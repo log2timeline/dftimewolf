@@ -87,3 +87,9 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Pycharm files
+.idea
+
+# Code review files
+/.review
