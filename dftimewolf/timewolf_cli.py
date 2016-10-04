@@ -53,7 +53,7 @@ gflags.MarkFlagAsRequired('username')
 gflags.MarkFlagAsRequired('reason')
 
 
-def main():
+def main(argv):
   """Timewolf tool."""
   try:
     argv = FLAGS(argv)  # parse flags
@@ -71,10 +71,11 @@ def main():
   if FLAGS.sketch_id:
     try:
       timesketch_api.GetSketch(FLAGS.sketch_id)
+      sketch_id = FLAGS.sketch_id
     except ValueError as e:
       console_out.StdErr(e, die=True)
   else:
-    sketch_id = timesketch_api.CreateSketch(reason, '')
+    sketch_id = timesketch_api.CreateSketch(FLAGS.reason, '')
 
   # Collect artifacts
   try:
