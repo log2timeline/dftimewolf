@@ -1,0 +1,116 @@
+"""Timewolf CLI.
+
+This is the Timewolf all-in-one CLI tool. It does the following:
+1) Collect artifacts from local filesystem or from a GRR client.
+2) Process the artifacts with Plaso log2timeline tool.
+3) Create a new Timesketch sketch or append to an existing one.
+4) Upload the plaso storage files to Timesketch.
+5) Output a link to the sketch.
+
+Example use:
+$ timewolf_cli --hosts cpelton.greendale.edu --reason 12345
+$ timewolf_cli --paths /path/to/artifacts/ --reason 12345
+
+You can also combine --paths and --hosts to collect artifacts from both.
+
+In the case of collecting artifacts from a host via GRR you will need approval
+for the host in question.
+"""
+
+import getpass
+import gflags
+import webbrowser
+import sys
+
+from dftimewolf.lib import collectors
+from dftimewolf.lib import processors
+from dftimewolf.lib import timesketch_utils
+from dftimewolf.lib import utils as timewolf_utils
+
+FLAGS = gflags.FLAGS
+gflags.DEFINE_list(u'hosts', [],
+                   u'One or more hostnames to collect artifacts from with GRR')
+gflags.DEFINE_list(u'paths', [],
+                   u'One or more paths to files to process on the filesystem')
+gflags.DEFINE_string(u'reason', None, u'Reason for requesting client access')
+gflags.DEFINE_string(u'grr_server_url', None, u'GRR server to use')
+gflags.DEFINE_string(u'timesketch_server_url', None,
+                     u'Timesketch server to use')
+gflags.DEFINE_string(u'artifacts', None,
+                     u'Comma separated list of GRR artifacts to fetch')
+gflags.DEFINE_string(u'timezone', None, u'Timezone to use for Plaso processing')
+gflags.DEFINE_list(
+    u'approvers', None,
+    u'Comma seperated list of usernames to approve GRR client access')
+gflags.DEFINE_boolean(u'open_in_browser', False,
+                      u'Open the resulting sketch in a browser window')
+gflags.DEFINE_integer(u'sketch_id', None, u'Timesketch sketch to append to')
+gflags.DEFINE_boolean(u'verbose', False, u'Show extended output')
+gflags.DEFINE_string(u'username', None, u'GRR/Timesketch username')
+
+# Required flags
+gflags.MarkFlagAsRequired('username')
+gflags.MarkFlagAsRequired('reason')
+
+
+def main():
+  """Timewolf tool."""
+  try:
+    argv = FLAGS(argv)  # parse flags
+  except gflags.FlagsError, e:
+    print e
+    sys.exit(1)
+  password = getpass.getpass()
+  # Console output helper
+  console_out = timewolf_utils.TimewolfConsoleOutput(
+      sender=u'TimewolfCli', verbose=FLAGS.verbose)
+  timesketch_api = timesketch_utils.TimesketchApiClient(
+      FLAGS.timesketch_server_url, FLAGS.username, password)
+
+  # Check if sketch exists and that the user has access to it, or exit.
+  if FLAGS.sketch_id:
+    try:
+      timesketch_api.GetSketch(FLAGS.sketch_id)
+    except ValueError as e:
+      console_out.StdErr(e, die=True)
+  else:
+    sketch_id = timesketch_api.CreateSketch(reason, '')
+
+  # Collect artifacts
+  try:
+    collected_artifacts = collectors.CollectArtifactsHelper(
+        FLAGS.hosts, FLAGS.paths, FLAGS.artifacts, FLAGS.reason,
+        FLAGS.approvers, FLAGS.verbose, FLAGS.grr_server_url, FLAGS.username,
+        password)
+  except (ValueError, RuntimeError) as e:
+    console_out.StdErr(e, die=True)
+
+  # Process artifacts
+  if FLAGS.timezone:
+    if not timewolf_utils.IsValidTimezone(FLAGS.timezone):
+      console_out.StdErr(
+          u'Unknown timezone: {0:s}'.format(FLAGS.timezone), die=True)
+
+  processed_artifacts = processors.ProcessArtifactsHelper(collected_artifacts,
+                                                          FLAGS.timezone,
+                                                          FLAGS.verbose)
+
+  # Export artifacts
+  for path_name in processed_artifacts:
+    path = path_name[0]
+    name = path_name[1]
+    new_timeline_id = timesketch_api.UploadTimeline(name, path)
+    timesketch_api.AddTimelineToSketch(sketch_id, new_timeline_id)
+
+  sketch_url = timesketch_api.GetSketchURL(sketch_id)
+
+  # Final output to stdout
+  console_out.StdOut(sketch_url)
+
+  # Open new webbrowser window/tab opening the result analysis URL
+  if FLAGS.open_in_browser:
+    webbrowser.open_new(sketch_url)
+
+
+if __name__ == '__main__':
+  main(sys.argv)
