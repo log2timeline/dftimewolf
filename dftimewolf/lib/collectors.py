@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-"""Timeflow artifact collectors.
+"""Timewolf artifact collectors.
 
-Timeflow artifact collectors are responsible for collecting artifacts.
+Timewolf artifact collectors are responsible for collecting artifacts.
 """
 
 import datetime
