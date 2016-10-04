@@ -18,8 +18,8 @@ This can then be piped into other tools, e.g. timewolf_export:
 $ timewolf_process --path /path/to/artifacts/ | timewolf_export --reason 123
 """
 
-import gflags
 import sys
+import gflags
 
 from dftimewolf.lib import collectors
 from dftimewolf.lib import processors

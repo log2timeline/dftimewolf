@@ -20,9 +20,9 @@ https://timesketch.greendale.edu/sketch/4711/
 """
 
 import getpass
-import gflags
 import os
 import sys
+import gflags
 
 from dftimewolf.lib import timesketch_utils
 from dftimewolf.lib import utils as timewolf_utils

@@ -6,7 +6,7 @@ import tempfile
 import uuid
 
 from plaso.cli import tools as cli_tools
-from plaso.tools import log2timeline
+from tools import log2timeline
 
 from dftimewolf.lib import utils
 

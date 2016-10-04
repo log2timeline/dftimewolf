@@ -18,9 +18,9 @@ for the host in question.
 """
 
 import getpass
-import gflags
 import webbrowser
 import sys
+import gflags
 
 from dftimewolf.lib import collectors
 from dftimewolf.lib import processors

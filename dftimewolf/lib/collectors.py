@@ -7,9 +7,9 @@ Timewolf artifact collectors are responsible for collecting artifacts.
 import datetime
 import os
 import re
-import requests
 import tempfile
 import time
+import requests
 
 from grr.gui.api_client import api as grr_api
 from grr.gui.api_client import utils as grr_utils
@@ -230,6 +230,7 @@ class GrrArtifactCollector(BaseArtifactCollector):
 
   # TODO(someguyiknow): Remove this horrible hack when GRR API supports download
   def _DownloadFiles(self, flow_id):
+    """Download files from the specified flow."""
     flow_results = self.client.Flow(flow_id).Get().ListFlowResults()
 
     resource_url = u'{0:s}/render/Download/DownloadView'.format(
