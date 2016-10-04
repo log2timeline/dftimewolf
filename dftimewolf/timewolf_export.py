@@ -60,10 +60,11 @@ def main(argv):
   if FLAGS.sketch_id:
     try:
       timesketch_api.GetSketch(FLAGS.sketch_id)
+      sketch_id = FLAGS.sketch_id
     except ValueError as e:
       console_out.StdErr(e, die=True)
   else:
-    sketch_id = timesketch_api.CreateSketch(reason, '')
+    sketch_id = timesketch_api.CreateSketch(FLAGS.reason, '')
 
   # Export artifacts
   if FLAGS.path:
