@@ -4,23 +4,45 @@ import requests
 
 
 class TimesketchApiClient(object):
-  """API Client for Timesketch."""
+  """API Client for Timesketch.
+
+  Attributes:
+    host_url: Hostname and port of Timesketch instance
+    username: Timesketch username
+    session: HTTP session for calls to Timesketch
+  """
 
   def __init__(self, host, username, password):
-    self.host_url = host
-    self.username = username
-    self.password = password
-    self.session = self._CreateSession()
+    """Initialize the Timesketch API client object.
 
-  def _CreateSession(self):
-    """Create HTTP session."""
+    Args:
+      host: Hostname and port of Timesketch instance
+      api_base_url: Base URL of API
+      username: Timesketch username
+      password: Timesketch password
+    """
+    self.host_url = host
+    self.api_base_url = u'{0:s}/api/v1'.format(self.host_url)
+    self.username = username
+    self.session = self._CreateSession(username, password)
+
+  def _CreateSession(self, username, password):
+    """Create HTTP session.
+
+    Args:
+      username: Timesketch username
+      password: Timesketch password
+
+    Returns:
+      Session object
+    """
     session = requests.Session()
     session.verify = False  # Depending on SSL cert is verifiable
     response = session.get(self.host_url)
     # Get the CSRF token from the response
     soup = BeautifulSoup(response.text, 'html.parser')
     csrf_token = soup.find('input', dict(name='csrf_token'))['value']
-    login_data = dict(username=self.username, password=self.password)
+    login_data = dict(username=username, password=password)
     session.headers.update({
         'x-csrftoken': csrf_token,
         'referer': self.host_url
@@ -30,8 +52,15 @@ class TimesketchApiClient(object):
     return session
 
   def CreateSketch(self, name, description):
-    """Create a new sketch with the specified name and description."""
-    resource_url = u'{0:s}/api/v1/sketches/'.format(self.host_url)
+    """Create a new sketch with the specified name and description.
+
+    Args:
+      name: Title of sketch
+      description: Description of sketch
+    Returns:
+      Integer corresponding to ID of created sketch
+    """
+    resource_url = u'{0:s}/sketches/'.format(self.api_base_url)
     form_data = {u'name': name, u'description': description}
     response = self.session.post(resource_url, json=form_data)
     response_dict = response.json()
@@ -39,8 +68,15 @@ class TimesketchApiClient(object):
     return sketch_id
 
   def UploadTimeline(self, timeline_name, plaso_storage_path):
-    """Create a timeline with the specified name from the given plaso file."""
-    resource_url = u'{0:s}/api/v1/upload/'.format(self.host_url)
+    """Create a timeline with the specified name from the given plaso file.
+
+    Args:
+      timeline_name: Name of timeline
+      plaso_storage_file: Local path of plaso file to be uploaded
+    Returns:
+      Integer corresponding to ID of uploaded timeline
+    """
+    resource_url = u'{0:s}/upload/'.format(self.api_base_url)
     files = {'file': open(plaso_storage_path, 'rb')}
     data = {u'name': timeline_name}
     response = self.session.post(resource_url, files=files, data=data)
@@ -49,16 +85,27 @@ class TimesketchApiClient(object):
     return index_id
 
   def AddTimelineToSketch(self, sketch_id, index_id):
-    """Associate the specified timeline and sketch."""
-    resource_url = u'{0:s}/api/v1/sketches/{1:d}/'.format(self.host_url,
-                                                          sketch_id)
+    """Associate the specified timeline and sketch.
+
+    Args:
+      sketch_id: ID of sketch
+      index_id: ID of timeline to add to sketch
+    """
+    resource_url = u'{0:s}/sketches/{1:d}/'.format(self.api_base_url, sketch_id)
     form_data = {u'timelines': [index_id]}
     self.session.post(resource_url, json=form_data)
 
   def GetSketch(self, sketch_id):
-    """Get information on the specified sketch."""
-    resource_url = u'{0:s}/api/v1/sketches/{1:d}/'.format(self.host_url,
-                                                          sketch_id)
+    """Get information on the specified sketch.
+
+    Args:
+      sketch_id: ID of sketch
+    Returns:
+      Dictionary of sketch information
+    Raises:
+      ValueError: Sketch is inaccessible
+    """
+    resource_url = u'{0:s}/sketches/{1:d}/'.format(self.api_base_url, sketch_id)
     response = self.session.get(resource_url)
     response_dict = response.json()
     try:
@@ -68,19 +115,12 @@ class TimesketchApiClient(object):
     return response_dict
 
   def GetSketchURL(self, sketch_id):
-    """Get the full URL of the specified sketch."""
-    resource_url = u'{0:s}/api/v1/sketches/{1:d}/'.format(self.host_url,
-                                                          sketch_id)
+    """Get the full URL of the specified sketch.
+
+    Args:
+      sketch_id: ID of sketch
+    Returns:
+      URL of sketch
+    """
+    resource_url = u'{0:s}/sketches/{1:d}/'.format(self.host_url, sketch_id)
     return resource_url
-
-
-if __name__ == '__main__':
-  timesketch = TimesketchApiClient(
-      host=u'127.0.0.1', username=u'foo', password=u'bar')
-  # Create new sketch with name 'foo' and description 'bar'
-  ts_sketch_id = timesketch.CreateSketch(u'foo', u'bar')
-  # Upload and index a new timeline from foo.plaso with name 'foobar timeline'
-  ts_index_id = timesketch.UploadTimeline(
-      u'foobar timeline', u'/tmp/foo.plaso')
-  # Add the newly created timeline to the sketch
-  timesketch.AddTimelineToSketch(ts_sketch_id, ts_index_id)

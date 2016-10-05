@@ -25,10 +25,24 @@ class BaseArtifactProcessor(object):
 
 
 class PlasoArtifactProcessor(BaseArtifactProcessor):
-  """Process artifacts with Plaso log2timeline tool."""
+  """Process artifacts with Plaso log2timeline tool.
+
+    Attributes:
+      output_path: Local path for plaso file output
+      artifacts_path: Local path for plaso artifact input
+      timezone: Timezone name
+      plaso_storage_file_name: Name of output plaso file
+      plaso_storage_file_path: output_path + plaso_storage_file_name
+  """
 
   def __init__(self, artifacts_path, timezone=None, verbose=False):
-    """Initialize the Plaso artifact processor object."""
+    """Initialize the Plaso artifact processor object.
+
+    Args:
+      artifacts_path: Local path for plaso artifact input
+      timezone: Timezone name
+      verbose: Boolean indicating if verbose output is desired
+    """
     super(PlasoArtifactProcessor, self).__init__(verbose=verbose)
     self.output_path = tempfile.mkdtemp()
     self.artifacts_path = artifacts_path

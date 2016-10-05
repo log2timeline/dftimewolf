@@ -17,19 +17,34 @@ class TimewolfConsoleOutput(object):
     self._verbose = verbose
 
   def _FormatMessage(self, message):
-    """Format message with script name and sender name."""
+    """Format message with script name and sender name.
+
+    Args:
+      message: Message to be formatted
+    Returns:
+      String containing formatted message
+    """
     script_name = os.path.basename(sys.argv[0])
     formatted_message = u'{0:s}: {1:s} - {2:s}\n'.format(script_name,
                                                          self._sender, message)
     return formatted_message
 
   def StdOut(self, message):
-    """Send message to standard out."""
+    """Send message to standard out.
+
+    Args:
+      message: Message to be printed
+    """
     sys.stdout.write(u'{0:s}\n'.format(message))
     sys.stdout.flush()
 
   def StdErr(self, message, die=False):
-    """Send formatted message to standard error."""
+    """Send formatted message to standard error.
+
+    Args:
+      message: Message to be printed
+      die: Boolean indicating whether error is irrecoverable
+    """
     error_message = self._FormatMessage(message)
     if die:
       exit_message = error_message.rstrip(u'\n')
@@ -38,7 +53,11 @@ class TimewolfConsoleOutput(object):
     sys.stderr.flush()
 
   def VerboseOut(self, message):
-    """Send verbose output to standard error."""
+    """Send verbose output to standard error.
+
+    Args:
+      message: Message to be printed
+    """
     if self._verbose:
       self.StdErr(message, die=False)
 
@@ -56,5 +75,9 @@ def ReadFromStdin():
 
 
 def IsValidTimezone(timezone):
-  """Check timezone string against known timezones in the pytz package."""
+  """Check timezone string against known timezones in the pytz package.
+
+  Args:
+    timezone: Timezone name
+  """
   return timezone in pytz.all_timezones
