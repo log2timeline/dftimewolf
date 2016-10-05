@@ -8,6 +8,7 @@ class TimesketchApiClient(object):
 
   Attributes:
     host_url: Hostname and port of Timesketch instance
+    api_base_url: Base URL of API
     username: Timesketch username
     session: HTTP session for calls to Timesketch
   """
@@ -17,7 +18,6 @@ class TimesketchApiClient(object):
 
     Args:
       host: Hostname and port of Timesketch instance
-      api_base_url: Base URL of API
       username: Timesketch username
       password: Timesketch password
     """
