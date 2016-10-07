@@ -55,15 +55,14 @@ gflags.MarkFlagAsRequired('reason')
 
 def main(argv):
   """Timewolf tool."""
-  try:
-    argv = FLAGS(argv)  # parse flags
-  except gflags.FlagsError, e:
-    print e
-    sys.exit(1)
-  password = getpass.getpass()
   # Console output helper
   console_out = timewolf_utils.TimewolfConsoleOutput(
       sender=u'TimewolfCli', verbose=FLAGS.verbose)
+  try:
+    argv = FLAGS(argv)  # parse flags
+  except gflags.FlagsError, e:
+    console_out.StdErr(e, die=True)
+  password = getpass.getpass()
   timesketch_api = timesketch_utils.TimesketchApiClient(
       FLAGS.timesketch_server_url, FLAGS.username, password)
 

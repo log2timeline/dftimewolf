@@ -34,14 +34,13 @@ gflags.DEFINE_boolean(u'verbose', False, u'Show extended output')
 
 def main(argv):
   """Timewolf process tool."""
-  try:
-    argv = FLAGS(argv)  # parse flags
-  except gflags.FlagsError, e:
-    print e
-    sys.exit(1)
   # Console output helper
   console_out = utils.TimewolfConsoleOutput(
       sender=u'TimewolfProcessCli', verbose=FLAGS.verbose)
+  try:
+    argv = FLAGS(argv)  # parse flags
+  except gflags.FlagsError, e:
+    console_out.StdErr(e, die=True)
 
   if FLAGS.path:
     # Collect the artifacts with the filesystem collector
