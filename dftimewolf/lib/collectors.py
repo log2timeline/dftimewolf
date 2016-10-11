@@ -14,6 +14,7 @@ import requests
 from grr.gui.api_client import api as grr_api
 from grr.gui.api_client import utils as grr_utils
 from dftimewolf.lib import utils as timewolf_utils
+from grr.proto import api_pb2
 from grr.proto import flows_pb2
 
 
@@ -64,24 +65,25 @@ class GrrArtifactCollector(BaseArtifactCollector):
   """Collect artifacts with GRR."""
   CHECK_APPROVAL_INTERVAL_SEC = 10
   CHECK_FLOW_INTERVAL_SEC = 10
-  DEFAULT_ARTIFACTS_LINUX = [u'LinuxAuditLogs', u'LinuxAuthLogs',
-                             u'LinuxCronLogs', u'LinuxWtmp',
-                             u'AllUsersShellHistory', u'ZeitgeistDatabase']
+  DEFAULT_ARTIFACTS_LINUX = [
+      u'LinuxAuditLogs', u'LinuxAuthLogs', u'LinuxCronLogs', u'LinuxWtmp',
+      u'AllUsersShellHistory', u'ZeitgeistDatabase'
+  ]
 
-  DEFAULT_ARTIFACTS_DARWIN = [u'OSXAppleSystemLogs', u'OSXAuditLogs',
-                              u'OSXBashHistory', u'OSXInstallationHistory',
-                              u'OSXInstallationLog', u'OSXInstallationTime',
-                              u'OSXLaunchAgents', u'OSXLaunchDaemons',
-                              u'OSXMiscLogs', u'OSXRecentItems',
-                              u'OSXSystemLogs', u'OSXUserApplicationLogs',
-                              u'OSXQuarantineEvents']
+  DEFAULT_ARTIFACTS_DARWIN = [
+      u'OSXAppleSystemLogs', u'OSXAuditLogs', u'OSXBashHistory',
+      u'OSXInstallationHistory', u'OSXInstallationLog', u'OSXInstallationTime',
+      u'OSXLaunchAgents', u'OSXLaunchDaemons', u'OSXMiscLogs',
+      u'OSXRecentItems', u'OSXSystemLogs', u'OSXUserApplicationLogs',
+      u'OSXQuarantineEvents'
+  ]
 
-  DEFAULT_ARTIFACTS_WINDOWS = [u'AppCompatCache', u'EventLogs',
-                               u'TerminalServicesEventLogEvtx',
-                               u'PrefetchFiles', u'SuperFetchFiles',
-                               u'WindowsSearchDatabase', u'ScheduledTasks',
-                               u'WindowsSystemRegistryFiles',
-                               u'WindowsUserRegistryFiles']
+  DEFAULT_ARTIFACTS_WINDOWS = [
+      u'AppCompatCache', u'EventLogs', u'TerminalServicesEventLogEvtx',
+      u'PrefetchFiles', u'SuperFetchFiles', u'WindowsSearchDatabase',
+      u'ScheduledTasks', u'WindowsSystemRegistryFiles',
+      u'WindowsUserRegistryFiles'
+  ]
 
   def __init__(self,
                host,
@@ -114,9 +116,9 @@ class GrrArtifactCollector(BaseArtifactCollector):
 
     result = {}
     for client in search_result:
-      client_id = grr_utils.UrnToClientId(client.data[u'urn'])
-      client_fqdn = client.data[u'os_info'][u'fqdn']
-      client_last_seen_at = client.data[u'last_seen_at']
+      client_id = client.client_id
+      client_fqdn = client.data.os_indo.fqdn
+      client_last_seen_at = client.data.last_seen_at
       if host.lower() in client_fqdn.lower():
         result[client_id] = client_last_seen_at
 
@@ -147,7 +149,10 @@ class GrrArtifactCollector(BaseArtifactCollector):
     """Get GRR client dictionary and make sure valid approvals exist."""
     client = self.grr_api.Client(client_id)
     self.console_out.VerboseOut(u'Checking for client approval')
-    if not client.HasValidApproval():
+    if not len(
+        list(
+            client.ListApprovals(
+                state=api_pb2.ApiListClientApprovalsArgs.VALID))):
       self.console_out.VerboseOut(u'No valid client approval found')
       if not approvers:
         raise ValueError(
@@ -160,8 +165,11 @@ class GrrArtifactCollector(BaseArtifactCollector):
           u'Waiting for approval (this can take a while..)')
       # Send a request for approval and wait until there is a valid one
       # available in GRR.
-      client.RequestApproval(approvers=approvers, reason=reason)
-      while not client.HasValidApproval():
+      client.CreateApproval(reason=reason, notified_users=approvers)
+      while not len(
+          list(
+              client.ListApprovals(
+                  state=api_pb2.ApiListClientApprovalsArgs.VALID))):
         time.sleep(self.CHECK_APPROVAL_INTERVAL_SEC)
 
     self.console_out.VerboseOut(u'Client approval is valid')
@@ -175,7 +183,7 @@ class GrrArtifactCollector(BaseArtifactCollector):
         u'Darwin': self.DEFAULT_ARTIFACTS_DARWIN,
         u'Windows': self.DEFAULT_ARTIFACTS_WINDOWS
     }
-    system_type = self.client.data[u'os_info'][u'system']
+    system_type = self.client.data.os_info.system
     self.console_out.VerboseOut(u'System type: {0:s}'.format(system_type))
     # If the list is supplied by the user via a flag, honor that.
     if self.artifacts:
@@ -198,7 +206,7 @@ class GrrArtifactCollector(BaseArtifactCollector):
 
     # Start the flow and get the flow ID
     flow = self.client.CreateFlow(name=name, args=args)
-    flow_id = grr_utils.UrnToFlowId(flow.data[u'urn'])
+    flow_id = grr_utils.UrnToFlowId(flow.data.urn)
     self.console_out.VerboseOut(u'Flow {0:s}: Scheduled'.format(flow_id))
 
     # Wait for the flow to finish
@@ -206,11 +214,11 @@ class GrrArtifactCollector(BaseArtifactCollector):
         flow_id))
     while True:
       status = self.client.Flow(flow_id).Get().data
-      state = status[u'state']
+      state = status.state
       if state == u'ERROR':
         # TODO(berggren): If one artifact fails, what happens? Test.
         raise RuntimeError(u'Flow {0:s}: FAILED! Backtrace from GRR:\n\n{1:s}'.
-                           format(flow_id, status[u'backtrace']))
+                           format(flow_id, status.backtrace))
       elif state == u'TERMINATED':
         self.console_out.VerboseOut(u'Flow {0:s}: Finished successfully'.format(
             flow_id))
@@ -231,55 +239,24 @@ class GrrArtifactCollector(BaseArtifactCollector):
   # TODO(someguyiknow): Remove this horrible hack when GRR API supports download
   def _DownloadFiles(self, flow_id):
     """Download files from the specified flow."""
-    flow_results = self.client.Flow(flow_id).Get().ListFlowResults()
-
-    resource_url = u'{0:s}/render/Download/DownloadView'.format(
-        self.grr_api.context.connector.api_endpoint)
-    headers = {
-        'x-csrftoken': self.grr_api.context.connector.csrf_token,
-        'x-requested-with': 'XMLHttpRequest'
-    }
-    cookies = {'csrftoken': self.grr_api.context.connector.csrf_token}
-    session = requests.Session()
-    session.auth = self.grr_api.context.connector.auth
-    session.headers.update(headers)
-    session.cookies.update(cookies)
-
     if not os.path.isdir(self.output_path):
       os.makedirs(self.output_path)
 
-    files_written = []
-    for item in flow_results:
-      payload = item.get(u'payload', None)
-      if not payload:
-        continue
-      aff4_path = payload.get(u'aff4path', None)
-      if not aff4_path:
-        continue
-      output_file_path = os.path.join(self.output_path,
-                                      u'/'.join(aff4_path.split(u'/')[1:]))
-      output_dir = os.path.dirname(output_file_path)
+    output_file_path = os.path.join(self.output_path, u'.'.join(
+        (flow_id, u'zip')))
 
-      if not os.path.isdir(output_dir):
-        os.makedirs(output_dir)
+    if os.path.exists(output_file_path):
+      print u'{0:s} already exists: Skipping'.format(output_file_path)
+      continue
 
-      if os.path.exists(output_file_path):
-        print u'{0:s} already exists: Skipping'.format(output_file_path)
-        continue
+    self.client.Flow(flow_id).GetFilesArchive().WriteToFile(output_file_path)
 
-      form_data = {u'aff4_path': aff4_path, u'client_id': self.client_id}
-      response = session.post(resource_url, data=form_data)
-
-      with open(output_file_path, u'wb') as fh:
-        fh.write(response.text.encode('utf-8'))
-        files_written.append(output_file_path)
-
-    return files_written
+    return output_file_path
 
   @property
   def collection_name(self):
     """Name for the collection of collected artifacts."""
-    collection_name = self.client.data[u'os_info'][u'fqdn']
+    collection_name = self.client.data.os_info.fqdn
     self.console_out.VerboseOut(u'Artifact collection name: {0:s}'.format(
         collection_name))
     return collection_name
