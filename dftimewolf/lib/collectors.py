@@ -116,7 +116,7 @@ class GrrArtifactCollector(BaseArtifactCollector):
     result = {}
     for client in search_result:
       client_id = client.client_id
-      client_fqdn = client.data.os_indo.fqdn
+      client_fqdn = client.data.os_info.fqdn
       client_last_seen_at = client.data.last_seen_at
       if host.lower() in client_fqdn.lower():
         result[client_id] = client_last_seen_at
@@ -235,7 +235,6 @@ class GrrArtifactCollector(BaseArtifactCollector):
 
     return self.output_path
 
-  # TODO(someguyiknow): Remove this horrible hack when GRR API supports download
   def _DownloadFiles(self, flow_id):
     """Download files from the specified flow."""
     if not os.path.isdir(self.output_path):
