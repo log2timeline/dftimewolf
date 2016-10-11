@@ -9,7 +9,6 @@ import os
 import re
 import tempfile
 import time
-import requests
 
 from grr.gui.api_client import api as grr_api
 from grr.gui.api_client import utils as grr_utils
@@ -228,11 +227,11 @@ class GrrArtifactCollector(BaseArtifactCollector):
     # Download the files collected by the flow
     self.console_out.VerboseOut(u'Flow {0:s}: Downloading artifacts'.format(
         flow_id))
-    collected_file_paths = self._DownloadFiles(flow_id)
+    collected_file_path = self._DownloadFiles(flow_id)
 
-    for file_path in collected_file_paths:
+    if collected_file_path:
       self.console_out.VerboseOut(u'Flow {0:s}: Downloaded: {1:s}'.format(
-          flow_id, file_path))
+          flow_id, collected_file_path))
 
     return self.output_path
 
@@ -247,7 +246,7 @@ class GrrArtifactCollector(BaseArtifactCollector):
 
     if os.path.exists(output_file_path):
       print u'{0:s} already exists: Skipping'.format(output_file_path)
-      continue
+      return None
 
     self.client.Flow(flow_id).GetFilesArchive().WriteToFile(output_file_path)
 
