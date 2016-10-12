@@ -249,6 +249,11 @@ class GrrArtifactCollector(BaseArtifactCollector):
 
     self.client.Flow(flow_id).GetFilesArchive().WriteToFile(output_file_path)
 
+    # Unzip archive for processing and remove redundant zip
+    with zipfile.ZipFile(output_file_path) as archive:
+      archive.extractall(path=self.output_path)
+    os.remove(output_file_path)
+
     return output_file_path
 
   @property
