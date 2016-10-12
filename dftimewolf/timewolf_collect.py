@@ -42,13 +42,13 @@ gflags.MarkFlagAsRequired('reason')
 
 def main(argv):
   """Timewolf collect tool."""
-  # Console output helper.
-  console_out = timewolf_utils.TimewolfConsoleOutput(
-      sender=u'TimewolfCollectCli', verbose=FLAGS.verbose)
   try:
     argv = FLAGS(argv)  # parse flags
   except gflags.FlagsError, e:
-    console_out.StdErr(e, die=True)
+    sys.exit(e)
+  # Console output helper.
+  console_out = timewolf_utils.TimewolfConsoleOutput(
+      sender=u'TimewolfCollectCli', verbose=FLAGS.verbose)
   password = getpass.getpass()
 
   # Collect artifacts
