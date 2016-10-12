@@ -12,6 +12,7 @@ import time
 import zipfile
 
 from grr.gui.api_client import api as grr_api
+from grr.gui.api_client import errors as grr_errors
 from grr.gui.api_client import utils as grr_utils
 from dftimewolf.lib import utils as timewolf_utils
 from grr.proto import api_pb2
@@ -149,10 +150,9 @@ class GrrArtifactCollector(BaseArtifactCollector):
     """Get GRR client dictionary and make sure valid approvals exist."""
     client = self.grr_api.Client(client_id)
     self.console_out.VerboseOut(u'Checking for client approval')
-    if not len(
-        list(
-            client.ListApprovals(
-                state=api_pb2.ApiListClientApprovalsArgs.VALID))):
+    try:
+      client.ListFlows()
+    except grr_errors.AccessForbiddenError:
       self.console_out.VerboseOut(u'No valid client approval found')
       if not approvers:
         raise ValueError(
@@ -166,11 +166,12 @@ class GrrArtifactCollector(BaseArtifactCollector):
       # Send a request for approval and wait until there is a valid one
       # available in GRR.
       client.CreateApproval(reason=reason, notified_users=approvers)
-      while not len(
-          list(
-              client.ListApprovals(
-                  state=api_pb2.ApiListClientApprovalsArgs.VALID))):
-        time.sleep(self.CHECK_APPROVAL_INTERVAL_SEC)
+      while True:
+        try:
+          client.ListFlows()
+          break
+        except grr_errors.AccessForbiddenError:
+          time.sleep(self.CHECK_APPROVAL_INTERVAL_SEC)
 
     self.console_out.VerboseOut(u'Client approval is valid')
     return client.Get()
