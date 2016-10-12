@@ -15,7 +15,6 @@ from grr.gui.api_client import api as grr_api
 from grr.gui.api_client import errors as grr_errors
 from grr.gui.api_client import utils as grr_utils
 from dftimewolf.lib import utils as timewolf_utils
-from grr.proto import api_pb2
 from grr.proto import flows_pb2
 
 
