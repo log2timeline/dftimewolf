@@ -219,7 +219,7 @@ class GrrArtifactCollector(BaseArtifactCollector):
       if state == flows_pb2.FlowContext.ERROR:
         # TODO(berggren): If one artifact fails, what happens? Test.
         raise RuntimeError(u'Flow {0:s}: FAILED! Backtrace from GRR:\n\n{1:s}'.
-                           format(flow_id, status.backtrace))
+                           format(flow_id, status.context.backtrace))
       elif state == flows_pb2.FlowContext.TERMINATED:
         self.console_out.VerboseOut(u'Flow {0:s}: Finished successfully'.format(
             flow_id))
