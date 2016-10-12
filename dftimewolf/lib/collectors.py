@@ -9,6 +9,7 @@ import os
 import re
 import tempfile
 import time
+import zipfile
 
 from grr.gui.api_client import api as grr_api
 from grr.gui.api_client import utils as grr_utils
