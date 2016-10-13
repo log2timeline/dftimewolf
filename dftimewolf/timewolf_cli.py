@@ -19,6 +19,8 @@ for the host in question.
 
 import getpass
 import webbrowser
+import netrc
+import re
 import sys
 import gflags
 
@@ -49,7 +51,8 @@ gflags.DEFINE_boolean(u'verbose', False, u'Show extended output')
 gflags.DEFINE_string(u'username', None, u'GRR/Timesketch username')
 
 # Required flags
-gflags.MarkFlagAsRequired('username')
+gflags.MarkFlagAsRequired('grr_server_url')
+gflags.MarkFlagAsRequired('timesketch_server_url')
 gflags.MarkFlagAsRequired('reason')
 
 
@@ -62,9 +65,20 @@ def main(argv):
   # Console output helper
   console_out = timewolf_utils.TimewolfConsoleOutput(
       sender=u'TimewolfCli', verbose=FLAGS.verbose)
-  password = getpass.getpass()
+
+  netrc_file = netrc.netrc()
+
+  ts_host = re.search('://(\S+):\d+', FLAGS.timesketch_server_url).group(1)
+  netrc_entry = netrc_file.authenticators(ts_host)
+  if netrc_entry:
+    username = netrc_entry[0]
+    password = netrc_entry[2]
+  else:
+    username = FLAGS.username
+    password = getpass.getpass()
+
   timesketch_api = timesketch_utils.TimesketchApiClient(
-      FLAGS.timesketch_server_url, FLAGS.username, password)
+      FLAGS.timesketch_server_url, username, password)
 
   # Check if sketch exists and that the user has access to it, or exit.
   if FLAGS.sketch_id:
@@ -76,11 +90,20 @@ def main(argv):
   else:
     sketch_id = timesketch_api.CreateSketch(FLAGS.reason, '')
 
+  grr_host = re.search('://(\S+):\d+', FLAGS.grr_server_url).group(1)
+  netrc_entry = netrc_file.authenticators(grr_host)
+  if netrc_entry:
+    username = netrc_entry[0]
+    password = netrc_entry[2]
+  else:
+    username = FLAGS.username
+    password = getpass.getpass()
+
   # Collect artifacts
   try:
     collected_artifacts = collectors.CollectArtifactsHelper(
         FLAGS.hosts, FLAGS.paths, FLAGS.artifacts, FLAGS.reason,
-        FLAGS.approvers, FLAGS.verbose, FLAGS.grr_server_url, FLAGS.username,
+        FLAGS.approvers, FLAGS.verbose, FLAGS.grr_server_url, username,
         password)
   except (ValueError, RuntimeError) as e:
     console_out.StdErr(e, die=True)

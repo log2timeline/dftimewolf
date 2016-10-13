@@ -14,6 +14,8 @@ $ timewolf_collect --path /path/to/artifacts/ --reason 12345 | timewolf_process
 """
 
 import getpass
+import netrc
+import re
 import sys
 import gflags
 
@@ -36,7 +38,7 @@ gflags.DEFINE_boolean(u'verbose', False, u'Show extended output')
 gflags.DEFINE_string(u'username', None, u'GRR username')
 
 # Required flags
-gflags.MarkFlagAsRequired('username')
+gflags.MarkFlagAsRequired('grr_server_url')
 gflags.MarkFlagAsRequired('reason')
 
 
@@ -49,13 +51,22 @@ def main(argv):
   # Console output helper.
   console_out = timewolf_utils.TimewolfConsoleOutput(
       sender=u'TimewolfCollectCli', verbose=FLAGS.verbose)
-  password = getpass.getpass()
+
+  netrc_file = netrc.netrc()
+  grr_host = re.search('://(\S+):\d+', FLAGS.grr_server_url).group(1)
+  netrc_entry = netrc_file.authenticators(grr_host)
+  if netrc_entry:
+    username = netrc_entry[0]
+    password = netrc_entry[2]
+  else:
+    username = FLAGS.username
+    password = getpass.getpass()
 
   # Collect artifacts
   try:
     collected_artifacts = collectors.CollectArtifactsHelper(
         FLAGS.hosts, FLAGS.paths, FLAGS.artifacts, FLAGS.reason,
-        FLAGS.approvers, FLAGS.verbose, FLAGS.grr_server_url, FLAGS.username,
+        FLAGS.approvers, FLAGS.verbose, FLAGS.grr_server_url, username,
         password)
   except (ValueError, RuntimeError) as e:
     console_out.StdErr(e, die=True)

@@ -21,6 +21,8 @@ https://timesketch.greendale.edu/sketch/4711/
 
 import getpass
 import os
+import netrc
+import re
 import sys
 import gflags
 
@@ -38,7 +40,7 @@ gflags.DEFINE_boolean(u'verbose', False, u'Show extended output')
 gflags.DEFINE_string(u'username', None, u'Timesketch username')
 
 # Required flags
-gflags.MarkFlagAsRequired('username')
+gflags.MarkFlagAsRequired('timesketch_server_url')
 gflags.MarkFlagAsRequired('reason')
 
 
@@ -51,9 +53,19 @@ def main(argv):
   # Console output helper
   console_out = timewolf_utils.TimewolfConsoleOutput(
       sender=u'TimewolfExportCli', verbose=FLAGS.verbose)
-  password = getpass.getpass()
+
+  netrc_file = netrc.netrc()
+  ts_host = re.search('://(\S+):\d+', FLAGS.timesketch_server_url).group(1)
+  netrc_entry = netrc_file.authenticators(ts_host)
+  if netrc_entry:
+    username = netrc_entry[0]
+    password = netrc_entry[2]
+  else:
+    username = FLAGS.username
+    password = getpass.getpass()
+
   timesketch_api = timesketch_utils.TimesketchApiClient(
-      FLAGS.timesketch_server_url, FLAGS.username, password)
+      FLAGS.timesketch_server_url, username, password)
 
   # Check if sketch exists and that the user have access to it, or exit.
   if FLAGS.sketch_id:
