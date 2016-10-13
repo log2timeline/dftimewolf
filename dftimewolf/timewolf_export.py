@@ -55,7 +55,7 @@ def main(argv):
       sender=u'TimewolfExportCli', verbose=FLAGS.verbose)
 
   netrc_file = netrc.netrc()
-  ts_host = re.search('://(\S+):\d+', FLAGS.timesketch_server_url).group(1)
+  ts_host = re.search(r"://(\S+):\d+", FLAGS.timesketch_server_url).group(1)
   netrc_entry = netrc_file.authenticators(ts_host)
   if netrc_entry:
     username = netrc_entry[0]

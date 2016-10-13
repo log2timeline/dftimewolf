@@ -68,7 +68,7 @@ def main(argv):
 
   netrc_file = netrc.netrc()
 
-  ts_host = re.search('://(\S+):\d+', FLAGS.timesketch_server_url).group(1)
+  ts_host = re.search(r"://(\S+):\d+", FLAGS.timesketch_server_url).group(1)
   netrc_entry = netrc_file.authenticators(ts_host)
   if netrc_entry:
     username = netrc_entry[0]
@@ -90,7 +90,7 @@ def main(argv):
   else:
     sketch_id = timesketch_api.CreateSketch(FLAGS.reason, '')
 
-  grr_host = re.search('://(\S+):\d+', FLAGS.grr_server_url).group(1)
+  grr_host = re.search(r"://(\S+):\d+", FLAGS.grr_server_url).group(1)
   netrc_entry = netrc_file.authenticators(grr_host)
   if netrc_entry:
     username = netrc_entry[0]

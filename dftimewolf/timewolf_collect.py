@@ -53,7 +53,7 @@ def main(argv):
       sender=u'TimewolfCollectCli', verbose=FLAGS.verbose)
 
   netrc_file = netrc.netrc()
-  grr_host = re.search('://(\S+):\d+', FLAGS.grr_server_url).group(1)
+  grr_host = re.search(r"://(\S+):\d+", FLAGS.grr_server_url).group(1)
   netrc_entry = netrc_file.authenticators(grr_host)
   if netrc_entry:
     username = netrc_entry[0]
