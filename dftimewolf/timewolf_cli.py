@@ -36,7 +36,7 @@ gflags.DEFINE_list(u'paths', [],
                    u'One or more paths to files to process on the filesystem')
 gflags.DEFINE_string(u'reason', None, u'Reason for requesting client access')
 gflags.DEFINE_string(u'grr_server_url', u'http://localhost:8000',
- u'GRR server to use')
+                     u'GRR server to use')
 gflags.DEFINE_string(u'timesketch_server_url', u'http://localhost:5000',
                      u'Timesketch server to use')
 gflags.DEFINE_string(u'artifacts', None,
@@ -62,13 +62,12 @@ def main(argv):
   console_out = timewolf_utils.TimewolfConsoleOutput(
       sender=u'TimewolfCli', verbose=FLAGS.verbose)
 
-  if not (FLAGS.paths || FLAGS.hosts):
+  if not (FLAGS.paths or FLAGS.hosts):
     console_out.StdErr(u'paths or hosts must be specified', die=True)
-
 
   netrc_file = netrc.netrc()
 
-  ts_host = re.search(r"://(\S+):\d+", FLAGS.timesketch_server_url).group(1)
+  ts_host = re.search(r'://(\S+):\d+', FLAGS.timesketch_server_url).group(1)
   netrc_entry = netrc_file.authenticators(ts_host)
   if netrc_entry:
     username = netrc_entry[0]
@@ -80,7 +79,7 @@ def main(argv):
   timesketch_api = timesketch_utils.TimesketchApiClient(
       FLAGS.timesketch_server_url, username, password)
 
-  grr_host = re.search(r"://(\S+):\d+", FLAGS.grr_server_url).group(1)
+  grr_host = re.search(r'://(\S+):\d+', FLAGS.grr_server_url).group(1)
   netrc_entry = netrc_file.authenticators(grr_host)
   if netrc_entry:
     username = netrc_entry[0]
