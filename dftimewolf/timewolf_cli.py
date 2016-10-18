@@ -64,13 +64,13 @@ def main(argv):
     console_out.StdErr(u'paths or hosts must be specified', die=True)
 
   ts_host = re.search(r'://(\S+):\d+', FLAGS.timesketch_server_url).group(1)
-  username, password = timewolf_utils.GetCredentials(ts_host)
+  username, password = timewolf_utils.GetCredentials(FLAGS.username, ts_host)
 
   timesketch_api = timesketch_utils.TimesketchApiClient(
       FLAGS.timesketch_server_url, username, password)
 
   grr_host = re.search(r'://(\S+):\d+', FLAGS.grr_server_url).group(1)
-  username, password = timewolf_utils.GetCredentials(grr_host)
+  username, password = timewolf_utils.GetCredentials(FLAGS.username, grr_host)
 
   # Collect artifacts
   try:

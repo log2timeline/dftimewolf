@@ -85,14 +85,15 @@ def IsValidTimezone(timezone):
   return timezone in pytz.all_timezones
 
 
-def GetCredentials(host):
+def GetCredentials(user, host):
+  """Attempts to return credentials from netrc file, prompting otherwise."""
   netrc_file = netrc.netrc()
   netrc_entry = netrc_file.authenticators(host)
   if netrc_entry:
     username = netrc_entry[0]
     password = netrc_entry[2]
   else:
-    username = FLAGS.username
+    username = user
     password = getpass.getpass()
 
   return username, password

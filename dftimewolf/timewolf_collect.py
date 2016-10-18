@@ -51,7 +51,7 @@ def main(argv):
     console_out.StdErr(u'paths or hosts must be specified', die=True)
 
   grr_host = re.search(r'://(\S+):\d+', FLAGS.grr_server_url).group(1)
-  username, password = timewolf_utils.GetCredentials(grr_host)
+  username, password = timewolf_utils.GetCredentials(FLAGS.username, grr_host)
 
   # Collect artifacts
   try:

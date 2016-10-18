@@ -19,9 +19,7 @@ The output is the URL to the sketch in Timesketch. E.g:
 https://timesketch.greendale.edu/sketch/4711/
 """
 
-import getpass
 import os
-import netrc
 import re
 import sys
 import gflags
@@ -50,15 +48,8 @@ def main(argv):
   console_out = timewolf_utils.TimewolfConsoleOutput(
       sender=u'TimewolfExportCli', verbose=FLAGS.verbose)
 
-  netrc_file = netrc.netrc()
   ts_host = re.search(r'://(\S+):\d+', FLAGS.timesketch_server_url).group(1)
-  netrc_entry = netrc_file.authenticators(ts_host)
-  if netrc_entry:
-    username = netrc_entry[0]
-    password = netrc_entry[2]
-  else:
-    username = FLAGS.username
-    password = getpass.getpass()
+  username, password = timewolf_utils.GetCredentials(FLAGS.username, ts_host)
 
   timesketch_api = timesketch_utils.TimesketchApiClient(
       FLAGS.timesketch_server_url, username, password)
