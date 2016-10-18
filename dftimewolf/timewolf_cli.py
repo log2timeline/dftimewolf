@@ -17,9 +17,7 @@ In the case of collecting artifacts from a host via GRR you may need approval
 for the host in question.
 """
 
-import getpass
 import webbrowser
-import netrc
 import re
 import sys
 import gflags
@@ -65,28 +63,14 @@ def main(argv):
   if not (FLAGS.paths or FLAGS.hosts):
     console_out.StdErr(u'paths or hosts must be specified', die=True)
 
-  netrc_file = netrc.netrc()
-
   ts_host = re.search(r'://(\S+):\d+', FLAGS.timesketch_server_url).group(1)
-  netrc_entry = netrc_file.authenticators(ts_host)
-  if netrc_entry:
-    username = netrc_entry[0]
-    password = netrc_entry[2]
-  else:
-    username = FLAGS.username
-    password = getpass.getpass()
+  username, password = timewolf_utils.GetCredentials(ts_host)
 
   timesketch_api = timesketch_utils.TimesketchApiClient(
       FLAGS.timesketch_server_url, username, password)
 
   grr_host = re.search(r'://(\S+):\d+', FLAGS.grr_server_url).group(1)
-  netrc_entry = netrc_file.authenticators(grr_host)
-  if netrc_entry:
-    username = netrc_entry[0]
-    password = netrc_entry[2]
-  else:
-    username = FLAGS.username
-    password = getpass.getpass()
+  username, password = timewolf_utils.GetCredentials(grr_host)
 
   # Collect artifacts
   try:

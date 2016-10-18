@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 """Common utilities for Timewolf."""
 
+import getpass
+import netrc
 import os
 import sys
 
@@ -81,3 +83,16 @@ def IsValidTimezone(timezone):
     timezone: Timezone name
   """
   return timezone in pytz.all_timezones
+
+
+def GetCredentials(host):
+  netrc_file = netrc.netrc()
+  netrc_entry = netrc_file.authenticators(host)
+  if netrc_entry:
+    username = netrc_entry[0]
+    password = netrc_entry[2]
+  else:
+    username = FLAGS.username
+    password = getpass.getpass()
+
+  return username, password

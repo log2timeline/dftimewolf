@@ -13,8 +13,6 @@ This can then be piped into other tools, e.g. timewolf_process
 $ timewolf_collect --path /path/to/artifacts/ --reason 12345 | timewolf_process
 """
 
-import getpass
-import netrc
 import re
 import sys
 import gflags
@@ -52,15 +50,8 @@ def main(argv):
   if not (FLAGS.paths or FLAGS.hosts):
     console_out.StdErr(u'paths or hosts must be specified', die=True)
 
-  netrc_file = netrc.netrc()
   grr_host = re.search(r'://(\S+):\d+', FLAGS.grr_server_url).group(1)
-  netrc_entry = netrc_file.authenticators(grr_host)
-  if netrc_entry:
-    username = netrc_entry[0]
-    password = netrc_entry[2]
-  else:
-    username = FLAGS.username
-    password = getpass.getpass()
+  username, password = timewolf_utils.GetCredentials(grr_host)
 
   # Collect artifacts
   try:
