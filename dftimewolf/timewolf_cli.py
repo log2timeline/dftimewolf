@@ -13,7 +13,7 @@ $ timewolf_cli --paths /path/to/artifacts/ --reason 12345
 
 You can also combine --paths and --hosts to collect artifacts from both.
 
-In the case of collecting artifacts from a host via GRR you will need approval
+In the case of collecting artifacts from a host via GRR you may need approval
 for the host in question.
 """
 
@@ -35,8 +35,9 @@ gflags.DEFINE_list(u'hosts', [],
 gflags.DEFINE_list(u'paths', [],
                    u'One or more paths to files to process on the filesystem')
 gflags.DEFINE_string(u'reason', None, u'Reason for requesting client access')
-gflags.DEFINE_string(u'grr_server_url', None, u'GRR server to use')
-gflags.DEFINE_string(u'timesketch_server_url', None,
+gflags.DEFINE_string(u'grr_server_url', u'http://localhost:8000',
+ u'GRR server to use')
+gflags.DEFINE_string(u'timesketch_server_url', u'http://localhost:5000',
                      u'Timesketch server to use')
 gflags.DEFINE_string(u'artifacts', None,
                      u'Comma separated list of GRR artifacts to fetch')
@@ -50,11 +51,6 @@ gflags.DEFINE_integer(u'sketch_id', None, u'Timesketch sketch to append to')
 gflags.DEFINE_boolean(u'verbose', False, u'Show extended output')
 gflags.DEFINE_string(u'username', None, u'GRR/Timesketch username')
 
-# Required flags
-gflags.MarkFlagAsRequired('grr_server_url')
-gflags.MarkFlagAsRequired('timesketch_server_url')
-gflags.MarkFlagAsRequired('reason')
-
 
 def main(argv):
   """Timewolf tool."""
@@ -65,6 +61,10 @@ def main(argv):
   # Console output helper
   console_out = timewolf_utils.TimewolfConsoleOutput(
       sender=u'TimewolfCli', verbose=FLAGS.verbose)
+
+  if not (FLAGS.paths || FLAGS.hosts):
+    console_out.StdErr(u'paths or hosts must be specified', die=True)
+
 
   netrc_file = netrc.netrc()
 
@@ -79,16 +79,6 @@ def main(argv):
 
   timesketch_api = timesketch_utils.TimesketchApiClient(
       FLAGS.timesketch_server_url, username, password)
-
-  # Check if sketch exists and that the user has access to it, or exit.
-  if FLAGS.sketch_id:
-    try:
-      timesketch_api.GetSketch(FLAGS.sketch_id)
-      sketch_id = FLAGS.sketch_id
-    except ValueError as e:
-      console_out.StdErr(e, die=True)
-  else:
-    sketch_id = timesketch_api.CreateSketch(FLAGS.reason, '')
 
   grr_host = re.search(r"://(\S+):\d+", FLAGS.grr_server_url).group(1)
   netrc_entry = netrc_file.authenticators(grr_host)
@@ -118,21 +108,32 @@ def main(argv):
                                                           FLAGS.timezone,
                                                           FLAGS.verbose)
 
-  # Export artifacts
-  for path_name in processed_artifacts:
-    path = path_name[0]
-    name = path_name[1]
-    new_timeline_id = timesketch_api.UploadTimeline(name, path)
-    timesketch_api.AddTimelineToSketch(sketch_id, new_timeline_id)
+  if processed_artifacts:
+    # Check if sketch exists and that the user has access to it, or exit.
+    if FLAGS.sketch_id:
+      try:
+        timesketch_api.GetSketch(FLAGS.sketch_id)
+        sketch_id = FLAGS.sketch_id
+      except ValueError as e:
+        console_out.StdErr(e, die=True)
+    else:
+      sketch_id = timesketch_api.CreateSketch(FLAGS.reason, FLAGS.reason)
 
-  sketch_url = timesketch_api.GetSketchURL(sketch_id)
+    # Export artifacts
+    for path_name in processed_artifacts:
+      path = path_name[0]
+      name = path_name[1]
+      new_timeline_id = timesketch_api.UploadTimeline(name, path)
+      timesketch_api.AddTimelineToSketch(sketch_id, new_timeline_id)
 
-  # Final output to stdout
-  console_out.StdOut(sketch_url)
+    sketch_url = timesketch_api.GetSketchURL(sketch_id)
 
-  # Open new webbrowser window/tab opening the result analysis URL
-  if FLAGS.open_in_browser:
-    webbrowser.open_new(sketch_url)
+    # Final output to stdout
+    console_out.StdOut(sketch_url)
+
+    # Open new webbrowser window/tab opening the result analysis URL
+    if FLAGS.open_in_browser:
+      webbrowser.open_new(sketch_url)
 
 
 if __name__ == '__main__':

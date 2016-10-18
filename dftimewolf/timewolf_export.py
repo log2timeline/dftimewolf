@@ -33,15 +33,11 @@ FLAGS = gflags.FLAGS
 gflags.DEFINE_string(u'reason', None, u'Reason for requesting client access')
 gflags.DEFINE_string(u'path', None, u'Path to Plaso storage file')
 gflags.DEFINE_string(u'name', None, u'Name the timeline')
-gflags.DEFINE_string(u'timesketch_server_url', None,
+gflags.DEFINE_string(u'timesketch_server_url', u'http://localhost:5000',
                      u'Timesketch server to use')
 gflags.DEFINE_integer(u'sketch_id', None, u'Timesketch sketch to append to')
 gflags.DEFINE_boolean(u'verbose', False, u'Show extended output')
 gflags.DEFINE_string(u'username', None, u'Timesketch username')
-
-# Required flags
-gflags.MarkFlagAsRequired('timesketch_server_url')
-gflags.MarkFlagAsRequired('reason')
 
 
 def main(argv):
@@ -67,16 +63,6 @@ def main(argv):
   timesketch_api = timesketch_utils.TimesketchApiClient(
       FLAGS.timesketch_server_url, username, password)
 
-  # Check if sketch exists and that the user have access to it, or exit.
-  if FLAGS.sketch_id:
-    try:
-      timesketch_api.GetSketch(FLAGS.sketch_id)
-      sketch_id = FLAGS.sketch_id
-    except ValueError as e:
-      console_out.StdErr(e, die=True)
-  else:
-    sketch_id = timesketch_api.CreateSketch(FLAGS.reason, '')
-
   # Export artifacts
   if FLAGS.path:
     if not FLAGS.name:
@@ -86,16 +72,29 @@ def main(argv):
     processed_artifacts = ((path, name)
                            for path, name in timewolf_utils.ReadFromStdin())
 
-  for path_name in processed_artifacts:
-    path = path_name[0]
-    name = path_name[1]
-    new_timeline_id = timesketch_api.UploadTimeline(name, path)
-    timesketch_api.AddTimelineToSketch(sketch_id, new_timeline_id)
+  if processed_artifacts:
+    # Check if sketch exists and that the user have access to it, or exit.
+    if FLAGS.sketch_id:
+      try:
+        timesketch_api.GetSketch(FLAGS.sketch_id)
+        sketch_id = FLAGS.sketch_id
+      except ValueError as e:
+        console_out.StdErr(e, die=True)
+    else:
+      sketch_id = timesketch_api.CreateSketch(FLAGS.reason, FLAGS.reason)
 
-  sketch_url = timesketch_api.GetSketchURL(sketch_id)
+    for path_name in processed_artifacts:
+      path = path_name[0]
+      name = path_name[1]
+      new_timeline_id = timesketch_api.UploadTimeline(name, path)
+      timesketch_api.AddTimelineToSketch(sketch_id, new_timeline_id)
 
-  # Final output
-  console_out.StdOut(sketch_url)
+    sketch_url = timesketch_api.GetSketchURL(sketch_id)
+
+    # Final output
+    console_out.StdOut(sketch_url)
+  else:
+    console_out.StfErr(u'No processed artifacts found', die=True)
 
 
 if __name__ == '__main__':

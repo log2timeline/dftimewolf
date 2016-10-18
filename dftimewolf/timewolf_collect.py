@@ -28,7 +28,8 @@ gflags.DEFINE_list(u'hosts', [],
 gflags.DEFINE_list(u'paths', [],
                    u'One or more paths to artifacts on the filesystem')
 gflags.DEFINE_string(u'reason', None, u'Reason for requesting client access')
-gflags.DEFINE_string(u'grr_server_url', None, u'GRR server to use')
+gflags.DEFINE_string(u'grr_server_url', u'http://localhost:8000',
+ u'GRR server to use')
 gflags.DEFINE_string(u'artifacts', None,
                      u'Comma seperated list of GRR artifacts to fetch')
 gflags.DEFINE_list(
@@ -36,10 +37,6 @@ gflags.DEFINE_list(
     u'Comma seperated list of usernames to approve GRR client access')
 gflags.DEFINE_boolean(u'verbose', False, u'Show extended output')
 gflags.DEFINE_string(u'username', None, u'GRR username')
-
-# Required flags
-gflags.MarkFlagAsRequired('grr_server_url')
-gflags.MarkFlagAsRequired('reason')
 
 
 def main(argv):
@@ -51,6 +48,10 @@ def main(argv):
   # Console output helper.
   console_out = timewolf_utils.TimewolfConsoleOutput(
       sender=u'TimewolfCollectCli', verbose=FLAGS.verbose)
+
+  if not (FLAGS.paths || FLAGS.hosts):
+    console_out.StdErr(u'paths or hosts must be specified', die=True)
+
 
   netrc_file = netrc.netrc()
   grr_host = re.search(r"://(\S+):\d+", FLAGS.grr_server_url).group(1)
