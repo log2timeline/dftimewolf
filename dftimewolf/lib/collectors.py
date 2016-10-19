@@ -8,6 +8,7 @@ import datetime
 import os
 import re
 import tempfile
+import threading
 import time
 import zipfile
 
@@ -18,7 +19,7 @@ from dftimewolf.lib import utils as timewolf_utils
 from grr.proto import flows_pb2
 
 
-class BaseArtifactCollector(object):
+class BaseArtifactCollector(threading.Thread):
   """Base class for artifact collectors."""
 
   def __init__(self, verbose):
@@ -26,6 +27,9 @@ class BaseArtifactCollector(object):
     super(BaseArtifactCollector, self).__init__()
     self.console_out = timewolf_utils.TimewolfConsoleOutput(
         sender=self.__class__.__name__, verbose=verbose)
+
+  def run(self):
+    self.Collect()
 
   def Collect(self):
     """Collect artifacts."""
@@ -43,7 +47,7 @@ class FilesystemCollector(BaseArtifactCollector):
   def __init__(self, path, name=None, verbose=False):
     super(FilesystemCollector, self).__init__(verbose=verbose)
     self.output_path = path
-    self.name = name
+    self.cname = name
 
   def Collect(self):
     """Collect the artifacts."""
@@ -54,11 +58,11 @@ class FilesystemCollector(BaseArtifactCollector):
   @property
   def collection_name(self):
     """Name for the collection of collected artifacts."""
-    if not self.name:
-      self.name = os.path.basename(self.output_path.rstrip(u'/'))
+    if not self.cname:
+      self.cname = os.path.basename(self.output_path.rstrip(u'/'))
     self.console_out.VerboseOut(u'Artifact collection name: {0:s}'.format(
-        self.name))
-    return self.name
+        self.cname))
+    return self.cname
 
 
 class GrrArtifactCollector(BaseArtifactCollector):
@@ -103,8 +107,9 @@ class GrrArtifactCollector(BaseArtifactCollector):
     self.artifacts = artifacts
     self.use_tsk = use_tsk
     self.reason = reason
+    self.approvers = approvers
     self.client_id = self._GetClientId(host)
-    self.client = self._GetClient(self.client_id, reason, approvers)
+    self.client = None
 
   def _GetClientId(self, host):
     """Search GRR by hostname provided and get the latest active client."""
@@ -185,6 +190,7 @@ class GrrArtifactCollector(BaseArtifactCollector):
         u'Darwin': self.DEFAULT_ARTIFACTS_DARWIN,
         u'Windows': self.DEFAULT_ARTIFACTS_WINDOWS
     }
+    self.client = self._GetClient(self.client_id, reason, approvers)
     system_type = self.client.data.os_info.system
     self.console_out.VerboseOut(u'System type: {0:s}'.format(system_type))
     # If the list is supplied by the user via a flag, honor that.
@@ -274,24 +280,32 @@ def CollectArtifactsHelper(host_list, path_list, artifact_list, use_tsk, reason,
                            password):
   """Helper function to collect artifacts based on command line flags passed."""
 
-  # Build list of artifact collectors
+  # Build list of artifact collectors and start collection in parallel
   artifact_collectors = []
   for host in host_list:
-    artifact_collectors.append(
-        GrrArtifactCollector(
-            host,
-            reason,
-            grr_server_url,
-            username,
-            password,
-            artifact_list,
-            use_tsk,
-            approvers,
-            verbose=verbose))
+    collector = GrrArtifactCollector(
+        host,
+        reason,
+        grr_server_url,
+        username,
+        password,
+        artifact_list,
+        use_tsk,
+        approvers,
+        verbose=verbose)
+    collector.start()
+    artifact_collectors.append(collector)
+
   for path in path_list:
-    artifact_collectors.append(FilesystemCollector(path, verbose=verbose))
+    collector = FilesystemCollector(path, verbose=verbose)
+    collector.start()
+    artifact_collectors.append(collector)
+
+  # Wait for all collectors to finish
+  for collector in artifact_collectors:
+    collector.join()
 
   # Collect the artifacts
-  collected_artifacts = ((collector.Collect(), collector.collection_name)
+  collected_artifacts = ((collector.output_path, collector.collection_name)
                          for collector in artifact_collectors)
   return collected_artifacts
