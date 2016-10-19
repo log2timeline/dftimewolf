@@ -113,7 +113,8 @@ class GrrHuntCollector(BaseArtifactCollector):
           u'Waiting for approval (this can take a while..)')
       # Send a request for approval and wait until there is a valid one
       # available in GRR.
-      self.hunt.CreateApproval(reason=reason, notified_users=approvers)
+      self.hunt.CreateApproval(
+          reason=self.reason, notified_users=self.approvers)
       while True:
         try:
           self.hunt.GetFilesArchive().WriteToFile(output_file_path)
