@@ -30,7 +30,7 @@ from dftimewolf.lib import utils as timewolf_utils
 FLAGS = gflags.FLAGS
 gflags.DEFINE_list(u'hosts', [],
                    u'One or more hostnames to collect artifacts from with GRR')
-gflags.Define_string(u'hunt_id', None,
+gflags.DEFINE_string(u'hunt_id', None,
                      u'Existing hunt to download current result set from')
 gflags.DEFINE_list(u'paths', [],
                    u'One or more paths to files to process on the filesystem')
