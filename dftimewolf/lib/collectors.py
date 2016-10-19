@@ -37,7 +37,7 @@ class BaseArtifactCollector(threading.Thread):
 
   @property
   def collection_name(self):
-    """Name for the collection pf artifacts."""
+    """Name for the collection of artifacts."""
     raise NotImplementedError
 
 
@@ -66,8 +66,8 @@ class FilesystemCollector(BaseArtifactCollector):
 
 
 class GrrHuntCollector(BaseArtifactCollector):
-  CHECK_APPROVAL_INTERVAL_SEC = 10
   """Collect hunt results with GRR."""
+  CHECK_APPROVAL_INTERVAL_SEC = 10
 
   def __init__(self,
                hunt_id,
@@ -85,9 +85,9 @@ class GrrHuntCollector(BaseArtifactCollector):
     self.approvers = approvers
     self.reason = reason
     self.hunt_id = hunt_id
-    self.hunt = self.grr_api.Hunt(hunt_id)
+    self.hunt = self.grr_api.Hunt(hunt_id).Get()
 
-  def DownloadFiles(self):
+  def Collect(self):
     """Download current set of files in results."""
     if not os.path.isdir(self.output_path):
       os.makedirs(self.output_path)
@@ -127,6 +127,15 @@ class GrrHuntCollector(BaseArtifactCollector):
     os.remove(output_file_path)
 
     return output_file_path
+
+  @property
+  def collection_name(self):
+    """Name for the collection of collected artifacts."""
+    collection_name = u'{0:s}: {1:s}'.format(
+        self.hunt_id, self.hunt.data.hunt_runner_args.description)
+    self.console_out.VerboseOut(u'Artifact collection name: {0:s}'.format(
+        collection_name))
+    return collection_name
 
 
 class GrrArtifactCollector(BaseArtifactCollector):
