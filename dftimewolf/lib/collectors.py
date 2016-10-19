@@ -384,7 +384,8 @@ def CollectArtifactsHelper(host_list, hunt_id, path_list, artifact_list,
         password,
         approvers,
         verbose=verbose)
-    artifact_collectors.append(collector.DownloadFiles())
+    collector.start()
+    artifact_collectors.append(collector)
 
   # Wait for all collectors to finish
   for collector in artifact_collectors:
