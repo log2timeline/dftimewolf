@@ -92,6 +92,7 @@ class GrrArtifactCollector(BaseArtifactCollector):
                username,
                password,
                artifacts=None,
+               use_tsk=False,
                approvers=None,
                verbose=False):
     """Initialize the GRR artifact collector object."""
@@ -100,6 +101,7 @@ class GrrArtifactCollector(BaseArtifactCollector):
     self.grr_api = grr_api.InitHttp(
         api_endpoint=grr_server_url, auth=(username, password))
     self.artifacts = artifacts
+    self.use_tsk = use_tsk
     self.reason = reason
     self.client_id = self._GetClientId(host)
     self.client = self._GetClient(self.client_id, reason, approvers)
@@ -198,6 +200,7 @@ class GrrArtifactCollector(BaseArtifactCollector):
     name = u'ArtifactCollectorFlow'
     args = flows_pb2.ArtifactCollectorFlowArgs(
         artifact_list=artifact_list,
+        use_tsk=self.use_tsk,
         ignore_interpolation_errors=True,
         apply_parsers=False,)
 
@@ -266,7 +269,7 @@ class GrrArtifactCollector(BaseArtifactCollector):
     return collection_name
 
 
-def CollectArtifactsHelper(host_list, path_list, artifact_list, reason,
+def CollectArtifactsHelper(host_list, path_list, artifact_list, use_tsk, reason,
                            approvers, verbose, grr_server_url, username,
                            password):
   """Helper function to collect artifacts based on command line flags passed."""
@@ -282,6 +285,7 @@ def CollectArtifactsHelper(host_list, path_list, artifact_list, reason,
             username,
             password,
             artifact_list,
+            use_tsk,
             approvers,
             verbose=verbose))
   for path in path_list:

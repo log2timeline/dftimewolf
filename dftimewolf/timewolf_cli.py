@@ -39,6 +39,7 @@ gflags.DEFINE_string(u'timesketch_server_url', u'http://localhost:5000',
                      u'Timesketch server to use')
 gflags.DEFINE_string(u'artifacts', None,
                      u'Comma separated list of GRR artifacts to fetch')
+gflags.DEFINE_boolean(u'use_tsk', False, u'Use TSK for artifact collection')
 gflags.DEFINE_string(u'timezone', None, u'Timezone to use for Plaso processing')
 gflags.DEFINE_list(
     u'approvers', None,
@@ -75,7 +76,7 @@ def main(argv):
   # Collect artifacts
   try:
     collected_artifacts = collectors.CollectArtifactsHelper(
-        FLAGS.hosts, FLAGS.paths, FLAGS.artifacts, FLAGS.reason,
+        FLAGS.hosts, FLAGS.paths, FLAGS.artifacts, FLAGS.use_tsk, FLAGS.reason,
         FLAGS.approvers, FLAGS.verbose, FLAGS.grr_server_url, username,
         password)
   except (ValueError, RuntimeError) as e:

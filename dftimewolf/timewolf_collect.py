@@ -30,6 +30,7 @@ gflags.DEFINE_string(u'grr_server_url', u'http://localhost:8000',
                      u'GRR server to use')
 gflags.DEFINE_string(u'artifacts', None,
                      u'Comma seperated list of GRR artifacts to fetch')
+gflags.DEFINE_boolean(u'use_tsk', False, u'Use TSK for artifact collection')
 gflags.DEFINE_list(
     u'approvers', None,
     u'Comma seperated list of usernames to approve GRR client access')
@@ -56,7 +57,7 @@ def main(argv):
   # Collect artifacts
   try:
     collected_artifacts = collectors.CollectArtifactsHelper(
-        FLAGS.hosts, FLAGS.paths, FLAGS.artifacts, FLAGS.reason,
+        FLAGS.hosts, FLAGS.paths, FLAGS.artifacts, FLAGS.use_tsk, FLAGS.reason,
         FLAGS.approvers, FLAGS.verbose, FLAGS.grr_server_url, username,
         password)
   except (ValueError, RuntimeError) as e:
