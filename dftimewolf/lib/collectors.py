@@ -264,7 +264,7 @@ class GrrArtifactCollector(BaseArtifactCollector):
         u'Darwin': self.DEFAULT_ARTIFACTS_DARWIN,
         u'Windows': self.DEFAULT_ARTIFACTS_WINDOWS
     }
-    self.client = self._GetClient(self.client_id, reason, approvers)
+    self.client = self._GetClient(self.client_id, self.reason, self.approvers)
     system_type = self.client.data.os_info.system
     self.console_out.VerboseOut(u'System type: {0:s}'.format(system_type))
     # If the list is supplied by the user via a flag, honor that.
