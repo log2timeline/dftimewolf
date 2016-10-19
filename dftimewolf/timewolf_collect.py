@@ -50,7 +50,7 @@ def main(argv):
   console_out = timewolf_utils.TimewolfConsoleOutput(
       sender=u'TimewolfCollectCli', verbose=FLAGS.verbose)
 
-  if not (FLAGS.paths or FLAGS.hosts):
+  if not (FLAGS.paths or FLAGS.hosts or FLAGS.hunt_id):
     console_out.StdErr(u'paths or hosts must be specified', die=True)
 
   grr_host = re.search(r'://(\S+):\d+', FLAGS.grr_server_url).group(1)
