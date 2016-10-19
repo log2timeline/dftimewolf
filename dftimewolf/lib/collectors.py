@@ -65,6 +65,70 @@ class FilesystemCollector(BaseArtifactCollector):
     return self.cname
 
 
+class GrrHuntCollector(BaseArtifactCollector):
+  CHECK_APPROVAL_INTERVAL_SEC = 10
+  """Collect hunt results with GRR."""
+
+  def __init__(self,
+               hunt_id,
+               reason,
+               grr_server_url,
+               username,
+               password,
+               approvers=None,
+               verbose=False):
+    """Initialize the GRR hunt result collector object."""
+    super(GrrHuntCollector, self).__init__(verbose=verbose)
+    self.output_path = tempfile.mkdtemp()
+    self.grr_api = grr_api.InitHttp(
+        api_endpoint=grr_server_url, auth=(username, password))
+    self.approvers = approvers
+    self.reason = reason
+    self.hunt_id = hunt_id
+    self.hunt = self.grr_api.Hunt(hunt_id)
+
+  def DownloadFiles(self):
+    """Download current set of files in results."""
+    if not os.path.isdir(self.output_path):
+      os.makedirs(self.output_path)
+
+    output_file_path = os.path.join(self.output_path, u'.'.join(
+        (self.hunt_id, u'zip')))
+
+    if os.path.exists(output_file_path):
+      print u'{0:s} already exists: Skipping'.format(output_file_path)
+      return None
+
+    try:
+      self.hunt.GetFilesArchive().WriteToFile(output_file_path)
+    except grr_errors.AccessForbiddenError:
+      self.console_out.VerboseOut(u'No valid hunt approval found')
+      if not self.approvers:
+        raise ValueError(u'GRR hunt needs approval but no approvers specified '
+                         u'(hint: use --approvers)')
+      self.console_out.VerboseOut(
+          u'Hunt approval request sent to: {0:s} (reason: {1:s})'.format(
+              self.approvers, self.reason))
+      self.console_out.VerboseOut(
+          u'Waiting for approval (this can take a while..)')
+      # Send a request for approval and wait until there is a valid one
+      # available in GRR.
+      self.hunt.CreateApproval(reason=reason, notified_users=approvers)
+      while True:
+        try:
+          self.hunt.GetFilesArchive().WriteToFile(output_file_path)
+          break
+        except grr_errors.AccessForbiddenError:
+          time.sleep(self.CHECK_APPROVAL_INTERVAL_SEC)
+
+    # Unzip archive for processing and remove redundant zip
+    with zipfile.ZipFile(output_file_path) as archive:
+      archive.extractall(path=self.output_path)
+    os.remove(output_file_path)
+
+    return output_file_path
+
+
 class GrrArtifactCollector(BaseArtifactCollector):
   """Collect artifacts with GRR."""
   CHECK_APPROVAL_INTERVAL_SEC = 10
@@ -275,9 +339,9 @@ class GrrArtifactCollector(BaseArtifactCollector):
     return collection_name
 
 
-def CollectArtifactsHelper(host_list, path_list, artifact_list, use_tsk, reason,
-                           approvers, verbose, grr_server_url, username,
-                           password):
+def CollectArtifactsHelper(host_list, hunt_id, path_list, artifact_list,
+                           use_tsk, reason, approvers, verbose, grr_server_url,
+                           username, password):
   """Helper function to collect artifacts based on command line flags passed."""
 
   # Build list of artifact collectors and start collection in parallel
@@ -300,6 +364,17 @@ def CollectArtifactsHelper(host_list, path_list, artifact_list, use_tsk, reason,
     collector = FilesystemCollector(path, verbose=verbose)
     collector.start()
     artifact_collectors.append(collector)
+
+  if hunt_id:
+    collector = GrrHuntCollector(
+        hunt_id,
+        reason,
+        grr_server_url,
+        username,
+        password,
+        approvers,
+        verbose=verbose)
+    artifact_collectors.append(collector.DownloadFiles())
 
   # Wait for all collectors to finish
   for collector in artifact_collectors:

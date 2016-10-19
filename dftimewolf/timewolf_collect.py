@@ -23,6 +23,8 @@ from dftimewolf.lib import utils as timewolf_utils
 FLAGS = gflags.FLAGS
 gflags.DEFINE_list(u'hosts', [],
                    u'One or more hostnames to collect artifacts from with GRR')
+gflags.Define_string(u'hunt_id', None,
+                     u'Existing hunt to download current result set from')
 gflags.DEFINE_list(u'paths', [],
                    u'One or more paths to artifacts on the filesystem')
 gflags.DEFINE_string(u'reason', None, u'Reason for requesting client access')
@@ -57,9 +59,9 @@ def main(argv):
   # Collect artifacts
   try:
     collected_artifacts = collectors.CollectArtifactsHelper(
-        FLAGS.hosts, FLAGS.paths, FLAGS.artifacts, FLAGS.use_tsk, FLAGS.reason,
-        FLAGS.approvers, FLAGS.verbose, FLAGS.grr_server_url, username,
-        password)
+        FLAGS.hosts, FLAGS.hunt_id, FLAGS.paths, FLAGS.artifacts, FLAGS.use_tsk,
+        FLAGS.reason, FLAGS.approvers, FLAGS.verbose, FLAGS.grr_server_url,
+        username, password)
   except (ValueError, RuntimeError) as e:
     console_out.StdErr(e, die=True)
 
