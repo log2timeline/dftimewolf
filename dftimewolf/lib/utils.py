@@ -39,8 +39,6 @@ class TimewolfConsoleOutput(object):
     """
     sys.stdout.write(u'{0:s}\n'.format(message))
     sys.stdout.flush()
-    if die:
-      sys.exit(0)
 
   def StdErr(self, message, die=False):
     """Send formatted message to standard error.

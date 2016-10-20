@@ -557,10 +557,10 @@ def CollectArtifactsHelper(host_list, new_hunt, hunt_id, path_list,
     if new_hunt:
       collector.console_out.StdOut(
           u'Hunt started. Run timewolf with --hunt_id {0:s} for results'.format(
-              collector.hunt_id),
-          die=True)
-    collector.start()
-    collectors.append(collector)
+              collector.hunt_id))
+    else:
+      collector.start()
+      collectors.append(collector)
 
   # Wait for all collectors to finish
   for collector in collectors:
