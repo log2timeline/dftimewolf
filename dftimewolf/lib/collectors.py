@@ -135,9 +135,9 @@ class GrrHuntCollector(BaseArtifactCollector):
         if not os.path.isdir(client_dir):
           os.makedirs(client_dir)
           collection_paths.update({client_path: client_name})
-        location = os.path.basename(archive.read(f)
+        location = os.path.basename(archive.read(f))
         archive.extract(u'{0:s}/hashes/{1:s}'.format(base, location),
-          client_dir)
+                        client_dir)
 
     os.remove(output_file_path)
 
@@ -406,6 +406,8 @@ def CollectArtifactsHelper(host_list, hunt_id, path_list, artifact_list,
 
   # Collect the artifacts
   for collector in artifact_collectors:
-    collected_artifacts.update({collector.output_path: collector.collection_name})
+    collected_artifacts.update({
+        collector.output_path: collector.collection_name
+    })
 
   return ((i, collected_artifacts[i]) for i in collected_artifacts)
