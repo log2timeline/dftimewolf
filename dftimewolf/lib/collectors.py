@@ -105,7 +105,7 @@ class GRRHuntCollector(BaseCollector):
       reason:
       grr_server_url:
       username:
-      password: 
+      password:
       approvers:
       verbose:
     """
