@@ -45,9 +45,9 @@ class PlasoArtifactProcessor(BaseArtifactProcessor):
     """Initialize the Plaso artifact processor object.
 
     Args:
-      artifacts_path: Local path for plaso artifact input
-      timezone: Timezone name
-      verbose: Boolean indicating if verbose output is desired
+      artifacts_path (str): Local path for plaso artifact input
+      timezone (str): Time zone name
+      verbose (bool): whether verbose output is desired
     """
     super(PlasoArtifactProcessor, self).__init__(verbose=verbose)
     self.output_path = tempfile.mkdtemp()
@@ -59,6 +59,7 @@ class PlasoArtifactProcessor(BaseArtifactProcessor):
     self.results = None
 
   def run(self):
+    """Starts a thread"""
     self.Process()
 
   def Process(self):

@@ -24,7 +24,11 @@ class BaseCollector(threading.Thread):
   """Base class for artifact collectors."""
 
   def __init__(self, verbose):
-    """Initialize the base artifact collector object."""
+    """Initialize the base artifact collector object.
+
+    Args:
+      verbose (Optional[bool]): whether verbose output is desired.
+    """
     super(BaseCollector, self).__init__()
     self.console_out = timewolf_utils.TimewolfConsoleOutput(
         sender=self.__class__.__name__, verbose=verbose)
@@ -57,9 +61,9 @@ class FilesystemCollector(BaseCollector):
     """
 
     Args:
-      path:
-      name:
-      verbose:
+      path (str): path to the files to collect.
+      name (Optional[str]): name of the collection.
+      verbose (Optional[bool]): whether verbose output is desired.
     """
     super(FilesystemCollector, self).__init__(verbose=verbose)
     self.cname = name
@@ -91,15 +95,20 @@ class GRRHuntCollector(BaseCollector):
   """Collect hunt results with GRR."""
   _CHECK_APPROVAL_INTERVAL_SEC = 10
 
-  def __init__(self,
-               hunt_id,
-               reason,
-               grr_server_url,
-               username,
-               password,
-               approvers=None,
-               verbose=False):
-    """Initialize the GRR hunt result collector object."""
+  def __init__(
+      self, hunt_id, reason, grr_server_url, username, password, approvers=None,
+      verbose=False):
+    """ Initializes a GRR hunt results collector.
+
+    Args:
+      hunt_id:
+      reason:
+      grr_server_url:
+      username:
+      password: 
+      approvers:
+      verbose:
+    """
     super(GRRHuntCollector, self).__init__(verbose=verbose)
     self.output_path = tempfile.mkdtemp()
     self.grr_api = grr_api.InitHttp(
