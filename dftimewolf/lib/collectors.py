@@ -555,13 +555,10 @@ def CollectArtifactsHelper(host_list, new_hunt, hunt_id, path_list,
         approvers,
         verbose=verbose)
     if new_hunt:
-      resp = raw_input(u'Hunt {0:s} started. Wait for completion? [y/n]: '.
-                       format(collector.hunt_id)).lower()
-      if resp.startswith('n'):
-        collector.console_out.StdOut(
-            u'Run timewolf with --hunt_id {0:s} for results'.format(
-                collector.hunt_id),
-            die=True)
+      collector.console_out.StdOut(
+          u'Hunt started. Run timewolf with --hunt_id {0:s} for results'.format(
+              collector.hunt_id),
+          die=True)
     collector.start()
     collectors.append(collector)
 
