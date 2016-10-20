@@ -126,7 +126,7 @@ class GrrHuntCollector(BaseArtifactCollector):
     collection_paths = {}
     with zipfile.ZipFile(output_file_path) as archive:
       items = archive.infolist()
-      base = items[0].split(u'/')[0]
+      base = items[0].filename.split(u'/')[0]
       for f in items:
         client_id = f.filename.split(u'/')[1]
         if client_id.startswith(u'C.'):
