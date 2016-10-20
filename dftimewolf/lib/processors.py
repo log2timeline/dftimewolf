@@ -22,7 +22,11 @@ class BaseArtifactProcessor(threading.Thread):
         sender=self.__class__.__name__, verbose=verbose)
 
   def Process(self):
-    """Process artifacts."""
+    """Process artifacts.
+
+    Returns:
+      str: path to a file containing results of processing.
+    """
     raise NotImplementedError
 
 
@@ -50,14 +54,19 @@ class PlasoArtifactProcessor(BaseArtifactProcessor):
     self.artifacts_path = artifacts_path
     self.timezone = timezone
     self.plaso_storage_file_name = u'{0:s}.plaso'.format(uuid.uuid4().hex)
-    self.plaso_storage_file_path = os.path.join(self.output_path,
-                                                self.plaso_storage_file_name)
+    self.plaso_storage_file_path = os.path.join(
+        self.output_path, self.plaso_storage_file_name)
+    self.results = None
 
   def run(self):
     self.Process()
 
   def Process(self):
-    """Process files with Log2Timeline from Plaso."""
+    """Process files with Log2Timeline from Plaso.
+
+    Returns:
+      str: path to a Plaso storage file.
+    """
     log_file_path = os.path.join(self.output_path, u'plaso.log')
     self.console_out.VerboseOut(u'Log file: {0:s}'.format(log_file_path))
 
@@ -84,27 +93,32 @@ class PlasoArtifactProcessor(BaseArtifactProcessor):
     tool.ProcessSources()
     self.console_out.VerboseOut(u'Storage file: {0:s}'.format(
         self.plaso_storage_file_path))
-    return self.plaso_storage_file_path
+    self.results = self.plaso_storage_file_path
 
 
 def ProcessArtifactsHelper(collected_artifacts, timezone, verbose):
   """Helper function to process data with Plaso.
 
   Args:
-    collected_artifacts (list[tuple]): List of tuples with path to data to
-        process and a name to use as timeline name
-    timezone: Timezone name
-    verbose: Boolean indicating if verbose output is to be used
+    collected_artifacts (list[tuple]): tuples with a timeline name and the path
+        to the data to processed.
+    timezone (str): Timezone name.
+    verbose (bool): whether verbose output is to be used.
 
   Returns:
-    List of tuples with path to Plaso storage file and name of the timeline
+    list(tuple): containing:
+      str: path to plaso storage file.
+      str: name to use for Timesketch timeline.
   """
   # Build list of artifact processors and start processing in parallel
   artifact_processors = []
-  for path, name in collected_artifacts:
+  for artifact in collected_artifacts:
+    name = artifact[0]
+    path = artifact[1]
     if os.path.exists(path):
       plaso_processor = PlasoArtifactProcessor(path, timezone, verbose=verbose)
       plaso_processor.start()
+      plaso_processor.join()
       artifact_processors.append((plaso_processor, name))
 
   # Wait for all processors to finish

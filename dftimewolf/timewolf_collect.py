@@ -29,7 +29,7 @@ gflags.DEFINE_string(u'hunt_id', None,
                      u'Existing hunt to download current result set from')
 gflags.DEFINE_list(u'paths', [],
                    u'One or more paths to artifacts on the filesystem')
-gflags.DEFINE_string(u'reason', None, u'Reason for requesting client access')
+gflags.DEFINE_string(u'reason', None, u'Reason for requesting _client access')
 gflags.DEFINE_string(u'grr_server_url', u'http://localhost:8000',
                      u'GRR server to use')
 gflags.DEFINE_string(u'artifacts', None,
@@ -37,7 +37,7 @@ gflags.DEFINE_string(u'artifacts', None,
 gflags.DEFINE_boolean(u'use_tsk', False, u'Use TSK for artifact collection')
 gflags.DEFINE_list(
     u'approvers', None,
-    u'Comma separated list of usernames to approve GRR client access')
+    u'Comma separated list of usernames to approve GRR _client access')
 gflags.DEFINE_boolean(u'verbose', False, u'Show extended output')
 gflags.DEFINE_string(u'username', None, u'GRR username')
 

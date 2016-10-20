@@ -671,7 +671,7 @@ group.add_option("--p4_changelist", action="store", dest="p4_changelist",
                  help=("Perforce changelist id"))
 group.add_option("--p4_client", action="store", dest="p4_client",
                  metavar="P4_CLIENT", default=None,
-                 help=("Perforce client/workspace"))
+                 help=("Perforce _client/workspace"))
 group.add_option("--p4_user", action="store", dest="p4_user",
                  metavar="P4_USER", default=None,
                  help=("Perforce user"))
