@@ -53,7 +53,7 @@ def main(argv):
   console_out = timewolf_utils.TimewolfConsoleOutput(
       sender=u'TimewolfCollectCli', verbose=FLAGS.verbose)
 
-  if not (FLAGS.paths or FLAGS.hosts or FLAGS.hunt_id):
+  if not (FLAGS.paths or FLAGS.hosts or FLAGS.hunt_id or FLAGS.new_hunt):
     console_out.StdErr(u'paths or hosts must be specified', die=True)
   elif (FLAGS.new_hunt and FLAGS.hosts):
     console_out.StdErr(u'new_hunt and hosts are mutually exclusive', die=True)
