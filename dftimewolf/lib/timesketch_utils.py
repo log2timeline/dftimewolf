@@ -48,8 +48,7 @@ class TimesketchApiClient(object):
         'x-csrftoken': csrf_token,
         'referer': self.host_url
     })
-    _ = session.post(
-        u'{0:s}/login/'.format(self.host_url), data=login_data)
+    _ = session.post(u'{0:s}/login/'.format(self.host_url), data=login_data)
     return session
 
   def CreateSketch(self, name, description):

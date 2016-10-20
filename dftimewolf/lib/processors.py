@@ -54,8 +54,8 @@ class PlasoArtifactProcessor(BaseArtifactProcessor):
     self.artifacts_path = artifacts_path
     self.timezone = timezone
     self.plaso_storage_file_name = u'{0:s}.plaso'.format(uuid.uuid4().hex)
-    self.plaso_storage_file_path = os.path.join(
-        self.output_path, self.plaso_storage_file_name)
+    self.plaso_storage_file_path = os.path.join(self.output_path,
+                                                self.plaso_storage_file_name)
     self.results = None
 
   def run(self):
