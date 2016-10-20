@@ -14,7 +14,8 @@ import zipfile
 
 from grr.gui.api_client import api as grr_api
 from grr.gui.api_client import errors as grr_errors
-from grr.gui.api_client import utils as grr_utils
+# TODO: Renable when there's a URNToFlowID method.
+# from grr.gui.api_client import utils as grr_utils
 from dftimewolf.lib import utils as timewolf_utils
 from grr.proto import flows_pb2
 
@@ -465,12 +466,6 @@ def CollectArtifactsHelper(host_list, hunt_id, path_list, artifact_list,
   for collector in collectors:
     collector.join()
 
-  # Update the dict of collected artifacts
-  for collector in collectors:
-    path = u''
-    name = u''
-    collected_artifact[collector.output_path] = ({
-        collector.output_path: collector.collection_name
-    })
+  collector_results = [collector.results for collector in collectors]
 
-  return
+  return collector_results
