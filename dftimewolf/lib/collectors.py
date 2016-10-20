@@ -122,12 +122,26 @@ class GrrHuntCollector(BaseArtifactCollector):
         except grr_errors.AccessForbiddenError:
           time.sleep(self.CHECK_APPROVAL_INTERVAL_SEC)
 
-    # Unzip archive for processing and remove redundant zip
+    # Extract items from archive by host for processing
+    collection_paths = {}
     with zipfile.ZipFile(output_file_path) as archive:
-      archive.extractall(path=self.output_path)
+      items = archive.infolist()
+      base = items[0].split(u'/')[0]
+      for f in items:
+        client_id = f.filename.split(u'/')[1]
+        client_name = self.grr_api.Client(client_id).Get().data.os_info.fqdn
+        if client_id.startswith(u'C.'):
+          client_dir = os.path.join(self.output_path, client_id)
+        if not os.path.isdir(client_dir):
+          os.makedirs(client_dir)
+          collection_paths.update({client_path: client_name})
+        location = os.path.basename(archive.read(f)
+        archive.extract(u'{0:s}/hashes/{1:s}'.format(base, location),
+          client_dir)
+
     os.remove(output_file_path)
 
-    return output_file_path
+    return collection_paths
 
   @property
   def collection_name(self):
@@ -356,6 +370,7 @@ def CollectArtifactsHelper(host_list, hunt_id, path_list, artifact_list,
 
   # Build list of artifact collectors and start collection in parallel
   artifact_collectors = []
+  collected_artifacts = {}
   for host in host_list:
     collector = GrrArtifactCollector(
         host,
@@ -368,7 +383,6 @@ def CollectArtifactsHelper(host_list, hunt_id, path_list, artifact_list,
         approvers,
         verbose=verbose)
     collector.start()
-    artifact_collectors.append(collector)
 
   for path in path_list:
     collector = FilesystemCollector(path, verbose=verbose)
@@ -384,14 +398,14 @@ def CollectArtifactsHelper(host_list, hunt_id, path_list, artifact_list,
         password,
         approvers,
         verbose=verbose)
-    collector.start()
-    artifact_collectors.append(collector)
+    collected_artifacts.update(collector.Collect())
 
   # Wait for all collectors to finish
   for collector in artifact_collectors:
     collector.join()
 
   # Collect the artifacts
-  collected_artifacts = ((collector.output_path, collector.collection_name)
-                         for collector in artifact_collectors)
-  return collected_artifacts
+  for collector in artifact_collectors:
+    collected_artifacts.update({collector.output_path: collector.collection_name})
+
+  return ((i, collected_artifacts[i]) for i in collected_artifacts)
