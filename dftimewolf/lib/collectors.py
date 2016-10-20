@@ -146,7 +146,7 @@ class GRRHuntCollector(BaseCollector):
     runner_args = self.grr_api.Types.HuntRunnerArgs(description=self.reason)
     self._hunt = self.grr_api.CreateHunt(
         flow_name=name, flow_args=args, hunt_runner_args=runner_args)
-    self.hunt_id = self.hunt.hunt_id
+    self.hunt_id = self._hunt.hunt_id
     self.console_out.VerboseOut(u'Hunt {0:s} created'.format(self.hunt_id))
 
     try:
