@@ -3,6 +3,7 @@
 import argparse
 import os
 import tempfile
+import threading
 import uuid
 
 from plaso.cli import tools as cli_tools
@@ -11,7 +12,7 @@ from tools import log2timeline
 from dftimewolf.lib import utils
 
 
-class BaseArtifactProcessor(object):
+class BaseArtifactProcessor(threading.Thread):
   """Base class for artifact processors."""
 
   def __init__(self, verbose):
@@ -50,6 +51,9 @@ class PlasoArtifactProcessor(BaseArtifactProcessor):
     self.plaso_storage_file_name = u'{0:s}.plaso'.format(uuid.uuid4().hex)
     self.plaso_storage_file_path = os.path.join(self.output_path,
                                                 self.plaso_storage_file_name)
+
+  def run(self):
+    self.Process()
 
   def Process(self):
     """Process files with Log2Timeline from Plaso."""
@@ -94,10 +98,19 @@ def ProcessArtifactsHelper(collected_artifacts, timezone, verbose):
   Returns:
     List of tuples with path to Plaso storage file and name of the timeline
   """
-  processed_artifacts = []
+  # Build list of artifact processors and start processing in parallel
+  artifact_processors = []
   for path, name in collected_artifacts:
     if os.path.exists(path):
       plaso_processor = PlasoArtifactProcessor(path, timezone, verbose=verbose)
-      plaso_storage_file = plaso_processor.Process()
-      processed_artifacts.append((plaso_storage_file, name))
+      plaso_processor.start()
+      artifact_processors.append((plaso_processor, name))
+
+  # Wait for all processors to finish
+  for (processor, name) in artifact_processors:
+    processor.join()
+
+  processed_artifacts = ((processor.plaso_storage_file_path, name)
+                         for (processor, name) in artifact_processors)
+
   return processed_artifacts

@@ -8,6 +8,7 @@ import datetime
 import os
 import re
 import tempfile
+import threading
 import time
 import zipfile
 
@@ -18,7 +19,7 @@ from dftimewolf.lib import utils as timewolf_utils
 from grr.proto import flows_pb2
 
 
-class BaseArtifactCollector(object):
+class BaseArtifactCollector(threading.Thread):
   """Base class for artifact collectors."""
 
   def __init__(self, verbose):
@@ -27,13 +28,16 @@ class BaseArtifactCollector(object):
     self.console_out = timewolf_utils.TimewolfConsoleOutput(
         sender=self.__class__.__name__, verbose=verbose)
 
+  def run(self):
+    self.Collect()
+
   def Collect(self):
     """Collect artifacts."""
     raise NotImplementedError
 
   @property
   def collection_name(self):
-    """Name for the collection pf artifacts."""
+    """Name for the collection of artifacts."""
     raise NotImplementedError
 
 
@@ -43,7 +47,7 @@ class FilesystemCollector(BaseArtifactCollector):
   def __init__(self, path, name=None, verbose=False):
     super(FilesystemCollector, self).__init__(verbose=verbose)
     self.output_path = path
-    self.name = name
+    self.cname = name
 
   def Collect(self):
     """Collect the artifacts."""
@@ -54,11 +58,102 @@ class FilesystemCollector(BaseArtifactCollector):
   @property
   def collection_name(self):
     """Name for the collection of collected artifacts."""
-    if not self.name:
-      self.name = os.path.basename(self.output_path.rstrip(u'/'))
+    if not self.cname:
+      self.cname = os.path.basename(self.output_path.rstrip(u'/'))
     self.console_out.VerboseOut(u'Artifact collection name: {0:s}'.format(
-        self.name))
-    return self.name
+        self.cname))
+    return self.cname
+
+
+class GrrHuntCollector(BaseArtifactCollector):
+  """Collect hunt results with GRR."""
+  CHECK_APPROVAL_INTERVAL_SEC = 10
+
+  def __init__(self,
+               hunt_id,
+               reason,
+               grr_server_url,
+               username,
+               password,
+               approvers=None,
+               verbose=False):
+    """Initialize the GRR hunt result collector object."""
+    super(GrrHuntCollector, self).__init__(verbose=verbose)
+    self.output_path = tempfile.mkdtemp()
+    self.grr_api = grr_api.InitHttp(
+        api_endpoint=grr_server_url, auth=(username, password))
+    self.approvers = approvers
+    self.reason = reason
+    self.hunt_id = hunt_id
+    self.hunt = self.grr_api.Hunt(hunt_id).Get()
+
+  def Collect(self):
+    """Download current set of files in results."""
+    if not os.path.isdir(self.output_path):
+      os.makedirs(self.output_path)
+
+    output_file_path = os.path.join(self.output_path, u'.'.join(
+        (self.hunt_id, u'zip')))
+
+    if os.path.exists(output_file_path):
+      print u'{0:s} already exists: Skipping'.format(output_file_path)
+      return None
+
+    try:
+      self.hunt.GetFilesArchive().WriteToFile(output_file_path)
+    except grr_errors.AccessForbiddenError:
+      self.console_out.VerboseOut(u'No valid hunt approval found')
+      if not self.approvers:
+        raise ValueError(u'GRR hunt needs approval but no approvers specified '
+                         u'(hint: use --approvers)')
+      self.console_out.VerboseOut(
+          u'Hunt approval request sent to: {0:s} (reason: {1:s})'.format(
+              self.approvers, self.reason))
+      self.console_out.VerboseOut(
+          u'Waiting for approval (this can take a while..)')
+      # Send a request for approval and wait until there is a valid one
+      # available in GRR.
+      self.hunt.CreateApproval(
+          reason=self.reason, notified_users=self.approvers)
+      while True:
+        try:
+          self.hunt.GetFilesArchive().WriteToFile(output_file_path)
+          break
+        except grr_errors.AccessForbiddenError:
+          time.sleep(self.CHECK_APPROVAL_INTERVAL_SEC)
+
+    # Extract items from archive by host for processing
+    collection_paths = {}
+    with zipfile.ZipFile(output_file_path) as archive:
+      items = archive.infolist()
+      base = items[0].filename.split(u'/')[0]
+      for f in items:
+        client_id = f.filename.split(u'/')[1]
+        if client_id.startswith(u'C.'):
+          client_name = self.grr_api.Client(client_id).Get().data.os_info.fqdn
+          client_dir = os.path.join(self.output_path, client_id)
+          if not os.path.isdir(client_dir):
+            os.makedirs(client_dir)
+            collection_paths.update({client_dir: client_name})
+          location = os.path.basename(archive.read(f))
+          try:
+            archive.extract(u'{0:s}/hashes/{1:s}'.format(base, location),
+                            client_dir)
+          except KeyError, e:
+            self.console_out.VerboseOut(u'Extraction error: {0:s}'.format(e))
+
+    os.remove(output_file_path)
+
+    return collection_paths
+
+  @property
+  def collection_name(self):
+    """Name for the collection of collected artifacts."""
+    collection_name = u'{0:s}: {1:s}'.format(
+        self.hunt_id, self.hunt.data.hunt_runner_args.description)
+    self.console_out.VerboseOut(u'Artifact collection name: {0:s}'.format(
+        collection_name))
+    return collection_name
 
 
 class GrrArtifactCollector(BaseArtifactCollector):
@@ -92,6 +187,7 @@ class GrrArtifactCollector(BaseArtifactCollector):
                username,
                password,
                artifacts=None,
+               use_tsk=False,
                approvers=None,
                verbose=False):
     """Initialize the GRR artifact collector object."""
@@ -100,9 +196,11 @@ class GrrArtifactCollector(BaseArtifactCollector):
     self.grr_api = grr_api.InitHttp(
         api_endpoint=grr_server_url, auth=(username, password))
     self.artifacts = artifacts
+    self.use_tsk = use_tsk
     self.reason = reason
+    self.approvers = approvers
     self.client_id = self._GetClientId(host)
-    self.client = self._GetClient(self.client_id, reason, approvers)
+    self.client = None
 
   def _GetClientId(self, host):
     """Search GRR by hostname provided and get the latest active client."""
@@ -183,6 +281,7 @@ class GrrArtifactCollector(BaseArtifactCollector):
         u'Darwin': self.DEFAULT_ARTIFACTS_DARWIN,
         u'Windows': self.DEFAULT_ARTIFACTS_WINDOWS
     }
+    self.client = self._GetClient(self.client_id, self.reason, self.approvers)
     system_type = self.client.data.os_info.system
     self.console_out.VerboseOut(u'System type: {0:s}'.format(system_type))
     # If the list is supplied by the user via a flag, honor that.
@@ -198,6 +297,7 @@ class GrrArtifactCollector(BaseArtifactCollector):
     name = u'ArtifactCollectorFlow'
     args = flows_pb2.ArtifactCollectorFlowArgs(
         artifact_list=artifact_list,
+        use_tsk=self.use_tsk,
         ignore_interpolation_errors=True,
         apply_parsers=False,)
 
@@ -266,28 +366,51 @@ class GrrArtifactCollector(BaseArtifactCollector):
     return collection_name
 
 
-def CollectArtifactsHelper(host_list, path_list, artifact_list, reason,
-                           approvers, verbose, grr_server_url, username,
-                           password):
+def CollectArtifactsHelper(host_list, hunt_id, path_list, artifact_list,
+                           use_tsk, reason, approvers, verbose, grr_server_url,
+                           username, password):
   """Helper function to collect artifacts based on command line flags passed."""
 
-  # Build list of artifact collectors
+  # Build list of artifact collectors and start collection in parallel
   artifact_collectors = []
+  collected_artifacts = {}
   for host in host_list:
-    artifact_collectors.append(
-        GrrArtifactCollector(
-            host,
-            reason,
-            grr_server_url,
-            username,
-            password,
-            artifact_list,
-            approvers,
-            verbose=verbose))
+    collector = GrrArtifactCollector(
+        host,
+        reason,
+        grr_server_url,
+        username,
+        password,
+        artifact_list,
+        use_tsk,
+        approvers,
+        verbose=verbose)
+    collector.start()
+
   for path in path_list:
-    artifact_collectors.append(FilesystemCollector(path, verbose=verbose))
+    collector = FilesystemCollector(path, verbose=verbose)
+    collector.start()
+    artifact_collectors.append(collector)
+
+  if hunt_id:
+    collector = GrrHuntCollector(
+        hunt_id,
+        reason,
+        grr_server_url,
+        username,
+        password,
+        approvers,
+        verbose=verbose)
+    collected_artifacts.update(collector.Collect())
+
+  # Wait for all collectors to finish
+  for collector in artifact_collectors:
+    collector.join()
 
   # Collect the artifacts
-  collected_artifacts = ((collector.Collect(), collector.collection_name)
-                         for collector in artifact_collectors)
-  return collected_artifacts
+  for collector in artifact_collectors:
+    collected_artifacts.update({
+        collector.output_path: collector.collection_name
+    })
+
+  return ((i, collected_artifacts[i]) for i in collected_artifacts)

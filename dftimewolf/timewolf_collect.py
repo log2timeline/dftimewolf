@@ -23,6 +23,8 @@ from dftimewolf.lib import utils as timewolf_utils
 FLAGS = gflags.FLAGS
 gflags.DEFINE_list(u'hosts', [],
                    u'One or more hostnames to collect artifacts from with GRR')
+gflags.DEFINE_string(u'hunt_id', None,
+                     u'Existing hunt to download current result set from')
 gflags.DEFINE_list(u'paths', [],
                    u'One or more paths to artifacts on the filesystem')
 gflags.DEFINE_string(u'reason', None, u'Reason for requesting client access')
@@ -30,6 +32,7 @@ gflags.DEFINE_string(u'grr_server_url', u'http://localhost:8000',
                      u'GRR server to use')
 gflags.DEFINE_string(u'artifacts', None,
                      u'Comma seperated list of GRR artifacts to fetch')
+gflags.DEFINE_boolean(u'use_tsk', False, u'Use TSK for artifact collection')
 gflags.DEFINE_list(
     u'approvers', None,
     u'Comma seperated list of usernames to approve GRR client access')
@@ -47,7 +50,7 @@ def main(argv):
   console_out = timewolf_utils.TimewolfConsoleOutput(
       sender=u'TimewolfCollectCli', verbose=FLAGS.verbose)
 
-  if not (FLAGS.paths or FLAGS.hosts):
+  if not (FLAGS.paths or FLAGS.hosts or FLAGS.hunt_id):
     console_out.StdErr(u'paths or hosts must be specified', die=True)
 
   grr_host = re.search(r'://(\S+):\d+', FLAGS.grr_server_url).group(1)
@@ -56,9 +59,9 @@ def main(argv):
   # Collect artifacts
   try:
     collected_artifacts = collectors.CollectArtifactsHelper(
-        FLAGS.hosts, FLAGS.paths, FLAGS.artifacts, FLAGS.reason,
-        FLAGS.approvers, FLAGS.verbose, FLAGS.grr_server_url, username,
-        password)
+        FLAGS.hosts, FLAGS.hunt_id, FLAGS.paths, FLAGS.artifacts, FLAGS.use_tsk,
+        FLAGS.reason, FLAGS.approvers, FLAGS.verbose, FLAGS.grr_server_url,
+        username, password)
   except (ValueError, RuntimeError) as e:
     console_out.StdErr(e, die=True)
 
