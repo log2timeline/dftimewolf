@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """Timewolf CLI.
 
 This is the Timewolf all-in-one CLI tool. It does the following:
@@ -34,7 +36,7 @@ gflags.DEFINE_string(u'hunt_id', None,
                      u'Existing hunt to download current result set from')
 gflags.DEFINE_list(u'paths', [],
                    u'One or more paths to files to process on the filesystem')
-gflags.DEFINE_string(u'reason', None, u'Reason for requesting client access')
+gflags.DEFINE_string(u'reason', None, u'Reason for requesting _client access')
 gflags.DEFINE_string(u'grr_server_url', u'http://localhost:8000',
                      u'GRR server to use')
 gflags.DEFINE_string(u'timesketch_server_url', u'http://localhost:5000',
@@ -45,7 +47,7 @@ gflags.DEFINE_boolean(u'use_tsk', False, u'Use TSK for artifact collection')
 gflags.DEFINE_string(u'timezone', None, u'Timezone to use for Plaso processing')
 gflags.DEFINE_list(
     u'approvers', None,
-    u'Comma seperated list of usernames to approve GRR client access')
+    u'Comma separated list of usernames to approve GRR _client access')
 gflags.DEFINE_boolean(u'open_in_browser', False,
                       u'Open the resulting sketch in a browser window')
 gflags.DEFINE_integer(u'sketch_id', None, u'Timesketch sketch to append to')
@@ -56,7 +58,7 @@ gflags.DEFINE_string(u'username', None, u'GRR/Timesketch username')
 def main(argv):
   """Timewolf tool."""
   try:
-    argv = FLAGS(argv)  # parse flags
+    _ = FLAGS(argv)  # parse flags
   except gflags.FlagsError, e:
     sys.exit(e)
   # Console output helper
@@ -81,8 +83,8 @@ def main(argv):
         FLAGS.hosts, FLAGS.hunt_id, FLAGS.paths, FLAGS.artifacts, FLAGS.use_tsk,
         FLAGS.reason, FLAGS.approvers, FLAGS.verbose, FLAGS.grr_server_url,
         username, password)
-  except (ValueError, RuntimeError) as e:
-    console_out.StdErr(e, die=True)
+  except (ValueError, RuntimeError) as exception:
+    console_out.StdErr(exception, die=True)
 
   # Process artifacts
   if FLAGS.timezone:
@@ -90,9 +92,8 @@ def main(argv):
       console_out.StdErr(
           u'Unknown timezone: {0:s}'.format(FLAGS.timezone), die=True)
 
-  processed_artifacts = processors.ProcessArtifactsHelper(collected_artifacts,
-                                                          FLAGS.timezone,
-                                                          FLAGS.verbose)
+  processed_artifacts = processors.ProcessArtifactsHelper(
+      collected_artifacts, FLAGS.timezone, FLAGS.verbose)
 
   if processed_artifacts:
     # Check if sketch exists and that the user has access to it, or exit.
@@ -103,7 +104,9 @@ def main(argv):
       except ValueError as e:
         console_out.StdErr(e, die=True)
     else:
-      sketch_id = timesketch_api.CreateSketch(FLAGS.reason, FLAGS.reason)
+      sketch_name = FLAGS.reason or u'default'
+      sketch_description = FLAGS.reason or u'default'
+      sketch_id = timesketch_api.CreateSketch(sketch_name, sketch_description)
 
     # Export artifacts
     for path_name in processed_artifacts:
@@ -117,7 +120,7 @@ def main(argv):
     # Final output to stdout
     console_out.StdOut(sketch_url)
 
-    # Open new webbrowser window/tab opening the result analysis URL
+    # Open new web browser window/tab opening the result analysis URL
     if FLAGS.open_in_browser:
       webbrowser.open_new(sketch_url)
 

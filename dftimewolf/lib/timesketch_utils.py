@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """API Client for Timesketch."""
 from bs4 import BeautifulSoup
 import requests
@@ -7,10 +8,10 @@ class TimesketchApiClient(object):
   """API Client for Timesketch.
 
   Attributes:
-    host_url: Hostname and port of Timesketch instance
-    api_base_url: Base URL of API
-    username: Timesketch username
-    session: HTTP session for calls to Timesketch
+    host_url (str): Hostname and port of Timesketch instance
+    api_base_url (str): Base URL of API
+    username (str): Timesketch username
+    session (requests.Session): HTTP session for calls to Timesketch
   """
 
   def __init__(self, host, username, password):
@@ -18,8 +19,8 @@ class TimesketchApiClient(object):
 
     Args:
       host: Hostname and port of Timesketch instance
-      username: Timesketch username
-      password: Timesketch password
+      username (str): Timesketch username
+      password (str): Timesketch password
     """
     self.host_url = host
     self.api_base_url = u'{0:s}/api/v1'.format(self.host_url)
@@ -30,11 +31,11 @@ class TimesketchApiClient(object):
     """Create HTTP session.
 
     Args:
-      username: Timesketch username
-      password: Timesketch password
+      username (str): Timesketch username
+      password (str): Timesketch password
 
     Returns:
-      Session object
+      requests.Session: Session object.
     """
     session = requests.Session()
     session.verify = False  # Depending on SSL cert is verifiable
@@ -47,7 +48,7 @@ class TimesketchApiClient(object):
         'x-csrftoken': csrf_token,
         'referer': self.host_url
     })
-    response = session.post(
+    _ = session.post(
         u'{0:s}/login/'.format(self.host_url), data=login_data)
     return session
 
@@ -55,10 +56,11 @@ class TimesketchApiClient(object):
     """Create a new sketch with the specified name and description.
 
     Args:
-      name: Title of sketch
-      description: Description of sketch
+      name (str): Title of sketch
+      description (str): Description of sketch
+
     Returns:
-      Integer corresponding to ID of created sketch
+      int: ID of created sketch
     """
     resource_url = u'{0:s}/sketches/'.format(self.api_base_url)
     form_data = {u'name': name, u'description': description}
@@ -71,10 +73,11 @@ class TimesketchApiClient(object):
     """Create a timeline with the specified name from the given plaso file.
 
     Args:
-      timeline_name: Name of timeline
-      plaso_storage_file: Local path of plaso file to be uploaded
+      timeline_name (str): Name of timeline
+      plaso_storage_path (str): Local path of plaso file to be uploaded
+
     Returns:
-      Integer corresponding to ID of uploaded timeline
+      int: ID of uploaded timeline
     """
     resource_url = u'{0:s}/upload/'.format(self.api_base_url)
     files = {'file': open(plaso_storage_path, 'rb')}
@@ -88,8 +91,8 @@ class TimesketchApiClient(object):
     """Associate the specified timeline and sketch.
 
     Args:
-      sketch_id: ID of sketch
-      index_id: ID of timeline to add to sketch
+      sketch_id (int): ID of sketch
+      index_id (int): ID of timeline to add to sketch
     """
     resource_url = u'{0:s}/sketches/{1:d}/'.format(self.api_base_url, sketch_id)
     form_data = {u'timelines': [index_id]}
@@ -99,9 +102,12 @@ class TimesketchApiClient(object):
     """Get information on the specified sketch.
 
     Args:
-      sketch_id: ID of sketch
+      sketch_id (int): ID of sketch
+
     Returns:
-      Dictionary of sketch information
+      dict: Dictionary of sketch information
+
+
     Raises:
       ValueError: Sketch is inaccessible
     """
@@ -120,7 +126,7 @@ class TimesketchApiClient(object):
     Args:
       sketch_id: ID of sketch
     Returns:
-      URL of sketch
+      str: URL of sketch
     """
     resource_url = u'{0:s}/sketches/{1:d}/'.format(self.host_url, sketch_id)
     return resource_url

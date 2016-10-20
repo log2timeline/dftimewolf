@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """Timewolf CLI tool to collect artifacts.
 
 This Timewolf tool collects files from either local filesystem or via GRR.
@@ -27,15 +29,15 @@ gflags.DEFINE_string(u'hunt_id', None,
                      u'Existing hunt to download current result set from')
 gflags.DEFINE_list(u'paths', [],
                    u'One or more paths to artifacts on the filesystem')
-gflags.DEFINE_string(u'reason', None, u'Reason for requesting client access')
+gflags.DEFINE_string(u'reason', None, u'Reason for requesting _client access')
 gflags.DEFINE_string(u'grr_server_url', u'http://localhost:8000',
                      u'GRR server to use')
 gflags.DEFINE_string(u'artifacts', None,
-                     u'Comma seperated list of GRR artifacts to fetch')
+                     u'Comma separated list of GRR artifacts to fetch')
 gflags.DEFINE_boolean(u'use_tsk', False, u'Use TSK for artifact collection')
 gflags.DEFINE_list(
     u'approvers', None,
-    u'Comma seperated list of usernames to approve GRR client access')
+    u'Comma separated list of usernames to approve GRR _client access')
 gflags.DEFINE_boolean(u'verbose', False, u'Show extended output')
 gflags.DEFINE_string(u'username', None, u'GRR username')
 
@@ -43,7 +45,7 @@ gflags.DEFINE_string(u'username', None, u'GRR username')
 def main(argv):
   """Timewolf collect tool."""
   try:
-    argv = FLAGS(argv)  # parse flags
+    _ = FLAGS(argv)  # parse flags
   except gflags.FlagsError, e:
     sys.exit(e)
   # Console output helper.
