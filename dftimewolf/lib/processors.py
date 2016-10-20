@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Timewolf artifact processors, responsible for processing artifacts."""
 
 import argparse
@@ -90,8 +91,8 @@ def ProcessArtifactsHelper(collected_artifacts, timezone, verbose):
   """Helper function to process data with Plaso.
 
   Args:
-    collected_artifacts: List of tuples with path to data to process and a name
-                         to use as timeline name
+    collected_artifacts (list[tuple]): List of tuples with path to data to
+        process and a name to use as timeline name
     timezone: Timezone name
     verbose: Boolean indicating if verbose output is to be used
 

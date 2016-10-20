@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """Common utilities for Timewolf."""
 
 import getpass
@@ -87,8 +87,11 @@ def IsValidTimezone(timezone):
 
 def GetCredentials(user, host):
   """Attempts to return credentials from netrc file, prompting otherwise."""
-  netrc_file = netrc.netrc()
-  netrc_entry = netrc_file.authenticators(host)
+  try:
+    netrc_file = netrc.netrc()
+    netrc_entry = netrc_file.authenticators(host)
+  except netrc.NetrcParseError:
+    netrc_entry = None
   if netrc_entry:
     username = netrc_entry[0]
     password = netrc_entry[2]

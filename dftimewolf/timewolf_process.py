@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """Timewolf CLI tool to process artifacts.
 
 This Timewolf tool processes artifacts with Plaso log2timeline tool.
@@ -35,7 +37,7 @@ gflags.DEFINE_boolean(u'verbose', False, u'Show extended output')
 def main(argv):
   """Timewolf process tool."""
   try:
-    argv = FLAGS(argv)  # parse flags
+    _ = FLAGS(argv)  # parse flags
   except gflags.FlagsError, e:
     sys.exit(e)
   # Console output helper

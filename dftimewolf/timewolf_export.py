@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """Timewolf CLI tool to export processed artifacts.
 
 This Timewolf tool exports Plaso storage files to Timesketch.
@@ -41,7 +43,7 @@ gflags.DEFINE_string(u'username', None, u'Timesketch username')
 def main(argv):
   """Timewolf export tool."""
   try:
-    argv = FLAGS(argv)  # parse flags
+    _ = FLAGS(argv)  # parse flags
   except gflags.FlagsError, e:
     sys.exit(e)
   # Console output helper
@@ -85,7 +87,7 @@ def main(argv):
     # Final output
     console_out.StdOut(sketch_url)
   else:
-    console_out.StfErr(u'No processed artifacts found', die=True)
+    console_out.StdErr(u'No processed artifacts found', die=True)
 
 
 if __name__ == '__main__':
