@@ -121,6 +121,7 @@ class GRRHuntCollector(BaseCollector):
     self.grr_api = grr_api.InitHttp(
         api_endpoint=grr_server_url, auth=(username, password))
     self.artifacts = artifacts
+    self.use_tsk = use_tsk
     self.approvers = approvers
     self.reason = reason
     if not hunt_id:
