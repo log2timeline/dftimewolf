@@ -136,8 +136,11 @@ class GrrHuntCollector(BaseArtifactCollector):
             os.makedirs(client_dir)
             collection_paths.update({client_dir: client_name})
           location = os.path.basename(archive.read(f))
-          archive.extract(u'{0:s}/hashes/{1:s}'.format(base, location),
-                          client_dir)
+          try:
+            archive.extract(u'{0:s}/hashes/{1:s}'.format(base, location),
+                            client_dir)
+          except KeyError, e:
+            self.console_out.VerboseOut(u'Extraction error: {0:s}'.format(e))
 
     os.remove(output_file_path)
 
