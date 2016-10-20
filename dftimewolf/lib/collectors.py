@@ -129,15 +129,15 @@ class GrrHuntCollector(BaseArtifactCollector):
       base = items[0].split(u'/')[0]
       for f in items:
         client_id = f.filename.split(u'/')[1]
-        client_name = self.grr_api.Client(client_id).Get().data.os_info.fqdn
         if client_id.startswith(u'C.'):
+          client_name = self.grr_api.Client(client_id).Get().data.os_info.fqdn
           client_dir = os.path.join(self.output_path, client_id)
-        if not os.path.isdir(client_dir):
-          os.makedirs(client_dir)
-          collection_paths.update({client_path: client_name})
-        location = os.path.basename(archive.read(f))
-        archive.extract(u'{0:s}/hashes/{1:s}'.format(base, location),
-                        client_dir)
+          if not os.path.isdir(client_dir):
+            os.makedirs(client_dir)
+            collection_paths.update({client_dir: client_name})
+          location = os.path.basename(archive.read(f))
+          archive.extract(u'{0:s}/hashes/{1:s}'.format(base, location),
+                          client_dir)
 
     os.remove(output_file_path)
 
