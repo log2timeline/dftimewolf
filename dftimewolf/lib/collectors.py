@@ -177,9 +177,9 @@ class GRRHuntCollector(BaseCollector):
 
   def Status(self):
     """Print status of hunt."""
-    status = self.grr_api.Hunt(self.hunt_id).data
+    status = self.grr_api.Hunt(self.hunt_id).Get().data
     self.console_out.StdOut(
-        u'Status of hunt {0:s}:\nTotal clients: {1:d}\nCompleted clients: '
+        u'Status of hunt {0:s}\nTotal clients: {1:d}\nCompleted clients: '
         u'{2:d}\nOutstanding clients: {3:d}\n'.
         format(self.hunt_id, status.all_clients_count,
                status.completed_clients_count, status.remaining_clients_count))
