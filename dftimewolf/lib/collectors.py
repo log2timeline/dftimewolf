@@ -175,6 +175,15 @@ class GRRHuntCollector(BaseCollector):
         except grr_errors.AccessForbiddenError:
           time.sleep(self._CHECK_APPROVAL_INTERVAL_SEC)
 
+  def Status(self):
+    """Print status of hunt."""
+    status = self.grr_api.Hunt(self.hunt_id).data
+    self.console_out.StdOut(
+        u'Status of hunt {0:s}:\nTotal clients: {1:d}\nCompleted clients: '
+        u'{2:d}\nOutstanding clients: {3:d}\n'.
+        format(self.hunt_id, status.all_clients_count,
+               status.completed_clients_count, status.remaining_clients_count))
+
   def Collect(self):
     """Download current set of files in results.
 
@@ -526,6 +535,7 @@ def CollectArtifactsHelper(host_list, new_hunt, hunt_id, path_list,
   Args:
       host_list: comma-separated list of hosts to collect artifacts from
       new_hunt (Optional[bool]): toggle for starting new GRR hunt
+      hunt_status (Optional[bool]): toggle for getting status of ongoing hunt
       hunt_id (Optional [str]): ID of GRR hunt to retrieve artifacts from
       path_list (Optional [str]:) comma-separated list of local artifact paths
       artifact_list (str): comma-separated list of ForensicArtifacts
@@ -580,6 +590,8 @@ def CollectArtifactsHelper(host_list, new_hunt, hunt_id, path_list,
       collector.console_out.StdOut(
           u'Hunt started. Run timewolf with --hunt_id {0:s} for results'.format(
               collector.hunt_id))
+    elif hunt_status:
+      collector.Status()
     else:
       collector.start()
       collectors.append(collector)
