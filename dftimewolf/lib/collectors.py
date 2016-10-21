@@ -243,7 +243,7 @@ class GRRHuntCollector(BaseCollector):
                 os.path.join(client_directory, real_file_path),
                 os.path.join(client_directory, os.path.basename(f.filename)))
           except KeyError, e:
-            self.console_out.VerboseOut(u'Extraction error: {0:s}'.format(e))
+            self.console_out.StdErr(u'Extraction error: {0:s}'.format(e))
 
     os.remove(output_file_path)
 
