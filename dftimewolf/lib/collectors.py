@@ -527,7 +527,7 @@ class GRRArtifactCollector(BaseCollector):
     return collection_name
 
 
-def CollectArtifactsHelper(host_list, new_hunt, hunt_id, path_list,
+def CollectArtifactsHelper(host_list, new_hunt, hunt_status, hunt_id, path_list,
                            artifact_list, use_tsk, reason, approvers, verbose,
                            grr_server_url, username, password):
   """Helper function to collect artifacts based on command line flags passed.
