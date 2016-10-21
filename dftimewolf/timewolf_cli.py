@@ -88,7 +88,7 @@ def main(argv):
   # Collect artifacts
   try:
     collected_artifacts = collectors.CollectArtifactsHelper(
-        FLAGS.hosts, FLAGS.new_hunt, flags.hunt_status, FLAGS.hunt_id,
+        FLAGS.hosts, FLAGS.new_hunt, FLAGS.hunt_status, FLAGS.hunt_id,
         FLAGS.paths, FLAGS.artifacts, FLAGS.use_tsk, FLAGS.reason,
         FLAGS.approvers, FLAGS.verbose, FLAGS.grr_server_url, username,
         password)
