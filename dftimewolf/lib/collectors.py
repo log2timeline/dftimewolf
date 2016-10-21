@@ -107,14 +107,15 @@ class GRRHuntCollector(BaseCollector):
     """ Initializes a GRR hunt results collector.
 
     Args:
-      hunt_id:
-      artifacts:
-      reason:
-      grr_server_url:
-      username:
-      password:
-      approvers:
-      verbose:
+      hunt_id (Optional [str]): ID of GRR hunt to retrieve artifacts from
+      artifacts (str): comma-separated list of ForensicArtifacts
+      use_tsk (Optional[bool]): toggle for use_tsk flag on GRR flows and hunts
+      reason (str): justification for GRR access
+      grr_server_url (str): GRR server url
+      username (str): GRR server username
+      password (str): GRR server password
+      approvers (str): comma-separated list of users to send GRR approval to
+      verbose (Optional[bool]): toggle for verbose output
     """
     super(GRRHuntCollector, self).__init__(verbose=verbose)
     self.output_path = tempfile.mkdtemp()
@@ -296,15 +297,15 @@ class GRRArtifactCollector(BaseCollector):
     """Initializes a GRR artifact collector.
 
     Args:
-      hostname:
-      reason:
-      grr_server_url:
-      username (str): GRR server username.
-      password (str): GRR server password.
-      artifacts (Optional[list()]:
-      use_tsk (Optional[bool]):
-      approvers (Optional[list(str)]):
-      verbose (Optional[bool]):
+      hostname (str): hostname of machine to extract artifacts from
+      reason (str): justification for GRR access
+      grr_server_url (str): GRR server url
+      username (str): GRR server username
+      password (str): GRR server password
+      artifacts (str): comma-separated list of ForensicArtifacts
+      use_tsk (Optional[bool]): toggle for use_tsk flag on GRR flow
+      approvers (str): comma-separated list of users to send GRR approval to
+      verbose (Optional[bool]): toggle for verbose output
     """
     super(GRRArtifactCollector, self).__init__(verbose=verbose)
     self.output_path = tempfile.mkdtemp()
@@ -367,7 +368,18 @@ class GRRArtifactCollector(BaseCollector):
     return active_client_id
 
   def _GetClient(self, client_id, reason, approvers):
-    """Get GRR client dictionary and make sure valid approvals exist."""
+    """Get GRR client dictionary and make sure valid approvals exist.
+
+    Args:
+      client_id (str): GRR client ID
+      reason (str): justification for GRR access
+      approvers (str): comma-separated list of users to send GRR approval to
+
+    Returns:
+      GRR API Client object
+
+    Raises:
+      ValueError: if no approvals exist and no approvers are specified"""
     client = self.grr_api.Client(client_id)
     self.console_out.VerboseOut(u'Checking for client approval')
     try:
@@ -468,7 +480,14 @@ class GRRArtifactCollector(BaseCollector):
     return [(self.host, self.output_path)]
 
   def _DownloadFiles(self, flow_id):
-    """Download files from the specified flow."""
+    """Download files from the specified flow.
+
+    Args:
+      flow_id (str): GRR flow ID
+
+    Returns:
+      str: path of downloaded files
+    """
     if not os.path.isdir(self.output_path):
       os.makedirs(self.output_path)
 
@@ -505,18 +524,18 @@ def CollectArtifactsHelper(host_list, new_hunt, hunt_id, path_list,
   """Helper function to collect artifacts based on command line flags passed.
 
   Args:
-    host_list: TODO
-    new_hunt: TODO
-    hunt_id: TODO
-    path_list: TODO
-    artifact_list: TODO
-    use_tsk: TODO
-    reason: TODO
-    approvers: TODO
-    verbose: TODO
-    grr_server_url: TODO
-    username: TODO
-    password: TODO
+      host_list: comma-separated list of hosts to collect artifacts from
+      new_hunt (Optional[bool]): toggle for starting new GRR hunt
+      hunt_id (Optional [str]): ID of GRR hunt to retrieve artifacts from
+      path_list (Optional [str]:) comma-separated list of local artifact paths
+      artifact_list (str): comma-separated list of ForensicArtifacts
+      use_tsk (Optional[bool]): toggle for use_tsk flag on GRR flows and hunts
+      reason (str): justification for GRR access
+      approvers (str): comma-separated list of users to send GRR approval to
+      verbose (Optional[bool]): toggle for verbose output
+      grr_server_url (str): GRR server url
+      username (str): GRR server username
+      password (str): GRR server password
 
   Returns:
       list(tuple): containing:
