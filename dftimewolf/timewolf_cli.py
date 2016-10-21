@@ -68,9 +68,9 @@ def main(argv):
 
   if not (FLAGS.paths or FLAGS.hosts or FLAGS.hunt_id or FLAGS.new_hunt):
     console_out.StdErr(u'paths or hosts must be specified', die=True)
-  elif (FLAGS.new_hunt and FLAGS.hosts):
+  elif FLAGS.new_hunt and FLAGS.hosts:
     console_out.StdErr(u'new_hunt and hosts are mutually exclusive', die=True)
-  elif (FLAGS.new_hunt and FLAGS.hunt_id):
+  elif FLAGS.new_hunt and FLAGS.hunt_id:
     console_out.StdErr(u'new_hunt and hunt_id are mutually exclusive', die=True)
 
   ts_host = re.search(r'://(\S+):\d+', FLAGS.timesketch_server_url).group(1)
