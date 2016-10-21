@@ -239,7 +239,9 @@ class GRRHuntCollector(BaseCollector):
           try:
             archive.extract(u'{0:s}/hashes/{1:s}'.format(base, file),
                             client_directory)
-	    os.rename(os.path.join(client_directory, file),os.path.join(client_directory, f.filename))
+            os.rename(
+                os.path.join(client_directory, file),
+                os.path.join(client_directory, f.filename))
           except KeyError, e:
             self.console_out.VerboseOut(u'Extraction error: {0:s}'.format(e))
 
