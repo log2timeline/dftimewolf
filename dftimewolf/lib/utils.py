@@ -86,7 +86,12 @@ def IsValidTimezone(timezone):
 
 
 def GetCredentials(user, host):
-  """Attempts to return credentials from netrc file, prompting otherwise."""
+  """Attempts to return credentials from netrc file, prompting otherwise.
+
+  Args:
+    user: username to use if no netrc entry found
+    host: netrc entry to search
+  """
   try:
     netrc_file = netrc.netrc()
     netrc_entry = netrc_file.authenticators(host)
