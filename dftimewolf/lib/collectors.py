@@ -235,13 +235,13 @@ class GRRHuntCollector(BaseCollector):
           if not os.path.isdir(client_directory):
             os.makedirs(client_directory)
             collection_paths.append((client_name, client_directory))
-          file = os.path.basename(archive.read(f))
+          real_file_path = os.path.join(base, u'hashes',
+                                        os.path.basename(archive.read(f)))
           try:
-            archive.extract(u'{0:s}/hashes/{1:s}'.format(base, file),
-                            client_directory)
+            archive.extract(real_file_path, client_directory)
             os.rename(
-                os.path.join(client_directory, file),
-                os.path.join(client_directory, f.filename))
+                os.path.join(client_directory, real_file_path),
+                os.path.join(client_directory, os.path.basename(f.filename)))
           except KeyError, e:
             self.console_out.VerboseOut(u'Extraction error: {0:s}'.format(e))
 
