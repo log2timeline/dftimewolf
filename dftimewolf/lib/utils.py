@@ -31,7 +31,7 @@ class TimewolfConsoleOutput(object):
                                                          self._sender, message)
     return formatted_message
 
-  def StdOut(self, message, die=False):
+  def StdOut(self, message):
     """Send message to standard out.
 
     Args:
