@@ -127,5 +127,5 @@ class TimesketchApiClient(object):
     Returns:
       str: URL of sketch
     """
-    resource_url = u'{0:s}/sketches/{1:d}/'.format(self.host_url, sketch_id)
+    resource_url = u'{0:s}/sketch/{1:d}/'.format(self.host_url, sketch_id)
     return resource_url

@@ -58,8 +58,9 @@ class FilesystemCollector(BaseCollector):
   """Collect artifacts from the local filesystem."""
 
   def __init__(self, path, name=None, verbose=False):
-    """Args:
+    """Initializes a filesystem collector.
 
+    Args:
       path (str): path to the files to collect.
       name (Optional[str]): name of the collection.
       verbose (Optional[bool]): whether verbose output is desired.
@@ -107,14 +108,14 @@ class GRRHuntCollector(BaseCollector):
     """ Initializes a GRR hunt results collector.
 
     Args:
-      hunt_id (Optional [str]): ID of GRR hunt to retrieve artifacts from
+      hunt_id (str): ID of GRR hunt to retrieve artifacts from
       artifacts (str): comma-separated list of ForensicArtifacts
-      use_tsk (Optional[bool]): toggle for use_tsk flag on GRR flows and hunts
+      use_tsk (bool): toggle for use_tsk flag on GRR flows and hunts
       reason (str): justification for GRR access
       grr_server_url (str): GRR server url
       username (str): GRR server username
       password (str): GRR server password
-      approvers (str): comma-separated list of users to send GRR approval to
+      approvers (Optional[str]): comma-separated list of GRR approval recipients
       verbose (Optional[bool]): toggle for verbose output
     """
     super(GRRHuntCollector, self).__init__(verbose=verbose)
@@ -313,7 +314,7 @@ class GRRArtifactCollector(BaseCollector):
       password (str): GRR server password
       artifacts (str): comma-separated list of ForensicArtifacts
       use_tsk (Optional[bool]): toggle for use_tsk flag on GRR flow
-      approvers (str): comma-separated list of users to send GRR approval to
+      approvers (Optional[str]): comma-separated list of GRR approval recipients
       verbose (Optional[bool]): toggle for verbose output
     """
     super(GRRArtifactCollector, self).__init__(verbose=verbose)
@@ -382,13 +383,14 @@ class GRRArtifactCollector(BaseCollector):
     Args:
       client_id (str): GRR client ID
       reason (str): justification for GRR access
-      approvers (str): comma-separated list of users to send GRR approval to
+      approvers (str): comma-separated list of GRR approval recipients
 
     Returns:
       GRR API Client object
 
     Raises:
-      ValueError: if no approvals exist and no approvers are specified"""
+      ValueError: if no approvals exist and no approvers are specified
+    """
     client = self.grr_api.Client(client_id)
     self.console_out.VerboseOut(u'Checking for client approval')
     try:
@@ -541,7 +543,7 @@ def CollectArtifactsHelper(host_list, new_hunt, hunt_status, hunt_id, path_list,
       artifact_list (str): comma-separated list of ForensicArtifacts
       use_tsk (Optional[bool]): toggle for use_tsk flag on GRR flows and hunts
       reason (str): justification for GRR access
-      approvers (str): comma-separated list of users to send GRR approval to
+      approvers (str): comma-separated list of GRR approval recipients
       verbose (Optional[bool]): toggle for verbose output
       grr_server_url (str): GRR server url
       username (str): GRR server username

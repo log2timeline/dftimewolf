@@ -95,7 +95,7 @@ def GetCredentials(user, host):
   try:
     netrc_file = netrc.netrc()
     netrc_entry = netrc_file.authenticators(host)
-  except netrc.NetrcParseError:
+  except (netrc.NetrcParseError, IOError):
     netrc_entry = None
   if netrc_entry:
     username = netrc_entry[0]
