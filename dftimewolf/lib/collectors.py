@@ -538,8 +538,8 @@ def CollectArtifactsHelper(host_list, new_hunt, hunt_status, hunt_id, path_list,
       host_list: comma-separated list of hosts to collect artifacts from
       new_hunt (Optional[bool]): toggle for starting new GRR hunt
       hunt_status (Optional[bool]): toggle for getting status of ongoing hunt
-      hunt_id (Optional [str]): ID of GRR hunt to retrieve artifacts from
-      path_list (Optional [str]:) comma-separated list of local artifact paths
+      hunt_id (str): ID of GRR hunt to retrieve artifacts from
+      path_list (Optional [str]): comma-separated list of local artifact paths
       artifact_list (str): comma-separated list of ForensicArtifacts
       use_tsk (Optional[bool]): toggle for use_tsk flag on GRR flows and hunts
       reason (str): justification for GRR access
