@@ -25,6 +25,8 @@ from dftimewolf.lib import utils as timewolf_utils
 FLAGS = gflags.FLAGS
 gflags.DEFINE_list(u'hosts', [],
                    u'One or more hostnames to collect artifacts from with GRR')
+gflags.DEFINE_boolean(u'new_hunt', False, u'Start a new GRR hunt')
+gflags.DEFINE_boolean(u'hunt_status', False, u'Get status of ongoing hunt')
 gflags.DEFINE_string(u'hunt_id', None,
                      u'Existing hunt to download current result set from')
 gflags.DEFINE_list(u'paths', [],
@@ -52,8 +54,14 @@ def main(argv):
   console_out = timewolf_utils.TimewolfConsoleOutput(
       sender=u'TimewolfCollectCli', verbose=FLAGS.verbose)
 
-  if not (FLAGS.paths or FLAGS.hosts or FLAGS.hunt_id):
+  if not (FLAGS.paths or FLAGS.hosts or FLAGS.hunt_id or FLAGS.new_hunt):
     console_out.StdErr(u'paths or hosts must be specified', die=True)
+  elif FLAGS.new_hunt and FLAGS.hosts:
+    console_out.StdErr(u'new_hunt and hosts are mutually exclusive', die=True)
+  elif FLAGS.new_hunt and FLAGS.hunt_id:
+    console_out.StdErr(u'new_hunt and hunt_id are mutually exclusive', die=True)
+  elif FLAGS.hunt_status and not FLAGS.hunt_id:
+    console_out.StdErr(u'hunt_id must be specified for status check', die=True)
 
   grr_host = re.search(r'://(\S+):\d+', FLAGS.grr_server_url).group(1)
   username, password = timewolf_utils.GetCredentials(FLAGS.username, grr_host)
@@ -61,9 +69,10 @@ def main(argv):
   # Collect artifacts
   try:
     collected_artifacts = collectors.CollectArtifactsHelper(
-        FLAGS.hosts, FLAGS.hunt_id, FLAGS.paths, FLAGS.artifacts, FLAGS.use_tsk,
-        FLAGS.reason, FLAGS.approvers, FLAGS.verbose, FLAGS.grr_server_url,
-        username, password)
+        FLAGS.hosts, FLAGS.new_hunt, FLAGS.hunt_status, FLAGS.hunt_id,
+        FLAGS.paths, FLAGS.artifacts, FLAGS.use_tsk, FLAGS.reason,
+        FLAGS.approvers, FLAGS.verbose, FLAGS.grr_server_url, username,
+        password)
   except (ValueError, RuntimeError) as e:
     console_out.StdErr(e, die=True)
 

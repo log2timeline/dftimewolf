@@ -48,8 +48,7 @@ class TimesketchApiClient(object):
         'x-csrftoken': csrf_token,
         'referer': self.host_url
     })
-    _ = session.post(
-        u'{0:s}/login/'.format(self.host_url), data=login_data)
+    _ = session.post(u'{0:s}/login/'.format(self.host_url), data=login_data)
     return session
 
   def CreateSketch(self, name, description):
@@ -128,5 +127,5 @@ class TimesketchApiClient(object):
     Returns:
       str: URL of sketch
     """
-    resource_url = u'{0:s}/sketches/{1:d}/'.format(self.host_url, sketch_id)
+    resource_url = u'{0:s}/sketch/{1:d}/'.format(self.host_url, sketch_id)
     return resource_url
