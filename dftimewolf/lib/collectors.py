@@ -145,7 +145,8 @@ class GRRHuntCollector(BaseCollector):
         use_tsk=self.use_tsk,
         ignore_interpolation_errors=True,
         apply_parsers=False,)
-    runner_args = self.grr_api.Types.HuntRunnerArgs(description=self.reason)
+    runner_args = self.grr_api.Types.CreateHuntRunnerArgs()
+    runner_args.description = self.reason
     self._hunt = self.grr_api.CreateHunt(
         flow_name=name, flow_args=args, hunt_runner_args=runner_args)
     self.hunt_id = self._hunt.hunt_id
