@@ -138,10 +138,12 @@ class LocalPlasoArtifactProcessor(PlasoArtifactProcessor):
     cmd.extend([u'-q', u'--status_view', u'none'])
     if self.timezone:
       cmd.extend([u'-z', self.timezone])
-    cmd.extend([u'--logfile', log_file_path, self.plaso_storage_file_path,
-                self.artifacts_path])
-    self.console_out.VerboseOut(
-        u'Running external command: {0:s}'.format(u' '.join(cmd)))
+    cmd.extend([
+        u'--logfile', log_file_path, self.plaso_storage_file_path,
+        self.artifacts_path
+    ])
+    self.console_out.VerboseOut(u'Running external command: {0:s}'.format(
+        u' '.join(cmd)))
     # Running the local l2t command
     l2t_proc = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -175,9 +177,11 @@ def ProcessArtifactsHelper(collected_artifacts, timezone, local_plaso, verbose):
     path = artifact[1]
     if os.path.exists(path):
       if local_plaso:
-        plaso_processor = LocalPlasoArtifactProcessor(path, timezone, verbose=verbose)
+        plaso_processor = LocalPlasoArtifactProcessor(
+            path, timezone, verbose=verbose)
       else:
-        plaso_processor = PlasoArtifactProcessor(path, timezone, verbose=verbose)
+        plaso_processor = PlasoArtifactProcessor(
+            path, timezone, verbose=verbose)
       plaso_processor.start()
       plaso_processor.join()
       artifact_processors.append((plaso_processor, name))
