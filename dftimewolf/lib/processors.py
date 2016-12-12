@@ -3,6 +3,7 @@
 
 import argparse
 import os
+import subprocess
 import tempfile
 import threading
 import uuid
@@ -97,13 +98,69 @@ class PlasoArtifactProcessor(BaseArtifactProcessor):
     self.results = self.plaso_storage_file_path
 
 
-def ProcessArtifactsHelper(collected_artifacts, timezone, verbose):
+class LocalPlasoArtifactProcessor(PlasoArtifactProcessor):
+  """Process artifacts with plaso, begetting a new log2timeline.py process.
+
+  Attributes:
+    output_path: Where to store the result
+    artifacts_path: Source data to process
+    plaso_storage_file_name: File name for the resulting Plaso storage file
+    plaso_storage_file_path: Full path to the result
+    timezone: Timezone to use for Plaso processing
+  """
+
+  def __init__(self, artifacts_path, timezone=None, verbose=False):
+    """Initialize the Plaso artifact processor object.
+
+    Args:
+      artifacts_path: Path to data to process
+      timezone: Timezone name (optional)
+      verbose: Boolean indicating if to use verbose output
+    """
+    super(LocalPlasoArtifactProcessor, self).__init__(
+        artifacts_path, timezone=timezone, verbose=verbose)
+
+  def Process(self):
+    """Process files with Log2Timeline from the local plaso install.
+
+    Returns:
+      Path to a Plaso storage file
+
+    Raises:
+      ValueError: If the local log2timeline.py process fails
+    """
+    log_file_path = os.path.join(self.output_path, u'plaso.log')
+    self.console_out.VerboseOut(u'Log file: {0:s}'.format(log_file_path))
+
+    cmd = [u'log2timeline.py']
+    # Since we might be running alongside another Processor, always disable
+    # the status view
+    cmd.extend([u'-q', u'--status_view', u'none'])
+    if self.timezone:
+      cmd.extend([u'-z', self.timezone])
+    cmd.extend([u'--logfile', log_file_path, self.plaso_storage_file_path,
+                self.artifacts_path])
+    self.console_out.VerboseOut(
+        u'Running external command: {0:s}'.format(u' '.join(cmd)))
+    # Running the local l2t command
+    l2t_proc = subprocess.Popen(
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    _, errors = l2t_proc.communicate()
+    l2t_status = l2t_proc.wait()
+    if l2t_status:
+      print >> sys.stderr, errors
+      raise ValueError(u'The command {0:s} failed'.format(u' '.join(cmd)))
+
+
+def ProcessArtifactsHelper(collected_artifacts, timezone, local_plaso, verbose):
   """Helper function to process data with Plaso.
 
   Args:
     collected_artifacts (list[tuple]): tuples with a timeline name and the path
         to the data to processed.
     timezone (str): Timezone name.
+    local_plaso: Boolean indicating if to use the current system's plaso
+	install.
     verbose (bool): whether verbose output is to be used.
 
   Returns:
@@ -117,7 +174,10 @@ def ProcessArtifactsHelper(collected_artifacts, timezone, verbose):
     name = artifact[0]
     path = artifact[1]
     if os.path.exists(path):
-      plaso_processor = PlasoArtifactProcessor(path, timezone, verbose=verbose)
+      if local_plaso:
+        plaso_processor = LocalPlasoArtifactProcessor(path, timezone, verbose=verbose)
+      else:
+        plaso_processor = PlasoArtifactProcessor(path, timezone, verbose=verbose)
       plaso_processor.start()
       plaso_processor.join()
       artifact_processors.append((plaso_processor, name))
