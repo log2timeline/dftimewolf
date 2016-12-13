@@ -36,6 +36,8 @@ gflags.DEFINE_boolean(u'new_hunt', False, u'Start a new GRR hunt')
 gflags.DEFINE_boolean(u'hunt_status', False, u'Get status of ongoing hunt')
 gflags.DEFINE_string(u'hunt_id', None,
                      u'Existing hunt to download current result set from')
+gflags.DEFINE_boolean(u'local_plaso', False,
+                      u'Use the local plaso installation')
 gflags.DEFINE_list(u'paths', [],
                    u'One or more paths to files to process on the filesystem')
 gflags.DEFINE_string(u'reason', None, u'Reason for requesting _client access')
@@ -103,6 +105,7 @@ def main(argv):
 
   processed_artifacts = processors.ProcessArtifactsHelper(collected_artifacts,
                                                           FLAGS.timezone,
+                                                          FLAGS.local_plaso,
                                                           FLAGS.verbose)
 
   if processed_artifacts:

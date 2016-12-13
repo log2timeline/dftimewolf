@@ -28,6 +28,8 @@ from dftimewolf.lib import processors
 from dftimewolf.lib import utils
 
 FLAGS = gflags.FLAGS
+gflags.DEFINE_boolean(u'local_plaso', False,
+                      u'Use the local plaso installation')
 gflags.DEFINE_string(u'path', None, u'Path to artifacts to process')
 gflags.DEFINE_string(u'name', None, u'Name the timeline')
 gflags.DEFINE_string(u'timezone', None, u'Timezone to use for Plaso processing')
@@ -60,6 +62,7 @@ def main(argv):
 
   processed_artifacts = processors.ProcessArtifactsHelper(collected_artifacts,
                                                           FLAGS.timezone,
+                                                          FLAGS.local_plaso,
                                                           FLAGS.verbose)
 
   # Send the result to stdout
