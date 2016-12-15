@@ -40,7 +40,7 @@ gflags.DEFINE_boolean(u'local_plaso', False,
                       u'Use the local plaso installation')
 gflags.DEFINE_list(u'paths', [],
                    u'One or more paths to files to process on the filesystem')
-gflags.DEFINE_string(u'reason', None, u'Reason for requesting _client access')
+gflags.DEFINE_string(u'reason', None, u'Reason for requesting client access')
 gflags.DEFINE_string(u'grr_server_url', u'http://localhost:8000',
                      u'GRR server to use')
 gflags.DEFINE_string(u'timesketch_server_url', u'http://localhost:5000',
@@ -51,7 +51,7 @@ gflags.DEFINE_boolean(u'use_tsk', False, u'Use TSK for artifact collection')
 gflags.DEFINE_string(u'timezone', None, u'Timezone to use for Plaso processing')
 gflags.DEFINE_list(
     u'approvers', None,
-    u'Comma separated list of usernames to approve GRR _client access')
+    u'Comma separated list of usernames to approve GRR client access')
 gflags.DEFINE_boolean(u'open_in_browser', False,
                       u'Open the resulting sketch in a browser window')
 gflags.DEFINE_integer(u'sketch_id', None, u'Timesketch sketch to append to')

@@ -13,7 +13,12 @@ class TimewolfConsoleOutput(object):
   """Send messages to stdin or stderr."""
 
   def __init__(self, sender, verbose):
-    """Initializer the Timewolf console output object."""
+    """Initialize the Timewolf console output object.
+
+    Args:
+      sender: Name of the sender of the message
+      verbose: Boolean indicating if verbose output is to be used
+    """
     super(TimewolfConsoleOutput, self).__init__()
     self._sender = sender
     self._verbose = verbose
@@ -65,7 +70,11 @@ class TimewolfConsoleOutput(object):
 
 
 def ReadFromStdin():
-  """Convenience function to read input from stdin."""
+  """Convenience function to read input from stdin.
+
+  Yields:
+    Tuple of path to artifacts or processed artifacts and a name
+  """
   for line in sys.stdin:
     path_name = line.strip(u'\n').split()
     try:
@@ -73,7 +82,7 @@ def ReadFromStdin():
       name = path_name[1]
     except IndexError:
       raise IndexError(u'Malformed input on stdin')
-  yield (path, name)
+    yield (path, name)
 
 
 def IsValidTimezone(timezone):
@@ -81,6 +90,8 @@ def IsValidTimezone(timezone):
 
   Args:
     timezone: Timezone name
+  Returns:
+    Boolean indicating if the timezone name is known to the pytz package
   """
   return timezone in pytz.all_timezones
 
