@@ -68,7 +68,7 @@ def main(argv):
   # Send the result to stdout
   for timeline_name, plaso_storage_file_path in processed_artifacts:
     console_out.StdOut(u'{0:s} {1:s}'.format(timeline_name,
-					     plaso_storage_file_path))
+                                             plaso_storage_file_path))
 
 
 if __name__ == '__main__':
