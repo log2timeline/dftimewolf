@@ -50,7 +50,7 @@ def main(argv):
     # Collect the artifacts with the filesystem collector
     collector = collectors.FilesystemCollector(FLAGS.path, FLAGS.name,
                                                FLAGS.verbose)
-    collected_artifacts = [(collector.Collect(), collector.collection_name)]
+    collected_artifacts = collector.Collect()
   else:
     # Read from stdin, expects space delimited lines with path and name
     collected_artifacts = ((path, name) for path, name in utils.ReadFromStdin())
