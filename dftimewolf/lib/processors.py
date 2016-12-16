@@ -191,7 +191,7 @@ def ProcessArtifactsHelper(collected_artifacts, timezone, local_plaso, verbose):
   for (processor, name) in artifact_processors:
     processor.join()
 
-  processed_artifacts = ((processor.plaso_storage_file_path, name)
-                         for (processor, name) in artifact_processors)
+  processed_artifacts = ((name, processor.plaso_storage_file_path)
+                         for (name, processor) in artifact_processors)
 
   return processed_artifacts
