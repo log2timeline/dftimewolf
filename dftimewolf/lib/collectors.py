@@ -165,7 +165,8 @@ class GRRHuntCollector(BaseArtifactCollector):
         use_tsk=self.use_tsk,
         ignore_interpolation_errors=True,
         apply_parsers=False,)
-    runner_args = self.grr_api.Types.HuntRunnerArgs(description=self.reason)
+    runner_args = self.grr_api.types.CreateHuntRunnerArgs()
+    runner_args.description = self.reason
     self._hunt = self.grr_api.CreateHunt(
         flow_name=name, flow_args=args, hunt_runner_args=runner_args)
     self.hunt_id = self._hunt.hunt_id
@@ -201,9 +202,9 @@ class GRRHuntCollector(BaseArtifactCollector):
     status = self.grr_api.Hunt(self.hunt_id).Get().data
     self.console_out.StdOut(
         u'Status of hunt {0:s}\nTotal clients: {1:d}\nCompleted clients: '
-        u'{2:d}\nOutstanding clients: {3:d}\n'.
-        format(self.hunt_id, status.all_clients_count,
-               status.completed_clients_count, status.remaining_clients_count))
+        u'{2:d}\nOutstanding clients: {3:d}\n'.format(
+            self.hunt_id, status.all_clients_count,
+            status.completed_clients_count, status.remaining_clients_count))
 
   def Collect(self):
     """Download current set of files in results.
