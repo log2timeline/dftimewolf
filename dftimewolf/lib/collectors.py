@@ -14,14 +14,16 @@ import zipfile
 
 from grr.gui.api_client import api as grr_api
 from grr.gui.api_client import errors as grr_errors
-# TODO: Renable when there's a URNToFlowID method.
-# from grr.gui.apiclient import utils as grr_utils
 from dftimewolf.lib import utils as timewolf_utils
 from grr.proto import flows_pb2
 
 
-class BaseCollector(threading.Thread):
-  """Base class for artifact collectors."""
+class BaseArtifactCollector(threading.Thread):
+  """Base class for artifact collectors.
+
+  Attributes:
+    console_out: Console output helper
+  """
 
   def __init__(self, verbose):
     """Initialize the base artifact collector object.
@@ -29,7 +31,7 @@ class BaseCollector(threading.Thread):
     Args:
       verbose (Optional[bool]): whether verbose output is desired.
     """
-    super(BaseCollector, self).__init__()
+    super(BaseArtifactCollector, self).__init__()
     self.console_out = timewolf_utils.TimewolfConsoleOutput(
         sender=self.__class__.__name__, verbose=verbose)
     self.results = []
@@ -54,8 +56,13 @@ class BaseCollector(threading.Thread):
     raise NotImplementedError
 
 
-class FilesystemCollector(BaseCollector):
-  """Collect artifacts from the local filesystem."""
+class FilesystemCollector(BaseArtifactCollector):
+  """Collect artifacts from the local filesystem.
+
+  Attributes:
+    output_path: Path to where to store collected artifacts.
+    cname: Name for the collection of collected artifacts.
+  """
 
   def __init__(self, path, name=None, verbose=False):
     """Initializes a filesystem collector.
@@ -83,7 +90,11 @@ class FilesystemCollector(BaseCollector):
 
   @property
   def collection_name(self):
-    """Name for the collection of collected artifacts."""
+    """Name for the collection of collected artifacts.
+
+    Returns:
+      str: name of the artifact collection
+    """
     if not self.cname:
       self.cname = os.path.basename(self.output_path.rstrip(u'/'))
     self.console_out.VerboseOut(u'Artifact collection name: {0:s}'.format(
@@ -91,8 +102,17 @@ class FilesystemCollector(BaseCollector):
     return self.cname
 
 
-class GRRHuntCollector(BaseCollector):
-  """Collect hunt results with GRR."""
+class GRRHuntCollector(BaseArtifactCollector):
+  """Collect hunt results with GRR.
+
+  Attributes:
+    output_path: Path to where to store collected artifacts
+    grr_api: GRR HTTP API client
+    artifacts: List of GRR artifacts names
+    use_tsk: Toggle for use_tsk flag on GRR flow
+    reason: Justification for GRR access
+    approvers: list of GRR approval recipients
+  """
   _CHECK_APPROVAL_INTERVAL_SEC = 10
 
   def __init__(self,
@@ -271,8 +291,20 @@ class GRRHuntCollector(BaseCollector):
     return collection_name
 
 
-class GRRArtifactCollector(BaseCollector):
-  """Collect artifacts with GRR."""
+class GRRArtifactCollector(BaseArtifactCollector):
+  """Collect artifacts with GRR.
+
+  Attributes:
+    output_path: Path to where to store collected artifacts
+    grr_api: GRR HTTP API client
+    artifacts: List of GRR artifacts names
+    host: Target of GRR collection
+    use_tsk: Toggle for use_tsk flag on GRR flow
+    reason: Justification for GRR access
+    approvers: list of GRR approval recipients
+    client_id: GRR client ID
+    client: Dictionary with information about a GRR client
+  """
   _CHECK_APPROVAL_INTERVAL_SEC = 10
   _CHECK_FLOW_INTERVAL_SEC = 10
   _DEFAULT_ARTIFACTS_LINUX = [
@@ -458,10 +490,7 @@ class GRRArtifactCollector(BaseCollector):
 
     # Start the flow and get the flow ID
     flow = self._client.CreateFlow(name=name, args=args)
-    # TODO: Get GRR to add a proper UrnToFlowId method.
-    # flow_id = grr_utils.UrnStringToHuntId(flow.data.urn)
-    urn_components = flow.data.urn.split('/')
-    flow_id = urn_components[-1]
+    flow_id = flow.flow_id
     self.console_out.VerboseOut(u'Flow {0:s}: Scheduled'.format(flow_id))
 
     # Wait for the flow to finish
