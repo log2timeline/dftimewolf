@@ -78,7 +78,7 @@ def main(argv):
 
   # Send the result to stdout as space delimited paths.
   for path, name in collected_artifacts:
-    console_out.StdOut(u'{0:s} {1:s}'.format(path, name))
+    console_out.StdOut(u'{0:s} {1:s}'.format(name, path))
 
 
 if __name__ == '__main__':

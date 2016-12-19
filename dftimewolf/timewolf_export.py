@@ -60,11 +60,10 @@ def main(argv):
   if FLAGS.path:
     if not FLAGS.name:
       FLAGS.name = os.path.basename(FLAGS.path.rstrip(u'/'))
-    processed_artifacts = [(FLAGS.path, FLAGS.name)]
+    processed_artifacts = [(FLAGS.name, FLAGS.path)]
   else:
-    processed_artifacts = ((path, name)
-                           for path, name in timewolf_utils.ReadFromStdin())
-
+    processed_artifacts = ((name, path)
+                           for name, path in timewolf_utils.ReadFromStdin())
   if processed_artifacts:
     # Check if sketch exists and that the user have access to it, or exit.
     if FLAGS.sketch_id:
@@ -77,8 +76,8 @@ def main(argv):
       sketch_id = timesketch_api.CreateSketch(FLAGS.reason, FLAGS.reason)
 
     for path_name in processed_artifacts:
-      path = path_name[0]
-      name = path_name[1]
+      name = path_name[0]
+      path = path_name[1]
       new_timeline_id = timesketch_api.UploadTimeline(name, path)
       timesketch_api.AddTimelineToSketch(sketch_id, new_timeline_id)
 

@@ -123,8 +123,8 @@ def main(argv):
 
     # Export artifacts
     for path_name in processed_artifacts:
-      path = path_name[0]
-      name = path_name[1]
+      name = path_name[0]
+      path = path_name[1]
       new_timeline_id = timesketch_api.UploadTimeline(name, path)
       timesketch_api.AddTimelineToSketch(sketch_id, new_timeline_id)
 

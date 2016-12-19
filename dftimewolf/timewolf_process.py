@@ -50,10 +50,10 @@ def main(argv):
     # Collect the artifacts with the filesystem collector
     collector = collectors.FilesystemCollector(FLAGS.path, FLAGS.name,
                                                FLAGS.verbose)
-    collected_artifacts = [(collector.Collect(), collector.collection_name)]
+    collected_artifacts = collector.Collect()
   else:
     # Read from stdin, expects space delimited lines with path and name
-    collected_artifacts = ((path, name) for path, name in utils.ReadFromStdin())
+    collected_artifacts = ((name, path) for name, path in utils.ReadFromStdin())
 
   # Process the artifacts
   if FLAGS.timezone:
@@ -66,9 +66,9 @@ def main(argv):
                                                           FLAGS.verbose)
 
   # Send the result to stdout
-  for plaso_storage_file_path, timeline_name in processed_artifacts:
-    console_out.StdOut(u'{0:s} {1:s}'.format(plaso_storage_file_path,
-                                             timeline_name))
+  for timeline_name, plaso_storage_file_path in processed_artifacts:
+    console_out.StdOut(u'{0:s} {1:s}'.format(timeline_name,
+                                             plaso_storage_file_path))
 
 
 if __name__ == '__main__':
