@@ -73,7 +73,7 @@ class FilesystemCollector(BaseArtifactCollector):
       verbose (Optional[bool]): whether verbose output is desired.
     """
     super(FilesystemCollector, self).__init__(verbose=verbose)
-    self.cname = name
+    self.cname = name or os.path.basename(path)
     self.output_path = path
 
   def Collect(self):
@@ -401,7 +401,7 @@ class GRRArtifactCollector(BaseArtifactCollector):
         datetime.datetime.utcnow() - last_seen_datetime).total_seconds()
     last_seen_minutes = int(round(last_seen_seconds)) / 60
 
-    self.console_out.VerboseOut(u'Found active _client: {0:s}'.format(
+    self.console_out.VerboseOut(u'Found active client: {0:s}'.format(
         active_client_id))
     self.console_out.VerboseOut(
         u'Client last seen: {0:s} ({1:d} minutes ago)'.format(
