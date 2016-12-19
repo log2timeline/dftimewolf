@@ -8,8 +8,8 @@ Example use:
 $ timewolf_collect --hosts cpelton.greendale.edu --reason 12345
 $ timewolf_collect --paths /path/to/artifacts/ --reason 12345
 
-The output is space delimited string with path and collection name. E.g:
-/tmp/03498209842093840284/C.12349439849383/ C.12349439849383
+The output is space delimited string with collection name and path. E.g:
+C.12349439849383 /tmp/03498209842093840284/C.12349439849383/
 
 This can then be piped into other tools, e.g. timewolf_process
 $ timewolf_collect --path /path/to/artifacts/ --reason 12345 | timewolf_process
