@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Timewolf artifact collectors.
-
-Timewolf artifact collectors are responsible for collecting artifacts.
-"""
+"""Timewolf artifact collectors, responsible for collecting artifacts."""
 
 import datetime
 import os
