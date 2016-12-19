@@ -94,8 +94,8 @@ def main(argv):
         FLAGS.paths, FLAGS.artifacts, FLAGS.use_tsk, FLAGS.reason,
         FLAGS.approvers, FLAGS.verbose, FLAGS.grr_server_url, username,
         password)
-  except (ValueError, RuntimeError) as exception:
-    console_out.StdErr(exception, die=True)
+  except (ValueError, RuntimeError) as e:
+    console_out.StdErr(e, die=True)
 
   # Process artifacts
   if FLAGS.timezone:
