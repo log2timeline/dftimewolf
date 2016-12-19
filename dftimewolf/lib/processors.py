@@ -163,7 +163,7 @@ def ProcessArtifactsHelper(collected_artifacts, timezone, local_plaso, verbose):
         to the data to processed.
     timezone (str): Timezone name.
     local_plaso: Boolean indicating if to use the current system's plaso
-	install.
+        install.
     verbose (bool): whether verbose output is to be used.
 
   Returns:
