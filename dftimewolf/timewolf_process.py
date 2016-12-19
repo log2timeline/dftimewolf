@@ -8,7 +8,7 @@ Example use:
 $ timewolf_process --path /path/to/artifacts/
 
 You can also run it by sending path and name on stdin:
-echo "/path/to/artifacts/ timeline_name" | timewolf_process
+echo "timeline_name /path/to/artifacts/" | timewolf_process
 
 This is designed to work with another Timewolf tool named timewolf_collect:
 $ timewolf_collect --path path/to/artifacts/ --reason 123 | timewolf_process
