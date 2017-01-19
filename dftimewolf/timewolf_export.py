@@ -30,7 +30,8 @@ from dftimewolf.lib import timesketch_utils
 from dftimewolf.lib import utils as timewolf_utils
 
 FLAGS = gflags.FLAGS
-gflags.DEFINE_string(u'reason', u'default', u'Reason for requesting _client access')
+gflags.DEFINE_string(u'reason', u'default',
+                     u'Reason for requesting _client access')
 gflags.DEFINE_string(u'path', None, u'Path to Plaso storage file')
 gflags.DEFINE_string(u'name', None, u'Name the timeline')
 gflags.DEFINE_string(u'timesketch_server_url', u'http://localhost:5000',
