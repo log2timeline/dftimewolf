@@ -8,8 +8,8 @@ Example use:
 $ timewolf_collect --hosts cpelton.greendale.edu --reason 12345
 $ timewolf_collect --paths /path/to/artifacts/ --reason 12345
 
-The output is space delimited string with path and collection name. E.g:
-/tmp/03498209842093840284/C.12349439849383/ C.12349439849383
+The output is space delimited string with collection name and path. E.g:
+C.12349439849383 /tmp/03498209842093840284/C.12349439849383/
 
 This can then be piped into other tools, e.g. timewolf_process
 $ timewolf_collect --path /path/to/artifacts/ --reason 12345 | timewolf_process
@@ -31,7 +31,7 @@ gflags.DEFINE_string(u'hunt_id', None,
                      u'Existing hunt to download current result set from')
 gflags.DEFINE_list(u'paths', [],
                    u'One or more paths to artifacts on the filesystem')
-gflags.DEFINE_string(u'reason', None, u'Reason for requesting _client access')
+gflags.DEFINE_string(u'reason', None, u'Reason for requesting client access')
 gflags.DEFINE_string(u'grr_server_url', u'http://localhost:8000',
                      u'GRR server to use')
 gflags.DEFINE_string(u'artifacts', None,
@@ -39,7 +39,7 @@ gflags.DEFINE_string(u'artifacts', None,
 gflags.DEFINE_boolean(u'use_tsk', False, u'Use TSK for artifact collection')
 gflags.DEFINE_list(
     u'approvers', None,
-    u'Comma separated list of usernames to approve GRR _client access')
+    u'Comma separated list of usernames to approve GRR client access')
 gflags.DEFINE_boolean(u'verbose', False, u'Show extended output')
 gflags.DEFINE_string(u'username', None, u'GRR username')
 
@@ -77,7 +77,7 @@ def main(argv):
     console_out.StdErr(e, die=True)
 
   # Send the result to stdout as space delimited paths.
-  for path, name in collected_artifacts:
+  for name, path in collected_artifacts:
     console_out.StdOut(u'{0:s} {1:s}'.format(name, path))
 
 

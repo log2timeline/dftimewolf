@@ -9,8 +9,8 @@ Using flags:
 $ timewolf_export --path /path/to/storage/file.plaso --name timeline_name /
 --reason 123
 
-You can also run it by sending path and name on stdin:
-echo "/path/to/storage/file.plaso timeline_name" | timewolf_export --reason 123
+You can also run it by sending name and path on stdin:
+echo "timeline_name /path/to/storage/file.plaso" | timewolf_export --reason 123
 
 This is designed to work with another set of Timewolf tools named
 timewolf_collect and timewolf_process:
@@ -30,7 +30,8 @@ from dftimewolf.lib import timesketch_utils
 from dftimewolf.lib import utils as timewolf_utils
 
 FLAGS = gflags.FLAGS
-gflags.DEFINE_string(u'reason', None, u'Reason for requesting _client access')
+gflags.DEFINE_string(u'reason', u'default',
+                     u'Reason for requesting _client access')
 gflags.DEFINE_string(u'path', None, u'Path to Plaso storage file')
 gflags.DEFINE_string(u'name', None, u'Name the timeline')
 gflags.DEFINE_string(u'timesketch_server_url', u'http://localhost:5000',
@@ -65,7 +66,7 @@ def main(argv):
     processed_artifacts = ((name, path)
                            for name, path in timewolf_utils.ReadFromStdin())
   if processed_artifacts:
-    # Check if sketch exists and that the user have access to it, or exit.
+    # Check if sketch exists and that the user has access to it, or exit.
     if FLAGS.sketch_id:
       try:
         timesketch_api.GetSketch(FLAGS.sketch_id)
@@ -73,7 +74,9 @@ def main(argv):
       except ValueError as e:
         console_out.StdErr(e, die=True)
     else:
-      sketch_id = timesketch_api.CreateSketch(FLAGS.reason, FLAGS.reason)
+      sketch_name = FLAGS.reason
+      sketch_description = FLAGS.reason
+      sketch_id = timesketch_api.CreateSketch(sketch_name, sketch_description)
 
     for path_name in processed_artifacts:
       name = path_name[0]

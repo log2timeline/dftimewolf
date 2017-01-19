@@ -40,7 +40,8 @@ gflags.DEFINE_boolean(u'local_plaso', False,
                       u'Use the local plaso installation')
 gflags.DEFINE_list(u'paths', [],
                    u'One or more paths to files to process on the filesystem')
-gflags.DEFINE_string(u'reason', None, u'Reason for requesting client access')
+gflags.DEFINE_string(u'reason', u'default',
+                     u'Reason for requesting client access')
 gflags.DEFINE_string(u'grr_server_url', u'http://localhost:8000',
                      u'GRR server to use')
 gflags.DEFINE_string(u'timesketch_server_url', u'http://localhost:5000',
@@ -94,8 +95,8 @@ def main(argv):
         FLAGS.paths, FLAGS.artifacts, FLAGS.use_tsk, FLAGS.reason,
         FLAGS.approvers, FLAGS.verbose, FLAGS.grr_server_url, username,
         password)
-  except (ValueError, RuntimeError) as exception:
-    console_out.StdErr(exception, die=True)
+  except (ValueError, RuntimeError) as e:
+    console_out.StdErr(e, die=True)
 
   # Process artifacts
   if FLAGS.timezone:
@@ -117,8 +118,8 @@ def main(argv):
       except ValueError as e:
         console_out.StdErr(e, die=True)
     else:
-      sketch_name = FLAGS.reason or u'default'
-      sketch_description = FLAGS.reason or u'default'
+      sketch_name = FLAGS.reason
+      sketch_description = FLAGS.reason
       sketch_id = timesketch_api.CreateSketch(sketch_name, sketch_description)
 
     # Export artifacts
