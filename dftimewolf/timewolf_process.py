@@ -8,13 +8,13 @@ Example use:
 $ timewolf_process --path /path/to/artifacts/
 
 You can also run it by sending path and name on stdin:
-echo "timeline_name /path/to/artifacts/" | timewolf_process
+echo "<TIMELINE_NAME> /path/to/artifacts/" | timewolf_process
 
 This is designed to work with another Timewolf tool named timewolf_collect:
 $ timewolf_collect --path path/to/artifacts/ --reason 123 | timewolf_process
 
 The output is space delimited string with timeline name and path. E.g:
-timeline_name /path/to/timeline.plaso
+<TIMELINE_NAME> /path/to/timeline.plaso
 
 This can then be piped into other tools, e.g. timewolf_export:
 $ timewolf_process --path /path/to/artifacts/ | timewolf_export --reason 123

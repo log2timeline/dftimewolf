@@ -30,7 +30,7 @@ from dftimewolf.lib import timesketch_utils
 from dftimewolf.lib import utils as timewolf_utils
 
 FLAGS = gflags.FLAGS
-gflags.DEFINE_string(u'reason', None, u'Reason for requesting _client access')
+gflags.DEFINE_string(u'reason', u'default', u'Reason for requesting _client access')
 gflags.DEFINE_string(u'path', None, u'Path to Plaso storage file')
 gflags.DEFINE_string(u'name', None, u'Name the timeline')
 gflags.DEFINE_string(u'timesketch_server_url', u'http://localhost:5000',
@@ -73,8 +73,8 @@ def main(argv):
       except ValueError as e:
         console_out.StdErr(e, die=True)
     else:
-      sketch_name = FLAGS.reason or u'default'
-      sketch_description = FLAGS.reason or u'default'
+      sketch_name = FLAGS.reason
+      sketch_description = FLAGS.reason
       sketch_id = timesketch_api.CreateSketch(sketch_name, sketch_description)
 
     for path_name in processed_artifacts:
