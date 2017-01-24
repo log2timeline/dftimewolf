@@ -522,8 +522,8 @@ class GRRArtifactCollector(BaseArtifactCollector):
       args = flows_pb2.KeepAliveArgs()
       keepalive_flow = self._client.CreateFlow(name=name, args=args)
       keepalive_flow_id = keepalive_flow.flow_id
-      self.console_out.VerboseOut(
-        u'KeepAlive Flow {0:s}: Scheduled'.format(keepalive_flow_id))
+      self.console_out.VerboseOut(u'KeepAlive Flow {0:s}: Scheduled'.format(
+          keepalive_flow_id))
 
     # Download the files collected by the flow
     self.console_out.VerboseOut(u'Flow {0:s}: Downloading artifacts'.format(
