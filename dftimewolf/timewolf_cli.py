@@ -44,7 +44,7 @@ gflags.DEFINE_string(u'reason', u'default',
                      u'Reason for requesting client access')
 gflags.DEFINE_string(u'grr_server_url', u'http://localhost:8000',
                      u'GRR server to use')
-gflags.DEFINE_boolean(u'keepalive', False, u'Schedule an extra KeepAlive flow')
+gflags.DEFINE_boolean(u'keepalive', False, u'Schedule a KeepAlive flow')
 gflags.DEFINE_string(u'timesketch_server_url', u'http://localhost:5000',
                      u'Timesketch server to use')
 gflags.DEFINE_string(u'artifacts', None,

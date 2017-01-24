@@ -347,7 +347,7 @@ class GRRArtifactCollector(BaseArtifactCollector):
       use_tsk (Optional[bool]): toggle for use_tsk flag on GRR flow
       approvers (Optional[str]): comma-separated list of GRR approval recipients
       verbose (Optional[bool]): toggle for verbose output
-      keepalive (Optional [bool]): toggle for scheduling an extra KeepAlive flow
+      keepalive (Optional [bool]): toggle for scheduling a KeepAlive flow
     """
     super(GRRArtifactCollector, self).__init__(verbose=verbose)
     self.output_path = tempfile.mkdtemp()
@@ -522,8 +522,8 @@ class GRRArtifactCollector(BaseArtifactCollector):
       args = flows_pb2.KeepAliveArgs()
       keepalive_flow = self._client.CreateFlow(name=name, args=args)
       keepalive_flow_id = keepalive_flow.flow_id
-      self.console_out.VerboseOut(u'KeepAlive Flow {0:s}: Scheduled'.format(
-          keepalive_flow_id))
+      self.console_out.VerboseOut(
+        u'KeepAlive Flow {0:s}: Scheduled'.format(keepalive_flow_id))
 
     # Download the files collected by the flow
     self.console_out.VerboseOut(u'Flow {0:s}: Downloading artifacts'.format(
@@ -594,7 +594,7 @@ def CollectArtifactsHelper(host_list, new_hunt, hunt_status, hunt_id, path_list,
       grr_server_url (str): GRR server url
       username (str): GRR server username
       password (str): GRR server password
-      keepalive (Optional[bool]): toggle for scheduling an extra KeepAlive flow
+      keepalive (Optional[bool]): toggle for scheduling a KeepAlive flow
 
   Returns:
       list(tuple): containing:
