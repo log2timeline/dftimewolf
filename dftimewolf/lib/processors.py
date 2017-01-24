@@ -61,7 +61,7 @@ class PlasoArtifactProcessor(BaseArtifactProcessor):
     self.results = None
 
   def run(self):
-    """Starts a thread"""
+    """Starts a thread."""
     self.Process()
 
   def Process(self):

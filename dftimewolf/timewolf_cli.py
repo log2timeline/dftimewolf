@@ -44,6 +44,7 @@ gflags.DEFINE_string(u'reason', u'default',
                      u'Reason for requesting client access')
 gflags.DEFINE_string(u'grr_server_url', u'http://localhost:8000',
                      u'GRR server to use')
+gflags.DEFINE_boolean(u'keepalive', False, u'Schedule a KeepAlive flow')
 gflags.DEFINE_string(u'timesketch_server_url', u'http://localhost:5000',
                      u'Timesketch server to use')
 gflags.DEFINE_string(u'artifacts', None,
@@ -94,7 +95,7 @@ def main(argv):
         FLAGS.hosts, FLAGS.new_hunt, FLAGS.hunt_status, FLAGS.hunt_id,
         FLAGS.paths, FLAGS.artifacts, FLAGS.use_tsk, FLAGS.reason,
         FLAGS.approvers, FLAGS.verbose, FLAGS.grr_server_url, username,
-        password)
+        password, FLAGS.keepalive)
   except (ValueError, RuntimeError) as e:
     console_out.StdErr(e, die=True)
 

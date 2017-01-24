@@ -122,7 +122,7 @@ class GRRHuntCollector(BaseArtifactCollector):
                password,
                approvers=None,
                verbose=False):
-    """ Initializes a GRR hunt results collector.
+    """Initializes a GRR hunt results collector.
 
     Args:
       hunt_id (str): ID of GRR hunt to retrieve artifacts from
@@ -318,10 +318,10 @@ class GRRArtifactCollector(BaseArtifactCollector):
   ]
 
   _DEFAULT_ARTIFACTS_WINDOWS = [
-      u'AppCompatCache', u'EventLogs', u'TerminalServicesEventLogEvtx',
-      u'PrefetchFiles', u'SuperFetchFiles', u'WindowsSearchDatabase',
-      u'ScheduledTasks', u'WindowsSystemRegistryFiles',
-      u'WindowsUserRegistryFiles'
+      u'WindowsAppCompatCache', u'WindowsEventLogs', u'WindowsPrefetchFiles',
+      u'WindowsScheduledTasks', u'WindowsSearchDatabase',
+      u'WindowsSuperFetchFiles', u'WindowsSystemRegistryFiles',
+      u'WindowsUserRegistryFiles', u'WindowsXMLEventLogTerminalServices'
   ]
 
   def __init__(self,
@@ -333,7 +333,8 @@ class GRRArtifactCollector(BaseArtifactCollector):
                artifacts=None,
                use_tsk=False,
                approvers=None,
-               verbose=False):
+               verbose=False,
+               keepalive=False):
     """Initializes a GRR artifact collector.
 
     Args:
@@ -346,6 +347,7 @@ class GRRArtifactCollector(BaseArtifactCollector):
       use_tsk (Optional[bool]): toggle for use_tsk flag on GRR flow
       approvers (Optional[str]): comma-separated list of GRR approval recipients
       verbose (Optional[bool]): toggle for verbose output
+      keepalive (Optional [bool]): toggle for scheduling a KeepAlive flow
     """
     super(GRRArtifactCollector, self).__init__(verbose=verbose)
     self.output_path = tempfile.mkdtemp()
@@ -358,6 +360,7 @@ class GRRArtifactCollector(BaseArtifactCollector):
     self.approvers = approvers
     self._client_id = self._GetClientId(hostname)
     self._client = None
+    self.keepalive = keepalive
 
   def _GetClientId(self, hostname):
     """Search GRR by hostname and get the latest active client.
@@ -367,6 +370,9 @@ class GRRArtifactCollector(BaseArtifactCollector):
 
     Returns:
       str: ID of most recently active client.
+
+    Raises:
+      RuntimeError: if no client ID found for hostname
     """
     client_id_pattern = re.compile(r'^c\.[0-9a-f]{16}$', re.IGNORECASE)
     if client_id_pattern.match(hostname):
@@ -457,6 +463,10 @@ class GRRArtifactCollector(BaseArtifactCollector):
           str: human-readable description of the source of the collection. For
               example, the name of the source host.
           str: path to the collected data.
+
+    Raises:
+      RuntimeError: if no artifacts specified nor resolved by platform, or if
+          flow error encountered
     """
     # Create a list of artifacts to collect.
     artifact_registry = {
@@ -505,6 +515,15 @@ class GRRArtifactCollector(BaseArtifactCollector):
             flow_id))
         break
       time.sleep(self._CHECK_FLOW_INTERVAL_SEC)
+
+    # TODO(someguyiknow): nest under parent flow
+    if self.keepalive:
+      name = u'KeepAlive'
+      args = flows_pb2.KeepAliveArgs()
+      keepalive_flow = self._client.CreateFlow(name=name, args=args)
+      keepalive_flow_id = keepalive_flow.flow_id
+      self.console_out.VerboseOut(u'KeepAlive Flow {0:s}: Scheduled'.format(
+          keepalive_flow_id))
 
     # Download the files collected by the flow
     self.console_out.VerboseOut(u'Flow {0:s}: Downloading artifacts'.format(
@@ -558,7 +577,7 @@ class GRRArtifactCollector(BaseArtifactCollector):
 
 def CollectArtifactsHelper(host_list, new_hunt, hunt_status, hunt_id, path_list,
                            artifact_list, use_tsk, reason, approvers, verbose,
-                           grr_server_url, username, password):
+                           grr_server_url, username, password, keepalive):
   """Helper function to collect artifacts based on command line flags passed.
 
   Args:
@@ -575,6 +594,7 @@ def CollectArtifactsHelper(host_list, new_hunt, hunt_status, hunt_id, path_list,
       grr_server_url (str): GRR server url
       username (str): GRR server username
       password (str): GRR server password
+      keepalive (Optional[bool]): toggle for scheduling a KeepAlive flow
 
   Returns:
       list(tuple): containing:
@@ -595,7 +615,8 @@ def CollectArtifactsHelper(host_list, new_hunt, hunt_status, hunt_id, path_list,
         artifact_list,
         use_tsk,
         approvers,
-        verbose=verbose)
+        verbose=verbose,
+        keepalive=keepalive)
     collector.start()
     collectors.append(collector)
 
