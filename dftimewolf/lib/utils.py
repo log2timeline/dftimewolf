@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Common utilities for Timewolf."""
 
+from datetime import datetime
 import getpass
 import netrc
 import os
@@ -24,7 +25,7 @@ class TimewolfConsoleOutput(object):
     self._verbose = verbose
 
   def _FormatMessage(self, message):
-    """Format message with script name and sender name.
+    """Format message with timestamp, script name and sender name.
 
     Args:
       message: Message to be formatted
@@ -32,8 +33,9 @@ class TimewolfConsoleOutput(object):
       String containing formatted message
     """
     script_name = os.path.basename(sys.argv[0])
-    formatted_message = u'{0:s}: {1:s} - {2:s}\n'.format(script_name,
-                                                         self._sender, message)
+    timestamp = datetime.now().isoformat()
+    formatted_message = u'[{0:s}] {1:s}: {2:s} - {3:s}\n'.format(
+        timestamp, script_name, self._sender, message)
     return formatted_message
 
   def StdOut(self, message):
