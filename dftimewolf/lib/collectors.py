@@ -317,15 +317,12 @@ class GRRArtifactCollector(BaseArtifactCollector):
       u'OSXQuarantineEvents'
   ]
 
-  _DEFAULT_ARTIFACTS_WINDOWS = [u'WindowsAppCompatCache',
-                                u'WindowsEventLogs',
-                                u'WindowsPrefetchFiles',
-                                u'WindowsScheduledTasks',
-                                u'WindowsSearchDatabase',
-                                u'WindowsSuperFetchFiles',
-                                u'WindowsSystemRegistryFiles',
-                                u'WindowsUserRegistryFiles',
-                                u'WindowsXMLEventLogTerminalServices']
+  _DEFAULT_ARTIFACTS_WINDOWS = [
+      u'WindowsAppCompatCache', u'WindowsEventLogs', u'WindowsPrefetchFiles',
+      u'WindowsScheduledTasks', u'WindowsSearchDatabase',
+      u'WindowsSuperFetchFiles', u'WindowsSystemRegistryFiles',
+      u'WindowsUserRegistryFiles', u'WindowsXMLEventLogTerminalServices'
+  ]
 
   def __init__(self,
                hostname,

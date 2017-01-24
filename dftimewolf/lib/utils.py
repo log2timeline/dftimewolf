@@ -34,8 +34,10 @@ class TimewolfConsoleOutput(object):
     """
     script_name = os.path.basename(sys.argv[0])
     timestamp = datetime.now().isoformat()
-    formatted_message = u'[{0:s}] {1:s}: {2:s} - {3:s}\n'.format(
-        timestamp, script_name, self._sender, message)
+    formatted_message = u'[{0:s}] {1:s}: {2:s} - {3:s}\n'.format(timestamp,
+                                                                 script_name,
+                                                                 self._sender,
+                                                                 message)
     return formatted_message
 
   def StdOut(self, message):
