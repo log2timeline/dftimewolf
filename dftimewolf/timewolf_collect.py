@@ -23,20 +23,20 @@ from dftimewolf.lib import collectors
 from dftimewolf.lib import utils as timewolf_utils
 
 FLAGS = gflags.FLAGS
-gflags.DEFINE_list(u'hosts', [],
-                   u'One or more hostnames to collect artifacts from with GRR')
+gflags.DEFINE_list(
+    u'hosts', [], u'One or more hostnames to collect artifacts from with GRR')
 gflags.DEFINE_boolean(u'new_hunt', False, u'Start a new GRR hunt')
 gflags.DEFINE_boolean(u'hunt_status', False, u'Get status of ongoing hunt')
-gflags.DEFINE_string(u'hunt_id', None,
-                     u'Existing hunt to download current result set from')
-gflags.DEFINE_list(u'paths', [],
-                   u'One or more paths to artifacts on the filesystem')
+gflags.DEFINE_string(
+    u'hunt_id', None, u'Existing hunt to download current result set from')
+gflags.DEFINE_list(
+    u'paths', [], u'One or more paths to artifacts on the filesystem')
 gflags.DEFINE_string(u'reason', None, u'Reason for requesting client access')
-gflags.DEFINE_string(u'grr_server_url', u'http://localhost:8000',
-                     u'GRR server to use')
+gflags.DEFINE_string(
+    u'grr_server_url', u'http://localhost:8000', u'GRR server to use')
 gflags.DEFINE_boolean(u'keepalive', False, u'Schedule a KeepAlive flow')
-gflags.DEFINE_string(u'artifacts', None,
-                     u'Comma separated list of GRR artifacts to fetch')
+gflags.DEFINE_string(
+    u'artifacts', None, u'Comma separated list of GRR artifacts to fetch')
 gflags.DEFINE_boolean(u'use_tsk', False, u'Use TSK for artifact collection')
 gflags.DEFINE_list(
     u'approvers', None,
