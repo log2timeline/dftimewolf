@@ -27,7 +27,7 @@ setup(
         'Programming Language :: Python',
     ],
     entry_points={
-        'console_scripts': ['timeflow=timeflow.cli.timeflow_recipes:test']
+        'console_scripts': ['timeflow=timeflow.cli.timeflow_recipes:main']
     },
     data_files=[('timeflow', ['timeflow/timeflow.json'])],
     include_package_data=True,
