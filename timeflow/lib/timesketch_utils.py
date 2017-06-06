@@ -2,8 +2,6 @@
 """API Client for Timesketch."""
 from bs4 import BeautifulSoup
 import requests
-from timeflow.config import TS_PASSWORD
-from timeflow.config import TS_USERNAME
 
 
 class TimesketchApiClient(object):
@@ -16,7 +14,7 @@ class TimesketchApiClient(object):
     session (requests.Session): HTTP session for calls to Timesketch
   """
 
-  def __init__(self, host, username=TS_USERNAME, password=TS_PASSWORD):
+  def __init__(self, host, username, password):
     """Initialize the Timesketch API client object.
 
     Args:

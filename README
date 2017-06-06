@@ -1,3 +1,12 @@
 ## Timeflow
 
 A framework for orchestrating forensic collection, processing and data export.
+
+### Configuration
+
+Timeflow has a minimal configuration file. Timeflow looks in the current
+directory, your home directory, or a directory pointed to by the
+`TIMEFLOW_CONFIG` environment variable and tries to load a JSON object from
+either `timeflow.json` or `.timeflowrc`.
+
+See `/timeflow/timeflow.json` for an example configuration file.

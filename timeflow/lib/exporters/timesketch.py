@@ -66,11 +66,19 @@ class TimesketchExporter(BaseExporter):
 
   @staticmethod
   def launch_exporter(
-      timesketch_endpoint, incident_id, sketch_id, verbose, processor_output):
+      ts_endpoint,
+      ts_username,
+      ts_password,
+      incident_id,
+      sketch_id,
+      verbose,
+      processor_output):
     """Threads one or more TimesketchExporter objects.
 
     Args:
-      timesketch_endpoint: Timesketch host
+      ts_endpoint: URL of destination Timesketch server
+      ts_username: Timesketch username
+      ts_password: Timesketch password
       incident_id: Incident ID or description associated with the investigation
       sketch_id: If provided, append the timelines to a given sketch
       verbose: Whether verbose output is desired.
@@ -80,7 +88,11 @@ class TimesketchExporter(BaseExporter):
       A list of TimesketchExporter objects that can be join()ed from the caller.
     """
 
-    timesketch_api = timesketch_utils.TimesketchApiClient(timesketch_endpoint)
+    print 'Using timesketch endpoint: {0:s}'.format(ts_endpoint)
+
+    timesketch_api = timesketch_utils.TimesketchApiClient(ts_endpoint,
+                                                          ts_username,
+                                                          ts_password)
     exporter = TimesketchExporter(
         timesketch_api, incident_id, sketch_id, verbose, processor_output)
     exporter.start()

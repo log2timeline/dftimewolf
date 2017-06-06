@@ -6,7 +6,7 @@
 """
 
 __author__ = u'tomchop@google.com (Thomas Chopitea)'
-from timeflow.config import TS_HOST
+from timeflow.config import get_config
 
 RECIPE = {
     'name': 'local_plaso',
@@ -33,7 +33,9 @@ RECIPE = {
         {
             'name': 'timesketch',
             'args': {
-                'timesketch_endpoint': TS_HOST,
+                'ts_endpoint': get_config()['timesketch']['endpoint'],
+                'ts_username': get_config()['timesketch']['username'],
+                'ts_password': get_config()['timesketch']['password'],
                 'incident_id': '$incident_id',
                 'sketch_id': None,
                 'verbose': True,
