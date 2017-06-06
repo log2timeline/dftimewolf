@@ -28,8 +28,8 @@ from dftimewolf.lib import processors
 from dftimewolf.lib import utils
 
 FLAGS = gflags.FLAGS
-gflags.DEFINE_boolean(u'local_plaso', False,
-                      u'Use the local plaso installation')
+gflags.DEFINE_boolean(
+    u'local_plaso', False, u'Use the local plaso installation')
 gflags.DEFINE_string(u'path', None, u'Path to artifacts to process')
 gflags.DEFINE_string(u'name', None, u'Name the timeline')
 gflags.DEFINE_string(u'timezone', None, u'Timezone to use for Plaso processing')
@@ -48,8 +48,8 @@ def main(argv):
 
   if FLAGS.path:
     # Collect the artifacts with the filesystem collector
-    collector = collectors.FilesystemCollector(FLAGS.path, FLAGS.name,
-                                               FLAGS.verbose)
+    collector = collectors.FilesystemCollector(
+        FLAGS.path, FLAGS.name, FLAGS.verbose)
     collected_artifacts = collector.Collect()
   else:
     # Read from stdin, expects space delimited lines with path and name
@@ -60,15 +60,13 @@ def main(argv):
     if not utils.IsValidTimezone(FLAGS.timezone):
       console_out.StdErr(u'Unknown timezone', die=True)
 
-  processed_artifacts = processors.ProcessArtifactsHelper(collected_artifacts,
-                                                          FLAGS.timezone,
-                                                          FLAGS.local_plaso,
-                                                          FLAGS.verbose)
+  processed_artifacts = processors.ProcessArtifactsHelper(
+      collected_artifacts, FLAGS.timezone, FLAGS.local_plaso, FLAGS.verbose)
 
   # Send the result to stdout
   for timeline_name, plaso_storage_file_path in processed_artifacts:
-    console_out.StdOut(u'{0:s} {1:s}'.format(timeline_name,
-                                             plaso_storage_file_path))
+    console_out.StdOut(
+        u'{0:s} {1:s}'.format(timeline_name, plaso_storage_file_path))
 
 
 if __name__ == '__main__':

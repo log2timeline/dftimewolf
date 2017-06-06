@@ -30,32 +30,33 @@ from dftimewolf.lib import timesketch_utils
 from dftimewolf.lib import utils as timewolf_utils
 
 FLAGS = gflags.FLAGS
-gflags.DEFINE_list(u'hosts', [],
-                   u'One or more hostnames to collect artifacts from with GRR')
+gflags.DEFINE_list(
+    u'hosts', [], u'One or more hostnames to collect artifacts from with GRR')
 gflags.DEFINE_boolean(u'new_hunt', False, u'Start a new GRR hunt')
 gflags.DEFINE_boolean(u'hunt_status', False, u'Get status of ongoing hunt')
-gflags.DEFINE_string(u'hunt_id', None,
-                     u'Existing hunt to download current result set from')
-gflags.DEFINE_boolean(u'local_plaso', False,
-                      u'Use the local plaso installation')
-gflags.DEFINE_list(u'paths', [],
-                   u'One or more paths to files to process on the filesystem')
-gflags.DEFINE_string(u'reason', u'default',
-                     u'Reason for requesting client access')
-gflags.DEFINE_string(u'grr_server_url', u'http://localhost:8000',
-                     u'GRR server to use')
+gflags.DEFINE_string(
+    u'hunt_id', None, u'Existing hunt to download current result set from')
+gflags.DEFINE_boolean(
+    u'local_plaso', False, u'Use the local plaso installation')
+gflags.DEFINE_list(
+    u'paths', [], u'One or more paths to files to process on the filesystem')
+gflags.DEFINE_string(
+    u'reason', u'default', u'Reason for requesting client access')
+gflags.DEFINE_string(
+    u'grr_server_url', u'http://localhost:8000', u'GRR server to use')
 gflags.DEFINE_boolean(u'keepalive', False, u'Schedule a KeepAlive flow')
-gflags.DEFINE_string(u'timesketch_server_url', u'http://localhost:5000',
-                     u'Timesketch server to use')
-gflags.DEFINE_string(u'artifacts', None,
-                     u'Comma separated list of GRR artifacts to fetch')
+gflags.DEFINE_string(
+    u'timesketch_server_url', u'http://localhost:5000',
+    u'Timesketch server to use')
+gflags.DEFINE_string(
+    u'artifacts', None, u'Comma separated list of GRR artifacts to fetch')
 gflags.DEFINE_boolean(u'use_tsk', False, u'Use TSK for artifact collection')
 gflags.DEFINE_string(u'timezone', None, u'Timezone to use for Plaso processing')
 gflags.DEFINE_list(
     u'approvers', None,
     u'Comma separated list of usernames to approve GRR client access')
-gflags.DEFINE_boolean(u'open_in_browser', False,
-                      u'Open the resulting sketch in a browser window')
+gflags.DEFINE_boolean(
+    u'open_in_browser', False, u'Open the resulting sketch in a browser window')
 gflags.DEFINE_integer(u'sketch_id', None, u'Timesketch sketch to append to')
 gflags.DEFINE_boolean(u'verbose', False, u'Show extended output')
 gflags.DEFINE_string(u'username', None, u'GRR/Timesketch username')
@@ -105,10 +106,8 @@ def main(argv):
       console_out.StdErr(
           u'Unknown timezone: {0:s}'.format(FLAGS.timezone), die=True)
 
-  processed_artifacts = processors.ProcessArtifactsHelper(collected_artifacts,
-                                                          FLAGS.timezone,
-                                                          FLAGS.local_plaso,
-                                                          FLAGS.verbose)
+  processed_artifacts = processors.ProcessArtifactsHelper(
+      collected_artifacts, FLAGS.timezone, FLAGS.local_plaso, FLAGS.verbose)
 
   if processed_artifacts:
     # Check if sketch exists and that the user has access to it, or exit.
