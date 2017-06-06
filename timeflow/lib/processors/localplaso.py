@@ -98,3 +98,5 @@ class LocalPlasoProcessor(BaseArtifactProcessor):
   def output(self):
     """Dynamically generate plugin processor output."""
     return [(self.name, self.plaso_storage_file_path)]
+
+MODCLASS = LocalPlasoProcessor

@@ -37,31 +37,12 @@ __author__ = u'tomchop@google.com (Thomas Chopitea)'
 import argparse
 import re
 
-from timeflow.cli.recipes import local_plaso
-
-# It's better to load these in the client since we want to keep recipes as
-# descriptive as possible.
+from timeflow.internals import import_modules
+from timeflow.internals import import_recipes
 from timeflow.lib import utils as timeflow_utils
-from timeflow.lib.collectors import filesystem
-from timeflow.lib.exporters import timesketch
-from timeflow.lib.processors import localplaso
 
-
-COLLECTORS = {
-    'filesystem': filesystem.FilesystemCollector,
-}
-
-PROCESSORS = {
-    'localplaso': localplaso.LocalPlasoProcessor,
-}
-
-EXPORTERS = {
-    'timesketch': timesketch.TimesketchExporter
-}
-
-RECIPES = {
-    'local_plaso': local_plaso,
-}
+MODULES = import_modules()
+RECIPES = import_recipes()
 
 
 def import_args_from_cli(elt, args):
@@ -125,7 +106,7 @@ def main():
   collector_objs = []
   for collector in recipe[u'collectors']:
     new_args = import_args_from_cli(collector[u'args'], args)
-    collector_cls = COLLECTORS[collector[u'name']]
+    collector_cls = MODULES['collectors'][collector[u'name']]
     collector_objs.extend(collector_cls.launch_collector(**new_args))
 
   # Wait for collectors to finish and collect output
@@ -144,7 +125,7 @@ def main():
   for processor in recipe[u'processors']:
     new_args = import_args_from_cli(processor[u'args'], args)
     new_args[u'collector_output'] = collector_output
-    processor_class = PROCESSORS[processor[u'name']]
+    processor_class = MODULES['processors'][processor[u'name']]
     processor_objs.extend(processor_class.launch_processor(**new_args))
 
   # Wait for processors to finish and collect output
@@ -163,7 +144,7 @@ def main():
   for exporter in recipe[u'exporters']:
     new_args = import_args_from_cli(exporter[u'args'], args)
     new_args[u'processor_output'] = processor_output
-    exporter_class = EXPORTERS[exporter[u'name']]
+    exporter_class = MODULES['exporters'][exporter[u'name']]
     exporter_objs.extend(exporter_class.launch_exporter(**new_args))
 
   # Wait for exporters to finish

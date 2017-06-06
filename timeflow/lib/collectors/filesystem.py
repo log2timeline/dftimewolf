@@ -75,3 +75,6 @@ class FilesystemCollector(BaseCollector):
       collector.start()
       collectors.append(collector)
     return collectors
+
+
+MODCLASS = FilesystemCollector

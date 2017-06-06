@@ -39,20 +39,6 @@ class BaseCollector(threading.Thread):
     """
     raise NotImplementedError
 
-  @staticmethod
-  def launch_collector():
-    """Launches one or more Collectors asynchronously.
-
-    Launches collection based on command-line flags. It will create as
-    many collector instances as needed and start them asynchronously
-    (threading the collect() method). It will not wait for collect() to finish
-    to return.
-
-    Returns:
-      list of started Collector objects (threads)
-    """
-    raise NotImplementedError
-
   @property
   def collection_name(self):
     """Name for the collection of artifacts."""

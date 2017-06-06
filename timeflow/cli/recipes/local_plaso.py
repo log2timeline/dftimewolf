@@ -6,7 +6,7 @@
 """
 
 __author__ = u'tomchop@google.com (Thomas Chopitea)'
-from timeflow.config import get_config
+from timeflow.internals import get_config
 
 RECIPE = {
     'name': 'local_plaso',

@@ -97,3 +97,5 @@ class TimesketchExporter(BaseExporter):
         timesketch_api, incident_id, sketch_id, verbose, processor_output)
     exporter.start()
     return [exporter]
+
+MODCLASS = TimesketchExporter
