@@ -1,4 +1,6 @@
 {
+    "recipe_dirs" : [],
+    "module_dirs" : [],
     "timesketch": {
         "username": "username",
         "password": "password",

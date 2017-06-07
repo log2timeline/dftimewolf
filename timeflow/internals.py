@@ -98,7 +98,11 @@ def get_config():
               return _CONFIG
           except IOError:
             pass
-    print 'WARNNING: No .timeflowrc file found. See README for details'
+          except KeyError as e:
+            print('ERROR: configuration file {0:s} '
+                  'is missing a {1:s} key:'.format(filename, e))
+
+    print 'ERROR: No valid .timeflowrc file found. See README for details.'
     exit(-1)
   else:
     return _CONFIG
