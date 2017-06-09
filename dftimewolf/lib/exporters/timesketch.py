@@ -4,8 +4,8 @@ __author__ = u'jbn@google.com (Johan Berggren)'
 
 import syslog
 
-from timeflow.lib import timesketch_utils
-from timeflow.lib.exporters.exporters import BaseExporter
+from dftimewolf.lib import timesketch_utils
+from dftimewolf.lib.exporters.exporters import BaseExporter
 
 
 class TimesketchExporter(BaseExporter):

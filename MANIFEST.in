@@ -1,2 +1,2 @@
-include timeflow/timeflow.json
+include dftimewolf/dftimewolf.json
 include README

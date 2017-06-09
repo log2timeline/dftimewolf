@@ -1,10 +1,10 @@
-"""Timeflow artifact processors, responsible for processing artifacts."""
+"""DFTimewolf artifact processors, responsible for processing artifacts."""
 
 __author__ = u'jbn@google.com (Johan Berggren)'
 
 import threading
 
-from timeflow.lib import utils
+from dftimewolf.lib import utils
 
 
 class BaseArtifactProcessor(threading.Thread):
@@ -12,7 +12,7 @@ class BaseArtifactProcessor(threading.Thread):
 
   def __init__(self, verbose):
     super(BaseArtifactProcessor, self).__init__()
-    self.console_out = utils.TimeflowConsoleOutput(
+    self.console_out = utils.DFTimewolfConsoleOutput(
         sender=self.__class__.__name__, verbose=verbose)
 
   def run(self):

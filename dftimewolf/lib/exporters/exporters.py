@@ -1,10 +1,10 @@
-"""Timeflow exporters, responsible for exporting processing results."""
+"""DFTimewolf exporters, responsible for exporting processing results."""
 
 __author__ = u'jbn@google.com (Johan Berggren)'
 
 import threading
 
-from timeflow.lib import utils
+from dftimewolf.lib import utils
 
 
 class BaseExporter(threading.Thread):
@@ -12,7 +12,7 @@ class BaseExporter(threading.Thread):
 
   def __init__(self, verbose):
     super(BaseExporter, self).__init__()
-    self.console_out = utils.TimeflowConsoleOutput(
+    self.console_out = utils.DFTimewolfConsoleOutput(
         sender=self.__class__.__name__, verbose=verbose)
 
   def run(self):

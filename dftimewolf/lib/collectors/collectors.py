@@ -1,10 +1,10 @@
-"""Timeflow artifact collectors, responsible for collecting artifacts."""
+"""DFTimewolf artifact collectors, responsible for collecting artifacts."""
 
 __author__ = u'jbn@google.com (Johan Berggren)'
 
 import threading
 
-from timeflow.lib import utils
+from dftimewolf.lib import utils
 
 
 class BaseCollector(threading.Thread):
@@ -21,7 +21,7 @@ class BaseCollector(threading.Thread):
       verbose: (Optional[bool]) whether verbose output is desired.
     """
     super(BaseCollector, self).__init__()
-    self.console_out = utils.TimeflowConsoleOutput(
+    self.console_out = utils.DFTimewolfConsoleOutput(
         sender=self.__class__.__name__, verbose=verbose)
     self.results = []
 

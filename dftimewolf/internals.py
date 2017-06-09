@@ -8,12 +8,12 @@ import pkgutil
 LOCATIONS = [
     os.curdir,
     os.path.expanduser('~'),
-    os.environ.get('TIMEFLOW_CONFIG'),
+    os.environ.get('DFTIMEWOLF_CONFIG'),
 ]
 
 FILENAMES = [
-    'timeflow.json',
-    '.timeflowrc',
+    'dftimewolf.json',
+    '.dftimewolfrc',
 ]
 
 _CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -30,7 +30,7 @@ _CONFIG = None
 
 
 def import_modules():
-  """Imports Timeflow's modules from specified directories.
+  """Imports DFTimewolf's modules from specified directories.
 
   Recursively load all modules containing a MODCLASS attribute and add them
   to the module_dict dictionary.
@@ -44,7 +44,7 @@ def import_modules():
   module_dict = {'collectors': {}, 'processors': {}, 'exporters': {}}
   for directory in module_directories:
     for subdir in module_dict:
-      package = 'timeflow.lib.{}'.format(subdir)
+      package = 'dftimewolf.lib.{}'.format(subdir)
       d = os.path.join(directory, subdir)
       for _, name, _ in pkgutil.walk_packages([d], prefix='.'):
         module = importlib.import_module(name, package=package)
@@ -57,7 +57,7 @@ def import_modules():
 
 
 def import_recipes():
-  """Imports Timeflow recipes from specified directories.
+  """Imports DFTimewolf recipes from specified directories.
 
   Load all modules from a given recipe directory.
 
@@ -68,16 +68,16 @@ def import_recipes():
   recipe_directories = get_config()['recipe_dirs']
   recipe_dict = {}
   for _, name, _ in pkgutil.walk_packages(recipe_directories, prefix='.'):
-    module = importlib.import_module(name, package='timeflow.cli.recipes')
+    module = importlib.import_module(name, package='dftimewolf.cli.recipes')
     recipe_dict[name[1:]] = module
   return recipe_dict
 
 
 def get_config():
-  """Searches several locations for a timeflow_config.json file.
+  """Searches several locations for a dftimewolf_config.json file.
 
-  Searches for a timeflow_config.json file in the current directory, user's home
-  directory, or an TIMEFLOW_CONFIG environment variable. If found file is
+  Searches for a dftimewolf_config.json file in the current directory, user's home
+  directory, or an DFTIMEWOLF_CONFIG environment variable. If found file is
   decoded as a JSON object.
 
   Returns:
@@ -102,7 +102,7 @@ def get_config():
             print('ERROR: configuration file {0:s} '
                   'is missing a {1:s} key:'.format(filename, e))
 
-    print 'ERROR: No valid .timeflowrc file found. See README for details.'
+    print 'ERROR: No valid .dftimewolfrc file found. See README for details.'
     exit(-1)
   else:
     return _CONFIG

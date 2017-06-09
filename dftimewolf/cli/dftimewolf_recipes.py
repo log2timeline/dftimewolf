@@ -1,22 +1,22 @@
-"""Timeflow CLI tool to collect artifacts.
+"""DFTimewolf CLI tool to collect artifacts.
 
-timeflow_recipes aims to replace timeflow_cli. It uses recipes defined in
-timeflow/cli/recipes to orchestrate collectors, processors and exporters.
+dftimewolf_recipes aims to replace dftimewolf_cli. It uses recipes defined in
+dftimewolf/cli/recipes to orchestrate collectors, processors and exporters.
 
 
 Usage:
 
-$ timeflow_recipes <recipe_name> <recipe_parameters>
+$ dftimewolf_recipes <recipe_name> <recipe_parameters>
 
 
 You can get help on recipe parameters using:
 
-$ timeflow_recipes <recipe_name> --help
+$ dftimewolf_recipes <recipe_name> --help
 
 
 Usage example (for "corp_hosts" recipe):
 
-$ timeflow_recipes local_plaso tomchop.yourorg.com testing
+$ dftimewolf_recipes local_plaso tomchop.yourorg.com testing
 Collectors:
   filesystem
 <collector verbose output>
@@ -37,9 +37,9 @@ __author__ = u'tomchop@google.com (Thomas Chopitea)'
 import argparse
 import re
 
-from timeflow.internals import import_modules
-from timeflow.internals import import_recipes
-from timeflow.lib import utils as timeflow_utils
+from dftimewolf.internals import import_modules
+from dftimewolf.internals import import_recipes
+from dftimewolf.lib import utils as dftimewolf_utils
 
 MODULES = import_modules()
 RECIPES = import_recipes()
@@ -53,7 +53,7 @@ def import_args_from_cli(elt, args):
   by the attribute in "args" of the same name.
 
   Args:
-    elt: dictionary containing arguments.See examples in timeflow/cli/recipes/
+    elt: dictionary containing arguments.See examples in dftimewolf/cli/recipes/
     args: argparse parse_args() object
 
   Returns:
@@ -74,7 +74,7 @@ def import_args_from_cli(elt, args):
 
 
 def main():
-  """Main function for Timeflow."""
+  """Main function for DFTimewolf."""
 
   parser = argparse.ArgumentParser()
 
@@ -94,8 +94,8 @@ def main():
   args = parser.parse_args()
   recipe = args.recipe.RECIPE
 
-  console_out = timeflow_utils.TimeflowConsoleOutput(
-      sender=u'TimeflowCli', verbose=True)
+  console_out = dftimewolf_utils.DFTimewolfConsoleOutput(
+      sender=u'DFTimewolfCli', verbose=True)
 
   # COLLECTORS
   # Thread collectors

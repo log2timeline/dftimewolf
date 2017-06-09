@@ -7,7 +7,7 @@ import subprocess
 import tempfile
 import uuid
 
-from timeflow.lib.processors.processors import BaseArtifactProcessor
+from dftimewolf.lib.processors.processors import BaseArtifactProcessor
 
 
 class LocalPlasoProcessor(BaseArtifactProcessor):

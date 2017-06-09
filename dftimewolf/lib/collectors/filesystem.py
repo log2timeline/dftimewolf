@@ -4,7 +4,7 @@ __author__ = u'jbn@google.com (Johan Berggren)'
 
 import os
 
-from timeflow.lib.collectors.collectors import BaseCollector
+from dftimewolf.lib.collectors.collectors import BaseCollector
 
 
 class FilesystemCollector(BaseCollector):

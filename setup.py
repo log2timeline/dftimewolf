@@ -13,12 +13,12 @@ def readme():
     return f.read()
 
 setup(
-    name='timeflow',
+    name='dftimewolf',
     version='2017.06',
     description='Digital forensic orchestration',
     long_description=readme(),
     url='https://github.com/log2timeline/dftimewolf',
-    author='Timeflow development team',
+    author='DFTimewolf development team',
     license='Apache License, Version 2.0',
     packages=find_packages(),
     classifiers=[
@@ -27,9 +27,9 @@ setup(
         'Programming Language :: Python',
     ],
     entry_points={
-        'console_scripts': ['timeflow=timeflow.cli.timeflow_recipes:main']
+        'console_scripts': ['dftimewolf=dftimewolf.cli.dftimewolf_recipes:main']
     },
-    data_files=[('timeflow', ['timeflow/timeflow.json'])],
+    data_files=[('dftimewolf', ['dftimewolf/dftimewolf.json'])],
     include_package_data=True,
     zip_safe=False,
     install_requires=[

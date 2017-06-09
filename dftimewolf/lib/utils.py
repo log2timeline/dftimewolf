@@ -1,4 +1,4 @@
-"""Common utilities for Timeflow."""
+"""Common utilities for DFTimewolf."""
 
 __author__ = u'jbn@google.com (Johan Berggren)'
 
@@ -9,17 +9,17 @@ import sys
 import pytz
 
 
-class TimeflowConsoleOutput(object):
+class DFTimewolfConsoleOutput(object):
   """Send messages to stdin or stderr."""
 
   def __init__(self, sender, verbose):
-    """Initialize the Timeflow console output object.
+    """Initialize the DFTimewolf console output object.
 
     Args:
       sender: Name of the sender of the message
       verbose: Boolean indicating if verbose output is to be used
     """
-    super(TimeflowConsoleOutput, self).__init__()
+    super(DFTimewolfConsoleOutput, self).__init__()
     self._sender = sender
     self._verbose = verbose
 

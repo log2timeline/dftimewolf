@@ -1,4 +1,4 @@
-"""Timeflow recipe for collecting data from the filesystem.
+"""DFTimewolf recipe for collecting data from the filesystem.
 
 - Collectors collect from a path in the FS
 - Processes them with a local install of plaso
@@ -6,7 +6,7 @@
 """
 
 __author__ = u'tomchop@google.com (Thomas Chopitea)'
-from timeflow.internals import get_config
+from dftimewolf.internals import get_config
 
 RECIPE = {
     'name': 'local_plaso',
