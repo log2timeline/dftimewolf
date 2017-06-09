@@ -76,8 +76,8 @@ def import_recipes():
 def get_config():
   """Searches several locations for a dftimewolf_config.json file.
 
-  Searches for a dftimewolf_config.json file in the current directory, user's home
-  directory, or an DFTIMEWOLF_CONFIG environment variable. If found file is
+  Searches for a dftimewolf_config.json file in the current directory, user's
+  home directory, or an DFTIMEWOLF_CONFIG environment variable. If found file is
   decoded as a JSON object.
 
   Returns:
