@@ -85,24 +85,24 @@ def get_config():
   """
   # pylint: disable=W0603
   global _CONFIG
-  if not _CONFIG:
-    for location in LOCATIONS:
-      for filename in FILENAMES:
-        if location and filename:
-          try:
-            full_path = os.path.abspath(os.path.join(location, filename))
-            with open(full_path) as config:
-              _CONFIG = json.loads(config.read())
-              _CONFIG['recipe_dirs'].extend(DEFAULT_RECIPE_DIRECTORIES)
-              _CONFIG['module_dirs'].extend(DEFAULT_MODULE_DIRECTORIES)
-              return _CONFIG
-          except IOError:
-            pass
-          except KeyError as e:
-            print('ERROR: configuration file {0:s} '
-                  'is missing a {1:s} key:'.format(filename, e))
-
-    print 'ERROR: No valid .dftimewolfrc file found. See README for details.'
-    exit(-1)
-  else:
+  if _CONFIG:
     return _CONFIG
+
+  for location in LOCATIONS:
+    for filename in FILENAMES:
+      try:
+        full_path = os.path.abspath(os.path.join(location, filename))
+        with open(full_path) as config:
+          _CONFIG = json.loads(config.read())
+          _CONFIG['recipe_dirs'].extend(DEFAULT_RECIPE_DIRECTORIES)
+          _CONFIG['module_dirs'].extend(DEFAULT_MODULE_DIRECTORIES)
+          print 'Using config file: {0:s}'.format(full_path)
+          return _CONFIG
+      except IOError:
+        pass
+      except KeyError as e:
+        print('ERROR: configuration file {0:s} '
+              'is missing a {1:s} key:'.format(filename, e))
+
+  print 'ERROR: No valid .dftimewolfrc file found. See README for details.'
+  exit(-1)
