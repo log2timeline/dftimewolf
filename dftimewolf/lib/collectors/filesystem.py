@@ -13,6 +13,7 @@ class FilesystemCollector(BaseCollector):
   Attributes:
     output_path: Path to store collected artifacts.
     name: Name for the collection of collected artifacts.
+    output: List of (name, path) tuples to process.
   """
 
   def __init__(self, path, name=None, verbose=False):
