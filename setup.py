@@ -36,5 +36,6 @@ setup(
         'pytz',
         'bs4',
         'requests',
-    ]
+    ],
+    test_suite='nose.collector'
 )
