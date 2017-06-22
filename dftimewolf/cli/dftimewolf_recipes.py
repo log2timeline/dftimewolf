@@ -61,11 +61,8 @@ def import_args_from_cli(elt, args):
     starting with "$" are replaced by the parameters in args.
   """
 
-  def _replace_func(match):
-    return getattr(args, match.group(1))
-
   if isinstance(elt, (str, unicode)):
-    return re.sub(r'\$(\w+)', _replace_func, str(elt))
+    return re.sub(r'\$(\w+)', lambda m: getattr(args, m.group(1)), str(elt))
   elif isinstance(elt, list):
     return [import_args_from_cli(item, args) for item in elt]
   elif isinstance(elt, dict):
