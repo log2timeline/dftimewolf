@@ -49,23 +49,23 @@ def import_args_from_cli(elt, args):
   """Replaces some arguments by those specified in CLI.
 
   This function will be recursively called on a dictionary looking for any
-  value staring with a "$" character. If found, the value will be replaced
+  value containing a "$" variable. If found, the value will be replaced
   by the attribute in "args" of the same name.
 
   Args:
-    elt: dictionary containing arguments.See examples in dftimewolf/cli/recipes/
+    elt: dictionary containing arguments.See examples in timeflow/cli/recipes/
     args: argparse parse_args() object
 
   Returns:
-    The first caller of the function will receive a dictionary in which the
-    values starting with "$" are replaced by the parameters in args.
+    The first caller of the function will receive a dictionary in which strings
+    starting with "$" are replaced by the parameters in args.
   """
 
+  def _replace_func(match):
+    return getattr(args, match.group(1))
+
   if isinstance(elt, (str, unicode)):
-    sub = re.match(r'\$(\w+)', str(elt))
-    if sub:
-      return getattr(args, sub.group(1))
-    return elt
+    return re.sub(r'\$(\w+)', _replace_func, str(elt))
   elif isinstance(elt, list):
     return [import_args_from_cli(item, args) for item in elt]
   elif isinstance(elt, dict):
