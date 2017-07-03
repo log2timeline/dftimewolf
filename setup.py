@@ -37,5 +37,9 @@ setup(
         'bs4',
         'requests',
     ],
-    test_suite='nose.collector'
+    test_suite='nose.collector',
+    test_require=[
+        'bs4',
+        'nose'
+    ]
 )
