@@ -1,7 +1,7 @@
 """DFTimewolf CLI tool to collect artifacts.
 
-dftimewolf_recipes aims to replace dftimewolf_cli. It uses recipes defined in
-dftimewolf/cli/recipes to orchestrate collectors, processors and exporters.
+dftimewolf_recipes uses recipes defined in dftimewolf/cli/recipesto orchestrate
+collectors, processors and exporters.
 
 
 Usage:
