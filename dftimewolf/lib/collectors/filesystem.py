@@ -39,8 +39,7 @@ class FilesystemCollector(BaseCollector):
     """
     self.console_out.VerboseOut(u'Artifact path: {0:s}'.format(
         self.output_path))
-    self.output = [(self.name, self.output_path)]
-    return self.output
+    return [(self.name, self.output_path)]
 
   @property
   def collection_name(self):

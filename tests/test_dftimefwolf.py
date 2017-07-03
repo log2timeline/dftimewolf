@@ -19,10 +19,10 @@ class DFTimewolfTest(TestCase):
 
     recipe_args = {
         'recipe_arg1': 'This should remain intact',
-        'recipe_arg2': 'This should be replaced: $parameterone',
-        'recipe_arg3': 'This should be replaced by $optional_param',
-        'recipe_arg4': 'This includes spaces: $spaces_param',
-        'recipe_arg5': 'Characters after param: $explosion!',
+        'recipe_arg2': 'This should be replaced: @parameterone',
+        'recipe_arg3': 'This should be replaced by @optional_param',
+        'recipe_arg4': 'This includes spaces: @spaces_param',
+        'recipe_arg5': 'Characters after param: @explosion!',
     }
 
     expected_args = {
@@ -44,15 +44,15 @@ class DFTimewolfTest(TestCase):
     self.assertEqual(imported_args, expected_args)
 
   def test_nonexistent_arg(self):
-    """Makes sure that an exception is raised for unknown $ variables.
+    """Makes sure that an exception is raised for unknown @ variables.
 
-    A recipe writer needs to define a parsing tuple for each $ variable used by
+    A recipe writer needs to define a parsing tuple for each @ variable used by
     the recipe.
     """
 
     recipe_args = {
-        'recipe_arg1': 'This should be replaced: $parameterone',
-        'recipe_arg2': 'This arg cannot be replaced $nonexistent',
+        'recipe_arg1': 'This should be replaced: @parameterone',
+        'recipe_arg2': 'This arg cannot be replaced @nonexistent',
     }
 
     args = parser.parse_args([

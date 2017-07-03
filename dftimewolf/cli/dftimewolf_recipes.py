@@ -62,7 +62,7 @@ def import_args_from_cli(elt, args):
   """
 
   if isinstance(elt, (str, unicode)):
-    return re.sub(r'\$(\w+)', lambda m: getattr(args, m.group(1)), str(elt))
+    return re.sub(r'\@(\w+)', lambda m: getattr(args, m.group(1)), str(elt))
   elif isinstance(elt, list):
     return [import_args_from_cli(item, args) for item in elt]
   elif isinstance(elt, dict):
@@ -110,26 +110,29 @@ def main():
   collector_output = []
   for collector_obj in collector_objs:
     collector_obj.join()
-    collector_output.extend(collector_obj.output)
+    collector_output.extend(collector_obj.results)
 
-  # PROCESSORS
-  # Thread processors
-  console_out.StdOut(u'Processors:')
-  for processor in recipe[u'processors']:
-    console_out.StdOut(u'  {0:s}'.format(processor[u'name']))
+  if recipe[u'processors']:
+    # PROCESSORS
+    # Thread processors
+    console_out.StdOut(u'Processors:')
+    for processor in recipe[u'processors']:
+      console_out.StdOut(u'  {0:s}'.format(processor[u'name']))
 
-  processor_objs = []
-  for processor in recipe[u'processors']:
-    new_args = import_args_from_cli(processor[u'args'], args)
-    new_args[u'collector_output'] = collector_output
-    processor_class = MODULES['processors'][processor[u'name']]
-    processor_objs.extend(processor_class.launch_processor(**new_args))
+    processor_objs = []
+    for processor in recipe[u'processors']:
+      new_args = import_args_from_cli(processor[u'args'], args)
+      new_args[u'collector_output'] = collector_output
+      processor_class = MODULES['processors'][processor[u'name']]
+      processor_objs.extend(processor_class.launch_processor(**new_args))
 
-  # Wait for processors to finish and collect output
-  processor_output = []
-  for processor in processor_objs:
-    processor.join()
-    processor_output.extend(processor.output)
+    # Wait for processors to finish and collect output
+    processor_output = []
+    for processor in processor_objs:
+      processor.join()
+      processor_output.extend(processor.output)
+  else:
+    processor_output = collector_output
 
   # EXPORTERS
   # Thread exporters

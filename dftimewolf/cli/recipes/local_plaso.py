@@ -15,7 +15,7 @@ RECIPE = {
         {
             'name': 'filesystem',
             'args': {
-                'paths': ['$paths'],
+                'paths': ['@paths'],
                 'verbose': True,
             },
         }
@@ -36,7 +36,7 @@ RECIPE = {
                 'ts_endpoint': get_config()['timesketch']['endpoint'],
                 'ts_username': get_config()['timesketch']['username'],
                 'ts_password': get_config()['timesketch']['password'],
-                'incident_id': '$incident_id',
+                'incident_id': '@incident_id',
                 'sketch_id': None,
                 'verbose': True,
             }
