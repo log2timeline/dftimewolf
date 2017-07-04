@@ -45,7 +45,7 @@ MODULES = import_modules()
 RECIPES = import_recipes()
 
 
-def import_args_from_cli(elt, args):
+def import_args_from_cli(value, args):
   """Replaces some arguments by those specified in CLI.
 
   This function will be recursively called on a dictionary looking for any
@@ -53,21 +53,23 @@ def import_args_from_cli(elt, args):
   by the attribute in "args" of the same name.
 
   Args:
-    elt: dictionary containing arguments.See examples in timeflow/cli/recipes/
-    args: argparse parse_args() object
+    value: The value of a {key: value} dictionary. This is passed recursively
+        and may change in nature: string, list, or dict. The top-level variable
+        should be the dictionary that is supposed to be recursively traversed.
+    args: argparse.Namespace object
 
   Returns:
     The first caller of the function will receive a dictionary in which strings
     starting with "$" are replaced by the parameters in args.
   """
 
-  if isinstance(elt, (str, unicode)):
-    return re.sub(r'\@(\w+)', lambda m: getattr(args, m.group(1)), str(elt))
-  elif isinstance(elt, list):
-    return [import_args_from_cli(item, args) for item in elt]
-  elif isinstance(elt, dict):
-    return {key: import_args_from_cli(val, args) for key, val in elt.items()}
-  return elt
+  if isinstance(value, (str, unicode)):
+    return re.sub(r'\@(\w+)', lambda m: getattr(args, m.group(1)), str(value))
+  elif isinstance(value, list):
+    return [import_args_from_cli(item, args) for item in value]
+  elif isinstance(value, dict):
+    return {key: import_args_from_cli(val, args) for key, val in value.items()}
+  return value
 
 
 def main():
