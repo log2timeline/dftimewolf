@@ -56,11 +56,7 @@ def import_args_from_cli(value, args):
     value: The value of a {key: value} dictionary. This is passed recursively
         and may change in nature: string, list, or dict. The top-level variable
         should be the dictionary that is supposed to be recursively traversed.
-<<<<<<< HEAD
     args: argparse.Namespace object
-=======
-    args: argparse parse_args() object
->>>>>>> 4616be5aaaf11a149b9c2929ab0bcd0d09603ba4
 
   Returns:
     The first caller of the function will receive a dictionary in which strings
