@@ -1,26 +1,25 @@
-# -*- coding: utf-8 -*-
-"""Common utilities for Timewolf."""
+"""Common utilities for DFTimewolf."""
+
+__author__ = u'jbn@google.com (Johan Berggren)'
 
 from datetime import datetime
-import getpass
-import netrc
 import os
 import sys
 
 import pytz
 
 
-class TimewolfConsoleOutput(object):
+class DFTimewolfConsoleOutput(object):
   """Send messages to stdin or stderr."""
 
   def __init__(self, sender, verbose):
-    """Initialize the Timewolf console output object.
+    """Initialize the DFTimewolf console output object.
 
     Args:
       sender: Name of the sender of the message
       verbose: Boolean indicating if verbose output is to be used
     """
-    super(TimewolfConsoleOutput, self).__init__()
+    super(DFTimewolfConsoleOutput, self).__init__()
     self._sender = sender
     self._verbose = verbose
 
@@ -98,25 +97,3 @@ def IsValidTimezone(timezone):
     Boolean indicating if the timezone name is known to the pytz package
   """
   return timezone in pytz.all_timezones
-
-
-def GetCredentials(user, host):
-  """Attempts to return credentials from netrc file, prompting otherwise.
-
-  Args:
-    user: username to use if no netrc entry found
-    host: netrc entry to search
-  """
-  try:
-    netrc_file = netrc.netrc()
-    netrc_entry = netrc_file.authenticators(host)
-  except (netrc.NetrcParseError, IOError):
-    netrc_entry = None
-  if netrc_entry:
-    username = netrc_entry[0]
-    password = netrc_entry[2]
-  else:
-    username = user
-    password = getpass.getpass()
-
-  return username, password

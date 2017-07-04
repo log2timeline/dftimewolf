@@ -1,5 +1,3 @@
 pytz
-requests
 bs4
-plaso
-grr
+requests

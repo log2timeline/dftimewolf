@@ -18,16 +18,16 @@ class TimesketchApiClient(object):
     """Initialize the Timesketch API client object.
 
     Args:
-      host: Hostname and port of Timesketch instance
+      host (str): Hostname and port of Timesketch instance
       username (str): Timesketch username
       password (str): Timesketch password
     """
     self.host_url = host
     self.api_base_url = u'{0:s}/api/v1'.format(self.host_url)
     self.username = username
-    self.session = self._CreateSession(username, password)
+    self.session = self._create_session(username, password)
 
-  def _CreateSession(self, username, password):
+  def _create_session(self, username, password):
     """Create HTTP session.
 
     Args:
@@ -51,7 +51,7 @@ class TimesketchApiClient(object):
     _ = session.post(u'{0:s}/login/'.format(self.host_url), data=login_data)
     return session
 
-  def CreateSketch(self, name, description):
+  def create_sketch(self, name, description):
     """Create a new sketch with the specified name and description.
 
     Args:
@@ -68,7 +68,7 @@ class TimesketchApiClient(object):
     sketch_id = response_dict[u'objects'][0]['id']
     return sketch_id
 
-  def UploadTimeline(self, timeline_name, plaso_storage_path):
+  def upload_timeline(self, timeline_name, plaso_storage_path):
     """Create a timeline with the specified name from the given plaso file.
 
     Args:
@@ -86,7 +86,25 @@ class TimesketchApiClient(object):
     index_id = response_dict[u'objects'][0]['id']
     return index_id
 
-  def AddTimelineToSketch(self, sketch_id, index_id):
+  def export_artifacts(self, processed_artifacts, sketch_id):
+    """Upload provided artifacts to specified, or new if non-existent, sketch.
+
+    Args:
+      processed_artifacts:  List of (timeline_name, artifact_path) tuples
+      sketch_id: ID of sketch to append the timeline to
+
+    Returns:
+      int: ID of sketch
+    """
+
+    # Export processed timeline(s)
+    for timeline_name, artifact_path in processed_artifacts:
+      new_timeline_id = self.upload_timeline(timeline_name, artifact_path)
+      self.add_timeline_to_sketch(sketch_id, new_timeline_id)
+
+    return sketch_id
+
+  def add_timeline_to_sketch(self, sketch_id, index_id):
     """Associate the specified timeline and sketch.
 
     Args:
@@ -97,7 +115,7 @@ class TimesketchApiClient(object):
     form_data = {u'timelines': [index_id]}
     self.session.post(resource_url, json=form_data)
 
-  def GetSketch(self, sketch_id):
+  def get_sketch(self, sketch_id):
     """Get information on the specified sketch.
 
     Args:
@@ -119,7 +137,7 @@ class TimesketchApiClient(object):
       raise ValueError(u'Sketch does not exist or you have no access')
     return response_dict
 
-  def GetSketchURL(self, sketch_id):
+  def get_sketch_url(self, sketch_id):
     """Get the full URL of the specified sketch.
 
     Args:

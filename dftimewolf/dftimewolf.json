@@ -1,0 +1,9 @@
+{
+    "recipe_dirs" : [],
+    "module_dirs" : [],
+    "timesketch": {
+        "username": "username",
+        "password": "password",
+        "endpoint": "http://localhost:5000/",
+    }
+}
