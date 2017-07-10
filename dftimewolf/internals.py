@@ -90,6 +90,8 @@ def get_config():
 
   for location in LOCATIONS:
     for filename in FILENAMES:
+      if not location or not filename:
+        continue
       try:
         full_path = os.path.abspath(os.path.join(location, filename))
         with open(full_path) as config:
