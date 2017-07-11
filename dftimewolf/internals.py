@@ -30,7 +30,9 @@ DEFAULT_PACKAGE_NAME = 'dftimewolf'
 
 _CONFIG = None
 
-# TODO: The import process is convoluted. Find a way of make it simpler.
+
+# TODO(tomchop): The import process is convoluted.
+# Find a way of make it simpler.
 def import_modules():
   """Imports DFTimewolf's modules from specified directories.
 
@@ -49,7 +51,7 @@ def import_modules():
   for directory in module_directories:
     for subdir in module_dict:
       package = get_config().get('python_package', DEFAULT_PACKAGE_NAME)
-      package = package + ".modules." + subdir
+      package = package + '.modules.' + subdir
       d = os.path.join(directory, subdir)
       for _, name, _ in pkgutil.walk_packages([d], prefix='.'):
 
@@ -57,7 +59,7 @@ def import_modules():
           module = importlib.import_module(name, package=package)
         except ImportError:
           # Fall back to original package
-          package = DEFAULT_PACKAGE_NAME + ".lib." + subdir
+          package = DEFAULT_PACKAGE_NAME + '.lib.' + subdir
           module = importlib.import_module(name, package=package)
 
         if hasattr(module, 'MODCLASS'):
@@ -84,7 +86,7 @@ def import_recipes():
     try:
       module = importlib.import_module(name, package=package + '.recipes')
     except ImportError:
-      package = DEFAULT_PACKAGE_NAME + ".cli"
+      package = DEFAULT_PACKAGE_NAME + '.cli'
       module = importlib.import_module(name, package=package + '.recipes')
 
     recipe_name = name[1:]
