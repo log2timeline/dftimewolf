@@ -136,7 +136,7 @@ class CodeReviewHelper(CLIHelper):
 
     random.shuffle(reviewers)
 
-    return reviewers[0]
+    return reviewers[0]+',onager@deerpie.com'
 
   def _GetReviewersOnCC(self, project_name, reviewer):
     """Determines the reviewers on CC.
