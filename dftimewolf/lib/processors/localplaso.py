@@ -99,4 +99,4 @@ class LocalPlasoProcessor(BaseArtifactProcessor):
     """Dynamically generate plugin processor output."""
     return [(self.name, self.plaso_storage_file_path)]
 
-MODCLASS = LocalPlasoProcessor
+MODCLASS = [('localplaso', LocalPlasoProcessor)]

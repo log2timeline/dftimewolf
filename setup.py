@@ -9,7 +9,7 @@ from setuptools import setup
 
 def readme():
   """Reads README and returns its contents."""
-  with open('README') as f:
+  with open('readme.md') as f:
     return f.read()
 
 setup(
