@@ -80,6 +80,7 @@ class CodeReviewHelper(CLIHelper):
           u'joachim.metz@gmail.com',
           u'onager@deerpie.com']),
       u'dftimewolf': frozenset([
+          u'onager@deerpie.com',
           u'jberggren@gmail.com',
           u'someguyiknow@google.com',
           u'tomchop@gmail.com']),
@@ -136,7 +137,7 @@ class CodeReviewHelper(CLIHelper):
 
     random.shuffle(reviewers)
 
-    return reviewers[0]+',onager@deerpie.com'
+    return reviewers[0]
 
   def _GetReviewersOnCC(self, project_name, reviewer):
     """Determines the reviewers on CC.
