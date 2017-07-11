@@ -77,4 +77,4 @@ class FilesystemCollector(BaseCollector):
     return collectors
 
 
-MODCLASS = FilesystemCollector
+MODCLASS = [('filesystem', FilesystemCollector)]

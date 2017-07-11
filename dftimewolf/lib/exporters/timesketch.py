@@ -98,4 +98,4 @@ class TimesketchExporter(BaseExporter):
     exporter.start()
     return [exporter]
 
-MODCLASS = TimesketchExporter
+MODCLASS = [('timesketch', TimesketchExporter)]

@@ -26,14 +26,18 @@ DEFAULT_MODULE_DIRECTORIES = [
     os.path.join(_CURRENT_DIR, 'lib'),
 ]
 
+DEFAULT_PACKAGE_NAME = 'dftimewolf'
+
 _CONFIG = None
 
-
+# TODO: The import process is convoluted. Find a way of make it simpler.
 def import_modules():
   """Imports DFTimewolf's modules from specified directories.
 
   Recursively load all modules containing a MODCLASS attribute and add them
-  to the module_dict dictionary.
+  to the module_dict dictionary. Will try loading modules using the python
+  packages specified in the loaded configuration file, fall back to default
+  otherwise.
 
   Returns:
     A dictionary describing collectors, processors, and exporters with their
@@ -44,14 +48,21 @@ def import_modules():
   module_dict = {'collectors': {}, 'processors': {}, 'exporters': {}}
   for directory in module_directories:
     for subdir in module_dict:
-      package = 'dftimewolf.lib.{}'.format(subdir)
+      package = get_config().get('python_package', DEFAULT_PACKAGE_NAME)
+      package = package + ".modules." + subdir
       d = os.path.join(directory, subdir)
       for _, name, _ in pkgutil.walk_packages([d], prefix='.'):
-        module = importlib.import_module(name, package=package)
+
         try:
-          module_dict[subdir][name[1:]] = module.MODCLASS
-        except AttributeError:
-          pass
+          module = importlib.import_module(name, package=package)
+        except ImportError:
+          # Fall back to original package
+          package = DEFAULT_PACKAGE_NAME + ".lib." + subdir
+          module = importlib.import_module(name, package=package)
+
+        if hasattr(module, 'MODCLASS'):
+          for module_name, module_class in module.MODCLASS:
+            module_dict[subdir][module_name] = module_class
 
   return module_dict
 
@@ -59,7 +70,8 @@ def import_modules():
 def import_recipes():
   """Imports DFTimewolf recipes from specified directories.
 
-  Load all modules from a given recipe directory.
+  Load all modules from a given recipe directory. If two recipes with identical
+  names are loaded, the last one will prevail.
 
   Returns:
     A dictionary of recipe names and recipe modules.
@@ -68,8 +80,15 @@ def import_recipes():
   recipe_directories = get_config()['recipe_dirs']
   recipe_dict = {}
   for _, name, _ in pkgutil.walk_packages(recipe_directories, prefix='.'):
-    module = importlib.import_module(name, package='dftimewolf.cli.recipes')
-    recipe_dict[name[1:]] = module
+    package = get_config().get('python_package', DEFAULT_PACKAGE_NAME)
+    try:
+      module = importlib.import_module(name, package=package + '.recipes')
+    except ImportError:
+      package = DEFAULT_PACKAGE_NAME + ".cli"
+      module = importlib.import_module(name, package=package + '.recipes')
+
+    recipe_name = name[1:]
+    recipe_dict[recipe_name] = module
   return recipe_dict
 
 
