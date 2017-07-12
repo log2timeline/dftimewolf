@@ -80,6 +80,7 @@ class CodeReviewHelper(CLIHelper):
           u'joachim.metz@gmail.com',
           u'onager@deerpie.com']),
       u'dftimewolf': frozenset([
+          u'onager@deerpie.com',
           u'jberggren@gmail.com',
           u'someguyiknow@google.com',
           u'tomchop@gmail.com']),
