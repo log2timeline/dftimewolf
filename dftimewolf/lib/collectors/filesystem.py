@@ -33,7 +33,7 @@ class FilesystemCollector(BaseCollector):
     """Collect the files.
 
     Returns:
-      list: containing:
+      list: of tuples:
         str: the name provided for the collection.
         str: path to the files for collection.
     """

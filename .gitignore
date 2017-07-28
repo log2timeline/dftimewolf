@@ -93,3 +93,6 @@ ENV/
 
 # Code review files
 /.review
+
+# dftimewolf configuration files
+dftimewolf/user_config.py

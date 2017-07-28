@@ -1,131 +1,141 @@
 """Small module to search for and load configuration files."""
 
-import importlib
 import json
-import os
-import pkgutil
+import sys
 
-LOCATIONS = [
-    os.curdir,
-    os.path.expanduser('~'),
-    os.environ.get('DFTIMEWOLF_CONFIG'),
-]
+class Config(object):
+  """Class that handles DFTimewolf's configuration parameters."""
 
-FILENAMES = [
-    'dftimewolf.json',
-    '.dftimewolfrc',
-]
+  _recipe_classes = {}
+  _collector_classes = {}
+  _processor_classes = {}
+  _exporter_classes = {}
 
-_CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
+  _extra_config = {}
 
-DEFAULT_RECIPE_DIRECTORIES = [
-    os.path.join(_CURRENT_DIR, 'cli', 'recipes')
-]
+  @classmethod
+  def get_extra(cls, name):
+    """Gets extra configuration parameters.
 
-DEFAULT_MODULE_DIRECTORIES = [
-    os.path.join(_CURRENT_DIR, 'lib'),
-]
+    These parameters should be loaded through load_extra or load_extra_data.
 
-DEFAULT_PACKAGE_NAME = 'dftimewolf'
+    Args:
+      name: str, the name of the configuration data to load.
 
-_CONFIG = None
+    Returns:
+      A dictionary containing the requested configuration data. None if
+      data was never loaded under that name.
+    """
+    return cls._extra_config.get(name, None)
 
+  @classmethod
+  def load_extra(cls, filename):
+    """Loads extra JSON configuration parameters from a file on the filesystem.
 
-# TODO(tomchop): The import process is convoluted.
-# Find a way of make it simpler.
-def import_modules():
-  """Imports DFTimewolf's modules from specified directories.
-
-  Recursively load all modules containing a MODCLASS attribute and add them
-  to the module_dict dictionary. Will try loading modules using the python
-  packages specified in the loaded configuration file, fall back to default
-  otherwise.
-
-  Returns:
-    A dictionary describing collectors, processors, and exporters with their
-    respective names and classes.
-
-  """
-  module_directories = get_config()['module_dirs']
-  module_dict = {'collectors': {}, 'processors': {}, 'exporters': {}}
-  for directory in module_directories:
-    for subdir in module_dict:
-      package = get_config().get('python_package', DEFAULT_PACKAGE_NAME)
-      package = package + '.modules.' + subdir
-      d = os.path.join(directory, subdir)
-      for _, name, _ in pkgutil.walk_packages([d], prefix='.'):
-
-        try:
-          module = importlib.import_module(name, package=package)
-        except ImportError:
-          # Fall back to original package
-          package = DEFAULT_PACKAGE_NAME + '.lib.' + subdir
-          module = importlib.import_module(name, package=package)
-
-        if hasattr(module, 'MODCLASS'):
-          for module_name, module_class in module.MODCLASS:
-            module_dict[subdir][module_name] = module_class
-
-  return module_dict
-
-
-def import_recipes():
-  """Imports DFTimewolf recipes from specified directories.
-
-  Load all modules from a given recipe directory. If two recipes with identical
-  names are loaded, the last one will prevail.
-
-  Returns:
-    A dictionary of recipe names and recipe modules.
-
-  """
-  recipe_directories = get_config()['recipe_dirs']
-  recipe_dict = {}
-  for _, name, _ in pkgutil.walk_packages(recipe_directories, prefix='.'):
-    package = get_config().get('python_package', DEFAULT_PACKAGE_NAME)
-    try:
-      module = importlib.import_module(name, package=package + '.recipes')
-    except ImportError:
-      package = DEFAULT_PACKAGE_NAME + '.cli'
-      module = importlib.import_module(name, package=package + '.recipes')
-
-    recipe_name = name[1:]
-    recipe_dict[recipe_name] = module
-  return recipe_dict
-
-
-def get_config():
-  """Searches several locations for a dftimewolf_config.json file.
-
-  Searches for a dftimewolf_config.json file in the current directory, user's
-  home directory, or an DFTIMEWOLF_CONFIG environment variable. If found file is
-  decoded as a JSON object.
-
-  Returns:
-    JSON object or None
-  """
-  # pylint: disable=W0603
-  global _CONFIG
-  if _CONFIG:
-    return _CONFIG
-
-  for location in LOCATIONS:
-    for filename in FILENAMES:
-      if not location or not filename:
-        continue
+    Args:
+      filename: str, the filename to open.
+    """
+    with open(filename, 'rb') as fp:
       try:
-        full_path = os.path.abspath(os.path.join(location, filename))
-        with open(full_path) as config:
-          _CONFIG = json.loads(config.read())
-          _CONFIG['recipe_dirs'].extend(DEFAULT_RECIPE_DIRECTORIES)
-          _CONFIG['module_dirs'].extend(DEFAULT_MODULE_DIRECTORIES)
-          print 'Using config file: {0:s}'.format(full_path)
-          return _CONFIG
-      except IOError:
-        pass
-      except KeyError as e:
-        print('ERROR: configuration file {0:s} '
-              'is missing a {1:s} key:'.format(filename, e))
+        cls.load_extra_data(fp.read())
+      except IOError as e:
+        sys.stderr.write("Could not open {0:s}. {1:s}".format(filename, e))
+        exit(-1)
 
-  print 'ERROR: No valid .dftimewolfrc file found. See README for details.'
-  exit(-1)
+  @classmethod
+  def load_extra_data(cls, data):
+    """Loads extra JSON configuration parameters from a data buffer.
+
+    The data buffer must represent a JSON object.
+
+    Args:
+      data: str, the buffer to load the JSON data from.
+    """
+    try:
+      cls._extra_config.update(json.loads(data))
+    except ValueError as e:
+      sys.stderr.write("Could convert to JSON. {0:s}".format(e))
+      exit(-1)
+
+  @classmethod
+  def register_recipe(cls, recipe):
+    """Registers a dftimewolf recipe.
+
+    Args:
+      recipe: imported python module representing the recipe.
+    """
+    recipe_config = cls.get_extra(recipe.name)
+    recipe.load(recipe_config)
+    cls._recipe_classes[recipe.name] = (recipe.contents, recipe.args)
+
+  @classmethod
+  def get_registered_recipes(cls):
+    """Fetches all registered recipes.
+
+    Returns:
+      List of registered (recipe, args) tuples.
+    """
+    return cls._recipe_classes.values()
+
+  @classmethod
+  def register_collector(cls, collector_class):
+    """Registers a dftimewolf collector.
+
+    Args:
+      collector_class: Python class extending BaseCollector.
+    """
+    cls._collector_classes[collector_class.__name__] = collector_class
+
+  @classmethod
+  def get_collector(cls, name):
+    """Fetches a previously registered collector.
+
+    Args:
+      name: str, name with which the collector was registered.
+
+    Returns:
+      Corresponding class extending BaseCollector.
+    """
+    return cls._collector_classes[name]
+
+  @classmethod
+  def register_processor(cls, processor_class):
+    """Registers a dftimewolf processor.
+
+    Args:
+      processor_class: Python class extending BaseProcessor.
+    """
+    cls._processor_classes[processor_class.__name__] = processor_class
+
+  @classmethod
+  def get_processor(cls, name):
+    """Fetches a previously registered processor.
+
+    Args:
+      name: str, name with which the processor was registered.
+
+    Returns:
+      Corresponding class extending BaseProcessor.
+    """
+    return cls._processor_classes[name]
+
+  @classmethod
+  def register_exporter(cls, exporter_class):
+    """Registers a dftimewolf exporter.
+
+    Args:
+      exporter_class: Python class extending BaseExporter.
+    """
+    cls._exporter_classes[exporter_class.__name__] = exporter_class
+
+  @classmethod
+  def get_exporter(cls, name):
+    """Fetches a previously registered exporter.
+
+    Args:
+      name: str, name with which the exporter was registered.
+
+    Returns:
+      Corresponding class extending BaseExporter.
+    """
+    return cls._exporter_classes[name]

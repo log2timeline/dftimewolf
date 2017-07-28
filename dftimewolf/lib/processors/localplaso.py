@@ -63,13 +63,17 @@ class LocalPlasoProcessor(BaseArtifactProcessor):
     self.console_out.VerboseOut(u'Running external command: {0:s}'.format(
         u' '.join(cmd)))
     # Running the local l2t command
-    l2t_proc = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    _, errors = l2t_proc.communicate()
-    l2t_status = l2t_proc.wait()
-    if l2t_status:
-      self.console_out.StdErr(errors)
-      raise ValueError(u'The command {0:s} failed'.format(u' '.join(cmd)))
+    try:
+      l2t_proc = subprocess.Popen(
+          cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+      _, errors = l2t_proc.communicate()
+      l2t_status = l2t_proc.wait()
+      if l2t_status:
+        self.console_out.StdErr(errors)
+        raise ValueError(u'The command {0:s} failed'.format(u' '.join(cmd)))
+    except OSError as e:
+      raise ValueError(
+          'An error occurred while attempting to run plaso: {0:s}'.format(e))
 
   @staticmethod
   def launch_processor(collector_output, timezone=None, verbose=False):

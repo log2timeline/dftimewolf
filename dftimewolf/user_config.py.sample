@@ -1,0 +1,30 @@
+from dftimewolf import internals
+
+# Import modules and register them
+from dftimewolf.lib.collectors import filesystem
+from dftimewolf.lib.processors import localplaso
+from dftimewolf.lib.exporters import timesketch
+
+# Import any recipes here
+from dftimewolf.cli.recipes import local_plaso
+
+def load():
+    # Register modules and recipes at runtime
+    internals.Config.register_collector(filesystem.FilesystemCollector)
+    internals.Config.register_processor(localplaso.LocalPlasoProcessor)
+    internals.Config.register_exporter(timesketch.TimesketchExporter)
+    internals.Config.load_extra_data(
+    """
+        {
+            "local_plaso": {
+                "ts_username": "tom",
+                "ts_password": "tom",
+                "ts_endpoint": "http://localhost:5000"
+            }
+        }
+    """
+    )
+
+    # Recipes must be registered after modules since some modules may have
+    # specific configuration needs (e.g. TimesketchEporter)
+    internals.Config.register_recipe(local_plaso.LocalPlasoRecipe)
