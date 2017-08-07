@@ -42,7 +42,12 @@ from dftimewolf.lib import utils as dftimewolf_utils
 
 # The logic for importing recipes and modules happens in the user_config.py
 # file.
-from dftimewolf import user_config
+try:
+  from dftimewolf import user_config
+except ImportError as e:
+  print "You must have a user_config.py file (see user_config.py.sample)"
+  exit(-1)
+
 user_config.load()
 
 
