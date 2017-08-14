@@ -1,8 +1,6 @@
 """Tests for DFTimewolf functions."""
 import argparse
 from unittest import TestCase
-import os
-import shutil
 
 from dftimewolf.cli import dftimewolf_recipes
 
