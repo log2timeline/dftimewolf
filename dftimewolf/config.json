@@ -1,0 +1,7 @@
+{
+    "local_plaso": {
+        "ts_username": "tom",
+        "ts_password": "tom",
+        "ts_endpoint": "http://localhost:5000"
+    }
+}

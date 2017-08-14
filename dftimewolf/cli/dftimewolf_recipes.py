@@ -37,13 +37,22 @@ __author__ = u'tomchop@google.com (Thomas Chopitea)'
 import argparse
 import re
 
-from dftimewolf.internals import import_modules
-from dftimewolf.internals import import_recipes
 from dftimewolf.lib import utils as dftimewolf_utils
+from dftimewolf import config
 
-MODULES = import_modules()
-RECIPES = import_recipes()
+from dftimewolf.lib.collectors import filesystem
+from dftimewolf.lib.processors import localplaso
+from dftimewolf.lib.exporters import timesketch
+from dftimewolf.cli.recipes import local_plaso
 
+config.Config.register_collector(filesystem.FilesystemCollector)
+config.Config.register_processor(localplaso.LocalPlasoProcessor)
+config.Config.register_exporter(timesketch.TimesketchExporter)
+
+
+config.Config.load_extra("dftimewolf/config.json")
+
+config.Config.register_recipe(local_plaso.LocalPlasoRecipe)
 
 def import_args_from_cli(value, args):
   """Replaces some arguments by those specified in CLI.
@@ -82,16 +91,16 @@ def main():
       description=u'List of currently loaded recipes',
       help=u'Recipe-specific help')
 
-  for recipe in RECIPES.values():
+  for recipe, recipe_args in config.Config.get_registered_recipes():
     subparser = subparsers.add_parser(
-        recipe.RECIPE[u'name'],
+        recipe[u'name'],
         description=u'{0:s}'.format(recipe.__doc__))
     subparser.set_defaults(recipe=recipe)
-    for switch, help_text in recipe.ARGS:
+    for switch, help_text in recipe_args:
       subparser.add_argument(switch, help=help_text)
 
   args = parser.parse_args()
-  recipe = args.recipe.RECIPE
+  recipe = args.recipe
 
   console_out = dftimewolf_utils.DFTimewolfConsoleOutput(
       sender=u'DFTimewolfCli', verbose=True)
@@ -105,7 +114,7 @@ def main():
   collector_objs = []
   for collector in recipe[u'collectors']:
     new_args = import_args_from_cli(collector[u'args'], args)
-    collector_cls = MODULES['collectors'][collector[u'name']]
+    collector_cls = config.Config.get_collector(collector[u'name'])
     collector_objs.extend(collector_cls.launch_collector(**new_args))
 
   # Wait for collectors to finish and collect output
@@ -125,7 +134,7 @@ def main():
     for processor in recipe[u'processors']:
       new_args = import_args_from_cli(processor[u'args'], args)
       new_args[u'collector_output'] = collector_output
-      processor_class = MODULES['processors'][processor[u'name']]
+      processor_class = config.Config.get_processor(processor[u'name'])
       processor_objs.extend(processor_class.launch_processor(**new_args))
 
     # Wait for processors to finish and collect output
@@ -146,7 +155,7 @@ def main():
   for exporter in recipe[u'exporters']:
     new_args = import_args_from_cli(exporter[u'args'], args)
     new_args[u'processor_output'] = processor_output
-    exporter_class = MODULES['exporters'][exporter[u'name']]
+    exporter_class = config.Config.get_exporter(exporter[u'name'])
     exporter_objs.extend(exporter_class.launch_exporter(**new_args))
 
   # Wait for exporters to finish
