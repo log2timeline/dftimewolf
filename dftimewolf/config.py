@@ -1,4 +1,4 @@
-"""Small module to search for and load configuration files."""
+"""Small module to load user configuration parameters."""
 
 import json
 import sys

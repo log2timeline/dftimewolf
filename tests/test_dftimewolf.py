@@ -16,34 +16,6 @@ parser.add_argument('explosion')
 class DFTimewolfTest(TestCase):
   """Tests for timeflow_recipes functions."""
 
-  backup_config = None
-  user_config_dir = None
-
-  def setUp(self):
-    # Copy user_config.py.sample to an actual user_config.py filesystem
-    current_path = os.getcwd()
-    user_config_dir = os.path.join(current_path, "dftimewolf")
-    self.user_config_path = os.path.join(user_config_dir, "user_config.py")
-
-    # If a config file exists, make a backup
-    if os.path.isfile(self.user_config_path):
-      backup_config = os.path.join(user_config_dir, "backup")
-      shutil.move(self.user_config_path, backup_config)
-      self.backup_config = backup_config
-
-    # Move sample config to user config
-    sample_config = os.path.join(user_config_dir, "user_config.py.sample")
-    shutil.copy(sample_config, self.user_config_path)
-
-  def tearDown(self):
-    # Restore backup config if there was one
-    if self.backup_config:
-      shutil.move(self.backup_config, self.user_config_path)
-    # Or delete dummy config
-    else:
-      os.remove(self.user_config_path)
-
-
   def test_import_args_from_cli(self):
     """Tries parsing the CLI arguments and updating a recipe dictionary."""
 
