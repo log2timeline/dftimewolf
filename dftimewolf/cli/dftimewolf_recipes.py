@@ -35,50 +35,26 @@ Recipe local_plaso executed successfully
 __author__ = u'tomchop@google.com (Thomas Chopitea)'
 
 import argparse
-import re
+import os
 
-from dftimewolf.lib import utils as dftimewolf_utils
 from dftimewolf import config
+from dftimewolf.lib import utils as dftw_utils
 
 from dftimewolf.lib.collectors import filesystem
 from dftimewolf.lib.processors import localplaso
 from dftimewolf.lib.exporters import timesketch
+
 from dftimewolf.cli.recipes import local_plaso
 
 config.Config.register_collector(filesystem.FilesystemCollector)
 config.Config.register_processor(localplaso.LocalPlasoProcessor)
 config.Config.register_exporter(timesketch.TimesketchExporter)
 
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+config_path = os.path.join(ROOT_DIR, 'config.json')
+config.Config.load_extra(config_path)
 
-config.Config.load_extra("dftimewolf/config.json")
-
-config.Config.register_recipe(local_plaso.LocalPlasoRecipe)
-
-def import_args_from_cli(value, args):
-  """Replaces some arguments by those specified in CLI.
-
-  This function will be recursively called on a dictionary looking for any
-  value containing a "$" variable. If found, the value will be replaced
-  by the attribute in "args" of the same name.
-
-  Args:
-    value: The value of a {key: value} dictionary. This is passed recursively
-        and may change in nature: string, list, or dict. The top-level variable
-        should be the dictionary that is supposed to be recursively traversed.
-    args: argparse.Namespace object
-
-  Returns:
-    The first caller of the function will receive a dictionary in which strings
-    starting with "$" are replaced by the parameters in args.
-  """
-
-  if isinstance(value, (str, unicode)):
-    return re.sub(r'\@(\w+)', lambda m: getattr(args, m.group(1)), str(value))
-  elif isinstance(value, list):
-    return [import_args_from_cli(item, args) for item in value]
-  elif isinstance(value, dict):
-    return {key: import_args_from_cli(val, args) for key, val in value.items()}
-  return value
+config.Config.register_recipe(local_plaso)
 
 
 def main():
@@ -102,7 +78,7 @@ def main():
   args = parser.parse_args()
   recipe = args.recipe
 
-  console_out = dftimewolf_utils.DFTimewolfConsoleOutput(
+  console_out = dftw_utils.DFTimewolfConsoleOutput(
       sender=u'DFTimewolfCli', verbose=True)
 
   # COLLECTORS
@@ -113,7 +89,7 @@ def main():
 
   collector_objs = []
   for collector in recipe[u'collectors']:
-    new_args = import_args_from_cli(collector[u'args'], args)
+    new_args = dftw_utils.import_args_from_dict(collector[u'args'], vars(args))
     collector_cls = config.Config.get_collector(collector[u'name'])
     collector_objs.extend(collector_cls.launch_collector(**new_args))
 
@@ -132,7 +108,8 @@ def main():
 
     processor_objs = []
     for processor in recipe[u'processors']:
-      new_args = import_args_from_cli(processor[u'args'], args)
+      new_args = dftw_utils.import_args_from_dict(
+          processor[u'args'], vars(args))
       new_args[u'collector_output'] = collector_output
       processor_class = config.Config.get_processor(processor[u'name'])
       processor_objs.extend(processor_class.launch_processor(**new_args))
@@ -153,7 +130,7 @@ def main():
 
   exporter_objs = []
   for exporter in recipe[u'exporters']:
-    new_args = import_args_from_cli(exporter[u'args'], args)
+    new_args = dftw_utils.import_args_from_dict(exporter[u'args'], vars(args))
     new_args[u'processor_output'] = processor_output
     exporter_class = config.Config.get_exporter(exporter[u'name'])
     exporter_objs.extend(exporter_class.launch_exporter(**new_args))

@@ -4,9 +4,12 @@ __author__ = u'jbn@google.com (Johan Berggren)'
 
 from datetime import datetime
 import os
+import re
 import sys
 
 import pytz
+
+TOKEN_REGEX = re.compile(r'\@(\w+)')
 
 
 class DFTimewolfConsoleOutput(object):
@@ -97,3 +100,59 @@ def IsValidTimezone(timezone):
     Boolean indicating if the timezone name is known to the pytz package
   """
   return timezone in pytz.all_timezones
+
+
+def import_args_from_dict(value, args):
+  """Replaces some arguments by those specified by a key-value dictionary.
+
+  This function will be recursively called on a dictionary looking for any
+  value containing a "$" variable. If found, the value will be replaced
+  by the attribute in "args" of the same name.
+
+  It is used to load arguments from the CLI and any extra configuration
+  parameters passed in recipes.
+
+  Args:
+    value: The value of a {key: value} dictionary. This is passed recursively
+        and may change in nature: string, list, or dict. The top-level variable
+        should be the dictionary that is supposed to be recursively traversed.
+    args: A {key: value} dictionary used to do replacements.
+
+  Returns:
+    The first caller of the function will receive a dictionary in which strings
+    starting with "@" are replaced by the parameters in args.
+  """
+
+  if isinstance(value, (str, unicode)):
+    match = TOKEN_REGEX.search(str(value))
+    if match and args.get(match.group(1)):
+      return TOKEN_REGEX.sub(args[match.group(1)] or '', value)
+  elif isinstance(value, list):
+    return [import_args_from_dict(item, args) for item in value]
+  elif isinstance(value, dict):
+    return {key: import_args_from_dict(val, args) for key, val in value.items()}
+  return value
+
+
+def check_placeholders(value):
+  """Checks if any values in a given dictionary still contain @ parameters.
+
+  Args:
+    value: Dictionary, list, or string that will be recursively checked for
+        placeholders
+
+  Raises:
+    ValueError: There still exists a value with an @ parameter.
+
+  Returns:
+    Top-level caller: a modified dict with replaced tokens.
+    Recursive caller: a modified objct with replaced tokens.
+  """
+  if isinstance(value, (str, unicode)):
+    if TOKEN_REGEX.search(value):
+      raise ValueError('{0:s} must be replaced in dictionary'.format(value))
+  elif isinstance(value, list):
+    return [check_placeholders(item) for item in value]
+  elif isinstance(value, dict):
+    return {key: check_placeholders(val) for key, val in value.items()}
+  return value

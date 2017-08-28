@@ -2,7 +2,7 @@
 import argparse
 from unittest import TestCase
 
-from dftimewolf.cli import dftimewolf_recipes
+from dftimewolf.lib import utils as dftw_utils
 
 parser = argparse.ArgumentParser()
 parser.add_argument('parameterone')
@@ -40,7 +40,9 @@ class DFTimewolfTest(TestCase):
         'BOOM',
     ])
 
-    imported_args = dftimewolf_recipes.import_args_from_cli(recipe_args, args)
+
+    imported_args = dftw_utils.import_args_from_dict(recipe_args, vars(args))
+
     self.assertEqual(imported_args, expected_args)
 
   def test_nonexistent_arg(self):
@@ -62,5 +64,6 @@ class DFTimewolfTest(TestCase):
         'BOOM',
     ])
 
-    with self.assertRaises(AttributeError):
-      dftimewolf_recipes.import_args_from_cli(recipe_args, args)
+    with self.assertRaises(ValueError):
+      imported = dftw_utils.import_args_from_dict(recipe_args, vars(args))
+      dftw_utils.check_placeholders(imported)
