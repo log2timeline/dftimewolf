@@ -31,9 +31,6 @@ Your Timesketch URL is: https://timesketch.yourorg.com/sketch/244/
 Recipe local_plaso executed successfully
 
 """
-
-__author__ = u'tomchop@google.com (Thomas Chopitea)'
-
 from __future__ import unicode_literals
 
 import argparse
