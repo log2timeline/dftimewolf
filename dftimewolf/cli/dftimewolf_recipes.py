@@ -34,6 +34,8 @@ Recipe local_plaso executed successfully
 
 __author__ = u'tomchop@google.com (Thomas Chopitea)'
 
+from __future__ import unicode_literals
+
 import argparse
 import os
 
@@ -89,14 +91,13 @@ def main():
 
   collector_objs = []
   for collector in recipe[u'collectors']:
-    new_args = dftw_utils.import_args_from_dict(collector[u'args'], vars(args))
-    collector_cls = config.Config.get_collector(collector[u'name'])
+    new_args = dftw_utils.import_args_from_dict(collector["args"], vars(args));collector_cls = config.Config.get_collector(collector[u'name'])
     collector_objs.extend(collector_cls.launch_collector(**new_args))
 
   # Wait for collectors to finish and collect output
   collector_output = []
   for collector_obj in collector_objs:
-    collector_obj.join()
+    collector_obj.join('')
     collector_output.extend(collector_obj.results)
 
   if recipe[u'processors']:
