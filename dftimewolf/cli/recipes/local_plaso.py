@@ -11,40 +11,35 @@ from __future__ import unicode_literals
 name = 'local_plaso'
 
 contents = {
-    'name': 'local_plaso',
+    'name':
+        'local_plaso',
     'params': {},
-    'collectors': [
-        {
-            'name': 'FilesystemCollector',
-            'args': {
-                'paths': ['@paths'],
-                'verbose': True,
-                },
-            }
-        ],
-    'processors': [
-        {
-            'name': 'LocalPlasoProcessor',
-            'args': {
-                'timezone': None,
-                'verbose': True,
-                },
-            }
-        ],
-    'exporters': [
-        {
-            'name': 'TimesketchExporter',
-            'args': {
-                'ts_endpoint': '@ts_endpoint',
-                'ts_username': '@ts_username',
-                'ts_password': '@ts_password',
-                'incident_id': '@incident_id',
-                'sketch_id': None,
-                'verbose': True,
-                }
-            }
-        ],
-    }
+    'collectors': [{
+        'name': 'FilesystemCollector',
+        'args': {
+            'paths': ['@paths'],
+            'verbose': True,
+        },
+    }],
+    'processors': [{
+        'name': 'LocalPlasoProcessor',
+        'args': {
+            'timezone': None,
+            'verbose': True,
+        },
+    }],
+    'exporters': [{
+        'name': 'TimesketchExporter',
+        'args': {
+            'ts_endpoint': '@ts_endpoint',
+            'ts_username': '@ts_username',
+            'ts_password': '@ts_password',
+            'incident_id': '@incident_id',
+            'sketch_id': None,
+            'verbose': True,
+        }
+    }],
+}
 
 args = [
     ('paths', 'Paths to process'),

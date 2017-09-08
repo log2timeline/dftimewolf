@@ -19,8 +19,7 @@ class TimesketchExporter(BaseExporter):
     sketch_id: Timesketch Sketch ID the timeline will be added to
   """
 
-  def __init__(
-      self, timesketch_api, incident_id, sketch_id, verbose, paths):
+  def __init__(self, timesketch_api, incident_id, sketch_id, verbose, paths):
     """Initializes a filesystem collector.
 
     Args:
@@ -48,8 +47,8 @@ class TimesketchExporter(BaseExporter):
         sketch_description = 'No description provided'
       self.sketch_id = timesketch_api.create_sketch(
           sketch_name, sketch_description)
-      self.console_out.StdOut('New sketch created: {0:d}'.format(
-          self.sketch_id))
+      self.console_out.StdOut(
+          'New sketch created: {0:d}'.format(self.sketch_id))
       syslog.syslog('New sketch created: {0:d}'.format(self.sketch_id))
 
   def export(self):
@@ -68,12 +67,7 @@ class TimesketchExporter(BaseExporter):
 
   @staticmethod
   def launch_exporter(
-      ts_endpoint,
-      ts_username,
-      ts_password,
-      incident_id,
-      sketch_id,
-      verbose,
+      ts_endpoint, ts_username, ts_password, incident_id, sketch_id, verbose,
       processor_output):
     """Threads one or more TimesketchExporter objects.
 
@@ -92,12 +86,12 @@ class TimesketchExporter(BaseExporter):
 
     print('Using timesketch endpoint: {0:s}'.format(ts_endpoint))
 
-    timesketch_api = timesketch_utils.TimesketchApiClient(ts_endpoint,
-                                                          ts_username,
-                                                          ts_password)
+    timesketch_api = timesketch_utils.TimesketchApiClient(
+        ts_endpoint, ts_username, ts_password)
     exporter = TimesketchExporter(
         timesketch_api, incident_id, sketch_id, verbose, processor_output)
     exporter.start()
     return [exporter]
+
 
 MODCLASS = [('timesketch', TimesketchExporter)]

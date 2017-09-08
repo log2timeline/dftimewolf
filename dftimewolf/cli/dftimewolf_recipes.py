@@ -70,8 +70,7 @@ def main():
 
   for recipe, recipe_args in config.Config.get_registered_recipes():
     subparser = subparsers.add_parser(
-        recipe['name'],
-        description='{0:s}'.format(recipe.__doc__))
+        recipe['name'], description='{0:s}'.format(recipe.__doc__))
     subparser.set_defaults(recipe=recipe)
     for switch, help_text in recipe_args:
       subparser.add_argument(switch, help=help_text)
@@ -109,8 +108,7 @@ def main():
 
     processor_objs = []
     for processor in recipe['processors']:
-      new_args = dftw_utils.import_args_from_dict(
-          processor['args'], vars(args))
+      new_args = dftw_utils.import_args_from_dict(processor['args'], vars(args))
       new_args['collector_output'] = collector_output
       processor_class = config.Config.get_processor(processor['name'])
       processor_objs.extend(processor_class.launch_processor(**new_args))
@@ -144,6 +142,7 @@ def main():
 
   console_out.StdOut(
       'Recipe {0:s} executed successfully'.format(recipe['name']))
+
 
 if __name__ == '__main__':
   main()

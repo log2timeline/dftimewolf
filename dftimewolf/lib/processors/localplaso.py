@@ -34,8 +34,8 @@ class LocalPlasoProcessor(BaseArtifactProcessor):
     self.artifacts_path = artifacts_path
     self.timezone = timezone
     self.plaso_storage_file_name = '{0:s}.plaso'.format(uuid.uuid4().hex)
-    self.plaso_storage_file_path = os.path.join(self.output_path,
-                                                self.plaso_storage_file_name)
+    self.plaso_storage_file_path = os.path.join(
+        self.output_path, self.plaso_storage_file_name)
     self.results = None
 
   def process(self):
@@ -60,8 +60,8 @@ class LocalPlasoProcessor(BaseArtifactProcessor):
         '--logfile', log_file_path, self.plaso_storage_file_path,
         self.artifacts_path
     ])
-    self.console_out.VerboseOut('Running external command: {0:s}'.format(
-        ' '.join(cmd)))
+    self.console_out.VerboseOut(
+        'Running external command: {0:s}'.format(' '.join(cmd)))
     # Running the local l2t command
     try:
       l2t_proc = subprocess.Popen(
@@ -102,5 +102,6 @@ class LocalPlasoProcessor(BaseArtifactProcessor):
   def output(self):
     """Dynamically generate plugin processor output."""
     return [(self.name, self.plaso_storage_file_path)]
+
 
 MODCLASS = [('localplaso', LocalPlasoProcessor)]

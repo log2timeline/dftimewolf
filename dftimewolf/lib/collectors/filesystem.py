@@ -38,8 +38,7 @@ class FilesystemCollector(BaseCollector):
         str: the name provided for the collection.
         str: path to the files for collection.
     """
-    self.console_out.VerboseOut('Artifact path: {0:s}'.format(
-        self.output_path))
+    self.console_out.VerboseOut('Artifact path: {0:s}'.format(self.output_path))
     return [(self.name, self.output_path)]
 
   @property
@@ -51,8 +50,8 @@ class FilesystemCollector(BaseCollector):
     """
     if not self.name:
       self.name = os.path.basename(self.output_path.rstrip('/'))
-    self.console_out.VerboseOut('Artifact collection name: {0:s}'.format(
-        self.name))
+    self.console_out.VerboseOut(
+        'Artifact collection name: {0:s}'.format(self.name))
     return self.name
 
   @staticmethod
