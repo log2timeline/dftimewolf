@@ -1111,7 +1111,7 @@ class ProjectHelper(CLIHelper):
       name, _, email_address = author[:-1].rpartition(u'(')
       if email_address in authors:
         if name != authors[email_address]:
-          logging.warning(u'Detected name mismatch for author: {0:d}.'.format(
+          logging.warning(u'Detected name mismatch for author: {0:s}.'.format(
               email_address))
         continue
 
