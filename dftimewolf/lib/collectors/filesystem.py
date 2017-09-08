@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
 """Collect artifacts from the local filesystem."""
 
-__author__ = u'jbn@google.com (Johan Berggren)'
+from __future__ import unicode_literals
 
 import os
 
@@ -37,7 +38,7 @@ class FilesystemCollector(BaseCollector):
         str: the name provided for the collection.
         str: path to the files for collection.
     """
-    self.console_out.VerboseOut(u'Artifact path: {0:s}'.format(
+    self.console_out.VerboseOut('Artifact path: {0:s}'.format(
         self.output_path))
     return [(self.name, self.output_path)]
 
@@ -49,8 +50,8 @@ class FilesystemCollector(BaseCollector):
       str: name of the artifact collection
     """
     if not self.name:
-      self.name = os.path.basename(self.output_path.rstrip(u'/'))
-    self.console_out.VerboseOut(u'Artifact collection name: {0:s}'.format(
+      self.name = os.path.basename(self.output_path.rstrip('/'))
+    self.console_out.VerboseOut('Artifact collection name: {0:s}'.format(
         self.name))
     return self.name
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """DFTimewolf CLI tool to collect artifacts.
 
 dftimewolf_recipes uses recipes defined in dftimewolf/cli/recipes to orchestrate
@@ -32,7 +33,7 @@ Recipe local_plaso executed successfully
 
 """
 
-__author__ = u'tomchop@google.com (Thomas Chopitea)'
+from __future__ import unicode_literals
 
 import argparse
 import os
@@ -63,14 +64,14 @@ def main():
   parser = argparse.ArgumentParser()
 
   subparsers = parser.add_subparsers(
-      title=u'Available recipes',
-      description=u'List of currently loaded recipes',
-      help=u'Recipe-specific help')
+      title='Available recipes',
+      description='List of currently loaded recipes',
+      help='Recipe-specific help')
 
   for recipe, recipe_args in config.Config.get_registered_recipes():
     subparser = subparsers.add_parser(
-        recipe[u'name'],
-        description=u'{0:s}'.format(recipe.__doc__))
+        recipe['name'],
+        description='{0:s}'.format(recipe.__doc__))
     subparser.set_defaults(recipe=recipe)
     for switch, help_text in recipe_args:
       subparser.add_argument(switch, help=help_text)
@@ -79,39 +80,39 @@ def main():
   recipe = args.recipe
 
   console_out = dftw_utils.DFTimewolfConsoleOutput(
-      sender=u'DFTimewolfCli', verbose=True)
+      sender='DFTimewolfCli', verbose=True)
 
   # COLLECTORS
   # Thread collectors
-  console_out.StdOut(u'Collectors:')
+  console_out.StdOut('Collectors:')
   for collector in recipe['collectors']:
-    console_out.StdOut(u'  {0:s}'.format(collector[u'name']))
+    console_out.StdOut('  {0:s}'.format(collector['name']))
 
-  collector_objs = []
-  for collector in recipe[u'collectors']:
-    new_args = dftw_utils.import_args_from_dict(collector[u'args'], vars(args))
-    collector_cls = config.Config.get_collector(collector[u'name'])
-    collector_objs.extend(collector_cls.launch_collector(**new_args))
+  collector_objects = []
+  for collector in recipe['collectors']:
+    new_args = dftw_utils.import_args_from_dict(collector['args'], vars(args))
+    collector_cls = config.Config.get_collector(collector['name'])
+    collector_objects.extend(collector_cls.launch_collector(**new_args))
 
   # Wait for collectors to finish and collect output
   collector_output = []
-  for collector_obj in collector_objs:
+  for collector_obj in collector_objects:
     collector_obj.join()
     collector_output.extend(collector_obj.results)
 
-  if recipe[u'processors']:
+  if recipe['processors']:
     # PROCESSORS
     # Thread processors
-    console_out.StdOut(u'Processors:')
-    for processor in recipe[u'processors']:
-      console_out.StdOut(u'  {0:s}'.format(processor[u'name']))
+    console_out.StdOut('Processors:')
+    for processor in recipe['processors']:
+      console_out.StdOut('  {0:s}'.format(processor['name']))
 
     processor_objs = []
-    for processor in recipe[u'processors']:
+    for processor in recipe['processors']:
       new_args = dftw_utils.import_args_from_dict(
-          processor[u'args'], vars(args))
-      new_args[u'collector_output'] = collector_output
-      processor_class = config.Config.get_processor(processor[u'name'])
+          processor['args'], vars(args))
+      new_args['collector_output'] = collector_output
+      processor_class = config.Config.get_processor(processor['name'])
       processor_objs.extend(processor_class.launch_processor(**new_args))
 
     # Wait for processors to finish and collect output
@@ -124,15 +125,15 @@ def main():
 
   # EXPORTERS
   # Thread exporters
-  console_out.StdOut(u'Exporters:')
-  for exporter in recipe[u'exporters']:
-    console_out.StdOut(u'  {0:s}'.format(exporter[u'name']))
+  console_out.StdOut('Exporters:')
+  for exporter in recipe['exporters']:
+    console_out.StdOut('  {0:s}'.format(exporter['name']))
 
   exporter_objs = []
-  for exporter in recipe[u'exporters']:
-    new_args = dftw_utils.import_args_from_dict(exporter[u'args'], vars(args))
-    new_args[u'processor_output'] = processor_output
-    exporter_class = config.Config.get_exporter(exporter[u'name'])
+  for exporter in recipe['exporters']:
+    new_args = dftw_utils.import_args_from_dict(exporter['args'], vars(args))
+    new_args['processor_output'] = processor_output
+    exporter_class = config.Config.get_exporter(exporter['name'])
     exporter_objs.extend(exporter_class.launch_exporter(**new_args))
 
   # Wait for exporters to finish
@@ -142,7 +143,7 @@ def main():
     exporter_output.extend(exporter.output)
 
   console_out.StdOut(
-      u'Recipe {0:s} executed successfully'.format(recipe[u'name']))
+      'Recipe {0:s} executed successfully'.format(recipe['name']))
 
 if __name__ == '__main__':
   main()

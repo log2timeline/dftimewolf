@@ -1,6 +1,5 @@
+# -*- coding: utf-8 -*-
 """DFTimewolf artifact processors, responsible for processing artifacts."""
-
-__author__ = u'jbn@google.com (Johan Berggren)'
 
 import threading
 

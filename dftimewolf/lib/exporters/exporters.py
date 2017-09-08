@@ -1,6 +1,5 @@
+# -*- coding: utf-8 -*-
 """DFTimewolf exporters, responsible for exporting processing results."""
-
-__author__ = u'jbn@google.com (Johan Berggren)'
 
 import threading
 

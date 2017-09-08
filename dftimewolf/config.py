@@ -1,4 +1,7 @@
+# -*- coding: utf-8 -*-
 """Small module to load user configuration parameters."""
+
+from __future__ import unicode_literals
 
 import json
 import sys
@@ -38,11 +41,11 @@ class Config(object):
     Args:
       filename: str, the filename to open.
     """
-    with open(filename, 'rb') as fp:
+    with open(filename, b'rb') as fp:
       try:
         cls.load_extra_data(fp.read())
       except IOError as e:
-        sys.stderr.write("Could not open {0:s}. {1:s}".format(filename, e))
+        sys.stderr.write('Could not open {0:s}. {1:s}'.format(filename, e))
         exit(-1)
 
   @classmethod
@@ -57,7 +60,7 @@ class Config(object):
     try:
       cls._extra_config.update(json.loads(data))
     except ValueError as e:
-      sys.stderr.write("Could convert to JSON. {0:s}".format(e))
+      sys.stderr.write('Could convert to JSON. {0:s}'.format(e))
       exit(-1)
 
   @classmethod

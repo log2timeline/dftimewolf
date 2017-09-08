@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
 """Common utilities for DFTimewolf."""
 
-__author__ = u'jbn@google.com (Johan Berggren)'
+from __future__ import unicode_literals
 
 from datetime import datetime
 import os
@@ -36,7 +37,7 @@ class DFTimewolfConsoleOutput(object):
     """
     script_name = os.path.basename(sys.argv[0])
     timestamp = datetime.now().isoformat()
-    formatted_message = u'[{0:s}] {1:s}: {2:s} - {3:s}\n'.format(timestamp,
+    formatted_message = '[{0:s}] {1:s}: {2:s} - {3:s}\n'.format(timestamp,
                                                                  script_name,
                                                                  self._sender,
                                                                  message)
@@ -48,7 +49,7 @@ class DFTimewolfConsoleOutput(object):
     Args:
       message: Message to be printed
     """
-    sys.stdout.write(u'{0:s}\n'.format(message))
+    sys.stdout.write('{0:s}\n'.format(message))
     sys.stdout.flush()
 
   def StdErr(self, message, die=False):
@@ -60,7 +61,7 @@ class DFTimewolfConsoleOutput(object):
     """
     error_message = self._FormatMessage(message)
     if die:
-      exit_message = error_message.rstrip(u'\n')
+      exit_message = error_message.rstrip('\n')
       sys.exit(exit_message)
     sys.stderr.write(error_message)
     sys.stderr.flush()
@@ -82,12 +83,12 @@ def ReadFromStdin():
     Tuple of path to artifacts or processed artifacts and a name
   """
   for line in sys.stdin:
-    path_name = line.strip(u'\n').split()
+    path_name = line.strip('\n').split()
     try:
       path = path_name[0]
       name = path_name[1]
     except IndexError:
-      raise IndexError(u'Malformed input on stdin')
+      raise IndexError('Malformed input on stdin')
     yield (path, name)
 
 
@@ -146,7 +147,7 @@ def check_placeholders(value):
 
   Returns:
     Top-level caller: a modified dict with replaced tokens.
-    Recursive caller: a modified objct with replaced tokens.
+    Recursive caller: a modified object with replaced tokens.
   """
   if isinstance(value, (str, unicode)):
     if TOKEN_REGEX.search(value):

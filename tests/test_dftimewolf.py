@@ -1,4 +1,8 @@
+# -*- coding: utf-8 -*-
 """Tests for DFTimewolf functions."""
+
+from __future__ import unicode_literals
+
 import argparse
 from unittest import TestCase
 

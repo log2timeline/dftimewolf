@@ -1,6 +1,8 @@
+# -*- coding: utf-8 -*-
 """Export processing results to Timesketch."""
 
-__author__ = u'jbn@google.com (Johan Berggren)'
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import syslog
 
@@ -42,13 +44,13 @@ class TimesketchExporter(BaseExporter):
         sketch_name = incident_id
         sketch_description = incident_id
       else:
-        sketch_name = u'Untitled sketch'
-        sketch_description = u'No description provided'
+        sketch_name = 'Untitled sketch'
+        sketch_description = 'No description provided'
       self.sketch_id = timesketch_api.create_sketch(
           sketch_name, sketch_description)
-      self.console_out.StdOut(u'New sketch created: {0:d}'.format(
+      self.console_out.StdOut('New sketch created: {0:d}'.format(
           self.sketch_id))
-      syslog.syslog(u'New sketch created: {0:d}'.format(self.sketch_id))
+      syslog.syslog('New sketch created: {0:d}'.format(self.sketch_id))
 
   def export(self):
     """Executes a Timesketch export.
@@ -60,7 +62,7 @@ class TimesketchExporter(BaseExporter):
     self.timesketch_api.export_artifacts(self.paths, self.sketch_id)
     self.sketch_url = self.timesketch_api.get_sketch_url(self.sketch_id)
     self.console_out.StdOut(
-        u'Your Timesketch URL is: {0:s}'.format(self.sketch_url))
+        'Your Timesketch URL is: {0:s}'.format(self.sketch_url))
     self.output.append(self.sketch_url)
     return self.sketch_url
 
@@ -88,7 +90,7 @@ class TimesketchExporter(BaseExporter):
       A list of TimesketchExporter objects that can be join()ed from the caller.
     """
 
-    print 'Using timesketch endpoint: {0:s}'.format(ts_endpoint)
+    print('Using timesketch endpoint: {0:s}'.format(ts_endpoint))
 
     timesketch_api = timesketch_utils.TimesketchApiClient(ts_endpoint,
                                                           ts_username,
