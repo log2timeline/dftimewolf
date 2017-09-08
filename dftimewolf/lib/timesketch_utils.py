@@ -81,7 +81,7 @@ class TimesketchApiClient(object):
       int: ID of uploaded timeline
     """
     resource_url = '{0:s}/upload/'.format(self.api_base_url)
-    files = {'file': open(plaso_storage_path, b'rb')}
+    files = {'file': open(plaso_storage_path, 'rb')}
     data = {'name': timeline_name}
     response = self.session.post(resource_url, files=files, data=data)
     response_dict = response.json()

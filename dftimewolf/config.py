@@ -41,7 +41,7 @@ class Config(object):
     Args:
       filename: str, the filename to open.
     """
-    with open(filename, b'rb') as fp:
+    with open(filename, 'rb') as fp:
       try:
         cls.load_extra_data(fp.read())
       except IOError as e:
