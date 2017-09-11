@@ -1,3 +1,2 @@
+# -*- coding: utf-8 -*-
 """DFTimewolf libraries."""
-
-__author__ = u'jbn@google.com (Johan Berggren)'

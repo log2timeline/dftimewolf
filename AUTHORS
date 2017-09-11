@@ -1,0 +1,15 @@
+# Names should be added to this file with this pattern:
+#
+# For individuals:
+#   Name (email address)
+#
+# For organizations:
+#   Organization (fnmatch pattern)
+#
+# See python fnmatch module documentation for more information.
+
+Google Inc. (*@google.com)
+Johan Berggren (jberggren@gmail.com)
+Thomas Chopitea (tomchop@google.com)
+Gary Brown (someguyiknow@google.com)
+Daniel White (onager@deerpie.com)

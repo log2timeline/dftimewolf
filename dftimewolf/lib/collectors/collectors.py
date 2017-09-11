@@ -1,6 +1,5 @@
+# -*- coding: utf-8 -*-
 """DFTimewolf artifact collectors, responsible for collecting artifacts."""
-
-__author__ = u'jbn@google.com (Johan Berggren)'
 
 import threading
 

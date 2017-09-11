@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """API Client for Timesketch."""
+from __future__ import unicode_literals
+
 from bs4 import BeautifulSoup
 import requests
 
@@ -23,7 +25,7 @@ class TimesketchApiClient(object):
       password (str): Timesketch password
     """
     self.host_url = host
-    self.api_base_url = u'{0:s}/api/v1'.format(self.host_url)
+    self.api_base_url = '{0:s}/api/v1'.format(self.host_url)
     self.username = username
     self.session = self._create_session(username, password)
 
@@ -48,7 +50,7 @@ class TimesketchApiClient(object):
         'x-csrftoken': csrf_token,
         'referer': self.host_url
     })
-    _ = session.post(u'{0:s}/login/'.format(self.host_url), data=login_data)
+    _ = session.post('{0:s}/login/'.format(self.host_url), data=login_data)
     return session
 
   def create_sketch(self, name, description):
@@ -61,11 +63,11 @@ class TimesketchApiClient(object):
     Returns:
       int: ID of created sketch
     """
-    resource_url = u'{0:s}/sketches/'.format(self.api_base_url)
-    form_data = {u'name': name, u'description': description}
+    resource_url = '{0:s}/sketches/'.format(self.api_base_url)
+    form_data = {'name': name, 'description': description}
     response = self.session.post(resource_url, json=form_data)
     response_dict = response.json()
-    sketch_id = response_dict[u'objects'][0]['id']
+    sketch_id = response_dict['objects'][0]['id']
     return sketch_id
 
   def upload_timeline(self, timeline_name, plaso_storage_path):
@@ -78,12 +80,12 @@ class TimesketchApiClient(object):
     Returns:
       int: ID of uploaded timeline
     """
-    resource_url = u'{0:s}/upload/'.format(self.api_base_url)
+    resource_url = '{0:s}/upload/'.format(self.api_base_url)
     files = {'file': open(plaso_storage_path, 'rb')}
-    data = {u'name': timeline_name}
+    data = {'name': timeline_name}
     response = self.session.post(resource_url, files=files, data=data)
     response_dict = response.json()
-    index_id = response_dict[u'objects'][0]['id']
+    index_id = response_dict['objects'][0]['id']
     return index_id
 
   def export_artifacts(self, processed_artifacts, sketch_id):
@@ -111,8 +113,8 @@ class TimesketchApiClient(object):
       sketch_id (int): ID of sketch
       index_id (int): ID of timeline to add to sketch
     """
-    resource_url = u'{0:s}/sketches/{1:d}/'.format(self.api_base_url, sketch_id)
-    form_data = {u'timelines': [index_id]}
+    resource_url = '{0:s}/sketches/{1:d}/'.format(self.api_base_url, sketch_id)
+    form_data = {'timelines': [index_id]}
     self.session.post(resource_url, json=form_data)
 
   def get_sketch(self, sketch_id):
@@ -128,13 +130,13 @@ class TimesketchApiClient(object):
     Raises:
       ValueError: Sketch is inaccessible
     """
-    resource_url = u'{0:s}/sketches/{1:d}/'.format(self.api_base_url, sketch_id)
+    resource_url = '{0:s}/sketches/{1:d}/'.format(self.api_base_url, sketch_id)
     response = self.session.get(resource_url)
     response_dict = response.json()
     try:
-      response_dict[u'objects']
+      response_dict['objects']
     except KeyError:
-      raise ValueError(u'Sketch does not exist or you have no access')
+      raise ValueError('Sketch does not exist or you have no access')
     return response_dict
 
   def get_sketch_url(self, sketch_id):
@@ -145,5 +147,5 @@ class TimesketchApiClient(object):
     Returns:
       str: URL of sketch
     """
-    resource_url = u'{0:s}/sketch/{1:d}/'.format(self.host_url, sketch_id)
+    resource_url = '{0:s}/sketch/{1:d}/'.format(self.host_url, sketch_id)
     return resource_url

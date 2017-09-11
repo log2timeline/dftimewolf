@@ -1,6 +1,6 @@
-"""Processes artifacst using a local plaso process."""
-
-__author__ = u'jbn@google.com (Johan Berggren)'
+# -*- coding: utf-8 -*-
+"""Processes artifacts using a local plaso process."""
+from __future__ import unicode_literals
 
 import os
 import subprocess
@@ -33,9 +33,9 @@ class LocalPlasoProcessor(BaseArtifactProcessor):
     self.output_path = tempfile.mkdtemp()
     self.artifacts_path = artifacts_path
     self.timezone = timezone
-    self.plaso_storage_file_name = u'{0:s}.plaso'.format(uuid.uuid4().hex)
-    self.plaso_storage_file_path = os.path.join(self.output_path,
-                                                self.plaso_storage_file_name)
+    self.plaso_storage_file_name = '{0:s}.plaso'.format(uuid.uuid4().hex)
+    self.plaso_storage_file_path = os.path.join(
+        self.output_path, self.plaso_storage_file_name)
     self.results = None
 
   def process(self):
@@ -47,21 +47,21 @@ class LocalPlasoProcessor(BaseArtifactProcessor):
     Raises:
       ValueError: If the local log2timeline.py process fails
     """
-    log_file_path = os.path.join(self.output_path, u'plaso.log')
-    self.console_out.VerboseOut(u'Log file: {0:s}'.format(log_file_path))
+    log_file_path = os.path.join(self.output_path, 'plaso.log')
+    self.console_out.VerboseOut('Log file: {0:s}'.format(log_file_path))
 
-    cmd = [u'log2timeline.py']
+    cmd = ['log2timeline.py']
     # Since we might be running alongside another Processor, always disable
     # the status view
-    cmd.extend([u'-q', u'--status_view', u'none'])
+    cmd.extend(['-q', '--status_view', 'none'])
     if self.timezone:
-      cmd.extend([u'-z', self.timezone])
+      cmd.extend(['-z', self.timezone])
     cmd.extend([
-        u'--logfile', log_file_path, self.plaso_storage_file_path,
+        '--logfile', log_file_path, self.plaso_storage_file_path,
         self.artifacts_path
     ])
-    self.console_out.VerboseOut(u'Running external command: {0:s}'.format(
-        u' '.join(cmd)))
+    self.console_out.VerboseOut(
+        'Running external command: {0:s}'.format(' '.join(cmd)))
     # Running the local l2t command
     try:
       l2t_proc = subprocess.Popen(
@@ -70,14 +70,14 @@ class LocalPlasoProcessor(BaseArtifactProcessor):
       l2t_status = l2t_proc.wait()
       if l2t_status:
         self.console_out.StdErr(errors)
-        raise ValueError(u'The command {0:s} failed'.format(u' '.join(cmd)))
+        raise ValueError('The command {0:s} failed'.format(' '.join(cmd)))
     except OSError as e:
       raise ValueError(
           'An error occurred while attempting to run plaso: {0:s}'.format(e))
 
   @staticmethod
   def launch_processor(collector_output, timezone=None, verbose=False):
-    """Thread one or more LocalPlasoProcessor obects.
+    """Thread one or more LocalPlasoProcessor objects.
 
     Args:
       collector_output: Path to data to process
@@ -102,5 +102,6 @@ class LocalPlasoProcessor(BaseArtifactProcessor):
   def output(self):
     """Dynamically generate plugin processor output."""
     return [(self.name, self.plaso_storage_file_path)]
+
 
 MODCLASS = [('localplaso', LocalPlasoProcessor)]
