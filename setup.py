@@ -29,7 +29,7 @@ setup(
     entry_points={
         'console_scripts': ['dftimewolf=dftimewolf.cli.dftimewolf_recipes:main']
     },
-    data_files=[('dftimewolf', ['dftimewolf/dftimewolf.json'])],
+    data_files=[('dftimewolf', ['dftimewolf/config.json'])],
     include_package_data=True,
     zip_safe=False,
     install_requires=[
