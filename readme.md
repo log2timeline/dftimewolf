@@ -6,9 +6,8 @@ A framework for orchestrating forensic collection, processing and data export.
 
 ### Configuration
 
-DFTimewolf has a minimal configuration file. DFTimewolf looks in the current
-directory, your home directory, or a directory pointed to by the
-`DFTIMEWOLF_CONFIG` environment variable and tries to load a JSON object from
-either `config.json` or `.dftimewolfrc`.
+DFTimewolf has a minimal configuration file. DFTimewolf looks for a
+`config.json` file in its directory and loads parameters from there.
 
-See `/dftimewolf/config.json` for an example configuration file.
+See `/dftimewolf/config.json` for an example configuration file and
+edit as you see fit.
