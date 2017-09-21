@@ -37,6 +37,7 @@ from __future__ import unicode_literals
 
 import argparse
 import os
+import sys
 
 from dftimewolf import config
 from dftimewolf.lib import utils as dftw_utils
@@ -51,16 +52,21 @@ config.Config.register_collector(filesystem.FilesystemCollector)
 config.Config.register_processor(localplaso.LocalPlasoProcessor)
 config.Config.register_exporter(timesketch.TimesketchExporter)
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-config_path = os.path.join(ROOT_DIR, 'config.json')
-config.Config.load_extra(config_path)
+# Try to open config.json and load configuration data from it
+try:
+  ROOT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+  config_path = os.path.join(ROOT_DIR, 'config.json')
+  config.Config.load_extra(config_path)
+except IOError as e:
+  sys.stderr.write(
+      'Could not open {}, some recipes might not work: {}'.format(
+          config_path, e))
 
 config.Config.register_recipe(local_plaso)
 
 
 def main():
   """Main function for DFTimewolf."""
-
   parser = argparse.ArgumentParser()
 
   subparsers = parser.add_subparsers(
