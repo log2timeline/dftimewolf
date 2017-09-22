@@ -52,15 +52,15 @@ config.Config.register_collector(filesystem.FilesystemCollector)
 config.Config.register_processor(localplaso.LocalPlasoProcessor)
 config.Config.register_exporter(timesketch.TimesketchExporter)
 
-# Try to open config.json and load configuration data from it
+# Try to open config.json and load configuration data from it.
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+config_path = os.path.join(ROOT_DIR, 'config.json')
 try:
-  ROOT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-  config_path = os.path.join(ROOT_DIR, 'config.json')
   config.Config.load_extra(config_path)
-except IOError as e:
+except IOError as exception:
   sys.stderr.write(
-      'Could not open {}, some recipes might not work: {}'.format(
-          config_path, e))
+      'Could not open {0:s}, some recipes might not work: {1:s}'.format(
+          config_path, exception))
 
 config.Config.register_recipe(local_plaso)
 
