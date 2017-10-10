@@ -77,6 +77,7 @@ config.Config.register_recipe(grr_artifact_hosts)
 config.Config.register_recipe(grr_hunt_file)
 config.Config.register_recipe(grr_huntresults_plaso_timesketch)
 
+
 def main():
   """Main function for DFTimewolf."""
   parser = argparse.ArgumentParser()
