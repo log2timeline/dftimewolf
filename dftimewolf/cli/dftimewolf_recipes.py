@@ -129,22 +129,25 @@ def main():
 
   # EXPORTERS
   # Thread exporters
-  console_out.StdOut('Exporters:')
-  for exporter in recipe['exporters']:
-    console_out.StdOut('  {0:s}'.format(exporter['name']))
+  if recipe['exporters']:
+    console_out.StdOut('Exporters:')
+    for exporter in recipe['exporters']:
+      console_out.StdOut('  {0:s}'.format(exporter['name']))
 
-  exporter_objs = []
-  for exporter in recipe['exporters']:
-    new_args = dftw_utils.import_args_from_dict(exporter['args'], vars(args))
-    new_args['processor_output'] = processor_output
-    exporter_class = config.Config.get_exporter(exporter['name'])
-    exporter_objs.extend(exporter_class.launch_exporter(**new_args))
+    exporter_objs = []
+    for exporter in recipe['exporters']:
+      new_args = dftw_utils.import_args_from_dict(exporter['args'], vars(args))
+      new_args['processor_output'] = processor_output
+      exporter_class = config.Config.get_exporter(exporter['name'])
+      exporter_objs.extend(exporter_class.launch_exporter(**new_args))
 
-  # Wait for exporters to finish
-  exporter_output = []
-  for exporter in exporter_objs:
-    exporter.join()
-    exporter_output.extend(exporter.output)
+    # Wait for exporters to finish
+    exporter_output = []
+    for exporter in exporter_objs:
+      exporter.join()
+      exporter_output.extend(exporter.output)
+  else:
+    exporter_output = processor_output
 
   console_out.StdOut(
       'Recipe {0:s} executed successfully'.format(recipe['name']))
