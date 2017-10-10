@@ -6,7 +6,7 @@
 - Exports them to a new Timesketch sketch
 """
 
-from __future__ import unicode_literals
+__author__ = 'tomchop@google.com (Thomas Chopitea)'
 
 contents = {
     'name': 'grr_huntresults_plaso_timesketch',

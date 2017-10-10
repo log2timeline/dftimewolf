@@ -10,7 +10,6 @@ import zipfile
 
 from dftimewolf.lib.collectors.collectors import BaseCollector
 
-
 from grr_api_client import errors as grr_errors
 from grr_api_client import api as grr_api
 from grr_api_client.proto.grr.proto import flows_pb2
@@ -27,12 +26,8 @@ class GRRHuntCollector(BaseCollector):
   """
   _CHECK_APPROVAL_INTERVAL_SEC = 10
 
-  def __init__(self,
-               reason,
-               grr_server_url,
-               grr_auth,
-               approvers=None,
-               verbose=False):
+  def __init__(
+      self, reason, grr_server_url, grr_auth, approvers=None, verbose=False):
     """Initializes a GRR hunt results collector.
 
     Args:
@@ -76,8 +71,9 @@ class GRRHuntCollector(BaseCollector):
       syslog.syslog('Hunt {0:s}: No valid hunt approval found'.format(hunt_id))
       self.console_out.VerboseOut('No valid hunt approval found')
       if not self.approvers:
-        raise ValueError('GRR hunt needs approval but no approvers specified '
-                         '(hint: use --approvers)')
+        raise ValueError(
+            'GRR hunt needs approval but no approvers specified '
+            '(hint: use --approvers)')
       self.console_out.VerboseOut(
           'Hunt {0:s}: approval request sent to: {1:s} (reason: {2:s})'.format(
               hunt_id, self.approvers, self.reason))
@@ -87,8 +83,8 @@ class GRRHuntCollector(BaseCollector):
       # Send a request for approval and wait until there is a valid one
       # available in GRR.
       hunt.CreateApproval(reason=self.reason, notified_users=self.approvers)
-      syslog.syslog('Hunt {0:s}: Request for hunt approval sent'.format(
-          hunt_id))
+      syslog.syslog(
+          'Hunt {0:s}: Request for hunt approval sent'.format(hunt_id))
       while True:
         try:
           hunt.Start()
@@ -112,8 +108,8 @@ class GRRHuntCollector(BaseCollector):
     if not os.path.isdir(self.output_path):
       os.makedirs(self.output_path)
 
-    output_file_path = os.path.join(self.output_path, '.'.join(
-        (self.hunt_id, 'zip')))
+    output_file_path = os.path.join(
+        self.output_path, '.'.join((self.hunt_id, 'zip')))
 
     if os.path.exists(output_file_path):
       self.console_out.StdOut(
@@ -123,15 +119,17 @@ class GRRHuntCollector(BaseCollector):
     try:
       self._hunt.GetFilesArchive().WriteToFile(output_file_path)
       syslog.syslog('Hunt {0:s}: Results downloaded'.format(self.hunt_id))
-      self.console_out.VerboseOut('Hunt {0:s}: Downloaded: {1:s}'.format(
-          self.hunt_id, output_file_path))
+      self.console_out.VerboseOut(
+          'Hunt {0:s}: Downloaded: {1:s}'.format(
+              self.hunt_id, output_file_path))
     except grr_errors.AccessForbiddenError:
-      syslog.syslog('Hunt {0:s}: No valid hunt approval found'.format(
-          self.hunt_id))
+      syslog.syslog(
+          'Hunt {0:s}: No valid hunt approval found'.format(self.hunt_id))
       self.console_out.VerboseOut('No valid hunt approval found')
       if not self.approvers:
-        raise ValueError('GRR hunt needs approval but no approvers specified '
-                         '(hint: use --approvers)')
+        raise ValueError(
+            'GRR hunt needs approval but no approvers specified '
+            '(hint: use --approvers)')
       self.console_out.VerboseOut(
           'Hunt {0:s}: approval request sent to: {1:s} (reason: {2:s})'.format(
               self.hunt_id, self.approvers, self.reason))
@@ -142,8 +140,8 @@ class GRRHuntCollector(BaseCollector):
       # available in GRR.
       self._hunt.CreateApproval(
           reason=self.reason, notified_users=self.approvers)
-      syslog.syslog('Hunt {0:s}: Request for hunt approval sent'.format(
-          self.hunt_id))
+      syslog.syslog(
+          'Hunt {0:s}: Request for hunt approval sent'.format(self.hunt_id))
       while True:
         try:
           hunt_archive = self._hunt.GetFilesArchive()
@@ -152,8 +150,9 @@ class GRRHuntCollector(BaseCollector):
               'Hunt {0:s}: Downloaded results to {1:s}'.format(
                   self.hunt_id, output_file_path))
           syslog.syslog('Hunt {0:s}: Results downloaded'.format(self.hunt_id))
-          self.console_out.VerboseOut('Hunt {0:s}: Downloaded: {1:s}'.format(
-              self.hunt_id, output_file_path))
+          self.console_out.VerboseOut(
+              'Hunt {0:s}: Downloaded: {1:s}'.format(
+                  self.hunt_id, output_file_path))
           break
         except grr_errors.AccessForbiddenError:
           time.sleep(self._CHECK_APPROVAL_INTERVAL_SEC)
@@ -184,8 +183,8 @@ class GRRHuntCollector(BaseCollector):
           if not os.path.isdir(client_directory):
             os.makedirs(client_directory)
           collection_paths.append((client_name, client_directory))
-          real_file_path = os.path.join(base, 'hashes',
-                                        os.path.basename(archive.read(f)))
+          real_file_path = os.path.join(
+              base, 'hashes', os.path.basename(archive.read(f)))
           try:
             archive.extract(real_file_path, client_directory)
             os.rename(
@@ -213,8 +212,8 @@ class GRRHuntCollector(BaseCollector):
     """Name for the collection of collected artifacts."""
     collection_name = '{0:s}: {1:s}'.format(
         self.hunt_id, self._hunt.data.hunt_runner_args.description)
-    self.console_out.VerboseOut('Artifact collection name: {0:s}'.format(
-        collection_name))
+    self.console_out.VerboseOut(
+        'Artifact collection name: {0:s}'.format(collection_name))
     return collection_name
 
 
@@ -230,14 +229,15 @@ class GRRHuntArtifactCollector(GRRHuntCollector):
     use_tsk: toggle for use_tsk flag
   """
 
-  def __init__(self,
-               reason,
-               grr_server_url,
-               grr_auth,
-               artifacts,
-               use_tsk,
-               approvers=None,
-               verbose=False):
+  def __init__(
+      self,
+      reason,
+      grr_server_url,
+      grr_auth,
+      artifacts,
+      use_tsk,
+      approvers=None,
+      verbose=False):
     """Initializes a GRR Hunt artifact collector.
 
     Args:
@@ -249,8 +249,8 @@ class GRRHuntArtifactCollector(GRRHuntCollector):
       approvers: str, comma-separated list of GRR approval recipients
       verbose: toggle for verbose output
     """
-    super(GRRHuntCollector, self).__init__(reason, grr_server_url, grr_auth,
-                                           approvers=approvers, verbose=verbose)
+    super(GRRHuntCollector, self).__init__(
+        reason, grr_server_url, grr_auth, approvers=approvers, verbose=verbose)
     self.artifacts = artifacts
     self.use_tsk = use_tsk
     self.hunt_id = self._NewHunt()
@@ -301,13 +301,14 @@ class GRRHuntFileCollector(GRRHuntCollector):
     files: comma-separated list of file paths
   """
 
-  def __init__(self,
-               reason,
-               grr_server_url,
-               grr_auth,
-               file_list,
-               approvers=None,
-               verbose=False):
+  def __init__(
+      self,
+      reason,
+      grr_server_url,
+      grr_auth,
+      file_list,
+      approvers=None,
+      verbose=False):
     """Initializes a GRR Hunt file collector.
 
     Args:
@@ -338,8 +339,8 @@ class GRRHuntFileCollector(GRRHuntCollector):
       raise RuntimeError('File must be specified for hunts')
 
     syslog.syslog('Hunt to collect {0:d} items'.format(len(self.file_list)))
-    self.console_out.VerboseOut('Files to be collected: {0:s}'.format(
-        self.file_list))
+    self.console_out.VerboseOut(
+        'Files to be collected: {0:s}'.format(self.file_list))
     hunt_name = 'FileFinder'
 
     hunt_action = flows_pb2.FileFinderAction(
@@ -351,15 +352,22 @@ class GRRHuntFileCollector(GRRHuntCollector):
     return self._StartHunt(hunt_name, hunt_args)
 
   @staticmethod
-  def launch_collector(reason, grr_server_url, grr_auth, file_list,
-                       approvers=None,
-                       verbose=False):
+  def launch_collector(
+      reason,
+      grr_server_url,
+      grr_auth,
+      file_list,
+      approvers=None,
+      verbose=False):
     """Start a file collector Hunt"""
     hunt = GRRHuntFileCollector(
         reason, grr_server_url, grr_auth, file_list, approvers, verbose)
-    hunt.console_out.StdOut("\nHunt {0:s} created succesfully!")
-    hunt.console_out.StdOut("Go grab some coffee while it completes and run a GRRHuntDownloader recipe to fetch results.".format(hunt.hunt_id))
-    hunt.console_out.StdOut("e.g. $ dftimewolf huntresults_plaso_timesketch {0:s}\n".format(hunt.hunt_id))
+    hunt.console_out.StdOut(
+        "\nHunt {0:s} created succesfully!".format(hunt.hunt_id))
+    hunt.console_out.StdOut("Run a GRRHuntDownloader recipe to fetch results.")
+    hunt.console_out.StdOut(
+        "e.g. $ dftimewolf huntresults_plaso_timesketch {0:s}\n".format(
+            hunt.hunt_id))
 
     return []
 
@@ -375,13 +383,14 @@ class GRRHuntDownloader(GRRHuntCollector):
     hunt_id: ID of GRR hunt to retrieve results from
   """
 
-  def __init__(self,
-               reason,
-               grr_server_url,
-               grr_auth,
-               hunt_id,
-               approvers=None,
-               verbose=False):
+  def __init__(
+      self,
+      reason,
+      grr_server_url,
+      grr_auth,
+      hunt_id,
+      approvers=None,
+      verbose=False):
     """Initializes a GRR hunt results collector.
 
     Args:
@@ -398,12 +407,8 @@ class GRRHuntDownloader(GRRHuntCollector):
     self._hunt = self.grr_api.Hunt(self.hunt_id).Get()
 
   @staticmethod
-  def launch_collector(reason,
-                       grr_server_url,
-                       grr_auth,
-                       hunt_id,
-                       approvers=None,
-                       verbose=False):
+  def launch_collector(
+      reason, grr_server_url, grr_auth, hunt_id, approvers=None, verbose=False):
     """Launch downloads of files previously hunted for,"""
     hunt_downloader = GRRHuntDownloader(
         reason, grr_server_url, grr_auth, hunt_id, approvers, verbose)
@@ -424,14 +429,15 @@ class GRRHostCollector(BaseCollector):
   _CHECK_APPROVAL_INTERVAL_SEC = 10
   _CHECK_FLOW_INTERVAL_SEC = 10
 
-  def __init__(self,
-               hostname,
-               reason,
-               grr_server_url,
-               grr_auth,
-               approvers=None,
-               verbose=False,
-               keepalive=False):
+  def __init__(
+      self,
+      hostname,
+      reason,
+      grr_server_url,
+      grr_auth,
+      approvers=None,
+      verbose=False,
+      keepalive=False):
     """Initializes a GRR collector.
 
     Args:
@@ -497,8 +503,8 @@ class GRRHostCollector(BaseCollector):
     last_seen_minutes = int(round(last_seen_seconds)) / 60
 
     syslog.syslog('{0:s}: Found active client'.format(active_client_id))
-    self.console_out.VerboseOut('Found active client: {0:s}'.format(
-        active_client_id))
+    self.console_out.VerboseOut(
+        'Found active client: {0:s}'.format(active_client_id))
     self.console_out.VerboseOut(
         'Client last seen: {0:s} ({1:d} minutes ago)'.format(
             last_seen_datetime.strftime('%Y-%m-%dT%H:%M:%S+0000'),
@@ -539,8 +545,7 @@ class GRRHostCollector(BaseCollector):
       # Send a request for approval and wait until there is a valid one
       # available in GRR.
       client.CreateApproval(reason=reason, notified_users=approvers)
-      syslog.syslog('{0:s}: Request for client approval sent'.format(
-          client_id))
+      syslog.syslog('{0:s}: Request for client approval sent'.format(client_id))
       while True:
         try:
           client.ListFlows()
@@ -573,8 +578,8 @@ class GRRHostCollector(BaseCollector):
       flow_args = flows_pb2.KeepAliveArgs()
       keepalive_flow = self._client.CreateFlow(name=flow_name, args=flow_args)
       syslog.syslog('KeepAlive scheduled')
-      self.console_out.VerboseOut('KeepAlive Flow:{0:s} scheduled'.format(
-          keepalive_flow.flow_id))
+      self.console_out.VerboseOut(
+          'KeepAlive Flow:{0:s} scheduled'.format(keepalive_flow.flow_id))
 
     return flow_id
 
@@ -588,37 +593,37 @@ class GRRHostCollector(BaseCollector):
       RuntimeError: if flow error encountered
     """
     # Wait for the flow to finish
-    self.console_out.VerboseOut('Flow {0:s}: Waiting to finish'.format(
-        flow_id))
+    self.console_out.VerboseOut('Flow {0:s}: Waiting to finish'.format(flow_id))
     while True:
       try:
         status = self._client.Flow(flow_id).Get().data
       except grr_errors.UnknownError:
-        raise RuntimeError('Unable to stat flow {0:s} for host {1:s}'.format(
-            flow_id, self.host))
+        raise RuntimeError(
+            'Unable to stat flow {0:s} for host {1:s}'.format(
+                flow_id, self.host))
       state = status.state
       if state == flows_pb2.FlowContext.ERROR:
         # TODO(jbn): If one artifact fails, what happens? Test.
-        raise RuntimeError('Flow {0:s}: FAILED! Backtrace from GRR:\n\n{1:s}'.
-                           format(flow_id, status.context.backtrace))
+        raise RuntimeError(
+            'Flow {0:s}: FAILED! Backtrace from GRR:\n\n{1:s}'.format(
+                flow_id, status.context.backtrace))
       elif state == flows_pb2.FlowContext.TERMINATED:
         syslog.syslog('Flow {0:s}: Complete'.format(flow_id))
-        self.console_out.VerboseOut('Flow {0:s}: Finished successfully'.format(
-            flow_id))
+        self.console_out.VerboseOut(
+            'Flow {0:s}: Finished successfully'.format(flow_id))
         break
       time.sleep(self._CHECK_FLOW_INTERVAL_SEC)
 
     # Download the files collected by the flow
-    syslog.syslog('Flow {0:s}: Downloading artifacts'.format(
-        flow_id))
-    self.console_out.VerboseOut('Flow {0:s}: Downloading artifacts'.format(
-        flow_id))
+    syslog.syslog('Flow {0:s}: Downloading artifacts'.format(flow_id))
+    self.console_out.VerboseOut(
+        'Flow {0:s}: Downloading artifacts'.format(flow_id))
     collected_file_path = self._DownloadFiles(flow_id)
 
     if collected_file_path:
       syslog.syslog('Flow {0:s}: Downloaded artifacts'.format(flow_id))
-      self.console_out.VerboseOut('Flow {0:s}: Downloaded: {1:s}'.format(
-          flow_id, collected_file_path))
+      self.console_out.VerboseOut(
+          'Flow {0:s}: Downloaded: {1:s}'.format(flow_id, collected_file_path))
 
   def PrintStatus(self):
     """Print status of flow.
@@ -630,8 +635,9 @@ class GRRHostCollector(BaseCollector):
     try:
       status = self._client.Flow(self.flow_id).Get().data
     except grr_errors.UnknownError:
-      raise RuntimeError('Unable to stat flow {0:s} for host {1:s}'.format(
-          self.flow_id, self.host))
+      raise RuntimeError(
+          'Unable to stat flow {0:s} for host {1:s}'.format(
+              self.flow_id, self.host))
 
     state = status.state
     if state == flows_pb2.FlowContext.ERROR:
@@ -640,8 +646,8 @@ class GRRHostCollector(BaseCollector):
       msg = 'Complete'
     elif state == flows_pb2.FlowContext.RUNNING:
       msg = 'Running...'
-    self.console_out.StdOut('Status of flow {0:s}: {1:s}\n'.format(
-        self.flow_id, msg))
+    self.console_out.StdOut(
+        'Status of flow {0:s}: {1:s}\n'.format(self.flow_id, msg))
 
   def _DownloadFiles(self, flow_id):
     """Download files from the specified flow.
@@ -655,12 +661,12 @@ class GRRHostCollector(BaseCollector):
     if not os.path.isdir(self.output_path):
       os.makedirs(self.output_path)
 
-    output_file_path = os.path.join(self.output_path, '.'.join(
-        (flow_id, 'zip')))
+    output_file_path = os.path.join(
+        self.output_path, '.'.join((flow_id, 'zip')))
 
     if os.path.exists(output_file_path):
-      self.console_out.StdOut('{0:s} already exists: Skipping'.format(
-          output_file_path))
+      self.console_out.StdOut(
+          '{0:s} already exists: Skipping'.format(output_file_path))
       return None
 
     flow = self._client.Flow(flow_id)
@@ -678,23 +684,24 @@ class GRRHostCollector(BaseCollector):
   def collection_name(self):
     """Name for the collection of collected artifacts."""
     collection_name = self._client.data.os_info.fqdn
-    self.console_out.VerboseOut('Artifact collection name: {0:s}'.format(
-        collection_name))
+    self.console_out.VerboseOut(
+        'Artifact collection name: {0:s}'.format(collection_name))
     return self._client.data.os_info.fqdn
 
   @staticmethod
-  def launch_collector(hosts,
-                       flow_id,
-                       reason,
-                       grr_server_url,
-                       grr_auth,
-                       artifact_list=None,
-                       file_list=None,
-                       use_tsk=False,
-                       approvers=None,
-                       verbose=False,
-                       keepalive=False,
-                       status=False):
+  def launch_collector(
+      hosts,
+      flow_id,
+      reason,
+      grr_server_url,
+      grr_auth,
+      artifact_list=None,
+      file_list=None,
+      use_tsk=False,
+      approvers=None,
+      verbose=False,
+      keepalive=False,
+      status=False):
     """Launches a series of GRR Artifact collectors.
 
     Iterates over the values of hosts and starts a GRRArtifactCollector
@@ -722,35 +729,38 @@ class GRRHostCollector(BaseCollector):
       host_collectors = []
       # Launch artifact collector if artifacts present or if no file/flow passed
       if artifact_list or not (file_list or flow_id):
-        host_collectors.append(GRRArtifactCollector(
-            hostname,
-            reason,
-            grr_server_url,
-            grr_auth,
-            artifact_list,
-            use_tsk,
-            approvers,
-            verbose=verbose,
-            keepalive=keepalive))
+        host_collectors.append(
+            GRRArtifactCollector(
+                hostname,
+                reason,
+                grr_server_url,
+                grr_auth,
+                artifact_list,
+                use_tsk,
+                approvers,
+                verbose=verbose,
+                keepalive=keepalive))
       if file_list:
-        host_collectors.append(GRRFileCollector(
-            hostname,
-            reason,
-            grr_server_url,
-            grr_auth,
-            file_list,
-            approvers,
-            verbose=verbose,
-            keepalive=keepalive))
+        host_collectors.append(
+            GRRFileCollector(
+                hostname,
+                reason,
+                grr_server_url,
+                grr_auth,
+                file_list,
+                approvers,
+                verbose=verbose,
+                keepalive=keepalive))
       if flow_id:
-        host_collectors.append(GRRFlowCollector(
-            hostname,
-            reason,
-            grr_server_url,
-            grr_auth,
-            flow_id,
-            approvers,
-            verbose=verbose))
+        host_collectors.append(
+            GRRFlowCollector(
+                hostname,
+                reason,
+                grr_server_url,
+                grr_auth,
+                flow_id,
+                approvers,
+                verbose=verbose))
 
       for collector in host_collectors:
         if flow_id and status:
@@ -774,50 +784,36 @@ class GRRArtifactCollector(GRRHostCollector):
     reason: Justification for GRR access
     approvers: list of GRR approval recipients
   """
-  _DEFAULT_ARTIFACTS_LINUX = ['LinuxAuditLogs',
-                              'LinuxAuthLogs',
-                              'LinuxCronLogs',
-                              'LinuxWtmp',
-                              'AllUsersShellHistory',
-                              'ZeitgeistDatabase'
-                             ]  # pyformat: disable
+  _DEFAULT_ARTIFACTS_LINUX = [
+      'LinuxAuditLogs', 'LinuxAuthLogs', 'LinuxCronLogs', 'LinuxWtmp',
+      'AllUsersShellHistory', 'ZeitgeistDatabase'
+  ]  # pyformat: disable
 
-  _DEFAULT_ARTIFACTS_DARWIN = ['OSXAppleSystemLogs',
-                               'OSXAuditLogs',
-                               'OSXBashHistory',
-                               'OSXInstallationHistory',
-                               'OSXInstallationLog',
-                               'OSXInstallationTime',
-                               'OSXLaunchAgents',
-                               'OSXLaunchDaemons',
-                               'OSXMiscLogs',
-                               'OSXRecentItems',
-                               'OSXSystemLogs',
-                               'OSXUserApplicationLogs',
-                               'OSXQuarantineEvents'
-                              ]  # pyformat: disable
+  _DEFAULT_ARTIFACTS_DARWIN = [
+      'OSXAppleSystemLogs', 'OSXAuditLogs', 'OSXBashHistory',
+      'OSXInstallationHistory', 'OSXInstallationLog', 'OSXInstallationTime',
+      'OSXLaunchAgents', 'OSXLaunchDaemons', 'OSXMiscLogs', 'OSXRecentItems',
+      'OSXSystemLogs', 'OSXUserApplicationLogs', 'OSXQuarantineEvents'
+  ]  # pyformat: disable
 
-  _DEFAULT_ARTIFACTS_WINDOWS = ['WindowsAppCompatCache',
-                                'WindowsEventLogs',
-                                'WindowsPrefetchFiles',
-                                'WindowsScheduledTasks',
-                                'WindowsSearchDatabase',
-                                'WindowsSuperFetchFiles',
-                                'WindowsSystemRegistryFiles',
-                                'WindowsUserRegistryFiles',
-                                'WindowsXMLEventLogTerminalServices'
-                               ]  # pyformat: disable
+  _DEFAULT_ARTIFACTS_WINDOWS = [
+      'WindowsAppCompatCache', 'WindowsEventLogs', 'WindowsPrefetchFiles',
+      'WindowsScheduledTasks', 'WindowsSearchDatabase',
+      'WindowsSuperFetchFiles', 'WindowsSystemRegistryFiles',
+      'WindowsUserRegistryFiles', 'WindowsXMLEventLogTerminalServices'
+  ]  # pyformat: disable
 
-  def __init__(self,
-               hostname,
-               reason,
-               grr_server_url,
-               grr_auth,
-               artifacts=None,
-               use_tsk=False,
-               approvers=None,
-               verbose=False,
-               keepalive=False):
+  def __init__(
+      self,
+      hostname,
+      reason,
+      grr_server_url,
+      grr_auth,
+      artifacts=None,
+      use_tsk=False,
+      approvers=None,
+      verbose=False,
+      keepalive=False):
     """Initializes a GRR artifact collector.
 
     Args:
@@ -831,13 +827,14 @@ class GRRArtifactCollector(GRRHostCollector):
       verbose: toggle for verbose output
       keepalive: toggle for scheduling a KeepAlive flow
     """
-    super(GRRArtifactCollector, self).__init__(hostname,
-                                               reason,
-                                               grr_server_url,
-                                               grr_auth,
-                                               approvers=approvers,
-                                               verbose=verbose,
-                                               keepalive=keepalive)
+    super(GRRArtifactCollector, self).__init__(
+        hostname,
+        reason,
+        grr_server_url,
+        grr_auth,
+        approvers=approvers,
+        verbose=verbose,
+        keepalive=keepalive)
     self.artifacts = artifacts
     self.use_tsk = use_tsk
 
@@ -866,8 +863,7 @@ class GRRArtifactCollector(GRRHostCollector):
 
     # If the list is supplied by the user via a flag, honor that.
     if self.artifacts:
-      syslog.syslog('Artifacts to be collected: {0:s}'.format(
-          self.artifacts))
+      syslog.syslog('Artifacts to be collected: {0:s}'.format(self.artifacts))
       artifact_list = self.artifacts.split(',')
     else:
       syslog.syslog('Artifacts to be collected: Default')
@@ -881,8 +877,8 @@ class GRRArtifactCollector(GRRHostCollector):
         use_tsk=self.use_tsk,
         ignore_interpolation_errors=True,
         apply_parsers=False,)
-    self.console_out.VerboseOut('Artifacts to collect: {0:s}'.format(
-        artifact_list))
+    self.console_out.VerboseOut(
+        'Artifacts to collect: {0:s}'.format(artifact_list))
     flow_id = self._LaunchFlow(flow_name, flow_args)
     self._AwaitFlow(flow_id)
     return [(self.host, self.output_path)]
@@ -902,15 +898,16 @@ class GRRFileCollector(GRRHostCollector):
     client: Dictionary with information about a GRR client
   """
 
-  def __init__(self,
-               hostname,
-               reason,
-               grr_server_url,
-               grr_auth,
-               files=None,
-               approvers=None,
-               verbose=False,
-               keepalive=False):
+  def __init__(
+      self,
+      hostname,
+      reason,
+      grr_server_url,
+      grr_auth,
+      files=None,
+      approvers=None,
+      verbose=False,
+      keepalive=False):
     """Initializes a GRR file collector.
 
     Args:
@@ -923,11 +920,14 @@ class GRRFileCollector(GRRHostCollector):
       verbose: toggle for verbose output
       keepalive: toggle for scheduling a KeepAlive flow
     """
-    super(GRRFileCollector, self).__init__(hostname, reason, grr_server_url,
-                                           grr_auth=grr_auth,
-                                           approvers=approvers,
-                                           verbose=verbose,
-                                           keepalive=keepalive)
+    super(GRRFileCollector, self).__init__(
+        hostname,
+        reason,
+        grr_server_url,
+        grr_auth=grr_auth,
+        approvers=approvers,
+        verbose=verbose,
+        keepalive=keepalive)
     self.files = files
 
   def collect(self):
@@ -948,8 +948,8 @@ class GRRFileCollector(GRRHostCollector):
     if not file_list:
       raise RuntimeError('File paths must be specified for FileFinder')
     syslog.syslog('Filefinder to collect {0:d} items'.format(len(file_list)))
-    self.console_out.VerboseOut('Files to be collected: {0:s}'.format(
-        self.files))
+    self.console_out.VerboseOut(
+        'Files to be collected: {0:s}'.format(self.files))
     flow_name = 'FileFinder'
     flow_action = flows_pb2.FileFinderAction(
         action_type=flows_pb2.FileFinderAction.DOWNLOAD,)
@@ -975,14 +975,15 @@ class GRRFlowCollector(GRRHostCollector):
     client: Dictionary with information about a GRR client
   """
 
-  def __init__(self,
-               hostname,
-               reason,
-               grr_server_url,
-               grr_auth,
-               flow_id=None,
-               approvers=None,
-               verbose=False):
+  def __init__(
+      self,
+      hostname,
+      reason,
+      grr_server_url,
+      grr_auth,
+      flow_id=None,
+      approvers=None,
+      verbose=False):
     """Initializes a GRR flow collector.
 
     Args:
@@ -994,10 +995,13 @@ class GRRFlowCollector(GRRHostCollector):
       approvers: comma-separated list of GRR approval recipients
       verbose: toggle for verbose output
     """
-    super(GRRFlowCollector, self).__init__(hostname, reason, grr_server_url,
-                                           grr_auth,
-                                           approvers=approvers,
-                                           verbose=verbose)
+    super(GRRFlowCollector, self).__init__(
+        hostname,
+        reason,
+        grr_server_url,
+        grr_auth,
+        approvers=approvers,
+        verbose=verbose)
     self.flow_id = flow_id
 
   def collect(self):
@@ -1020,10 +1024,10 @@ class GRRFlowCollector(GRRHostCollector):
 MODCLASS = [
     ('google_grr_hunt_collector', GRRHuntCollector),
     ('google_grr_hunt_artifact_collector', GRRHuntArtifactCollector),
-    ('google_grr_hunt_file_collector', GRRHuntFileCollector),
-    ('google_grr_hunt_downloader', GRRHuntDownloader),
-    ('google_grr_host_collector', GRRHostCollector),
-    ('google_grr_artifact_collector', GRRArtifactCollector),
-    ('google_grr_file_collector', GRRFileCollector),
-    ('google_grr_flow_collector', GRRFlowCollector)
+    ('google_grr_hunt_file_collector',
+     GRRHuntFileCollector), ('google_grr_hunt_downloader', GRRHuntDownloader),
+    ('google_grr_host_collector',
+     GRRHostCollector), ('google_grr_artifact_collector', GRRArtifactCollector),
+    ('google_grr_file_collector',
+     GRRFileCollector), ('google_grr_flow_collector', GRRFlowCollector)
 ]

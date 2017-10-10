@@ -8,23 +8,21 @@
 
 __author__ = u'tomchop@google.com (Thomas Chopitea)'
 
-
 contents = {
-    'name': 'grr_hunt_file',
+    'name':
+        'grr_hunt_file',
     'params': {},
-    'collectors': [
-        {
-            'name': 'GRRHuntFileCollector',
-            'args': {
-                'file_list': '@file_list',
-                'reason': '@reason',
-                'grr_server_url': 'http://localhost:8000',
-                'grr_auth': ('admin', 'admin'),
-                'approvers': ['grr-approvals@google.com'],
-                'verbose': True,
-            },
-        }
-    ],
+    'collectors': [{
+        'name': 'GRRHuntFileCollector',
+        'args': {
+            'file_list': '@file_list',
+            'reason': '@reason',
+            'grr_server_url': 'http://localhost:8000',
+            'grr_auth': ('admin', 'admin'),
+            'approvers': ['grr-approvals@google.com'],
+            'verbose': True,
+        },
+    }],
     'processors': [],
     'exporters': [],
 }
