@@ -50,6 +50,7 @@ from dftimewolf.lib.exporters import timesketch
 from dftimewolf.cli.recipes import local_plaso
 from dftimewolf.cli.recipes import grr_artifact_hosts
 from dftimewolf.cli.recipes import grr_hunt_file
+from dftimewolf.cli.recipes import grr_huntresults_plaso_timesketch
 
 config.Config.register_collector(filesystem.FilesystemCollector)
 config.Config.register_collector(grr.GRRHuntArtifactCollector)
@@ -72,9 +73,9 @@ except IOError as exception:
           config_path, exception))
 
 config.Config.register_recipe(local_plaso)
-
 config.Config.register_recipe(grr_artifact_hosts)
 config.Config.register_recipe(grr_hunt_file)
+config.Config.register_recipe(grr_huntresults_plaso_timesketch)
 
 def main():
   """Main function for DFTimewolf."""
