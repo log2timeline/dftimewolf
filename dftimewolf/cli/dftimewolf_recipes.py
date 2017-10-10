@@ -43,12 +43,19 @@ from dftimewolf import config
 from dftimewolf.lib import utils as dftw_utils
 
 from dftimewolf.lib.collectors import filesystem
+from dftimewolf.lib.collectors import grr
 from dftimewolf.lib.processors import localplaso
 from dftimewolf.lib.exporters import timesketch
 
 from dftimewolf.cli.recipes import local_plaso
 
 config.Config.register_collector(filesystem.FilesystemCollector)
+config.Config.register_collector(grr.GRRHuntArtifactCollector)
+config.Config.register_collector(grr.GRRHuntFileCollector)
+config.Config.register_collector(grr.GRRHuntDownloader)
+config.Config.register_collector(grr.GRRArtifactCollector)
+config.Config.register_collector(grr.GRRFileCollector)
+config.Config.register_collector(grr.GRRFlowCollector)
 config.Config.register_processor(localplaso.LocalPlasoProcessor)
 config.Config.register_exporter(timesketch.TimesketchExporter)
 
