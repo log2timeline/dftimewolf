@@ -42,6 +42,6 @@ contents = {
 }
 
 args = [
-    ('paths', 'Paths to process'),
-    ('--incident_id', 'Incident ID (used for Timesketch description)'),
+    ('paths', 'Paths to process', None),
+    ('--incident_id', 'Incident ID (used for Timesketch description)', None),
 ]

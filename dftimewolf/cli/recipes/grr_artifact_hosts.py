@@ -22,11 +22,7 @@ contents = {
             'grr_auth': ('admin', 'admin'),
             'approvers': ['grr-approvals@google.com'],
             'verbose': True,
-            'artifact_list':
-                'AllUsersShellHistory,BrowserHistory,'
-                'LinuxLogFiles,AllLinuxScheduleFiles,'
-                'LinuxScheduleFiles,ZeitgeistDatabase,'
-                'AllShellConfigs',
+            'artifact_list': '@artifact_list',
         },
     }],
     'processors': [{
@@ -49,7 +45,13 @@ contents = {
     }],
 }
 
-args = [
-    ('hosts', 'Comma-separated list of hosts to process'),
-    ('reason', 'Reason for collection'),
-]
+DEFAULT_ARTIFACT_LIST = (
+    'AllUsersShellHistory,BrowserHistory,'
+    'LinuxLogFiles,AllLinuxScheduleFiles,'
+    'LinuxScheduleFiles,ZeitgeistDatabase,'
+    'AllShellConfigs')
+
+args = [('hosts', 'Comma-separated list of hosts to process', None),
+        ('reason', 'Reason for collection', None), (
+            '--artifact_list', 'Comma-separated list of artifacts to fetch',
+            DEFAULT_ARTIFACT_LIST)]

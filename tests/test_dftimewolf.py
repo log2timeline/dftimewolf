@@ -7,6 +7,8 @@ import argparse
 from unittest import TestCase
 
 from dftimewolf.lib import utils as dftw_utils
+from dftimewolf import config
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('parameterone')
@@ -17,6 +19,9 @@ parser.add_argument('explosion')
 
 class DFTimewolfTest(TestCase):
   """Tests for dftimewolf_recipes functions."""
+
+  def setUp(self):
+    config.Config.clear_extra()
 
   def test_import_args_from_cli(self):
     """Tries parsing the CLI arguments and updating a recipe dictionary."""
@@ -45,7 +50,7 @@ class DFTimewolfTest(TestCase):
     ])
 
 
-    imported_args = dftw_utils.import_args_from_dict(recipe_args, vars(args))
+    imported_args = dftw_utils.import_args_from_dict(recipe_args, vars(args), config.Config)
 
     self.assertEqual(imported_args, expected_args)
 
@@ -69,5 +74,33 @@ class DFTimewolfTest(TestCase):
     ])
 
     with self.assertRaises(ValueError):
-      imported = dftw_utils.import_args_from_dict(recipe_args, vars(args))
+      imported = dftw_utils.import_args_from_dict(
+          recipe_args, vars(args), config.Config)
       dftw_utils.check_placeholders(imported)
+
+  def test_cli_precedence_over_config(self):
+    provided_args = {
+        'arg1': 'I want whatever CLI says: @parameterone',
+    }
+    expected_args = {
+        'arg1': 'I want whatever CLI says: CLI WINS!',
+    }
+
+    config.Config.load_extra_data('{"parameterone": "CONFIG WINS!"}')
+    args = parser.parse_args(['CLI WINS!', 'BOOM'])
+    imported_args = dftw_utils.import_args_from_dict(provided_args, vars(args), config.Config)
+    self.assertEqual(imported_args, expected_args)
+
+
+  def test_config_fills_missing_args(self):
+    provided_args = {
+        'arg1': 'This should remain intact',
+        'arg2': '@config'
+    }
+    expected_args = {
+        'arg1': 'This should remain intact',
+        'arg2': 'A config arg',
+    }
+    config.Config.load_extra_data('{"config": "A config arg"}')
+    imported_args = dftw_utils.import_args_from_dict(provided_args, {}, config.Config)
+    self.assertEqual(imported_args, expected_args)

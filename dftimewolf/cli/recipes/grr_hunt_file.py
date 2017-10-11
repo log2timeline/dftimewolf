@@ -26,6 +26,6 @@ contents = {
 }
 
 args = [
-    ('file_list', 'Comma-separated list of filepaths to hunt for'),
-    ('reason', 'Reason for collection'),
+    ('file_list', 'Comma-separated list of filepaths to hunt for', None),
+    ('reason', 'Reason for collection', None),
 ]

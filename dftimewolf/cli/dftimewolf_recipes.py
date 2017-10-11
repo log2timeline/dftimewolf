@@ -93,8 +93,8 @@ def main():
     subparser = subparsers.add_parser(
         recipe['name'], description='{0:s}'.format(recipe.__doc__))
     subparser.set_defaults(recipe=recipe)
-    for switch, help_text in recipe_args:
-      subparser.add_argument(switch, help=help_text)
+    for switch, help_text, default in recipe_args:
+      subparser.add_argument(switch, help=help_text, default=default)
 
   args = parser.parse_args()
   recipe = args.recipe
@@ -110,7 +110,8 @@ def main():
 
   collector_objects = []
   for collector in recipe['collectors']:
-    new_args = dftw_utils.import_args_from_dict(collector['args'], vars(args))
+    new_args = dftw_utils.import_args_from_dict(
+        collector['args'], vars(args), config.Config)
     collector_cls = config.Config.get_collector(collector['name'])
     collector_objects.extend(collector_cls.launch_collector(**new_args))
 
@@ -129,7 +130,8 @@ def main():
 
     processor_objs = []
     for processor in recipe['processors']:
-      new_args = dftw_utils.import_args_from_dict(processor['args'], vars(args))
+      new_args = dftw_utils.import_args_from_dict(
+          processor['args'], vars(args), config.Config)
       new_args['collector_output'] = collector_output
       processor_class = config.Config.get_processor(processor['name'])
       processor_objs.extend(processor_class.launch_processor(**new_args))
@@ -151,7 +153,8 @@ def main():
 
     exporter_objs = []
     for exporter in recipe['exporters']:
-      new_args = dftw_utils.import_args_from_dict(exporter['args'], vars(args))
+      new_args = dftw_utils.import_args_from_dict(
+          exporter['args'], vars(args), config.Config)
       new_args['processor_output'] = processor_output
       exporter_class = config.Config.get_exporter(exporter['name'])
       exporter_objs.extend(exporter_class.launch_exporter(**new_args))

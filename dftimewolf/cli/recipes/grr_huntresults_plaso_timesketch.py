@@ -42,6 +42,6 @@ contents = {
 }
 
 args = [
-    ('hunt_id', 'ID of GRR Hunt results to fetch'),
-    ('reason', 'Reason for exporting hunt (used for Timesketch description)'),
+    ('hunt_id', 'ID of GRR Hunt results to fetch', None),
+    ('reason', 'Reason for exporting hunt (used for Timesketch description)', None),
 ]

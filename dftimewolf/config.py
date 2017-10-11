@@ -64,6 +64,11 @@ class Config(object):
       exit(-1)
 
   @classmethod
+  def clear_extra(cls):
+    """Clears any extra arguments loaded from a config JSON blob."""
+    cls._extra_config = {}
+
+  @classmethod
   def register_recipe(cls, recipe, **kwargs):
     """Registers a dftimewolf recipe.
 
@@ -79,8 +84,6 @@ class Config(object):
           CLI arguments.
     """
     # Update kwargs with what we already loaded from config.json
-    kwargs.update(cls._extra_config)
-    recipe.contents = dftw_utils.import_args_from_dict(recipe.contents, kwargs)
     recipe_name = recipe.contents['name']
     cls._recipe_classes[recipe_name] = (recipe.contents, recipe.args)
 

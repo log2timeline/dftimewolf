@@ -27,6 +27,6 @@ contents = {
 }
 
 args = [
-    ('artifacts', 'Comma-separated list of artifacts to hunt for'),
-    ('reason', 'Reason for collection'),
+    ('artifacts', 'Comma-separated list of artifacts to hunt for', None),
+    ('reason', 'Reason for collection', None),
 ]
