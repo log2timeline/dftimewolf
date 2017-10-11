@@ -131,7 +131,10 @@ def import_args_from_dict(value, args, config):
   elif isinstance(value, list):
     return [import_args_from_dict(item, args, config) for item in value]
   elif isinstance(value, dict):
-    return {key: import_args_from_dict(val, args, config) for key, val in value.items()}
+    return {
+        key: import_args_from_dict(val, args, config)
+        for key, val in value.items()
+    }
   return value
 
 
