@@ -16,7 +16,7 @@ parser.add_argument('explosion')
 
 
 class DFTimewolfTest(TestCase):
-  """Tests for timeflow_recipes functions."""
+  """Tests for dftimewolf_recipes functions."""
 
   def test_import_args_from_cli(self):
     """Tries parsing the CLI arguments and updating a recipe dictionary."""

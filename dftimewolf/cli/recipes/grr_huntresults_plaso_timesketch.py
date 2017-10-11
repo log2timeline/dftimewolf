@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-"""DFTimewolf recipe for collecting data from the filesystem.
+"""DFTimewolf recipe for downloading the results of a GRR Hunt and process them.
 
-- Collectors collect from a path in the FS
-- Processes them with a local install of plaso
-- Exports them to a new Timesketch sketch
+- Collect results of a hunt given its Hunt ID
+- Processes results with a local install of plaso
+- Exports processed items to a new Timesketch sketch
 """
 
 __author__ = 'tomchop@google.com (Thomas Chopitea)'

@@ -1,9 +1,7 @@
-"""Timeflow recipe for collecting data from hosts using GRR.
+"""DFTimewolf recipe for starting file hunts using GRR.
 
-- Collectors collect default artifacts from hosts using GRR
-- Processes them with a local install of plaso
-- Exports them to a new Timesketch sketch
-
+Consists of a single collector that starts the hunt and provides a Hunt ID to
+the user.
 """
 
 __author__ = u'tomchop@google.com (Thomas Chopitea)'
