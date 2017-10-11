@@ -101,7 +101,7 @@ def IsValidTimezone(timezone):
   return timezone in pytz.all_timezones
 
 
-def import_args_from_dict(value, args):
+def import_args_from_dict(value, args, config):
   """Replaces some arguments by those specified by a key-value dictionary.
 
   This function will be recursively called on a dictionary looking for any
@@ -126,10 +126,12 @@ def import_args_from_dict(value, args):
     match = TOKEN_REGEX.search(str(value))
     if match and args.get(match.group(1)):
       return TOKEN_REGEX.sub(args[match.group(1)] or '', value)
+    if match and config.get_extra(str(match.group(1))):
+      return TOKEN_REGEX.sub(config.get_extra(str(match.group(1))) or '', value)
   elif isinstance(value, list):
-    return [import_args_from_dict(item, args) for item in value]
+    return [import_args_from_dict(item, args, config) for item in value]
   elif isinstance(value, dict):
-    return {key: import_args_from_dict(val, args) for key, val in value.items()}
+    return {key: import_args_from_dict(val, args, config) for key, val in value.items()}
   return value
 
 
