@@ -6,8 +6,6 @@ from __future__ import unicode_literals
 import json
 import sys
 
-from dftimewolf.lib import utils as dftw_utils
-
 
 class Config(object):
   """Class that handles DFTimewolf's configuration parameters."""
@@ -69,19 +67,11 @@ class Config(object):
     cls._extra_config = {}
 
   @classmethod
-  def register_recipe(cls, recipe, **kwargs):
+  def register_recipe(cls, recipe):
     """Registers a dftimewolf recipe.
-
-    Registers a DFTimeWolf recipe with specified parameters. Parameters can be
-    specified in three ways, in order of precedence:
-      * Defined in config.json
-      * Passed as arguments to the register_recipe function call
-      * Passed as CLI args
 
     Args:
       recipe: imported python module representing the recipe.
-      **kwargs: parameters to be replaced in the recipe before checking the
-          CLI arguments.
     """
     # Update kwargs with what we already loaded from config.json
     recipe_name = recipe.contents['name']
