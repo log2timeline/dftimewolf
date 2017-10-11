@@ -1,4 +1,7 @@
+# -*- coding: utf-8 -*-
 """Collects artifacts with GRR."""
+
+from __future__ import unicode_literals
 
 import datetime
 import os
@@ -23,6 +26,7 @@ class GRRHuntCollector(BaseCollector):
     grr_api: GRR HTTP API client.
     reason: Justification for GRR access.
     approvers: list of GRR approval recipients.
+    hunt_id: Identifier of the hunt being collected.
   """
   _CHECK_APPROVAL_INTERVAL_SEC = 10
 
@@ -38,9 +42,11 @@ class GRRHuntCollector(BaseCollector):
       verbose: toggle for verbose output.
     """
     super(GRRHuntCollector, self).__init__(verbose=verbose)
-    self.output_path = tempfile.mkdtemp()
-    self.grr_api = grr_api.InitHttp(api_endpoint=grr_server_url, auth=grr_auth)
+    self._hunt = None
     self.approvers = approvers
+    self.grr_api = grr_api.InitHttp(api_endpoint=grr_server_url, auth=grr_auth)
+    self.hunt_id = None
+    self.output_path = tempfile.mkdtemp()
     self.reason = reason
 
   def _StartHunt(self, name, args):
@@ -53,8 +59,8 @@ class GRRHuntCollector(BaseCollector):
     Returns:
       str representing hunt ID.
 
-      Raises:
-        ValueError: if approval is needed and approvers were not specified.
+    Raises:
+      ValueError: if approval is needed and approvers were not specified.
     """
     runner_args = self.grr_api.types.CreateHuntRunnerArgs()
     runner_args.description = self.reason
@@ -67,6 +73,7 @@ class GRRHuntCollector(BaseCollector):
     try:
       hunt.Start()
       return hunt_id
+
     except grr_errors.AccessForbiddenError:
       syslog.syslog('Hunt {0:s}: No valid hunt approval found'.format(hunt_id))
       self.console_out.VerboseOut('No valid hunt approval found')
@@ -85,6 +92,7 @@ class GRRHuntCollector(BaseCollector):
       hunt.CreateApproval(reason=self.reason, notified_users=self.approvers)
       syslog.syslog(
           'Hunt {0:s}: Request for hunt approval sent'.format(hunt_id))
+
       while True:
         try:
           hunt.Start()
@@ -142,6 +150,7 @@ class GRRHuntCollector(BaseCollector):
           reason=self.reason, notified_users=self.approvers)
       syslog.syslog(
           'Hunt {0:s}: Request for hunt approval sent'.format(self.hunt_id))
+
       while True:
         try:
           hunt_archive = self._hunt.GetFilesArchive()
@@ -221,8 +230,6 @@ class GRRHuntArtifactCollector(GRRHuntCollector):
   """Artifact collector for GRR hunts.
 
   Attributes:
-    output_path: Path to where to store collected items.
-    grr_api: GRR HTTP API client.
     reason: Justification for GRR access.
     approvers: list of GRR approval recipients.
     artifacts: comma-separated list of GRR-defined artifacts.
@@ -310,11 +317,9 @@ class GRRHuntFileCollector(GRRHuntCollector):
   """File collector for GRR hunts.
 
   Attributes:
-    output_path: Path to where to store collected items.
-    grr_api: GRR HTTP API client.
     reason: Justification for GRR access.
     approvers: list of GRR approval recipients.
-    files: comma-separated list of file paths.
+    file_list: comma-separated list of file paths.
   """
 
   def __init__(
@@ -331,7 +336,7 @@ class GRRHuntFileCollector(GRRHuntCollector):
       reason: justification for GRR access.
       grr_server_url: GRR server URL.
       grr_auth: Tuple containing a (username, password) combination.
-      files: comma-separated list of file paths.
+      file_list: comma-separated list of file paths.
       approvers: comma-separated list of GRR approval recipients.
       verbose: toggle for verbose output.
     """
@@ -369,11 +374,7 @@ class GRRHuntFileCollector(GRRHuntCollector):
 
   @staticmethod
   def launch_collector(
-      reason,
-      grr_server_url,
-      grr_auth,
-      file_list,
-      approvers=None,
+      reason, grr_server_url, grr_auth, file_list, approvers=None,
       verbose=False):
     """Start a file collector Hunt using GRRHuntFileCollector.
 
@@ -387,7 +388,7 @@ class GRRHuntFileCollector(GRRHuntCollector):
     hunt = GRRHuntFileCollector(
         reason, grr_server_url, grr_auth, file_list, approvers, verbose)
     hunt.console_out.StdOut(
-        "\nHunt {0:s} created succesfully!".format(hunt.hunt_id))
+        "\nHunt {0:s} created successfully!".format(hunt.hunt_id))
     hunt.console_out.StdOut("Run a GRRHuntDownloader recipe to fetch results.")
     hunt.console_out.StdOut(
         "e.g. $ dftimewolf grr_huntresults_plaso_timesketch {0:s}\n".format(
@@ -400,8 +401,6 @@ class GRRHuntDownloader(GRRHuntCollector):
   """File collector for GRR hunts.
 
   Attributes:
-    output_path: path to where to store collected items.
-    grr_api: GRR HTTP API client.
     reason: justification for GRR access.
     approvers: list of GRR approval recipients.
     hunt_id: ID of GRR hunt to retrieve results from.
@@ -462,6 +461,8 @@ class GRRHostCollector(BaseCollector):
   _CHECK_APPROVAL_INTERVAL_SEC = 10
   _CHECK_FLOW_INTERVAL_SEC = 10
 
+  _CLIENT_ID_REGEX = re.compile(r'^c\.[0-9a-f]{16}$', re.IGNORECASE)
+
   def __init__(
       self,
       hostname,
@@ -491,6 +492,14 @@ class GRRHostCollector(BaseCollector):
     self._client_id = self._GetClientId(hostname)
     self._client = None
     self.keepalive = keepalive
+    self.flow_id = None
+
+  def collect(self):
+    """Collect artifacts.
+
+    Not implemented, as this is an abstract class.
+    """
+    raise NotImplementedError
 
   def _GetClientId(self, hostname):
     """Search GRR by hostname and get the latest active client.
@@ -504,8 +513,7 @@ class GRRHostCollector(BaseCollector):
     Raises:
       RuntimeError: if no client ID found for hostname.
     """
-    client_id_pattern = re.compile(r'^c\.[0-9a-f]{16}$', re.IGNORECASE)
-    if client_id_pattern.match(hostname):
+    if self._CLIENT_ID_REGEX.match(hostname):
       return hostname
 
     # Search for the hostname in GRR
@@ -804,18 +812,11 @@ class GRRHostCollector(BaseCollector):
 
     return collectors
 
-  # pylint-disable=W0223
-  # GRRHostCollector is never concretely instantiated, only extended.
-  # Classes that extend GRRHostCollector should implement the collect method()
-
 
 class GRRArtifactCollector(GRRHostCollector):
   """Artifact collector for GRR flows.
 
   Attributes:
-    output_path: Path to where to store collected items.
-    grr_api: GRR HTTP API client.
-    host: Target of GRR collection.
     artifacts: comma-separated list of GRR-defined artifacts.
     use_tsk: Toggle for use_tsk flag on GRR flow.
     reason: Justification for GRR access.
@@ -824,21 +825,21 @@ class GRRArtifactCollector(GRRHostCollector):
   _DEFAULT_ARTIFACTS_LINUX = [
       'LinuxAuditLogs', 'LinuxAuthLogs', 'LinuxCronLogs', 'LinuxWtmp',
       'AllUsersShellHistory', 'ZeitgeistDatabase'
-  ]  # pyformat: disable
+  ]
 
   _DEFAULT_ARTIFACTS_DARWIN = [
       'OSXAppleSystemLogs', 'OSXAuditLogs', 'OSXBashHistory',
       'OSXInstallationHistory', 'OSXInstallationLog', 'OSXInstallationTime',
       'OSXLaunchAgents', 'OSXLaunchDaemons', 'OSXMiscLogs', 'OSXRecentItems',
       'OSXSystemLogs', 'OSXUserApplicationLogs', 'OSXQuarantineEvents'
-  ]  # pyformat: disable
+  ]
 
   _DEFAULT_ARTIFACTS_WINDOWS = [
       'WindowsAppCompatCache', 'WindowsEventLogs', 'WindowsPrefetchFiles',
       'WindowsScheduledTasks', 'WindowsSearchDatabase',
       'WindowsSuperFetchFiles', 'WindowsSystemRegistryFiles',
       'WindowsUserRegistryFiles', 'WindowsXMLEventLogTerminalServices'
-  ]  # pyformat: disable
+  ]
 
   def __init__(
       self,
@@ -925,14 +926,9 @@ class GRRFileCollector(GRRHostCollector):
   """File collector for GRR flows.
 
   Attributes:
-    output_path: Path to where to store collected items.
-    grr_api: GRR HTTP API client.
-    host: Target of GRR collection.
     files: comma-separated list of file paths.
     reason: Justification for GRR access.
     approvers: list of GRR approval recipients.
-    client_id: GRR client ID.
-    client: Dictionary with information about a GRR client.
   """
 
   def __init__(
@@ -1008,8 +1004,6 @@ class GRRFlowCollector(GRRHostCollector):
     flow_id: ID of GRR flow to retrieve.
     reason: Justification for GRR access.
     approvers: list of GRR approval recipients.
-    client_id: GRR client ID.
-    client: Dictionary with information about a GRR client.
   """
 
   def __init__(
