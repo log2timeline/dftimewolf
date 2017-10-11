@@ -249,7 +249,7 @@ class GRRHuntArtifactCollector(GRRHuntCollector):
       approvers: str, comma-separated list of GRR approval recipients.
       verbose: toggle for verbose output.
     """
-    super(GRRHuntCollector, self).__init__(
+    super(GRRHuntArtifactCollector, self).__init__(
         reason, grr_server_url, grr_auth, approvers=approvers, verbose=verbose)
     self.artifacts = artifacts
     self.use_tsk = use_tsk
@@ -271,23 +271,39 @@ class GRRHuntArtifactCollector(GRRHuntCollector):
 
     syslog.syslog('Artifacts to be collected: {0:s}'.format(self.artifacts))
     hunt_name = 'ArtifactCollectorFlow'
-    hunt_args = grr_api.types.CreateFlowArgs("ArtifactCollectorFlow")
-    hunt_args.artifact_list = artifact_list
+    hunt_args = self.grr_api.types.CreateFlowArgs("ArtifactCollectorFlow")
+    for artifact in artifact_list:
+      hunt_args.artifact_list.append(artifact)
     hunt_args.use_tsk = self.use_tsk
     hunt_args.ignore_interpolation_errors = True
     hunt_args.apply_parsers = False
-    # hunt_args = flows_pb2.ArtifactCollectorFlowArgs(
-    #     artifact_list=artifact_list,
-    #     use_tsk=self.use_tsk,
-    #     ignore_interpolation_errors=True,
-    #     apply_parsers=False,)
 
     return self._StartHunt(hunt_name, hunt_args)
 
   @staticmethod
-  def launch_collector(self, *args, **kwargs):
-    "Start an artifact collection hunt"
-    pass
+  def launch_collector(
+      reason, grr_server_url, grr_auth, artifacts, use_tsk, approvers, verbose):
+    """Start a file collector Hunt using GRRHuntFileCollector.
+
+    Args:
+      reason: Justification for GRR access.
+      grr_server_url: GRR server URL.
+      grr_auth: Tuple containing a (username, password) combination.
+      artifacts: Comma-separated list of artifacts to collect.
+      use_tsk: toggle for use_tsk flag on GRR flow.
+      approvers: comma-separated list of GRR approval recipients.
+      verbose: toggle for verbose output.
+    """
+    hunt = GRRHuntArtifactCollector(
+        reason, grr_server_url, grr_auth, artifacts, use_tsk, approvers,
+        verbose)
+    hunt.console_out.StdOut(
+        "\nArtifact hunt {0:s} created succesfully!".format(hunt.hunt_id))
+    hunt.console_out.StdOut("Run a GRRHuntDownloader recipe to fetch results.")
+    hunt.console_out.StdOut(
+        "e.g. $ dftimewolf grr_huntresults_plaso_timesketch {0:s}\n".format(
+            hunt.hunt_id))
+    return []
 
 
 class GRRHuntFileCollector(GRRHuntCollector):
@@ -374,7 +390,7 @@ class GRRHuntFileCollector(GRRHuntCollector):
         "\nHunt {0:s} created succesfully!".format(hunt.hunt_id))
     hunt.console_out.StdOut("Run a GRRHuntDownloader recipe to fetch results.")
     hunt.console_out.StdOut(
-        "e.g. $ dftimewolf huntresults_plaso_timesketch {0:s}\n".format(
+        "e.g. $ dftimewolf grr_huntresults_plaso_timesketch {0:s}\n".format(
             hunt.hunt_id))
 
     return []
