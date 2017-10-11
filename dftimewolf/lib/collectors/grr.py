@@ -799,10 +799,14 @@ class GRRHostCollector(BaseCollector):
         if flow_id and status:
           collector.PrintStatus()
         else:
-          collector.start()
+          collector.collect()
           collectors.append(collector)
 
     return collectors
+
+  # pylint-disable=W0223
+  # GRRHostCollector is never concretely instantiated, only extended.
+  # Classes that extend GRRHostCollector should implement the collect method()
 
 
 class GRRArtifactCollector(GRRHostCollector):

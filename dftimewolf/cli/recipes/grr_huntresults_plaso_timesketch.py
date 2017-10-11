@@ -9,7 +9,8 @@
 __author__ = 'tomchop@google.com (Thomas Chopitea)'
 
 contents = {
-    'name': 'grr_huntresults_plaso_timesketch',
+    'name':
+        'grr_huntresults_plaso_timesketch',
     'params': {},
     'collectors': [{
         'name': 'GRRHuntDownloader',
@@ -43,5 +44,6 @@ contents = {
 
 args = [
     ('hunt_id', 'ID of GRR Hunt results to fetch', None),
-    ('reason', 'Reason for exporting hunt (used for Timesketch description)', None),
+    ('reason', 'Reason for exporting hunt (used for Timesketch description)',
+     None),
 ]
