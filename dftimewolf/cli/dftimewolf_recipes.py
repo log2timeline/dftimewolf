@@ -43,12 +43,23 @@ from dftimewolf import config
 from dftimewolf.lib import utils as dftw_utils
 
 from dftimewolf.lib.collectors import filesystem
+from dftimewolf.lib.collectors import grr
 from dftimewolf.lib.processors import localplaso
 from dftimewolf.lib.exporters import timesketch
 
 from dftimewolf.cli.recipes import local_plaso
+from dftimewolf.cli.recipes import grr_artifact_hosts
+from dftimewolf.cli.recipes import grr_hunt_file
+from dftimewolf.cli.recipes import grr_hunt_artifacts
+from dftimewolf.cli.recipes import grr_huntresults_plaso_timesketch
 
 config.Config.register_collector(filesystem.FilesystemCollector)
+config.Config.register_collector(grr.GRRHuntArtifactCollector)
+config.Config.register_collector(grr.GRRHuntFileCollector)
+config.Config.register_collector(grr.GRRHuntDownloader)
+config.Config.register_collector(grr.GRRArtifactCollector)
+config.Config.register_collector(grr.GRRFileCollector)
+config.Config.register_collector(grr.GRRFlowCollector)
 config.Config.register_processor(localplaso.LocalPlasoProcessor)
 config.Config.register_exporter(timesketch.TimesketchExporter)
 
@@ -63,6 +74,10 @@ except IOError as exception:
           config_path, exception))
 
 config.Config.register_recipe(local_plaso)
+config.Config.register_recipe(grr_artifact_hosts)
+config.Config.register_recipe(grr_hunt_file)
+config.Config.register_recipe(grr_hunt_artifacts)
+config.Config.register_recipe(grr_huntresults_plaso_timesketch)
 
 
 def main():
@@ -78,8 +93,8 @@ def main():
     subparser = subparsers.add_parser(
         recipe['name'], description='{0:s}'.format(recipe.__doc__))
     subparser.set_defaults(recipe=recipe)
-    for switch, help_text in recipe_args:
-      subparser.add_argument(switch, help=help_text)
+    for switch, help_text, default in recipe_args:
+      subparser.add_argument(switch, help=help_text, default=default)
 
   args = parser.parse_args()
   recipe = args.recipe
@@ -95,7 +110,8 @@ def main():
 
   collector_objects = []
   for collector in recipe['collectors']:
-    new_args = dftw_utils.import_args_from_dict(collector['args'], vars(args))
+    new_args = dftw_utils.import_args_from_dict(
+        collector['args'], vars(args), config.Config)
     collector_cls = config.Config.get_collector(collector['name'])
     collector_objects.extend(collector_cls.launch_collector(**new_args))
 
@@ -114,7 +130,8 @@ def main():
 
     processor_objs = []
     for processor in recipe['processors']:
-      new_args = dftw_utils.import_args_from_dict(processor['args'], vars(args))
+      new_args = dftw_utils.import_args_from_dict(
+          processor['args'], vars(args), config.Config)
       new_args['collector_output'] = collector_output
       processor_class = config.Config.get_processor(processor['name'])
       processor_objs.extend(processor_class.launch_processor(**new_args))
@@ -129,22 +146,26 @@ def main():
 
   # EXPORTERS
   # Thread exporters
-  console_out.StdOut('Exporters:')
-  for exporter in recipe['exporters']:
-    console_out.StdOut('  {0:s}'.format(exporter['name']))
+  if recipe['exporters']:
+    console_out.StdOut('Exporters:')
+    for exporter in recipe['exporters']:
+      console_out.StdOut('  {0:s}'.format(exporter['name']))
 
-  exporter_objs = []
-  for exporter in recipe['exporters']:
-    new_args = dftw_utils.import_args_from_dict(exporter['args'], vars(args))
-    new_args['processor_output'] = processor_output
-    exporter_class = config.Config.get_exporter(exporter['name'])
-    exporter_objs.extend(exporter_class.launch_exporter(**new_args))
+    exporter_objs = []
+    for exporter in recipe['exporters']:
+      new_args = dftw_utils.import_args_from_dict(
+          exporter['args'], vars(args), config.Config)
+      new_args['processor_output'] = processor_output
+      exporter_class = config.Config.get_exporter(exporter['name'])
+      exporter_objs.extend(exporter_class.launch_exporter(**new_args))
 
-  # Wait for exporters to finish
-  exporter_output = []
-  for exporter in exporter_objs:
-    exporter.join()
-    exporter_output.extend(exporter.output)
+    # Wait for exporters to finish
+    exporter_output = []
+    for exporter in exporter_objs:
+      exporter.join()
+      exporter_output.extend(exporter.output)
+  else:
+    exporter_output = processor_output
 
   console_out.StdOut(
       'Recipe {0:s} executed successfully'.format(recipe['name']))

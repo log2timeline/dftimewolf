@@ -1,24 +1,25 @@
 # -*- coding: utf-8 -*-
-"""DFTimewolf recipe for collecting data from the filesystem.
+"""DFTimewolf recipe for downloading the results of a GRR Hunt and process them.
 
-- Collectors collect from a path in the FS
-- Processes them with a local install of plaso
-- Exports them to a new Timesketch sketch
+- Collect results of a hunt given its Hunt ID
+- Processes results with a local install of plaso
+- Exports processed items to a new Timesketch sketch
 """
-
 from __future__ import unicode_literals
 
-name = 'local_plaso'
 
 contents = {
     'name':
-        'local_plaso',
+        'grr_huntresults_plaso_timesketch',
     'params': {},
     'collectors': [{
-        'name': 'FilesystemCollector',
+        'name': 'GRRHuntDownloader',
         'args': {
-            'paths': ['@paths'],
+            'hunt_id': '@hunt_id',
+            'grr_server_url': 'http://localhost:8000',
+            'grr_auth': ('admin', 'admin'),
             'verbose': True,
+            'reason': '@reason',
         },
     }],
     'processors': [{
@@ -42,6 +43,7 @@ contents = {
 }
 
 args = [
-    ('paths', 'Paths to process', None),
-    ('--incident_id', 'Incident ID (used for Timesketch description)', None),
+    ('hunt_id', 'ID of GRR Hunt results to fetch', None),
+    ('reason', 'Reason for exporting hunt (used for Timesketch description)',
+     None),
 ]
