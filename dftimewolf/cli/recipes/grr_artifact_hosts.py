@@ -5,8 +5,7 @@
 - Exports them to a new Timesketch sketch
 
 """
-
-__author__ = u'tomchop@google.com (Thomas Chopitea)'
+from __future__ import unicode_literals
 
 contents = {
     'name':
@@ -20,7 +19,7 @@ contents = {
             'reason': '@reason',
             'grr_server_url': 'http://localhost:8000',
             'grr_auth': ('admin', 'admin'),
-            'approvers': ['grr-approvals@google.com'],
+            'approvers': [],
             'verbose': True,
             'artifact_list': '@artifact_list',
         },

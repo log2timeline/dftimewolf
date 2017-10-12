@@ -3,8 +3,7 @@
 Consists of a single collector that starts the hunt and provides a Hunt ID to
 the user.
 """
-
-__author__ = u'tomchop@google.com (Thomas Chopitea)'
+from __future__ import unicode_literals
 
 contents = {
     'name':
@@ -17,7 +16,7 @@ contents = {
             'reason': '@reason',
             'grr_server_url': 'http://localhost:8000',
             'grr_auth': ('admin', 'admin'),
-            'approvers': ['grr-approvals@google.com'],
+            'approvers': [],
             'verbose': True,
         },
     }],

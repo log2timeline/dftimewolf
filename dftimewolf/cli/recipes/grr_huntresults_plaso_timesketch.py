@@ -5,8 +5,8 @@
 - Processes results with a local install of plaso
 - Exports processed items to a new Timesketch sketch
 """
+from __future__ import unicode_literals
 
-__author__ = 'tomchop@google.com (Thomas Chopitea)'
 
 contents = {
     'name':
