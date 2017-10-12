@@ -199,8 +199,8 @@ class GRRHuntCollector(BaseCollector):
             os.rename(
                 os.path.join(client_directory, real_file_path),
                 os.path.join(client_directory, os.path.basename(f.filename)))
-          except KeyError, e:
-            self.console_out.StdErr('Extraction error: {0:s}'.format(e))
+          except KeyError as exception:
+            self.console_out.StdErr('Extraction error: {0:s}'.format(exception))
             return None
 
     os.remove(output_file_path)
@@ -278,7 +278,7 @@ class GRRHuntArtifactCollector(GRRHuntCollector):
 
     syslog.syslog('Artifacts to be collected: {0:s}'.format(self.artifacts))
     hunt_name = 'ArtifactCollectorFlow'
-    hunt_args = self.grr_api.types.CreateFlowArgs("ArtifactCollectorFlow")
+    hunt_args = self.grr_api.types.CreateFlowArgs('ArtifactCollectorFlow')
     for artifact in artifact_list:
       hunt_args.artifact_list.append(artifact)
     hunt_args.use_tsk = self.use_tsk
@@ -305,10 +305,10 @@ class GRRHuntArtifactCollector(GRRHuntCollector):
         reason, grr_server_url, grr_auth, artifacts, use_tsk, approvers,
         verbose)
     hunt.console_out.StdOut(
-        "\nArtifact hunt {0:s} created succesfully!".format(hunt.hunt_id))
-    hunt.console_out.StdOut("Run a GRRHuntDownloader recipe to fetch results.")
+        '\nArtifact hunt {0:s} created successfully!'.format(hunt.hunt_id))
+    hunt.console_out.StdOut('Run a GRRHuntDownloader recipe to fetch results.')
     hunt.console_out.StdOut(
-        "e.g. $ dftimewolf grr_huntresults_plaso_timesketch {0:s}\n".format(
+        'e.g. $ dftimewolf grr_huntresults_plaso_timesketch {0:s}\n'.format(
             hunt.hunt_id))
     return []
 
@@ -388,10 +388,10 @@ class GRRHuntFileCollector(GRRHuntCollector):
     hunt = GRRHuntFileCollector(
         reason, grr_server_url, grr_auth, file_list, approvers, verbose)
     hunt.console_out.StdOut(
-        "\nHunt {0:s} created successfully!".format(hunt.hunt_id))
-    hunt.console_out.StdOut("Run a GRRHuntDownloader recipe to fetch results.")
+        '\nHunt {0:s} created successfully!'.format(hunt.hunt_id))
+    hunt.console_out.StdOut('Run a GRRHuntDownloader recipe to fetch results.')
     hunt.console_out.StdOut(
-        "e.g. $ dftimewolf grr_huntresults_plaso_timesketch {0:s}\n".format(
+        'e.g. $ dftimewolf grr_huntresults_plaso_timesketch {0:s}\n'.format(
             hunt.hunt_id))
 
     return []
