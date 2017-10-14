@@ -819,7 +819,7 @@ class GRRHostCollector(BaseCollector):
         if flow_id and status:
           collector.PrintStatus()
         else:
-          collector.collect()
+          collector.start()
           collectors.append(collector)
 
     return collectors
