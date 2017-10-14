@@ -34,7 +34,7 @@ class LocalFilesystemExporter(BaseExporter):
     if not os.path.exists(directory):
       try:
         os.makedirs(directory)
-      except Exception as exception:
+      except OSError as exception:
         self.console_out.StdErr(
             'An unknown error occurred: {0:s}'.format(exception))
     self.console_out.VerboseOut(
