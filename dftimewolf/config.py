@@ -73,9 +73,9 @@ class Config(object):
     Args:
       recipe: imported python module representing the recipe.
     """
-    # Update kwargs with what we already loaded from config.json
     recipe_name = recipe.contents['name']
-    cls._recipe_classes[recipe_name] = (recipe.contents, recipe.args)
+    cls._recipe_classes[recipe_name] = (
+        recipe.contents, recipe.args, recipe.__doc__)
 
   @classmethod
   def get_registered_recipes(cls):

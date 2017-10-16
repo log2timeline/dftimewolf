@@ -93,9 +93,9 @@ def main():
       description='List of currently loaded recipes',
       help='Recipe-specific help')
 
-  for recipe, recipe_args in config.Config.get_registered_recipes():
+  for recipe, recipe_args, doc in config.Config.get_registered_recipes():
     subparser = subparsers.add_parser(
-        recipe['name'], description='{0:s}'.format(recipe.__doc__))
+        recipe['name'], description='{0:s}'.format(doc))
     subparser.set_defaults(recipe=recipe)
     for switch, help_text, default in recipe_args:
       subparser.add_argument(switch, help=help_text, default=default)
