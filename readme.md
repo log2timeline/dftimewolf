@@ -14,7 +14,7 @@ dfTimewofl is typically ran by specifying a recipe name and any argument the
 recipe defines:
 
 ```
-$ dftimewolf.py local_plaso /tmp/path1,/tmp/path2 --incident_id 12345
+$ dftimewolf local_plaso /tmp/path1,/tmp/path2 --incident_id 12345
 ```
 This will launch the local_plaso against `path1` and `path2` in `/tmp`.
 `--incident_id` is used by Timesketch as a sketch description.
@@ -22,15 +22,15 @@ This will launch the local_plaso against `path1` and `path2` in `/tmp`.
 Details on a recipe can be obtained using the standard python help flags:
 
 ```
-$ dftimewolf.py -h
-usage: dftimewolf.py [-h]
+$ dftimewolf -h
+usage: dftimewolf [-h]
                              {local_plaso,grr_artifact_hosts,...}
 
 optional arguments:
   -h, --help            show this help message and exit
 
 Available recipes:
-  "dftimewolf.py <recipe_name> help" for help on a specific recipe
+  "dftimewolf <recipe_name> help" for help on a specific recipe
 
   {local_plaso,grr_artifact_hosts,...}
 ```
@@ -39,8 +39,8 @@ To get more help on a recipe's specific flags, specify a recipe name before
 the `-h` flag:
 
 ```
-$ dftimewolf.py local_plaso -h
-usage: dftimewolf.py local_plaso [-h] [--incident_id INCIDENT_ID] paths
+$ dftimewolf local_plaso -h
+usage: dftimewolf local_plaso [-h] [--incident_id INCIDENT_ID] paths
 
 DFTimewolf recipe for collecting data from the filesystem. - Collectors collect
 from a path in the FS - Processes them with a local install of plaso - Exports
