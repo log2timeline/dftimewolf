@@ -37,7 +37,6 @@ from __future__ import unicode_literals
 
 import argparse
 import os
-import sys
 
 from dftimewolf import config
 from dftimewolf.lib import utils as dftw_utils
