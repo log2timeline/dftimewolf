@@ -116,9 +116,14 @@ def main():
 
   # Wait for collectors to finish and collect output
   collector_output = []
+  errors = []
   for collector_obj in collector_objects:
     collector_obj.join()
     collector_output.extend(collector_obj.results)
+    errors.extend(collector_obj.errors)
+  if errors:
+    for error in errors:
+      console_out.StdErr("ERROR:Collector:{0:s}\n".format(error))
 
   if recipe['processors']:
     # PROCESSORS
