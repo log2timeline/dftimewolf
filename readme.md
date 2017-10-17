@@ -1,6 +1,8 @@
 ## DFTimewolf
 
-![dftimewolf](https://cloud.githubusercontent.com/assets/13300571/17257013/0065185c-5575-11e6-957d-5e662ec78d8c.png)
+<p align="center">
+  <img src="https://cloud.githubusercontent.com/assets/13300571/17257013/0065185c-5575-11e6-957d-5e662ec78d8c.png" width="300"/>
+</p>
 
 A framework for orchestrating forensic collection, processing and data export.
 
