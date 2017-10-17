@@ -300,6 +300,10 @@ class GRRHuntArtifactCollector(GRRHuntCollector):
       use_tsk: toggle for use_tsk flag on GRR flow.
       approvers: comma-separated list of GRR approval recipients.
       verbose: toggle for verbose output.
+
+    Returns:
+      An empty list, since this launches a Hunt and no processors can be
+          immediately called.
     """
     hunt = GRRHuntArtifactCollector(
         reason, grr_server_url, grr_auth, artifacts, use_tsk, approvers,
@@ -378,12 +382,17 @@ class GRRHuntFileCollector(GRRHuntCollector):
       verbose=False):
     """Start a file collector Hunt using GRRHuntFileCollector.
 
-    Attributes:
+    Args:
+      reason: Justification for GRR access.
       grr_server_url: GRR server URL.
       grr_auth: Tuple containing a (username, password) combination.
       file_list: Comma-separated list of files to download in the Hunt.
       approvers: comma-separated list of GRR approval recipients.
       verbose: toggle for verbose output.
+
+    Returns:
+      An empty list, since this launches a Hunt and no processors can be
+          immediately called.
     """
     hunt = GRRHuntFileCollector(
         reason, grr_server_url, grr_auth, file_list, approvers, verbose)
@@ -441,6 +450,9 @@ class GRRHuntDownloader(GRRHuntCollector):
       hunt_id: GRR Hunt id to download files from.
       approvers: comma-separated list of GRR approval recipients.
       verbose: toggle for verbose output.
+
+    Returns:
+      An list containing the started Hunt downloader collector.
     """
     hunt_downloader = GRRHuntDownloader(
         reason, grr_server_url, grr_auth, hunt_id, approvers, verbose)
@@ -807,7 +819,7 @@ class GRRHostCollector(BaseCollector):
         if flow_id and status:
           collector.PrintStatus()
         else:
-          collector.collect()
+          collector.start()
           collectors.append(collector)
 
     return collectors

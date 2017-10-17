@@ -37,6 +37,7 @@ from __future__ import unicode_literals
 
 import argparse
 import os
+import sys
 
 from dftimewolf import config
 from dftimewolf.lib import utils as dftw_utils
@@ -45,12 +46,14 @@ from dftimewolf.lib.collectors import filesystem
 from dftimewolf.lib.collectors import grr
 from dftimewolf.lib.processors import localplaso
 from dftimewolf.lib.exporters import timesketch
+from dftimewolf.lib.exporters import local_filesystem
 
 from dftimewolf.cli.recipes import local_plaso
 from dftimewolf.cli.recipes import grr_artifact_hosts
 from dftimewolf.cli.recipes import grr_hunt_file
 from dftimewolf.cli.recipes import grr_hunt_artifacts
 from dftimewolf.cli.recipes import grr_huntresults_plaso_timesketch
+from dftimewolf.cli.recipes import grr_flow_download
 
 config.Config.register_collector(filesystem.FilesystemCollector)
 config.Config.register_collector(grr.GRRHuntArtifactCollector)
@@ -61,6 +64,7 @@ config.Config.register_collector(grr.GRRFileCollector)
 config.Config.register_collector(grr.GRRFlowCollector)
 config.Config.register_processor(localplaso.LocalPlasoProcessor)
 config.Config.register_exporter(timesketch.TimesketchExporter)
+config.Config.register_exporter(local_filesystem.LocalFilesystemExporter)
 
 # Try to open config.json and load configuration data from it.
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -77,6 +81,7 @@ config.Config.register_recipe(grr_artifact_hosts)
 config.Config.register_recipe(grr_hunt_file)
 config.Config.register_recipe(grr_hunt_artifacts)
 config.Config.register_recipe(grr_huntresults_plaso_timesketch)
+config.Config.register_recipe(grr_flow_download)
 
 
 def main():
@@ -88,9 +93,9 @@ def main():
       description='List of currently loaded recipes',
       help='Recipe-specific help')
 
-  for recipe, recipe_args in config.Config.get_registered_recipes():
+  for recipe, recipe_args, doc in config.Config.get_registered_recipes():
     subparser = subparsers.add_parser(
-        recipe['name'], description='{0:s}'.format(recipe.__doc__))
+        recipe['name'], description='{0:s}'.format(doc))
     subparser.set_defaults(recipe=recipe)
     for switch, help_text, default in recipe_args:
       subparser.add_argument(switch, help=help_text, default=default)
@@ -116,9 +121,14 @@ def main():
 
   # Wait for collectors to finish and collect output
   collector_output = []
+  errors = []
   for collector_obj in collector_objects:
     collector_obj.join()
     collector_output.extend(collector_obj.results)
+    errors.extend(collector_obj.errors)
+  if errors:
+    for error in errors:
+      console_out.StdErr("ERROR:Collector:{0:s}\n".format(error))
 
   if recipe['processors']:
     # PROCESSORS

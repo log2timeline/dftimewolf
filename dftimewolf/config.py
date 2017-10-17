@@ -39,12 +39,13 @@ class Config(object):
     Args:
       filename: str, the filename to open.
     """
-    with open(filename, 'rb') as fp:
-      try:
+    try:
+      with open(filename, 'rb') as fp:
         cls.load_extra_data(fp.read())
-      except IOError as e:
-        sys.stderr.write('Could not open {0:s}. {1:s}'.format(filename, e))
-        exit(-1)
+    except IOError:
+      return False
+    sys.stderr.write("Config succesfully loaded from {0:s}\n".format(filename))
+    return True
 
   @classmethod
   def load_extra_data(cls, data):
@@ -73,9 +74,9 @@ class Config(object):
     Args:
       recipe: imported python module representing the recipe.
     """
-    # Update kwargs with what we already loaded from config.json
     recipe_name = recipe.contents['name']
-    cls._recipe_classes[recipe_name] = (recipe.contents, recipe.args)
+    cls._recipe_classes[recipe_name] = (
+        recipe.contents, recipe.args, recipe.__doc__)
 
   @classmethod
   def get_registered_recipes(cls):
