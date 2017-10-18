@@ -41,7 +41,10 @@ class TimesketchApiClient(object):
     """
     session = requests.Session()
     session.verify = False  # Depending on SSL cert is verifiable
-    response = session.get(self.host_url)
+    try:
+      response = session.get(self.host_url)
+    except requests.exceptions.ConnectionError as e:
+      return False
     # Get the CSRF token from the response
     soup = BeautifulSoup(response.text, 'html.parser')
     csrf_token = soup.find('input', dict(name='csrf_token'))['value']
@@ -98,7 +101,7 @@ class TimesketchApiClient(object):
     Returns:
       int: ID of sketch
     """
-
+    
     # Export processed timeline(s)
     for timeline_name, artifact_path in processed_artifacts:
       new_timeline_id = self.upload_timeline(timeline_name, artifact_path)

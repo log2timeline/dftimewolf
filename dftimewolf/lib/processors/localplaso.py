@@ -69,14 +69,15 @@ class LocalPlasoProcessor(BaseArtifactProcessor):
       _, errors = l2t_proc.communicate()
       l2t_status = l2t_proc.wait()
       if l2t_status:
-        self.console_out.StdErr(errors)
+        # self.console_out.StdErr(errors)
         error_msg = 'The command {0:s} failed'.format(' '.join(cmd))
         self.errors.append(error_msg)
-        raise ValueError(error_msg)
     except OSError as e:
       error = 'An error occurred while attempting to run plaso: {0:s}'.format(e)
       self.errors.append(error)
-      raise ValueError(error)
+    except Exception as e:
+      error = 'An unknown error occured: {0:s}'.format(e)
+      self.errors.append(error)
 
   @staticmethod
   def launch_processor(collector_output, timezone=None, verbose=False):

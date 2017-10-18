@@ -119,16 +119,22 @@ def main():
     collector_cls = config.Config.get_collector(collector['name'])
     collector_objects.extend(collector_cls.launch_collector(**new_args))
 
+  # Set global errors for final reporting
+  global_errors = []
+
   # Wait for collectors to finish and collect output
   collector_output = []
   errors = []
   for collector_obj in collector_objects:
     collector_obj.join()
     collector_output.extend(collector_obj.results)
-    errors.extend(collector_obj.errors)
+    if collector_obj.errors:
+      err = (collector_obj.__class__.__name__, ", ".join(collector_obj.errors))
+      errors.append(err)
+      global_errors.append(err)
+      console_out.StdErr("ERROR:{0:s}:{1:s}\n".format(*err))
   if errors:
-    for error in errors:
-      console_out.StdErr("ERROR:Collector:{0:s}\n".format(error))
+    pass # pass or exit?
 
   if recipe['processors']:
     # PROCESSORS
@@ -147,9 +153,17 @@ def main():
 
     # Wait for processors to finish and collect output
     processor_output = []
+    errors = []
     for processor in processor_objs:
       processor.join()
       processor_output.extend(processor.output)
+      if processor.errors:
+        err = (processor.__class__.__name__, ", ".join(processor.errors))
+        errors.append(err)
+        global_errors.append(err)
+        console_out.StdErr("ERROR:{0:s}:{1:s}\n".format(*err))
+    if errors:
+      pass
   else:
     processor_output = collector_output
 
@@ -170,14 +184,27 @@ def main():
 
     # Wait for exporters to finish
     exporter_output = []
+    errors = []
     for exporter in exporter_objs:
       exporter.join()
       exporter_output.extend(exporter.output)
+      if exporter.errors:
+        err = (exporter.__class__.__name__, ", ".join(exporter.errors))
+        errors.append(err)
+        global_errors.append(err)
+        console_out.StdErr("ERROR:{0:s}:{1:s}\n".format(*err))
+    if errors:
+      pass
   else:
     exporter_output = processor_output
 
-  console_out.StdOut(
-      'Recipe {0:s} executed successfully'.format(recipe['name']))
+  if not global_errors:
+    console_out.StdOut(
+        'Recipe {0:s} executed successfully'.format(recipe['name']))
+  else:
+    console_out.StdOut('Recipe {0:s} executed with {1:d} errors:'.format(recipe['name'], len(global_errors)))
+    for error in global_errors:
+      console_out.StdOut('  {0:s}: {1:s}'.format(*error))
 
 
 if __name__ == '__main__':
