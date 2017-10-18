@@ -5,7 +5,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import syslog
-import sys
 
 from dftimewolf.lib import timesketch_utils
 from dftimewolf.lib.exporters.exporters import BaseExporter
@@ -50,7 +49,7 @@ class TimesketchExporter(BaseExporter):
         else:
           sketch_name = 'Untitled sketch'
           sketch_description = 'No description provided'
-        self.sketch_id = timesketch_api.create_sketch(
+        self.sketch_id = self.timesketch_api.create_sketch(
             sketch_name, sketch_description)
         self.console_out.StdOut(
             'New sketch created: {0:d}'.format(self.sketch_id))
