@@ -75,7 +75,8 @@ class LocalPlasoProcessor(BaseArtifactProcessor):
     except OSError as e:
       error = 'An error occurred while attempting to run plaso: {0:s}'.format(e)
       self.errors.append(error)
-    except Exception as e:
+    # Catch all remaining errors since we want to gracefully report them
+    except Exception as e:  #pylint: disable=W0703
       error = 'An unknown error occured: {0:s}'.format(e)
       self.errors.append(error)
 

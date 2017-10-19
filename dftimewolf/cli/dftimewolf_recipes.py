@@ -134,7 +134,7 @@ def main():
       global_errors.append(err)
       console_out.StdErr("ERROR:{0:s}:{1:s}\n".format(*err))
   if errors:
-    pass # pass or exit?
+    pass  # pass or exit?
 
   if recipe['processors']:
     # PROCESSORS
@@ -202,7 +202,9 @@ def main():
     console_out.StdOut(
         'Recipe {0:s} executed successfully'.format(recipe['name']))
   else:
-    console_out.StdOut('Recipe {0:s} executed with {1:d} errors:'.format(recipe['name'], len(global_errors)))
+    console_out.StdOut(
+        'Recipe {0:s} executed with {1:d} errors:'.format(
+            recipe['name'], len(global_errors)))
     for error in global_errors:
       console_out.StdOut('  {0:s}: {1:s}'.format(*error))
 
