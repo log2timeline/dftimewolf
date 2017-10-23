@@ -34,7 +34,9 @@ class TimesketchExporter(BaseExporter):
     self.timesketch_api = timesketch_utils.TimesketchApiClient(
         ts_endpoint, ts_username, ts_password)
     if not self.timesketch_api.session:
-      self.errors.append("Could not connect to timesketch server")
+      self.errors.append("Could not connect to timesketch server {0:s}".format(
+          ts_endpoint
+      ))
     else:
       self.incident_id = incident_id
       self.sketch_id = sketch_id
