@@ -68,13 +68,9 @@ config.Config.register_exporter(local_filesystem.LocalFilesystemExporter)
 
 # Try to open config.json and load configuration data from it.
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-config_path = os.path.join(ROOT_DIR, 'config.json')
-try:
-  config.Config.load_extra(config_path)
-except IOError as exception:
-  sys.stderr.write(
-      'Could not open {0:s}, some recipes might not work: {1:s}'.format(
-          config_path, exception))
+USER_DIR = os.path.expanduser("~")
+config.Config.load_extra(os.path.join(ROOT_DIR, 'config.json'))
+config.Config.load_extra(os.path.join(USER_DIR, '.dftimewolfrc'))
 
 config.Config.register_recipe(local_plaso)
 config.Config.register_recipe(grr_artifact_hosts)
