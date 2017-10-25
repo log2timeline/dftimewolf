@@ -105,6 +105,8 @@ GRRFileCollector and GRRFlowCollector will wait for results before exiting.
 
 * TimesketchExporter - exports the result of a processor to a remote Timesketch
 instance.
+* LocalFileSystemExporter - exports the results of a processor to the local
+filesystem.
 
 
 
