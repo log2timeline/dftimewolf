@@ -13,8 +13,8 @@ data on to one another. How modules are orchestrated is defined in predefined
 
 ### Quick how-to
 
-dfTimewofl is typically ran by specifying a recipe name and any argument the
-recipe defines:
+dfTimewolf is typically run by specifying a recipe name and any argument the
+recipe defines. For example:
 
 ```
 $ dftimewolf local_plaso /tmp/path1,/tmp/path2 --incident_id 12345
@@ -62,16 +62,16 @@ optional arguments:
 ### Recipes
 
 Recipes are pre-defined sequences of collectors, processors and exporters. They
-can be minimally configure to take specific command-line arguments or flags.
+can be minimally configured to take specific command-line arguments or flags.
 
 * grr_artifact_hosts - Launches an ArtifactCollectorFlow on specific hosts,
-  processes them with plaso, and exports results to timesketch.
+  processes them with Plaso, and exports results to Timesketch.
 * grr_hunt_artifacts - Launches a fleet-wide GRR Artifact hunt and returns a
   hunt ID.
 * grr_hunt_file - Launches a fleet-wide GRR FileFinder hunt and returns a
   hunt ID.
 * grr_huntresults_plaso_timesketch - Fetches hunt results given a Hunt ID,
-  processes them with plaso, sends results to Timesketch
+  processes them with Plaso, sends results to Timesketch
 * local_plaso - Launches log2timeline on a local file path and exports results
   to timesketch.
 

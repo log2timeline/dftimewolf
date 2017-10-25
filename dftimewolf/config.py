@@ -40,8 +40,8 @@ class Config(object):
       filename: str, the filename to open.
     """
     try:
-      with open(filename, 'rb') as fp:
-        cls.load_extra_data(fp.read())
+      with open(filename, 'rb') as configuration_file:
+        cls.load_extra_data(configuration_file.read())
     except IOError:
       return False
     sys.stderr.write("Config succesfully loaded from {0:s}\n".format(filename))

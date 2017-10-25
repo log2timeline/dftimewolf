@@ -45,15 +45,15 @@ from dftimewolf.lib import utils as dftw_utils
 from dftimewolf.lib.collectors import filesystem
 from dftimewolf.lib.collectors import grr
 from dftimewolf.lib.processors import localplaso
-from dftimewolf.lib.exporters import timesketch
 from dftimewolf.lib.exporters import local_filesystem
+from dftimewolf.lib.exporters import timesketch
 
-from dftimewolf.cli.recipes import local_plaso
 from dftimewolf.cli.recipes import grr_artifact_hosts
-from dftimewolf.cli.recipes import grr_hunt_file
-from dftimewolf.cli.recipes import grr_hunt_artifacts
-from dftimewolf.cli.recipes import grr_huntresults_plaso_timesketch
 from dftimewolf.cli.recipes import grr_flow_download
+from dftimewolf.cli.recipes import grr_hunt_artifacts
+from dftimewolf.cli.recipes import grr_hunt_file
+from dftimewolf.cli.recipes import grr_huntresults_plaso_timesketch
+from dftimewolf.cli.recipes import local_plaso
 
 config.Config.register_collector(filesystem.FilesystemCollector)
 config.Config.register_collector(grr.GRRHuntArtifactCollector)
@@ -89,9 +89,10 @@ def main():
       description='List of currently loaded recipes',
       help='Recipe-specific help')
 
-  for recipe, recipe_args, doc in config.Config.get_registered_recipes():
+  for registered_recipe in config.Config.get_registered_recipes():
+    recipe, recipe_args, documentation = registered_recipe
     subparser = subparsers.add_parser(
-        recipe['name'], description='{0:s}'.format(doc))
+        recipe['name'], description='{0:s}'.format(documentation))
     subparser.set_defaults(recipe=recipe)
     for switch, help_text, default in recipe_args:
       subparser.add_argument(switch, help=help_text, default=default)
@@ -102,8 +103,7 @@ def main():
   console_out = dftw_utils.DFTimewolfConsoleOutput(
       sender='DFTimewolfCli', verbose=True)
 
-  # COLLECTORS
-  # Thread collectors
+  # Thread all collectors.
   console_out.StdOut('Collectors:')
   for collector in recipe['collectors']:
     console_out.StdOut('  {0:s}'.format(collector['name']))
@@ -115,26 +115,23 @@ def main():
     collector_cls = config.Config.get_collector(collector['name'])
     collector_objects.extend(collector_cls.launch_collector(**new_args))
 
-  # Set global errors for final reporting
+  # global_errors will contain any errors generated along the way by collectors,
+  # producers or exporters.
   global_errors = []
 
-  # Wait for collectors to finish and collect output
+  # Wait for collectors to finish and collect output.
   collector_output = []
-  errors = []
   for collector_obj in collector_objects:
     collector_obj.join()
     collector_output.extend(collector_obj.results)
     if collector_obj.errors:
-      err = (collector_obj.__class__.__name__, ", ".join(collector_obj.errors))
-      errors.append(err)
-      global_errors.append(err)
-      console_out.StdErr("ERROR:{0:s}:{1:s}\n".format(*err))
-  if errors:
-    pass  # pass or exit?
+      #TODO(tomchop): Add name attributes in module objects
+      error = (collector_obj.__class__.__name__, ", ".join(collector_obj.errors))
+      global_errors.append(error)
+      console_out.StdErr("ERROR:{0:s}:{1:s}\n".format(*error))
 
   if recipe['processors']:
-    # PROCESSORS
-    # Thread processors
+    # Thread processors.
     console_out.StdOut('Processors:')
     for processor in recipe['processors']:
       console_out.StdOut('  {0:s}'.format(processor['name']))
@@ -149,22 +146,21 @@ def main():
 
     # Wait for processors to finish and collect output
     processor_output = []
-    errors = []
     for processor in processor_objs:
       processor.join()
       processor_output.extend(processor.output)
       if processor.errors:
-        err = (processor.__class__.__name__, ", ".join(processor.errors))
-        errors.append(err)
-        global_errors.append(err)
-        console_out.StdErr("ERROR:{0:s}:{1:s}\n".format(*err))
-    if errors:
-      pass
+        # Note: Should we fail if modules produce errors, or is warning the user
+        # enough?
+        # TODO(tomchop): Add name attributes in module objects.
+        error = (processor.__class__.__name__, ", ".join(processor.errors))
+        global_errors.append(error)
+        console_out.StdErr("ERROR:{0:s}:{1:s}\n".format(*error))
+
   else:
     processor_output = collector_output
 
-  # EXPORTERS
-  # Thread exporters
+  # Thread all exporters.
   if recipe['exporters']:
     console_out.StdOut('Exporters:')
     for exporter in recipe['exporters']:
@@ -178,19 +174,16 @@ def main():
       exporter_class = config.Config.get_exporter(exporter['name'])
       exporter_objs.extend(exporter_class.launch_exporter(**new_args))
 
-    # Wait for exporters to finish
+    # Wait for exporters to finish.
     exporter_output = []
-    errors = []
     for exporter in exporter_objs:
       exporter.join()
       exporter_output.extend(exporter.output)
       if exporter.errors:
-        err = (exporter.__class__.__name__, ", ".join(exporter.errors))
-        errors.append(err)
-        global_errors.append(err)
-        console_out.StdErr("ERROR:{0:s}:{1:s}\n".format(*err))
-    if errors:
-      pass
+        #TODO(tomchop): Add name attributes in module objects
+        error = (exporter.__class__.__name__, ", ".join(exporter.errors))
+        global_errors.append(error)
+        console_out.StdErr("ERROR:{0:s}:{1:s}\n".format(*error))
   else:
     exporter_output = processor_output
 
