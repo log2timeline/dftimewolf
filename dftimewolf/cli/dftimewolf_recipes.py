@@ -37,7 +37,6 @@ from __future__ import unicode_literals
 
 import argparse
 import os
-import sys
 
 from dftimewolf import config
 from dftimewolf.lib import utils as dftw_utils
@@ -126,7 +125,8 @@ def main():
     collector_output.extend(collector_obj.results)
     if collector_obj.errors:
       #TODO(tomchop): Add name attributes in module objects
-      error = (collector_obj.__class__.__name__, ", ".join(collector_obj.errors))
+      error = (collector_obj.__class__.__name__, ", ".join(
+          collector_obj.errors))
       global_errors.append(error)
       console_out.StdErr("ERROR:{0:s}:{1:s}\n".format(*error))
 
