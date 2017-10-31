@@ -38,14 +38,17 @@ class Config(object):
 
     Args:
       filename: str, the filename to open.
+      
+    Returns:
+      bool: True if the extra configuration parameters were read.
     """
     try:
       with open(filename, 'rb') as configuration_file:
         cls.load_extra_data(configuration_file.read())
+        sys.stderr.write("Config succesfully loaded from {0:s}\n".format(filename))
+        return True
     except IOError:
       return False
-    sys.stderr.write("Config succesfully loaded from {0:s}\n".format(filename))
-    return True
 
   @classmethod
   def load_extra_data(cls, data):
