@@ -41,7 +41,10 @@ class TimesketchApiClient(object):
     """
     session = requests.Session()
     session.verify = False  # Depending on SSL cert is verifiable
-    response = session.get(self.host_url)
+    try:
+      response = session.get(self.host_url)
+    except requests.exceptions.ConnectionError:
+      return False
     # Get the CSRF token from the response
     soup = BeautifulSoup(response.text, 'html.parser')
     csrf_token = soup.find('input', dict(name='csrf_token'))['value']

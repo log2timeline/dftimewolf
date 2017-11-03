@@ -66,14 +66,20 @@ class LocalPlasoProcessor(BaseArtifactProcessor):
     try:
       l2t_proc = subprocess.Popen(
           cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-      _, errors = l2t_proc.communicate()
+      _, error = l2t_proc.communicate()
       l2t_status = l2t_proc.wait()
       if l2t_status:
-        self.console_out.StdErr(errors)
-        raise ValueError('The command {0:s} failed'.format(' '.join(cmd)))
-    except OSError as e:
-      raise ValueError(
-          'An error occurred while attempting to run plaso: {0:s}'.format(e))
+        # self.console_out.StdErr(errors)
+        message = 'The command {0:s} failed: {1:s}'.format(' '.join(cmd), error)
+        self.errors.append(message)
+    except OSError as exception:
+      error = 'An error occurred while attempting to run plaso: {0:s}'.format(
+          exception)
+      self.errors.append(error)
+    # Catch all remaining errors since we want to gracefully report them
+    except Exception as exception:  #pylint: disable=W0703
+      error = 'An unexpected error occured: {0:s}'.format(exception)
+      self.errors.append(error)
 
   @staticmethod
   def launch_processor(collector_output, timezone=None, verbose=False):
