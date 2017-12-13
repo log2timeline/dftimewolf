@@ -1,6 +1,6 @@
-"""DFTimewolf recipe for collecting data from hosts using GRR.
+"""DFTimewolf recipe for collecting artifacts from hosts using GRR.
 
-- Collectors collect default artifacts from hosts using GRR
+- Collectors collect a predefined list of artifacts from hosts using GRR
 - Processes them with a local install of plaso
 - Exports them to a new Timesketch sketch
 

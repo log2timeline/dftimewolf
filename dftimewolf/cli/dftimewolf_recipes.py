@@ -86,7 +86,7 @@ def main():
   subparsers = parser.add_subparsers(
       title='Available recipes',
       description='List of currently loaded recipes',
-      help='Recipe-specific help')
+      help='Recipe-specific help. Run dftimewolf <RECIPE_NAME> -h for details.')
 
   for registered_recipe in config.Config.get_registered_recipes():
     recipe, recipe_args, documentation = registered_recipe

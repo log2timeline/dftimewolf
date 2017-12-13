@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""DFTimewolf recipe for collecting data from the filesystem.
+"""DFTimewolf recipe for collecting and processing data from the filesystem.
 
 - Collectors collect from a path in the FS
 - Processes them with a local install of plaso
