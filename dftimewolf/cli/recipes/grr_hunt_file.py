@@ -17,7 +17,7 @@ contents = {
             'reason': '@reason',
             'grr_server_url': 'http://localhost:8000',
             'grr_auth': ('admin', 'admin'),
-            'approvers': [],
+            'approvers': "",
             'verbose': True,
         },
     }],

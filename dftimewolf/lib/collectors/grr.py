@@ -13,8 +13,8 @@ import zipfile
 
 from dftimewolf.lib.collectors.collectors import BaseCollector
 
-from grr_api_client import errors as grr_errors
 from grr_api_client import api as grr_api
+from grr_api_client import errors as grr_errors
 from grr_api_client.proto.grr.proto import flows_pb2
 
 
@@ -38,11 +38,13 @@ class GRRHuntCollector(BaseCollector):
       reason: justification for GRR access.
       grr_server_url: GRR server URL.
       grr_auth: Tuple containing a (username, password) combination.
-      approvers: comma-separated list of GRR approval recipients.
+      approvers: list of GRR approval recipients.
       verbose: toggle for verbose output.
     """
     super(GRRHuntCollector, self).__init__(verbose=verbose)
     self._hunt = None
+    if approvers is None:
+      approvers = []
     self.approvers = approvers
     self.grr_api = grr_api.InitHttp(api_endpoint=grr_server_url, auth=grr_auth)
     self.hunt_id = None
@@ -305,6 +307,7 @@ class GRRHuntArtifactCollector(GRRHuntCollector):
       An empty list, since this launches a Hunt and no processors can be
           immediately called.
     """
+    approvers = [approver for approver in approvers.split(',') if approver]
     hunt = GRRHuntArtifactCollector(
         reason, grr_server_url, grr_auth, artifacts, use_tsk, approvers,
         verbose)
@@ -378,7 +381,7 @@ class GRRHuntFileCollector(GRRHuntCollector):
 
   @staticmethod
   def launch_collector(
-      reason, grr_server_url, grr_auth, file_list, approvers=None,
+      reason, grr_server_url, grr_auth, file_list, approvers='',
       verbose=False):
     """Start a file collector Hunt using GRRHuntFileCollector.
 
@@ -394,6 +397,7 @@ class GRRHuntFileCollector(GRRHuntCollector):
       An empty list, since this launches a Hunt and no processors can be
           immediately called.
     """
+    approvers = [approver for approver in approvers.split(',') if approver]
     hunt = GRRHuntFileCollector(
         reason, grr_server_url, grr_auth, file_list, approvers, verbose)
     hunt.console_out.StdOut(
@@ -440,7 +444,7 @@ class GRRHuntDownloader(GRRHuntCollector):
 
   @staticmethod
   def launch_collector(
-      reason, grr_server_url, grr_auth, hunt_id, approvers=None, verbose=False):
+      reason, grr_server_url, grr_auth, hunt_id, approvers='', verbose=False):
     """Downloads the files found during a given GRR Hunt.
 
     Args:
@@ -454,6 +458,7 @@ class GRRHuntDownloader(GRRHuntCollector):
     Returns:
       An list containing the started Hunt downloader collector.
     """
+    approvers = [approver for approver in approvers.split(',') if approver]
     hunt_downloader = GRRHuntDownloader(
         reason, grr_server_url, grr_auth, hunt_id, approvers, verbose)
     hunt_downloader.start()
@@ -496,6 +501,8 @@ class GRRHostCollector(BaseCollector):
       keepalive: toggle for scheduling a KeepAlive flow.
     """
     super(GRRHostCollector, self).__init__(verbose=verbose)
+    if approvers is None:
+      approvers = []
     self.output_path = tempfile.mkdtemp()
     self.grr_api = grr_api.InitHttp(api_endpoint=grr_server_url, auth=grr_auth)
     self.host = hostname
@@ -749,9 +756,9 @@ class GRRHostCollector(BaseCollector):
       grr_server_url,
       grr_auth,
       artifact_list=None,
-      file_list=None,
+      file_list='',
       use_tsk=False,
-      approvers=None,
+      approvers='',
       verbose=False,
       keepalive=False,
       status=False):
@@ -778,6 +785,9 @@ class GRRHostCollector(BaseCollector):
       A list of started collectors for each path
     """
     collectors = []
+    approvers = [approver for approver in approvers.split(',') if approver]
+    file_list = [item for item in file_list.split(',') if item]
+    artifact_list = [item for item in artifact_list.split(',') if item]
     for hostname in hosts.split(','):
       host_collectors = []
       # Launch artifact collector if artifacts present or if no file/flow passed
@@ -871,12 +881,16 @@ class GRRArtifactCollector(GRRHostCollector):
       reason: justification for GRR access.
       grr_server_url: GRR server URL.
       grr_auth: Tuple containing a (username, password) combination.
-      artifacts: comma-separated list of GRR-defined artifacts.
+      artifacts: list of GRR-defined artifacts.
       use_tsk: toggle for use_tsk flag on GRR flow.
-      approvers: comma-separated list of GRR approval recipients.
+      approvers: list of GRR approval recipients.
       verbose: toggle for verbose output.
       keepalive: toggle for scheduling a KeepAlive flow.
     """
+    if approvers is None:
+      approvers = []
+    if artifacts is None:
+      artifacts = []
     super(GRRArtifactCollector, self).__init__(
         hostname,
         reason,
@@ -914,7 +928,7 @@ class GRRArtifactCollector(GRRHostCollector):
     # If the list is supplied by the user via a flag, honor that.
     if self.artifacts:
       syslog.syslog('Artifacts to be collected: {0:s}'.format(self.artifacts))
-      artifact_list = self.artifacts.split(',')
+      artifact_list = self.artifacts
     else:
       syslog.syslog('Artifacts to be collected: Default')
       artifact_list = artifact_registry.get(system_type, None)
@@ -938,7 +952,7 @@ class GRRFileCollector(GRRHostCollector):
   """File collector for GRR flows.
 
   Attributes:
-    files: comma-separated list of file paths.
+    files: list of file paths.
     reason: Justification for GRR access.
     approvers: list of GRR approval recipients.
   """
@@ -960,11 +974,13 @@ class GRRFileCollector(GRRHostCollector):
       reason: justification for GRR access.
       grr_server_url: GRR server URL.
       grr_auth: Tuple containing a (username, password) combination.
-      files: comma-separated list of file paths.
-      approvers: comma-separated list of GRR approval recipients.
+      files: list of file paths.
+      approvers: list of GRR approval recipients.
       verbose: toggle for verbose output.
       keepalive: toggle for scheduling a KeepAlive flow.
     """
+    if approvers is None:
+      approvers = []
     super(GRRFileCollector, self).__init__(
         hostname,
         reason,
@@ -989,7 +1005,7 @@ class GRRFileCollector(GRRHostCollector):
     """
     self._client = self._GetClient(self._client_id, self.reason, self.approvers)
 
-    file_list = self.files.split(',')
+    file_list = self.files
     if not file_list:
       raise RuntimeError('File paths must be specified for FileFinder')
     syslog.syslog('Filefinder to collect {0:d} items'.format(len(file_list)))
@@ -1035,9 +1051,11 @@ class GRRFlowCollector(GRRHostCollector):
       grr_server_url: GRR server URL.
       grr_auth: Tuple containing a (username, password) combination.
       flow_id: ID of GRR flow to retrieve.
-      approvers: comma-separated list of GRR approval recipients.
+      approvers: list of GRR approval recipients.
       verbose: toggle for verbose output.
     """
+    if approvers is None:
+      approvers = []
     super(GRRFlowCollector, self).__init__(
         hostname,
         reason,

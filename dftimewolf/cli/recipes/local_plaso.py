@@ -17,7 +17,7 @@ contents = {
     'collectors': [{
         'name': 'FilesystemCollector',
         'args': {
-            'paths': ['@paths'],
+            'paths': '@paths',
             'verbose': True,
         },
     }],

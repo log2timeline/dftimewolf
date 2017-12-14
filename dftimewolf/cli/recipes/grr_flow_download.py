@@ -20,7 +20,7 @@ contents = {
             'grr_server_url': 'http://localhost:8000',
             'grr_auth': ('admin', 'admin'),
             'use_tsk': False,
-            'approvers': [],
+            'approvers': "",
             'verbose': True,
         },
     }],
