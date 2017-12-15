@@ -70,10 +70,11 @@ class FilesystemCollector(BaseCollector):
       caller.
     """
     collectors = []
-    for path in paths:
-      collector = FilesystemCollector(path, verbose=verbose)
-      collector.start()
-      collectors.append(collector)
+    for path in paths.split(','):
+      if path:
+        collector = FilesystemCollector(path, verbose=verbose)
+        collector.start()
+        collectors.append(collector)
     return collectors
 
 

@@ -1,7 +1,8 @@
 """DFTimewolf recipe for starting file hunts using GRR.
 
 Consists of a single collector that starts the hunt and provides a Hunt ID to
-the user.
+the user. Feed the Hunt ID to grr_huntresults_plaso_timesketch to process them
+through plaso and send them to Timesketch.
 """
 from __future__ import unicode_literals
 
@@ -16,7 +17,7 @@ contents = {
             'reason': '@reason',
             'grr_server_url': 'http://localhost:8000',
             'grr_auth': ('admin', 'admin'),
-            'approvers': [],
+            'approvers': "",
             'verbose': True,
         },
     }],
