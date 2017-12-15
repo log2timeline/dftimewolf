@@ -30,3 +30,22 @@ fi
 if [[ "$*" =~ "include-test" ]]; then
     sudo apt-get install -y ${TEST_DEPENDENCIES}
 fi
+
+if [[ "$*" =~ "include-grr" ]]; then
+    mkdir ~/grr-docker
+    sudo docker run \
+      --name grr-server -v ~/grr-docker/db:/var/grr-datastore \
+      -v ~/grr-docker/logs:/var/log \
+      -e EXTERNAL_HOSTNAME="localhost" \
+      -e ADMIN_PASSWORD="demo" \
+      --ulimit nofile=1048576:1048576 \
+      -p 0.0.0.0:8000:8000 -p 0.0.0.0:8080:8080 \
+      -d grrdocker/grr:latest grr
+    sudo docker cp grr-server:usr/share/grr-server/executables/installers .
+
+    sudo dpkg -i installers/*amd64.deb
+fi
+
+if [[ "$*" =~ "include-plaso" ]]; then
+    sudo apt-get -y install plaso-tools
+fi
