@@ -3,7 +3,8 @@ set -e
 
 # Dependencies for running dftimewolf, alphabetized, one per line.
 # This should not include packages only required for testing or development.
-PYTHON2_DEPENDENCIES="python-certifi
+PYTHON2_DEPENDENCIES="python-bs4
+                      python-certifi
                       python-chardet
                       python-idna
                       python-requests
