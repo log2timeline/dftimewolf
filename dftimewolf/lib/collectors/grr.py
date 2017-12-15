@@ -280,12 +280,11 @@ class GRRHuntArtifactCollector(GRRHuntCollector):
 
     syslog.syslog('Artifacts to be collected: {0:s}'.format(self.artifacts))
     hunt_name = 'ArtifactCollectorFlow'
-    hunt_args = self.grr_api.types.CreateFlowArgs('ArtifactCollectorFlow')
-    for artifact in artifact_list:
-      hunt_args.artifact_list.append(artifact)
-    hunt_args.use_tsk = self.use_tsk
-    hunt_args.ignore_interpolation_errors = True
-    hunt_args.apply_parsers = False
+    hunt_args = flows_pb2.ArtifactCollectorFlowArgs(
+        artifact_list=artifact_list,
+        use_tsk=self.use_tsk,
+        ignore_interpolation_errors=True,
+        apply_parsers=False,)
 
     return self._StartHunt(hunt_name, hunt_args)
 
@@ -755,7 +754,7 @@ class GRRHostCollector(BaseCollector):
       reason,
       grr_server_url,
       grr_auth,
-      artifact_list=None,
+      artifact_list='',
       file_list='',
       use_tsk=False,
       approvers='',
