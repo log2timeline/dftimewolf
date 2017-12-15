@@ -25,7 +25,7 @@ sudo apt-get install -y ${PYTHON2_DEPENDENCIES}
 
 # Pending resolution of https://github.com/log2timeline/l2tdevtools/issues/233.
 sudo apt-get install -y python-pip
-sudo pip install -y grr-api-client
+sudo pip install grr-api-client
 
 if [[ "$*" =~ "include-development" ]]; then
     sudo apt-get install -y ${DEVELOPMENT_DEPENDENCIES}
