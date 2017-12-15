@@ -15,7 +15,7 @@ contents = {
         'name': 'GRRFlowCollector',
         'args': {
             'hosts': '@host',
-            'flow_ids': '@flow_id',
+            'flow_id': '@flow_id',
             'reason': '@reason',
             'grr_server_url': 'http://localhost:8000',
             'grr_auth': ('admin', 'admin'),
@@ -35,7 +35,7 @@ contents = {
 
 args = [
     ('host', 'Hostname to collect the flow from', None),
-    ('flow_ids', 'Comma-separated list of flow IDs to download', None),
+    ('flow_id', 'Flow ID to download', None),
     ('reason', 'Reason for collection', None),
     ('directory', 'Directory in which to export files.', None),
 ]
