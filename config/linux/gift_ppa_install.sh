@@ -23,6 +23,9 @@ sudo add-apt-repository ppa:gift/dev -y
 sudo apt-get update -q
 sudo apt-get install -y ${PYTHON2_DEPENDENCIES}
 
+# Pending resolution of https://github.com/log2timeline/l2tdevtools/issues/233.
+sudo pip install grr-api-client
+
 if [[ "$*" =~ "include-development" ]]; then
     sudo apt-get install -y ${DEVELOPMENT_DEPENDENCIES}
 fi
