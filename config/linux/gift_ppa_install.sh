@@ -32,6 +32,17 @@ if [[ "$*" =~ "include-test" ]]; then
 fi
 
 if [[ "$*" =~ "include-grr" ]]; then
+
+    # Install docker
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    sudo add-apt-repository \
+       "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+       $(lsb_release -cs) \
+       stable"
+    sudo apt-get update -q
+    sudo apt-get install -y docker-ce
+
+    # Start the GRR server container.
     mkdir ~/grr-docker
     sudo docker run \
       --name grr-server -v ~/grr-docker/db:/var/grr-datastore \
@@ -41,8 +52,9 @@ if [[ "$*" =~ "include-grr" ]]; then
       --ulimit nofile=1048576:1048576 \
       -p 0.0.0.0:8000:8000 -p 0.0.0.0:8080:8080 \
       -d grrdocker/grr:latest grr
-    sudo docker cp grr-server:usr/share/grr-server/executables/installers .
 
+    # Install the client.
+    sudo docker cp grr-server:usr/share/grr-server/executables/installers .
     sudo dpkg -i installers/*amd64.deb
 fi
 
