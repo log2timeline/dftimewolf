@@ -38,7 +38,7 @@ contents = {
             'ts_username': '@ts_username',
             'ts_password': '@ts_password',
             'incident_id': '@incident_id',
-            'sketch_id': None,
+            'sketch_id': '@sketch_id',
             'verbose': True,
         }
     }],
@@ -50,7 +50,10 @@ DEFAULT_ARTIFACT_LIST = (
     'LinuxScheduleFiles,ZeitgeistDatabase,'
     'AllShellConfigs')
 
-args = [('hosts', 'Comma-separated list of hosts to process', None),
-        ('reason', 'Reason for collection', None), (
-            '--artifact_list', 'Comma-separated list of artifacts to fetch',
-            DEFAULT_ARTIFACT_LIST)]
+args = [
+    ('hosts', 'Comma-separated list of hosts to process', None),
+    ('reason', 'Reason for collection', None),
+    ('--artifact_list', 'Comma-separated list of artifacts to fetch',
+     DEFAULT_ARTIFACT_LIST),
+    ('--sketch_id', 'Sketch to which the timeline should be added', None)
+]
