@@ -10,7 +10,7 @@ import sys
 
 import pytz
 
-TOKEN_REGEX = re.compile(r'\@(\w+)')
+TOKEN_REGEX = re.compile(r'\@([\w_]+)')
 
 
 class DFTimewolfConsoleOutput(object):
@@ -116,17 +116,17 @@ def import_args_from_dict(value, args, config):
         and may change in nature: string, list, or dict. The top-level variable
         should be the dictionary that is supposed to be recursively traversed.
     args: A {key: value} dictionary used to do replacements.
+    config: A dftimewolf.Config class containing configuration information
 
   Returns:
     The first caller of the function will receive a dictionary in which strings
     starting with "@" are replaced by the parameters in args.
   """
-
   if isinstance(value, (str, unicode)):
     match = TOKEN_REGEX.search(str(value))
-    if match and args.get(match.group(1)):
+    if match and match.group(1) in args:
       return TOKEN_REGEX.sub(args[match.group(1)] or '', value)
-    if match and config.get_extra(str(match.group(1))):
+    if match and config.has_extra(str(match.group(1))):
       return TOKEN_REGEX.sub(config.get_extra(str(match.group(1))) or '', value)
   elif isinstance(value, list):
     return [import_args_from_dict(item, args, config) for item in value]

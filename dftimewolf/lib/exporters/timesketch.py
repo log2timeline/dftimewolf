@@ -42,7 +42,7 @@ class TimesketchExporter(BaseExporter):
       return
 
     self.incident_id = incident_id
-    self.sketch_id = sketch_id
+    self.sketch_id = int(sketch_id) if sketch_id else None
     self.paths = paths
     self.sketch_url = None
     self.output = None

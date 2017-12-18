@@ -36,7 +36,7 @@ contents = {
             'ts_username': '@ts_username',
             'ts_password': '@ts_password',
             'incident_id': '@incident_id',
-            'sketch_id': None,
+            'sketch_id': '@sketch_id',
             'verbose': True,
         }
     }],
@@ -46,4 +46,5 @@ args = [
     ('hunt_id', 'ID of GRR Hunt results to fetch', None),
     ('reason', 'Reason for exporting hunt (used for Timesketch description)',
      None),
+    ('--sketch_id', 'Sketch to which the timeline should be added', None)
 ]

@@ -33,6 +33,19 @@ class Config(object):
     return cls._extra_config.get(name, None)
 
   @classmethod
+  def has_extra(cls, name):
+    """Checks if an named configuration parameter has been provided.
+
+    Args:
+      name: str, the name of the configuration data to load.
+
+    Returns:
+      True if parameter is provided in the extra configuration data, false
+      otherwise.
+    """
+    return name in cls._extra_config
+
+  @classmethod
   def load_extra(cls, filename):
     """Loads extra JSON configuration parameters from a file on the filesystem.
 
