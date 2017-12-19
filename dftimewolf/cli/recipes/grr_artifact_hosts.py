@@ -22,6 +22,7 @@ contents = {
             'approvers': "",
             'verbose': True,
             'artifact_list': '@artifact_list',
+            'extra_artifacts': '@extra_artifacts',
         },
     }],
     'processors': [{
@@ -44,16 +45,12 @@ contents = {
     }],
 }
 
-DEFAULT_ARTIFACT_LIST = (
-    'AllUsersShellHistory,BrowserHistory,'
-    'LinuxLogFiles,AllLinuxScheduleFiles,'
-    'LinuxScheduleFiles,ZeitgeistDatabase,'
-    'AllShellConfigs')
-
 args = [
     ('hosts', 'Comma-separated list of hosts to process', None),
     ('reason', 'Reason for collection', None),
-    ('--artifact_list', 'Comma-separated list of artifacts to fetch',
-     DEFAULT_ARTIFACT_LIST),
+    ('--artifact_list', 'Comma-separated list of artifacts to fetch '
+     '(override default artifacts)', None),
+    ('--extra_artifacts', 'Comma-separated list of artifacts to fetch '
+     '(including default artifacts)', None),
     ('--sketch_id', 'Sketch to which the timeline should be added', None)
 ]
