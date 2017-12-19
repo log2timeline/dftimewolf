@@ -50,7 +50,7 @@ args = [
     ('reason', 'Reason for collection', None),
     ('--artifact_list', 'Comma-separated list of artifacts to fetch '
      '(override default artifacts)', None),
-    ('--extra_artifacts', 'Comma-separated list of artifacts to fetch '
-     '(including default artifacts)', None),
+    ('--extra_artifacts', 'Comma-separated list of artifacts to append '
+     'to the default artifact list', None),
     ('--sketch_id', 'Sketch to which the timeline should be added', None)
 ]
