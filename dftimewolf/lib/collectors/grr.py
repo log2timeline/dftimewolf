@@ -790,9 +790,6 @@ class GRRHostCollector(BaseCollector):
     file_list = [item for item in file_list.split(',') if item]
     artifact_list = [item for item in artifact_list.split(',') if item]
     extra_artifacts = [item for item in extra_artifacts.split(',') if item]
-    for artifact in extra_artifacts.split(','):
-      if artifact:
-        artiact_list.append(artifact)
     for hostname in hosts.split(','):
       host_collectors = []
       # Launch artifact collector if artifacts present or if no file/flow passed
@@ -889,7 +886,7 @@ class GRRArtifactCollector(GRRHostCollector):
       grr_server_url: GRR server URL.
       grr_auth: Tuple containing a (username, password) combination.
       artifacts: list of GRR-defined artifacts.
-      extra_artifacts: lost of GRR-defined artifacts to append.
+      extra_artifacts: list of GRR-defined artifacts to append.
       use_tsk: toggle for use_tsk flag on GRR flow.
       approvers: list of GRR approval recipients.
       verbose: toggle for verbose output.
@@ -945,7 +942,7 @@ class GRRArtifactCollector(GRRHostCollector):
       artifact_list = artifact_registry.get(system_type, None)
 
     artifact_list.extend(self.extra_artifacts)
-    artifact_list = list(set(self.artifact_list))
+    artifact_list = list(set(artifact_list))
 
     if not artifact_list:
       raise RuntimeError('No artifacts to collect')
