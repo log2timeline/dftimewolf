@@ -1,31 +1,18 @@
-# -*- coding: utf-8 -*-
-"""DFTimewolf recipe for collecting and processing data from the filesystem.
-
-- Collectors collect from a path in the FS
-- Processes them with a local install of plaso
-- Exports them to a new Timesketch sketch
-"""
+"""DFTimewolf recipe for exporting a Plaso storage file to Timesketch."""
 
 from __future__ import unicode_literals
 
 contents = {
     'name':
-        'local_plaso',
-    'params': {},
+        'plaso_file_timesketch',
     'collectors': [{
         'name': 'FilesystemCollector',
         'args': {
-            'paths': '@paths',
+            'paths': '@plaso_file',
             'verbose': True,
         },
     }],
-    'processors': [{
-        'name': 'LocalPlasoProcessor',
-        'args': {
-            'timezone': None,
-            'verbose': True,
-        },
-    }],
+    'processors': [],
     'exporters': [{
         'name': 'TimesketchExporter',
         'args': {
@@ -40,7 +27,7 @@ contents = {
 }
 
 args = [
-    ('paths', 'Paths to process', None),
-    ('--incident_id', 'Incident ID (used for Timesketch description)', None),
+    ('--plaso_file', 'Path to Plaso storage file', None),
     ('--sketch_id', 'Sketch to which the timeline should be added', None),
+    ('--incident_id', 'Incident ID (used for Timesketch description)', None)
 ]
