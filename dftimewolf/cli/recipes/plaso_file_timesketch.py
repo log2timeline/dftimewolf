@@ -27,7 +27,7 @@ contents = {
 }
 
 args = [
-    ('--plaso_file', 'Path to Plaso storage file', None),
+    ('plaso_file', 'Path to Plaso storage file', None),
     ('--sketch_id', 'Sketch to which the timeline should be added', None),
     ('--incident_id', 'Incident ID (used for Timesketch description)', None)
 ]
