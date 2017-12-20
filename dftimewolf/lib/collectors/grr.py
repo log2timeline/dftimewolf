@@ -853,10 +853,11 @@ class GRRArtifactCollector(GRRHostCollector):
   ]
 
   _DEFAULT_ARTIFACTS_DARWIN = [
-      'OSXAppleSystemLogs', 'OSXAuditLogs', 'OSXBashHistory',
-      'OSXInstallationHistory', 'OSXInstallationLog', 'OSXInstallationTime',
-      'OSXLaunchAgents', 'OSXLaunchDaemons', 'OSXMiscLogs', 'OSXRecentItems',
-      'OSXSystemLogs', 'OSXUserApplicationLogs', 'OSXQuarantineEvents'
+      'MacOSRecentItems', 'MacOSBashHistory', 'MacOSLaunchAgentsPlistFiles',
+      'MacOSAuditLogFiles', 'MacOSSystemLogFiles', 'MacOSAppleSystemLogFiles',
+      'MacOSMiscLogs', 'MacOSSystemInstallationTime', 'MacOSQuarantineEvents',
+      'MacOSLaunchDaemonsPlistFiles', 'MacOSInstallationHistory',
+      'MacOSUserApplicationLogs', 'MacOSInstallationLogFile'
   ]
 
   _DEFAULT_ARTIFACTS_WINDOWS = [
