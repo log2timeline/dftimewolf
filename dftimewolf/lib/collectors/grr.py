@@ -755,6 +755,7 @@ class GRRHostCollector(BaseCollector):
       grr_server_url,
       grr_auth,
       artifact_list='',
+      extra_artifacts='',
       file_list='',
       use_tsk=False,
       approvers='',
@@ -773,6 +774,7 @@ class GRRHostCollector(BaseCollector):
       grr_server_url: GRR server URL.
       grr_auth: Tuple containing a (username, password) combination.
       artifact_list: comma-separated list of GRR-defined artifacts.
+      extra_artifacts: comma-separated list of GRR-defined artifacts to append.
       file_list: comma-separated list of GRR file paths.
       use_tsk: toggle for use_tsk flag on GRR flow.
       approvers: comma-separated list of GRR approval recipients.
@@ -787,6 +789,7 @@ class GRRHostCollector(BaseCollector):
     approvers = [approver for approver in approvers.split(',') if approver]
     file_list = [item for item in file_list.split(',') if item]
     artifact_list = [item for item in artifact_list.split(',') if item]
+    extra_artifacts = [item for item in extra_artifacts.split(',') if item]
     for hostname in hosts.split(','):
       host_collectors = []
       # Launch artifact collector if artifacts present or if no file/flow passed
@@ -798,6 +801,7 @@ class GRRHostCollector(BaseCollector):
                 grr_server_url,
                 grr_auth,
                 artifact_list,
+                extra_artifacts,
                 use_tsk,
                 approvers,
                 verbose=verbose,
@@ -869,6 +873,7 @@ class GRRArtifactCollector(GRRHostCollector):
       grr_server_url,
       grr_auth,
       artifacts=None,
+      extra_artifacts=None,
       use_tsk=False,
       approvers=None,
       verbose=False,
@@ -881,6 +886,7 @@ class GRRArtifactCollector(GRRHostCollector):
       grr_server_url: GRR server URL.
       grr_auth: Tuple containing a (username, password) combination.
       artifacts: list of GRR-defined artifacts.
+      extra_artifacts: list of GRR-defined artifacts to append.
       use_tsk: toggle for use_tsk flag on GRR flow.
       approvers: list of GRR approval recipients.
       verbose: toggle for verbose output.
@@ -890,6 +896,8 @@ class GRRArtifactCollector(GRRHostCollector):
       approvers = []
     if artifacts is None:
       artifacts = []
+    if extra_artifacts is None:
+      extra_artifacts = []
     super(GRRArtifactCollector, self).__init__(
         hostname,
         reason,
@@ -899,6 +907,7 @@ class GRRArtifactCollector(GRRHostCollector):
         verbose=verbose,
         keepalive=keepalive)
     self.artifacts = artifacts
+    self.extra_artifacts = extra_artifacts
     self.use_tsk = use_tsk
 
   def collect(self):
@@ -931,6 +940,9 @@ class GRRArtifactCollector(GRRHostCollector):
     else:
       syslog.syslog('Artifacts to be collected: Default')
       artifact_list = artifact_registry.get(system_type, None)
+
+    artifact_list.extend(self.extra_artifacts)
+    artifact_list = list(set(artifact_list))
 
     if not artifact_list:
       raise RuntimeError('No artifacts to collect')
