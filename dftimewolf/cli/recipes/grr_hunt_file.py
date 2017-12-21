@@ -15,7 +15,7 @@ contents = {
         'args': {
             'file_list': '@file_list',
             'reason': '@reason',
-            'grr_server_url': 'http://localhost:8000',
+            'grr_server_url': '@grr_server_url',
             'grr_auth': ('admin', 'admin'),
             'approvers': "",
             'verbose': True,
@@ -28,4 +28,5 @@ contents = {
 args = [
     ('file_list', 'Comma-separated list of filepaths to hunt for', None),
     ('reason', 'Reason for collection', None),
+    ('--grr_server_url', 'GRR endpoint', 'http://localhost:8000')
 ]
