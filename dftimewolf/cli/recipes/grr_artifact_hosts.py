@@ -23,6 +23,7 @@ contents = {
             'verbose': True,
             'artifact_list': '@artifact_list',
             'extra_artifacts': '@extra_artifacts',
+            'use_tsk': "@use_tsk",
         },
     }],
     'processors': [{
@@ -52,6 +53,7 @@ args = [
      '(override default artifacts)', None),
     ('--extra_artifacts', 'Comma-separated list of artifacts to append '
      'to the default artifact list', None),
-    ('--sketch_id', 'Sketch to which the timeline should be added', None)
+    ('--use_tsk', 'Use TSK to fetch artifacts', False),
+    ('--sketch_id', 'Sketch to which the timeline should be added', None),
     ('--grr_server_url', 'GRR endpoint', 'http://localhost:8000')
 ]
