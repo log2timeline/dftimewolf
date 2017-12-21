@@ -17,7 +17,7 @@ contents = {
             'hosts': '@hosts',
             'flow_id': None,
             'reason': '@reason',
-            'grr_server_url': 'http://localhost:8000',
+            'grr_server_url': '@grr_server_url',
             'grr_auth': ('admin', 'admin'),
             'approvers': "",
             'verbose': True,
@@ -53,4 +53,5 @@ args = [
     ('--extra_artifacts', 'Comma-separated list of artifacts to append '
      'to the default artifact list', None),
     ('--sketch_id', 'Sketch to which the timeline should be added', None)
+    ('--grr_server_url', 'GRR endpoint', 'http://localhost:8000')
 ]

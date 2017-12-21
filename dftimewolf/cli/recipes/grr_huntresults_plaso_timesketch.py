@@ -16,7 +16,7 @@ contents = {
         'name': 'GRRHuntDownloader',
         'args': {
             'hunt_id': '@hunt_id',
-            'grr_server_url': 'http://localhost:8000',
+            'grr_server_url': '@grr_server_url',
             'grr_auth': ('admin', 'admin'),
             'verbose': True,
             'reason': '@reason',
@@ -46,5 +46,6 @@ args = [
     ('hunt_id', 'ID of GRR Hunt results to fetch', None),
     ('reason', 'Reason for exporting hunt (used for Timesketch description)',
      None),
-    ('--sketch_id', 'Sketch to which the timeline should be added', None)
+    ('--sketch_id', 'Sketch to which the timeline should be added', None),
+    ('--grr_server_url', 'GRR endpoint', 'http://localhost:8000')
 ]
