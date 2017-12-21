@@ -124,10 +124,21 @@ def import_args_from_dict(value, args, config):
   """
   if isinstance(value, (str, unicode)):
     match = TOKEN_REGEX.search(str(value))
-    if match and match.group(1) in args:
-      return TOKEN_REGEX.sub(args[match.group(1)] or '', value)
-    if match and config.has_extra(str(match.group(1))):
-      return TOKEN_REGEX.sub(config.get_extra(str(match.group(1))) or '', value)
+    if not match:
+      return value
+    token = match.group(1)
+    actual_param = None
+    if token in args:
+      actual_param = args[token]
+    elif config.has_extra(str(token)):
+      actual_param = config.get_extra(str(token))
+
+    if actual_param is not None:
+      if isinstance(actual_param, (str, unicode)):
+        return TOKEN_REGEX.sub(actual_param, value)
+      else:
+        return actual_param
+
   elif isinstance(value, list):
     return [import_args_from_dict(item, args, config) for item in value]
   elif isinstance(value, dict):
