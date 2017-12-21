@@ -41,6 +41,7 @@ class DFTimewolfTest(TestCase):
         'recipe_arg5': 'Characters after param: BOOM!',
     }
 
+    parser.set_defaults(**config.Config.get_extra())
     args = parser.parse_args([
         'value_for_param_one',
         '--optional_param', '3',
@@ -64,7 +65,7 @@ class DFTimewolfTest(TestCase):
         'recipe_arg1': 'This should be replaced: @parameterone',
         'recipe_arg2': 'This arg cannot be replaced @nonexistent',
     }
-
+    parser.set_defaults(**config.Config.get_extra())
     args = parser.parse_args([
         'value_for_param_one',
         '--optional_param', '3',
@@ -89,6 +90,7 @@ class DFTimewolfTest(TestCase):
     }
 
     config.Config.load_extra_data('{"parameterone": "CONFIG WINS!"}')
+    parser.set_defaults(**config.Config.get_extra())
     args = parser.parse_args(['CLI WINS!', 'BOOM'])
     imported_args = dftw_utils.import_args_from_dict(
         provided_args, vars(args), config.Config)
@@ -103,6 +105,8 @@ class DFTimewolfTest(TestCase):
         'arg2': 'A config arg',
     }
     config.Config.load_extra_data('{"config": "A config arg"}')
+    parser.set_defaults(**config.Config.get_extra())
+    args = parser.parse_args(['a', 'b'])
     imported_args = dftw_utils.import_args_from_dict(
-        provided_args, {}, config.Config)
+        provided_args, vars(args), config.Config)
     self.assertEqual(imported_args, expected_args)

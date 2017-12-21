@@ -123,22 +123,14 @@ def import_args_from_dict(value, args, config):
     starting with "@" are replaced by the parameters in args.
   """
   if isinstance(value, (str, unicode)):
-    match = TOKEN_REGEX.search(str(value))
-    if not match:
-      return value
-    token = match.group(1)
-    actual_param = None
-    if token in args:
-      actual_param = args[token]
-    elif config.has_extra(str(token)):
-      actual_param = config.get_extra(str(token))
-
-    if actual_param is not None:
-      if isinstance(actual_param, (str, unicode)):
-        return TOKEN_REGEX.sub(actual_param, value)
-      else:
-        return actual_param
-
+    for match in TOKEN_REGEX.finditer(str(value)):
+      token = match.group(1)
+      if token in args:
+        actual_param = args[token]
+        if isinstance(actual_param, (str, unicode)):
+          value = value.replace("@"+token, args[token])
+        else:
+          value = actual_param
   elif isinstance(value, list):
     return [import_args_from_dict(item, args, config) for item in value]
   elif isinstance(value, dict):
