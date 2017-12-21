@@ -18,7 +18,7 @@ class Config(object):
   _extra_config = {}
 
   @classmethod
-  def get_extra(cls, name):
+  def get_extra(cls, name=None):
     """Gets extra configuration parameters.
 
     These parameters should be loaded through load_extra or load_extra_data.
@@ -30,6 +30,8 @@ class Config(object):
       A dictionary containing the requested configuration data. None if
       data was never loaded under that name.
     """
+    if not name:
+      return cls._extra_config
     return cls._extra_config.get(name, None)
 
   @classmethod

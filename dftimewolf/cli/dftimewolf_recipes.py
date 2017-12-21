@@ -97,6 +97,9 @@ def main():
     subparser.set_defaults(recipe=recipe)
     for switch, help_text, default in recipe_args:
       subparser.add_argument(switch, help=help_text, default=default)
+    # Override recipe defaults with those specified in Config
+    # so that they can in turn be overridden in the commandline
+    subparser.set_defaults(**config.Config.get_extra())
 
   args = parser.parse_args()
   recipe = args.recipe
