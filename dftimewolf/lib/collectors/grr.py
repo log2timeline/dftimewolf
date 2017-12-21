@@ -184,7 +184,6 @@ class GRRHuntCollector(BaseCollector):
     collection_paths = []
     with zipfile.ZipFile(output_file_path) as archive:
       items = archive.infolist()
-      base = items[0].filename.split('/')[0]
       for f in items:
         client_id = f.filename.split('/')[1]
         if client_id.startswith('C.'):
@@ -194,16 +193,11 @@ class GRRHuntCollector(BaseCollector):
           if not os.path.isdir(client_directory):
             os.makedirs(client_directory)
           collection_paths.append((client_name, client_directory))
-          real_file_path = os.path.join(
-              base, 'hashes', os.path.basename(archive.read(f)))
           try:
-            archive.extract(real_file_path, client_directory)
-            os.rename(
-                os.path.join(client_directory, real_file_path),
-                os.path.join(client_directory, os.path.basename(f.filename)))
+            archive.extract(f, client_directory)
           except KeyError as exception:
             self.console_out.StdErr('Extraction error: {0:s}'.format(exception))
-            return None
+            return []
 
     os.remove(output_file_path)
 
