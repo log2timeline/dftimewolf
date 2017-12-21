@@ -17,7 +17,7 @@ contents = {
             'reason': '@reason',
             'grr_server_url': 'http://localhost:8000',
             'grr_auth': ('admin', 'admin'),
-            'use_tsk': False,
+            'use_tsk': "@use_tsk",
             'approvers': "",
             'verbose': True,
         },
@@ -29,4 +29,5 @@ contents = {
 args = [
     ('artifacts', 'Comma-separated list of artifacts to hunt for', None),
     ('reason', 'Reason for collection', None),
+    ('use_tsk', 'Use TSK to fetch artifacts', False),
 ]
