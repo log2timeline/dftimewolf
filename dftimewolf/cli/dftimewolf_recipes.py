@@ -37,6 +37,7 @@ from __future__ import unicode_literals
 
 import argparse
 import os
+import signal
 
 from dftimewolf import config
 from dftimewolf.lib import utils as dftw_utils
@@ -54,6 +55,8 @@ from dftimewolf.cli.recipes import grr_hunt_file
 from dftimewolf.cli.recipes import grr_huntresults_plaso_timesketch
 from dftimewolf.cli.recipes import local_plaso
 from dftimewolf.cli.recipes import plaso_file_timesketch
+
+signal.signal(signal.SIGINT, dftw_utils.signal_handler)
 
 config.Config.register_collector(filesystem.FilesystemCollector)
 config.Config.register_collector(grr.GRRHuntArtifactCollector)
