@@ -53,7 +53,7 @@ from dftimewolf.cli.recipes import grr_hunt_artifacts
 from dftimewolf.cli.recipes import grr_hunt_file
 from dftimewolf.cli.recipes import grr_huntresults_plaso_timesketch
 from dftimewolf.cli.recipes import local_plaso
-from dftimewolf.cli.recipes import plaso_file_timesketch
+from dftimewolf.cli.recipes import timesketch_upload
 
 config.Config.register_collector(filesystem.FilesystemCollector)
 config.Config.register_collector(grr.GRRHuntArtifactCollector)
@@ -78,7 +78,7 @@ config.Config.register_recipe(grr_hunt_file)
 config.Config.register_recipe(grr_hunt_artifacts)
 config.Config.register_recipe(grr_huntresults_plaso_timesketch)
 config.Config.register_recipe(grr_flow_download)
-config.Config.register_recipe(plaso_file_timesketch)
+config.Config.register_recipe(timesketch_upload)
 
 
 def main():
