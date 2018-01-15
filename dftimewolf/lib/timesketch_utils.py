@@ -116,8 +116,8 @@ class TimesketchApiClient(object):
       sketch_id (int): ID of sketch
       index_id (int): ID of timeline to add to sketch
     """
-    resource_url = '{0:s}/sketches/{1:d}/'.format(self.api_base_url, sketch_id)
-    form_data = {'timelines': [index_id]}
+    resource_url = '{0:s}/sketches/{1:d}/timelines/'.format(self.api_base_url, sketch_id)
+    form_data = {'timeline': [index_id]}
     self.session.post(resource_url, json=form_data)
 
   def get_sketch(self, sketch_id):
