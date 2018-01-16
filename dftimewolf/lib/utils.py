@@ -163,3 +163,8 @@ def check_placeholders(value):
   elif isinstance(value, dict):
     return {key: check_placeholders(val) for key, val in value.items()}
   return value
+
+def signal_handler(*unused_argvs):
+  """Catches Ctrl + C to exit cleanly."""
+  sys.stderr.write("\nCtrl^C caught, bailing...\n")
+  sys.exit(0)
