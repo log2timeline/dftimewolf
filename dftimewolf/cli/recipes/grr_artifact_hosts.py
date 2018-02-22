@@ -1,16 +1,19 @@
-"""DFTimewolf recipe for collecting artifacts from hosts using GRR.
+"""Collect artifacts from hosts using GRR.
 
-- Collectors collect a predefined list of artifacts from hosts using GRR
-- Processes them with a local install of plaso
-- Exports them to a new Timesketch sketch
-
+- Collect a predefined list of artifacts from hosts using GRR
+- Process them with a local install of plaso
+- Export them to a Timesketch sketch
 """
 from __future__ import unicode_literals
+
+_short_description = ('Fetches default artifacts from a list of GRR hosts, '
+                      'processes them with plaso, and sends the results to '
+                      'Timesketch.')
 
 contents = {
     'name':
         'grr_artifact_hosts',
-    'params': {},
+    'short_description': _short_description,
     'collectors': [{
         'name': 'GRRArtifactCollector',
         'args': {
@@ -19,11 +22,11 @@ contents = {
             'reason': '@reason',
             'grr_server_url': '@grr_server_url',
             'grr_auth': ('admin', 'admin'),
-            'approvers': "",
+            'approvers': '',
             'verbose': True,
             'artifact_list': '@artifact_list',
             'extra_artifacts': '@extra_artifacts',
-            'use_tsk': "@use_tsk",
+            'use_tsk': '@use_tsk',
         },
     }],
     'processors': [{

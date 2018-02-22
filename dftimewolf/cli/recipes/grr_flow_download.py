@@ -1,16 +1,17 @@
-"""DFTimewolf recipe for starting artifact hunts using GRR.
+"""Download GRR flows.
 
-Consists of a single collector that starts the hunt and provides a Hunt ID to
-the user. Feed the Hunt ID to grr_huntresults_plaso_timesketch to process them
-through plaso and send them to Timesketch.
+Consists of a single collector that downloads data collected by a GRR flow and
+saves it to the local filesystem.
 """
-
 from __future__ import unicode_literals
+
+_short_description = ('Downloads the contents of a specific GRR flow to '
+                      'the filesystem.')
 
 contents = {
     'name':
         'grr_flow_download',
-    'params': {},
+    'short_description': _short_description,
     'collectors': [{
         'name': 'GRRFlowCollector',
         'args': {
@@ -20,7 +21,7 @@ contents = {
             'grr_server_url': '@grr_server_url',
             'grr_auth': ('admin', 'admin'),
             'use_tsk': False,
-            'approvers': "",
+            'approvers': '',
             'verbose': True,
         },
     }],

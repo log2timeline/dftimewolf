@@ -1,37 +1,5 @@
 # -*- coding: utf-8 -*-
-"""DFTimewolf CLI tool to collect artifacts.
-
-dftimewolf_recipes uses recipes defined in dftimewolf/cli/recipes to orchestrate
-collectors, processors and exporters.
-
-
-Usage:
-
-$ dftimewolf_recipes <recipe_name> <recipe_parameters>
-
-
-You can get help on recipe parameters using:
-
-$ dftimewolf_recipes <recipe_name> --help
-
-
-Usage example (for "corp_hosts" recipe):
-
-$ dftimewolf_recipes local_plaso tomchop.yourorg.com testing
-Collectors:
-  filesystem
-<collector verbose output>
-Processors:
-  localplaso
-<processor verbose output>
-Exporters:
-  timesketch
-<exporter output>
-New sketch created: 244
-Your Timesketch URL is: https://timesketch.yourorg.com/sketch/244/
-Recipe local_plaso executed successfully
-
-"""
+"""dftimewolf main entrypoint."""
 
 from __future__ import unicode_literals
 
@@ -40,13 +8,6 @@ import os
 import signal
 
 from dftimewolf import config
-from dftimewolf.lib import utils as dftw_utils
-
-from dftimewolf.lib.collectors import filesystem
-from dftimewolf.lib.collectors import grr
-from dftimewolf.lib.processors import localplaso
-from dftimewolf.lib.exporters import local_filesystem
-from dftimewolf.lib.exporters import timesketch
 
 from dftimewolf.cli.recipes import grr_artifact_hosts
 from dftimewolf.cli.recipes import grr_flow_download
@@ -55,6 +16,16 @@ from dftimewolf.cli.recipes import grr_hunt_file
 from dftimewolf.cli.recipes import grr_huntresults_plaso_timesketch
 from dftimewolf.cli.recipes import local_plaso
 from dftimewolf.cli.recipes import plaso_file_timesketch
+
+from dftimewolf.lib import utils as dftw_utils
+
+from dftimewolf.lib.collectors import filesystem
+from dftimewolf.lib.collectors import grr
+from dftimewolf.lib.exporters import local_filesystem
+from dftimewolf.lib.exporters import timesketch
+from dftimewolf.lib.processors import localplaso
+from dftimewolf.lib.utils import DFTimewolfFormatterClass
+
 
 signal.signal(signal.SIGINT, dftw_utils.signal_handler)
 
@@ -71,7 +42,7 @@ config.Config.register_exporter(local_filesystem.LocalFilesystemExporter)
 
 # Try to open config.json and load configuration data from it.
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-USER_DIR = os.path.expanduser("~")
+USER_DIR = os.path.expanduser('~')
 config.Config.load_extra(os.path.join(ROOT_DIR, 'config.json'))
 config.Config.load_extra(os.path.join(USER_DIR, '.dftimewolfrc'))
 
@@ -84,19 +55,30 @@ config.Config.register_recipe(grr_flow_download)
 config.Config.register_recipe(plaso_file_timesketch)
 
 
+def generate_help():
+  """Generates help text with alphabetically sorted recipes."""
+  help_text = '\nAvailable recipes:\n\n'
+  recipes = config.Config.get_registered_recipes()
+  for contents, _, _ in sorted(recipes, key=lambda k: k[0]['name']):
+    help_text += ' {0:<35s}{1:s}\n'.format(
+        contents['name'], contents.get('short_description', 'No description'))
+  return help_text
+
+
 def main():
   """Main function for DFTimewolf."""
-  parser = argparse.ArgumentParser()
+  parser = argparse.ArgumentParser(
+      formatter_class=argparse.RawDescriptionHelpFormatter,
+      description=generate_help())
 
-  subparsers = parser.add_subparsers(
-      title='Available recipes',
-      description='List of currently loaded recipes',
-      help='Recipe-specific help. Run dftimewolf <RECIPE_NAME> -h for details.')
+  subparsers = parser.add_subparsers()
 
   for registered_recipe in config.Config.get_registered_recipes():
     recipe, recipe_args, documentation = registered_recipe
     subparser = subparsers.add_parser(
-        recipe['name'], description='{0:s}'.format(documentation))
+        recipe['name'],
+        formatter_class=DFTimewolfFormatterClass,
+        description='{0:s}'.format(documentation))
     subparser.set_defaults(recipe=recipe)
     for switch, help_text, default in recipe_args:
       subparser.add_argument(switch, help=help_text, default=default)
@@ -132,11 +114,11 @@ def main():
     collector_obj.join()
     collector_output.extend(collector_obj.results)
     if collector_obj.errors:
-      #TODO(tomchop): Add name attributes in module objects
-      error = (collector_obj.__class__.__name__, ", ".join(
+      # TODO(tomchop): Add name attributes in module objects
+      error = (collector_obj.__class__.__name__, ', '.join(
           collector_obj.errors))
       global_errors.append(error)
-      console_out.StdErr("ERROR:{0:s}:{1:s}\n".format(*error))
+      console_out.StdErr('ERROR:{0:s}:{1:s}\n'.format(*error))
 
   if recipe['processors']:
     # Thread processors.
@@ -161,9 +143,9 @@ def main():
         # Note: Should we fail if modules produce errors, or is warning the user
         # enough?
         # TODO(tomchop): Add name attributes in module objects.
-        error = (processor.__class__.__name__, ", ".join(processor.errors))
+        error = (processor.__class__.__name__, ', '.join(processor.errors))
         global_errors.append(error)
-        console_out.StdErr("ERROR:{0:s}:{1:s}\n".format(*error))
+        console_out.StdErr('ERROR:{0:s}:{1:s}\n'.format(*error))
 
   else:
     processor_output = collector_output
@@ -188,10 +170,10 @@ def main():
       exporter.join()
       exporter_output.extend(exporter.output)
       if exporter.errors:
-        #TODO(tomchop): Add name attributes in module objects
-        error = (exporter.__class__.__name__, ", ".join(exporter.errors))
+        # TODO(tomchop): Add name attributes in module objects
+        error = (exporter.__class__.__name__, ', '.join(exporter.errors))
         global_errors.append(error)
-        console_out.StdErr("ERROR:{0:s}:{1:s}\n".format(*error))
+        console_out.StdErr('ERROR:{0:s}:{1:s}\n'.format(*error))
   else:
     exporter_output = processor_output
 
