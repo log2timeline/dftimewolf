@@ -27,6 +27,16 @@ from dftimewolf.lib.processors import localplaso
 from dftimewolf.lib.utils import DFTimewolfFormatterClass
 
 
+from dftimewolf.lib import utils as dftw_utils
+
+from dftimewolf.lib.collectors import filesystem
+from dftimewolf.lib.collectors import grr
+from dftimewolf.lib.exporters import local_filesystem
+from dftimewolf.lib.exporters import timesketch
+from dftimewolf.lib.processors import localplaso
+from dftimewolf.lib.utils import DFTimewolfFormatterClass
+
+
 signal.signal(signal.SIGINT, dftw_utils.signal_handler)
 
 config.Config.register_collector(filesystem.FilesystemCollector)
@@ -53,6 +63,16 @@ config.Config.register_recipe(grr_hunt_artifacts)
 config.Config.register_recipe(grr_huntresults_plaso_timesketch)
 config.Config.register_recipe(grr_flow_download)
 config.Config.register_recipe(timesketch_upload)
+
+
+def generate_help():
+  """Generates help text with alphabetically sorted recipes."""
+  help_text = '\nAvailable recipes:\n\n'
+  recipes = config.Config.get_registered_recipes()
+  for contents, _, _ in sorted(recipes, key=lambda k: k[0]['name']):
+    help_text += ' {0:<35s}{1:s}\n'.format(
+        contents['name'], contents.get('short_description', 'No description'))
+  return help_text
 
 
 def generate_help():
