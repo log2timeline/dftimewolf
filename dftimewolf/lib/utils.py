@@ -17,6 +17,7 @@ TOKEN_REGEX = re.compile(r'\@([\w_]+)')
 class DFTimewolfFormatterClass(
     argparse.ArgumentDefaultsHelpFormatter,
     argparse.RawDescriptionHelpFormatter):
+  """argparse formatter class. Respects whitespace and provides defaults."""
   pass
 
 
