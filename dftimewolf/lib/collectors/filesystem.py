@@ -5,10 +5,10 @@ from __future__ import unicode_literals
 
 import os
 
-from dftimewolf.lib.collectors.collectors import BaseCollector
+from dftimewolf.lib.modules import BaseModule
 
 
-class FilesystemCollector(BaseCollector):
+class FilesystemCollector(BaseModule):
   """Collect artifacts from the local filesystem.
 
   Attributes:
@@ -25,12 +25,11 @@ class FilesystemCollector(BaseCollector):
       name: name of the collection.
       verbose: whether verbose output is desired.
     """
-    super(FilesystemCollector, self).__init__(verbose=verbose)
+    super(FilesystemCollector, self).__init__(critical=True)
     self.name = name or os.path.basename(path)
-    self.output_path = path
-    self.output = None
+    self.output = []
 
-  def collect(self):
+  def process(self):
     """Collect the files.
 
     Returns:
@@ -38,21 +37,16 @@ class FilesystemCollector(BaseCollector):
         str: the name provided for the collection.
         str: path to the files for collection.
     """
-    self.console_out.VerboseOut('Artifact path: {0:s}'.format(self.output_path))
+    collectors = []
+    for path in paths.split(','):
+      if path:
+        collector = FilesystemCollector(path, verbose=verbose)
+        collector.start()
+        collectors.append(collector)
+    return collectors
+    print('Artifact path: {0:s}'.format(self.output_path)))
     return [(self.name, self.output_path)]
 
-  @property
-  def collection_name(self):
-    """Name for the collection of collected artifacts.
-
-    Returns:
-      str: name of the artifact collection
-    """
-    if not self.name:
-      self.name = os.path.basename(self.output_path.rstrip('/'))
-    self.console_out.VerboseOut(
-        'Artifact collection name: {0:s}'.format(self.name))
-    return self.name
 
   @staticmethod
   def launch_collector(paths, verbose=False):
@@ -69,13 +63,7 @@ class FilesystemCollector(BaseCollector):
       A list of FilesystemCollector objects that can be join()ed from the
       caller.
     """
-    collectors = []
-    for path in paths.split(','):
-      if path:
-        collector = FilesystemCollector(path, verbose=verbose)
-        collector.start()
-        collectors.append(collector)
-    return collectors
+
 
 
 MODCLASS = [('filesystem', FilesystemCollector)]

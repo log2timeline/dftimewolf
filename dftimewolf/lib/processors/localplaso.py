@@ -8,7 +8,7 @@ import tempfile
 import uuid
 
 from dftimewolf.lib.processors.processors import BaseArtifactProcessor
-
+from dftimewolf.lib.errors import DFTimewolfError
 
 class LocalPlasoProcessor(BaseArtifactProcessor):
   """Process artifacts with plaso, begetting a new log2timeline.py process.
@@ -50,7 +50,7 @@ class LocalPlasoProcessor(BaseArtifactProcessor):
     log_file_path = os.path.join(self.output_path, 'plaso.log')
     self.console_out.VerboseOut('Log file: {0:s}'.format(log_file_path))
 
-    cmd = ['log2timeline.py']
+    cmd = ['log2timeline_notexist.py']
     # Since we might be running alongside another Processor, always disable
     # the status view
     cmd.extend(['-q', '--status_view', 'none'])
@@ -71,15 +71,15 @@ class LocalPlasoProcessor(BaseArtifactProcessor):
       if l2t_status:
         # self.console_out.StdErr(errors)
         message = 'The command {0:s} failed: {1:s}'.format(' '.join(cmd), error)
-        self.errors.append(message)
+        self.errors.append(DFTimewolfError(message, fatal=self.fail_on_fatal_error))
     except OSError as exception:
       error = 'An error occurred while attempting to run plaso: {0:s}'.format(
           exception)
-      self.errors.append(error)
+      self.errors.append(DFTimewolfError(message, fatal=self.fail_on_fatal_error))
     # Catch all remaining errors since we want to gracefully report them
     except Exception as exception:  #pylint: disable=W0703
       error = 'An unexpected error occured: {0:s}'.format(exception)
-      self.errors.append(error)
+      self.errors.append(DFTimewolfError(message, fatal=self.fail_on_fatal_error))
 
   @staticmethod
   def launch_processor(collector_output, timezone=None, verbose=False):
