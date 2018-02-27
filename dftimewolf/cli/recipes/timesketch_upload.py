@@ -1,10 +1,12 @@
-"""DFTimewolf recipe for exporting a CSV file or Plaso file to Timesketch."""
+"""Upload a CSV file or Plaso file to Timesketch."""
 
 from __future__ import unicode_literals
 
+_short_description = 'Uploads a .plaso file to Timesketch.'
+
 contents = {
-    'name':
-        'timesketch_upload',
+    'name': 'timesketch_upload',
+    'short_description': _short_description,
     'collectors': [{
         'name': 'FilesystemCollector',
         'args': {

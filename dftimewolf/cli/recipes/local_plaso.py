@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""DFTimewolf recipe for collecting and processing data from the filesystem.
+"""Analyze local filepaths with plaso and send results to Timesketch.
 
 - Collectors collect from a path in the FS
 - Processes them with a local install of plaso
@@ -8,10 +8,13 @@
 
 from __future__ import unicode_literals
 
+_short_description = ('Processes a list of file paths using plaso and sends '
+                      'results to Timesketch.')
+
 contents = {
     'name':
         'local_plaso',
-    'params': {},
+    'short_description': _short_description,
     'collectors': [{
         'name': 'FilesystemCollector',
         'args': {
