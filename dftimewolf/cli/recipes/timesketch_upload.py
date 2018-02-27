@@ -1,14 +1,14 @@
-"""DFTimewolf recipe for exporting a Plaso storage file to Timesketch."""
+"""DFTimewolf recipe for exporting a CSV file or Plaso file to Timesketch."""
 
 from __future__ import unicode_literals
 
 contents = {
     'name':
-        'plaso_file_timesketch',
+        'timesketch_upload',
     'collectors': [{
         'name': 'FilesystemCollector',
         'args': {
-            'paths': '@plaso_file',
+            'paths': '@file',
             'verbose': True,
         },
     }],
@@ -27,7 +27,7 @@ contents = {
 }
 
 args = [
-    ('plaso_file', 'Path to Plaso storage file', None),
+    ('file', 'Path to CSV file or Plaso storage file', None),
     ('--sketch_id', 'Sketch to which the timeline should be added', None),
     ('--incident_id', 'Incident ID (used for Timesketch description)', None)
 ]
