@@ -1,17 +1,16 @@
-"""Upload a plaso file to Timesketch."""
+"""Upload a CSV file or Plaso file to Timesketch."""
 
 from __future__ import unicode_literals
 
 _short_description = 'Uploads a .plaso file to Timesketch.'
 
 contents = {
-    'name':
-        'plaso_file_timesketch',
+    'name': 'timesketch_upload',
     'short_description': _short_description,
     'collectors': [{
         'name': 'FilesystemCollector',
         'args': {
-            'paths': '@plaso_file',
+            'paths': '@file',
             'verbose': True,
         },
     }],
@@ -30,7 +29,7 @@ contents = {
 }
 
 args = [
-    ('plaso_file', 'Path to Plaso storage file', None),
+    ('file', 'Path to CSV file or Plaso storage file', None),
     ('--sketch_id', 'Sketch to which the timeline should be added', None),
     ('--incident_id', 'Incident ID (used for Timesketch description)', None)
 ]
