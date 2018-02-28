@@ -9,105 +9,69 @@ import uuid
 
 from dftimewolf.lib.processors.processors import BaseArtifactProcessor
 from dftimewolf.lib.errors import DFTimewolfError
+from dftimewolf.lib.module import BaseModule
 
-class LocalPlasoProcessor(BaseArtifactProcessor):
-  """Process artifacts with plaso, begetting a new log2timeline.py process.
 
-  Attributes:
-    output_path: Where to store the result
-    artifacts_path: Source data to process
-    plaso_storage_file_name: File name for the resulting Plaso storage file
-    plaso_storage_file_path: Full path to the result
-    timezone: Timezone to use for Plaso processing
+class LocalPlasoProcessor(BaseModule):
+  """Processes a list of filepaths with Plaso (log2timeline).
+
+  input: A list of file paths to process.
+  output: The path to the resulting Plaso storage file.
   """
 
-  def __init__(self, artifacts_path, timezone=None, verbose=False):
-    """Initialize the Plaso artifact processor object.
+  def __init__(self, state):
+    super(LocalPlasoProcessor, self).__init__(state)
+    self._timezone = None
+    self._output_path = None
+    self._plaso_storage_file_path = None
+
+  def setup(self, timezone=None):
+    """Sets up the _timezone attribute
 
     Args:
-      artifacts_path: Path to data to process
       timezone: Timezone name (optional)
-      verbose: Boolean indicating if to use verbose output
     """
-    super(LocalPlasoProcessor, self).__init__(verbose=verbose)
-    self.output_path = tempfile.mkdtemp()
-    self.artifacts_path = artifacts_path
-    self.timezone = timezone
-    self.plaso_storage_file_name = '{0:s}.plaso'.format(uuid.uuid4().hex)
-    self.plaso_storage_file_path = os.path.join(
-        self.output_path, self.plaso_storage_file_name)
-    self.results = None
+    self._timezone = timezone
+    self._output_path = tempfile.mkdtemp()
+    self._plaso_storage_file_path = os.path.join(
+        self._output_path, '{0:s}.plaso'.format(uuid.uuid4().hex))
 
   def process(self):
-    """Process files with Log2Timeline from the local plaso install.
+    """Execute the Plaso process."""
+    for path in self.state.input:
+      log_file_path = os.path.join(self._output_path, 'plaso.log')
+      print 'Log file: {0:s}'.format(log_file_path)
 
-    Returns:
-      Path to a Plaso storage file
+      # Build the plaso command line.
+      cmd = ['log2timeline.py']
+      # Since we might be running alongside another Module, always disable
+      # the status view.
+      cmd.extend(['-q', '--status_view', 'none'])
+      if self._timezone:
+        cmd.extend(['-z', self._timezone])
 
-    Raises:
-      ValueError: If the local log2timeline.py process fails
-    """
-    log_file_path = os.path.join(self.output_path, 'plaso.log')
-    self.console_out.VerboseOut('Log file: {0:s}'.format(log_file_path))
+      # Setup logging.
+      cmd.extend(['--logfile', log_file_path])
 
-    cmd = ['log2timeline_notexist.py']
-    # Since we might be running alongside another Processor, always disable
-    # the status view
-    cmd.extend(['-q', '--status_view', 'none'])
-    if self.timezone:
-      cmd.extend(['-z', self.timezone])
-    cmd.extend([
-        '--logfile', log_file_path, self.plaso_storage_file_path,
-        self.artifacts_path
-    ])
-    self.console_out.VerboseOut(
-        'Running external command: {0:s}'.format(' '.join(cmd)))
-    # Running the local l2t command
-    try:
-      l2t_proc = subprocess.Popen(
-          cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-      _, error = l2t_proc.communicate()
-      l2t_status = l2t_proc.wait()
-      if l2t_status:
-        # self.console_out.StdErr(errors)
-        message = 'The command {0:s} failed: {1:s}'.format(' '.join(cmd), error)
-        self.errors.append(DFTimewolfError(message, fatal=self.fail_on_fatal_error))
-    except OSError as exception:
-      error = 'An error occurred while attempting to run plaso: {0:s}'.format(
-          exception)
-      self.errors.append(DFTimewolfError(message, fatal=self.fail_on_fatal_error))
-    # Catch all remaining errors since we want to gracefully report them
-    except Exception as exception:  #pylint: disable=W0703
-      error = 'An unexpected error occured: {0:s}'.format(exception)
-      self.errors.append(DFTimewolfError(message, fatal=self.fail_on_fatal_error))
+      # And now, the crux of the command.
+      cmd.extend([self._plaso_storage_file_path, path])
 
-  @staticmethod
-  def launch_processor(collector_output, timezone=None, verbose=False):
-    """Thread one or more LocalPlasoProcessor objects.
-
-    Args:
-      collector_output: Path to data to process
-      timezone: Timezone name (optional)
-      verbose: Boolean indicating if to use verbose output
-
-    Returns:
-      A list of LocalPlasoProcessor objects that can be join()ed from the
-      caller.
-
-    """
-    processors = []
-    for name, path in collector_output:
-      processor = LocalPlasoProcessor(path, timezone, verbose)
-      processor.name = name
-      processor.start()
-      processors.append(processor)
-
-    return processors
-
-  @property
-  def output(self):
-    """Dynamically generate plugin processor output."""
-    return [(self.name, self.plaso_storage_file_path)]
-
-
-MODCLASS = [('localplaso', LocalPlasoProcessor)]
+      # Run the l2t command
+      full_cmd = ' '.join(cmd)
+      print 'Running external command: "{0:s}"'.format(full_cmd)
+      try:
+        l2t_proc = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        _, error = l2t_proc.communicate()
+        l2t_status = l2t_proc.wait()
+        if l2t_status:
+          # self.console_out.StdErr(errors)
+          message = ('The log2timeline command {0:s} failed: {1:s}.'
+                     ' Check log file for details.').format(full_cmd, error)
+          self.state.add_error(message, critical=True)
+        self.state.output = [self._plaso_storage_file_path]
+      except OSError as exception:
+        self.state.add_error(exception, critical=True)
+      # Catch all remaining errors since we want to gracefully report them
+      except Exception as exception:  #pylint: disable=W0703
+        self.state.add_error(exception, critical=True)
