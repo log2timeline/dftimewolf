@@ -13,21 +13,32 @@ class BaseModule(threading.Thread):
     critical: Boolean indicating whether the execution of this module is
         critical to the execution of the recipe. If set to True, and the module
         fails to properly run, the recipe will be aborted.
-    input: list of elements to process
-    output: JSON dict of eventual module outputs.
+    input: variable containing elements to be processed by a module.
+    output: variable containing the output of a module's execution.
   """
 
-  def __init__(self, critical=False):
+  def __init__(self, state, critical=False):
     """Initialize the base collector object.
 
     Args:
-      critical: Whether the module is critical or not.
+      state: a DFTimewolfState object.
+      critical: Whether the module is critical or not. If True and the module
+          encounteurs an error, then the whole recipe will fail.
     """
-    super(BaseCollector, self).__init__()
+    super(BaseModule, self).__init__()
     self.critical = critical
-    self.output = {}
+    self.state = state
+    self.state.set_current_module(self)
 
-  def process_input(self, input):
+  def setup(self):
+    """Sets up necessary module configuration options."""
+    raise NotImplementedError
+
+  def cleanup(self):
+    """Cleans up module output to prepare it for the next module."""
+    raise NotImplementedError
+
+  def process(self):
     """Processes input and builds the module's output attribute.
 
     Modules take input information and process it into output information,
@@ -35,5 +46,6 @@ class BaseModule(threading.Thread):
 
     Args:
       input: dict: The input information to be processed
+      settings: dict: Module settings
     """
     raise NotImplementedError
