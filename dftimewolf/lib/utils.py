@@ -3,6 +3,7 @@
 
 from __future__ import unicode_literals
 
+import argparse
 from datetime import datetime
 import os
 import re
@@ -11,6 +12,13 @@ import sys
 import pytz
 
 TOKEN_REGEX = re.compile(r'\@([\w_]+)')
+
+
+class DFTimewolfFormatterClass(
+    argparse.ArgumentDefaultsHelpFormatter,
+    argparse.RawDescriptionHelpFormatter):
+  """argparse formatter class. Respects whitespace and provides defaults."""
+  pass
 
 
 class DFTimewolfConsoleOutput(object):
