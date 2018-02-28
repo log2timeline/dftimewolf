@@ -3,67 +3,41 @@
 
 from __future__ import unicode_literals
 
-import os
+# from pathlib import Path
 
-from dftimewolf.lib.modules import BaseModule
+from dftimewolf.lib.module import BaseModule
 
 
 class FilesystemCollector(BaseModule):
   """Collect artifacts from the local filesystem.
 
-  Attributes:
-    output_path: Path to store collected artifacts.
-    name: Name for the collection of collected artifacts.
-    output: List of (name, path) tuples to process.
+  input: None, takes input from parameters only.
+  output: A list of existing file paths.
   """
 
-  def __init__(self, path, name=None, verbose=False):
-    """Initializes a filesystem collector.
+  def __init__(self, state):
+    super(FilesystemCollector, self).__init__(state)
+    self._paths = None
+
+  def setup(self, paths=None):
+    """Sets up the _paths attribute
 
     Args:
-      path: path to the files to collect.
-      name: name of the collection.
-      verbose: whether verbose output is desired.
+      paths: Comma-separated list of strings represnting the paths to collect.
     """
-    super(FilesystemCollector, self).__init__(critical=True)
-    self.name = name or os.path.basename(path)
-    self.output = []
+    if not paths:
+      self.add_error("No `paths` argument provided in recipe, bailing", critical=True)
+    self._paths = [path.strip() for path in paths.strip().split(',')]
 
   def process(self):
-    """Collect the files.
-
-    Returns:
-      list: of tuples:
-        str: the name provided for the collection.
-        str: path to the files for collection.
-    """
-    collectors = []
-    for path in paths.split(','):
-      if path:
-        collector = FilesystemCollector(path, verbose=verbose)
-        collector.start()
-        collectors.append(collector)
-    return collectors
-    print('Artifact path: {0:s}'.format(self.output_path)))
-    return [(self.name, self.output_path)]
-
-
-  @staticmethod
-  def launch_collector(paths, verbose=False):
-    """Threads one or more FilesystemCollector objects.
-
-    Iterates over the values of paths and starts a Filesystem Collector
-    for each.
-
-    Args:
-      paths: List of strings representing paths to collect files from
-      verbose: Print extra output to stdout (default: False)
-
-    Returns:
-      A list of FilesystemCollector objects that can be join()ed from the
-      caller.
-    """
-
-
+    """Checks whether the paths exists and updates the state accordingly."""
+    for path in self._paths:
+      # path = Path(path)
+      # if path.exists():
+      #   self.state.output.append(path)
+      # else:
+      #   self.state.add_error(
+      #       'Path {0:s} does not exist'.format(str(path)), critical=False)
+      self.state.output.append(path)
 
 MODCLASS = [('filesystem', FilesystemCollector)]
