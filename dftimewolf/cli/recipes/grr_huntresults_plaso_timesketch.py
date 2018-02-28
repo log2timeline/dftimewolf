@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""DFTimewolf recipe for downloading the results of a GRR Hunt and process them.
+"""Download the results of a GRR hunt and process them.
 
 - Collect results of a hunt given its Hunt ID
 - Processes results with a local install of plaso
@@ -7,11 +7,13 @@
 """
 from __future__ import unicode_literals
 
+_short_description = ('Fetches the findings of a GRR hunt, processes them with '
+                      'plaso, and sends the results to Timesketch.')
 
 contents = {
     'name':
         'grr_huntresults_plaso_timesketch',
-    'params': {},
+    'short_description': _short_description,
     'collectors': [{
         'name': 'GRRHuntDownloader',
         'args': {
