@@ -11,9 +11,7 @@ class Config(object):
   """Class that handles DFTimewolf's configuration parameters."""
 
   _recipe_classes = {}
-  _collector_classes = {}
-  _processor_classes = {}
-  _exporter_classes = {}
+  _module_classes = {}
 
   _extra_config = {}
 
@@ -107,16 +105,16 @@ class Config(object):
     return cls._recipe_classes.values()
 
   @classmethod
-  def register_collector(cls, collector_class):
+  def register_module(cls, module_class):
     """Registers a dftimewolf collector.
 
     Args:
       collector_class: Python class extending BaseCollector.
     """
-    cls._collector_classes[collector_class.__name__] = collector_class
+    cls._module_classes[module_class.__name__] = module_class
 
   @classmethod
-  def get_collector(cls, name):
+  def get_module(cls, name):
     """Fetches a previously registered collector.
 
     Args:
@@ -125,46 +123,4 @@ class Config(object):
     Returns:
       Corresponding class extending BaseCollector.
     """
-    return cls._collector_classes[name]
-
-  @classmethod
-  def register_processor(cls, processor_class):
-    """Registers a dftimewolf processor.
-
-    Args:
-      processor_class: Python class extending BaseProcessor.
-    """
-    cls._processor_classes[processor_class.__name__] = processor_class
-
-  @classmethod
-  def get_processor(cls, name):
-    """Fetches a previously registered processor.
-
-    Args:
-      name: str, name with which the processor was registered.
-
-    Returns:
-      Corresponding class extending BaseProcessor.
-    """
-    return cls._processor_classes[name]
-
-  @classmethod
-  def register_exporter(cls, exporter_class):
-    """Registers a dftimewolf exporter.
-
-    Args:
-      exporter_class: Python class extending BaseExporter.
-    """
-    cls._exporter_classes[exporter_class.__name__] = exporter_class
-
-  @classmethod
-  def get_exporter(cls, name):
-    """Fetches a previously registered exporter.
-
-    Args:
-      name: str, name with which the exporter was registered.
-
-    Returns:
-      Corresponding class extending BaseExporter.
-    """
-    return cls._exporter_classes[name]
+    return cls._module_classes[name]
