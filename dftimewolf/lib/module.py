@@ -3,8 +3,6 @@
 
 import threading
 
-from dftimewolf.lib import utils
-
 
 class BaseModule(threading.Thread):
   """Base class for Modules.
@@ -30,7 +28,7 @@ class BaseModule(threading.Thread):
     self.state = state
     self.state.set_current_module(self)
 
-  def setup(self):
+  def setup(self, *args, **kwargs):
     """Sets up necessary module configuration options."""
     raise NotImplementedError
 

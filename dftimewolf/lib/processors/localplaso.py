@@ -7,8 +7,6 @@ import subprocess
 import tempfile
 import uuid
 
-from dftimewolf.lib.processors.processors import BaseArtifactProcessor
-from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.module import BaseModule
 
 
@@ -25,7 +23,7 @@ class LocalPlasoProcessor(BaseModule):
     self._output_path = None
     self._plaso_storage_file_path = None
 
-  def setup(self, timezone=None):
+  def setup(self, timezone=None):  # pylint: disable=arguments-differ
     """Sets up the _timezone attribute
 
     Args:
@@ -35,6 +33,9 @@ class LocalPlasoProcessor(BaseModule):
     self._output_path = tempfile.mkdtemp()
     self._plaso_storage_file_path = os.path.join(
         self._output_path, '{0:s}.plaso'.format(uuid.uuid4().hex))
+
+  def cleanup(self):
+    pass
 
   def process(self):
     """Execute the Plaso process."""

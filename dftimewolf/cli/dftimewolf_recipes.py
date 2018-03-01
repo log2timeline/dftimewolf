@@ -9,22 +9,14 @@ import signal
 
 from dftimewolf import config
 
-from dftimewolf.cli.recipes import grr_artifact_hosts
-from dftimewolf.cli.recipes import grr_flow_download
-from dftimewolf.cli.recipes import grr_hunt_artifacts
-from dftimewolf.cli.recipes import grr_hunt_file
-from dftimewolf.cli.recipes import grr_huntresults_plaso_timesketch
 from dftimewolf.cli.recipes import local_plaso
-from dftimewolf.cli.recipes import timesketch_upload
-from dftimewolf.cli.recipes import test_recipe
 
 from dftimewolf.lib import utils as dftw_utils
 
 from dftimewolf.lib.collectors import filesystem
-from dftimewolf.lib.collectors import grr
-from dftimewolf.lib.exporters import local_filesystem
 from dftimewolf.lib.exporters import timesketch
 from dftimewolf.lib.processors import localplaso
+
 from dftimewolf.lib.state import DFTimewolfState
 from dftimewolf.lib.utils import DFTimewolfFormatterClass
 
@@ -32,15 +24,8 @@ from dftimewolf.lib.utils import DFTimewolfFormatterClass
 signal.signal(signal.SIGINT, dftw_utils.signal_handler)
 
 config.Config.register_module(filesystem.FilesystemCollector)
-# config.Config.register_collector(grr.GRRHuntArtifactCollector)
-# config.Config.register_collector(grr.GRRHuntFileCollector)
-# config.Config.register_collector(grr.GRRHuntDownloader)
-# config.Config.register_collector(grr.GRRArtifactCollector)
-# config.Config.register_collector(grr.GRRFileCollector)
-# config.Config.register_collector(grr.GRRFlowCollector)
 config.Config.register_module(localplaso.LocalPlasoProcessor)
 config.Config.register_module(timesketch.TimesketchExporter)
-# config.Config.register_exporter(local_filesystem.LocalFilesystemExporter)
 
 # Try to open config.json and load configuration data from it.
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -49,12 +34,6 @@ config.Config.load_extra(os.path.join(ROOT_DIR, 'config.json'))
 config.Config.load_extra(os.path.join(USER_DIR, '.dftimewolfrc'))
 
 config.Config.register_recipe(local_plaso)
-config.Config.register_recipe(grr_artifact_hosts)
-config.Config.register_recipe(grr_hunt_file)
-config.Config.register_recipe(grr_hunt_artifacts)
-config.Config.register_recipe(grr_huntresults_plaso_timesketch)
-config.Config.register_recipe(grr_flow_download)
-config.Config.register_recipe(timesketch_upload)
 
 
 def generate_help():
@@ -110,8 +89,7 @@ def main():
     module.setup(**new_args)
     module.process()
 
-    # Check for any eventual errors and clean up after each round.
-
+    # Check for eventual errors and clean up after each round.
     state.check_errors()
     state.cleanup()
 
