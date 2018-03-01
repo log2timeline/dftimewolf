@@ -21,7 +21,7 @@ class TimesketchExporter(BaseModule):
     self.incident_id = None
     self.sketch_id = None
 
-  def setup(self,
+  def setup(self, # pylint: disable=arguments-differ
             endpoint=None,
             username=None,
             password=None,
@@ -60,6 +60,9 @@ class TimesketchExporter(BaseModule):
       message = 'Sketch {0:d} created'.format(self.sketch_id)
       print message
       syslog.syslog(message)
+
+  def cleanup(self):
+    pass
 
   def process(self):
     """Executes a Timesketch export."""

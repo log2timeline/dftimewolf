@@ -3,7 +3,7 @@
 
 from __future__ import unicode_literals
 
-# from pathlib import Path
+import os
 
 from dftimewolf.lib.module import BaseModule
 
@@ -19,25 +19,28 @@ class FilesystemCollector(BaseModule):
     super(FilesystemCollector, self).__init__(state)
     self._paths = None
 
-  def setup(self, paths=None):
+  def setup(self, paths=None): # pylint: disable=arguments-differ
     """Sets up the _paths attribute
 
     Args:
       paths: Comma-separated list of strings represnting the paths to collect.
     """
     if not paths:
-      self.add_error("No `paths` argument provided in recipe, bailing", critical=True)
+      self.add_error(
+          'No `paths` argument provided in recipe, bailing', critical=True)
     self._paths = [path.strip() for path in paths.strip().split(',')]
+
+  def cleanup(self):
+    pass
 
   def process(self):
     """Checks whether the paths exists and updates the state accordingly."""
     for path in self._paths:
-      # path = Path(path)
-      # if path.exists():
-      #   self.state.output.append(path)
-      # else:
-      #   self.state.add_error(
-      #       'Path {0:s} does not exist'.format(str(path)), critical=False)
+      if os.path.exists():
+        self.state.output.append(path)
+      else:
+        self.state.add_error(
+            'Path {0:s} does not exist'.format(str(path)), critical=False)
       self.state.output.append(path)
 
 MODCLASS = [('filesystem', FilesystemCollector)]
