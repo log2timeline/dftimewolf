@@ -46,16 +46,6 @@ def generate_help():
   return help_text
 
 
-def generate_help():
-  """Generates help text with alphabetically sorted recipes."""
-  help_text = '\nAvailable recipes:\n\n'
-  recipes = config.Config.get_registered_recipes()
-  for contents, _, _ in sorted(recipes, key=lambda k: k[0]['name']):
-    help_text += ' {0:<35s}{1:s}\n'.format(
-        contents['name'], contents.get('short_description', 'No description'))
-  return help_text
-
-
 def main():
   """Main function for DFTimewolf."""
   parser = argparse.ArgumentParser(
