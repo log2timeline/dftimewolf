@@ -26,7 +26,7 @@ class FilesystemCollector(BaseModule):
       paths: Comma-separated list of strings represnting the paths to collect.
     """
     if not paths:
-      self.add_error(
+      self.state.add_error(
           'No `paths` argument provided in recipe, bailing', critical=True)
     self._paths = [path.strip() for path in paths.strip().split(',')]
 
@@ -36,11 +36,8 @@ class FilesystemCollector(BaseModule):
   def process(self):
     """Checks whether the paths exists and updates the state accordingly."""
     for path in self._paths:
-      if os.path.exists():
+      if os.path.exists(path):
         self.state.output.append(path)
       else:
         self.state.add_error(
             'Path {0:s} does not exist'.format(str(path)), critical=False)
-      self.state.output.append(path)
-
-MODCLASS = [('filesystem', FilesystemCollector)]

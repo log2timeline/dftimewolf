@@ -28,9 +28,9 @@ contents = {
     }, {
         'name': 'TimesketchExporter',
         'args': {
-            'endpoint': '@endpoint',
-            'username': '@username',
-            'password': '@password',
+            'endpoint': '@ts_endpoint',
+            'username': '@ts_username',
+            'password': '@ts_password',
             'incident_id': '@incident_id',
             'sketch_id': '@sketch_id',
         }
