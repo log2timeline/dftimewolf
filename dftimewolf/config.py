@@ -109,7 +109,7 @@ class Config(object):
     """Registers a dftimewolf collector.
 
     Args:
-      collector_class: Python class extending BaseCollector.
+      collector_class: Python class extending BaseModule.
     """
     cls._module_classes[module_class.__name__] = module_class
 

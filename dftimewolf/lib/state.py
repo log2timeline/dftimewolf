@@ -2,7 +2,8 @@
 
 Use it to track errors, abort on global failures, cleanup after modules, etc.
 """
-
+# TODO(tomchop): Make sure docstrings here follow the same type hinting as the
+# rest of the codebase
 import sys
 
 class DFTimewolfState(object):
@@ -56,14 +57,14 @@ class DFTimewolfState(object):
     self.input = self.output
     self.output = []
 
-  def check_errors(self, global_=False):
+  def check_errors(self, is_global=False):
     """Checks for errors and exits if any of them are critical.
 
     Args:
-      global_: If True, check the global_errors attribute. If false, check the
+      is_global: If True, check the global_errors attribute. If false, check the
           error attribute.
     """
-    errors = self.global_errors if global_ else self.errors
+    errors = self.global_errors if is_global else self.errors
     if errors:
       print 'dfTimewolf encountered one or more errors:'
       for error, critical in errors:

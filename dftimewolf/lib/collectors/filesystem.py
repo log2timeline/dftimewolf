@@ -23,7 +23,7 @@ class FilesystemCollector(BaseModule):
     """Sets up the _paths attribute
 
     Args:
-      paths: Comma-separated list of strings represnting the paths to collect.
+      paths: Comma-separated list of strings representing the paths to collect.
     """
     if not paths:
       self.state.add_error(
