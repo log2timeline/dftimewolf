@@ -3,8 +3,6 @@
 
 from __future__ import unicode_literals
 
-import syslog
-
 from dftimewolf.lib import timesketch_utils
 from dftimewolf.lib.module import BaseModule
 
@@ -57,9 +55,7 @@ class TimesketchExporter(BaseModule):
 
       self.sketch_id = self.timesketch_api.create_sketch(
           sketch_name, sketch_description)
-      message = 'Sketch {0:d} created'.format(self.sketch_id)
-      print message
-      syslog.syslog(message)
+      print 'Sketch {0:d} created'.format(self.sketch_id)
 
   def cleanup(self):
     pass
