@@ -35,6 +35,8 @@ config.Config.load_extra(os.path.join(USER_DIR, '.dftimewolfrc'))
 
 config.Config.register_recipe(local_plaso)
 
+# TODO(tomchop) Change the print statements by a better logging / display system
+
 
 def generate_help():
   """Generates help text with alphabetically sorted recipes."""
