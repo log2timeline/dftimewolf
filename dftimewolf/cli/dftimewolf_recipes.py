@@ -15,6 +15,7 @@ from dftimewolf.lib import utils as dftw_utils
 
 from dftimewolf.lib.collectors import filesystem
 from dftimewolf.lib.exporters import timesketch
+from dftimewolf.lib.exporters import local_filesystem
 from dftimewolf.lib.processors import localplaso
 
 from dftimewolf.lib.state import DFTimewolfState
@@ -26,6 +27,7 @@ signal.signal(signal.SIGINT, dftw_utils.signal_handler)
 config.Config.register_module(filesystem.FilesystemCollector)
 config.Config.register_module(localplaso.LocalPlasoProcessor)
 config.Config.register_module(timesketch.TimesketchExporter)
+config.Config.register_module(local_filesystem.LocalFilesystemCopy)
 
 # Try to open config.json and load configuration data from it.
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -89,6 +91,7 @@ def main():
     print 'Running module {0:s}'.format(module_name)
     module = config.Config.get_module(module_name)(state)
     module.setup(**new_args)
+    state.check_errors()
     module.process()
 
     # Check for eventual errors and clean up after each round.
