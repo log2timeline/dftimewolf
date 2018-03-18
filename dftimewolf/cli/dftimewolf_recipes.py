@@ -9,36 +9,23 @@ import signal
 
 from dftimewolf import config
 
-from dftimewolf.cli.recipes import grr_artifact_hosts
-from dftimewolf.cli.recipes import grr_flow_download
-from dftimewolf.cli.recipes import grr_hunt_artifacts
-from dftimewolf.cli.recipes import grr_hunt_file
-from dftimewolf.cli.recipes import grr_huntresults_plaso_timesketch
 from dftimewolf.cli.recipes import local_plaso
-from dftimewolf.cli.recipes import timesketch_upload
 
 from dftimewolf.lib import utils as dftw_utils
 
 from dftimewolf.lib.collectors import filesystem
-from dftimewolf.lib.collectors import grr
-from dftimewolf.lib.exporters import local_filesystem
 from dftimewolf.lib.exporters import timesketch
 from dftimewolf.lib.processors import localplaso
+
+from dftimewolf.lib.state import DFTimewolfState
 from dftimewolf.lib.utils import DFTimewolfFormatterClass
 
 
 signal.signal(signal.SIGINT, dftw_utils.signal_handler)
 
-config.Config.register_collector(filesystem.FilesystemCollector)
-config.Config.register_collector(grr.GRRHuntArtifactCollector)
-config.Config.register_collector(grr.GRRHuntFileCollector)
-config.Config.register_collector(grr.GRRHuntDownloader)
-config.Config.register_collector(grr.GRRArtifactCollector)
-config.Config.register_collector(grr.GRRFileCollector)
-config.Config.register_collector(grr.GRRFlowCollector)
-config.Config.register_processor(localplaso.LocalPlasoProcessor)
-config.Config.register_exporter(timesketch.TimesketchExporter)
-config.Config.register_exporter(local_filesystem.LocalFilesystemExporter)
+config.Config.register_module(filesystem.FilesystemCollector)
+config.Config.register_module(localplaso.LocalPlasoProcessor)
+config.Config.register_module(timesketch.TimesketchExporter)
 
 # Try to open config.json and load configuration data from it.
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -47,12 +34,8 @@ config.Config.load_extra(os.path.join(ROOT_DIR, 'config.json'))
 config.Config.load_extra(os.path.join(USER_DIR, '.dftimewolfrc'))
 
 config.Config.register_recipe(local_plaso)
-config.Config.register_recipe(grr_artifact_hosts)
-config.Config.register_recipe(grr_hunt_file)
-config.Config.register_recipe(grr_hunt_artifacts)
-config.Config.register_recipe(grr_huntresults_plaso_timesketch)
-config.Config.register_recipe(grr_flow_download)
-config.Config.register_recipe(timesketch_upload)
+
+# TODO(tomchop) Change the print statements by a better logging / display system
 
 
 def generate_help():
@@ -94,98 +77,28 @@ def main():
 
   # Thread all collectors.
   console_out.StdOut('Collectors:')
-  for collector in recipe['collectors']:
-    console_out.StdOut('  {0:s}'.format(collector['name']))
+  state = DFTimewolfState()
 
-  collector_objects = []
-  for collector in recipe['collectors']:
+  for module_description in recipe['modules']:
+    # Combine CLI args with args from the recipe description
     new_args = dftw_utils.import_args_from_dict(
-        collector['args'], vars(args), config.Config)
-    collector_cls = config.Config.get_collector(collector['name'])
-    collector_objects.extend(collector_cls.launch_collector(**new_args))
+        module_description['args'], vars(args), config.Config)
 
-  # global_errors will contain any errors generated along the way by collectors,
-  # producers or exporters.
-  global_errors = []
+    # Create the module object and start processing
+    module_name = module_description['name']
+    print 'Running module {0:s}'.format(module_name)
+    module = config.Config.get_module(module_name)(state)
+    module.setup(**new_args)
+    module.process()
 
-  # Wait for collectors to finish and collect output.
-  collector_output = []
-  for collector_obj in collector_objects:
-    collector_obj.join()
-    collector_output.extend(collector_obj.results)
-    if collector_obj.errors:
-      # TODO(tomchop): Add name attributes in module objects
-      error = (collector_obj.__class__.__name__, ', '.join(
-          collector_obj.errors))
-      global_errors.append(error)
-      console_out.StdErr('ERROR:{0:s}:{1:s}\n'.format(*error))
+    # Check for eventual errors and clean up after each round.
+    state.check_errors()
+    state.cleanup()
 
-  if recipe['processors']:
-    # Thread processors.
-    console_out.StdOut('Processors:')
-    for processor in recipe['processors']:
-      console_out.StdOut('  {0:s}'.format(processor['name']))
-
-    processor_objs = []
-    for processor in recipe['processors']:
-      new_args = dftw_utils.import_args_from_dict(
-          processor['args'], vars(args), config.Config)
-      new_args['collector_output'] = collector_output
-      processor_class = config.Config.get_processor(processor['name'])
-      processor_objs.extend(processor_class.launch_processor(**new_args))
-
-    # Wait for processors to finish and collect output
-    processor_output = []
-    for processor in processor_objs:
-      processor.join()
-      processor_output.extend(processor.output)
-      if processor.errors:
-        # Note: Should we fail if modules produce errors, or is warning the user
-        # enough?
-        # TODO(tomchop): Add name attributes in module objects.
-        error = (processor.__class__.__name__, ', '.join(processor.errors))
-        global_errors.append(error)
-        console_out.StdErr('ERROR:{0:s}:{1:s}\n'.format(*error))
-
-  else:
-    processor_output = collector_output
-
-  # Thread all exporters.
-  if recipe['exporters']:
-    console_out.StdOut('Exporters:')
-    for exporter in recipe['exporters']:
-      console_out.StdOut('  {0:s}'.format(exporter['name']))
-
-    exporter_objs = []
-    for exporter in recipe['exporters']:
-      new_args = dftw_utils.import_args_from_dict(
-          exporter['args'], vars(args), config.Config)
-      new_args['processor_output'] = processor_output
-      exporter_class = config.Config.get_exporter(exporter['name'])
-      exporter_objs.extend(exporter_class.launch_exporter(**new_args))
-
-    # Wait for exporters to finish.
-    exporter_output = []
-    for exporter in exporter_objs:
-      exporter.join()
-      exporter_output.extend(exporter.output)
-      if exporter.errors:
-        # TODO(tomchop): Add name attributes in module objects
-        error = (exporter.__class__.__name__, ', '.join(exporter.errors))
-        global_errors.append(error)
-        console_out.StdErr('ERROR:{0:s}:{1:s}\n'.format(*error))
-  else:
-    exporter_output = processor_output
-
-  if not global_errors:
-    console_out.StdOut(
-        'Recipe {0:s} executed successfully'.format(recipe['name']))
-  else:
-    console_out.StdOut(
-        'Recipe {0:s} executed with {1:d} errors:'.format(
-            recipe['name'], len(global_errors)))
-    for error in global_errors:
-      console_out.StdOut('  {0:s}: {1:s}'.format(*error))
+  print 'Recipe executed succesfully.'
+  if state.input:
+    print 'The last executed module generated unprocessed input; here it is:'
+    print state.input
 
 
 if __name__ == '__main__':
