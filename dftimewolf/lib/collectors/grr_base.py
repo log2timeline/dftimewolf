@@ -1,0 +1,77 @@
+import tempfile
+import time
+
+from grr_api_client import api as grr_api
+from grr_api_client import errors as grr_errors
+from grr_api_client.proto.grr.proto import flows_pb2
+
+from dftimewolf.lib.module import BaseModule
+
+
+class GRRBaseModule(BaseModule):
+  """Base module for GRR hunt and flow modules.
+
+  Attributes:
+    output_path: Path to store collected artifacts.
+    grr_api: GRR HTTP API client.
+    reason: Justification for GRR access.
+    approvers: list of GRR approval recipients.
+  """
+  _CHECK_APPROVAL_INTERVAL_SEC = 10
+
+  def __init__(self, state):
+    super(GRRBaseModule, self).__init__(state)
+    self.reason = None
+    self.grr_api = None
+    self.approvers = None
+    self.output_path = None
+
+  # pylint: disable=arguments-differ
+  def setup(self, reason, grr_server_url, grr_auth, approvers=None):
+    """Initializes a GRR hunt results collector.
+
+    Args:
+      reason: justification for GRR access.
+      grr_server_url: GRR server URL.
+      grr_auth: Tuple containing a (username, password) combination.
+      approvers: list of GRR approval recipients.
+    """
+
+    self.approvers = []
+    if approvers:
+      self.approvers = [item.strip() for item in approvers.strip().split(',')]
+    self.grr_api = grr_api.InitHttp(api_endpoint=grr_server_url, auth=grr_auth)
+    self.output_path = tempfile.mkdtemp()
+    self.reason = reason
+
+  def _check_approval_wrapper(self, grr_object, function):
+    """Wraps a call to GRR functions checking for approval."""
+    approval = False
+    approval_sent = False
+
+    while not approval:
+      try:
+        function()
+        approval = True
+      except grr_errors.AccessForbiddenError:
+        print '{0:s}: no valid approval found'.format(grr_object.id)
+        # If approval was already sent, just wait a bit more.
+        if approval_sent:
+          print 'Approval not yet granted, waiting {0:s}s'.format(
+              self._CHECK_APPROVAL_INTERVAL_SEC)
+          time.sleep(self._CHECK_APPROVAL_INTERVAL_SEC)
+          continue
+
+        # If no approvers were specified, abort.
+        if not self.approvers:
+          message = ('GRR needs approval but no approvers specified '
+                     '(hint: use --approvers)')
+          self.state.add_error(message, critical=True)
+          return
+
+        # Otherwise, send a request for approval
+        grr_object.CreateApproval(
+            reason=self.reason, notified_users=self.approvers)
+        approval_sent = True
+        print '{0:s}: approval request sent to: {1:s} (reason: {2:s})'.format(
+            grr_object, self.approvers, self.reason)
