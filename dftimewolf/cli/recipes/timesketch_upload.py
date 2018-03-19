@@ -7,23 +7,19 @@ _short_description = 'Uploads a .plaso file to Timesketch.'
 contents = {
     'name': 'timesketch_upload',
     'short_description': _short_description,
-    'collectors': [{
+    'modules': [{
         'name': 'FilesystemCollector',
         'args': {
             'paths': '@file',
-            'verbose': True,
         },
-    }],
-    'processors': [],
-    'exporters': [{
+    }, {
         'name': 'TimesketchExporter',
         'args': {
-            'ts_endpoint': '@ts_endpoint',
-            'ts_username': '@ts_username',
-            'ts_password': '@ts_password',
+            'endpoint': '@ts_endpoint',
+            'username': '@ts_username',
+            'password': '@ts_password',
             'incident_id': '@incident_id',
             'sketch_id': '@sketch_id',
-            'verbose': True,
         }
     }],
 }
