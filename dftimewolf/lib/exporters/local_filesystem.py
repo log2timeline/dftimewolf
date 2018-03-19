@@ -39,9 +39,10 @@ class LocalFilesystemCopy(BaseModule):
 
   def process(self):
     """Checks whether the paths exists and updates the state accordingly."""
-    for path in self.state.input:
-      self._copy_file_or_directory(path, self._target_directory)
-      print '{0:s} -> {1:s}'.format(path, self._target_directory)
+    for host, path in self.state.input:
+      directory = os.path.join(self._target_directory, host)
+      self._copy_file_or_directory(path, directory)
+      print '{0:s} -> {1:s}'.format(path, directory)
 
   def _copy_file_or_directory(self, source, destination_directory):
     """Recursively copies files from source to destination_directory.
