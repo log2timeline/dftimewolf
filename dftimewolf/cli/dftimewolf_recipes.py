@@ -10,10 +10,12 @@ import signal
 from dftimewolf import config
 
 from dftimewolf.cli.recipes import local_plaso
+from dftimewolf.cli.recipes import grr_artifact_hosts
 
 from dftimewolf.lib import utils as dftw_utils
 
 from dftimewolf.lib.collectors import filesystem
+from dftimewolf.lib.collectors import grr_hosts
 from dftimewolf.lib.exporters import timesketch
 from dftimewolf.lib.exporters import local_filesystem
 from dftimewolf.lib.processors import localplaso
@@ -27,6 +29,8 @@ signal.signal(signal.SIGINT, dftw_utils.signal_handler)
 config.Config.register_module(filesystem.FilesystemCollector)
 config.Config.register_module(localplaso.LocalPlasoProcessor)
 config.Config.register_module(timesketch.TimesketchExporter)
+config.Config.register_module(grr_hosts.GRRArtifactCollector)
+config.Config.register_module(timesketch.TimesketchExporter)
 config.Config.register_module(local_filesystem.LocalFilesystemCopy)
 
 # Try to open config.json and load configuration data from it.
@@ -36,6 +40,7 @@ config.Config.load_extra(os.path.join(ROOT_DIR, 'config.json'))
 config.Config.load_extra(os.path.join(USER_DIR, '.dftimewolfrc'))
 
 config.Config.register_recipe(local_plaso)
+config.Config.register_recipe(grr_artifact_hosts)
 
 # TODO(tomchop) Change the print statements by a better logging / display system
 
