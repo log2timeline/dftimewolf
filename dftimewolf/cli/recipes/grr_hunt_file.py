@@ -12,15 +12,14 @@ contents = {
     'name':
         'grr_hunt_file',
     'short_description': _short_description,
-    'collectors': [{
+    'modules': [{
         'name': 'GRRHuntFileCollector',
         'args': {
             'file_list': '@file_list',
             'reason': '@reason',
             'grr_server_url': '@grr_server_url',
             'grr_auth': ('admin', 'admin'),
-            'approvers': '',
-            'verbose': True,
+            'approvers': '@approvers',
         },
     }],
     'processors': [],
@@ -30,5 +29,6 @@ contents = {
 args = [
     ('file_list', 'Comma-separated list of filepaths to hunt for', None),
     ('reason', 'Reason for collection', None),
+    ('--approvers', 'Emails for GRR approval request', None),
     ('--grr_server_url', 'GRR endpoint', 'http://localhost:8000')
 ]

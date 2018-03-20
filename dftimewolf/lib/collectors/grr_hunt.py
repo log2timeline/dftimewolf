@@ -187,7 +187,7 @@ class GRRHuntFileCollector(GRRHunt):
       approvers: comma-separated list of GRR approval recipients.
       verbose: toggle for verbose output.
     """
-    super(GRRHuntFileCollector, self).__init__(
+    super(GRRHuntFileCollector, self).setup(
         reason, grr_server_url, grr_auth, approvers=approvers)
     self.file_list = [item.strip() for item in file_list.strip().split(',')]
     if not file_list:
