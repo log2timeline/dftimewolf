@@ -12,12 +12,14 @@ from dftimewolf import config
 from dftimewolf.cli.recipes import local_plaso
 from dftimewolf.cli.recipes import grr_artifact_hosts
 from dftimewolf.cli.recipes import grr_flow_download
+from dftimewolf.cli.recipes import grr_hunt_artifacts
 from dftimewolf.cli.recipes import timesketch_upload
 
 from dftimewolf.lib import utils as dftw_utils
 
 from dftimewolf.lib.collectors import filesystem
 from dftimewolf.lib.collectors import grr_hosts
+from dftimewolf.lib.collectors import grr_hunt
 from dftimewolf.lib.exporters import timesketch
 from dftimewolf.lib.exporters import local_filesystem
 from dftimewolf.lib.processors import localplaso
@@ -33,6 +35,8 @@ config.Config.register_module(localplaso.LocalPlasoProcessor)
 config.Config.register_module(timesketch.TimesketchExporter)
 config.Config.register_module(grr_hosts.GRRArtifactCollector)
 config.Config.register_module(grr_hosts.GRRFlowCollector)
+config.Config.register_module(grr_hunt.GRRHuntArtifactCollector)
+
 config.Config.register_module(timesketch.TimesketchExporter)
 config.Config.register_module(local_filesystem.LocalFilesystemCopy)
 
@@ -45,6 +49,7 @@ config.Config.load_extra(os.path.join(USER_DIR, '.dftimewolfrc'))
 config.Config.register_recipe(local_plaso)
 config.Config.register_recipe(grr_artifact_hosts)
 config.Config.register_recipe(grr_flow_download)
+config.Config.register_recipe(grr_hunt_artifacts)
 config.Config.register_recipe(timesketch_upload)
 
 # TODO(tomchop) Change the print statements by a better logging / display system
