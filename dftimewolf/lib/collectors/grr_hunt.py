@@ -6,6 +6,8 @@ from __future__ import unicode_literals
 import os
 import zipfile
 
+from grr_response_proto import flows_pb2
+
 from dftimewolf.lib.collectors.grr_base import GRRBaseModule
 
 class GRRHunt(GRRBaseModule):

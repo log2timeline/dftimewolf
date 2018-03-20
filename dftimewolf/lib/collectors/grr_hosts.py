@@ -11,7 +11,7 @@ from dftimewolf.lib.collectors.grr_base import GRRBaseModule
 
 from grr_api_client import api as grr_api
 from grr_api_client import errors as grr_errors
-from grr_api_client.proto.grr.proto import flows_pb2
+from grr_response_proto import flows_pb2
 
 
 class GRRFlow(GRRBaseModule):
