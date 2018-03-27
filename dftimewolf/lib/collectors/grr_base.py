@@ -66,7 +66,7 @@ class GRRBaseModule(BaseModule):  # pylint: disable=abstract-method
           message = ('GRR needs approval but no approvers specified '
                      '(hint: use --approvers)')
           self.state.add_error(message, critical=True)
-          return
+          return None
 
         # Otherwise, send a request for approval
         grr_object.CreateApproval(
