@@ -53,7 +53,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     if not result:
       self.state.add_error(
           'Could not get client_id for {0:s}'.format(hostname), critical=True)
-      return
+      return None
 
     last_seen, client = sorted(result, key=lambda x: x[0], reverse=True)[0]
     # Remove microseconds and create datetime object
