@@ -255,9 +255,16 @@ class GRRArtifactCollector(GRRFlow):
       'WindowsUserRegistryFiles', 'WindowsXMLEventLogTerminalServices'
   ]
 
+  artifact_registry = {
+      'Linux': _DEFAULT_ARTIFACTS_LINUX,
+      'Darwin': _DEFAULT_ARTIFACTS_DARWIN,
+      'Windows': _DEFAULT_ARTIFACTS_WINDOWS
+  }
+
   def __init__(self, state):
     super(GRRArtifactCollector, self).__init__(state)
     self.artifacts = []
+    self.extra_artifacts = []
     self.hostnames = None
     self._clients = []
     self.use_tsk = False
@@ -284,10 +291,10 @@ class GRRArtifactCollector(GRRFlow):
 
     if artifacts is not None:
       self.artifacts = [item.strip() for item in artifacts.strip().split(',')]
+
     if extra_artifacts is not None:
-      extra = [item.strip() for item in extra_artifacts.strip().split(',')]
-      self.artifacts.extend(extra)
-      self.artifacts = list(set(self.artifacts))
+      self.extra_artifacts = [item.strip() for item
+                              in extra_artifacts.strip().split(',')]
 
     hosts = [item.strip() for item in hosts.strip().split(',')]
     # TODO(tomchop): Thread this
@@ -307,12 +314,6 @@ class GRRArtifactCollector(GRRFlow):
       RuntimeError: if no artifacts specified nor resolved by platform.
     """
 
-    artifact_registry = {
-        'Linux': self._DEFAULT_ARTIFACTS_LINUX,
-        'Darwin': self._DEFAULT_ARTIFACTS_DARWIN,
-        'Windows': self._DEFAULT_ARTIFACTS_WINDOWS
-    }
-
     # TODO(tomchop): Thread this
     for client in self._clients:
       # Create a list of artifacts to collect.
@@ -321,12 +322,20 @@ class GRRArtifactCollector(GRRFlow):
       print 'System type: {0:s}'.format(system_type)
 
       # If the list is supplied by the user via a flag, honor that.
+      artifact_list = []
       if self.artifacts:
         print 'Artifacts to be collected: {0:s}'.format(self.artifacts)
         artifact_list = self.artifacts
       else:
-        print 'Artifacts to be collected: Default'
-        artifact_list = artifact_registry.get(system_type, None)
+        default_artifacts = self.artifact_registry.get(system_type, None)
+        print 'Collecting default artifacts for {0:s}: {1:s}'.format(
+            system_type, default_artifacts)
+        artifact_list.extend(default_artifacts)
+
+      if self.extra_artifacts:
+        print 'Throwing in an extra {0:s}'.format(self.extra_artifacts)
+        artifact_list.extend(self.extra_artifacts)
+        artifact_list = list(set(artifact_list))
 
       if not artifact_list:
         raise RuntimeError('No artifacts to collect')
@@ -339,7 +348,7 @@ class GRRArtifactCollector(GRRFlow):
       flow_id = self._launch_flow(client, 'ArtifactCollectorFlow', flow_args)
       self._await_flow(client, flow_id)
 
-    self.state.output = self.output_path
+    self.state.output = [self.output_path]
 
 
 class GRRFileCollector(GRRFlow):
@@ -410,7 +419,7 @@ class GRRFileCollector(GRRFlow):
       flow_id = self._launch_flow(client, 'FileFinder', flow_args)
       self._await_flow(client, flow_id)
 
-    self.state.output = self.output_path
+    self.state.output = [self.output_path]
 
 
 class GRRFlowCollector(GRRFlow):
