@@ -1,3 +1,5 @@
+"""Base GRR module class. GRR modules should extend it."""
+
 import tempfile
 import time
 
@@ -46,13 +48,11 @@ class GRRBaseModule(BaseModule):
 
   def _check_approval_wrapper(self, grr_object, function):
     """Wraps a call to GRR functions checking for approval."""
-    approval = False
     approval_sent = False
 
-    while not approval:
+    while True:
       try:
-        function()
-        approval = True
+        return function()
       except grr_errors.AccessForbiddenError:
         print '{0:s}: no valid approval found'.format(grr_object.id)
         # If approval was already sent, just wait a bit more.

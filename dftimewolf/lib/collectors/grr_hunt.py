@@ -4,6 +4,7 @@
 from __future__ import unicode_literals
 
 import os
+import tempfile
 import zipfile
 
 from grr_response_proto import flows_pb2
@@ -33,66 +34,6 @@ class GRRHunt(GRRBaseModule):
     print '{0:s}: Hunt created'.format(hunt.hunt_id)
     self._check_approval_wrapper(hunt, hunt.Start)
     return hunt
-
-  def collect_hunt_results(self):
-    """Download current set of files in results.
-
-    Returns:
-      list: tuples containing:
-          str: human-readable description of the source of the collection. For
-              example, the name of the source host.
-          str: path to the collected data.
-    Raises:
-      ValueError: if approval is needed and approvers were not specified.
-    """
-    if not os.path.isdir(self.output_path):
-      os.makedirs(self.output_path)
-
-    output_file_path = os.path.join(
-        self.output_path, '.'.join((self.hunt_id, 'zip')))
-
-    if os.path.exists(output_file_path):
-      print '{0:s} already exists: Skipping'.format(output_file_path)
-      return None
-
-    hunt_archive = self._check_approval_wrapper(
-        self.hunt, self.hunt.GetFilesArchive)
-    hunt_archive.WriteToFile(output_file_path)
-    return self._extract_hunt_results(output_file_path)
-
-  def _extract_hunt_results(self, output_file_path):
-    """Open a hunt output archive and extract files.
-
-    Args:
-      output_file_path: The path where the hunt archive is downloaded to.
-
-    Returns:
-      list: tuples containing:
-          str: The name of the client from where the files were downloaded.
-          str: The directory where the files were downloaded to.
-    """
-    # Extract items from archive by host for processing
-    collection_paths = []
-    with zipfile.ZipFile(output_file_path) as archive:
-      items = archive.infolist()
-      for f in items:
-        client_id = f.filename.split('/')[1]
-        if client_id.startswith('C.'):
-          client = self.grr_api.Client(client_id).Get()
-          client_name = client.data.os_info.fqdn
-          client_directory = os.path.join(self.output_path, client_id)
-          if not os.path.isdir(client_directory):
-            os.makedirs(client_directory)
-          collection_paths.append((client_name, client_directory))
-          try:
-            archive.extract(f, client_directory)
-          except KeyError as exception:
-            self.console_out.StdErr('Extraction error: {0:s}'.format(exception))
-            return []
-
-    os.remove(output_file_path)
-
-    return collection_paths
 
   def print_status(self):
     """Print status of hunt."""
@@ -209,3 +150,108 @@ class GRRHuntFileCollector(GRRHunt):
     hunt_args = flows_pb2.FileFinderArgs(
         paths=self.file_list, action=hunt_action)
     return self._create_hunt('FileFinder', hunt_args)
+
+
+class GRRHuntDownloader(GRRHunt):
+  """Downloads results from a GRR Hunt.
+
+  Attributes:
+    reason: Justification for GRR access.
+    approvers: list of GRR approval recipients.
+  """
+
+  def __init__(self, state):
+    super(GRRHuntDownloader, self).__init__(state)
+    self.hunt_id = None
+
+  # pylint: disable=arguments-differ
+  def setup(self,
+            hunt_id,
+            reason, grr_server_url, grr_auth, approvers=None):
+    """Initializes a GRR Hunt file collector.
+
+    Args:
+      hunt_id: Hunt ID to download results from.
+      reason: justification for GRR access.
+      grr_server_url: GRR server URL.
+      grr_auth: Tuple containing a (username, password) combination.
+      approvers: comma-separated list of GRR approval recipients.
+    """
+    super(GRRHuntDownloader, self).setup(
+        reason, grr_server_url, grr_auth, approvers=approvers)
+    self.hunt_id = hunt_id
+    self.output_path = tempfile.mkdtemp()
+
+  def collect_hunt_results(self, hunt):
+    """Download current set of files in results.
+
+    Args:
+      hunt: The GRR hunt object to download files from.
+
+    Returns:
+      list: tuples containing:
+          str: human-readable description of the source of the collection. For
+              example, the name of the source host.
+          str: path to the collected data.
+    Raises:
+      ValueError: if approval is needed and approvers were not specified.
+    """
+    if not os.path.isdir(self.output_path):
+      os.makedirs(self.output_path)
+
+    output_file_path = os.path.join(
+        self.output_path, '.'.join((self.hunt_id, 'zip')))
+
+    if os.path.exists(output_file_path):
+      print '{0:s} already exists: Skipping'.format(output_file_path)
+      return None
+
+    hunt_archive = self._check_approval_wrapper(
+        hunt, hunt.GetFilesArchive)
+    hunt_archive.WriteToFile(output_file_path)
+    print 'Wrote results of {0:s} to {1:s}'.format(hunt.hunt_id, output_file_path)
+    return self._extract_hunt_results(output_file_path)
+
+  def _extract_hunt_results(self, output_file_path):
+    """Open a hunt output archive and extract files.
+
+    Args:
+      output_file_path: The path where the hunt archive is downloaded to.
+
+    Returns:
+      list: tuples containing:
+          str: The name of the client from where the files were downloaded.
+          str: The directory where the files were downloaded to.
+    """
+    # Extract items from archive by host for processing
+    collection_paths = []
+    with zipfile.ZipFile(output_file_path) as archive:
+      items = archive.infolist()
+      for f in items:
+        client_id = f.filename.split('/')[1]
+        if client_id.startswith('C.'):
+          client_directory = os.path.join(self.output_path, client_id)
+          if not os.path.isdir(client_directory):
+            os.makedirs(client_directory)
+          collection_paths.append(client_directory)
+          try:
+            archive.extract(f, client_directory)
+          except KeyError as exception:
+            self.console_out.StdErr('Extraction error: {0:s}'.format(exception))
+            return []
+
+    os.remove(output_file_path)
+
+    return collection_paths
+
+  def process(self):
+    """Construct and start a new File hunt.
+
+    Returns:
+      The newly created GRR hunt object.
+
+    Raises:
+      RuntimeError: if no items specified for collection.
+    """
+    hunt = self.grr_api.Hunt(self.hunt_id).Get()
+    self.state.output = self.collect_hunt_results(hunt)
