@@ -1,28 +1,25 @@
+"""Definition of modules for collecting data from GRR hosts."""
+
 from __future__ import unicode_literals
 
 import datetime
 import os
 import re
-import syslog
 import time
 import zipfile
 
 from dftimewolf.lib.collectors.grr_base import GRRBaseModule
 
-from grr_api_client import api as grr_api
 from grr_api_client import errors as grr_errors
 from grr_response_proto import flows_pb2
 
 
-class GRRFlow(GRRBaseModule):
+# GRRFlow should be extended by classes that actually implement the process()
+# method
+class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
   """Launches and collects GRR flows.
 
-  Attributes:
-    output_path: Path to where to store collected items.
-    grr_api: GRR HTTP API client.
-    host: Target of GRR collection.
-    reason: Justification for GRR access.
-    approvers: list of GRR approval recipients.
+  Modules that use GRR flows or interact with hosts should extend this class.
   """
   _CHECK_APPROVAL_INTERVAL_SEC = 10
   _CHECK_FLOW_INTERVAL_SEC = 10
@@ -145,8 +142,9 @@ class GRRFlow(GRRBaseModule):
       try:
         status = client.Flow(flow_id).Get().data
       except grr_errors.UnknownError:
-        msg = 'Unable to stat flow {0:s} for host {1:s}'.format(flow_id, self.host)
-        self.state.add_error()
+        msg = 'Unable to stat flow {0:s} for host {1:s}'.format(
+            flow_id, self.host)
+        self.state.add_error(msg)
         raise RuntimeError(
             'Unable to stat flow {0:s} for host {1:s}'.format(
                 flow_id, self.host))
@@ -270,6 +268,7 @@ class GRRArtifactCollector(GRRFlow):
     self.use_tsk = False
     self.keepalive = False
 
+  # pylint: disable=arguments-differ
   def setup(self,
             hosts, artifacts, extra_artifacts, use_tsk,
             reason, grr_server_url, grr_auth, approvers=None):
@@ -368,6 +367,7 @@ class GRRFileCollector(GRRFlow):
     self.use_tsk = False
     self.keepalive = False
 
+  # pylint: disable=arguments-differ
   def setup(self,
             hosts, files, use_tsk,
             reason, grr_server_url, grr_auth, approvers=None):

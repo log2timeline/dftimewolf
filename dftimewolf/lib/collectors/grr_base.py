@@ -5,12 +5,11 @@ import time
 
 from grr_api_client import api as grr_api
 from grr_api_client import errors as grr_errors
-from grr_response_proto import flows_pb2
 
 from dftimewolf.lib.module import BaseModule
 
-
-class GRRBaseModule(BaseModule):
+# This class does not implement process() since it is a base class.
+class GRRBaseModule(BaseModule):  # pylint: disable=abstract-method
   """Base module for GRR hunt and flow modules.
 
   Attributes:
@@ -75,3 +74,6 @@ class GRRBaseModule(BaseModule):
         approval_sent = True
         print '{0:s}: approval request sent to: {1:s} (reason: {2:s})'.format(
             grr_object, self.approvers, self.reason)
+
+  def cleanup(self):
+    pass

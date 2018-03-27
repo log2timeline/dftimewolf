@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Collects artifacts with GRR."""
+"""Definition of modules for collecting data from GRR Hunts."""
 
 from __future__ import unicode_literals
 
@@ -11,8 +11,14 @@ from grr_response_proto import flows_pb2
 
 from dftimewolf.lib.collectors.grr_base import GRRBaseModule
 
-class GRRHunt(GRRBaseModule):
-  """This class groups functions generic to all GRR Hunt modules."""
+
+# GRRHunt should be extended by classes that actually implement the process()
+# method
+class GRRHunt(GRRBaseModule):  # pylint: disable=abstract-method
+  """This class groups functions generic to all GRR Hunt modules.
+
+  Should be extended by the modules that interact with GRR hunts.
+  """
 
   def _create_hunt(self, name, args):
     """Create specified hunt.
@@ -209,7 +215,8 @@ class GRRHuntDownloader(GRRHunt):
     hunt_archive = self._check_approval_wrapper(
         hunt, hunt.GetFilesArchive)
     hunt_archive.WriteToFile(output_file_path)
-    print 'Wrote results of {0:s} to {1:s}'.format(hunt.hunt_id, output_file_path)
+    print 'Wrote results of {0:s} to {1:s}'.format(
+        hunt.hunt_id, output_file_path)
     return self._extract_hunt_results(output_file_path)
 
   def _extract_hunt_results(self, output_file_path):
