@@ -232,22 +232,39 @@ class GRRHuntDownloader(GRRHunt):
     """
     # Extract items from archive by host for processing
     collection_paths = []
-    with zipfile.ZipFile(output_file_path) as archive:
-      items = archive.infolist()
-      for f in items:
-        client_id = f.filename.split('/')[1]
-        if client_id.startswith('C.'):
-          client_directory = os.path.join(self.output_path, client_id)
-          if not os.path.isdir(client_directory):
-            os.makedirs(client_directory)
-          collection_paths.append(client_directory)
-          try:
-            archive.extract(f, client_directory)
-          except KeyError as exception:
-            self.console_out.StdErr('Extraction error: {0:s}'.format(exception))
-            return []
+    try:
+      with zipfile.ZipFile(output_file_path) as archive:
+        items = archive.infolist()
+        for f in items:
+          client_id = f.filename.split('/')[1]
+          if client_id.startswith('C.'):
+            client_directory = os.path.join(self.output_path,
+                                            client_id)
+            if not os.path.isdir(client_directory):
+              os.makedirs(client_directory)
+            collection_paths.append(client_directory)
+            try:
+              archive.extract(f, client_directory)
+            except KeyError as exception:
+              print 'Extraction error: {0:s}'.format(exception)
+              return []
 
-    os.remove(output_file_path)
+    except OSError as error:
+      msg = 'Error manipulating file {0:s}: {1:s}'.format(
+          output_file_path, error)
+      self.state.add_error(msg, critical=True)
+      return []
+    except zipfile.BadZipfile as error:
+      msg = 'Bad zipfile {0:s}: {1:s}'.format(
+          output_file_path, error)
+      self.state.add_error(msg, critical=True)
+      return []
+
+    try:
+      os.remove(output_file_path)
+    except OSError as error:
+      print 'Ourput path {0:s} could not be removed: {1:s}'.format(
+          output_file_path, error)
 
     return collection_paths
 
