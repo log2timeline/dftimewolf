@@ -53,5 +53,6 @@ args = [
     ('--use_tsk', 'Use TSK to fetch artifacts', False),
     ('--approvers', 'Emails for GRR approval request', None),
     ('--sketch_id', 'Sketch to which the timeline should be added', None),
+    ('--incident_id', 'Incident ID (used for Timesketch description)', None),
     ('--grr_server_url', 'GRR endpoint', 'http://localhost:8000')
 ]
