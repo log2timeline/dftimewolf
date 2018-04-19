@@ -29,7 +29,7 @@ class GRRBaseModule(BaseModule):  # pylint: disable=abstract-method
 
   # pylint: disable=arguments-differ
   def setup(self, reason, grr_server_url, grr_auth, approvers=None):
-    """Initializes a GRR hunt results collector.
+    """Initializes a GRR hunt result collector.
 
     Args:
       reason: justification for GRR access.
