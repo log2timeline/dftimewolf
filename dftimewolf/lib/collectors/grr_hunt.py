@@ -113,21 +113,21 @@ class GRRHuntFileCollector(GRRHunt):
   Attributes:
     reason: Justification for GRR access.
     approvers: list of GRR approval recipients.
-    file_list: comma-separated list of file paths.
+    file_path_list: comma-separated list of file paths.
   """
 
   def __init__(self, state):
     super(GRRHuntFileCollector, self).__init__(state)
-    self.file_list = None
+    self.file_path_list = None
 
   # pylint: disable=arguments-differ
   def setup(self,
-            file_list,
+            file_path_list,
             reason, grr_server_url, grr_auth, approvers=None):
     """Initializes a GRR Hunt file collector.
 
     Args:
-      file_list: comma-separated list of file paths.
+      file_path_list: comma-separated list of file paths.
       reason: justification for GRR access.
       grr_server_url: GRR server URL.
       grr_auth: Tuple containing a (username, password) combination.
@@ -136,8 +136,9 @@ class GRRHuntFileCollector(GRRHunt):
     """
     super(GRRHuntFileCollector, self).setup(
         reason, grr_server_url, grr_auth, approvers=approvers)
-    self.file_list = [item.strip() for item in file_list.strip().split(',')]
-    if not file_list:
+    self.file_path_list = [item.strip() for item
+                           in file_path_list.strip().split(',')]
+    if not file_path_list:
       self.state.add_error('Files must be specified for hunts', critical=True)
 
   def process(self):
@@ -149,12 +150,12 @@ class GRRHuntFileCollector(GRRHunt):
     Raises:
       RuntimeError: if no items specified for collection.
     """
-    print 'Hunt to collect {0:d} items'.format(len(self.file_list))
-    print 'Files to be collected: {0:s}'.format(self.file_list)
+    print 'Hunt to collect {0:d} items'.format(len(self.file_path_list))
+    print 'Files to be collected: {0:s}'.format(self.file_path_list)
     hunt_action = flows_pb2.FileFinderAction(
         action_type=flows_pb2.FileFinderAction.DOWNLOAD)
     hunt_args = flows_pb2.FileFinderArgs(
-        paths=self.file_list, action=hunt_action)
+        paths=self.file_path_list, action=hunt_action)
     return self._create_hunt('FileFinder', hunt_args)
 
 
