@@ -14,32 +14,28 @@ contents = {
     'name':
         'grr_huntresults_plaso_timesketch',
     'short_description': _short_description,
-    'collectors': [{
+    'modules': [{
         'name': 'GRRHuntDownloader',
         'args': {
             'hunt_id': '@hunt_id',
             'grr_server_url': '@grr_server_url',
             'grr_auth': ('admin', 'admin'),
-            'verbose': True,
             'reason': '@reason',
+            'approvers': '@approvers',
         },
-    }],
-    'processors': [{
+    }, {
         'name': 'LocalPlasoProcessor',
         'args': {
             'timezone': None,
-            'verbose': True,
         },
-    }],
-    'exporters': [{
+    }, {
         'name': 'TimesketchExporter',
         'args': {
-            'ts_endpoint': '@ts_endpoint',
-            'ts_username': '@ts_username',
-            'ts_password': '@ts_password',
+            'endpoint': '@ts_endpoint',
+            'username': '@ts_username',
+            'password': '@ts_password',
             'incident_id': '@incident_id',
             'sketch_id': '@sketch_id',
-            'verbose': True,
         }
     }],
 }
@@ -49,5 +45,6 @@ args = [
     ('reason', 'Reason for exporting hunt (used for Timesketch description)',
      None),
     ('--sketch_id', 'Sketch to which the timeline should be added', None),
+    ('--approvers', 'Emails for GRR approval request', None),
     ('--grr_server_url', 'GRR endpoint', 'http://localhost:8000')
 ]

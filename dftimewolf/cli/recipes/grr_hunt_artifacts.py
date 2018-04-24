@@ -12,7 +12,7 @@ contents = {
     'name':
         'grr_hunt_artifacts',
     'short_description': _short_description,
-    'collectors': [{
+    'modules': [{
         'name': 'GRRHuntArtifactCollector',
         'args': {
             'artifacts': '@artifacts',
@@ -20,17 +20,15 @@ contents = {
             'grr_server_url': '@grr_server_url',
             'grr_auth': ('admin', 'admin'),
             'use_tsk': "@use_tsk",
-            'approvers': '',
-            'verbose': True,
+            'approvers': '@approvers',
         },
     }],
-    'processors': [],
-    'exporters': [],
 }
 
 args = [
     ('artifacts', 'Comma-separated list of artifacts to hunt for', None),
     ('reason', 'Reason for collection', None),
     ('--use_tsk', 'Use TSK to fetch artifacts', False),
+    ('--approvers', 'Emails for GRR approval request', None),
     ('--grr_server_url', 'GRR endpoint', 'http://localhost:8000')
 ]
