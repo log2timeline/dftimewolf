@@ -3,10 +3,11 @@
 import tempfile
 import time
 
+from dftimewolf.lib.module import BaseModule
+
 from grr_api_client import api as grr_api
 from grr_api_client import errors as grr_errors
 
-from dftimewolf.lib.module import BaseModule
 
 # This class does not implement process() since it is a base class.
 class GRRBaseModule(BaseModule):  # pylint: disable=abstract-method
@@ -45,18 +46,29 @@ class GRRBaseModule(BaseModule):  # pylint: disable=abstract-method
     self.output_path = tempfile.mkdtemp()
     self.reason = reason
 
-  def _check_approval_wrapper(self, grr_object, function):
-    """Wraps a call to GRR functions checking for approval."""
+  def _check_approval_wrapper(self, grr_object, function, *args, **kwargs):
+    """Wraps a call to GRR functions checking for approval.
+
+    Args:
+      grr_object: the GRR object to create the eventual approval on.
+      function: The GRR function requiring approval.
+      *args: Positional arguments that are to be passed to `function`.
+      **kwargs: Keyword arguments that are to be passed to `function`.
+
+    Returns:
+      The return value of the execution of function(*args, **kwargs).
+    """
     approval_sent = False
+    object_id = getattr(grr_object, 'hunt_id') or getattr(grr_object, 'flow_id')
 
     while True:
       try:
-        return function()
+        return function(*args, **kwargs)
       except grr_errors.AccessForbiddenError:
-        print '{0:s}: no valid approval found'.format(grr_object.id)
+        print '{0:s}: no valid approval found'.format(object_id)
         # If approval was already sent, just wait a bit more.
         if approval_sent:
-          print 'Approval not yet granted, waiting {0:s}s'.format(
+          print 'Approval not yet granted, waiting {0:d}s'.format(
               self._CHECK_APPROVAL_INTERVAL_SEC)
           time.sleep(self._CHECK_APPROVAL_INTERVAL_SEC)
           continue
