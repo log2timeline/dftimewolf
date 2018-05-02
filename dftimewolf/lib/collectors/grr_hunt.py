@@ -7,9 +7,9 @@ import os
 import tempfile
 import zipfile
 
-from grr_response_proto import flows_pb2
-
 from dftimewolf.lib.collectors.grr_base import GRRBaseModule
+
+from grr_response_proto import flows_pb2
 
 
 # GRRHunt should be extended by classes that actually implement the process()
@@ -132,7 +132,6 @@ class GRRHuntFileCollector(GRRHunt):
       grr_server_url: GRR server URL.
       grr_auth: Tuple containing a (username, password) combination.
       approvers: comma-separated list of GRR approval recipients.
-      verbose: toggle for verbose output.
     """
     super(GRRHuntFileCollector, self).setup(
         reason, grr_server_url, grr_auth, approvers=approvers)
@@ -213,12 +212,24 @@ class GRRHuntDownloader(GRRHunt):
       print '{0:s} already exists: Skipping'.format(output_file_path)
       return None
 
-    hunt_archive = self._check_approval_wrapper(
-        hunt, hunt.GetFilesArchive)
-    hunt_archive.WriteToFile(output_file_path)
+    self._check_approval_wrapper(
+        hunt, self._get_and_write_archive, hunt, output_file_path)
+
     print 'Wrote results of {0:s} to {1:s}'.format(
         hunt.hunt_id, output_file_path)
     return self._extract_hunt_results(output_file_path)
+
+  def _get_and_write_archive(self, hunt, output_file_path):
+    """Gets and writes a hunt archive.
+
+    Function is necessary for the _check_approval_wrapper to work.
+
+    Args:
+      hunt: The GRR hunt object.
+      output_file_path: The output path where to write the Hunt Archive.
+    """
+    hunt_archive = hunt.GetFilesArchive()
+    hunt_archive.WriteToFile(output_file_path)
 
   def _extract_hunt_results(self, output_file_path):
     """Open a hunt output archive and extract files.
