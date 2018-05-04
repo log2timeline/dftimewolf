@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 from dftimewolf.lib import timesketch_utils
 from dftimewolf.lib.module import BaseModule
 
+
 class TimesketchExporter(BaseModule):
   """Exports a given set of plaso or CSV files to Timesketch.
 
@@ -19,7 +20,7 @@ class TimesketchExporter(BaseModule):
     self.incident_id = None
     self.sketch_id = None
 
-  def setup(self, # pylint: disable=arguments-differ
+  def setup(self,  # pylint: disable=arguments-differ
             endpoint=None,
             username=None,
             password=None,
@@ -64,14 +65,16 @@ class TimesketchExporter(BaseModule):
     """Executes a Timesketch export."""
     # This is not the best way of catching errors, but timesketch_utils will be
     # deprecated soon.
-    # TODO: Consider using the official Timesketch python API.
+    # TODO(tomchop): Consider using the official Timesketch python API.
     if not self.timesketch_api.session:
       message = 'Could not connect to Timesketch server'
       self.state.add_error(message, critical=True)
 
     named_timelines = []
-    for path in self.state.input:
-      named_timelines.append(('untitled timeline for '+path, path))
+    for description, path in self.state.input:
+      if not description:
+        description = 'untitled timeline for '+path
+      named_timelines.append((description, path))
     self.timesketch_api.export_artifacts(named_timelines, self.sketch_id)
     sketch_url = self.timesketch_api.get_sketch_url(self.sketch_id)
     self.state.output = 'Your Timesketch URL is: {0:s}'.format(sketch_url)
