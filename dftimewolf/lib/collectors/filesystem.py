@@ -19,8 +19,8 @@ class FilesystemCollector(BaseModule):
     super(FilesystemCollector, self).__init__(state)
     self._paths = None
 
-  def setup(self, paths=None): # pylint: disable=arguments-differ
-    """Sets up the _paths attribute
+  def setup(self, paths=None):  # pylint: disable=arguments-differ
+    """Sets up the _paths attribute.
 
     Args:
       paths: Comma-separated list of strings representing the paths to collect.
@@ -37,7 +37,7 @@ class FilesystemCollector(BaseModule):
     """Checks whether the paths exists and updates the state accordingly."""
     for path in self._paths:
       if os.path.exists(path):
-        self.state.output.append(path)
+        self.state.output.append((path, path))
       else:
         self.state.add_error(
             'Path {0:s} does not exist'.format(str(path)), critical=False)

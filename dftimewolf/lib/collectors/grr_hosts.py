@@ -303,12 +303,6 @@ class GRRArtifactCollector(GRRFlow):
   def process(self):
     """Collect the artifacts.
 
-    Returns:
-      list of tuples containing:
-          str: human-readable description of the source of the collection. For
-              example, the name of the source host.
-          str: path to the collected data.
-
     Raises:
       RuntimeError: if no artifacts specified nor resolved by platform.
     """
@@ -318,6 +312,9 @@ class GRRArtifactCollector(GRRFlow):
       # Create a list of artifacts to collect.
 
       system_type = client.data.os_info.system
+      fqdn = client.data.os_info.fqdn.lower()
+      client_dir = os.path.join(self.output_path, fqdn)
+      os.makedirs(client_dir)
       print 'System type: {0:s}'.format(system_type)
 
       # If the list is supplied by the user via a flag, honor that.
@@ -346,8 +343,7 @@ class GRRArtifactCollector(GRRFlow):
           apply_parsers=False)
       flow_id = self._launch_flow(client, 'ArtifactCollectorFlow', flow_args)
       self._await_flow(client, flow_id)
-
-    self.state.output = [self.output_path]
+      self.state.output.append((fqdn, client_dir))
 
 
 class GRRFileCollector(GRRFlow):
@@ -448,12 +444,11 @@ class GRRFlowCollector(GRRFlow):
 
     Args:
       host: hostname of machine.
+      flow_id: ID of GRR flow to retrieve.
       reason: justification for GRR access.
       grr_server_url: GRR server URL.
       grr_auth: Tuple containing a (username, password) combination.
-      flow_id: ID of GRR flow to retrieve.
       approvers: list of GRR approval recipients.
-      verbose: toggle for verbose output.
     """
     super(GRRFlowCollector, self).setup(
         reason, grr_server_url, grr_auth, approvers=approvers)
