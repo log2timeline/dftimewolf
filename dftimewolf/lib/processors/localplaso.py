@@ -24,7 +24,7 @@ class LocalPlasoProcessor(BaseModule):
     self._plaso_storage_file_path = None
 
   def setup(self, timezone=None):  # pylint: disable=arguments-differ
-    """Sets up the _timezone attribute
+    """Sets up the _timezone attribute.
 
     Args:
       timezone: Timezone name (optional)
@@ -74,5 +74,5 @@ class LocalPlasoProcessor(BaseModule):
       except OSError as exception:
         self.state.add_error(exception, critical=True)
       # Catch all remaining errors since we want to gracefully report them
-      except Exception as exception:  #pylint: disable=W0703
+      except Exception as exception:  # pylint: disable=W0703
         self.state.add_error(exception, critical=True)
