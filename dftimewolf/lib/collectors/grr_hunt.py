@@ -254,7 +254,7 @@ class GRRHuntDownloader(GRRHunt):
                                             client_id)
             if not os.path.isdir(client_directory):
               os.makedirs(client_directory)
-            collection_paths.append(client_directory)
+            collection_paths.append((client_id, client_directory))
             try:
               archive.extract(f, client_directory)
             except KeyError as exception:

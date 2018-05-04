@@ -39,7 +39,7 @@ class LocalPlasoProcessor(BaseModule):
 
   def process(self):
     """Execute the Plaso process."""
-    for path in self.state.input:
+    for description, path in self.state.input:
       log_file_path = os.path.join(self._output_path, 'plaso.log')
       print 'Log file: {0:s}'.format(log_file_path)
 
@@ -70,7 +70,7 @@ class LocalPlasoProcessor(BaseModule):
           message = ('The log2timeline command {0:s} failed: {1:s}.'
                      ' Check log file for details.').format(full_cmd, error)
           self.state.add_error(message, critical=True)
-        self.state.output = [self._plaso_storage_file_path]
+        self.state.output.append(description, self._plaso_storage_file_path))
       except OSError as exception:
         self.state.add_error(exception, critical=True)
       # Catch all remaining errors since we want to gracefully report them
