@@ -70,7 +70,7 @@ class LocalPlasoProcessor(BaseModule):
           message = ('The log2timeline command {0:s} failed: {1:s}.'
                      ' Check log file for details.').format(full_cmd, error)
           self.state.add_error(message, critical=True)
-        self.state.output.append(description, self._plaso_storage_file_path))
+        self.state.output.append((description, self._plaso_storage_file_path))
       except OSError as exception:
         self.state.add_error(exception, critical=True)
       # Catch all remaining errors since we want to gracefully report them
