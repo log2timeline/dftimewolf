@@ -444,12 +444,11 @@ class GRRFlowCollector(GRRFlow):
 
     Args:
       host: hostname of machine.
+      flow_id: ID of GRR flow to retrieve.
       reason: justification for GRR access.
       grr_server_url: GRR server URL.
       grr_auth: Tuple containing a (username, password) combination.
-      flow_id: ID of GRR flow to retrieve.
       approvers: list of GRR approval recipients.
-      verbose: toggle for verbose output.
     """
     super(GRRFlowCollector, self).setup(
         reason, grr_server_url, grr_auth, approvers=approvers)

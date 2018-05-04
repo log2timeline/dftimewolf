@@ -20,11 +20,11 @@ class LocalFilesystemCopy(BaseModule):
     super(LocalFilesystemCopy, self).__init__(state)
     self._target_directory = None
 
-  def setup(self, target_directory=None): # pylint: disable=arguments-differ
-    """Sets up the _paths attribute
+  def setup(self, target_directory=None):  # pylint: disable=arguments-differ
+    """Sets up the _paths attribute.
 
     Args:
-      paths: Comma-separated list of strings represnting the paths to collect.
+      target_directory: Directory in which collected files will be dumped.
     """
     if not os.path.exists(target_directory):
       try:
