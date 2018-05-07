@@ -64,6 +64,13 @@ if [[ "$*" =~ "include-grr" ]]; then
     sudo dpkg -i installers/*amd64.deb
 fi
 
+if [[ "$*" =~ "include-timesketch" ]]; then
+    # Start the Timesketch server container.
+     git clone https://github.com/google/timesketch.git
+     cd timesketch/docker
+     sudo docker-compose up
+fi
+
 if [[ "$*" =~ "include-plaso" ]]; then
     sudo apt-get -y install plaso-tools
 fi
