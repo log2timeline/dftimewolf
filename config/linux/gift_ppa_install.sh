@@ -59,6 +59,7 @@ if [[ "$*" =~ "include-grr" ]]; then
       -p 0.0.0.0:8000:8000 -p 0.0.0.0:8080:8080 \
       -d grrdocker/grr:latest grr
 
+    /bin/sleep 10
     # Install the client.
     sudo docker cp grr-server:/usr/share/grr-server/executables/installers .
     sudo dpkg -i installers/*amd64.deb
@@ -66,6 +67,7 @@ fi
 
 if [[ "$*" =~ "include-timesketch" ]]; then
     # Start the Timesketch server container.
+     TIMESKETCH_PASSWORD="dftimewolf_test"
      git clone https://github.com/google/timesketch.git
      cd timesketch/docker
      sudo docker-compose up
