@@ -71,7 +71,8 @@ fi
 
 if [[ "$*" =~ "include-timesketch" ]]; then
     # Start the Timesketch server container.
-     TIMESKETCH_PASSWORD="dftimewolf_test"
+     export TIMESKETCH_USERNAME="your_username"
+     export TIMESKETCH_PASSWORD="your_password"
      git clone https://github.com/google/timesketch.git
      cd timesketch/docker
      sudo docker-compose up -d
