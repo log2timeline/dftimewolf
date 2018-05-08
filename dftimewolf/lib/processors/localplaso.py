@@ -11,7 +11,7 @@ from dftimewolf.lib.module import BaseModule
 
 
 class LocalPlasoProcessor(BaseModule):
-  """Processes a list of filepaths with Plaso (log2timeline).
+  """Processes a list of file paths with Plaso (log2timeline).
 
   input: A list of file paths to process.
   output: The path to the resulting Plaso storage file.
