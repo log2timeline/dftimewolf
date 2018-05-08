@@ -4,7 +4,7 @@
 from __future__ import unicode_literals
 
 import argparse
-from unittest import TestCase
+import unittest
 
 from dftimewolf.lib import utils as dftw_utils
 from dftimewolf import config
@@ -16,7 +16,7 @@ parser.add_argument('--spaces_param')
 parser.add_argument('explosion')
 
 
-class DFTimewolfTest(TestCase):
+class DFTimewolfTest(unittest.TestCase):
   """Tests for dftimewolf_recipes functions."""
 
   def setUp(self):
