@@ -58,7 +58,7 @@ if [[ "$*" =~ "include-grr" ]]; then
       -e EXTERNAL_HOSTNAME="localhost" \
       -e ADMIN_PASSWORD="admin" \
       --ulimit nofile=1048576:1048576 \
-      -p 0.0.0.0:8000:8000 -p 0.0.0.0:8080:8080 \
+      -p 127.0.0.1:8000:8000 -p 127.0.0.1:8080:8080 \
       -d grrdocker/grr:v3.2.2.0 grr
 
     # Wait for GRR to initialize.
