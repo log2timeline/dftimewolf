@@ -275,7 +275,7 @@ class GRRHuntDownloader(GRRHunt):
     try:
       os.remove(output_file_path)
     except OSError as error:
-      print 'Ourput path {0:s} could not be removed: {1:s}'.format(
+      print 'Output path {0:s} could not be removed: {1:s}'.format(
           output_file_path, error)
 
     return collection_paths
