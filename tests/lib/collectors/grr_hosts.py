@@ -16,9 +16,8 @@ class GRRArtifactCollectorTest(unittest.TestCase):
   def testInitialization(self):
     """Tests that the collector can be initialized."""
     test_state = state.DFTimewolfState()
-    grr_base_module = grr_hosts.GRRArtifactCollector(test_state)
-    self.assertIsNotNone(grr_base_module)
-
+    grr_artifact_collector = grr_hosts.GRRArtifactCollector(test_state)
+    self.assertIsNotNone(grr_artifact_collector)
 
 class GRRFileCollectorTest(unittest.TestCase):
   """Tests for the GRR file collector."""
@@ -26,8 +25,8 @@ class GRRFileCollectorTest(unittest.TestCase):
   def testInitialization(self):
     """Tests that the collector can be initialized."""
     test_state = state.DFTimewolfState()
-    grr_base_module = grr_hosts.GRRFileCollector(test_state)
-    self.assertIsNotNone(grr_base_module)
+    grr_file_collector = grr_hosts.GRRFileCollector(test_state)
+    self.assertIsNotNone(grr_file_collector)
 
 
 class GRRFlowCollector(unittest.TestCase):
@@ -36,8 +35,8 @@ class GRRFlowCollector(unittest.TestCase):
   def testInitialization(self):
     """Tests that the collector can be initialized."""
     test_state = state.DFTimewolfState()
-    grr_base_module = grr_hosts.GRRFlowCollector(test_state)
-    self.assertIsNotNone(grr_base_module)
+    grr_flow_collector = grr_hosts.GRRFlowCollector(test_state)
+    self.assertIsNotNone(grr_flow_collector)
 
 
 if __name__ == '__main__':

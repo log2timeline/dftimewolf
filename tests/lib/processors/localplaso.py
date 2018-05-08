@@ -11,7 +11,7 @@ from dftimewolf.lib.processors import localplaso
 
 
 class LocalPlasoTest(unittest.TestCase):
-  """Tests for the localplaso processor."""
+  """Tests for the local Plaso processor."""
 
   def testInitialization(self):
     """Tests that the processor can be initialized."""
