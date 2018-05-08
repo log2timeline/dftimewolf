@@ -44,8 +44,10 @@ class DFTimewolfTest(unittest.TestCase):
     parser.set_defaults(**config.Config.get_extra())
     args = parser.parse_args([
         'value_for_param_one',
-        '--optional_param', '3',
-        '--spaces_param', 'S P A C E',
+        '--optional_param',
+        '3',
+        '--spaces_param',
+        'S P A C E',
         'BOOM',
     ])
 
@@ -68,8 +70,10 @@ class DFTimewolfTest(unittest.TestCase):
     parser.set_defaults(**config.Config.get_extra())
     args = parser.parse_args([
         'value_for_param_one',
-        '--optional_param', '3',
-        '--spaces_param', 'So unique!',
+        '--optional_param',
+        '3',
+        '--spaces_param',
+        'So unique!',
         'BOOM',
     ])
 

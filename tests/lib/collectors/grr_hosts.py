@@ -19,6 +19,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     grr_artifact_collector = grr_hosts.GRRArtifactCollector(test_state)
     self.assertIsNotNone(grr_artifact_collector)
 
+
 class GRRFileCollectorTest(unittest.TestCase):
   """Tests for the GRR file collector."""
 
