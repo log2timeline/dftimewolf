@@ -37,7 +37,6 @@ if [[ "$*" =~ "include-test" ]]; then
 fi
 
 if [[ "$*" =~ "include-docker" ]]; then
-    # Install docker
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
     sudo add-apt-repository \
        "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
@@ -57,9 +56,11 @@ if [[ "$*" =~ "include-grr" ]]; then
       -e ADMIN_PASSWORD="demo" \
       --ulimit nofile=1048576:1048576 \
       -p 0.0.0.0:8000:8000 -p 0.0.0.0:8080:8080 \
-      -d grrdocker/grr:latest grr
+      -d grrdocker/grr:v3.2.2.0 grr
 
-    /bin/sleep 10
+    # Wait for GRR to initialize.
+    /bin/sleep 120
+
     # Install the client.
     sudo docker cp grr-server:/usr/share/grr-server/executables/installers .
     sudo dpkg -i installers/*amd64.deb
