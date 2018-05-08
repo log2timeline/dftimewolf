@@ -74,7 +74,9 @@ if [[ "$*" =~ "include-timesketch" ]]; then
      TIMESKETCH_PASSWORD="dftimewolf_test"
      git clone https://github.com/google/timesketch.git
      cd timesketch/docker
-     sudo docker-compose up
+     sudo docker-compose up -d
+     # Wait for Timesketch to initialize
+     /bin/sleep 300
 fi
 
 if [[ "$*" =~ "include-plaso" ]]; then
