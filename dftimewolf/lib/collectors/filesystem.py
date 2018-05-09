@@ -28,7 +28,8 @@ class FilesystemCollector(BaseModule):
     if not paths:
       self.state.add_error(
           'No `paths` argument provided in recipe, bailing', critical=True)
-    self._paths = [path.strip() for path in paths.strip().split(',')]
+    else:
+      self._paths = [path.strip() for path in paths.strip().split(',')]
 
   def cleanup(self):
     pass
