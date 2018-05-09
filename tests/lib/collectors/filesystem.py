@@ -4,8 +4,9 @@
 
 from __future__ import unicode_literals
 
-import mock
 import unittest
+
+import mock
 
 from dftimewolf.lib import state
 from dftimewolf.lib.collectors import filesystem
@@ -22,6 +23,7 @@ class LocalFileSystemTest(unittest.TestCase):
 
   @mock.patch('dftimewolf.lib.collectors.filesystem.os.path')
   def testOutput(self, mock_path):
+    """Tests that the module ouput is consistent with the input."""
     test_state = state.DFTimewolfState()
     filesystem_collector = filesystem.FilesystemCollector(test_state)
     fake_paths = '/fake/path/1,/fake/path/2'
@@ -36,6 +38,7 @@ class LocalFileSystemTest(unittest.TestCase):
 
   @mock.patch('dftimewolf.lib.state.DFTimewolfState.add_error')
   def testSetup(self, mock_add_error):
+    """Tests that no input will generate an error."""
     test_state = state.DFTimewolfState()
     filesystem_collector = filesystem.FilesystemCollector(test_state)
 
