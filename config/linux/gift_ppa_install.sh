@@ -77,7 +77,7 @@ if [[ "$*" =~ "include-timesketch" ]]; then
      cd timesketch
      git checkout compose
      cd docker
-     sudo docker-compose up -d
+     sudo -E docker-compose up -d
      # Wait for Timesketch to initialize
      /bin/sleep 300
 fi
