@@ -4,7 +4,7 @@
 from __future__ import unicode_literals
 
 import argparse
-from unittest import TestCase
+import unittest
 
 from dftimewolf.lib import utils as dftw_utils
 from dftimewolf import config
@@ -16,7 +16,7 @@ parser.add_argument('--spaces_param')
 parser.add_argument('explosion')
 
 
-class DFTimewolfTest(TestCase):
+class DFTimewolfTest(unittest.TestCase):
   """Tests for dftimewolf_recipes functions."""
 
   def setUp(self):
@@ -44,8 +44,10 @@ class DFTimewolfTest(TestCase):
     parser.set_defaults(**config.Config.get_extra())
     args = parser.parse_args([
         'value_for_param_one',
-        '--optional_param', '3',
-        '--spaces_param', 'S P A C E',
+        '--optional_param',
+        '3',
+        '--spaces_param',
+        'S P A C E',
         'BOOM',
     ])
 
@@ -68,8 +70,10 @@ class DFTimewolfTest(TestCase):
     parser.set_defaults(**config.Config.get_extra())
     args = parser.parse_args([
         'value_for_param_one',
-        '--optional_param', '3',
-        '--spaces_param', 'So unique!',
+        '--optional_param',
+        '3',
+        '--spaces_param',
+        'So unique!',
         'BOOM',
     ])
 

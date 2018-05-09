@@ -21,7 +21,7 @@ class BaseModule(threading.Thread):
     Args:
       state: a DFTimewolfState object.
       critical: Whether the module is critical or not. If True and the module
-          encounteurs an error, then the whole recipe will fail.
+          encounters an error, then the whole recipe will fail.
     """
     super(BaseModule, self).__init__()
     self.critical = critical

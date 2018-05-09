@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Definition of modules for collecting data from GRR hosts."""
 
 from __future__ import unicode_literals
