@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Analyze local filepaths with plaso and send results to Timesketch.
+"""Analyze local file paths with plaso and send results to Timesketch.
 
 - Collectors collect from a path in the FS
 - Processes them with a local install of plaso
