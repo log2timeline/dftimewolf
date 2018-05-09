@@ -7,3 +7,6 @@ install:
 
 script:
   python run_tests.py
+
+after_success:
+- codecov
