@@ -16,15 +16,15 @@ class TimesketchApiClient(object):
     session (requests.Session): HTTP session for calls to Timesketch
   """
 
-  def __init__(self, host, username, password):
+  def __init__(self, host_url, username, password):
     """Initialize the Timesketch API client object.
 
     Args:
-      host (str): Hostname and port of Timesketch instance
+      host_url (str): URL of Timesketch instance
       username (str): Timesketch username
       password (str): Timesketch password
     """
-    self.host_url = host
+    self.host_url = host_url
     self.api_base_url = '{0:s}/api/v1'.format(self.host_url)
     self.username = username
     self.session = self._create_session(username, password)
@@ -129,7 +129,6 @@ class TimesketchApiClient(object):
 
     Returns:
       dict: Dictionary of sketch information
-
 
     Raises:
       ValueError: Sketch is inaccessible

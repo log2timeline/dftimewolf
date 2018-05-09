@@ -39,7 +39,8 @@ class DFTimewolfState(object):
     """Sets the current_module for the state.
 
     Args:
-      module: The dfTimewolfModule to define as current module."""
+      module: The dfTimewolfModule to define as current module.
+    """
     self.current_module = module
 
   def cleanup(self):
