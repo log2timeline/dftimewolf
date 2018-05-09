@@ -46,7 +46,7 @@ class LocalFileSystemTest(unittest.TestCase):
     mock_add_error.assert_called_with(
         'No `paths` argument provided in recipe, bailing', critical=True)
     self.assertIsNot(filesystem_collector.state.errors, [])
-    self.assertIsNone(filesystem_collector._paths)
+    self.assertIsNone(filesystem_collector._paths)  # pylint: disable=protected-access
 
 if __name__ == '__main__':
   unittest.main()
