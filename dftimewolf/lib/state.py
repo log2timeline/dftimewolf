@@ -30,6 +30,7 @@ class DFTimewolfState(object):
     """Adds an error to the state.
 
     Args:
+      error: The text that will be added to the error list.
       critical: If set to True and the error is checked with check_errors, will
           dfTimewolf will abort.
     """
@@ -39,7 +40,8 @@ class DFTimewolfState(object):
     """Sets the current_module for the state.
 
     Args:
-      module: The dfTimewolfModule to define as current module."""
+      module: The dfTimewolfModule to define as current module.
+    """
     self.current_module = module
 
   def cleanup(self):
