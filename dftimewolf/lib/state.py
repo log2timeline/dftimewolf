@@ -30,6 +30,7 @@ class DFTimewolfState(object):
     """Adds an error to the state.
 
     Args:
+      error: The text that will be added to the error list.
       critical: If set to True and the error is checked with check_errors, will
           dfTimewolf will abort.
     """
