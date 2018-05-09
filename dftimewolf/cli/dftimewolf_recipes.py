@@ -116,7 +116,7 @@ def main():
     state.check_errors()
     state.cleanup()
 
-  print 'Recipe executed succesfully.'
+  print 'Recipe executed successfully.'
   if state.input:
     print 'The last executed module generated unprocessed input; here it is:'
     print state.input
