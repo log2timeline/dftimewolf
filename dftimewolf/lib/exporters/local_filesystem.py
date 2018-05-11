@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 
 import os
 import shutil
+import tempfile
 
 from dftimewolf.lib.module import BaseModule
 
@@ -21,12 +22,14 @@ class LocalFilesystemCopy(BaseModule):
     self._target_directory = None
 
   def setup(self, target_directory=None):  # pylint: disable=arguments-differ
-    """Sets up the _paths attribute.
+    """Sets up the _target_directory attribute.
 
     Args:
       target_directory: Directory in which collected files will be dumped.
     """
-    if not os.path.exists(target_directory):
+    if not target_directory:
+      self._target_directory = tempfile.mkdtemp()
+    elif not os.path.exists(target_directory):
       try:
         os.makedirs(target_directory)
       except OSError as exception:
