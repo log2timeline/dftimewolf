@@ -23,8 +23,8 @@ class LocalFileSystemTest(unittest.TestCase):
     """Tests that the module output is consistent with its input."""
     test_state = state.DFTimewolfState()
     test_state.input = [
-      ('First test path', '/fake/test/path1'),
-      ('Second test path', '/fake/test/path2')
+        ('First test path', '/fake/test/path1'),
+        ('Second test path', '/fake/test/path2')
     ]
     local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
     local_filesystem_copy.setup()
