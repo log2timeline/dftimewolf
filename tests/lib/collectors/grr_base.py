@@ -32,8 +32,6 @@ class MockGRRObject(object):
 class GRRBaseModuleTest(unittest.TestCase):
   """Tests for the GRR base collector."""
 
-
-
   def testInitialization(self):
     """Tests that the collector can be initialized."""
     test_state = state.DFTimewolfState()
@@ -114,13 +112,6 @@ class GRRBaseModuleTest(unittest.TestCase):
     # Correct error message is generated
     self.assertIn('no approvers specified', test_state.errors[0][0])
     self.assertTrue(test_state.errors[0][1])  # critical=True
-
-
-
-
-
-
-
 
 if __name__ == '__main__':
   unittest.main()
