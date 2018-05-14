@@ -86,7 +86,38 @@ class GRRBaseModuleTest(unittest.TestCase):
     mock_grr_object.CreateApproval.assert_called_with(
         reason='random reason', notified_users=['approver1@google.com', 'approver2@google.com'])
 
- # test noapprovers returns none on check approval wrapper
+  def testNoApproversErrorsOut(self):
+    """Tests that an error is generated if no approvers are specified.
+
+    This should only error on unauthorized objects, which is how our mock
+    behaves.
+    """
+    test_state = state.DFTimewolfState()
+    grr_base_module = grr_base.GRRBaseModule(test_state)
+    grr_base_module.setup('random', 'http://fake/url', ('admin', 'admin'), '')
+    # pylint: disable=protected-access
+    grr_base_module._CHECK_APPROVAL_INTERVAL_SEC = 0
+    mock_grr_object = MockGRRObject()
+    mock_forbidden_function = mock.Mock(
+        wraps=mock_grr_object.forbidden_function)
+    result = grr_base_module._check_approval_wrapper(
+        mock_grr_object,
+        mock_forbidden_function,
+        'random1',
+        'random2',
+        random3=4,
+        random4=4)
+    self.assertIsNone(result)
+    # Only one error message is generateds
+    self.assertEqual(len(test_state.errors), 1)
+    # Correct error message is generated
+    self.assertIn('no approvers specified', test_state.errors[0][0])
+    self.assertTrue(test_state.errors[0][1])  # critical=True
+
+
+
+
+
 
 
 
