@@ -9,10 +9,10 @@ import re
 import time
 import zipfile
 
-from dftimewolf.lib.collectors.grr_base import GRRBaseModule
-
 from grr_api_client import errors as grr_errors
 from grr_response_proto import flows_pb2
+
+from dftimewolf.lib.collectors.grr_base import GRRBaseModule
 
 
 # GRRFlow should be extended by classes that actually implement the process()
@@ -43,9 +43,6 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     Raises:
       RuntimeError: if no client ID found for hostname.
     """
-    if self._CLIENT_ID_REGEX.match(hostname):
-      return hostname
-
     # Search for the hostname in GRR
     print 'Searching for client: {0:s}'.format(hostname)
     search_result = self.grr_api.SearchClients(hostname)

@@ -7,11 +7,11 @@ from __future__ import unicode_literals
 import unittest
 import mock
 
-from dftimewolf.lib import state
-from dftimewolf.lib.collectors import grr_hosts
 from grr_response_proto import flows_pb2
 
-from tests.lib.collectors.test_data import grr_clients
+from dftimewolf.lib import state
+from dftimewolf.lib.collectors import grr_hosts
+from tests.lib.collectors.test_data import mock_grr_hosts
 
 
 class GRRFlowTests(unittest.TestCase):
@@ -26,7 +26,7 @@ class GRRFlowTests(unittest.TestCase):
   @mock.patch('grr_api_client.api.GrrApi.SearchClients')
   def testGetClientByHostname(self, mock_SearchClients):
     """Tests that GetClientByHostname fetches the most recent GRR client."""
-    mock_SearchClients.return_value = grr_clients.MOCK_CLIENT_LIST
+    mock_SearchClients.return_value = mock_grr_hosts.MOCK_CLIENT_LIST
     test_state = state.DFTimewolfState()
     base_grr_flow_collector = grr_hosts.GRRFlow(test_state)
     base_grr_flow_collector.setup('random reason',
@@ -37,12 +37,12 @@ class GRRFlowTests(unittest.TestCase):
     client = base_grr_flow_collector._get_client_by_hostname('tomchop')
     mock_SearchClients.assert_called_with('tomchop')
     self.assertEqual(
-        client.data.client_id, grr_clients.MOCK_CLIENT_RECENT.data.client_id)
+        client.data.client_id, mock_grr_hosts.MOCK_CLIENT_RECENT.data.client_id)
 
   @mock.patch('grr_api_client.client.ClientBase.CreateFlow')
   def testLaunchFlow(self, mock_CreateFlow):
     """Tests that CreateFlow is correctly called."""
-    mock_CreateFlow.return_value = grr_clients.MOCK_FLOW
+    mock_CreateFlow.return_value = mock_grr_hosts.MOCK_FLOW
     test_state = state.DFTimewolfState()
     base_grr_flow_collector = grr_hosts.GRRFlow(test_state)
     base_grr_flow_collector.setup('random reason',
@@ -50,14 +50,15 @@ class GRRFlowTests(unittest.TestCase):
                                   ('admin', 'admin'),
                                   'approver1@google.com,approver2@google.com')
     # pylint: disable=protected-access
-    base_grr_flow_collector._launch_flow(
-        grr_clients.MOCK_CLIENT, "FlowName", "FlowArgs")
+    flow_id = base_grr_flow_collector._launch_flow(
+        mock_grr_hosts.MOCK_CLIENT, "FlowName", "FlowArgs")
+    self.assertEqual(flow_id, 'F:12345')
     mock_CreateFlow.assert_called_once_with(name="FlowName", args="FlowArgs")
 
   @mock.patch('grr_api_client.client.ClientBase.CreateFlow')
   def testLaunchFlowKeepalive(self, mock_CreateFlow):
     """Tests that keepalive flows are correctly created."""
-    mock_CreateFlow.return_value = grr_clients.MOCK_FLOW
+    mock_CreateFlow.return_value = mock_grr_hosts.MOCK_FLOW
     test_state = state.DFTimewolfState()
     base_grr_flow_collector = grr_hosts.GRRFlow(test_state)
     base_grr_flow_collector.setup('random reason',
@@ -66,8 +67,9 @@ class GRRFlowTests(unittest.TestCase):
                                   'approver1@google.com,approver2@google.com')
     base_grr_flow_collector.keepalive = True
     # pylint: disable=protected-access
-    base_grr_flow_collector._launch_flow(
-        grr_clients.MOCK_CLIENT, "FlowName", "FlowArgs")
+    flow_id = base_grr_flow_collector._launch_flow(
+        mock_grr_hosts.MOCK_CLIENT, "FlowName", "FlowArgs")
+    self.assertEqual(flow_id, 'F:12345')
     self.assertEqual(mock_CreateFlow.call_count, 2)
     self.assertEqual(
         mock_CreateFlow.call_args,
