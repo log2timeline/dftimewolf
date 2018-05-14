@@ -20,6 +20,7 @@ class MockGRRObject(object):
   CreateApproval = mock.MagicMock()
 
   hunt_id = "123"
+  client_id = "321"
   # pylint: disable=unused-argument
   def forbidden_function(self, random1, random2, random3=None, random4=None):
     """Will raise a grr_errors.AccessForbiddenError three times, and return."""

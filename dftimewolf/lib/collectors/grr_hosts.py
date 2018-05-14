@@ -27,6 +27,10 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
 
   _CLIENT_ID_REGEX = re.compile(r'^c\.[0-9a-f]{16}$', re.IGNORECASE)
 
+  def __init__(self, state):
+    super(GRRFlow, self).__init__(state)
+    self.keepalive = False
+
   def _get_client_by_hostname(self, hostname):
     """Search GRR by hostname and get the latest active client.
 
