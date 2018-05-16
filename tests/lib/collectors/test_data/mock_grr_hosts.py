@@ -1,3 +1,5 @@
+"""Mocks objects and protos for the GRR Host module tests."""
+
 from google.protobuf import text_format
 
 from grr_response_proto.api import client_pb2
@@ -53,4 +55,5 @@ MOCK_CLIENT_LIST = [
     MOCK_CLIENT_RECENT
 ]
 
-MOCK_FLOW = flow.Flow(data=flow_pb2.ApiFlow(urn="C.0000000000000001", flow_id="F:12345"), context=True)
+flow_pb = flow_pb2.ApiFlow(urn="C.0000000000000001", flow_id="F:12345")
+MOCK_FLOW = flow.Flow(data=flow_pb, context=True)

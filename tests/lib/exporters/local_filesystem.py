@@ -11,8 +11,8 @@ from dftimewolf.lib import state
 from dftimewolf.lib.exporters import local_filesystem
 
 FAKE_PATHS = {
-    '/tmp/evidence_directory': ['file1', 'file2'],
-    '/tmp/evidence_file': None
+    '/fake/evidence_directory': ['file1', 'file2'],
+    '/fake/evidence_file': None
 }
 
 def fake_isdir(string):
@@ -47,28 +47,28 @@ class LocalFileSystemTest(unittest.TestCase):
     """Tests that the module processes input correctly."""
     test_state = state.DFTimewolfState()
     test_state.input = [
-        ('description', '/tmp/evidence_directory'),
-        ('description2', '/tmp/evidence_file'),
+        ('description', '/fake/evidence_directory'),
+        ('description2', '/fake/evidence_file'),
     ]
-    mock_mkdtemp.return_value = '/tmp/random'
+    mock_mkdtemp.return_value = '/fake/random'
     local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
     local_filesystem_copy.setup()
     local_filesystem_copy.process()
     mock_copytree.assert_has_calls([
-        mock.call('/tmp/evidence_directory/file1', '/tmp/random/file1'),
-        mock.call('/tmp/evidence_directory/file2', '/tmp/random/file2'),
+        mock.call('/fake/evidence_directory/file1', '/fake/random/file1'),
+        mock.call('/fake/evidence_directory/file2', '/fake/random/file2'),
     ])
-    mock_copy2.assert_called_with('/tmp/evidence_file', '/tmp/random')
+    mock_copy2.assert_called_with('/fake/evidence_file', '/fake/random')
 
   @mock.patch('tempfile.mkdtemp')
   def testSetup(self, mock_mkdtemp):
     """Tests that the specified directory is used if created."""
-    mock_mkdtemp.return_value = '/tmp/random'
+    mock_mkdtemp.return_value = '/fake/random'
     test_state = state.DFTimewolfState()
     local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
     local_filesystem_copy.setup()
     # pylint: disable=protected-access
-    self.assertEquals(local_filesystem_copy._target_directory, '/tmp/random')
+    self.assertEquals(local_filesystem_copy._target_directory, '/fake/random')
 
   @mock.patch('os.makedirs')
   def testSetupError(self, mock_makedirs):

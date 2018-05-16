@@ -44,7 +44,7 @@ class GRRBaseModuleTest(unittest.TestCase):
     """Tests that setup works"""
     test_state = state.DFTimewolfState()
     grr_base_module = grr_base.GRRBaseModule(test_state)
-    mock_mkdtemp.return_value = '/tmp/fake'
+    mock_mkdtemp.return_value = '/fake'
     grr_base_module.setup('random reason',
                           'http://fake/endpoint',
                           ('admin', 'admin'),
@@ -53,7 +53,7 @@ class GRRBaseModuleTest(unittest.TestCase):
         api_endpoint='http://fake/endpoint', auth=('admin', 'admin'))
     self.assertEqual(grr_base_module.approvers,
                      ['approver1@google.com', 'approver2@google.com'])
-    self.assertEqual(grr_base_module.output_path, '/tmp/fake')
+    self.assertEqual(grr_base_module.output_path, '/fake')
 
   def testApprovalWrapper(self):
     """Tests that the approval wrapper works correctly."""
@@ -83,7 +83,8 @@ class GRRBaseModuleTest(unittest.TestCase):
     # Our forbidden function should be called 4 times, the last one succeeeding.
     self.assertEqual(mock_forbidden_function.call_count, 4)
     mock_grr_object.CreateApproval.assert_called_with(
-        reason='random reason', notified_users=['approver1@google.com', 'approver2@google.com'])
+        reason='random reason',
+        notified_users=['approver1@google.com', 'approver2@google.com'])
 
   def testNoApproversErrorsOut(self):
     """Tests that an error is generated if no approvers are specified.
