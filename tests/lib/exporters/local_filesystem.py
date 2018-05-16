@@ -47,8 +47,8 @@ class LocalFileSystemTest(unittest.TestCase):
     """Tests that the module processes input correctly."""
     test_state = state.DFTimewolfState()
     test_state.input = [
-        '/tmp/evidence_directory',
-        '/tmp/evidence_file'
+        ('description', '/tmp/evidence_directory'),
+        ('description2', '/tmp/evidence_file'),
     ]
     mock_mkdtemp.return_value = '/tmp/random'
     local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
