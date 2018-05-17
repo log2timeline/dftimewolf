@@ -138,12 +138,14 @@ setup(
     zip_safe=False,
     install_requires=[
         'pytz',
-        'bs4',
+        'beautifulsoup4',
         'requests',
+        'grr_api_client',
     ],
     test_suite='nose.collector',
     test_require=[
-        'bs4',
-        'nose'
+        'beautifulsoup4',
+        'nose',
+        'mock'
     ]
 )
