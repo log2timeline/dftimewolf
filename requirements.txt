@@ -1,4 +1,4 @@
-codecov
+coverage
 pip >= 7.0.0
 beautifulsoup4
 certifi >= 2016.9.26
