@@ -1,0 +1,18 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[dev-packages]
+pylint = "*"
+mock = "*"
+coverage = "*"
+
+[packages]
+requests = "*"
+"beautifulsoup4" = "*"
+grr-api-client = "*"
+pytz = "*"
+
+[requires]
+python_version = "2.7"

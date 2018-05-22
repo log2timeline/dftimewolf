@@ -15,6 +15,23 @@ data on to one another. How modules are orchestrated is defined in predefined
 --- | --- | --
 [![Build Status](https://travis-ci.org/log2timeline/dftimewolf.svg?branch=master)](https://travis-ci.org/log2timeline/dftimewolf) | [![codecov](https://codecov.io/gh/log2timeline/dftimewolf/branch/master/graph/badge.svg)](https://codecov.io/gh/log2timeline/dftimewolf) | [![CodeFactor](https://www.codefactor.io/repository/github/log2timeline/dftimewolf/badge)](https://www.codefactor.io/repository/github/log2timeline/dftimewolf)
 
+### Installation
+
+Ideally you'll want to install dftimewolf in its own virtual environment. We
+leverage `pipenv` for that.
+
+```
+$ pip install pipenv
+$ git clone https://github.com/log2timeline/dftimewolf.git && cd dftimewolf
+$ pipenv install -e .
+```
+
+Then use `pipenv shell` to activate your freshly created virtual environment.
+You can then invoke the `dftimewolf` command from any directory.
+
+You can still use `python setup.py` or `pip install -e .` if you'd rather
+install dftimewolf this way.
+
 ### Quick how-to
 
 dfTimewolf is typically run by specifying a recipe name and any argument the
