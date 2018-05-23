@@ -28,6 +28,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
   _CLIENT_ID_REGEX = re.compile(r'^c\.[0-9a-f]{16}$', re.IGNORECASE)
 
   def __init__(self, state):
+    """Sets the keepalive attribute to False for GRRFlow objects."""
     super(GRRFlow, self).__init__(state)
     self.keepalive = False
 
