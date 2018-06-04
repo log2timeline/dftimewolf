@@ -38,14 +38,12 @@ class LocalFileSystemTest(unittest.TestCase):
 
   @mock.patch('dftimewolf.lib.state.DFTimewolfState.add_error')
   def testSetup(self, mock_add_error):
-    """Tests that no input will generate an error."""
+    """Tests that no paths specified in setup will generate an error."""
     test_state = state.DFTimewolfState()
     filesystem_collector = filesystem.FilesystemCollector(test_state)
-
     filesystem_collector.setup(paths=None)
     mock_add_error.assert_called_with(
         'No `paths` argument provided in recipe, bailing', critical=True)
-    self.assertIsNot(filesystem_collector.state.errors, [])
     self.assertIsNone(filesystem_collector._paths)  # pylint: disable=protected-access
 
 if __name__ == '__main__':

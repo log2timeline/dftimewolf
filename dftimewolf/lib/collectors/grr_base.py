@@ -3,11 +3,10 @@
 import tempfile
 import time
 
-from dftimewolf.lib.module import BaseModule
-
 from grr_api_client import api as grr_api
 from grr_api_client import errors as grr_errors
 
+from dftimewolf.lib.module import BaseModule
 
 # This class does not implement process() since it is a base class.
 class GRRBaseModule(BaseModule):  # pylint: disable=abstract-method
