@@ -244,17 +244,19 @@ class GRRHuntDownloader(GRRHunt):
     """
     # Extract items from archive by host for processing
     collection_paths = []
+    clients = set()
     try:
       with zipfile.ZipFile(output_file_path) as archive:
         items = archive.infolist()
         for f in items:
           client_id = f.filename.split('/')[1]
           if client_id.startswith('C.'):
-            client_directory = os.path.join(self.output_path,
-                                            client_id)
+            client_directory = os.path.join(self.output_path, client_id)
             if not os.path.isdir(client_directory):
               os.makedirs(client_directory)
-            collection_paths.append((client_id, client_directory))
+            if client_id not in clients:
+              collection_paths.append((client_id, client_directory))
+              clients.add(client_id)
             try:
               archive.extract(f, client_directory)
             except KeyError as exception:

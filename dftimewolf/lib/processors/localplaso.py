@@ -21,7 +21,6 @@ class LocalPlasoProcessor(BaseModule):
     super(LocalPlasoProcessor, self).__init__(state)
     self._timezone = None
     self._output_path = None
-    self._plaso_storage_file_path = None
 
   def setup(self, timezone=None):  # pylint: disable=arguments-differ
     """Sets up the _timezone attribute.
@@ -31,8 +30,6 @@ class LocalPlasoProcessor(BaseModule):
     """
     self._timezone = timezone
     self._output_path = tempfile.mkdtemp()
-    self._plaso_storage_file_path = os.path.join(
-        self._output_path, '{0:s}.plaso'.format(uuid.uuid4().hex))
 
   def cleanup(self):
     pass
@@ -55,7 +52,10 @@ class LocalPlasoProcessor(BaseModule):
       cmd.extend(['--logfile', log_file_path])
 
       # And now, the crux of the command.
-      cmd.extend([self._plaso_storage_file_path, path])
+      # Generate a new storage file for each plaso run
+      plaso_storage_file_path = os.path.join(
+          self._output_path, '{0:s}.plaso'.format(uuid.uuid4().hex))
+      cmd.extend([plaso_storage_file_path, path])
 
       # Run the l2t command
       full_cmd = ' '.join(cmd)
@@ -70,7 +70,7 @@ class LocalPlasoProcessor(BaseModule):
           message = ('The log2timeline command {0:s} failed: {1:s}.'
                      ' Check log file for details.').format(full_cmd, error)
           self.state.add_error(message, critical=True)
-        self.state.output.append((description, self._plaso_storage_file_path))
+        self.state.output.append((description, plaso_storage_file_path))
       except OSError as exception:
         self.state.add_error(exception, critical=True)
       # Catch all remaining errors since we want to gracefully report them
