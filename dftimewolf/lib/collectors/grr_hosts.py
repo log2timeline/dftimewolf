@@ -316,8 +316,9 @@ class GRRArtifactCollector(GRRFlow):
 
       system_type = client.data.os_info.system
       fqdn = client.data.os_info.fqdn.lower()
-      client_dir = os.path.join(self.output_path, fqdn)
-      os.makedirs(client_dir)
+      client_dir = os.path.join(self.output_path)
+      if not os.path.isdir(client_dir):
+        os.makedirs(client_dir)
       print 'System type: {0:s}'.format(system_type)
 
       # If the list is supplied by the user via a flag, honor that.
