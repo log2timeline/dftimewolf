@@ -4,11 +4,10 @@ from __future__ import unicode_literals
 
 import os
 import tempfile
-import uuid
 
 from dftimewolf.lib.module import BaseModule
 
-from turbinia import client
+from turbinia import client as turbinia_client
 from turbinia import config
 from turbinia import evidence
 from turbinia.pubsub import TurbiniaRequest
@@ -23,7 +22,6 @@ class TurbiniaProcessor(BaseModule):
     disk_name: Name of the disk to process
     project: The project containing the disk to process
     zone: The zone containing the disk to process
-    _gcs_client: The GCS client object
     _output_path: The path to output files
   """
 
@@ -38,9 +36,8 @@ class TurbiniaProcessor(BaseModule):
     self.project = None
     self.zone = None
     self._output_path = None
-    self._gcs_client = None
 
-  def setup(self, disk_name, project, zone):
+  def setup(self, disk_name, project, zone): # pylint: disable=arguments-differ
     """Sets up the object attributes.
 
     Args:
@@ -75,7 +72,7 @@ class TurbiniaProcessor(BaseModule):
       region = config.TURBINIA_REGION
       instance = config.PUBSUB_TOPIC
       project = config.PROJECT
-      client = TurbiniaClient()
+      client = turbinia_client.TurbiniaClient()
 
       self.console_out.VerboseOut(
           'Creating Turbinia request {0:s} with Evidence {1:s}'.format(
@@ -85,13 +82,13 @@ class TurbiniaProcessor(BaseModule):
                                   'complete'.format(request.request_id))
       client.wait_for_request(
           instance=instance, project=project, region=region,
-          request_id=request.request_id, poll_interval=args.poll_interval)
+          request_id=request.request_id)
       task_data = client.get_task_data(
           instance=instance, project=project, region=region,
           request_id=request.request_id)
       print client.format_task_status(
           instance=instance, project=project, region=region,
-          request_id=request.request_id, all_fields=args.all_fields)
+          request_id=request.request_id, all_fields=True)
     except TurbiniaException as e:
       self.state.add_error(e, critical=True)
 
@@ -99,8 +96,8 @@ class TurbiniaProcessor(BaseModule):
     # This finds all .plaso files in the Turbinia output, and determines if they
     # are local or remote (it's possible this will be running against a local
     # instance of Turbinia).
-    local_paths = None
-    gs_paths = None
+    local_paths = []
+    gs_paths = []
     for task in task_data:
       for path in task.get('saved_paths', []):
         if path.startswith('/') and path.endswith('.plaso'):
@@ -113,6 +110,7 @@ class TurbiniaProcessor(BaseModule):
           "No .plaso files found in Turbinia output.", critical=True)
 
     # Any local .plaso files that exist we can add immediately to the output
+    # pylint: disable=expression-not-assigned
     [self.state.output.append(p) for p in local_paths if os.path.exists(p)]
 
     # For files remote in GCS we copy each plaso file back from GCS and then add

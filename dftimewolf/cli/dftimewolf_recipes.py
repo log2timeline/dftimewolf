@@ -17,6 +17,7 @@ from dftimewolf.cli.recipes import grr_hunt_artifacts
 from dftimewolf.cli.recipes import grr_hunt_file
 from dftimewolf.cli.recipes import grr_huntresults_plaso_timesketch
 from dftimewolf.cli.recipes import timesketch_upload
+from dftimewolf.cli.recipes import turbinia_gcp_disk
 
 from dftimewolf.lib import utils
 
