@@ -127,5 +127,5 @@ class TurbiniaProcessor(BaseModule):
       if local_path:
         self.state.output.append(local_path)
 
-    if len(self.state.output) == 0:
+    if not self.state.output:
       self.state.add_error("No .plaso files could be found.", critical=True)
