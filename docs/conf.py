@@ -1,3 +1,4 @@
+# pylint: disable=missing-docstring
 # -*- coding: utf-8 -*-
 #
 # Configuration file for the Sphinx documentation builder.
@@ -16,6 +17,11 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
+import re
+
+from recommonmark.parser import CommonMarkParser
+from recommonmark.transform import AutoStructify
+from docutils import nodes, transforms
 
 # -- Project information -----------------------------------------------------
 project = u'dfTimewolf'
@@ -43,7 +49,6 @@ extensions = [
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
-from recommonmark.parser import CommonMarkParser
 
 source_parsers = {
     '.md': CommonMarkParser,
@@ -101,7 +106,13 @@ html_static_path = ['_static']
 # 'searchbox.html']``.
 #
 html_sidebars = {
-    '**': ['sidebar.html', 'localtoc.html', 'relations.html', 'sourcelink.html', 'searchbox.html']
+    '**': [
+        'sidebar.html',
+        'localtoc.html',
+        'relations.html',
+        'sourcelink.html',
+        'searchbox.html'
+    ]
 }
 
 html_logo = "_static/logo.png"
@@ -165,16 +176,17 @@ texinfo_documents = [
 
 # Configure sphinx to convert markdown links (recommonmark is broken at the
 # moment).
-from docutils import nodes, transforms
-import re
 
-anchor_regex = re.compile(r'(?P<uri>[a-zA-Z0-9-./]+?).md#(?P<anchor>[a-zA-Z0-9-]+)')
+anchor_regex = re.compile(
+    r'(?P<uri>[a-zA-Z0-9-./]+?).md#(?P<anchor>[a-zA-Z0-9-]+)')
 
 class ProcessLink(transforms.Transform):
+  """Transform definition to parse .md references to internal pages."""
 
   default_priority = 1000
 
   def find_replace(self, node):
+    """Parses URIs containing .md and replaces them with their HTML page."""
     if isinstance(node, nodes.reference) and "refuri" in node:
       r = node["refuri"]
       if r.endswith(".md"):
@@ -183,7 +195,8 @@ class ProcessLink(transforms.Transform):
       else:
         match = anchor_regex.match(r)
         if match:
-          node["refuri"] = '{0:s}.html#{1:s}'.format(match.group('uri'), match.group('anchor'))
+          node["refuri"] = '{0:s}.html#{1:s}'.format(
+              match.group('uri'), match.group('anchor'))
     return node
 
   def traverse(self, node):
@@ -196,13 +209,15 @@ class ProcessLink(transforms.Transform):
     for c in node.children:
       self.traverse(c)
 
+  # pylint: disable=arguments-differ,attribute-defined-outside-init
+  # this was taken from GRR's config file for documentation
   def apply(self):
     self.current_level = 0
     self.traverse(self.document)
 
-from recommonmark.transform import AutoStructify
 
 def setup(app):
+  """Add custom parsers to Sphinx generation."""
   app.add_config_value('recommonmark_config', {
       'enable_auto_doc_ref': False,
       }, True)

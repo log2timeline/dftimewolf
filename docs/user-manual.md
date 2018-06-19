@@ -3,11 +3,11 @@
 dfTimewolf ships with *recipes*, which are essentially instructions on how to
 launch and chain modules.
 
-[Listing all recipes](user-manual.md#listing-all-recipes)
-[Get detailed help for a specific recipe](user-manual.md#get-detailed-help-for-a-specific-recipe)
-[Running a recipe](user-manual.md#running-a-recipe)
-[~/.dftimewolfrc](user-manual.md#dftimewolfrc)
+```eval_rst
+.. toctree::
 
+    user-manual
+```
 ## Listing all recipes
 
 Since you won't know all the recipe names off the top of your head, start with:
