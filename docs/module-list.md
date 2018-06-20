@@ -11,8 +11,7 @@ the processors.
 ### GRR hunts
 
 Launch or fetch results from fleet-wide GRR hunts.
-  * `GRRHuntArtifactCollector` - Launches a fleet-wide GRR
-  `ArtifactCollectorFlow`
+  * `GRRHuntArtifactCollector` - Launches a fleet-wide GRR `ArtifactCollectorFlow`
   * `GRRHuntFileCollector` - Launches a fleet-wide GRR `FileFinder`
   * `GRRHuntDownloader` - Downloads results from a GRR hunt.
 
