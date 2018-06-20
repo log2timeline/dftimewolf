@@ -73,7 +73,7 @@ if [[ "$*" =~ "include-timesketch" ]]; then
     # Start the Timesketch server container.
      export TIMESKETCH_USER="your_username"
      export TIMESKETCH_PASSWORD="your_password"
-     git clone https://github.com/Onager/timesketch.git
+     git clone https://github.com/google/timesketch.git
      cd timesketch
      git checkout compose
      cd docker
