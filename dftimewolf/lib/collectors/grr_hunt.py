@@ -7,9 +7,9 @@ import os
 import tempfile
 import zipfile
 
-from dftimewolf.lib.collectors.grr_base import GRRBaseModule
-
 from grr_response_proto import flows_pb2
+
+from dftimewolf.lib.collectors.grr_base import GRRBaseModule
 
 
 # GRRHunt should be extended by classes that actually implement the process()
@@ -151,6 +151,8 @@ class GRRHuntFileCollector(GRRHunt):
     """
     print 'Hunt to collect {0:d} items'.format(len(self.file_path_list))
     print 'Files to be collected: {0:s}'.format(self.file_path_list)
+    # Pylint doesn't recognize the generated proto field.
+    # pylint: disable=no-member
     hunt_action = flows_pb2.FileFinderAction(
         action_type=flows_pb2.FileFinderAction.DOWNLOAD)
     hunt_args = flows_pb2.FileFinderArgs(
