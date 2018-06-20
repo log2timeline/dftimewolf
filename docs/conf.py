@@ -187,15 +187,15 @@ class ProcessLink(transforms.Transform):
 
   def find_replace(self, node):
     """Parses URIs containing .md and replaces them with their HTML page."""
-    if isinstance(node, nodes.reference) and "refuri" in node:
-      r = node["refuri"]
-      if r.endswith(".md"):
-        r = r[:-3] + ".html"
-        node["refuri"] = r
+    if isinstance(node, nodes.reference) and 'refuri' in node:
+      r = node['refuri']
+      if r.endswith('.md'):
+        r = r[:-3] + '.html'
+        node['refuri'] = r
       else:
         match = anchor_regex.match(r)
         if match:
-          node["refuri"] = '{0:s}.html#{1:s}'.format(
+          node['refuri'] = '{0:s}.html#{1:s}'.format(
               match.group('uri'), match.group('anchor'))
     return node
 

@@ -7,10 +7,10 @@ and Exporters (called Modules).
 
 Use this recipe to collect a predefined set of artifacts from a specific list of
 hosts. If you want to collect the `BrowserHistory` and `LinuxLogFiles` from
-`tomchop.greendale.edu` and `admin.greendale.edu`, use this
+`tomchop.greendale.xyz` and `admin.greendale.xyz`, use this
 command:
 
-    $ dftimewolf grr_artifact_hosts tomchop.greendale.edu,admin.greendale.edu --artifact_list=BrowserHistory,LinuxLogFiles
+    $ dftimewolf grr_artifact_hosts tomchop.greendale.xyz,admin.greendale.xyz --artifact_list=BrowserHistory,LinuxLogFiles
 
 If `artifact_list` is not provided, the list defaults to:
 
@@ -52,10 +52,10 @@ If `artifact_list` is not provided, the list defaults to:
 Use this recipe to download the results of a given GRR flow.
 
 If because of `test_reason` you want to fetch flow `F:920AFD8` from
-`tomchop.greendale.edu` and dump results into `/tmp/tomflow/`,
+`tomchop.greendale.xyz` and dump results into `/tmp/tomflow/`,
 use the following command:
 
-    $ dftimewolf grr_flow_download tomchop.greendale.edu F:920AFD8 test_reason /tmp/tomflow
+    $ dftimewolf grr_flow_download tomchop.greendale.xyz F:920AFD8 test_reason /tmp/tomflow
 
 ## grr_hunt_artifacts
 

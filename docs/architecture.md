@@ -27,7 +27,7 @@ sequentially with no big delay, like checking for permissions on a cloud
 project, creating an analysis VM, verifying that a file exists, etc.
 
 `process` is where all the magic happens - here is where you'll want to
-paralellize things as much as possible (copying a disk, running plaso, etc.).
+parallelize things as much as possible (copying a disk, running plaso, etc.).
 You'll be adding information to the state (e.g. processed plaso files) in the
 module's output as you go. You can access a previous module's output (i.e. your
 input) using `self.state.input` and manipulate the current module's output using
@@ -66,7 +66,7 @@ The State object is an instance of the [DFTimewolfState
 class](https://github.com/log2timeline/dftimewolf/blob/master/dftimewolf/lib/state.py).
 It has a couple of useful methods:
 
-*   `add_error`: Used by moduels to indicate that an error occurred during
+*   `add_error`: Used by modules to indicate that an error occurred during
     execution (e.g. missing file, unauthorized access).
 *   `check_errors`: Display any errors that have been added. If any critical
     errors were added, dftimewolf will stop the execution of the recipe and

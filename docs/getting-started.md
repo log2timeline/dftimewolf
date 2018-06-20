@@ -26,13 +26,13 @@ install dftimewolf this way.
 
 ## Quick how-to
 
-dfTimewolf is typically run by specifying a recipe name and any argument the
+dfTimewolf is typically run by specifying a recipe name and any arguments the
 recipe defines. For example:
 
 ```
 $ dftimewolf local_plaso /tmp/path1,/tmp/path2 --incident_id 12345
 ```
-This will launch the local_plaso against `path1` and `path2` in `/tmp`. In this
+This will launch the local_plaso recipe against `path1` and `path2` in `/tmp`. In this
 recipe `--incident_id` is used by Timesketch as a sketch description.
 
 Details on a recipe can be obtained using the standard python help flags:

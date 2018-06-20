@@ -17,5 +17,5 @@ data on to one another. How modules are orchestrated is defined in predefined
 
 ### Getting started
 
-[Documentation](dftimewolf.readthedocs.cio) is hosted on Read the Docs:
-[dftimewolf.readthedocs.io](dftimewolf.readthedocs.io).
+[Documentation](https://dftimewolf.readthedocs.io) is hosted on Read the Docs:
+[dftimewolf.readthedocs.io](https://dftimewolf.readthedocs.io).

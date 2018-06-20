@@ -89,16 +89,16 @@ example:
 
 Given the help output above, you can then use the recipe like this:
 
-    $ dftimewolf grr_artifact_hosts tomchop.greendale.edu collection_reason
+    $ dftimewolf grr_artifact_hosts tomchop.greendale.xyz collection_reason
 
 If you only want to collect browser activity:
 
-    $ dftimewolf grr_artifact_hosts tomchop.greendale.edu collection_reason --artifact_list=BrowserHistory
+    $ dftimewolf grr_artifact_hosts tomchop.greendale.xyz collection_reason --artifact_list=BrowserHistory
 
 In the same way, if you want to specify one (or more) approver(s):
 
-    $ dftimewolf grr_artifact_hosts tomchop.greendale.edu collection_reason --artifact_list=BrowserHistory --approvers=admin
-    $ dftimewolf grr_artifact_hosts tomchop.greendale.edu collection_reason --artifact_list=BrowserHistory --approvers=admin,tomchop
+    $ dftimewolf grr_artifact_hosts tomchop.greendale.xyz collection_reason --artifact_list=BrowserHistory --approvers=admin
+    $ dftimewolf grr_artifact_hosts tomchop.greendale.xyz collection_reason --artifact_list=BrowserHistory --approvers=admin,tomchop
 
 ### ~/.dftimewolfrc
 
@@ -109,8 +109,8 @@ of GRR approvers), you can use a `.dftimewolfrc` file. Just create a
 
     $ cat ~/.dftimewolfrc
     {
-      "approvers": "approver@greendale.edu",
-      "timesketch_endpoint": "http://timesketch.greendale.edu/"
+      "approvers": "approver@greendale.xyz",
+      "timesketch_endpoint": "http://timesketch.greendale.xyz/"
     }
 
 This will set your `timesketch_endpoint` and `approvers` parameters for all
