@@ -3,6 +3,8 @@
 
 [MASTER]
 
+extension-pkg-whitelist=grr_response_proto,grr_api_client
+
 # Specify a configuration file.
 #rcfile=
 
@@ -119,7 +121,7 @@ ignore-mixin-members=yes
 
 # List of classes names for which member attributes should not be checked
 # (useful for classes with attributes dynamically set).
-ignored-classes=SQLObject,twisted.internet.reactor,hashlib,google.appengine.api.memcache
+ignored-classes=SQLObject,twisted.internet.reactor,hashlib,google.appengine.api.memcache,grr_response_proto.flows_pb2.FlowContext,grr_response_proto.flows_pb2.FileFinderAction
 
 # List of members which are set dynamically and missed by pylint inference
 # system, and so shouldn't trigger E0201 when accessed. Python regular
