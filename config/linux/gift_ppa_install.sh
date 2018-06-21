@@ -75,7 +75,6 @@ if [[ "$*" =~ "include-timesketch" ]]; then
      export TIMESKETCH_PASSWORD="your_password"
      git clone https://github.com/google/timesketch.git
      cd timesketch
-     git checkout compose
      cd docker
      sudo -E docker-compose up -d
      # Wait for Timesketch to initialize
