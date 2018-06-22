@@ -172,7 +172,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
       print('{0:s}: Downloaded: {1:s}'.format(flow_id, collected_file_path))
 
   def print_status(self, flow):
-    """print(status of flow.
+    """Print status of flow.
 
     Args:
       flow: GRR flow to check the status for.

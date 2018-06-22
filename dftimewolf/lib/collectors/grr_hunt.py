@@ -43,7 +43,7 @@ class GRRHunt(GRRBaseModule):  # pylint: disable=abstract-method
     return hunt
 
   def print_status(self):
-    """print(status of hunt."""
+    """Print status of hunt."""
     status = self.grr_api.Hunt(self.hunt_id).Get().data
     print('Status of hunt {0:s}'.format(self.hunt_id))
     print('Total clients: {0:d}'.format(status.all_clients_count))
