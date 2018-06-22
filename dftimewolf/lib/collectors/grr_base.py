@@ -1,5 +1,8 @@
 """Base GRR module class. GRR modules should extend it."""
 
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import tempfile
 import time
 
@@ -64,11 +67,11 @@ class GRRBaseModule(BaseModule):  # pylint: disable=abstract-method
       try:
         return grr_function(*args, **kwargs)
       except grr_errors.AccessForbiddenError:
-        print '{0:s}: no valid approval found'.format(object_id)
+        print('{0:s}: no valid approval found'.format(object_id))
         # If approval was already sent, just wait a bit more.
         if approval_sent:
-          print 'Approval not yet granted, waiting {0:d}s'.format(
-              self._CHECK_APPROVAL_INTERVAL_SEC)
+          print('Approval not yet granted, waiting {0:d}s'.format(
+              self._CHECK_APPROVAL_INTERVAL_SEC))
           time.sleep(self._CHECK_APPROVAL_INTERVAL_SEC)
           continue
 
@@ -83,8 +86,8 @@ class GRRBaseModule(BaseModule):  # pylint: disable=abstract-method
         grr_object.CreateApproval(
             reason=self.reason, notified_users=self.approvers)
         approval_sent = True
-        print '{0:s}: approval request sent to: {1:s} (reason: {2:s})'.format(
-            grr_object, self.approvers, self.reason)
+        print('{0:s}: approval request sent to: {1:s} (reason: {2:s})'.format(
+            grr_object, self.approvers, self.reason))
 
   def cleanup(self):
     pass

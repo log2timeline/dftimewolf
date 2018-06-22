@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Processes artifacts using a local plaso process."""
+from __future__ import print_function
 from __future__ import unicode_literals
 
 import os
@@ -38,7 +39,7 @@ class LocalPlasoProcessor(BaseModule):
     """Execute the Plaso process."""
     for description, path in self.state.input:
       log_file_path = os.path.join(self._output_path, 'plaso.log')
-      print 'Log file: {0:s}'.format(log_file_path)
+      print('Log file: {0:s}'.format(log_file_path))
 
       # Build the plaso command line.
       cmd = ['log2timeline.py']
@@ -59,7 +60,7 @@ class LocalPlasoProcessor(BaseModule):
 
       # Run the l2t command
       full_cmd = ' '.join(cmd)
-      print 'Running external command: "{0:s}"'.format(full_cmd)
+      print('Running external command: "{0:s}"'.format(full_cmd))
       try:
         l2t_proc = subprocess.Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -74,5 +75,5 @@ class LocalPlasoProcessor(BaseModule):
       except OSError as exception:
         self.state.add_error(exception, critical=True)
       # Catch all remaining errors since we want to gracefully report them
-      except Exception as exception:  # pylint: disable=W0703
+      except Exception as exception:  # pylint: disable=broad-except
         self.state.add_error(exception, critical=True)
