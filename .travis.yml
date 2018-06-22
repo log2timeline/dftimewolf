@@ -1,13 +1,45 @@
 language: python
-python:
-  - "2.7"
-
+virtualenv:
+  system_site_packages: true
+matrix:
+  include:
+  - env: TARGET="pylint"
+    os: linux
+    dist: trusty
+    sudo: required
+    group: edge
+    python: 2.7
+  - env: TARGET="linux-python27"
+    os: linux
+    dist: trusty
+    sudo: required
+    group: edge
+    python: 2.7
+  - env: TARGET="linux-python34"
+    os: linux
+    dist: trusty
+    sudo: required
+    group: edge
+    python: 3.4
+ - env: [TARGET="linux-python27-tox", TOXENV="py27"]
+    os: linux
+    dist: trusty
+    sudo: required
+    group: edge
+    python: 2.7
+  - env: [TARGET="linux-python34-tox", TOXENV="py34"]
+    os: linux
+    dist: trusty
+    sudo: required
+    group: edge
+    python: 3.4
+  allow_failures:
+  - env: TARGET="linux-python34"
+  - env: [TARGET="linux-python34-tox", TOXENV="py34"]
 install:
   - pip install pipenv
   - pipenv install --dev
-
 script:
-  python run_tests.py
-
+- ./config/travis/run_with_timeout.sh 30 ./config/travis/runtests.sh
 after_success:
-- codecov
+- if test ${TARGET} = "linux-python27"; then curl -o codecov.sh -s https://codecov.io/bash && /bin/bash ./codecov.sh; fi

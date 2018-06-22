@@ -7,9 +7,9 @@ import os
 import tempfile
 import zipfile
 
-from dftimewolf.lib.collectors.grr_base import GRRBaseModule
-
 from grr_response_proto import flows_pb2
+
+from dftimewolf.lib.collectors.grr_base import GRRBaseModule
 
 
 # GRRHunt should be extended by classes that actually implement the process()
