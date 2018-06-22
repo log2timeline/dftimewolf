@@ -151,8 +151,6 @@ class GRRHuntFileCollector(GRRHunt):
     """
     print 'Hunt to collect {0:d} items'.format(len(self.file_path_list))
     print 'Files to be collected: {0:s}'.format(self.file_path_list)
-    # Pylint doesn't recognize the generated proto field.
-    # pylint: disable=no-member
     hunt_action = flows_pb2.FileFinderAction(
         action_type=flows_pb2.FileFinderAction.DOWNLOAD)
     hunt_args = flows_pb2.FileFinderArgs(
