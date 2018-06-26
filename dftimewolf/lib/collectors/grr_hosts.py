@@ -53,7 +53,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
       self.state.add_error('Could not search for host {0:s}: {1:s}'.format(
           hostname, err
       ), critical=True)
-      return
+      return None
 
     result = []
     for client in search_result:
