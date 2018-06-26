@@ -47,12 +47,12 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     # Search for the hostname in GRR
     print 'Searching for client: {0:s}'.format(hostname)
     try:
-        search_result = self.grr_api.SearchClients(hostname)
+      search_result = self.grr_api.SearchClients(hostname)
     except grr_errors.UnknownError as err:
-        self.state.add_error('Could not search for host {0:s}: {1:s}'.format(
-            hostname, err
-        ), critical=True)
-        return
+      self.state.add_error('Could not search for host {0:s}: {1:s}'.format(
+          hostname, err
+      ), critical=True)
+      return
 
     result = []
     for client in search_result:
@@ -124,7 +124,8 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
       string containing ID of launched flow
     """
     # Start the flow and get the flow ID
-    flow = self._check_approval_wrapper(client, client.CreateFlow, name=name, args=args)
+    flow = self._check_approval_wrapper(
+        client, client.CreateFlow, name=name, args=args)
     flow_id = flow.flow_id
     print '{0:s}: Scheduled'.format(flow_id)
 
