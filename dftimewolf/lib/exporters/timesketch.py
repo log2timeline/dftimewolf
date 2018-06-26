@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Export processing results to Timesketch."""
 
+from __future__ import print_function
 from __future__ import unicode_literals
 
 from dftimewolf.lib import timesketch_utils
@@ -56,7 +57,7 @@ class TimesketchExporter(BaseModule):
 
       self.sketch_id = self.timesketch_api.create_sketch(
           sketch_name, sketch_description)
-      print 'Sketch {0:d} created'.format(self.sketch_id)
+      print('Sketch {0:d} created'.format(self.sketch_id))
 
   def cleanup(self):
     pass

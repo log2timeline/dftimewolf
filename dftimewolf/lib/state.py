@@ -4,6 +4,9 @@ Use it to track errors, abort on global failures, cleanup after modules, etc.
 """
 # TODO(tomchop): Make sure docstrings here follow the same type hinting as the
 # rest of the codebase
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import sys
 
 class DFTimewolfState(object):
@@ -68,9 +71,9 @@ class DFTimewolfState(object):
     """
     errors = self.global_errors if is_global else self.errors
     if errors:
-      print 'dfTimewolf encountered one or more errors:'
+      print('dfTimewolf encountered one or more errors:')
       for error, critical in errors:
-        print '{0:s}  {1:s}'.format('CRITICAL: ' if critical else '', error)
+        print('{0:s}  {1:s}'.format('CRITICAL: ' if critical else '', error))
         if critical:
-          print 'Critical error found. Aborting.'
+          print('Critical error found. Aborting.')
           sys.exit(-1)
