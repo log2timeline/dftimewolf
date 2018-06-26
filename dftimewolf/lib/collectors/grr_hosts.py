@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Definition of modules for collecting data from GRR hosts."""
 
+from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
@@ -74,11 +75,11 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
         datetime.datetime.utcnow() - last_seen_datetime).total_seconds()
     last_seen_minutes = int(round(last_seen_seconds)) / 60
 
-    print '{0:s}: Found active client'.format(client.client_id)
-    print 'Found active client: {0:s}'.format(client.client_id)
-    print 'Client last seen: {0:s} ({1:d} minutes ago)'.format(
+    print('{0:s}: Found active client'.format(client.client_id))
+    print('Found active client: {0:s}'.format(client.client_id))
+    print('Client last seen: {0:s} ({1:d} minutes ago)'.format(
         last_seen_datetime.strftime('%Y-%m-%dT%H:%M:%S+0000'),
-        last_seen_minutes)
+        last_seen_minutes))
 
     return client
 
@@ -107,9 +108,9 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
       GRR API Client object
     """
     client = self.grr_api.Client(client_id)
-    print 'Checking for client approval'
+    print('Checking for client approval')
     self._check_approval_wrapper(client, client.ListFlows)
-    print '{0:s}: Client approval is valid'.format(client_id)
+    print('{0:s}: Client approval is valid'.format(client_id))
     return client.Get()
 
   def _launch_flow(self, client, name, args):
@@ -126,12 +127,12 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     # Start the flow and get the flow ID
     flow = self._check_approval_wrapper(client, client.CreateFlow, name=name, args=args)
     flow_id = flow.flow_id
-    print '{0:s}: Scheduled'.format(flow_id)
+    print('{0:s}: Scheduled'.format(flow_id))
 
     if self.keepalive:
       keepalive_flow = client.CreateFlow(
           name='KeepAlive', args=flows_pb2.KeepAliveArgs())
-      print 'KeepAlive Flow:{0:s} scheduled'.format(keepalive_flow.flow_id)
+      print('KeepAlive Flow:{0:s} scheduled'.format(keepalive_flow.flow_id))
 
     return flow_id
 
@@ -146,7 +147,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
       RuntimeError: if flow error encountered.
     """
     # Wait for the flow to finish
-    print '{0:s}: Waiting to finish'.format(flow_id)
+    print('{0:s}: Waiting to finish'.format(flow_id))
     while True:
       try:
         status = client.Flow(flow_id).Get().data
@@ -165,16 +166,16 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
                 flow_id, status.context.backtrace))
 
       if status.state == flows_pb2.FlowContext.TERMINATED:
-        print '{0:s}: Complete'.format(flow_id)
+        print('{0:s}: Complete'.format(flow_id))
         break
       time.sleep(self._CHECK_FLOW_INTERVAL_SEC)
 
     # Download the files collected by the flow
-    print '{0:s}: Downloading artifacts'.format(flow_id)
+    print('{0:s}: Downloading artifacts'.format(flow_id))
     collected_file_path = self._download_files(client, flow_id)
 
     if collected_file_path:
-      print '{0:s}: Downloaded: {1:s}'.format(flow_id, collected_file_path)
+      print('{0:s}: Downloaded: {1:s}'.format(flow_id, collected_file_path))
 
   def print_status(self, flow):
     """Print status of flow.
@@ -199,7 +200,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
         flows_pb2.FlowContext.RUNNING: 'Running...'
     }
     msg = code_to_msg[status.state]
-    print 'Status of flow {0:s}: {1:s}\n'.format(flow.flow_id, msg)
+    print('Status of flow {0:s}: {1:s}\n'.format(flow.flow_id, msg))
 
   def _download_files(self, client, flow_id):
     """Download files from the specified flow.
@@ -218,7 +219,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
         self.output_path, '.'.join((flow_id, 'zip')))
 
     if os.path.exists(output_file_path):
-      print '{0:s} already exists: Skipping'.format(output_file_path)
+      print('{0:s} already exists: Skipping'.format(output_file_path))
       return None
 
     flow = client.Flow(flow_id)
@@ -325,21 +326,21 @@ class GRRArtifactCollector(GRRFlow):
       client_dir = os.path.join(self.output_path)
       if not os.path.isdir(client_dir):
         os.makedirs(client_dir)
-      print 'System type: {0:s}'.format(system_type)
+      print('System type: {0:s}'.format(system_type))
 
       # If the list is supplied by the user via a flag, honor that.
       artifact_list = []
       if self.artifacts:
-        print 'Artifacts to be collected: {0:s}'.format(self.artifacts)
+        print('Artifacts to be collected: {0:s}'.format(self.artifacts))
         artifact_list = self.artifacts
       else:
         default_artifacts = self.artifact_registry.get(system_type, None)
-        print 'Collecting default artifacts for {0:s}: {1:s}'.format(
-            system_type, default_artifacts)
+        print('Collecting default artifacts for {0:s}: {1:s}'.format(
+            system_type, default_artifacts))
         artifact_list.extend(default_artifacts)
 
       if self.extra_artifacts:
-        print 'Throwing in an extra {0:s}'.format(self.extra_artifacts)
+        print('Throwing in an extra {0:s}'.format(self.extra_artifacts))
         artifact_list.extend(self.extra_artifacts)
         artifact_list = list(set(artifact_list))
 
@@ -415,7 +416,7 @@ class GRRFileCollector(GRRFlow):
       file_list = self.files
       if not file_list:
         raise RuntimeError('File paths must be specified for FileFinder')
-      print 'Filefinder to collect {0:d} items'.format(len(file_list))
+      print('Filefinder to collect {0:d} items'.format(len(file_list)))
 
       flow_action = flows_pb2.FileFinderAction(
           action_type=flows_pb2.FileFinderAction.DOWNLOAD)
