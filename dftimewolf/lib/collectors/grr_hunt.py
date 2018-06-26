@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Definition of modules for collecting data from GRR Hunts."""
 
+from __future__ import print_function
 from __future__ import unicode_literals
 
 import os
@@ -37,17 +38,17 @@ class GRRHunt(GRRBaseModule):  # pylint: disable=abstract-method
     runner_args.description = self.reason
     hunt = self.grr_api.CreateHunt(
         flow_name=name, flow_args=args, hunt_runner_args=runner_args)
-    print '{0:s}: Hunt created'.format(hunt.hunt_id)
+    print('{0:s}: Hunt created'.format(hunt.hunt_id))
     self._check_approval_wrapper(hunt, hunt.Start)
     return hunt
 
   def print_status(self):
     """Print status of hunt."""
     status = self.grr_api.Hunt(self.hunt_id).Get().data
-    print 'Status of hunt {0:s}'.format(self.hunt_id)
-    print 'Total clients: {0:d}'.format(status.all_clients_count)
-    print 'Completed clients: {0:d}'.format(status.completed_clients_count)
-    print 'Outstanding clients: {0:d}'.format(status.remaining_clients_count)
+    print('Status of hunt {0:s}'.format(self.hunt_id))
+    print('Total clients: {0:d}'.format(status.all_clients_count))
+    print('Completed clients: {0:d}'.format(status.completed_clients_count))
+    print('Outstanding clients: {0:d}'.format(status.remaining_clients_count))
 
 
 class GRRHuntArtifactCollector(GRRHunt):
@@ -98,7 +99,7 @@ class GRRHuntArtifactCollector(GRRHunt):
       RuntimeError: if no items specified for collection.
     """
 
-    print 'Artifacts to be collected: {0:s}'.format(self.artifacts)
+    print('Artifacts to be collected: {0:s}'.format(self.artifacts))
     hunt_args = flows_pb2.ArtifactCollectorFlowArgs(
         artifact_list=self.artifacts,
         use_tsk=self.use_tsk,
@@ -149,8 +150,8 @@ class GRRHuntFileCollector(GRRHunt):
     Raises:
       RuntimeError: if no items specified for collection.
     """
-    print 'Hunt to collect {0:d} items'.format(len(self.file_path_list))
-    print 'Files to be collected: {0:s}'.format(self.file_path_list)
+    print('Hunt to collect {0:d} items'.format(len(self.file_path_list)))
+    print('Files to be collected: {0:s}'.format(self.file_path_list))
     hunt_action = flows_pb2.FileFinderAction(
         action_type=flows_pb2.FileFinderAction.DOWNLOAD)
     hunt_args = flows_pb2.FileFinderArgs(
@@ -209,14 +210,14 @@ class GRRHuntDownloader(GRRHunt):
         self.output_path, '.'.join((self.hunt_id, 'zip')))
 
     if os.path.exists(output_file_path):
-      print '{0:s} already exists: Skipping'.format(output_file_path)
+      print('{0:s} already exists: Skipping'.format(output_file_path))
       return None
 
     self._check_approval_wrapper(
         hunt, self._get_and_write_archive, hunt, output_file_path)
 
-    print 'Wrote results of {0:s} to {1:s}'.format(
-        hunt.hunt_id, output_file_path)
+    print('Wrote results of {0:s} to {1:s}'.format(
+        hunt.hunt_id, output_file_path))
     return self._extract_hunt_results(output_file_path)
 
   def _get_and_write_archive(self, hunt, output_file_path):
@@ -260,7 +261,7 @@ class GRRHuntDownloader(GRRHunt):
             try:
               archive.extract(f, client_directory)
             except KeyError as exception:
-              print 'Extraction error: {0:s}'.format(exception)
+              print('Extraction error: {0:s}'.format(exception))
               return []
 
     except OSError as error:
@@ -277,8 +278,8 @@ class GRRHuntDownloader(GRRHunt):
     try:
       os.remove(output_file_path)
     except OSError as error:
-      print 'Output path {0:s} could not be removed: {1:s}'.format(
-          output_file_path, error)
+      print('Output path {0:s} could not be removed: {1:s}'.format(
+          output_file_path, error))
 
     return collection_paths
 

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Collect artifacts from the local filesystem."""
 
+from __future__ import print_function
 from __future__ import unicode_literals
 
 import os
@@ -44,7 +45,7 @@ class LocalFilesystemCopy(BaseModule):
     """Checks whether the paths exists and updates the state accordingly."""
     for _, path in self.state.input:
       self._copy_file_or_directory(path, self._target_directory)
-      print '{0:s} -> {1:s}'.format(path, self._target_directory)
+      print('{0:s} -> {1:s}'.format(path, self._target_directory))
 
   def _copy_file_or_directory(self, source, destination_directory):
     """Recursively copies files from source to destination_directory.

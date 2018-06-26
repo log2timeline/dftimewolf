@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """dftimewolf main entrypoint."""
 
+from __future__ import print_function
 from __future__ import unicode_literals
 
 import argparse
@@ -106,7 +107,7 @@ def main():
 
     # Create the module object and start processing
     module_name = module_description['name']
-    print 'Running module {0:s}'.format(module_name)
+    print('Running module {0:s}'.format(module_name))
     module = config.Config.get_module(module_name)(state)
     module.setup(**new_args)
     state.check_errors()
@@ -116,10 +117,10 @@ def main():
     state.check_errors()
     state.cleanup()
 
-  print 'Recipe executed successfully.'
+  print('Recipe executed successfully.')
   if state.input:
-    print 'The last executed module generated unprocessed input; here it is:'
-    print state.input
+    print('The last executed module generated unprocessed input; here it is:')
+    print(state.input)
 
 
 if __name__ == '__main__':
