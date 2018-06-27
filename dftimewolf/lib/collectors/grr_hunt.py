@@ -170,6 +170,7 @@ class GRRHuntDownloader(GRRHunt):
   def __init__(self, state):
     super(GRRHuntDownloader, self).__init__(state)
     self.hunt_id = None
+    self.output_path = None
 
   # pylint: disable=arguments-differ
   def setup(self,
