@@ -49,9 +49,9 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     print 'Searching for client: {0:s}'.format(hostname)
     try:
       search_result = self.grr_api.SearchClients(hostname)
-    except grr_errors.UnknownError as err:
+    except grr_errors.UnknownError as exception:
       self.state.add_error('Could not search for host {0:s}: {1:s}'.format(
-          hostname, err
+          hostname, exception
       ), critical=True)
       return None
 

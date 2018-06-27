@@ -75,8 +75,8 @@ class Config(object):
     """
     try:
       cls._extra_config.update(json.loads(data))
-    except ValueError as e:
-      sys.stderr.write('Could convert to JSON. {0:s}'.format(e))
+    except ValueError as exception:
+      sys.stderr.write('Could convert to JSON. {0:s}'.format(exception))
       exit(-1)
 
   @classmethod

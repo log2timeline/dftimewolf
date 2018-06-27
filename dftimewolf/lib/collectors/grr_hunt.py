@@ -264,22 +264,22 @@ class GRRHuntDownloader(GRRHunt):
               print('Extraction error: {0:s}'.format(exception))
               return []
 
-    except OSError as error:
+    except OSError as exception:
       msg = 'Error manipulating file {0:s}: {1:s}'.format(
-          output_file_path, error)
+          output_file_path, exception)
       self.state.add_error(msg, critical=True)
       return []
-    except zipfile.BadZipfile as error:
+    except zipfile.BadZipfile as exception:
       msg = 'Bad zipfile {0:s}: {1:s}'.format(
-          output_file_path, error)
+          output_file_path, exception)
       self.state.add_error(msg, critical=True)
       return []
 
     try:
       os.remove(output_file_path)
-    except OSError as error:
+    except OSError as exception:
       print('Output path {0:s} could not be removed: {1:s}'.format(
-          output_file_path, error))
+          output_file_path, exception))
 
     return collection_paths
 
