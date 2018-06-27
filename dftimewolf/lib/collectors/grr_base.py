@@ -61,18 +61,12 @@ class GRRBaseModule(BaseModule):  # pylint: disable=abstract-method
       The return value of the execution of grr_function(*args, **kwargs).
     """
     approval_sent = False
-    object_id = getattr(grr_object, 'hunt_id', None)
-    if not object_id:
-      object_id = getattr(grr_object, 'flow_id', None)
-    if not object_id:
-      object_id = getattr(grr_object, 'client_id', None)
 
     while True:
       try:
         return grr_function(*args, **kwargs)
       except grr_errors.AccessForbiddenError as exception:
-        print('{0:s}: no valid approval found: {1:s}'.format(
-            object_id, exception))
+        print('No valid approval found: {1:s}'.format(exception)
         # If approval was already sent, just wait a bit more.
         if approval_sent:
           print('Approval not yet granted, waiting {0:d}s'.format(
