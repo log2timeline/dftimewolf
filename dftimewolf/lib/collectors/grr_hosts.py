@@ -46,7 +46,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
       RuntimeError: if no client ID found for hostname.
     """
     # Search for the hostname in GRR
-    print 'Searching for client: {0:s}'.format(hostname)
+    print('Searching for client: {0:s}'.format(hostname))
     try:
       search_result = self.grr_api.SearchClients(hostname)
     except grr_errors.UnknownError as exception:
