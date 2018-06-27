@@ -118,9 +118,6 @@ def main():
     state.cleanup()
 
   print('Recipe executed successfully.')
-  if state.input:
-    print('The last executed module generated unprocessed input; here it is:')
-    print(state.input)
 
 
 if __name__ == '__main__':
