@@ -8,14 +8,14 @@ import os
 import tempfile
 import zipfile
 
-from dftimewolf.lib.collectors.grr_base import GRRBaseModule
+from dftimewolf.lib.collectors import grr_base
 
 from grr_response_proto import flows_pb2
 
 
 # GRRHunt should be extended by classes that actually implement the process()
 # method
-class GRRHunt(GRRBaseModule):  # pylint: disable=abstract-method
+class GRRHunt(grr_base.GRRBaseModule):  # pylint: disable=abstract-method
   """This class groups functions generic to all GRR Hunt modules.
 
   Should be extended by the modules that interact with GRR hunts.
@@ -170,6 +170,7 @@ class GRRHuntDownloader(GRRHunt):
   def __init__(self, state):
     super(GRRHuntDownloader, self).__init__(state)
     self.hunt_id = None
+    self.output_path = None
 
   # pylint: disable=arguments-differ
   def setup(self,
@@ -264,22 +265,22 @@ class GRRHuntDownloader(GRRHunt):
               print('Extraction error: {0:s}'.format(exception))
               return []
 
-    except OSError as error:
+    except OSError as exception:
       msg = 'Error manipulating file {0:s}: {1:s}'.format(
-          output_file_path, error)
+          output_file_path, exception)
       self.state.add_error(msg, critical=True)
       return []
-    except zipfile.BadZipfile as error:
+    except zipfile.BadZipfile as exception:
       msg = 'Bad zipfile {0:s}: {1:s}'.format(
-          output_file_path, error)
+          output_file_path, exception)
       self.state.add_error(msg, critical=True)
       return []
 
     try:
       os.remove(output_file_path)
-    except OSError as error:
+    except OSError as exception:
       print('Output path {0:s} could not be removed: {1:s}'.format(
-          output_file_path, error))
+          output_file_path, exception))
 
     return collection_paths
 

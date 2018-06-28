@@ -78,4 +78,5 @@ class TimesketchExporter(BaseModule):
       named_timelines.append((description, path))
     self.timesketch_api.export_artifacts(named_timelines, self.sketch_id)
     sketch_url = self.timesketch_api.get_sketch_url(self.sketch_id)
-    self.state.output = 'Your Timesketch URL is: {0:s}'.format(sketch_url)
+    print('Your Timesketch URL is: {0:s}'.format(sketch_url))
+    self.state.output = sketch_url

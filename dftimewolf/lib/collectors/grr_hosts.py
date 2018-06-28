@@ -47,7 +47,13 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     """
     # Search for the hostname in GRR
     print('Searching for client: {0:s}'.format(hostname))
-    search_result = self.grr_api.SearchClients(hostname)
+    try:
+      search_result = self.grr_api.SearchClients(hostname)
+    except grr_errors.UnknownError as exception:
+      self.state.add_error('Could not search for host {0:s}: {1:s}'.format(
+          hostname, exception
+      ), critical=True)
+      return None
 
     result = []
     for client in search_result:
@@ -119,7 +125,8 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
       string containing ID of launched flow
     """
     # Start the flow and get the flow ID
-    flow = client.CreateFlow(name=name, args=args)
+    flow = self._check_approval_wrapper(
+        client, client.CreateFlow, name=name, args=args)
     flow_id = flow.flow_id
     print('{0:s}: Scheduled'.format(flow_id))
 
@@ -147,11 +154,11 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
         status = client.Flow(flow_id).Get().data
       except grr_errors.UnknownError:
         msg = 'Unable to stat flow {0:s} for host {1:s}'.format(
-            flow_id, self.host)
+            flow_id, client.data.os_info.fqdn.lower())
         self.state.add_error(msg)
         raise RuntimeError(
             'Unable to stat flow {0:s} for host {1:s}'.format(
-                flow_id, self.host))
+                flow_id, client.data.os_info.fqdn.lower()))
 
       if status.state == flows_pb2.FlowContext.ERROR:
         # TODO(jbn): If one artifact fails, what happens? Test.
