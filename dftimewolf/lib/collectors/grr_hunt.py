@@ -8,14 +8,14 @@ import os
 import tempfile
 import zipfile
 
-from dftimewolf.lib.collectors.grr_base import GRRBaseModule
+from dftimewolf.lib.collectors import grr_base
 
 from grr_response_proto import flows_pb2
 
 
 # GRRHunt should be extended by classes that actually implement the process()
 # method
-class GRRHunt(GRRBaseModule):  # pylint: disable=abstract-method
+class GRRHunt(grr_base.GRRBaseModule):  # pylint: disable=abstract-method
   """This class groups functions generic to all GRR Hunt modules.
 
   Should be extended by the modules that interact with GRR hunts.
