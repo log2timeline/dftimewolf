@@ -218,5 +218,8 @@ class ProcessLink(transforms.Transform):
 
 def setup(app):
   """Add custom parsers to Sphinx generation."""
+  app.add_config_value('recommonmark_config', {
+      'enable_auto_doc_ref': False,
+      }, True)
   app.add_transform(AutoStructify)
   app.add_transform(ProcessLink)
