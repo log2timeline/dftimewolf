@@ -240,7 +240,7 @@ class GRRHuntDownloader(GRRHunt):
     Args:
       client_info_contents: The contents of the client_info.yaml file.
     """
-    yamldict = yaml.load(client_info_contents)
+    yamldict = yaml.safe_load(client_info_contents)
     fqdn = yamldict['system_info']['fqdn']
     client_id = yamldict['client_id'].split('/')[1]
     return client_id, fqdn
