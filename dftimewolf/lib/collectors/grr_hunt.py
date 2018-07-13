@@ -239,6 +239,9 @@ class GRRHuntDownloader(GRRHunt):
 
     Args:
       client_info_contents: The contents of the client_info.yaml file.
+
+    Returns:
+      A (str, str) tuple representing client ID and client FQDN.
     """
     yamldict = yaml.safe_load(client_info_contents)
     fqdn = yamldict['system_info']['fqdn']
@@ -258,8 +261,8 @@ class GRRHuntDownloader(GRRHunt):
     """
     # Extract items from archive by host for processing
     collection_paths = []
-    clients = set()
-    client_id_fqdn = {}
+    client_ids = set()
+    client_id_to_fqdn = {}
     hunt_dir = None
     try:
       with zipfile.ZipFile(output_file_path) as archive:
@@ -269,22 +272,20 @@ class GRRHuntDownloader(GRRHunt):
           if not hunt_dir:
             hunt_dir = f.filename.split('/')[0]
 
-          # client_info.yaml contains information used to translate client ID
-          # to FQDN; extract it and save for later
+          # If we're dealing with client_info.yaml, use it to build a client
+          # ID to FQDN correspondence table & skip extraction.
           if f.filename.split('/')[-1] == 'client_info.yaml':
             client_id, fqdn = self._get_client_fqdn(archive.read(f))
-            client_id_fqdn[client_id] = fqdn
+            client_id_to_fqdn[client_id] = fqdn
             continue
 
-          # Otherwise, extract the files for each client ID in their own
-          # directory
           client_id = f.filename.split('/')[1]
           if client_id.startswith('C.'):
-            if client_id not in clients:
+            if client_id not in client_ids:
               client_directory = os.path.join(self.output_path,
                                               hunt_dir, client_id)
               collection_paths.append((client_id, client_directory))
-              clients.add(client_id)
+              client_ids.add(client_id)
             try:
               archive.extract(f, self.output_path)
             except KeyError as exception:
@@ -312,7 +313,7 @@ class GRRHuntDownloader(GRRHunt):
     # earlier
     fqdn_collection_paths = []
     for client_id, path in collection_paths:
-      fqdn = client_id_fqdn[client_id]
+      fqdn = client_id_to_fqdn.get(client_id, client_id)
       fqdn_collection_paths.append((fqdn, path))
 
     return fqdn_collection_paths
