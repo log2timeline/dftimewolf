@@ -10,16 +10,16 @@ import signal
 
 from dftimewolf import config
 
-from dftimewolf.cli.recipes import local_plaso
+from dftimewolf.cli.recipes import gcp_turbinia
+from dftimewolf.cli.recipes import gcp_turbinia_import
 from dftimewolf.cli.recipes import grr_artifact_hosts
 from dftimewolf.cli.recipes import grr_flow_download
 from dftimewolf.cli.recipes import grr_fetch_files
 from dftimewolf.cli.recipes import grr_hunt_artifacts
 from dftimewolf.cli.recipes import grr_hunt_file
 from dftimewolf.cli.recipes import grr_huntresults_plaso_timesketch
+from dftimewolf.cli.recipes import local_plaso
 from dftimewolf.cli.recipes import timesketch_upload
-from dftimewolf.cli.recipes import gcp_turbinia
-from dftimewolf.cli.recipes import gcp_turbinia_import
 
 from dftimewolf.lib import utils
 
@@ -68,8 +68,8 @@ config.Config.register_recipe(grr_hunt_artifacts)
 config.Config.register_recipe(grr_hunt_file)
 config.Config.register_recipe(grr_huntresults_plaso_timesketch)
 config.Config.register_recipe(timesketch_upload)
-config.Config.register_recipe(turbinia_gcp)
-config.Config.register_recipe(turbinia_gcp_import)
+config.Config.register_recipe(gcp_turbinia)
+config.Config.register_recipe(gcp_turbinia_import)
 
 # TODO(tomchop) Change the print statements by a better logging / display system
 
