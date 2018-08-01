@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 import os
 import tempfile
 import zipfile
+import yaml
 
 from grr_response_proto import flows_pb2
 
@@ -233,6 +234,20 @@ class GRRHuntDownloader(GRRHunt):
     hunt_archive = hunt.GetFilesArchive()
     hunt_archive.WriteToFile(output_file_path)
 
+  def _get_client_fqdn(self, client_info_contents):
+    """Extracts a GRR client's FQDN from its client_info.yaml file.
+
+    Args:
+      client_info_contents: The contents of the client_info.yaml file.
+
+    Returns:
+      A (str, str) tuple representing client ID and client FQDN.
+    """
+    yamldict = yaml.safe_load(client_info_contents)
+    fqdn = yamldict['system_info']['fqdn']
+    client_id = yamldict['client_id'].split('/')[1]
+    return client_id, fqdn
+
   def _extract_hunt_results(self, output_file_path):
     """Open a hunt output archive and extract files.
 
@@ -246,21 +261,33 @@ class GRRHuntDownloader(GRRHunt):
     """
     # Extract items from archive by host for processing
     collection_paths = []
-    clients = set()
+    client_ids = set()
+    client_id_to_fqdn = {}
+    hunt_dir = None
     try:
       with zipfile.ZipFile(output_file_path) as archive:
         items = archive.infolist()
         for f in items:
+
+          if not hunt_dir:
+            hunt_dir = f.filename.split('/')[0]
+
+          # If we're dealing with client_info.yaml, use it to build a client
+          # ID to FQDN correspondence table & skip extraction.
+          if f.filename.split('/')[-1] == 'client_info.yaml':
+            client_id, fqdn = self._get_client_fqdn(archive.read(f))
+            client_id_to_fqdn[client_id] = fqdn
+            continue
+
           client_id = f.filename.split('/')[1]
           if client_id.startswith('C.'):
-            client_directory = os.path.join(self.output_path, client_id)
-            if not os.path.isdir(client_directory):
-              os.makedirs(client_directory)
-            if client_id not in clients:
+            if client_id not in client_ids:
+              client_directory = os.path.join(self.output_path,
+                                              hunt_dir, client_id)
               collection_paths.append((client_id, client_directory))
-              clients.add(client_id)
+              client_ids.add(client_id)
             try:
-              archive.extract(f, client_directory)
+              archive.extract(f, self.output_path)
             except KeyError as exception:
               print('Extraction error: {0:s}'.format(exception))
               return []
@@ -282,7 +309,14 @@ class GRRHuntDownloader(GRRHunt):
       print('Output path {0:s} could not be removed: {1:s}'.format(
           output_file_path, exception))
 
-    return collection_paths
+    # Translate GRR client IDs to FQDNs with the information retrieved
+    # earlier
+    fqdn_collection_paths = []
+    for client_id, path in collection_paths:
+      fqdn = client_id_to_fqdn.get(client_id, client_id)
+      fqdn_collection_paths.append((fqdn, path))
+
+    return fqdn_collection_paths
 
   def process(self):
     """Construct and start a new File hunt.
