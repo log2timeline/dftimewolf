@@ -8,6 +8,7 @@ the same project as Turbinia you can use the gcp_turbinia recipe.
 """
 
 from __future__ import unicode_literals
+from datetime import datetime
 
 _short_description = ('Imports a remote GCP persistent disk and sends to '
                       'Turbinia and Timesketch.')
@@ -52,7 +53,8 @@ args = [
 
     ('--zone', 'The GCP zone the disk to process (and Turbinia workers) are in',
      None),
-    ('--incident_id', 'Incident ID (used for Timesketch description)', None),
+    ('--incident_id', 'Incident ID (used for Timesketch description)',
+     datetime.now().strftime("%Y%m%d%H%M%S")),
     ('--sketch_id', 'Sketch to which the timeline should be added', None),
     ('--timesketch_endpoint', 'Endpoint of the Timesketch server to use',
      'https://localhost:5000'),
