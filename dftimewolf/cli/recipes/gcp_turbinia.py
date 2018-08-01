@@ -12,7 +12,7 @@ _short_description = ('Processes a GCP persistent disk with Turbinia and sends '
                       'results to Timesketch.')
 
 contents = {
-    'name': 'turbinia_gcp',
+    'name': 'gcp_turbinia',
     'short_description': _short_description,
     'modules': [{
         'name': 'TurbiniaProcessor',
