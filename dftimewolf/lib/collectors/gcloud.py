@@ -11,6 +11,8 @@ class GoogleCloudCollector(module.BaseModule):
   """Class for Google Cloud Collector.
 
   Attributes:
+    analysis_project: The project that contains the analysis VM (instance of
+        libcloudforensics.GoogleCloudProject).
     analysis_vm: The analysis VM on which the disk copy will be attached
         (instance of libcloudforensics.GoogleComputeInstance).
     incident_id: The incident ID used to name the Analysis VM (string).
@@ -20,9 +22,13 @@ class GoogleCloudCollector(module.BaseModule):
 
   def __init__(self, state):
     super(GoogleCloudCollector, self).__init__(state)
+    self.analysis_project = None
     self.analysis_vm = None
     self.incident_id = None
     self.disks_to_copy = []
+
+  def cleanup(self):
+    pass
 
   def process(self):
     """Copy a disk to the analysis project.
@@ -42,6 +48,7 @@ class GoogleCloudCollector(module.BaseModule):
           disk.name, new_disk.name)
       self.state.output.append((self.analysis_vm.name, new_disk))
 
+  # pylint: disable=arguments-differ
   def setup(self,
             analysis_project_name,
             remote_project_name,
