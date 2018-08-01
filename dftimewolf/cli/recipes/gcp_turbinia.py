@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Process a GCP persistent disk with Turbinia and send output to Timesketch.
 
-This processes a disk that is already in the project where Turbinia exists.  If
+This processes a disk that is already in the project where Turbinia exists. If
 you want to copy the disk from another project, use the gcp_turbinia_import
 recipe.
 """
