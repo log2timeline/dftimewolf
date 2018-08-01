@@ -112,6 +112,7 @@ class GoogleCloudCollector(module.BaseModule):
         zone)
 
     try:
+      # TODO: Make creating an analysis VM optional
       self.analysis_vm, _ = libcloudforensics.start_analysis_vm(
           self.analysis_project.project_id, analysis_vm_name, zone,
           boot_disk_size)

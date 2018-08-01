@@ -2,6 +2,7 @@
 """Processes cloud artifacts using a remote Turbinia instance."""
 from __future__ import unicode_literals
 from __future__ import absolute_import
+from __future__ import print_function
 
 import os
 import tempfile
@@ -17,7 +18,7 @@ from turbinia.message import TurbiniaRequest
 
 
 class TurbiniaProcessor(BaseModule):
-  """Process cloud disks with remote Turbinia instance.
+  """Process cloud disks with a remote Turbinia instance.
 
   Attributes:
     client: A TurbiniaClient object
@@ -52,6 +53,8 @@ class TurbiniaProcessor(BaseModule):
       project: The project containing the disk to process
       zone: The zone containing the disk to process
     """
+    # TODO: Consider the case when multiple disks are provided by the previous
+    # module or by the CLI.
     if self.state.input and not disk_name:
       _, disk = self.state.input[0]
       disk_name = disk.name
@@ -81,6 +84,7 @@ class TurbiniaProcessor(BaseModule):
       self.client = turbinia_client.TurbiniaClient()
     except TurbiniaException as e:
       self.state.add_error(e, critical=True)
+      return
 
   def cleanup(self):
     pass
@@ -107,9 +111,9 @@ class TurbiniaProcessor(BaseModule):
       task_data = self.client.get_task_data(
           instance=self.instance, project=self.project, region=self.region,
           request_id=request.request_id)
-      print self.client.format_task_status(
+      print(self.client.format_task_status(
           instance=self.instance, project=self.project, region=self.region,
-          request_id=request.request_id, all_fields=True)
+          request_id=request.request_id, all_fields=True))
     except TurbiniaException as e:
       self.state.add_error(e, critical=True)
       return
@@ -138,6 +142,7 @@ class TurbiniaProcessor(BaseModule):
 
     # For files remote in GCS we copy each plaso file back from GCS and then add
     # to output paths
+    # TODO: Externalize fetching files from GCS buckets to a different module.
     for path in gs_paths:
       local_path = None
       try:
