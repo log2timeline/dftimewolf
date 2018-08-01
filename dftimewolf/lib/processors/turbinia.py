@@ -132,7 +132,7 @@ class TurbiniaProcessor(BaseModule):
       return
 
     # Any local .plaso files that exist we can add immediately to the output
-    self.state.output = [p for p in local_paths if os.path.exists(p)]
+    self.state.output = [(p, p) for p in local_paths if os.path.exists(p)]
 
     # For files remote in GCS we copy each plaso file back from GCS and then add
     # to output paths
