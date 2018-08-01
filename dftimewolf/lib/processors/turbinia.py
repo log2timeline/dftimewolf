@@ -119,6 +119,7 @@ class TurbiniaProcessor(BaseModule):
     # instance of Turbinia).
     local_paths = []
     gs_paths = []
+    timeline_label = '{0:s}-{1:s}'.format(self.project, self.disk_name)
     for task in task_data:
       for path in task.get('saved_paths', []):
         if path.startswith('/') and path.endswith('.plaso'):
@@ -132,7 +133,8 @@ class TurbiniaProcessor(BaseModule):
       return
 
     # Any local .plaso files that exist we can add immediately to the output
-    self.state.output = [(p, p) for p in local_paths if os.path.exists(p)]
+    self.state.output = [
+        (timeline_label, p) for p in local_paths if os.path.exists(p)]
 
     # For files remote in GCS we copy each plaso file back from GCS and then add
     # to output paths
@@ -147,7 +149,7 @@ class TurbiniaProcessor(BaseModule):
         return
 
       if local_path:
-        self.state.output.append((path, local_path))
+        self.state.output.append((timeline_label, local_path))
 
     if not self.state.output:
       self.state.add_error('No .plaso files could be found.', critical=True)
