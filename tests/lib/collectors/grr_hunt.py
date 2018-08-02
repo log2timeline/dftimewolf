@@ -43,7 +43,7 @@ class GRRFHuntDownloader(unittest.TestCase):
 
   @mock.patch('os.remove')
   @mock.patch('zipfile.ZipFile.extract')
-  def testExtractHuntResults(self, unused_mock_extract, mock_remove):
+  def testExtractHuntResults(self, _, mock_remove):
     """Tests that hunt results are correctly extracted."""
     test_state = state.DFTimewolfState()
     grr_hunt_downloader = grr_hunt.GRRHuntDownloader(test_state)
