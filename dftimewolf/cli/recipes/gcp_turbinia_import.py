@@ -23,7 +23,7 @@ contents = {
             'remote_project_name': '@remote_project_name',
             'remote_instance_name': '@instance',
             'incident_id': '@incident_id',
-            'zone': '@zone',
+            'turbinia_zone': '@turbinia_zone',
             'disk_names': '@disks',
             'all_disks': '@all_disks',
             'boot_disk_size': '@boot_disk_size',
@@ -33,7 +33,7 @@ contents = {
         'args': {
             'disk_name': None,  # Taken from GoogleCloudCollector's output
             'project': '@analysis_project_name',
-            'zone': '@zone',
+            'turbinia_zone': '@turbinia_zone',
         },
     }, {
         'name': 'TimesketchExporter',
@@ -50,10 +50,10 @@ contents = {
 args = [
     ('remote_project_name',
      'Name of the project containing the instance / disks to copy ', None),
-    ('--zone', 'The GCP zone the disk to process (and Turbinia workers) are in',
-     None),
+    ('--turbinia_zone', 'The GCP zone the disk to process (and Turbinia '
+     'workers) are in', None),
     ('--incident_id', 'Incident ID (used for Timesketch description)',
-     datetime.now().strftime("%Y%m%d%H%M%S")),
+     datetime.now().strftime('%Y%m%d%H%M%S')),
     ('--sketch_id', 'Sketch to which the timeline should be added', None),
     ('--timesketch_endpoint', 'Endpoint of the Timesketch server to use',
      'https://localhost:5000'),

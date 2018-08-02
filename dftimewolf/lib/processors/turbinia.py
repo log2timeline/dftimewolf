@@ -10,7 +10,7 @@ import tempfile
 from dftimewolf.lib.module import BaseModule
 
 from turbinia import client as turbinia_client
-from turbinia import config
+from turbinia import config as turbinia_config
 from turbinia import evidence
 from turbinia import output_manager
 from turbinia import TurbiniaException
@@ -22,11 +22,11 @@ class TurbiniaProcessor(BaseModule):
 
   Attributes:
     client: A TurbiniaClient object
-    disk_name: Name of the disk to process
+    disk_name (string): Name of the disk to process
     instance (string): The name of the Turbinia instance
-    project: The project containing the disk to process
-    region (string): The region Turbinia is in
-    zone: The zone containing the disk to process
+    project (string): The project containing the disk to process
+    turbinia_region (string): The region Turbinia is in
+    turbinia_zone (string): The zone Turbinia is in
     _output_path: The path to output files
   """
 
@@ -41,17 +41,18 @@ class TurbiniaProcessor(BaseModule):
     self.disk_name = None
     self.instance = None
     self.project = None
-    self.region = None
-    self.zone = None
+    self.turbinia_region = None
+    self.turbinia_zone = None
     self._output_path = None
 
-  def setup(self, disk_name, project, zone):  # pylint: disable=arguments-differ
+  # pylint: disable=arguments-differ
+  def setup(self, disk_name, project, turbinia_zone):
     """Sets up the object attributes.
 
     Args:
-      disk_name: Name of the disk to process
-      project: The project containing the disk to process
-      zone: The zone containing the disk to process
+      disk_name (string): Name of the disk to process
+      project (string): The project containing the disk to process
+      turbinia_zone (string): The zone containing the disk to process
     """
     # TODO: Consider the case when multiple disks are provided by the previous
     # module or by the CLI.
@@ -60,27 +61,27 @@ class TurbiniaProcessor(BaseModule):
       disk_name = disk.name
       print('Using disk {0:s} from previous collector'.format(disk_name))
 
-    if disk_name is None or project is None or zone is None:
+    if disk_name is None or project is None or turbinia_zone is None:
       self.state.add_error(
-          'disk_name, project or zone are not all specified, bailing out',
-          critical=True)
+          'disk_name, project or turbinia_zone are not all specified, bailing '
+          'out', critical=True)
       return
     self.disk_name = disk_name
     self.project = project
-    self.zone = zone
-    self._output_path = tempfile.mkdtemp()
+    self.turbinia_zone = turbinia_zone
 
     try:
-      config.LoadConfig()
-      self.region = config.TURBINIA_REGION
-      self.instance = config.PUBSUB_TOPIC
-      if config.PROJECT != self.project:
+      turbinia_config.LoadConfig()
+      self.turbinia_region = turbinia_config.TURBINIA_REGION
+      self.instance = turbinia_config.PUBSUB_TOPIC
+      if turbinia_config.PROJECT != self.project:
         self.state.add_error(
             'Specified project {0:s} does not match Turbinia configured '
-            'project {1:s}. Use gcp_forensics_import recipe to copy the disk '
+            'project {1:s}. Use gcp_turbinia_import recipe to copy the disk '
             'into the same project.'.format(
-                self.project, config.PROJECT), critical=True)
+                self.project, turbinia_config.PROJECT), critical=True)
         return
+      self._output_path = tempfile.mkdtemp()
       self.client = turbinia_client.TurbiniaClient()
     except TurbiniaException as e:
       self.state.add_error(e, critical=True)
@@ -95,7 +96,7 @@ class TurbiniaProcessor(BaseModule):
     print('Turbinia log file: {0:s}'.format(log_file_path))
 
     evidence_ = evidence.GoogleCloudDisk(
-        disk_name=self.disk_name, project=self.project, zone=self.zone)
+        disk_name=self.disk_name, project=self.project, zone=self.turbinia_zone)
     request = TurbiniaRequest()
     request.evidence.append(evidence_)
 
@@ -106,14 +107,15 @@ class TurbiniaProcessor(BaseModule):
       print('Waiting for Turbinia request {0:s} to complete'.format(
           request.request_id))
       self.client.wait_for_request(
-          instance=self.instance, project=self.project, region=self.region,
-          request_id=request.request_id)
+          instance=self.instance, project=self.project,
+          region=self.turbinia_region, request_id=request.request_id)
       task_data = self.client.get_task_data(
-          instance=self.instance, project=self.project, region=self.region,
-          request_id=request.request_id)
+          instance=self.instance, project=self.project,
+          region=self.turbinia_region, request_id=request.request_id)
       print(self.client.format_task_status(
-          instance=self.instance, project=self.project, region=self.region,
-          request_id=request.request_id, all_fields=True))
+          instance=self.instance, project=self.project,
+          region=self.turbinia_region, request_id=request.request_id,
+          all_fields=True))
     except TurbiniaException as e:
       self.state.add_error(e, critical=True)
       return
