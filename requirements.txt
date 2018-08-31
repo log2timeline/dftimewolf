@@ -1,4 +1,33 @@
-beautifulsoup4
-grr-api-client
-pytz
-requests
+-i https://pypi.org/simple
+asn1crypto==0.24.0
+backports.shutil-get-terminal-size==1.0.0; python_version == '2.7'
+beautifulsoup4==4.6.3
+cffi==1.11.5
+chardet==3.0.4
+cryptography==2.0.3
+decorator==4.3.0
+enum34==1.1.6; python_version == '2.7'
+grr-api-client==3.2.3.post2
+grr-response-proto==3.2.3.post2
+idna==2.7
+ipaddress==1.0.22
+ipython-genutils==0.2.0
+ipython==5.0.0
+pathlib2==2.3.2; python_version == '2.7' or python_version == '3.3'
+pexpect==4.6.0; sys_platform != 'win32'
+pickleshare==0.7.4
+prompt-toolkit==1.0.15
+protobuf==3.3.0
+ptyprocess==0.6.0
+pycparser==2.18
+pygments==2.2.0
+pytz==2018.5
+pyyaml==3.13
+requests==2.9.1
+scandir==1.9.0; python_version < '3.5'
+simplegeneric==0.8.1
+six==1.11.0
+traitlets==4.3.2
+urllib3==1.23
+wcwidth==0.1.7
+werkzeug==0.11.3

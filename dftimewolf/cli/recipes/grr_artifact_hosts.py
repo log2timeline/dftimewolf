@@ -25,6 +25,7 @@ contents = {
             'extra_artifacts': '@extra_artifacts',
             'use_tsk': '@use_tsk',
             'approvers': '@approvers',
+            'verify': True,
         },
     }, {
         'name': 'LocalPlasoProcessor',
