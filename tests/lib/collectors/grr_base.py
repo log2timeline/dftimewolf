@@ -48,11 +48,14 @@ class GRRBaseModuleTest(unittest.TestCase):
     grr_base_module.setup('random reason',
                           'http://fake/endpoint',
                           ('admin', 'admin'),
-                          'approver1@google.com,approver2@google.com')
+                          'approver1@example.com,approver2@example.com',
+                          True)
     mock_grr_inithttp.assert_called_with(
-        api_endpoint='http://fake/endpoint', auth=('admin', 'admin'))
+        api_endpoint='http://fake/endpoint',
+        auth=('admin', 'admin'),
+        verify=True)
     self.assertEqual(grr_base_module.approvers,
-                     ['approver1@google.com', 'approver2@google.com'])
+                     ['approver1@example.com', 'approver2@example.com'])
     self.assertEqual(grr_base_module.output_path, '/fake')
 
   def testApprovalWrapper(self):
@@ -62,7 +65,8 @@ class GRRBaseModuleTest(unittest.TestCase):
     grr_base_module.setup('random reason',
                           'http://fake/endpoint',
                           ('admin', 'admin'),
-                          'approver1@google.com,approver2@google.com')
+                          'approver1@example.com,approver2@example.com',
+                          True)
     # pylint: disable=protected-access
     grr_base_module._CHECK_APPROVAL_INTERVAL_SEC = 0
     mock_grr_object = MockGRRObject()
@@ -84,7 +88,7 @@ class GRRBaseModuleTest(unittest.TestCase):
     self.assertEqual(mock_forbidden_function.call_count, 4)
     mock_grr_object.CreateApproval.assert_called_with(
         reason='random reason',
-        notified_users=['approver1@google.com', 'approver2@google.com'])
+        notified_users=['approver1@example.com', 'approver2@example.com'])
 
   def testNoApproversErrorsOut(self):
     """Tests that an error is generated if no approvers are specified.

@@ -21,6 +21,7 @@ contents = {
             'grr_auth': ('admin', 'admin'),
             'use_tsk': "@use_tsk",
             'approvers': '@approvers',
+            'verify': True,
         },
     }],
 }

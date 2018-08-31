@@ -141,11 +141,14 @@ setup(
         'beautifulsoup4',
         'requests',
         'grr_api_client',
+        'pyyaml',
     ],
     test_suite='nose.collector',
     test_require=[
         'beautifulsoup4',
         'nose',
-        'mock'
+        'mock',
+        'pylint',
+        'coverage',
     ]
 )

@@ -22,6 +22,7 @@ contents = {
             'grr_auth': ('admin', 'admin'),
             'reason': '@reason',
             'approvers': '@approvers',
+            'verify': True,
         },
     }, {
         'name': 'LocalPlasoProcessor',
