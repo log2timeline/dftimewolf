@@ -139,7 +139,7 @@ setup(
     install_requires=[
         'pytz',
         'beautifulsoup4',
-        'requests',
+        'requests==2.9.1',
         'grr_api_client',
         'pyyaml',
     ],
