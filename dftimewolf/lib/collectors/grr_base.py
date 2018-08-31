@@ -31,7 +31,7 @@ class GRRBaseModule(BaseModule):  # pylint: disable=abstract-method
     self.output_path = None
 
   # pylint: disable=arguments-differ
-  def setup(self, reason, grr_server_url, grr_auth, approvers=None):
+  def setup(self, reason, grr_server_url, grr_auth, approvers=None, verify=True):
     """Initializes a GRR hunt result collector.
 
     Args:
@@ -39,12 +39,15 @@ class GRRBaseModule(BaseModule):  # pylint: disable=abstract-method
       grr_server_url: GRR server URL.
       grr_auth: Tuple containing a (username, password) combination.
       approvers: list of GRR approval recipients.
+      verify: boolean, whether to verify the GRR server's x509 certificate.
     """
 
     self.approvers = []
     if approvers:
       self.approvers = [item.strip() for item in approvers.strip().split(',')]
-    self.grr_api = grr_api.InitHttp(api_endpoint=grr_server_url, auth=grr_auth)
+    self.grr_api = grr_api.InitHttp(api_endpoint=grr_server_url,
+                                    auth=grr_auth,
+                                    verify=verify)
     self.output_path = tempfile.mkdtemp()
     self.reason = reason
 

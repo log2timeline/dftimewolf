@@ -20,6 +20,7 @@ contents = {
             'grr_server_url': '@grr_server_url',
             'grr_auth': ('admin', 'admin'),
             'approvers': '@approvers',
+            'verify': True,
         },
     }],
     'processors': [],
