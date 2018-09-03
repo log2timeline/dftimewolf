@@ -136,10 +136,10 @@ class GRRHuntFileCollector(GRRHunt):
       file_path_list: comma-separated list of file paths.
       reason: justification for GRR access.
       grr_server_url: GRR server URL.
-      grr_auth: Tuple containing a (username, password) combination.
+      grr_username: GRR username.
+      grr_password: GRR password.
       approvers: comma-separated list of GRR approval recipients.
     """
-    grr_auth = (grr_username, grr_password)
     super(GRRHuntFileCollector, self).setup(
         reason, grr_server_url, grr_username, grr_password,
         approvers=approvers, verify=verify)
