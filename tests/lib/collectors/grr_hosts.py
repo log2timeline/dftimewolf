@@ -32,7 +32,8 @@ class GRRFlowTests(unittest.TestCase):
     base_grr_flow_collector.setup(
         reason='random reason',
         grr_server_url='http://fake/endpoint',
-        grr_auth=('admin', 'admin'),
+        grr_username='admin1',
+        grr_password='admin2',
         approvers='approver1@example.com,approver2@example.com',
         verify=True
     )
@@ -51,7 +52,8 @@ class GRRFlowTests(unittest.TestCase):
     base_grr_flow_collector.setup(
         reason='random reason',
         grr_server_url='http://fake/endpoint',
-        grr_auth=('admin', 'admin'),
+        grr_username='admin1',
+        grr_password='admin2',
         approvers='approver1@example.com,approver2@example.com',
         verify=True
     )
@@ -70,7 +72,8 @@ class GRRFlowTests(unittest.TestCase):
     base_grr_flow_collector.setup(
         reason='random reason',
         grr_server_url='http://fake/endpoint',
-        grr_auth=('admin', 'admin'),
+        grr_username='admin1',
+        grr_password='admin2',
         approvers='approver1@example.com,approver2@example.com',
         verify=True
     )
