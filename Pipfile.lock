@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "2c47e9353b1d2455d7e71290eb73f889c960c3bedf79aaf981ac26c7eed961d1"
+            "sha256": "01b7f40667feaabb82ec428a1702562da62dd2649ff0998e247cd6554f257a89"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -134,6 +134,7 @@
                 "sha256:6bd0f6ad48ec2aa117d3d141940d484deccda84d4fcd884f5c3d93c23ecd8c79",
                 "sha256:8ad8c4783bf61ded74527bffb48ed9b54166685e4230386a9ed9b1279e2df5b1"
             ],
+            "markers": "python_version == '2.7'",
             "version": "==1.1.6"
         },
         "grr-api-client": {
@@ -408,6 +409,7 @@
                 "sha256:6bd0f6ad48ec2aa117d3d141940d484deccda84d4fcd884f5c3d93c23ecd8c79",
                 "sha256:8ad8c4783bf61ded74527bffb48ed9b54166685e4230386a9ed9b1279e2df5b1"
             ],
+            "markers": "python_version == '2.7'",
             "version": "==1.1.6"
         },
         "funcsigs": {
