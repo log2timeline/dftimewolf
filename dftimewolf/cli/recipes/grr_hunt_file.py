@@ -20,7 +20,7 @@ contents = {
             'grr_server_url': '@grr_server_url',
             'grr_auth': ('admin', 'admin'),
             'approvers': '@approvers',
-            'verify': True,
+            'verify': '@verify',
         },
     }],
     'processors': [],
@@ -31,5 +31,6 @@ args = [
     ('file_path_list', 'Comma-separated list of file paths to hunt for', None),
     ('reason', 'Reason for collection', None),
     ('--approvers', 'Emails for GRR approval request', None),
-    ('--grr_server_url', 'GRR endpoint', 'http://localhost:8000')
+    ('--grr_server_url', 'GRR endpoint', 'http://localhost:8000'),
+    ('--verify', 'Whether to verify the GRR TLS certificate', True),
 ]

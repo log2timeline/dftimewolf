@@ -22,7 +22,7 @@ contents = {
             'grr_auth': ('admin', 'admin'),
             'reason': '@reason',
             'approvers': '@approvers',
-            'verify': True,
+            'verify': '@verify',
         },
     }, {
         'name': 'LocalPlasoProcessor',
@@ -47,5 +47,6 @@ args = [
      None),
     ('--sketch_id', 'Sketch to which the timeline should be added', None),
     ('--approvers', 'Emails for GRR approval request', None),
-    ('--grr_server_url', 'GRR endpoint', 'http://localhost:8000')
+    ('--grr_server_url', 'GRR endpoint', 'http://localhost:8000'),
+    ('--verify', 'Whether to verify the GRR TLS certificate', True),
 ]
