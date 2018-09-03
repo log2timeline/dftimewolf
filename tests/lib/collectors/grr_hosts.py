@@ -29,10 +29,13 @@ class GRRFlowTests(unittest.TestCase):
     mock_SearchClients.return_value = mock_grr_hosts.MOCK_CLIENT_LIST
     test_state = state.DFTimewolfState()
     base_grr_flow_collector = grr_hosts.GRRFlow(test_state)
-    base_grr_flow_collector.setup('random reason',
-                                  'http://fake/endpoint',
-                                  ('admin', 'admin'),
-                                  'approver1@example.com,approver2@example.com')
+    base_grr_flow_collector.setup(
+        reason='random reason',
+        grr_server_url='http://fake/endpoint',
+        grr_auth=('admin', 'admin'),
+        approvers='approver1@example.com,approver2@example.com',
+        verify=True
+    )
     # pylint: disable=protected-access
     client = base_grr_flow_collector._get_client_by_hostname('tomchop')
     mock_SearchClients.assert_called_with('tomchop')
@@ -45,10 +48,13 @@ class GRRFlowTests(unittest.TestCase):
     mock_CreateFlow.return_value = mock_grr_hosts.MOCK_FLOW
     test_state = state.DFTimewolfState()
     base_grr_flow_collector = grr_hosts.GRRFlow(test_state)
-    base_grr_flow_collector.setup('random reason',
-                                  'http://fake/endpoint',
-                                  ('admin', 'admin'),
-                                  'approver1@example.com,approver2@example.com')
+    base_grr_flow_collector.setup(
+        reason='random reason',
+        grr_server_url='http://fake/endpoint',
+        grr_auth=('admin', 'admin'),
+        approvers='approver1@example.com,approver2@example.com',
+        verify=True
+    )
     # pylint: disable=protected-access
     flow_id = base_grr_flow_collector._launch_flow(
         mock_grr_hosts.MOCK_CLIENT, "FlowName", "FlowArgs")
@@ -61,10 +67,13 @@ class GRRFlowTests(unittest.TestCase):
     mock_CreateFlow.return_value = mock_grr_hosts.MOCK_FLOW
     test_state = state.DFTimewolfState()
     base_grr_flow_collector = grr_hosts.GRRFlow(test_state)
-    base_grr_flow_collector.setup('random reason',
-                                  'http://fake/endpoint',
-                                  ('admin', 'admin'),
-                                  'approver1@example.com,approver2@example.com')
+    base_grr_flow_collector.setup(
+        reason='random reason',
+        grr_server_url='http://fake/endpoint',
+        grr_auth=('admin', 'admin'),
+        approvers='approver1@example.com,approver2@example.com',
+        verify=True
+    )
     base_grr_flow_collector.keepalive = True
     # pylint: disable=protected-access
     flow_id = base_grr_flow_collector._launch_flow(

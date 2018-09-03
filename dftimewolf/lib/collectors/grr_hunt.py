@@ -71,7 +71,7 @@ class GRRHuntArtifactCollector(GRRHunt):
   # pylint: disable=arguments-differ
   def setup(self,
             artifacts, use_tsk,
-            reason, grr_server_url, grr_auth, approvers=None):
+            reason, grr_server_url, grr_auth, approvers=None, verify=True):
     """Initializes a GRR Hunt artifact collector.
 
     Args:
@@ -125,7 +125,7 @@ class GRRHuntFileCollector(GRRHunt):
   # pylint: disable=arguments-differ
   def setup(self,
             file_path_list,
-            reason, grr_server_url, grr_auth, approvers=None):
+            reason, grr_server_url, grr_auth, approvers=None, verify=True):
     """Initializes a GRR Hunt file collector.
 
     Args:
@@ -176,7 +176,7 @@ class GRRHuntDownloader(GRRHunt):
   # pylint: disable=arguments-differ
   def setup(self,
             hunt_id,
-            reason, grr_server_url, grr_auth, approvers=None):
+            reason, grr_server_url, grr_auth, approvers=None, verify=True):
     """Initializes a GRR Hunt file collector.
 
     Args:
