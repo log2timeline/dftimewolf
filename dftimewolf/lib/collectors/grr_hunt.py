@@ -83,7 +83,7 @@ class GRRHuntArtifactCollector(GRRHunt):
       approvers: str, comma-separated list of GRR approval recipients.
     """
     super(GRRHuntArtifactCollector, self).setup(
-        reason, grr_server_url, grr_auth, approvers=approvers)
+        reason, grr_server_url, grr_auth, approvers=approvers, verify=verify)
 
     self.artifacts = [item.strip() for item in artifacts.strip().split(',')]
     if not artifacts:
@@ -136,7 +136,7 @@ class GRRHuntFileCollector(GRRHunt):
       approvers: comma-separated list of GRR approval recipients.
     """
     super(GRRHuntFileCollector, self).setup(
-        reason, grr_server_url, grr_auth, approvers=approvers)
+        reason, grr_server_url, grr_auth, approvers=approvers, verify=verify)
     self.file_path_list = [item.strip() for item
                            in file_path_list.strip().split(',')]
     if not file_path_list:
@@ -187,7 +187,7 @@ class GRRHuntDownloader(GRRHunt):
       approvers: comma-separated list of GRR approval recipients.
     """
     super(GRRHuntDownloader, self).setup(
-        reason, grr_server_url, grr_auth, approvers=approvers)
+        reason, grr_server_url, grr_auth, approvers=approvers, verify=verify)
     self.hunt_id = hunt_id
     self.output_path = tempfile.mkdtemp()
 
