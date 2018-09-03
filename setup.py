@@ -148,7 +148,7 @@ setup(
         'beautifulsoup4',
         'nose',
         'mock',
-        'pylint',
+        'pylint==1.9.3',
         'coverage',
     ]
 )
