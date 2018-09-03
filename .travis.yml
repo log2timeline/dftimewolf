@@ -39,7 +39,7 @@ matrix:
 install:
 - pip install tox
 - pip install pipenv
-- python setup.py build && python setup.py install
+- pipenv install --dev
 script:
 - ./config/travis/run_with_timeout.sh 30 ./config/travis/runtests.sh
 after_success:
