@@ -21,7 +21,7 @@ contents = {
             'grr_auth': ('admin', 'admin'),
             'use_tsk': "@use_tsk",
             'approvers': '@approvers',
-            'verify': True,
+            'verify': '@verify',
         },
     }],
 }
@@ -31,5 +31,6 @@ args = [
     ('reason', 'Reason for collection', None),
     ('--use_tsk', 'Use TSK to fetch artifacts', False),
     ('--approvers', 'Emails for GRR approval request', None),
-    ('--grr_server_url', 'GRR endpoint', 'http://localhost:8000')
+    ('--grr_server_url', 'GRR endpoint', 'http://localhost:8000'),
+    ('--verify', 'Whether to verify the GRR TLS certificate', True),
 ]

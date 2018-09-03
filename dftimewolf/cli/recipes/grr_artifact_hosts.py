@@ -25,7 +25,7 @@ contents = {
             'extra_artifacts': '@extra_artifacts',
             'use_tsk': '@use_tsk',
             'approvers': '@approvers',
-            'verify': True,
+            'verify': '@verify',
         },
     }, {
         'name': 'LocalPlasoProcessor',
@@ -55,5 +55,6 @@ args = [
     ('--approvers', 'Emails for GRR approval request', None),
     ('--sketch_id', 'Sketch to which the timeline should be added', None),
     ('--incident_id', 'Incident ID (used for Timesketch description)', None),
-    ('--grr_server_url', 'GRR endpoint', 'http://localhost:8000')
+    ('--grr_server_url', 'GRR endpoint', 'http://localhost:8000'),
+    ('--verify', 'Whether to verify the GRR TLS certificate', True),
 ]

@@ -297,7 +297,7 @@ class GRRArtifactCollector(GRRFlow):
     """
 
     super(GRRArtifactCollector, self).setup(
-        reason, grr_server_url, grr_auth, approvers=approvers)
+        reason, grr_server_url, grr_auth, approvers=approvers, verify=verify)
 
     if artifacts is not None:
       self.artifacts = [item.strip() for item in artifacts.strip().split(',')]
@@ -391,7 +391,7 @@ class GRRFileCollector(GRRFlow):
       approvers: list of GRR approval recipients.
     """
     super(GRRFileCollector, self).setup(
-        reason, grr_server_url, grr_auth, approvers=approvers)
+        reason, grr_server_url, grr_auth, approvers=approvers, verify=verify)
 
     if files is not None:
       self.files = [item.strip() for item in files.strip().split(',')]
@@ -463,7 +463,7 @@ class GRRFlowCollector(GRRFlow):
       approvers: list of GRR approval recipients.
     """
     super(GRRFlowCollector, self).setup(
-        reason, grr_server_url, grr_auth, approvers=approvers)
+        reason, grr_server_url, grr_auth, approvers=approvers, verify=verify)
     self.flow_id = flow_id
     self.host = host
 
