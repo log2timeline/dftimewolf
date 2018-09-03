@@ -282,7 +282,7 @@ class GRRArtifactCollector(GRRFlow):
   # pylint: disable=arguments-differ
   def setup(self,
             hosts, artifacts, extra_artifacts, use_tsk,
-            reason, grr_server_url, grr_auth, approvers=None):
+            reason, grr_server_url, grr_auth, approvers=None, verify=True):
     """Initializes a GRR artifact collector.
 
     Args:
@@ -378,7 +378,7 @@ class GRRFileCollector(GRRFlow):
   # pylint: disable=arguments-differ
   def setup(self,
             hosts, files, use_tsk,
-            reason, grr_server_url, grr_auth, approvers=None):
+            reason, grr_server_url, grr_auth, approvers=None, verify=True):
     """Initializes a GRR file collector.
 
     Args:
@@ -451,7 +451,7 @@ class GRRFlowCollector(GRRFlow):
   # pylint: disable=arguments-differ
   def setup(self,
             host, flow_id,
-            reason, grr_server_url, grr_auth, approvers=None):
+            reason, grr_server_url, grr_auth, approvers=None, verify=True):
     """Initializes a GRR flow collector.
 
     Args:

@@ -45,11 +45,13 @@ class GRRBaseModuleTest(unittest.TestCase):
     test_state = state.DFTimewolfState()
     grr_base_module = grr_base.GRRBaseModule(test_state)
     mock_mkdtemp.return_value = '/fake'
-    grr_base_module.setup('random reason',
-                          'http://fake/endpoint',
-                          ('admin', 'admin'),
-                          'approver1@example.com,approver2@example.com',
-                          True)
+    grr_base_module.setup(
+        reason='random reason',
+        grr_server_url='http://fake/endpoint',
+        grr_auth=('admin', 'admin'),
+        approvers='approver1@example.com,approver2@example.com',
+        verify=True
+    )
     mock_grr_inithttp.assert_called_with(
         api_endpoint='http://fake/endpoint',
         auth=('admin', 'admin'),
@@ -62,11 +64,13 @@ class GRRBaseModuleTest(unittest.TestCase):
     """Tests that the approval wrapper works correctly."""
     test_state = state.DFTimewolfState()
     grr_base_module = grr_base.GRRBaseModule(test_state)
-    grr_base_module.setup('random reason',
-                          'http://fake/endpoint',
-                          ('admin', 'admin'),
-                          'approver1@example.com,approver2@example.com',
-                          True)
+    grr_base_module.setup(
+        reason='random reason',
+        grr_server_url='http://fake/endpoint',
+        grr_auth=('admin', 'admin'),
+        approvers='approver1@example.com,approver2@example.com',
+        verify=True
+    )
     # pylint: disable=protected-access
     grr_base_module._CHECK_APPROVAL_INTERVAL_SEC = 0
     mock_grr_object = MockGRRObject()
@@ -98,7 +102,13 @@ class GRRBaseModuleTest(unittest.TestCase):
     """
     test_state = state.DFTimewolfState()
     grr_base_module = grr_base.GRRBaseModule(test_state)
-    grr_base_module.setup('random', 'http://fake/url', ('admin', 'admin'), '')
+    grr_base_module.setup(
+        reason='random',
+        grr_server_url='http://fake/url',
+        grr_auth=('admin', 'admin'),
+        approvers='',
+        verify=True
+    )
     # pylint: disable=protected-access
     grr_base_module._CHECK_APPROVAL_INTERVAL_SEC = 0
     mock_grr_object = MockGRRObject()
