@@ -193,7 +193,6 @@ class GRRHuntDownloader(GRRHunt):
       grr_password: GRR password.
       approvers: comma-separated list of GRR approval recipients.
     """
-    grr_auth = (grr_username, grr_password)
     super(GRRHuntDownloader, self).setup(
         reason, grr_server_url, grr_username, grr_password,
         approvers=approvers, verify=verify)
