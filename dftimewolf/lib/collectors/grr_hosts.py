@@ -298,8 +298,8 @@ class GRRArtifactCollector(GRRFlow):
       approvers: list of GRR approval recipients.
     """
     super(GRRArtifactCollector, self).setup(
-        reason, grr_server_url, grr_username=grr_username,
-        grr_password=grr_password, approvers=approvers, verify=verify)
+        reason, grr_server_url, grr_username, grr_password, approvers=approvers,
+        verify=verify)
 
     if artifacts is not None:
       self.artifacts = [item.strip() for item in artifacts.strip().split(',')]
