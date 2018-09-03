@@ -44,8 +44,6 @@ class GRRBaseModule(BaseModule):  # pylint: disable=abstract-method
       verify: boolean, whether to verify the GRR server's x509 certificate.
     """
     grr_auth = (grr_username, grr_password)
-    print(grr_auth)
-    exit()
     self.approvers = []
     if approvers:
       self.approvers = [item.strip() for item in approvers.strip().split(',')]
