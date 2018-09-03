@@ -182,7 +182,8 @@ class GRRHuntDownloader(GRRHunt):
   # pylint: disable=arguments-differ
   def setup(self,
             hunt_id,
-            reason, grr_server_url, grr_username, grr_password, approvers=None, verify=True):
+            reason, grr_server_url, grr_username, grr_password, approvers=None,
+            verify=True):
     """Initializes a GRR Hunt file collector.
 
     Args:

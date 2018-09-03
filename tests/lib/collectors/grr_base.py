@@ -55,7 +55,7 @@ class GRRBaseModuleTest(unittest.TestCase):
     )
     mock_grr_inithttp.assert_called_with(
         api_endpoint='http://fake/endpoint',
-        auth=('admin1','admin2'),
+        auth=('admin1', 'admin2'),
         verify=True)
     self.assertEqual(grr_base_module.approvers,
                      ['approver1@example.com', 'approver2@example.com'])
