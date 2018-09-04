@@ -87,7 +87,14 @@ class TimesketchApiClient(object):
     files = {'file': open(plaso_storage_path, 'rb')}
     data = {'name': timeline_name}
     response = self.session.post(resource_url, files=files, data=data)
-    response_dict = response.json()
+    try:
+      response_dict = response.json()
+    except ValueError:
+      raise RuntimeError(
+          'Could not decode JSON response from Timesketch'
+          ' (Status {0:d}):\n{1:s}'.format(
+              response.status_code, response.content))
+
     index_id = response_dict['objects'][0]['id']
     return index_id
 
@@ -104,6 +111,8 @@ class TimesketchApiClient(object):
 
     # Export processed timeline(s)
     for timeline_name, artifact_path in processed_artifacts:
+      print('Uploading {0:s} to timeline {1:s}'.format(
+          artifact_path, timeline_name))
       new_timeline_id = self.upload_timeline(timeline_name, artifact_path)
       self.add_timeline_to_sketch(sketch_id, new_timeline_id)
 
