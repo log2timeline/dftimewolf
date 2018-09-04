@@ -71,7 +71,8 @@ class GRRHuntArtifactCollector(GRRHunt):
   # pylint: disable=arguments-differ
   def setup(self,
             artifacts, use_tsk,
-            reason, grr_server_url, grr_auth, approvers=None, verify=True):
+            reason, grr_server_url, grr_username, grr_password, approvers=None,
+            verify=True):
     """Initializes a GRR Hunt artifact collector.
 
     Args:
@@ -79,11 +80,13 @@ class GRRHuntArtifactCollector(GRRHunt):
       use_tsk: toggle for use_tsk flag.
       reason: justification for GRR access.
       grr_server_url: GRR server URL.
-      grr_auth: Tuple containing a (username, password) combination.
+      grr_username: GRR username.
+      grr_password: GRR password.
       approvers: str, comma-separated list of GRR approval recipients.
     """
     super(GRRHuntArtifactCollector, self).setup(
-        reason, grr_server_url, grr_auth, approvers=approvers, verify=verify)
+        reason, grr_server_url, grr_username, grr_password,
+        approvers=approvers, verify=verify)
 
     self.artifacts = [item.strip() for item in artifacts.strip().split(',')]
     if not artifacts:
@@ -125,18 +128,21 @@ class GRRHuntFileCollector(GRRHunt):
   # pylint: disable=arguments-differ
   def setup(self,
             file_path_list,
-            reason, grr_server_url, grr_auth, approvers=None, verify=True):
+            reason, grr_server_url, grr_username, grr_password, approvers=None,
+            verify=True):
     """Initializes a GRR Hunt file collector.
 
     Args:
       file_path_list: comma-separated list of file paths.
       reason: justification for GRR access.
       grr_server_url: GRR server URL.
-      grr_auth: Tuple containing a (username, password) combination.
+      grr_username: GRR username.
+      grr_password: GRR password.
       approvers: comma-separated list of GRR approval recipients.
     """
     super(GRRHuntFileCollector, self).setup(
-        reason, grr_server_url, grr_auth, approvers=approvers, verify=verify)
+        reason, grr_server_url, grr_username, grr_password,
+        approvers=approvers, verify=verify)
     self.file_path_list = [item.strip() for item
                            in file_path_list.strip().split(',')]
     if not file_path_list:
@@ -176,18 +182,21 @@ class GRRHuntDownloader(GRRHunt):
   # pylint: disable=arguments-differ
   def setup(self,
             hunt_id,
-            reason, grr_server_url, grr_auth, approvers=None, verify=True):
+            reason, grr_server_url, grr_username, grr_password, approvers=None,
+            verify=True):
     """Initializes a GRR Hunt file collector.
 
     Args:
       hunt_id: Hunt ID to download results from.
       reason: justification for GRR access.
       grr_server_url: GRR server URL.
-      grr_auth: Tuple containing a (username, password) combination.
+      grr_username: GRR username.
+      grr_password: GRR password.
       approvers: comma-separated list of GRR approval recipients.
     """
     super(GRRHuntDownloader, self).setup(
-        reason, grr_server_url, grr_auth, approvers=approvers, verify=verify)
+        reason, grr_server_url, grr_username, grr_password,
+        approvers=approvers, verify=verify)
     self.hunt_id = hunt_id
     self.output_path = tempfile.mkdtemp()
 

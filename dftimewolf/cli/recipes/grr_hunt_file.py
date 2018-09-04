@@ -18,7 +18,8 @@ contents = {
             'file_path_list': '@file_path_list',
             'reason': '@reason',
             'grr_server_url': '@grr_server_url',
-            'grr_auth': ('admin', 'admin'),
+            'grr_username': '@grr_username',
+            'grr_password': '@grr_password',
             'approvers': '@approvers',
             'verify': '@verify',
         },
@@ -33,4 +34,6 @@ args = [
     ('--approvers', 'Emails for GRR approval request', None),
     ('--grr_server_url', 'GRR endpoint', 'http://localhost:8000'),
     ('--verify', 'Whether to verify the GRR TLS certificate', True),
+    ('--grr_username', 'GRR username', 'admin'),
+    ('--grr_password', 'GRR password', 'admin'),
 ]
