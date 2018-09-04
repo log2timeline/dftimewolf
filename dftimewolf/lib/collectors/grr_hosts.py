@@ -282,7 +282,8 @@ class GRRArtifactCollector(GRRFlow):
   # pylint: disable=arguments-differ
   def setup(self,
             hosts, artifacts, extra_artifacts, use_tsk,
-            reason, grr_server_url, grr_auth, approvers=None, verify=True):
+            reason, grr_server_url, grr_username, grr_password, approvers=None,
+            verify=True):
     """Initializes a GRR artifact collector.
 
     Args:
@@ -292,12 +293,13 @@ class GRRArtifactCollector(GRRFlow):
       use_tsk: toggle for use_tsk flag on GRR flow.
       reason: justification for GRR access.
       grr_server_url: GRR server URL.
-      grr_auth: Tuple containing a (username, password) combination.
+      grr_username: GRR username.
+      grr_password: GRR password.
       approvers: list of GRR approval recipients.
     """
-
     super(GRRArtifactCollector, self).setup(
-        reason, grr_server_url, grr_auth, approvers=approvers, verify=verify)
+        reason, grr_server_url, grr_username, grr_password, approvers=approvers,
+        verify=verify)
 
     if artifacts is not None:
       self.artifacts = [item.strip() for item in artifacts.strip().split(',')]
@@ -378,7 +380,8 @@ class GRRFileCollector(GRRFlow):
   # pylint: disable=arguments-differ
   def setup(self,
             hosts, files, use_tsk,
-            reason, grr_server_url, grr_auth, approvers=None, verify=True):
+            reason, grr_server_url, grr_username, grr_password, approvers=None,
+            verify=True):
     """Initializes a GRR file collector.
 
     Args:
@@ -387,11 +390,13 @@ class GRRFileCollector(GRRFlow):
       use_tsk: toggle for use_tsk flag on GRR flow.
       reason: justification for GRR access.
       grr_server_url: GRR server URL.
-      grr_auth: Tuple containing a (username, password) combination.
+      grr_username: GRR username.
+      grr_password: GRR password.
       approvers: list of GRR approval recipients.
     """
     super(GRRFileCollector, self).setup(
-        reason, grr_server_url, grr_auth, approvers=approvers, verify=verify)
+        reason, grr_server_url, grr_username, grr_password,
+        approvers=approvers, verify=verify)
 
     if files is not None:
       self.files = [item.strip() for item in files.strip().split(',')]
@@ -451,7 +456,8 @@ class GRRFlowCollector(GRRFlow):
   # pylint: disable=arguments-differ
   def setup(self,
             host, flow_id,
-            reason, grr_server_url, grr_auth, approvers=None, verify=True):
+            reason, grr_server_url, grr_username, grr_password, approvers=None,
+            verify=True):
     """Initializes a GRR flow collector.
 
     Args:
@@ -459,11 +465,13 @@ class GRRFlowCollector(GRRFlow):
       flow_id: ID of GRR flow to retrieve.
       reason: justification for GRR access.
       grr_server_url: GRR server URL.
-      grr_auth: Tuple containing a (username, password) combination.
+      grr_username: GRR username.
+      grr_password: GRR password.
       approvers: list of GRR approval recipients.
     """
     super(GRRFlowCollector, self).setup(
-        reason, grr_server_url, grr_auth, approvers=approvers, verify=verify)
+        reason, grr_server_url, grr_server_url, grr_username, grr_password,
+        approvers=approvers, verify=verify)
     self.flow_id = flow_id
     self.host = host
 

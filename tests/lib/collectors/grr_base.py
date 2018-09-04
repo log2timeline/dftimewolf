@@ -48,13 +48,14 @@ class GRRBaseModuleTest(unittest.TestCase):
     grr_base_module.setup(
         reason='random reason',
         grr_server_url='http://fake/endpoint',
-        grr_auth=('admin', 'admin'),
+        grr_username='admin1',
+        grr_password='admin2',
         approvers='approver1@example.com,approver2@example.com',
         verify=True
     )
     mock_grr_inithttp.assert_called_with(
         api_endpoint='http://fake/endpoint',
-        auth=('admin', 'admin'),
+        auth=('admin1', 'admin2'),
         verify=True)
     self.assertEqual(grr_base_module.approvers,
                      ['approver1@example.com', 'approver2@example.com'])
@@ -67,7 +68,8 @@ class GRRBaseModuleTest(unittest.TestCase):
     grr_base_module.setup(
         reason='random reason',
         grr_server_url='http://fake/endpoint',
-        grr_auth=('admin', 'admin'),
+        grr_username='admin1',
+        grr_password='admin2',
         approvers='approver1@example.com,approver2@example.com',
         verify=True
     )
@@ -105,7 +107,8 @@ class GRRBaseModuleTest(unittest.TestCase):
     grr_base_module.setup(
         reason='random',
         grr_server_url='http://fake/url',
-        grr_auth=('admin', 'admin'),
+        grr_username='admin1',
+        grr_password='admin2',
         approvers='',
         verify=True
     )

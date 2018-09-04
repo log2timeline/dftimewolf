@@ -31,18 +31,19 @@ class GRRBaseModule(BaseModule):  # pylint: disable=abstract-method
     self.output_path = None
 
   # pylint: disable=arguments-differ
-  def setup(self, reason, grr_server_url, grr_auth, approvers=None,
-            verify=True):
+  def setup(self, reason, grr_server_url, grr_username, grr_password,
+            approvers=None, verify=True):
     """Initializes a GRR hunt result collector.
 
     Args:
       reason: justification for GRR access.
       grr_server_url: GRR server URL.
-      grr_auth: Tuple containing a (username, password) combination.
+      grr_username: GRR username.
+      grr_password: GRR password.
       approvers: list of GRR approval recipients.
       verify: boolean, whether to verify the GRR server's x509 certificate.
     """
-
+    grr_auth = (grr_username, grr_password)
     self.approvers = []
     if approvers:
       self.approvers = [item.strip() for item in approvers.strip().split(',')]
