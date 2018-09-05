@@ -1,14 +1,10 @@
 """Generic error wrapper"""
 
 class DFTimewolfError(Exception):
-  """Class to represent a DFTimewolfError."""
+  """Class to represent a dfTimewolfGenericError."""
 
-  fatal = False
   message = 'An error occurred.'
 
-  def __init__(self, message, fatal=False):
+  def __init__(self, message):
     Exception.__init__(self)
     self.message = message
-    if fatal:
-      self.message = 'CRITICAL: ' + self.message
-    self.fatal = fatal
