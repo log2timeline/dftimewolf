@@ -82,6 +82,9 @@ class TimesketchApiClient(object):
 
     Returns:
       int: ID of uploaded timeline
+
+    Raises:
+      RuntimeError: When the JSON response from Timesketch cannot be decoded.
     """
     resource_url = '{0:s}/upload/'.format(self.api_base_url)
     files = {'file': open(plaso_storage_path, 'rb')}
@@ -106,7 +109,7 @@ class TimesketchApiClient(object):
       sketch_id: ID of sketch to append the timeline to
 
     Returns:
-      int: ID of sketch
+      int: ID of sketch.
     """
 
     # Export processed timeline(s)
