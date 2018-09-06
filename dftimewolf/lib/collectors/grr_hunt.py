@@ -329,7 +329,7 @@ class GRRHuntDownloader(GRRHunt):
     if not fqdn_collection_paths:
       self.state.add_error('Nothing was extracted from the hunt archive',
                            critical=True)
-      return
+      return []
 
     return fqdn_collection_paths
 
