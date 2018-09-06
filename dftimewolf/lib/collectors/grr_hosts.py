@@ -473,7 +473,7 @@ class GRRFlowCollector(GRRFlow):
       approvers: list of GRR approval recipients.
     """
     super(GRRFlowCollector, self).setup(
-        reason, grr_server_url, grr_server_url, grr_username, grr_password,
+        reason, grr_server_url, grr_username, grr_password,
         approvers=approvers, verify=verify)
     self.flow_id = flow_id
     self.host = host
