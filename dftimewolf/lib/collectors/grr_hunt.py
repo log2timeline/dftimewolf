@@ -227,9 +227,10 @@ class GRRHuntDownloader(GRRHunt):
     self._check_approval_wrapper(
         hunt, self._get_and_write_archive, hunt, output_file_path)
 
+    results = self._extract_hunt_results(output_file_path)
     print('Wrote results of {0:s} to {1:s}'.format(
         hunt.hunt_id, output_file_path))
-    return self._extract_hunt_results(output_file_path)
+    return results
 
   def _get_and_write_archive(self, hunt, output_file_path):
     """Gets and writes a hunt archive.
@@ -324,6 +325,11 @@ class GRRHuntDownloader(GRRHunt):
     for client_id, path in collection_paths:
       fqdn = client_id_to_fqdn.get(client_id, client_id)
       fqdn_collection_paths.append((fqdn, path))
+
+    if not fqdn_collection_paths:
+      self.state.add_error('Nothing was extracted from the hunt archive',
+                           critical=True)
+      return []
 
     return fqdn_collection_paths
 

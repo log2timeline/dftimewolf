@@ -14,7 +14,7 @@ from grr_api_client import errors as grr_errors
 from grr_response_proto import flows_pb2
 
 from dftimewolf.lib.collectors.grr_base import GRRBaseModule
-
+from dftimewolf.lib.errors import DFTimewolfError
 
 # GRRFlow should be extended by classes that actually implement the process()
 # method
@@ -43,7 +43,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
       GRR API Client object
 
     Raises:
-      RuntimeError: if no client ID found for hostname.
+      DFTimewolfError: if no client ID found for hostname.
     """
     # Search for the hostname in GRR
     print('Searching for client: {0:s}'.format(hostname))
@@ -145,7 +145,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
       flow_id: string containing ID of flow to await.
 
     Raises:
-      RuntimeError: if flow error encountered.
+      DFTimewolfError: if flow error encountered.
     """
     # Wait for the flow to finish
     print('{0:s}: Waiting to finish'.format(flow_id))
@@ -156,15 +156,18 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
         msg = 'Unable to stat flow {0:s} for host {1:s}'.format(
             flow_id, client.data.os_info.fqdn.lower())
         self.state.add_error(msg)
-        raise RuntimeError(
+        raise DFTimewolfError(
             'Unable to stat flow {0:s} for host {1:s}'.format(
                 flow_id, client.data.os_info.fqdn.lower()))
 
       if status.state == flows_pb2.FlowContext.ERROR:
         # TODO(jbn): If one artifact fails, what happens? Test.
-        raise RuntimeError(
-            '{0:s}: FAILED! Backtrace from GRR:\n\n{1:s}'.format(
-                flow_id, status.context.backtrace))
+        message = status.context.backtrace
+        if 'ArtifactNotRegisteredError' in status.context.backtrace:
+          message = status.context.backtrace.split('\n')[-2]
+        raise DFTimewolfError(
+            '{0:s}: FAILED! Message from GRR:\n{1:s}'.format(
+                flow_id, message))
 
       if status.state == flows_pb2.FlowContext.TERMINATED:
         print('{0:s}: Complete'.format(flow_id))
@@ -185,13 +188,13 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
       flow: GRR flow to check the status for.
 
     Raises:
-      RuntimeError: if error encountered getting flow data.
+      DFTimewolfError: if error encountered getting flow data.
     """
     client = self._get_client_by_id(self._client_id)
     try:
       status = client.Flow(flow.flow_id).Get().data
     except grr_errors.UnknownError:
-      raise RuntimeError(
+      raise DFTimewolfError(
           'Unable to stat flow {0:s} for client {1:s}'.format(
               flow.flow_id, client.client_id))
 
@@ -317,7 +320,7 @@ class GRRArtifactCollector(GRRFlow):
     """Collect the artifacts.
 
     Raises:
-      RuntimeError: if no artifacts specified nor resolved by platform.
+      DFTimewolfError: if no artifacts specified nor resolved by platform.
     """
 
     # TODO(tomchop): Thread this
@@ -348,7 +351,7 @@ class GRRArtifactCollector(GRRFlow):
         artifact_list = list(set(artifact_list))
 
       if not artifact_list:
-        raise RuntimeError('No artifacts to collect')
+        raise DFTimewolfError('No artifacts to collect')
 
       flow_args = flows_pb2.ArtifactCollectorFlowArgs(
           artifact_list=artifact_list,
@@ -415,13 +418,13 @@ class GRRFileCollector(GRRFlow):
           str: path to the collected data.
 
     Raises:
-      RuntimeError: if no files specified.
+      DFTimewolfError: if no files specified.
     """
     # TODO(tomchop): Thread this
     for client in self._clients:
       file_list = self.files
       if not file_list:
-        raise RuntimeError('File paths must be specified for FileFinder')
+        raise DFTimewolfError('File paths must be specified for FileFinder')
       print('Filefinder to collect {0:d} items'.format(len(file_list)))
 
       flow_action = flows_pb2.FileFinderAction(
@@ -470,7 +473,7 @@ class GRRFlowCollector(GRRFlow):
       approvers: list of GRR approval recipients.
     """
     super(GRRFlowCollector, self).setup(
-        reason, grr_server_url, grr_server_url, grr_username, grr_password,
+        reason, grr_server_url, grr_username, grr_password,
         approvers=approvers, verify=verify)
     self.flow_id = flow_id
     self.host = host
@@ -485,7 +488,7 @@ class GRRFlowCollector(GRRFlow):
           str: path to the collected data.
 
     Raises:
-      RuntimeError: if no files specified
+      DFTimewolfError: if no files specified
     """
     client_id = self._get_client_by_hostname(self.host).client_id
     self._await_flow(self._get_client_by_id(client_id), self.flow_id)
