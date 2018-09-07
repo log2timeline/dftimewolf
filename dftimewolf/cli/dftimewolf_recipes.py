@@ -28,7 +28,7 @@ from dftimewolf.lib.exporters import local_filesystem
 from dftimewolf.lib.processors import localplaso
 
 from dftimewolf.lib.state import DFTimewolfState
-
+from dftimewolf.lib.errors import DFTimewolfError
 
 signal.signal(signal.SIGINT, utils.signal_handler)
 
@@ -112,7 +112,10 @@ def main():
     module = config.Config.get_module(module_name)(state)
     module.setup(**new_args)
     state.check_errors()
-    module.process()
+    try:
+      module.process()
+    except DFTimewolfError as error:
+      state.add_error(error.message, critical=True)
 
     # Check for eventual errors and clean up after each round.
     state.check_errors()

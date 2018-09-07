@@ -76,7 +76,13 @@ class TimesketchExporter(BaseModule):
       if not description:
         description = 'untitled timeline for '+path
       named_timelines.append((description, path))
-    self.timesketch_api.export_artifacts(named_timelines, self.sketch_id)
+    try:
+      self.timesketch_api.export_artifacts(named_timelines, self.sketch_id)
+    except RuntimeError as e:
+      self.state.add_error(
+          'Error occured while working with Timesketch: {0:s}'.format(str(e)),
+          critical=True)
+      return
     sketch_url = self.timesketch_api.get_sketch_url(self.sketch_id)
     print('Your Timesketch URL is: {0:s}'.format(sketch_url))
     self.state.output = sketch_url
