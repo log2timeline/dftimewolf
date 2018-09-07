@@ -78,9 +78,6 @@ class LocalFileSystemTest(unittest.TestCase):
     local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
     local_filesystem_copy.setup(target_directory="/nonexistent")
     # pylint: disable=protected-access
-    self.assertIsNone(local_filesystem_copy._target_directory)
-    self.assertEquals(
-        test_state.errors[0][0], 'An unknown error occurred: FAKEERROR')
     self.assertEquals(test_state.errors[0][1], True)
 
   @mock.patch('os.makedirs')
