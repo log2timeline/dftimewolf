@@ -13,6 +13,7 @@ from dftimewolf import config
 from dftimewolf.cli.recipes import local_plaso
 from dftimewolf.cli.recipes import grr_artifact_hosts
 from dftimewolf.cli.recipes import grr_flow_download
+from dftimewolf.cli.recipes import grr_fetch_files
 from dftimewolf.cli.recipes import grr_hunt_artifacts
 from dftimewolf.cli.recipes import grr_hunt_file
 from dftimewolf.cli.recipes import grr_huntresults_plaso_timesketch
@@ -56,6 +57,7 @@ config.Config.load_extra(os.path.join('/', 'etc', 'dftimewolf.conf'))
 config.Config.register_recipe(local_plaso)
 config.Config.register_recipe(grr_artifact_hosts)
 config.Config.register_recipe(grr_flow_download)
+config.Config.register_recipe(grr_fetch_files)
 config.Config.register_recipe(grr_hunt_artifacts)
 config.Config.register_recipe(grr_hunt_file)
 config.Config.register_recipe(grr_huntresults_plaso_timesketch)

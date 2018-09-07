@@ -28,12 +28,12 @@ class LocalFilesystemCopy(BaseModule):
     Args:
       target_directory: Directory in which collected files will be dumped.
     """
+    self._target_directory = target_directory
     if not target_directory:
       self._target_directory = tempfile.mkdtemp()
     elif not os.path.exists(target_directory):
       try:
         os.makedirs(target_directory)
-        self._target_directory = target_directory
       except OSError as exception:
         message = 'An unknown error occurred: {0:s}'.format(exception)
         self.state.add_error(message, critical=True)
