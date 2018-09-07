@@ -1,7 +1,7 @@
-"""Fetches specific files from a GRR host."""
+"""Fetches specific files from one or more GRR hosts."""
 from __future__ import unicode_literals
 
-_short_description = 'Fetches specific files from a GRR host.'
+_short_description = 'Fetches specific files from one or more GRR hosts.'
 
 contents = {
     'name':
@@ -31,7 +31,8 @@ contents = {
 args = [
     ('hosts', 'Comma-separated list of hosts to process', None),
     ('reason', 'Reason for collection', None),
-    ('files', 'Comma-separated list of files to fetch', None),
+    ('files', 'Comma-separated list of files to fetch (supports GRR variable '
+              'interpolation)', None),
     ('directory', 'Directory in which to export files.', None),
     ('--use_tsk', 'Use TSK to fetch artifacts', False),
     ('--approvers', 'Emails for GRR approval request', None),
