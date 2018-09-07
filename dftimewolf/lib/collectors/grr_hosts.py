@@ -434,8 +434,8 @@ class GRRFileCollector(GRRFlow):
           action=flow_action,)
       flow_id = self._launch_flow(client, 'FileFinder', flow_args)
       self._await_flow(client, flow_id)
-
-    self.state.output = [self.output_path]
+      fqdn = client.data.os_info.fqdn.lower()
+      self.state.output.append((fqdn, self.output_path))
 
 
 class GRRFlowCollector(GRRFlow):
