@@ -87,6 +87,10 @@ class GRRFlowTests(unittest.TestCase):
         mock_CreateFlow.call_args,
         ((), {'name': 'KeepAlive', 'args': flows_pb2.KeepAliveArgs()}))
 
+
+
+
+
 class GRRArtifactCollectorTest(unittest.TestCase):
   """Tests for the GRR artifact collector."""
 
@@ -95,6 +99,56 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     test_state = state.DFTimewolfState()
     grr_artifact_collector = grr_hosts.GRRArtifactCollector(test_state)
     self.assertIsNotNone(grr_artifact_collector)
+
+  @mock.patch('grr_api_client.api.GrrApi.SearchClients')
+  def testSetup(self, mock_SearchClients):
+    """Tests that the module is setup properly."""
+    test_state = state.DFTimewolfState()
+    grr_artifact_collector = grr_hosts.GRRArtifactCollector(test_state)
+    grr_artifact_collector.setup(
+        hosts='host1,host2',
+        artifacts='RandomArtifact',
+        extra_artifacts='AnotherArtifact',
+        use_tsk=True,
+        reason='Random reason',
+        grr_server_url='localhost',
+        grr_username='user',
+        grr_password='password',
+        approvers='approver1,approver2',
+        verify=False
+    )
+    self.assertEqual(grr_artifact_collector.artifacts, ['RandomArtifact'])
+    self.assertEqual(
+        grr_artifact_collector.extra_artifacts, ['AnotherArtifact'])
+    self.assertTrue(grr_artifact_collector.use_tsk)
+    mock_SearchClients.assert_any_call('host2')
+    mock_SearchClients.assert_any_call('host1')
+
+  @mock.patch('grr_api_client.flow.FlowBase.Get')
+  @mock.patch('grr_api_client.client.ClientBase.CreateFlow')
+  @mock.patch('grr_api_client.api.GrrApi.SearchClients')
+  def testProcess(self, mock_SearchClients, mock_CreateFlow, mock_Get):
+    """Tests that the module is setup properly."""
+    test_state = state.DFTimewolfState()
+    mock_SearchClients.return_value = mock_grr_hosts.MOCK_CLIENT_LIST
+    mock_CreateFlow.return_value = mock_grr_hosts.MOCK_FLOW
+    mock_Get.return_value = mock_grr_hosts.MOCK_FLOW
+    grr_artifact_collector = grr_hosts.GRRArtifactCollector(test_state)
+    grr_artifact_collector.setup(
+        hosts='tomchop',
+        artifacts='RandomArtifact',
+        extra_artifacts='AnotherArtifact',
+        use_tsk=True,
+        reason='Random reason',
+        grr_server_url='localhost',
+        grr_username='user',
+        grr_password='password',
+        approvers='approver1,approver2',
+        verify=False,
+    )
+    result = grr_artifact_collector.process()
+    self.assertEqual(mock_CreateFlow.call_count, 1)
+    self.assertIsNotNone(result)
 
 
 class GRRFileCollectorTest(unittest.TestCase):
