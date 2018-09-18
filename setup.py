@@ -142,6 +142,7 @@ setup(
         'requests',
         'grr_api_client',
         'pyyaml',
+        'future',
     ],
     test_suite='nose.collector',
     test_require=[
