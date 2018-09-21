@@ -8,6 +8,7 @@ import datetime
 import os
 import re
 import time
+import threading
 import zipfile
 
 from grr_api_client import errors as grr_errors
@@ -316,6 +317,47 @@ class GRRArtifactCollector(GRRFlow):
     self._clients = self.find_clients(hosts)
     self.use_tsk = use_tsk
 
+  def _process_thread(self, client):
+    """Process a single GRR client.
+
+    Args:
+      client: a GRR client object.
+    """
+    system_type = client.data.os_info.system
+    fqdn = client.data.os_info.fqdn.lower()
+    client_dir = os.path.join(self.output_path)
+    if not os.path.isdir(client_dir):
+      os.makedirs(client_dir)
+    print('System type: {0:s}'.format(system_type))
+
+    # If the list is supplied by the user via a flag, honor that.
+    artifact_list = []
+    if self.artifacts:
+      print('Artifacts to be collected: {0:s}'.format(self.artifacts))
+      artifact_list = self.artifacts
+    else:
+      default_artifacts = self.artifact_registry.get(system_type, None)
+      print('Collecting default artifacts for {0:s}: {1:s}'.format(
+          system_type, default_artifacts))
+      artifact_list.extend(default_artifacts)
+
+    if self.extra_artifacts:
+      print('Throwing in an extra {0:s}'.format(self.extra_artifacts))
+      artifact_list.extend(self.extra_artifacts)
+      artifact_list = list(set(artifact_list))
+
+    if not artifact_list:
+      raise DFTimewolfError('No artifacts to collect')
+
+    flow_args = flows_pb2.ArtifactCollectorFlowArgs(
+        artifact_list=artifact_list,
+        use_tsk=self.use_tsk,
+        ignore_interpolation_errors=True,
+        apply_parsers=False)
+    flow_id = self._launch_flow(client, 'ArtifactCollectorFlow', flow_args)
+    self._await_flow(client, flow_id)
+    self.state.output.append((fqdn, client_dir))
+
   def process(self):
     """Collect the artifacts.
 
@@ -323,45 +365,14 @@ class GRRArtifactCollector(GRRFlow):
       DFTimewolfError: if no artifacts specified nor resolved by platform.
     """
 
-    # TODO(tomchop): Thread this
+    threads = []
     for client in self._clients:
-      # Create a list of artifacts to collect.
+      thread = threading.Thread(target=self._process_thread, args=(client, ))
+      threads.append(thread)
+      thread.start()
 
-      system_type = client.data.os_info.system
-      fqdn = client.data.os_info.fqdn.lower()
-      client_dir = os.path.join(self.output_path)
-      if not os.path.isdir(client_dir):
-        os.makedirs(client_dir)
-      print('System type: {0:s}'.format(system_type))
-
-      # If the list is supplied by the user via a flag, honor that.
-      artifact_list = []
-      if self.artifacts:
-        print('Artifacts to be collected: {0:s}'.format(self.artifacts))
-        artifact_list = self.artifacts
-      else:
-        default_artifacts = self.artifact_registry.get(system_type, None)
-        print('Collecting default artifacts for {0:s}: {1:s}'.format(
-            system_type, default_artifacts))
-        artifact_list.extend(default_artifacts)
-
-      if self.extra_artifacts:
-        print('Throwing in an extra {0:s}'.format(self.extra_artifacts))
-        artifact_list.extend(self.extra_artifacts)
-        artifact_list = list(set(artifact_list))
-
-      if not artifact_list:
-        raise DFTimewolfError('No artifacts to collect')
-
-      flow_args = flows_pb2.ArtifactCollectorFlowArgs(
-          artifact_list=artifact_list,
-          use_tsk=self.use_tsk,
-          ignore_interpolation_errors=True,
-          apply_parsers=False)
-      flow_id = self._launch_flow(client, 'ArtifactCollectorFlow', flow_args)
-      self._await_flow(client, flow_id)
-      self.state.output.append((fqdn, client_dir))
-
+    for thread in threads:
+      thread.join()
 
 class GRRFileCollector(GRRFlow):
   """File collector for GRR flows.
@@ -408,35 +419,42 @@ class GRRFileCollector(GRRFlow):
     self._clients = self.find_clients(hosts)
     self.use_tsk = use_tsk
 
+  def _process_thread(self, client):
+    """Process a single client.
+
+    Args:
+      client: GRR client object to act on.
+    """
+    file_list = self.files
+    if not file_list:
+      raise DFTimewolfError('File paths must be specified for FileFinder')
+    print('Filefinder to collect {0:d} items'.format(len(file_list)))
+
+    flow_action = flows_pb2.FileFinderAction(
+        action_type=flows_pb2.FileFinderAction.DOWNLOAD)
+    flow_args = flows_pb2.FileFinderArgs(
+        paths=file_list,
+        action=flow_action,)
+    flow_id = self._launch_flow(client, 'FileFinder', flow_args)
+    self._await_flow(client, flow_id)
+    fqdn = client.data.os_info.fqdn.lower()
+    self.state.output.append((fqdn, self.output_path))
+
   def process(self):
     """Collect the files.
-
-    Returns:
-      list of tuples containing:
-          str: human-readable description of the source of the collection. For
-              example, the name of the source host.
-          str: path to the collected data.
 
     Raises:
       DFTimewolfError: if no files specified.
     """
     # TODO(tomchop): Thread this
+    threads = []
     for client in self._clients:
-      file_list = self.files
-      if not file_list:
-        raise DFTimewolfError('File paths must be specified for FileFinder')
-      print('Filefinder to collect {0:d} items'.format(len(file_list)))
+      thread = threading.Thread(target=self._process_thread, args=(client, ))
+      threads.append(thread)
+      thread.start()
 
-      flow_action = flows_pb2.FileFinderAction(
-          action_type=flows_pb2.FileFinderAction.DOWNLOAD)
-      flow_args = flows_pb2.FileFinderArgs(
-          paths=file_list,
-          action=flow_action,)
-      flow_id = self._launch_flow(client, 'FileFinder', flow_args)
-      self._await_flow(client, flow_id)
-      fqdn = client.data.os_info.fqdn.lower()
-      self.state.output.append((fqdn, self.output_path))
-
+    for thread in threads:
+      thread.join()
 
 class GRRFlowCollector(GRRFlow):
   """Flow collector.
@@ -480,12 +498,6 @@ class GRRFlowCollector(GRRFlow):
 
   def process(self):
     """Collect the results.
-
-    Returns:
-      list: containing:
-          str: human-readable description of the source of the collection. For
-              example, the name of the source host.
-          str: path to the collected data.
 
     Raises:
       DFTimewolfError: if no files specified
