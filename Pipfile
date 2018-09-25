@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [dev-packages]
-pylint = "<2"
+pylint = "<2.0.0"
 mock = "*"
 coverage = "*"
 
