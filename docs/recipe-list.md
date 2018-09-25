@@ -10,7 +10,7 @@ hosts. If you want to collect the `BrowserHistory` and `LinuxLogFiles` from
 `tomchop.greendale.xyz` and `admin.greendale.xyz`, use this
 command:
 
-    $ dftimewolf grr_artifact_hosts tomchop.greendale.xyz,admin.greendale.xyz --artifact_list=BrowserHistory,LinuxLogFiles
+    $ dftimewolf grr_artifact_hosts tomchop.greendale.xyz,admin.greendale.xyz --artifacts BrowserHistory,LinuxLogFiles
 
 If `artifact_list` is not provided, the list defaults to:
 
