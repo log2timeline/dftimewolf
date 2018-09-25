@@ -337,9 +337,10 @@ class GRRArtifactCollector(GRRFlow):
       artifact_list = self.artifacts
     else:
       default_artifacts = self.artifact_registry.get(system_type, None)
-      print('Collecting default artifacts for {0:s}: {1:s}'.format(
-          system_type, default_artifacts))
-      artifact_list.extend(default_artifacts)
+      if default_artifacts:
+        print('Collecting default artifacts for {0:s}: {1:s}'.format(
+            system_type, ', '.join(default_artifacts)))
+        artifact_list.extend(default_artifacts)
 
     if self.extra_artifacts:
       print('Throwing in an extra {0:s}'.format(self.extra_artifacts))
@@ -446,7 +447,6 @@ class GRRFileCollector(GRRFlow):
     Raises:
       DFTimewolfError: if no files specified.
     """
-    # TODO(tomchop): Thread this
     threads = []
     for client in self._clients:
       thread = threading.Thread(target=self._process_thread, args=(client, ))
