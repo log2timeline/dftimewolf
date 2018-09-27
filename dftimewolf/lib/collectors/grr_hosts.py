@@ -175,31 +175,6 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
         break
       time.sleep(self._CHECK_FLOW_INTERVAL_SEC)
 
-  def print_status(self, flow):
-    """Print status of flow.
-
-    Args:
-      flow: GRR flow to check the status for.
-
-    Raises:
-      DFTimewolfError: if error encountered getting flow data.
-    """
-    client = self._get_client_by_id(self._client_id)
-    try:
-      status = client.Flow(flow.flow_id).Get().data
-    except grr_errors.UnknownError:
-      raise DFTimewolfError(
-          'Unable to stat flow {0:s} for client {1:s}'.format(
-              flow.flow_id, client.client_id))
-
-    code_to_msg = {
-        flows_pb2.FlowContext.ERROR: 'ERROR',
-        flows_pb2.FlowContext.TERMINATED: 'Complete',
-        flows_pb2.FlowContext.RUNNING: 'Running...'
-    }
-    msg = code_to_msg[status.state]
-    print('Status of flow {0:s}: {1:s}\n'.format(flow.flow_id, msg))
-
   def _download_files(self, client, flow_id):
     """Download files from the specified flow.
 
