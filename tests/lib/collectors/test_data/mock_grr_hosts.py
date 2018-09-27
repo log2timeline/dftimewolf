@@ -58,7 +58,15 @@ MOCK_CLIENT_LIST = [
 
 MOCK_CLIENT_REF = client.ClientRef(MOCK_CLIENT.client_id, context=True)
 
-flow_pb_terminated = flow_pb2.ApiFlow(urn="C.0000000000000001", flow_id="F:12345", state=flows_pb2.FlowContext.TERMINATED)
-flow_pb_error = flow_pb2.ApiFlow(urn="C.0000000000000001", flow_id="F:12345", state=flows_pb2.FlowContext.ERROR)
+flow_pb_terminated = flow_pb2.ApiFlow(
+    urn="C.0000000000000001",
+    flow_id="F:12345",
+    state=flows_pb2.FlowContext.TERMINATED
+)
+flow_pb_error = flow_pb2.ApiFlow(
+    urn="C.0000000000000001",
+    flow_id="F:12345",
+    state=flows_pb2.FlowContext.ERROR
+)
 MOCK_FLOW = flow.Flow(data=flow_pb_terminated, context=True)
 MOCK_FLOW_ERROR = flow.Flow(data=flow_pb_error, context=True)
