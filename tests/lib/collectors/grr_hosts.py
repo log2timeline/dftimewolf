@@ -231,7 +231,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     )
     self.assertEqual(len(test_state.output), 1)
     self.assertEqual(test_state.output[0][0], 'tomchop')
-    self.assertRegexpMatches(test_state.output[0][1], r'/tmp/tmp[\w]+/tomchop')
+    self.assertEqual(test_state.output[0][1], '/tmp/tmpRandom/tomchop')
 
 
 class GRRFileCollectorTest(unittest.TestCase):
