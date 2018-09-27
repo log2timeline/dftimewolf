@@ -18,6 +18,7 @@ from dftimewolf.cli.recipes import grr_hunt_artifacts
 from dftimewolf.cli.recipes import grr_hunt_file
 from dftimewolf.cli.recipes import grr_huntresults_plaso_timesketch
 from dftimewolf.cli.recipes import timesketch_upload
+from dftimewolf.cli.recipes import insider_triage
 
 from dftimewolf.lib import utils
 
@@ -27,6 +28,7 @@ from dftimewolf.lib.collectors import grr_hunt
 from dftimewolf.lib.exporters import timesketch
 from dftimewolf.lib.exporters import local_filesystem
 from dftimewolf.lib.processors import localplaso
+from dftimewolf.lib.processors import grepper
 
 from dftimewolf.lib.state import DFTimewolfState
 from dftimewolf.lib.errors import DFTimewolfError
@@ -36,6 +38,7 @@ signal.signal(signal.SIGINT, utils.signal_handler)
 config.Config.register_module(filesystem.FilesystemCollector)
 config.Config.register_module(localplaso.LocalPlasoProcessor)
 config.Config.register_module(timesketch.TimesketchExporter)
+config.Config.register_module(grepper.GrepperSearch)
 
 config.Config.register_module(grr_hosts.GRRArtifactCollector)
 config.Config.register_module(grr_hosts.GRRFileCollector)
@@ -62,6 +65,7 @@ config.Config.register_recipe(grr_hunt_artifacts)
 config.Config.register_recipe(grr_hunt_file)
 config.Config.register_recipe(grr_huntresults_plaso_timesketch)
 config.Config.register_recipe(timesketch_upload)
+config.Config.register_recipe(insider_triage)
 
 # TODO(tomchop) Change the print statements by a better logging / display system
 
