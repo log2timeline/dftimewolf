@@ -195,6 +195,7 @@ setup(
         'grr_api_client',
         'pyyaml',
         'future',
+        'turbinia',
     ],
     test_suite='nose.collector',
     test_require=[
