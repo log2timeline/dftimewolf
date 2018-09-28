@@ -5,12 +5,12 @@
 """
 from __future__ import unicode_literals
 
-_short_description = ('Fetches default artifacts from a list of GRR hosts '
+_short_description = ('Fetches requested artifacts from a list of GRR hosts '
                       'and processes them with grep.')
 
 contents = {
     'name':
-        'insider_triage',
+        'activity_triage',
     'short_description': _short_description,
     'modules': [{
         'name': 'GRRArtifactCollector',
