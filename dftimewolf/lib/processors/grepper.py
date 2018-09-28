@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 import os
 import subprocess
 import tempfile
-import cStringIO
 
 from dftimewolf.lib.module import BaseModule
 
@@ -16,7 +15,7 @@ class GrepperSearch(BaseModule):
   specific keywords.
 
   input: A file path to process, and a list of keywords to search for
-  output: matchThe path to the resulting Plaso storage file.
+  output: filepath and keyword match, to stdout.
   """
 
   def __init__(self, state):
@@ -40,11 +39,12 @@ class GrepperSearch(BaseModule):
     """Execute the grep"""
 
     for description, path in self.state.input:
-      log_file_path = os.path.join(self._output_path, 'grep.log')
+      log_file_path = os.path.join(self._output_path, 'triager.log')
       print('Log file: {0:s}'.format(log_file_path))
 
       # Build the grep command line.
-      cmd = ['egrep', '--color', '-roiw', self._keywords, path]
+      cmd = ['egrep', '-roiw', self._keywords, path]
+      cmd_sort = ['sort', '-u']
 
       # Run the grep command
       full_cmd = ' '.join(cmd)
@@ -52,14 +52,22 @@ class GrepperSearch(BaseModule):
       try:
         grep_proc = subprocess.Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        grep_output, error = grep_proc.communicate()
+        sort_proc = subprocess.Popen(cmd_sort, stdin=grep_proc.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        sort_output, error = sort_proc.communicate()
         grep_status = grep_proc.wait()
-        print("Grep Output: ")
-        print(grep_output)
+        sort_status = sort_proc.wait()
+        print("\nKeyword matching output:")
+        print(sort_output)
         if grep_status:
           # self.console_out.StdErr(errors)
           message = ('The egrep command {0:s} failed: {1:s}.'
                      ' Check log file for details.').format(full_cmd, error)
+          self.state.add_error(message, critical=True)
+
+        if sort_status:
+          # self.console_out.StdErr(errors)
+          message = ('The sort command {0:s} failed: {1:s}.'
+                     ' Check log file for details.').format(cmd_sort, error)
           self.state.add_error(message, critical=True)
         self.state.output.append((description, log_file_path))
       except OSError as exception:
