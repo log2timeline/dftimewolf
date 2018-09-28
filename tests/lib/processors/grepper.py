@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Tests the GRR host collectors."""
+"""Tests the activity_triage recipe and grepper processor."""
 
 from __future__ import unicode_literals
 
@@ -17,12 +17,20 @@ class GrepperTest(unittest.TestCase):
     test_state = state.DFTimewolfState()
     base_grepper_search = grepper.GrepperSearch(test_state)
     base_grepper_search.setup(
-        keywords='foo|pycharm|CE'
+        keywords='foo|lorem|nduja|triage|bar'
     )
     # Put here a path to a test directory where you have files to grep on the
     # above keyword. This is to simulate the path received an input from GRR
     base_grepper_search.state.input = \
-      [['Test description', '/testdir/triager-test']]
+      [['Test description', '../collectors/test_data/grepper_test_dir']]
     base_grepper_search.process()
     # pylint: disable=protected-access
-    self.assertEqual(base_grepper_search._keywords, 'foo|pycharm|CE')
+    self.assertEqual(
+        base_grepper_search._keywords, 'foo|lorem|nduja|triage|bar')
+
+    self.assertEqual(
+        base_grepper_search._final_output,
+        '../collectors/test_data/grepper_test_dir/grepper_test.txt:bar\n'
+        '../collectors/test_data/grepper_test_dir/grepper_test.txt:foo\n'
+        '../collectors/test_data/grepper_test_dir/grepper_test.txt:Lorem\n'
+        '../collectors/test_data/grepper_test_dir/grepper_test.txt:triage\n')

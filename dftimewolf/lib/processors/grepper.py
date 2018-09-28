@@ -15,13 +15,14 @@ class GrepperSearch(BaseModule):
   specific keywords.
 
   input: A file path to process, and a list of keywords to search for
-  output: filepath and keyword match, to stdout.
+  output: filepath and keyword match, to stdout (final_output).
   """
 
   def __init__(self, state):
     super(GrepperSearch, self).__init__(state)
     self._keywords = None
     self._output_path = None
+    self._final_output = None
 
   def setup(self, keywords=None):  # pylint: disable=arguments-differ
     """Sets up the _keywords attribute.
@@ -36,14 +37,14 @@ class GrepperSearch(BaseModule):
     pass
 
   def process(self):
-    """Execute the grep"""
+    """Execute the grep command"""
 
     for description, path in self.state.input:
       log_file_path = os.path.join(self._output_path, 'triager.log')
       print('Log file: {0:s}'.format(log_file_path))
 
       # Build the grep command line.
-      cmd = ['egrep', '-roiw', self._keywords, path]
+      cmd = ['egrep', '-roi', self._keywords, path]
       cmd_sort = ['sort', '-u']
 
       # Run the grep command
@@ -55,11 +56,11 @@ class GrepperSearch(BaseModule):
         sort_proc = subprocess.Popen(
             cmd_sort, stdin=grep_proc.stdout, stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
-        sort_output, error = sort_proc.communicate()
+        self._final_output, error = sort_proc.communicate()
         grep_status = grep_proc.wait()
         sort_status = sort_proc.wait()
         print("\nKeyword matching output:")
-        print(sort_output)
+        print(self._final_output)
         if grep_status:
           # self.console_out.StdErr(errors)
           message = ('The egrep command {0:s} failed: {1:s}.'
