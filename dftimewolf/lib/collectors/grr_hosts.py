@@ -175,38 +175,6 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
         break
       time.sleep(self._CHECK_FLOW_INTERVAL_SEC)
 
-    # Download the files collected by the flow
-    print('{0:s}: Downloading artifacts'.format(flow_id))
-    collected_file_path = self._download_files(client, flow_id)
-
-    if collected_file_path:
-      print('{0:s}: Downloaded: {1:s}'.format(flow_id, collected_file_path))
-
-  def print_status(self, flow):
-    """Print status of flow.
-
-    Args:
-      flow: GRR flow to check the status for.
-
-    Raises:
-      DFTimewolfError: if error encountered getting flow data.
-    """
-    client = self._get_client_by_id(self._client_id)
-    try:
-      status = client.Flow(flow.flow_id).Get().data
-    except grr_errors.UnknownError:
-      raise DFTimewolfError(
-          'Unable to stat flow {0:s} for client {1:s}'.format(
-              flow.flow_id, client.client_id))
-
-    code_to_msg = {
-        flows_pb2.FlowContext.ERROR: 'ERROR',
-        flows_pb2.FlowContext.TERMINATED: 'Complete',
-        flows_pb2.FlowContext.RUNNING: 'Running...'
-    }
-    msg = code_to_msg[status.state]
-    print('Status of flow {0:s}: {1:s}\n'.format(flow.flow_id, msg))
-
   def _download_files(self, client, flow_id):
     """Download files from the specified flow.
 
@@ -217,9 +185,6 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     Returns:
       str: path of downloaded files.
     """
-    if not os.path.isdir(self.output_path):
-      os.makedirs(self.output_path)
-
     output_file_path = os.path.join(
         self.output_path, '.'.join((flow_id, 'zip')))
 
@@ -232,11 +197,16 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     file_archive.WriteToFile(output_file_path)
 
     # Unzip archive for processing and remove redundant zip
+    fqdn = client.data.os_info.fqdn.lower()
+    client_output_file = os.path.join(self.output_path, fqdn)
+    if not os.path.isdir(client_output_file):
+      os.makedirs(client_output_file)
+
     with zipfile.ZipFile(output_file_path) as archive:
-      archive.extractall(path=self.output_path)
+      archive.extractall(path=client_output_file)
     os.remove(output_file_path)
 
-    return output_file_path
+    return client_output_file
 
 
 class GRRArtifactCollector(GRRFlow):
@@ -324,10 +294,6 @@ class GRRArtifactCollector(GRRFlow):
       client: a GRR client object.
     """
     system_type = client.data.os_info.system
-    fqdn = client.data.os_info.fqdn.lower()
-    client_dir = os.path.join(self.output_path)
-    if not os.path.isdir(client_dir):
-      os.makedirs(client_dir)
     print('System type: {0:s}'.format(system_type))
 
     # If the list is supplied by the user via a flag, honor that.
@@ -357,7 +323,11 @@ class GRRArtifactCollector(GRRFlow):
         apply_parsers=False)
     flow_id = self._launch_flow(client, 'ArtifactCollectorFlow', flow_args)
     self._await_flow(client, flow_id)
-    self.state.output.append((fqdn, client_dir))
+    collected_flow_data = self._download_files(client, flow_id)
+    if collected_flow_data:
+      print('{0:s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
+      fqdn = client.data.os_info.fqdn.lower()
+      self.state.output.append((fqdn, collected_flow_data))
 
   def process(self):
     """Collect the artifacts.
@@ -438,8 +408,11 @@ class GRRFileCollector(GRRFlow):
         action=flow_action,)
     flow_id = self._launch_flow(client, 'FileFinder', flow_args)
     self._await_flow(client, flow_id)
-    fqdn = client.data.os_info.fqdn.lower()
-    self.state.output.append((fqdn, self.output_path))
+    collected_flow_data = self._download_files(client, flow_id)
+    if collected_flow_data:
+      print('{0:s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
+      fqdn = client.data.os_info.fqdn.lower()
+      self.state.output.append((fqdn, collected_flow_data))
 
   def process(self):
     """Collect the files.
@@ -502,6 +475,11 @@ class GRRFlowCollector(GRRFlow):
     Raises:
       DFTimewolfError: if no files specified
     """
-    client_id = self._get_client_by_hostname(self.host).client_id
-    self._await_flow(self._get_client_by_id(client_id), self.flow_id)
-    self.state.output.append((self.host, self.output_path))
+    client = self._get_client_by_hostname(self.host)
+    self._await_flow(client, self.flow_id)
+    collected_flow_data = self._download_files(client, self.flow_id)
+    if collected_flow_data:
+      print('{0:s}: Downloaded: {1:s}'.format(
+          self.flow_id, collected_flow_data))
+      fqdn = client.data.os_info.fqdn.lower()
+      self.state.output.append((fqdn, collected_flow_data))
