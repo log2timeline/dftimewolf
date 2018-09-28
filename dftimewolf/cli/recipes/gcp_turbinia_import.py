@@ -23,7 +23,7 @@ contents = {
             'remote_project_name': '@remote_project_name',
             'remote_instance_name': '@instance',
             'incident_id': '@incident_id',
-            'turbinia_zone': '@turbinia_zone',
+            'zone': '@turbinia_zone',
             'disk_names': '@disks',
             'all_disks': '@all_disks',
             'boot_disk_size': '@boot_disk_size',
@@ -50,6 +50,8 @@ contents = {
 args = [
     ('remote_project_name',
      'Name of the project containing the instance / disks to copy ', None),
+    ('analysis_project_name', 'Name of the project where the analysis VM will'
+                              ' be created', None),
     ('--turbinia_zone', 'The GCP zone the disk to process (and Turbinia '
      'workers) are in', None),
     ('--incident_id', 'Incident ID (used for Timesketch description)',

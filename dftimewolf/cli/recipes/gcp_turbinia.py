@@ -8,8 +8,9 @@ recipe.
 
 from __future__ import unicode_literals
 
-_short_description = ('Processes a GCP persistent disk with Turbinia and sends '
-                      'results to Timesketch.')
+_short_description = (
+    'Processes a GCP persistent disk already in our forensics analysis project '
+    'with Turbinia and sends the results to Timesketch.')
 
 contents = {
     'name': 'gcp_turbinia',
@@ -18,8 +19,8 @@ contents = {
         'name': 'TurbiniaProcessor',
         'args': {
             'disk_name': '@disk_name',
-            'project': '@project',
-            'zone': '@zone',
+            'project': '@analysis_project_name',
+            'turbinia_zone': '@turbinia_zone',
         },
     }, {
         'name': 'TimesketchExporter',
@@ -34,10 +35,10 @@ contents = {
 }
 
 args = [
+    ('analysis_project_name', 'Name of GCP project disk exists in', None),
+    ('turbinia_zone',
+     'The GCP zone the disk to process (and Turbinia workers) are in', None),
     ('disk_name', 'Name of GCP persistent disk to process', None),
-    ('project', 'Name of GCP project disk exists in', None),
-    ('zone', 'The GCP zone the disk to process (and Turbinia workers) are in',
-     None),
     ('--incident_id', 'Incident ID (used for Timesketch description)', None),
     ('--sketch_id', 'Sketch to which the timeline should be added', None),
 ]

@@ -81,7 +81,7 @@ class GoogleCloudCollector(module.BaseModule):
           be copied from (string).
       incident_id: The incident ID on which the name of the analysis VM will be
           based (string).
-      zone: The sone in which new resources should be created (string).
+      zone: The zone in which new resources should be created (string).
       boot_disk_size: The size of the analysis VM boot disk (in GB) (float).
       remote_instance_name: The name of the instance in the remote project
           containing the disks to be copied (string).
