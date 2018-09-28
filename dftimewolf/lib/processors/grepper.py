@@ -52,7 +52,8 @@ class GrepperSearch(BaseModule):
       try:
         grep_proc = subprocess.Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        sort_proc = subprocess.Popen(cmd_sort, stdin=grep_proc.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        sort_proc = subprocess.Popen(cmd_sort, stdin=grep_proc.stdout,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         sort_output, error = sort_proc.communicate()
         grep_status = grep_proc.wait()
         sort_status = sort_proc.wait()

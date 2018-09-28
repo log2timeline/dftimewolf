@@ -19,7 +19,10 @@ class GrepperTest(unittest.TestCase):
     base_grepper_search.setup(
         keywords='foo|pycharm|CE'
     )
-    base_grepper_search.state.input = [['Test description', '/tmp/triager-test']]
+    # Put here a path to a test directory where you have files to grep on the
+    # above keyword. This is to simulate the path received an input from GRR
+    base_grepper_search.state.input = [['Test description',
+      '/testdir/triager-test']]
     base_grepper_search.process()
     # pylint: disable=protected-access
     self.assertEqual(base_grepper_search._keywords, 'foo|pycharm|CE')
