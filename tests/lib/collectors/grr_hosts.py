@@ -16,7 +16,8 @@ from dftimewolf.lib.errors import DFTimewolfError
 
 from tests.lib.collectors.test_data import mock_grr_hosts
 
-
+# Extensive access to protected members for testing.
+# pylint: disable=protected-access
 class GRRFlowTests(unittest.TestCase):
   """Tests for the GRRFlow base class."""
 
@@ -40,7 +41,6 @@ class GRRFlowTests(unittest.TestCase):
   def testGetClientByHostname(self, mock_SearchClients):
     """Tests that GetClientByHostname fetches the most recent GRR client."""
     mock_SearchClients.return_value = mock_grr_hosts.MOCK_CLIENT_LIST
-    # pylint: disable=protected-access
     client = self.grr_flow_module._get_client_by_hostname('tomchop')
     mock_SearchClients.assert_called_with('tomchop')
     self.assertEqual(
@@ -50,7 +50,6 @@ class GRRFlowTests(unittest.TestCase):
   def testGetClientByHostnameError(self, mock_SearchClients):
     """Tests that GetClientByHostname fetches the most recent GRR client."""
     mock_SearchClients.side_effect = grr_errors.UnknownError
-    # pylint: disable=protected-access
     self.grr_flow_module._get_client_by_hostname('tomchop')
     self.assertEqual(len(self.test_state.errors), 1)
     self.assertEqual(
@@ -62,7 +61,6 @@ class GRRFlowTests(unittest.TestCase):
   def testLaunchFlow(self, mock_CreateFlow):
     """Tests that CreateFlow is correctly called."""
     mock_CreateFlow.return_value = mock_grr_hosts.MOCK_FLOW
-    # pylint: disable=protected-access
     flow_id = self.grr_flow_module._launch_flow(
         mock_grr_hosts.MOCK_CLIENT, "FlowName", "FlowArgs")
     self.assertEqual(flow_id, 'F:12345')
@@ -77,7 +75,6 @@ class GRRFlowTests(unittest.TestCase):
     mock_ListFlows.return_value = [mock_grr_hosts.MOCK_FLOW]
     mock_Client.return_value = mock_grr_hosts.MOCK_CLIENT_REF
     mock_ClientRefGet.return_value = mock_grr_hosts.MOCK_CLIENT
-    # pylint: disable=protected-access
     client = self.grr_flow_module._get_client_by_id(
         mock_grr_hosts.MOCK_CLIENT.client_id)
     mock_Client.assert_called_once_with(mock_grr_hosts.MOCK_CLIENT.client_id)
@@ -89,7 +86,6 @@ class GRRFlowTests(unittest.TestCase):
     """Tests that keepalive flows are correctly created."""
     mock_CreateFlow.return_value = mock_grr_hosts.MOCK_FLOW
     self.grr_flow_module.keepalive = True
-    # pylint: disable=protected-access
     flow_id = self.grr_flow_module._launch_flow(
         mock_grr_hosts.MOCK_CLIENT, "FlowName", "FlowArgs")
     self.assertEqual(flow_id, 'F:12345')
@@ -102,7 +98,6 @@ class GRRFlowTests(unittest.TestCase):
   def testAwaitFlow(self, mock_FlowGet):
     """Test that no errors are generated when GRR flow succeeds."""
     mock_FlowGet.return_value = mock_grr_hosts.MOCK_FLOW
-    # pylint: disable=protected-access
     self.grr_flow_module._await_flow(mock_grr_hosts.MOCK_CLIENT, "F:12345")
     mock_FlowGet.assert_called_once()
     self.assertEqual(self.test_state.errors, [])
@@ -113,7 +108,6 @@ class GRRFlowTests(unittest.TestCase):
     mock_FlowGet.return_value = mock_grr_hosts.MOCK_FLOW_ERROR
     error_msg = 'F:12345: FAILED! Message from GRR:'
     with self.assertRaisesRegexp(DFTimewolfError, error_msg):
-      # pylint: disable=protected-access
       self.grr_flow_module._await_flow(mock_grr_hosts.MOCK_CLIENT, "F:12345")
 
   @mock.patch('grr_api_client.flow.FlowRef.Get')
@@ -122,7 +116,6 @@ class GRRFlowTests(unittest.TestCase):
     mock_FlowGet.side_effect = grr_errors.UnknownError
     error_msg = 'Unable to stat flow F:12345 for host'
     with self.assertRaisesRegexp(DFTimewolfError, error_msg):
-      # pylint: disable=protected-access
       self.grr_flow_module._await_flow(mock_grr_hosts.MOCK_CLIENT, "F:12345")
 
   @mock.patch('os.remove')
@@ -139,7 +132,6 @@ class GRRFlowTests(unittest.TestCase):
     self.grr_flow_module.output_path = '/tmp/random'
     mock_isdir.return_value = False  # Return false so makedirs is called
 
-    # pylint: disable=protected-access
     return_value = self.grr_flow_module._download_files(
         mock_grr_hosts.MOCK_CLIENT, "F:12345")
     self.assertEquals(return_value, '/tmp/random/tomchop')
@@ -160,7 +152,6 @@ class GRRFlowTests(unittest.TestCase):
     self.grr_flow_module.output_path = '/tmp/random'
     mock_exists.return_value = True  # Simulate existing flow directory
 
-    # pylint: disable=protected-access
     self.grr_flow_module._download_files(mock_grr_hosts.MOCK_CLIENT, "F:12345")
     mock_GetFilesArchive.assert_not_called()
 
