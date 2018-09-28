@@ -97,7 +97,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     clients = []
     for host in hosts:
       clients.append(self._get_client_by_hostname(host))
-    return clients
+    return [client for client in clients if client is not None]
 
   def _get_client_by_id(self, client_id):
     """Get GRR client dictionary and make sure valid approvals exist.
@@ -282,9 +282,7 @@ class GRRArtifactCollector(GRRFlow):
       self.extra_artifacts = [item.strip() for item
                               in extra_artifacts.strip().split(',')]
 
-    hosts = [item.strip() for item in hosts.strip().split(',')]
-    # TODO(tomchop): Thread this
-    self._clients = self.find_clients(hosts)
+    self.hostnames = [item.strip() for item in hosts.strip().split(',')]
     self.use_tsk = use_tsk
 
   def _process_thread(self, client):
@@ -314,7 +312,7 @@ class GRRArtifactCollector(GRRFlow):
       artifact_list = list(set(artifact_list))
 
     if not artifact_list:
-      raise DFTimewolfError('No artifacts to collect')
+      return
 
     flow_args = flows_pb2.ArtifactCollectorFlowArgs(
         artifact_list=artifact_list,
@@ -335,9 +333,8 @@ class GRRArtifactCollector(GRRFlow):
     Raises:
       DFTimewolfError: if no artifacts specified nor resolved by platform.
     """
-
     threads = []
-    for client in self._clients:
+    for client in self.find_clients(self.hostnames):
       thread = threading.Thread(target=self._process_thread, args=(client, ))
       threads.append(thread)
       thread.start()
@@ -386,8 +383,7 @@ class GRRFileCollector(GRRFlow):
     if files is not None:
       self.files = [item.strip() for item in files.strip().split(',')]
 
-    hosts = [item.strip() for item in hosts.strip().split(',')]
-    self._clients = self.find_clients(hosts)
+    self.hostnames = [item.strip() for item in hosts.strip().split(',')]
     self.use_tsk = use_tsk
 
   def _process_thread(self, client):
@@ -398,7 +394,7 @@ class GRRFileCollector(GRRFlow):
     """
     file_list = self.files
     if not file_list:
-      raise DFTimewolfError('File paths must be specified for FileFinder')
+      return
     print('Filefinder to collect {0:d} items'.format(len(file_list)))
 
     flow_action = flows_pb2.FileFinderAction(
@@ -421,7 +417,7 @@ class GRRFileCollector(GRRFlow):
       DFTimewolfError: if no files specified.
     """
     threads = []
-    for client in self._clients:
+    for client in self.find_clients(self.hostnames):
       thread = threading.Thread(target=self._process_thread, args=(client, ))
       threads.append(thread)
       thread.start()
