@@ -285,7 +285,7 @@ class GRRFileCollectorTest(unittest.TestCase):
                   mock_launch_flow,
                   mock_SearchClients,
                   mock_download_files,
-                  unused_mock_await_flow):
+                  _):
     """Tests that processing launches appropriate flows."""
     mock_SearchClients.return_value = mock_grr_hosts.MOCK_CLIENT_LIST
     mock_download_files.return_value = '/tmp/something'
@@ -323,7 +323,7 @@ class GRRFlowCollector(unittest.TestCase):
   @mock.patch('grr_api_client.api.GrrApi.SearchClients')
   def testProcess(self,
                   mock_SearchClients,
-                  unused_mock_await_flow,
+                  _,
                   mock_download_files):
     """Tests that the collector can be initialized."""
     mock_SearchClients.return_value = mock_grr_hosts.MOCK_CLIENT_LIST

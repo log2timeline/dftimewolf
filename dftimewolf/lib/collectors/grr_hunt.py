@@ -43,14 +43,6 @@ class GRRHunt(grr_base.GRRBaseModule):  # pylint: disable=abstract-method
     self._check_approval_wrapper(hunt, hunt.Start)
     return hunt
 
-  def print_status(self):
-    """Print status of hunt."""
-    status = self.grr_api.Hunt(self.hunt_id).Get().data
-    print('Status of hunt {0:s}'.format(self.hunt_id))
-    print('Total clients: {0:d}'.format(status.all_clients_count))
-    print('Completed clients: {0:d}'.format(status.completed_clients_count))
-    print('Outstanding clients: {0:d}'.format(status.remaining_clients_count))
-
 
 class GRRHuntArtifactCollector(GRRHunt):
   """Artifact collector for GRR hunts.
