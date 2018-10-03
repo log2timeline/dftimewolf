@@ -35,7 +35,7 @@ contents = {
 }
 
 args = [
-    ('analysis_project_name', 'Name of GCP project disk exists in', None),
+    ('analysis_project_name', 'Name of GCP project the disk exists in', None),
     ('turbinia_zone',
      'The GCP zone the disk to process (and Turbinia workers) are in', None),
     ('disk_name', 'Name of GCP persistent disk to process', None),
