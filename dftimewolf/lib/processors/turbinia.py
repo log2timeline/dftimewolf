@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Processes cloud artifacts using a remote Turbinia instance."""
+"""Processes GCP cloud disks using a remote Turbinia instance."""
 from __future__ import unicode_literals
 from __future__ import absolute_import
 from __future__ import print_function
