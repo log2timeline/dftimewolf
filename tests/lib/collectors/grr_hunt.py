@@ -14,6 +14,8 @@ from dftimewolf.lib import state
 from dftimewolf.lib.collectors import grr_hunt
 from tests.lib.collectors.test_data import mock_grr_hosts
 
+# Mocking of classes.
+# pylint: disable=invalid-name
 class GRRHuntArtifactCollectorTest(unittest.TestCase):
   """Tests for the GRR artifact collector."""
 

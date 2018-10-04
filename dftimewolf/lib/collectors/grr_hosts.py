@@ -253,7 +253,7 @@ class GRRArtifactCollector(GRRFlow):
     self.use_tsk = False
     self.keepalive = False
 
-  # pylint: disable=arguments-differ
+  # pylint: disable=arguments-differ,too-many-arguments
   def setup(self,
             hosts, artifacts, extra_artifacts, use_tsk,
             reason, grr_server_url, grr_username, grr_password, approvers=None,
@@ -270,6 +270,7 @@ class GRRArtifactCollector(GRRFlow):
       grr_username: GRR username.
       grr_password: GRR password.
       approvers: list of GRR approval recipients.
+      verify: boolean, whether to verify the GRR server's x509 certificate.
     """
     super(GRRArtifactCollector, self).setup(
         reason, grr_server_url, grr_username, grr_password, approvers=approvers,
@@ -375,6 +376,7 @@ class GRRFileCollector(GRRFlow):
       grr_username: GRR username.
       grr_password: GRR password.
       approvers: list of GRR approval recipients.
+      verify: boolean, whether to verify the GRR server's x509 certificate.
     """
     super(GRRFileCollector, self).setup(
         reason, grr_server_url, grr_username, grr_password,
@@ -458,6 +460,7 @@ class GRRFlowCollector(GRRFlow):
       grr_username: GRR username.
       grr_password: GRR password.
       approvers: list of GRR approval recipients.
+      verify: boolean, whether to verify the GRR server's x509 certificate.
     """
     super(GRRFlowCollector, self).setup(
         reason, grr_server_url, grr_username, grr_password,
