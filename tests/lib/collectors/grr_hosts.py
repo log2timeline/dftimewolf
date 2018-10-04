@@ -16,8 +16,8 @@ from dftimewolf.lib.errors import DFTimewolfError
 
 from tests.lib.collectors.test_data import mock_grr_hosts
 
-# Extensive access to protected members for testing.
-# pylint: disable=protected-access
+# Extensive access to protected members for testing, and mocking of classes.
+# pylint: disable=protected-access,invalid-name
 class GRRFlowTests(unittest.TestCase):
   """Tests for the GRRFlow base class."""
 
