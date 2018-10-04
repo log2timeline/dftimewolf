@@ -41,9 +41,5 @@ class BaseModule(threading.Thread):
 
     Modules take input information and process it into output information,
     which can in turn be ingested as input information by other modules.
-
-    Args:
-      input: dict: The input information to be processed
-      settings: dict: Module settings
     """
     raise NotImplementedError

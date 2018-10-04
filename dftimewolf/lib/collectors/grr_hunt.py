@@ -75,6 +75,7 @@ class GRRHuntArtifactCollector(GRRHunt):
       grr_username: GRR username.
       grr_password: GRR password.
       approvers: str, comma-separated list of GRR approval recipients.
+      verify: boolean, whether to verify the GRR server's x509 certificate.
     """
     super(GRRHuntArtifactCollector, self).setup(
         reason, grr_server_url, grr_username, grr_password,
@@ -131,6 +132,7 @@ class GRRHuntFileCollector(GRRHunt):
       grr_username: GRR username.
       grr_password: GRR password.
       approvers: comma-separated list of GRR approval recipients.
+      verify: boolean, whether to verify the GRR server's x509 certificate.
     """
     super(GRRHuntFileCollector, self).setup(
         reason, grr_server_url, grr_username, grr_password,
@@ -185,6 +187,7 @@ class GRRHuntDownloader(GRRHunt):
       grr_username: GRR username.
       grr_password: GRR password.
       approvers: comma-separated list of GRR approval recipients.
+      verify: boolean, whether to verify the GRR server's x509 certificate.
     """
     super(GRRHuntDownloader, self).setup(
         reason, grr_server_url, grr_username, grr_password,
@@ -327,9 +330,6 @@ class GRRHuntDownloader(GRRHunt):
 
   def process(self):
     """Construct and start a new File hunt.
-
-    Returns:
-      The newly created GRR hunt object.
 
     Raises:
       RuntimeError: if no items specified for collection.

@@ -87,6 +87,9 @@ def ReadFromStdin():
 
   Yields:
     Tuple of path to artifacts or processed artifacts and a name
+
+  Raises:
+    IndexError: if input from stdin cannot be read.
   """
   for line in sys.stdin:
     path_name = line.strip('\n').split()
