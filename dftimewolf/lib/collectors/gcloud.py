@@ -30,12 +30,7 @@ class GoogleCloudCollector(module.BaseModule):
     pass
 
   def process(self):
-    """Copy a disk to the analysis project.
-
-    Returns:
-      Array containing a tuple of the analysis VM's name and name of the new
-      copy of the disk.
-    """
+    """Copy a disk to the analysis project."""
     for disk in self.disks_to_copy:
       print "Disk copy of {0:s} started...".format(disk.name)
       snapshot = disk.snapshot()
