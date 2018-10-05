@@ -16,6 +16,8 @@ from turbinia.message import TurbiniaRequest
 
 from dftimewolf.lib.module import BaseModule
 
+# pylint: disable=no-member
+
 
 class TurbiniaProcessor(BaseModule):
   """Process cloud disks with a remote Turbinia instance.
