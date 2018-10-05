@@ -7,14 +7,14 @@ from __future__ import print_function
 import os
 import tempfile
 
-from dftimewolf.lib.module import BaseModule
-
 from turbinia import client as turbinia_client
 from turbinia import config as turbinia_config
 from turbinia import evidence
 from turbinia import output_manager
 from turbinia import TurbiniaException
 from turbinia.message import TurbiniaRequest
+
+from dftimewolf.lib.module import BaseModule
 
 
 class TurbiniaProcessor(BaseModule):
