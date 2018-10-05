@@ -1,10 +1,9 @@
 """Creates a forensic VM and copies a GCP disk to it for anaysis."""
-
-from dftimewolf.lib import module
-
 from googleapiclient.errors import HttpError
 from oauth2client.client import AccessTokenRefreshError
 from turbinia.lib import libcloudforensics
+
+from dftimewolf.lib import module
 
 
 class GoogleCloudCollector(module.BaseModule):
