@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import unittest
 import mock
+import six
 
 from grr_response_proto import flows_pb2
 from grr_api_client import errors as grr_errors
@@ -107,7 +108,7 @@ class GRRFlowTests(unittest.TestCase):
     """Test that an exception is raised when flow has an ERROR status."""
     mock_FlowGet.return_value = mock_grr_hosts.MOCK_FLOW_ERROR
     error_msg = 'F:12345: FAILED! Message from GRR:'
-    with self.assertRaisesRegex(DFTimewolfError, error_msg):
+    with six.assertRaisesRegex(self, DFTimewolfError, error_msg):
       self.grr_flow_module._await_flow(mock_grr_hosts.MOCK_CLIENT, "F:12345")
 
   @mock.patch('grr_api_client.flow.FlowRef.Get')
@@ -115,7 +116,7 @@ class GRRFlowTests(unittest.TestCase):
     """"Test that an exception is raised if the GRR API raises an error."""
     mock_FlowGet.side_effect = grr_errors.UnknownError
     error_msg = 'Unable to stat flow F:12345 for host'
-    with self.assertRaisesRegex(DFTimewolfError, error_msg):
+    with six.assertRaisesRegex(self, DFTimewolfError, error_msg):
       self.grr_flow_module._await_flow(mock_grr_hosts.MOCK_CLIENT, "F:12345")
 
   @mock.patch('os.remove')

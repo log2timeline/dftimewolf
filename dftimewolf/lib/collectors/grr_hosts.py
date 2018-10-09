@@ -74,7 +74,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     # First, count total seconds. This will return a float.
     last_seen_seconds = (
         datetime.datetime.utcnow() - last_seen_datetime).total_seconds()
-    last_seen_minutes = round(last_seen_seconds / 60)
+    last_seen_minutes = int(round(last_seen_seconds / 60))
 
     print('{0:s}: Found active client'.format(client.client_id))
     print('Found active client: {0:s}'.format(client.client_id))
