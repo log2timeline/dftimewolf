@@ -18,6 +18,3 @@ chardet = "*"
 pyyaml = "*"
 future = "*"
 six = "*"
-
-[requires]
-python_version = "3.5"
