@@ -295,7 +295,7 @@ class GRRFileCollectorTest(unittest.TestCase):
                 action_type=flows_pb2.FileFinderAction.DOWNLOAD)
         )
     )
-    assert self.test_state.output[0] == ('tomchop', '/tmp/something')
+    self.assertEqual(self.test_state.output[0], ('tomchop', '/tmp/something'))
 
 
 class GRRFlowCollector(unittest.TestCase):
