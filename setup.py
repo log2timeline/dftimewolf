@@ -200,7 +200,6 @@ setup(
     test_require=[
         'beautifulsoup4',
         'nose',
-        'mock',
         'pylint<2',
         'coverage',
     ]

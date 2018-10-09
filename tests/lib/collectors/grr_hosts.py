@@ -79,7 +79,7 @@ class GRRFlowTests(unittest.TestCase):
         mock_grr_hosts.MOCK_CLIENT.client_id)
     mock_Client.assert_called_once_with(mock_grr_hosts.MOCK_CLIENT.client_id)
     mock_ListFlows.assert_called_once()
-    self.assertEquals(client, mock_grr_hosts.MOCK_CLIENT)
+    self.assertEqual(client, mock_grr_hosts.MOCK_CLIENT)
 
   @mock.patch('grr_api_client.client.ClientBase.CreateFlow')
   def testLaunchFlowKeepalive(self, mock_CreateFlow):
@@ -107,7 +107,7 @@ class GRRFlowTests(unittest.TestCase):
     """Test that an exception is raised when flow has an ERROR status."""
     mock_FlowGet.return_value = mock_grr_hosts.MOCK_FLOW_ERROR
     error_msg = 'F:12345: FAILED! Message from GRR:'
-    with self.assertRaisesRegexp(DFTimewolfError, error_msg):
+    with self.assertRaisesRegex(DFTimewolfError, error_msg):
       self.grr_flow_module._await_flow(mock_grr_hosts.MOCK_CLIENT, "F:12345")
 
   @mock.patch('grr_api_client.flow.FlowRef.Get')
@@ -115,7 +115,7 @@ class GRRFlowTests(unittest.TestCase):
     """"Test that an exception is raised if the GRR API raises an error."""
     mock_FlowGet.side_effect = grr_errors.UnknownError
     error_msg = 'Unable to stat flow F:12345 for host'
-    with self.assertRaisesRegexp(DFTimewolfError, error_msg):
+    with self.assertRaisesRegex(DFTimewolfError, error_msg):
       self.grr_flow_module._await_flow(mock_grr_hosts.MOCK_CLIENT, "F:12345")
 
   @mock.patch('os.remove')
@@ -134,7 +134,7 @@ class GRRFlowTests(unittest.TestCase):
 
     return_value = self.grr_flow_module._download_files(
         mock_grr_hosts.MOCK_CLIENT, "F:12345")
-    self.assertEquals(return_value, '/tmp/random/tomchop')
+    self.assertEqual(return_value, '/tmp/random/tomchop')
     mock_GetFilesArchive.assert_called_once()
     mock_ZipFile.assert_called_once_with('/tmp/random/F:12345.zip')
     mock_isdir.assert_called_once_with('/tmp/random/tomchop')
@@ -216,11 +216,13 @@ class GRRArtifactCollectorTest(unittest.TestCase):
         verify=False
     )
     self.grr_artifact_collector.process()
-    mock_ArtifactCollectorFlowArgs.assert_called_once_with(
-        apply_parsers=False,  # default argument
-        ignore_interpolation_errors=True,  # default argument
-        use_tsk=True,
-        artifact_list=['AnotherArtifact', 'RandomArtifact'])
+    kwargs = mock_ArtifactCollectorFlowArgs.call_args[1]
+    # raise ValueError(str(kwargs[1]))
+    self.assertFalse(kwargs['apply_parsers'])  # default argument
+    self.assertTrue(kwargs['ignore_interpolation_errors'])  # default argument
+    self.assertTrue(kwargs['use_tsk'])
+    sorted_artifacts = sorted(['AnotherArtifact', 'RandomArtifact'])
+    self.assertEqual(sorted(kwargs['artifact_list']), sorted_artifacts)
 
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._download_files')
   @mock.patch('grr_api_client.flow.FlowBase.Get')
@@ -267,9 +269,9 @@ class GRRFileCollectorTest(unittest.TestCase):
   def testInitialization(self):
     """Tests that the collector can be initialized."""
     self.assertIsNotNone(self.grr_file_collector)
-    self.assertEquals(self.grr_file_collector.hostnames,
+    self.assertEqual(self.grr_file_collector.hostnames,
                       ['tomchop', 'tomchop2'])
-    self.assertEquals(self.grr_file_collector.files, ['/etc/passwd'])
+    self.assertEqual(self.grr_file_collector.files, ['/etc/passwd'])
 
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._await_flow')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._download_files')
@@ -293,7 +295,7 @@ class GRRFileCollectorTest(unittest.TestCase):
                 action_type=flows_pb2.FileFinderAction.DOWNLOAD)
         )
     )
-    self.assertEquals(self.test_state.output[0], ('tomchop', '/tmp/something'))
+    assert self.test_state.output[0] == ('tomchop', '/tmp/something')
 
 
 class GRRFlowCollector(unittest.TestCase):
@@ -325,7 +327,7 @@ class GRRFlowCollector(unittest.TestCase):
     self.grr_flow_collector.process()
     mock_download_files.assert_called_once_with(
         mock_grr_hosts.MOCK_CLIENT_RECENT, 'F:12345')
-    self.assertEquals(self.test_state.output[0], ('tomchop', '/tmp/something'))
+    self.assertEqual(self.test_state.output[0], ('tomchop', '/tmp/something'))
 
 if __name__ == '__main__':
   unittest.main()
