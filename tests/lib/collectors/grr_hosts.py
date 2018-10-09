@@ -270,7 +270,7 @@ class GRRFileCollectorTest(unittest.TestCase):
     """Tests that the collector can be initialized."""
     self.assertIsNotNone(self.grr_file_collector)
     self.assertEqual(self.grr_file_collector.hostnames,
-                      ['tomchop', 'tomchop2'])
+                     ['tomchop', 'tomchop2'])
     self.assertEqual(self.grr_file_collector.files, ['/etc/passwd'])
 
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._await_flow')
