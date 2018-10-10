@@ -16,6 +16,7 @@ pytz = "*"
 chardet = "*"
 "urllib3" = "*"
 pyyaml = "*"
+turbinia = "*"
 future = "*"
 
 [requires]
