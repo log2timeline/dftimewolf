@@ -219,11 +219,13 @@ class GRRArtifactCollectorTest(unittest.TestCase):
         verify=False
     )
     self.grr_artifact_collector.process()
-    mock_ArtifactCollectorFlowArgs.assert_called_once_with(
-        apply_parsers=False,  # default argument
-        ignore_interpolation_errors=True,  # default argument
-        use_tsk=True,
-        artifact_list=['AnotherArtifact', 'RandomArtifact'])
+    kwargs = mock_ArtifactCollectorFlowArgs.call_args[1]
+    # raise ValueError(str(kwargs[1]))
+    self.assertFalse(kwargs['apply_parsers'])  # default argument
+    self.assertTrue(kwargs['ignore_interpolation_errors'])  # default argument
+    self.assertTrue(kwargs['use_tsk'])
+    sorted_artifacts = sorted(['AnotherArtifact', 'RandomArtifact'])
+    self.assertEqual(sorted(kwargs['artifact_list']), sorted_artifacts)
 
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._download_files')
   @mock.patch('grr_api_client.flow.FlowBase.Get')
