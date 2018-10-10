@@ -189,6 +189,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
                      ['tomchop', 'tomchop2'])
     self.assertTrue(self.grr_artifact_collector.use_tsk)
 
+  @mock.patch('grr_api_client.flow.FlowBase.Get')
   @mock.patch('grr_api_client.client.ClientBase.CreateFlow')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._download_files')
   @mock.patch('grr_response_proto.flows_pb2.ArtifactCollectorFlowArgs')
@@ -197,11 +198,13 @@ class GRRArtifactCollectorTest(unittest.TestCase):
                                    mock_SearchClients,
                                    mock_ArtifactCollectorFlowArgs,
                                    mock_DownloadFiles,
-                                   mock_CreateFlow):
+                                   mock_CreateFlow,
+                                   mock_Get):
     """Tests that artifacts defined during setup are searched for."""
     mock_DownloadFiles.return_value = '/tmp/tmpRandom/tomchop'
     mock_SearchClients.return_value = mock_grr_hosts.MOCK_CLIENT_LIST
     mock_CreateFlow.return_value = mock_grr_hosts.MOCK_FLOW
+    mock_Get.return_value = mock_grr_hosts.MOCK_FLOW
     self.grr_artifact_collector = grr_hosts.GRRArtifactCollector(
         self.test_state)
     self.grr_artifact_collector.setup(
@@ -218,7 +221,6 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     )
     self.grr_artifact_collector.process()
     kwargs = mock_ArtifactCollectorFlowArgs.call_args[1]
-    # raise ValueError(str(kwargs[1]))
     self.assertFalse(kwargs['apply_parsers'])  # default argument
     self.assertTrue(kwargs['ignore_interpolation_errors'])  # default argument
     self.assertTrue(kwargs['use_tsk'])
