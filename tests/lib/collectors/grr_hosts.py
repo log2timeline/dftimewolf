@@ -220,7 +220,6 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     )
     self.grr_artifact_collector.process()
     kwargs = mock_ArtifactCollectorFlowArgs.call_args[1]
-    # raise ValueError(str(kwargs[1]))
     self.assertFalse(kwargs['apply_parsers'])  # default argument
     self.assertTrue(kwargs['ignore_interpolation_errors'])  # default argument
     self.assertTrue(kwargs['use_tsk'])
