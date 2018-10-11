@@ -1,12 +1,10 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "a10af5f062a693e1c61e526c4c0d40dc7950fcee18a7e6bbbdf587946fddc2de"
+            "sha256": "2cc433484dfe31f177f9e88a21d23f2c932e3f42e5ef0eafc385e57a590d98d0"
         },
         "pipfile-spec": 6,
-        "requires": {
-            "python_version": "2.7"
-        },
+        "requires": {},
         "sources": [
             {
                 "name": "pypi",
@@ -16,14 +14,6 @@
         ]
     },
     "default": {
-        "appnope": {
-            "hashes": [
-                "sha256:5b26757dc6f79a3b7dc9fab95359328d5747fcb2409d331ea66d0272b90ab2a0",
-                "sha256:8b995ffe925347a2138d7ac0fe77155e4311a0ea6d6da4f5128fe4b3cbe5ed71"
-            ],
-            "markers": "sys_platform == 'darwin'",
-            "version": "==0.1.0"
-        },
         "asn1crypto": {
             "hashes": [
                 "sha256:2f1adbb7546ed199e3c90ef23ec95c5cf3585bac7d11fb7eb562a3fe89c64e87",
@@ -159,6 +149,7 @@
                 "sha256:6bd0f6ad48ec2aa117d3d141940d484deccda84d4fcd884f5c3d93c23ecd8c79",
                 "sha256:8ad8c4783bf61ded74527bffb48ed9b54166685e4230386a9ed9b1279e2df5b1"
             ],
+            "markers": "python_version == '2.7'",
             "version": "==1.1.6"
         },
         "filelock": {
@@ -180,6 +171,7 @@
                 "sha256:9ec02aa7d674acb8618afb127e27fde7fc68994c0437ad759fa094a574adb265",
                 "sha256:ec0a6cb848cc212002b9828c3e34c675e0c9ff6741dc445cab6fdd4e1085d1f1"
             ],
+            "markers": "python_version < '3.2'",
             "version": "==3.2.0"
         },
         "google-api-core": {
@@ -296,16 +288,16 @@
         },
         "grr-api-client": {
             "hashes": [
-                "sha256:1772bcd4aca89f68cd5af599888da91cb37476cc92e123e36ae54fcf6d406229"
+                "sha256:65681c211152f954b9907a533be5b397eb555ffd5fdd7d0375b3431580f81d77"
             ],
             "index": "pypi",
-            "version": "==3.2.4.post0"
+            "version": "==3.2.4.post2"
         },
         "grr-response-proto": {
             "hashes": [
-                "sha256:4872d0f45052286649b8ae5af228ef0602b2591ccbd3008367a6eaedb4b3b419"
+                "sha256:32c61cda89bb8062d69577132b8f9f2d1db0512bfc82753728c49f5cca360fa7"
             ],
-            "version": "==3.2.4.post0"
+            "version": "==3.2.4.post2"
         },
         "httplib2": {
             "hashes": [
@@ -355,7 +347,7 @@
                 "sha256:8eb170f8d0d61825e09a95b38be068299ddeda82f35e96c3301a8a5e7604cb83",
                 "sha256:d1aa2a11ba7b8f7b21ab852b1fb5afb277e1bb99d5dfc663380b5015c0d80c5a"
             ],
-            "markers": "python_version == '2.7' or python_version == '3.3'",
+            "markers": "python_version in '2.6 2.7 3.2 3.3'",
             "version": "==2.3.2"
         },
         "pexpect": {
@@ -530,6 +522,7 @@
                 "sha256:70e8a77beed4562e7f14fe23a786b54f6296e34344c23bc42f07b15018ff98e9",
                 "sha256:832dc0e10feb1aa2c68dcc57dbb658f1c7e65b9b61af69048abc87a2db00a0eb"
             ],
+            "index": "pypi",
             "version": "==1.11.0"
         },
         "traitlets": {
@@ -652,6 +645,7 @@
                 "sha256:6bd0f6ad48ec2aa117d3d141940d484deccda84d4fcd884f5c3d93c23ecd8c79",
                 "sha256:8ad8c4783bf61ded74527bffb48ed9b54166685e4230386a9ed9b1279e2df5b1"
             ],
+            "markers": "python_version == '2.7'",
             "version": "==1.1.6"
         },
         "funcsigs": {
@@ -667,6 +661,7 @@
                 "sha256:9ec02aa7d674acb8618afb127e27fde7fc68994c0437ad759fa094a574adb265",
                 "sha256:ec0a6cb848cc212002b9828c3e34c675e0c9ff6741dc445cab6fdd4e1085d1f1"
             ],
+            "markers": "python_version < '3.2'",
             "version": "==3.2.0"
         },
         "isort": {
@@ -754,6 +749,7 @@
                 "sha256:70e8a77beed4562e7f14fe23a786b54f6296e34344c23bc42f07b15018ff98e9",
                 "sha256:832dc0e10feb1aa2c68dcc57dbb658f1c7e65b9b61af69048abc87a2db00a0eb"
             ],
+            "index": "pypi",
             "version": "==1.11.0"
         },
         "wrapt": {

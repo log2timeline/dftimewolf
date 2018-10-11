@@ -71,7 +71,7 @@ class GRRBaseModule(BaseModule):  # pylint: disable=abstract-method
       try:
         return grr_function(*args, **kwargs)
       except grr_errors.AccessForbiddenError as exception:
-        print('No valid approval found: {0:s}'.format(exception))
+        print('No valid approval found: {0!s}'.format(exception))
         # If approval was already sent, just wait a bit more.
         if approval_sent:
           print('Approval not yet granted, waiting {0:d}s'.format(
@@ -90,7 +90,7 @@ class GRRBaseModule(BaseModule):  # pylint: disable=abstract-method
         grr_object.CreateApproval(
             reason=self.reason, notified_users=self.approvers)
         approval_sent = True
-        print('{0:s}: approval request sent to: {1:s} (reason: {2:s})'.format(
+        print('{0!s}: approval request sent to: {1!s} (reason: {2:s})'.format(
             grr_object, self.approvers, self.reason))
 
   def cleanup(self):

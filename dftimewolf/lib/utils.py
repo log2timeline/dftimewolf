@@ -10,6 +10,7 @@ import re
 import sys
 
 import pytz
+import six
 
 TOKEN_REGEX = re.compile(r'\@([\w_]+)')
 
@@ -133,12 +134,12 @@ def import_args_from_dict(value, args, config):
     The first caller of the function will receive a dictionary in which strings
     starting with "@" are replaced by the parameters in args.
   """
-  if isinstance(value, (str, unicode)):
+  if isinstance(value, six.string_types):
     for match in TOKEN_REGEX.finditer(str(value)):
       token = match.group(1)
       if token in args:
         actual_param = args[token]
-        if isinstance(actual_param, (str, unicode)):
+        if isinstance(actual_param, six.string_types):
           value = value.replace("@"+token, args[token])
         else:
           value = actual_param
@@ -166,7 +167,7 @@ def check_placeholders(value):
     Top-level caller: a modified dict with replaced tokens.
     Recursive caller: a modified object with replaced tokens.
   """
-  if isinstance(value, (str, unicode)):
+  if isinstance(value, six.string_types):
     if TOKEN_REGEX.search(value):
       raise ValueError('{0:s} must be replaced in dictionary'.format(value))
   elif isinstance(value, list):
