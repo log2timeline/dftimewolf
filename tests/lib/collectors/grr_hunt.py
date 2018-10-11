@@ -38,12 +38,12 @@ class GRRHuntArtifactCollectorTest(unittest.TestCase):
     """Tests that the process function issues correct GRR API calls."""
     self.grr_hunt_artifact_collector.process()
     call_kwargs = mock_CreateHunt.call_args[1]  # extract call kwargs
-    self.assertEquals(call_kwargs['flow_args'].artifact_list,
-                      ['RandomArtifact'])
-    self.assertEquals(call_kwargs['flow_args'].use_tsk, True)
-    self.assertEquals(call_kwargs['flow_name'], 'ArtifactCollectorFlow')
-    self.assertEquals(call_kwargs['hunt_runner_args'].description,
-                      'random reason')
+    self.assertEqual(call_kwargs['flow_args'].artifact_list,
+                     ['RandomArtifact'])
+    self.assertEqual(call_kwargs['flow_args'].use_tsk, True)
+    self.assertEqual(call_kwargs['flow_name'], 'ArtifactCollectorFlow')
+    self.assertEqual(call_kwargs['hunt_runner_args'].description,
+                     'random reason')
 
 
 class GRRHuntFileCollectorTest(unittest.TestCase):
@@ -64,7 +64,7 @@ class GRRHuntFileCollectorTest(unittest.TestCase):
 
   def testInitialization(self):
     """Tests that the collector can be initialized."""
-    self.assertEquals(
+    self.assertEqual(
         self.grr_hunt_file_collector.file_path_list,
         ['/etc/passwd', '/etc/shadow']
     )
@@ -74,13 +74,13 @@ class GRRHuntFileCollectorTest(unittest.TestCase):
     """Tests that the process method invokes the correct GRR API calls."""
     self.grr_hunt_file_collector.process()
     call_kwargs = mock_CreateHunt.call_args[1]  # extract call kwargs
-    self.assertEquals(call_kwargs['flow_args'].paths,
-                      ['/etc/passwd', '/etc/shadow'])
-    self.assertEquals(call_kwargs['flow_args'].action.action_type,
-                      flows_pb2.FileFinderAction.DOWNLOAD)
-    self.assertEquals(call_kwargs['flow_name'], 'FileFinder')
-    self.assertEquals(call_kwargs['hunt_runner_args'].description,
-                      'random reason')
+    self.assertEqual(call_kwargs['flow_args'].paths,
+                     ['/etc/passwd', '/etc/shadow'])
+    self.assertEqual(call_kwargs['flow_args'].action.action_type,
+                     flows_pb2.FileFinderAction.DOWNLOAD)
+    self.assertEqual(call_kwargs['flow_name'], 'FileFinder')
+    self.assertEqual(call_kwargs['hunt_runner_args'].description,
+                     'random reason')
 
 
 
@@ -102,7 +102,7 @@ class GRRFHuntDownloader(unittest.TestCase):
 
   def testInitialization(self):
     """Tests that the collector is correctly initialized."""
-    self.assertEquals(self.grr_hunt_downloader.hunt_id, 'H:12345')
+    self.assertEqual(self.grr_hunt_downloader.hunt_id, 'H:12345')
 
   @mock.patch('dftimewolf.lib.collectors.grr_hunt.GRRHuntDownloader._extract_hunt_results')  # pylint: disable=line-too-long
   @mock.patch('dftimewolf.lib.collectors.grr_hunt.GRRHuntDownloader._get_and_write_archive')  # pylint: disable=line-too-long

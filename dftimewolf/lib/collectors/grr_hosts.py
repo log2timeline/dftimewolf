@@ -51,7 +51,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     try:
       search_result = self.grr_api.SearchClients(hostname)
     except grr_errors.UnknownError as exception:
-      self.state.add_error('Could not search for host {0:s}: {1:s}'.format(
+      self.state.add_error('Could not search for host {0:s}: {1!s}'.format(
           hostname, exception
       ), critical=True)
       return None
@@ -74,7 +74,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     # First, count total seconds. This will return a float.
     last_seen_seconds = (
         datetime.datetime.utcnow() - last_seen_datetime).total_seconds()
-    last_seen_minutes = int(round(last_seen_seconds)) / 60
+    last_seen_minutes = int(round(last_seen_seconds / 60))
 
     print('{0:s}: Found active client'.format(client.client_id))
     print('Found active client: {0:s}'.format(client.client_id))
@@ -298,7 +298,7 @@ class GRRArtifactCollector(GRRFlow):
     # If the list is supplied by the user via a flag, honor that.
     artifact_list = []
     if self.artifacts:
-      print('Artifacts to be collected: {0:s}'.format(self.artifacts))
+      print('Artifacts to be collected: {0!s}'.format(self.artifacts))
       artifact_list = self.artifacts
     else:
       default_artifacts = self.artifact_registry.get(system_type, None)
@@ -308,7 +308,7 @@ class GRRArtifactCollector(GRRFlow):
         artifact_list.extend(default_artifacts)
 
     if self.extra_artifacts:
-      print('Throwing in an extra {0:s}'.format(self.extra_artifacts))
+      print('Throwing in an extra {0!s}'.format(self.extra_artifacts))
       artifact_list.extend(self.extra_artifacts)
       artifact_list = list(set(artifact_list))
 
@@ -324,7 +324,7 @@ class GRRArtifactCollector(GRRFlow):
     self._await_flow(client, flow_id)
     collected_flow_data = self._download_files(client, flow_id)
     if collected_flow_data:
-      print('{0:s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
+      print('{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
       fqdn = client.data.os_info.fqdn.lower()
       self.state.output.append((fqdn, collected_flow_data))
 
@@ -336,6 +336,7 @@ class GRRArtifactCollector(GRRFlow):
     """
     threads = []
     for client in self.find_clients(self.hostnames):
+      print(client)
       thread = threading.Thread(target=self._process_thread, args=(client, ))
       threads.append(thread)
       thread.start()
@@ -408,7 +409,7 @@ class GRRFileCollector(GRRFlow):
     self._await_flow(client, flow_id)
     collected_flow_data = self._download_files(client, flow_id)
     if collected_flow_data:
-      print('{0:s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
+      print('{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
       fqdn = client.data.os_info.fqdn.lower()
       self.state.output.append((fqdn, collected_flow_data))
 
