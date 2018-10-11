@@ -18,6 +18,4 @@ chardet = "*"
 pyyaml = "*"
 turbinia = "*"
 future = "*"
-
-[requires]
-python_version = "2.7"
+six = "*"
