@@ -17,6 +17,7 @@ chardet = "*"
 "urllib3" = "*"
 pyyaml = "*"
 future = "*"
+"pypdf2" = "*"
 
 [requires]
 python_version = "2.7"
