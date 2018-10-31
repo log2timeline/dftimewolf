@@ -41,13 +41,13 @@ class GrepperSearch(BaseModule):
   def process(self):
     """Execute the grep command"""
 
-    for description, path in self.state.input:
+    for _, path in self.state.input:
       log_file_path = os.path.join(self._output_path, 'grepper.log')
       print('Log file: {0:s}'.format(log_file_path))
 
       print('Walking through dir (absolute) = ' + os.path.abspath(path))
       try:
-        for root, subdirs, files in os.walk(path):
+        for root, _, files in os.walk(path):
           for filename in files:
             found = set()
             fullpath = os.path.abspath(root) + '/' + filename
@@ -73,6 +73,12 @@ class GrepperSearch(BaseModule):
         self.state.add_error(exception, critical=True)
 
   def grepPDF(self, path):
+    """
+    Parse PDF files text content for keywords.
+
+    :param path: PDF file path.
+    :return: match: set of unique occurrences of every match
+    """
     with open(path, 'rb') as pdfFileObj:
       match = set()
       text = ""
