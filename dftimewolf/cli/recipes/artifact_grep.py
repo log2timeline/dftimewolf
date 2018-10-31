@@ -10,7 +10,7 @@ _short_description = ('Fetches requested artifacts from a list of GRR hosts '
 
 contents = {
     'name':
-        'activity_triage',
+        'artifact_grep',
     'short_description': _short_description,
     'modules': [{
         'name': 'GRRArtifactCollector',

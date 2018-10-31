@@ -18,7 +18,7 @@ from dftimewolf.cli.recipes import grr_hunt_artifacts
 from dftimewolf.cli.recipes import grr_hunt_file
 from dftimewolf.cli.recipes import grr_huntresults_plaso_timesketch
 from dftimewolf.cli.recipes import timesketch_upload
-from dftimewolf.cli.recipes import activity_triage
+from dftimewolf.cli.recipes import artifact_grep
 
 from dftimewolf.lib import utils
 
@@ -65,7 +65,7 @@ config.Config.register_recipe(grr_hunt_artifacts)
 config.Config.register_recipe(grr_hunt_file)
 config.Config.register_recipe(grr_huntresults_plaso_timesketch)
 config.Config.register_recipe(timesketch_upload)
-config.Config.register_recipe(activity_triage)
+config.Config.register_recipe(artifact_grep)
 
 # TODO(tomchop) Change the print statements by a better logging / display system
 

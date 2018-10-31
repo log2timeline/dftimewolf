@@ -1,33 +1,34 @@
 -i https://pypi.org/simple
-appnope==0.1.0; sys_platform == 'darwin'
+appnope==0.1.0 ; sys_platform == 'darwin'
 asn1crypto==0.24.0
-backports.shutil-get-terminal-size==1.0.0; python_version == '2.7'
+backports.shutil-get-terminal-size==1.0.0 ; python_version == '2.7'
 beautifulsoup4==4.6.3
-certifi==2018.8.24
+certifi==2018.10.15
 cffi==1.11.5
 chardet==3.0.4
 cryptography==2.3
 decorator==4.3.0
-enum34==1.1.6; python_version == '2.7'
+enum34==1.1.6 ; python_version == '2.7'
 future==0.16.0
-grr-api-client==3.2.4.post0
-grr-response-proto==3.2.4.post0
+grr-api-client==3.2.4.post3
+grr-response-proto==3.2.4.post3
 idna==2.7
-ipaddress==1.0.22; python_version < '3'
+ipaddress==1.0.22 ; python_version < '3'
 ipython-genutils==0.2.0
 ipython==5.0.0
-pathlib2==2.3.2; python_version in '2.6 2.7 3.2 3.3'
-pexpect==4.6.0; sys_platform != 'win32'
-pickleshare==0.7.4
+pathlib2==2.3.2 ; python_version in '2.6 2.7 3.2 3.3'
+pexpect==4.6.0 ; sys_platform != 'win32'
+pickleshare==0.7.5
 prompt-toolkit==1.0.15
 protobuf==3.3.0
 ptyprocess==0.6.0
-pycparser==2.18
+pycparser==2.19
 pygments==2.2.0
-pytz==2018.5
+pypdf2==1.26.0
+pytz==2018.7
 pyyaml==3.13
 requests==2.19.1
-scandir==1.9.0; python_version < '3.5'
+scandir==1.9.0 ; python_version < '3.5'
 simplegeneric==0.8.1
 six==1.11.0
 traitlets==4.3.2

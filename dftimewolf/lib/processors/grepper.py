@@ -4,14 +4,16 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import os
-import subprocess
 import tempfile
+import re
+import mimetypes
+import PyPDF2
 
 from dftimewolf.lib.module import BaseModule
 
 
 class GrepperSearch(BaseModule):
-  """Processes a list of file paths with egrep to search for
+  """Processes a list of file paths with to search for
   specific keywords.
 
   input: A file path to process, and a list of keywords to search for
@@ -40,41 +42,45 @@ class GrepperSearch(BaseModule):
     """Execute the grep command"""
 
     for description, path in self.state.input:
-      log_file_path = os.path.join(self._output_path, 'triager.log')
+      log_file_path = os.path.join(self._output_path, 'grepper.log')
       print('Log file: {0:s}'.format(log_file_path))
 
-      # Build the grep command line.
-      cmd = ['egrep', '-roi', self._keywords, path]
-      cmd_sort = ['sort', '-u']
-
-      # Run the grep command
-      full_cmd = ' '.join(cmd)
-      print('Running external command: "{0:s}"'.format(full_cmd))
+      print('Walking through dir (absolute) = ' + os.path.abspath(path))
       try:
-        grep_proc = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        sort_proc = subprocess.Popen(
-            cmd_sort, stdin=grep_proc.stdout, stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
-        self._final_output, error = sort_proc.communicate()
-        grep_status = grep_proc.wait()
-        sort_status = sort_proc.wait()
-        print("\nKeyword matching output:")
-        print(self._final_output)
-        if grep_status:
-          # self.console_out.StdErr(errors)
-          message = ('The egrep command {0:s} failed: {1:s}.'
-                     ' Check log file for details.').format(full_cmd, error)
-          self.state.add_error(message, critical=True)
-
-        if sort_status:
-          # self.console_out.StdErr(errors)
-          message = ('The sort command {0:s} failed: {1:s}.'
-                     ' Check log file for details.').format(cmd_sort, error)
-          self.state.add_error(message, critical=True)
-        self.state.output.append((description, log_file_path))
+        for root, subdirs, files in os.walk(path):
+          for filename in files:
+            found = set()
+            fullpath = os.path.abspath(root) + '/' + filename
+            if mimetypes.guess_type(filename)[0] == 'application/pdf':
+              found = self.grepPDF(fullpath)
+            else:
+              with open(fullpath, 'r') as fp:
+                for line in fp:
+                  found.update(set(x.lower() for x in re.findall(
+                      self._keywords, line, re.IGNORECASE)))
+            if filter(None, found):
+              output = path + '/' + filename + ':' + ','.join(
+                  filter(None, found))
+              if self._final_output:
+                self._final_output += '\n' + output
+              else:
+                self._final_output = output
+              print(output)
       except OSError as exception:
         self.state.add_error(exception, critical=True)
       # Catch all remaining errors since we want to gracefully report them
       except Exception as exception:  # pylint: disable=broad-except
         self.state.add_error(exception, critical=True)
+
+  def grepPDF(self, path):
+    with open(path, 'rb') as pdfFileObj:
+      match = set()
+      text = ""
+      pdfReader = PyPDF2.PdfFileReader(pdfFileObj)
+      pages = pdfReader.numPages
+      for page in range(pages):
+        pageObj = pdfReader.getPage(page)
+        text += "\n" + pageObj.extractText()
+      match.update(set(x.lower() for x in re.findall(
+          self._keywords, text, re.IGNORECASE)))
+    return match

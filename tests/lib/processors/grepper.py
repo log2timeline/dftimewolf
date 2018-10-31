@@ -17,7 +17,7 @@ class GrepperTest(unittest.TestCase):
     test_state = state.DFTimewolfState()
     base_grepper_search = grepper.GrepperSearch(test_state)
     base_grepper_search.setup(
-        keywords='foo|lorem|nduja|triage|bar'
+        keywords='foo|lorem|meow|triage|bar|homebrew'
     )
     # Put here a path to a test directory where you have files to grep on the
     # above keyword. This is to simulate the path received an input from GRR
@@ -26,11 +26,11 @@ class GrepperTest(unittest.TestCase):
     base_grepper_search.process()
     # pylint: disable=protected-access
     self.assertEqual(
-        base_grepper_search._keywords, 'foo|lorem|nduja|triage|bar')
+        base_grepper_search._keywords, 'foo|lorem|meow|triage|bar|homebrew')
 
     self.assertEqual(
         base_grepper_search._final_output,
-        '../collectors/test_data/grepper_test_dir/grepper_test.txt:bar\n'
-        '../collectors/test_data/grepper_test_dir/grepper_test.txt:foo\n'
-        '../collectors/test_data/grepper_test_dir/grepper_test.txt:Lorem\n'
-        '../collectors/test_data/grepper_test_dir/grepper_test.txt:triage\n')
+        '../collectors/test_data/grepper_test_dir/grepper_test.txt:bar,foo,'
+        'lorem,triage\n'
+        '../collectors/test_data/grepper_test_dir/1test.pdf:homebrew\n'
+        '../collectors/test_data/grepper_test_dir/grepper_test2.txt:foo')

@@ -143,6 +143,7 @@ setup(
         'grr_api_client',
         'pyyaml',
         'future',
+        'pypdf2',
     ],
     test_suite='nose.collector',
     test_require=[
