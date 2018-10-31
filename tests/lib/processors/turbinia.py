@@ -15,8 +15,9 @@ from dftimewolf.lib import state
 # variable
 current_dir = os.path.dirname(os.path.realpath(__file__))
 os.environ['TURBINIA_CONFIG_PATH'] = os.path.join(current_dir, 'test_data')
-
+# pylint: disable=wrong-import-position
 from dftimewolf.lib.processors import turbinia
+
 
 
 class TurbiniaProcessorTest(unittest.TestCase):
@@ -29,7 +30,8 @@ class TurbiniaProcessorTest(unittest.TestCase):
     self.assertIsNotNone(turbinia_processor)
 
   @mock.patch('turbinia.client.TurbiniaClient')
-  def testSetup(self, mock_TurbiniaClient):
+  # pylint: disable=invalid-name
+  def testSetup(self, _mock_TurbiniaClient):
     """Tests that the processor is set up correctly."""
     test_state = state.DFTimewolfState()
     turbinia_processor = turbinia.TurbiniaProcessor(test_state)
@@ -41,12 +43,17 @@ class TurbiniaProcessorTest(unittest.TestCase):
     self.assertEqual(turbinia_processor.project, 'turbinia-project')
     self.assertEqual(turbinia_processor.turbinia_zone, 'europe-west1')
     self.assertEqual(test_state.errors, [])
+
+    # TURBINIA_REGION is dynamically generated
+    # pylint: disable=no-member
     self.assertEqual(turbinia_processor.turbinia_region,
                      turbinia.turbinia_config.TURBINIA_REGION)
+    # pylint: disable=protected-access
     six.assertRegex(self, turbinia_processor._output_path, '/tmp/tmp.+')
 
   @mock.patch('turbinia.client.TurbiniaClient')
-  def testWrongProject(self, mock_TurbiniaClient):
+  # pylint: disable=invalid-name
+  def testWrongProject(self, _mock_TurbiniaClient):
     """Tests that specifying the wrong Turbinia project generates an error."""
     test_state = state.DFTimewolfState()
     turbinia_processor = turbinia.TurbiniaProcessor(test_state)
@@ -65,24 +72,24 @@ class TurbiniaProcessorTest(unittest.TestCase):
     self.assertEqual(is_critical, True)
 
   @mock.patch('turbinia.client.TurbiniaClient')
-  def testWrongProject(self, mock_TurbiniaClient):
-    """Tests that specifying the wrong Turbinia project generates an error."""
+  def tesWrongSetups(self, _mock_TurbiniaClient): # pylint: disable=invalid-name
+    """Tests that invalid setup options generate errors."""
     params = [
-      {
-        'disk_name': None,
-        'project': 'turbinia-project',
-        'turbinia_zone': 'europe-west1'
-      },
-      {
-        'disk_name': 'disk-1',
-        'project': None,
-        'turbinia_zone': 'europe-west1'
-      },
-      {
-        'disk_name': 'disk-1',
-        'project': 'turbinia-project',
-        'turbinia_zone': None
-      }
+        {
+            'disk_name': None,
+            'project': 'turbinia-project',
+            'turbinia_zone': 'europe-west1'
+        },
+        {
+            'disk_name': 'disk-1',
+            'project': None,
+            'turbinia_zone': 'europe-west1'
+        },
+        {
+            'disk_name': 'disk-1',
+            'project': 'turbinia-project',
+            'turbinia_zone': None
+        }
     ]
     expected_error = ('disk_name, project or turbinia_zone are not all '
                       'specified, bailing out')
@@ -100,12 +107,13 @@ class TurbiniaProcessorTest(unittest.TestCase):
   @mock.patch('turbinia.output_manager.GCSOutputWriter')
   @mock.patch('turbinia.evidence.GoogleCloudDisk')
   @mock.patch('turbinia.client.TurbiniaClient')
+  # pylint: disable=invalid-name
   def testProcess(self,
-                  mock_TurbiniaClient,
+                  _mock_TurbiniaClient,
                   mock_GoogleCloudDisk,
                   mock_GCSOutputWriter,
                   mock_exists):
-    """Tests that the processor is set up correctly."""
+    """Tests that the processor processes data correctly."""
 
     test_state = state.DFTimewolfState()
     turbinia_processor = turbinia.TurbiniaProcessor(test_state)
@@ -115,11 +123,11 @@ class TurbiniaProcessorTest(unittest.TestCase):
         turbinia_zone='europe-west1')
 
     turbinia_processor.client.get_task_data.return_value = [{
-      'saved_paths': [
-          '/fake/data.plaso',
-          '/fake/data2.plaso',
-          'gs://bucket/data3.plaso'
-      ]
+        'saved_paths': [
+            '/fake/data.plaso',
+            '/fake/data2.plaso',
+            'gs://bucket/data3.plaso'
+        ]
     }]
 
     # Return true so the tests assumes the above file exists
@@ -133,21 +141,25 @@ class TurbiniaProcessorTest(unittest.TestCase):
     turbinia_processor.process()
 
     mock_GoogleCloudDisk.assert_called_with(
-      disk_name='disk-1',
-      project='turbinia-project',
-      zone='europe-west1')
+        disk_name='disk-1',
+        project='turbinia-project',
+        zone='europe-west1')
+
+    # These are mock classes, so there is a member
+    # pylint: disable=no-member
     turbinia_processor.client.send_request.assert_called()
     turbinia_processor.client.get_task_data.assert_called()
     turbinia_processor.client.format_task_status.assert_called()
+    # pylint: disable=protected-access
     mock_GCSOutputWriter.assert_called_with(
-      'gs://bucket/data3.plaso',
-      local_output_dir=turbinia_processor._output_path
+        'gs://bucket/data3.plaso',
+        local_output_dir=turbinia_processor._output_path
     )
     self.assertEquals(test_state.errors, [])
     self.assertEquals(test_state.output, [
-      ('turbinia-project-disk-1', '/fake/data.plaso'),
-      ('turbinia-project-disk-1', '/fake/data2.plaso'),
-      ('turbinia-project-disk-1', '/fake/local/path')
+        ('turbinia-project-disk-1', '/fake/data.plaso'),
+        ('turbinia-project-disk-1', '/fake/data2.plaso'),
+        ('turbinia-project-disk-1', '/fake/local/path')
     ])
 
 
