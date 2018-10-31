@@ -10,13 +10,15 @@ import signal
 
 from dftimewolf import config
 
-from dftimewolf.cli.recipes import local_plaso
+from dftimewolf.cli.recipes import gcp_turbinia
+from dftimewolf.cli.recipes import gcp_turbinia_import
 from dftimewolf.cli.recipes import grr_artifact_hosts
 from dftimewolf.cli.recipes import grr_flow_download
 from dftimewolf.cli.recipes import grr_fetch_files
 from dftimewolf.cli.recipes import grr_hunt_artifacts
 from dftimewolf.cli.recipes import grr_hunt_file
 from dftimewolf.cli.recipes import grr_huntresults_plaso_timesketch
+from dftimewolf.cli.recipes import local_plaso
 from dftimewolf.cli.recipes import timesketch_upload
 from dftimewolf.cli.recipes import artifact_grep
 
@@ -29,6 +31,8 @@ from dftimewolf.lib.exporters import timesketch
 from dftimewolf.lib.exporters import local_filesystem
 from dftimewolf.lib.processors import localplaso
 from dftimewolf.lib.processors import grepper
+from dftimewolf.lib.processors import turbinia
+from dftimewolf.lib.collectors.gcloud import GoogleCloudCollector
 
 from dftimewolf.lib.state import DFTimewolfState
 from dftimewolf.lib.errors import DFTimewolfError
@@ -39,6 +43,7 @@ config.Config.register_module(filesystem.FilesystemCollector)
 config.Config.register_module(localplaso.LocalPlasoProcessor)
 config.Config.register_module(timesketch.TimesketchExporter)
 config.Config.register_module(grepper.GrepperSearch)
+config.Config.register_module(GoogleCloudCollector)
 
 config.Config.register_module(grr_hosts.GRRArtifactCollector)
 config.Config.register_module(grr_hosts.GRRFileCollector)
@@ -49,6 +54,7 @@ config.Config.register_module(grr_hunt.GRRHuntDownloader)
 
 config.Config.register_module(timesketch.TimesketchExporter)
 config.Config.register_module(local_filesystem.LocalFilesystemCopy)
+config.Config.register_module(turbinia.TurbiniaProcessor)
 
 # Try to open config.json and load configuration data from it.
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -66,6 +72,8 @@ config.Config.register_recipe(grr_hunt_file)
 config.Config.register_recipe(grr_huntresults_plaso_timesketch)
 config.Config.register_recipe(timesketch_upload)
 config.Config.register_recipe(artifact_grep)
+config.Config.register_recipe(gcp_turbinia)
+config.Config.register_recipe(gcp_turbinia_import)
 
 # TODO(tomchop) Change the print statements by a better logging / display system
 

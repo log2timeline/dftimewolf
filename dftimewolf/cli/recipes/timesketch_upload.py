@@ -10,7 +10,7 @@ contents = {
     'modules': [{
         'name': 'FilesystemCollector',
         'args': {
-            'paths': '@file',
+            'paths': '@files',
         },
     }, {
         'name': 'TimesketchExporter',
@@ -25,7 +25,8 @@ contents = {
 }
 
 args = [
-    ('file', 'Path to CSV file or Plaso storage file', None),
+    ('files', 'Comma-separated list of paths to CSV files or Plaso storage'
+              ' files', None),
     ('--sketch_id', 'Sketch to which the timeline should be added', None),
     ('--incident_id', 'Incident ID (used for Timesketch description)', None)
 ]

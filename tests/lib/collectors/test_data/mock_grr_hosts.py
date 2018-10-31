@@ -2,8 +2,11 @@
 
 from grr_api_client import client
 from grr_api_client import flow
+from grr_api_client import hunt
 from grr_response_proto.api import client_pb2
 from grr_response_proto.api import flow_pb2
+from grr_response_proto.api import hunt_pb2
+from grr_response_proto import flows_pb2
 
 from google.protobuf import text_format
 
@@ -57,5 +60,23 @@ MOCK_CLIENT_LIST = [
 
 MOCK_CLIENT_REF = client.ClientRef(MOCK_CLIENT.client_id, context=True)
 
-flow_pb = flow_pb2.ApiFlow(urn="C.0000000000000001", flow_id="F:12345", state=1)
-MOCK_FLOW = flow.Flow(data=flow_pb, context=True)
+flow_pb_terminated = flow_pb2.ApiFlow(
+    urn="C.0000000000000001",
+    flow_id="F:12345",
+    state=flows_pb2.FlowContext.TERMINATED
+)
+flow_pb_error = flow_pb2.ApiFlow(
+    urn="C.0000000000000001",
+    flow_id="F:12345",
+    state=flows_pb2.FlowContext.ERROR
+)
+MOCK_FLOW = flow.Flow(data=flow_pb_terminated, context=True)
+MOCK_FLOW_ERROR = flow.Flow(data=flow_pb_error, context=True)
+
+hunt_pb = hunt_pb2.ApiHunt(
+    urn="hunts/12345",
+    hunt_id="F:12345",
+    state=1
+)
+
+MOCK_HUNT = hunt.Hunt(data=hunt_pb)

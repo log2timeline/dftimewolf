@@ -51,7 +51,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     try:
       search_result = self.grr_api.SearchClients(hostname)
     except grr_errors.UnknownError as exception:
-      self.state.add_error('Could not search for host {0:s}: {1:s}'.format(
+      self.state.add_error('Could not search for host {0:s}: {1!s}'.format(
           hostname, exception
       ), critical=True)
       return None
@@ -74,7 +74,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     # First, count total seconds. This will return a float.
     last_seen_seconds = (
         datetime.datetime.utcnow() - last_seen_datetime).total_seconds()
-    last_seen_minutes = int(round(last_seen_seconds)) / 60
+    last_seen_minutes = int(round(last_seen_seconds / 60))
 
     print('{0:s}: Found active client'.format(client.client_id))
     print('Found active client: {0:s}'.format(client.client_id))
@@ -97,7 +97,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     clients = []
     for host in hosts:
       clients.append(self._get_client_by_hostname(host))
-    return clients
+    return [client for client in clients if client is not None]
 
   def _get_client_by_id(self, client_id):
     """Get GRR client dictionary and make sure valid approvals exist.
@@ -175,38 +175,6 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
         break
       time.sleep(self._CHECK_FLOW_INTERVAL_SEC)
 
-    # Download the files collected by the flow
-    print('{0:s}: Downloading artifacts'.format(flow_id))
-    collected_file_path = self._download_files(client, flow_id)
-
-    if collected_file_path:
-      print('{0:s}: Downloaded: {1:s}'.format(flow_id, collected_file_path))
-
-  def print_status(self, flow):
-    """Print status of flow.
-
-    Args:
-      flow: GRR flow to check the status for.
-
-    Raises:
-      DFTimewolfError: if error encountered getting flow data.
-    """
-    client = self._get_client_by_id(self._client_id)
-    try:
-      status = client.Flow(flow.flow_id).Get().data
-    except grr_errors.UnknownError:
-      raise DFTimewolfError(
-          'Unable to stat flow {0:s} for client {1:s}'.format(
-              flow.flow_id, client.client_id))
-
-    code_to_msg = {
-        flows_pb2.FlowContext.ERROR: 'ERROR',
-        flows_pb2.FlowContext.TERMINATED: 'Complete',
-        flows_pb2.FlowContext.RUNNING: 'Running...'
-    }
-    msg = code_to_msg[status.state]
-    print('Status of flow {0:s}: {1:s}\n'.format(flow.flow_id, msg))
-
   def _download_files(self, client, flow_id):
     """Download files from the specified flow.
 
@@ -217,9 +185,6 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     Returns:
       str: path of downloaded files.
     """
-    if not os.path.isdir(self.output_path):
-      os.makedirs(self.output_path)
-
     output_file_path = os.path.join(
         self.output_path, '.'.join((flow_id, 'zip')))
 
@@ -232,11 +197,16 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     file_archive.WriteToFile(output_file_path)
 
     # Unzip archive for processing and remove redundant zip
+    fqdn = client.data.os_info.fqdn.lower()
+    client_output_file = os.path.join(self.output_path, fqdn)
+    if not os.path.isdir(client_output_file):
+      os.makedirs(client_output_file)
+
     with zipfile.ZipFile(output_file_path) as archive:
-      archive.extractall(path=self.output_path)
+      archive.extractall(path=client_output_file)
     os.remove(output_file_path)
 
-    return output_file_path
+    return client_output_file
 
 
 class GRRArtifactCollector(GRRFlow):
@@ -283,7 +253,7 @@ class GRRArtifactCollector(GRRFlow):
     self.use_tsk = False
     self.keepalive = False
 
-  # pylint: disable=arguments-differ
+  # pylint: disable=arguments-differ,too-many-arguments
   def setup(self,
             hosts, artifacts, extra_artifacts, use_tsk,
             reason, grr_server_url, grr_username, grr_password, approvers=None,
@@ -300,6 +270,7 @@ class GRRArtifactCollector(GRRFlow):
       grr_username: GRR username.
       grr_password: GRR password.
       approvers: list of GRR approval recipients.
+      verify: boolean, whether to verify the GRR server's x509 certificate.
     """
     super(GRRArtifactCollector, self).setup(
         reason, grr_server_url, grr_username, grr_password, approvers=approvers,
@@ -312,9 +283,7 @@ class GRRArtifactCollector(GRRFlow):
       self.extra_artifacts = [item.strip() for item
                               in extra_artifacts.strip().split(',')]
 
-    hosts = [item.strip() for item in hosts.strip().split(',')]
-    # TODO(tomchop): Thread this
-    self._clients = self.find_clients(hosts)
+    self.hostnames = [item.strip() for item in hosts.strip().split(',')]
     self.use_tsk = use_tsk
 
   def _process_thread(self, client):
@@ -324,16 +293,12 @@ class GRRArtifactCollector(GRRFlow):
       client: a GRR client object.
     """
     system_type = client.data.os_info.system
-    fqdn = client.data.os_info.fqdn.lower()
-    client_dir = os.path.join(self.output_path)
-    if not os.path.isdir(client_dir):
-      os.makedirs(client_dir)
     print('System type: {0:s}'.format(system_type))
 
     # If the list is supplied by the user via a flag, honor that.
     artifact_list = []
     if self.artifacts:
-      print('Artifacts to be collected: {0:s}'.format(self.artifacts))
+      print('Artifacts to be collected: {0!s}'.format(self.artifacts))
       artifact_list = self.artifacts
     else:
       default_artifacts = self.artifact_registry.get(system_type, None)
@@ -343,12 +308,12 @@ class GRRArtifactCollector(GRRFlow):
         artifact_list.extend(default_artifacts)
 
     if self.extra_artifacts:
-      print('Throwing in an extra {0:s}'.format(self.extra_artifacts))
+      print('Throwing in an extra {0!s}'.format(self.extra_artifacts))
       artifact_list.extend(self.extra_artifacts)
       artifact_list = list(set(artifact_list))
 
     if not artifact_list:
-      raise DFTimewolfError('No artifacts to collect')
+      return
 
     flow_args = flows_pb2.ArtifactCollectorFlowArgs(
         artifact_list=artifact_list,
@@ -357,7 +322,11 @@ class GRRArtifactCollector(GRRFlow):
         apply_parsers=False)
     flow_id = self._launch_flow(client, 'ArtifactCollectorFlow', flow_args)
     self._await_flow(client, flow_id)
-    self.state.output.append((fqdn, client_dir))
+    collected_flow_data = self._download_files(client, flow_id)
+    if collected_flow_data:
+      print('{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
+      fqdn = client.data.os_info.fqdn.lower()
+      self.state.output.append((fqdn, collected_flow_data))
 
   def process(self):
     """Collect the artifacts.
@@ -365,9 +334,9 @@ class GRRArtifactCollector(GRRFlow):
     Raises:
       DFTimewolfError: if no artifacts specified nor resolved by platform.
     """
-
     threads = []
-    for client in self._clients:
+    for client in self.find_clients(self.hostnames):
+      print(client)
       thread = threading.Thread(target=self._process_thread, args=(client, ))
       threads.append(thread)
       thread.start()
@@ -408,6 +377,7 @@ class GRRFileCollector(GRRFlow):
       grr_username: GRR username.
       grr_password: GRR password.
       approvers: list of GRR approval recipients.
+      verify: boolean, whether to verify the GRR server's x509 certificate.
     """
     super(GRRFileCollector, self).setup(
         reason, grr_server_url, grr_username, grr_password,
@@ -416,8 +386,7 @@ class GRRFileCollector(GRRFlow):
     if files is not None:
       self.files = [item.strip() for item in files.strip().split(',')]
 
-    hosts = [item.strip() for item in hosts.strip().split(',')]
-    self._clients = self.find_clients(hosts)
+    self.hostnames = [item.strip() for item in hosts.strip().split(',')]
     self.use_tsk = use_tsk
 
   def _process_thread(self, client):
@@ -428,7 +397,7 @@ class GRRFileCollector(GRRFlow):
     """
     file_list = self.files
     if not file_list:
-      raise DFTimewolfError('File paths must be specified for FileFinder')
+      return
     print('Filefinder to collect {0:d} items'.format(len(file_list)))
 
     flow_action = flows_pb2.FileFinderAction(
@@ -438,8 +407,11 @@ class GRRFileCollector(GRRFlow):
         action=flow_action,)
     flow_id = self._launch_flow(client, 'FileFinder', flow_args)
     self._await_flow(client, flow_id)
-    fqdn = client.data.os_info.fqdn.lower()
-    self.state.output.append((fqdn, self.output_path))
+    collected_flow_data = self._download_files(client, flow_id)
+    if collected_flow_data:
+      print('{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
+      fqdn = client.data.os_info.fqdn.lower()
+      self.state.output.append((fqdn, collected_flow_data))
 
   def process(self):
     """Collect the files.
@@ -448,7 +420,7 @@ class GRRFileCollector(GRRFlow):
       DFTimewolfError: if no files specified.
     """
     threads = []
-    for client in self._clients:
+    for client in self.find_clients(self.hostnames):
       thread = threading.Thread(target=self._process_thread, args=(client, ))
       threads.append(thread)
       thread.start()
@@ -489,6 +461,7 @@ class GRRFlowCollector(GRRFlow):
       grr_username: GRR username.
       grr_password: GRR password.
       approvers: list of GRR approval recipients.
+      verify: boolean, whether to verify the GRR server's x509 certificate.
     """
     super(GRRFlowCollector, self).setup(
         reason, grr_server_url, grr_username, grr_password,
@@ -502,6 +475,11 @@ class GRRFlowCollector(GRRFlow):
     Raises:
       DFTimewolfError: if no files specified
     """
-    client_id = self._get_client_by_hostname(self.host).client_id
-    self._await_flow(self._get_client_by_id(client_id), self.flow_id)
-    self.state.output.append((self.host, self.output_path))
+    client = self._get_client_by_hostname(self.host)
+    self._await_flow(client, self.flow_id)
+    collected_flow_data = self._download_files(client, self.flow_id)
+    if collected_flow_data:
+      print('{0:s}: Downloaded: {1:s}'.format(
+          self.flow_id, collected_flow_data))
+      fqdn = client.data.os_info.fqdn.lower()
+      self.state.output.append((fqdn, collected_flow_data))
