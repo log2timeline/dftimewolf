@@ -39,17 +39,9 @@ class GRRHunt(grr_base.GRRBaseModule):  # pylint: disable=abstract-method
     runner_args.description = self.reason
     hunt = self.grr_api.CreateHunt(
         flow_name=name, flow_args=args, hunt_runner_args=runner_args)
-    print('{0:s}: Hunt created'.format(hunt.hunt_id))
+    print('{0!s}: Hunt created'.format(hunt.hunt_id))
     self._check_approval_wrapper(hunt, hunt.Start)
     return hunt
-
-  def print_status(self):
-    """Print status of hunt."""
-    status = self.grr_api.Hunt(self.hunt_id).Get().data
-    print('Status of hunt {0:s}'.format(self.hunt_id))
-    print('Total clients: {0:d}'.format(status.all_clients_count))
-    print('Completed clients: {0:d}'.format(status.completed_clients_count))
-    print('Outstanding clients: {0:d}'.format(status.remaining_clients_count))
 
 
 class GRRHuntArtifactCollector(GRRHunt):
@@ -83,6 +75,7 @@ class GRRHuntArtifactCollector(GRRHunt):
       grr_username: GRR username.
       grr_password: GRR password.
       approvers: str, comma-separated list of GRR approval recipients.
+      verify: boolean, whether to verify the GRR server's x509 certificate.
     """
     super(GRRHuntArtifactCollector, self).setup(
         reason, grr_server_url, grr_username, grr_password,
@@ -103,7 +96,7 @@ class GRRHuntArtifactCollector(GRRHunt):
       RuntimeError: if no items specified for collection.
     """
 
-    print('Artifacts to be collected: {0:s}'.format(self.artifacts))
+    print('Artifacts to be collected: {0!s}'.format(self.artifacts))
     hunt_args = flows_pb2.ArtifactCollectorFlowArgs(
         artifact_list=self.artifacts,
         use_tsk=self.use_tsk,
@@ -139,6 +132,7 @@ class GRRHuntFileCollector(GRRHunt):
       grr_username: GRR username.
       grr_password: GRR password.
       approvers: comma-separated list of GRR approval recipients.
+      verify: boolean, whether to verify the GRR server's x509 certificate.
     """
     super(GRRHuntFileCollector, self).setup(
         reason, grr_server_url, grr_username, grr_password,
@@ -158,7 +152,7 @@ class GRRHuntFileCollector(GRRHunt):
       RuntimeError: if no items specified for collection.
     """
     print('Hunt to collect {0:d} items'.format(len(self.file_path_list)))
-    print('Files to be collected: {0:s}'.format(self.file_path_list))
+    print('Files to be collected: {0!s}'.format(self.file_path_list))
     hunt_action = flows_pb2.FileFinderAction(
         action_type=flows_pb2.FileFinderAction.DOWNLOAD)
     hunt_args = flows_pb2.FileFinderArgs(
@@ -193,6 +187,7 @@ class GRRHuntDownloader(GRRHunt):
       grr_username: GRR username.
       grr_password: GRR password.
       approvers: comma-separated list of GRR approval recipients.
+      verify: boolean, whether to verify the GRR server's x509 certificate.
     """
     super(GRRHuntDownloader, self).setup(
         reason, grr_server_url, grr_username, grr_password,
@@ -303,12 +298,12 @@ class GRRHuntDownloader(GRRHunt):
               return []
 
     except OSError as exception:
-      msg = 'Error manipulating file {0:s}: {1:s}'.format(
+      msg = 'Error manipulating file {0:s}: {1!s}'.format(
           output_file_path, exception)
       self.state.add_error(msg, critical=True)
       return []
     except zipfile.BadZipfile as exception:
-      msg = 'Bad zipfile {0:s}: {1:s}'.format(
+      msg = 'Bad zipfile {0:s}: {1!s}'.format(
           output_file_path, exception)
       self.state.add_error(msg, critical=True)
       return []
@@ -335,9 +330,6 @@ class GRRHuntDownloader(GRRHunt):
 
   def process(self):
     """Construct and start a new File hunt.
-
-    Returns:
-      The newly created GRR hunt object.
 
     Raises:
       RuntimeError: if no items specified for collection.
