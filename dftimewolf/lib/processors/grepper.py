@@ -79,14 +79,14 @@ class GrepperSearch(BaseModule):
     :param path: PDF file path.
     :return: match: set of unique occurrences of every match
     """
-    with open(path, 'rb') as pdfFileObj:
+    with open(path, 'rb') as pdf_file_obj:
       match = set()
       text = ""
-      pdfReader = PyPDF2.PdfFileReader(pdfFileObj)
-      pages = pdfReader.numPages
+      pdf_reader = PyPDF2.PdfFileReader(pdf_file_obj)
+      pages = pdf_reader.numPages
       for page in range(pages):
-        pageObj = pdfReader.getPage(page)
-        text += "\n" + pageObj.extractText()
+        page_obj = pdf_reader.getPage(page)
+        text += "\n" + page_obj.extractText()
       match.update(set(x.lower() for x in re.findall(
           self._keywords, text, re.IGNORECASE)))
     return match
