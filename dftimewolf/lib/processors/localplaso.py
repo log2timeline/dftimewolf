@@ -49,6 +49,9 @@ class LocalPlasoProcessor(BaseModule):
       if self._timezone:
         cmd.extend(['-z', self._timezone])
 
+      # Analyze all available partitions.
+      cmd.extend(['--partition', 'all'])
+
       # Setup logging.
       cmd.extend(['--logfile', log_file_path])
 
