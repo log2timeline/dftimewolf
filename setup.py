@@ -199,7 +199,6 @@ setup(
     ],
     test_suite='nose.collector',
     test_require=[
-        'beautifulsoup4',
         'nose',
         'pylint<2',
         'coverage',

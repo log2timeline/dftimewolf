@@ -35,8 +35,8 @@ matrix:
     python: 3.4
 install:
 - pip install tox
-- pip install pipenv
-- pipenv install --dev
+- pip install -r requirements.txt
+- pip install 'pylint<=2' mock coverage
 script:
 - ./config/travis/run_with_timeout.sh 30 ./config/travis/runtests.sh
 after_success:
