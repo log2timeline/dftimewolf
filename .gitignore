@@ -101,3 +101,5 @@ dftimewolf/user_config.py
 
 # Vscode
 .vscode
+
+.DS_Store
