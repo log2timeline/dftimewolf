@@ -42,3 +42,5 @@ class FilesystemCollector(BaseModule):
       else:
         self.state.add_error(
             'Path {0:s} does not exist'.format(str(path)), critical=False)
+    if not self.state.output:
+      self.state.add_error('No valid paths collected, bailing', critical=True)
