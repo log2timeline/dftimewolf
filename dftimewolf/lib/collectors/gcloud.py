@@ -1,4 +1,7 @@
 """Creates a forensic VM and copies a GCP disk to it for anaysis."""
+from __future__ import print_function
+from __future__ import unicode_literals
+
 from googleapiclient.errors import HttpError
 from oauth2client.client import AccessTokenRefreshError
 from turbinia.lib import libcloudforensics
@@ -32,14 +35,14 @@ class GoogleCloudCollector(module.BaseModule):
   def process(self):
     """Copy a disk to the analysis project."""
     for disk in self.disks_to_copy:
-      print "Disk copy of {0:s} started...".format(disk.name)
+      print("Disk copy of {0:s} started...".format(disk.name))
       snapshot = disk.snapshot()
       new_disk = self.analysis_project.create_disk_from_snapshot(
           snapshot, disk_name_prefix="incident" + self.incident_id)
       self.analysis_vm.attach_disk(new_disk)
       snapshot.delete()
-      print "Disk {0:s} succesfully copied to {1:s}".format(
-          disk.name, new_disk.name)
+      print("Disk {0:s} succesfully copied to {1:s}".format(
+          disk.name, new_disk.name))
       self.state.output.append((self.analysis_vm.name, new_disk))
 
   # pylint: disable=arguments-differ
@@ -51,7 +54,9 @@ class GoogleCloudCollector(module.BaseModule):
             boot_disk_size,
             remote_instance_name=None,
             disk_names=None,
-            all_disks=False):
+            all_disks=False,
+            ubuntu_project='ubuntu-os-cloud',
+            ubuntu_version='ubuntu-1604-lts'):
     """Sets up a Google cloud collector.
 
     This method creates and starts an analysis VM in the analysis project and
@@ -81,6 +86,8 @@ class GoogleCloudCollector(module.BaseModule):
           containing the disks to be copied (string).
       disk_names: Comma separated string with disk names to copy (string).
       all_disks: Copy all disks attached to the source instance (bool).
+      ubuntu_project: The project from which to get the Analysis VM image from.
+      ubuntu_version: The Ubuntu version of the analysis VM
     """
 
     disk_names = disk_names.split(",") if disk_names else []
@@ -98,12 +105,12 @@ class GoogleCloudCollector(module.BaseModule):
 
     self.incident_id = incident_id
     analysis_vm_name = "gcp-forensics-vm-{0:s}".format(incident_id)
-    print "Your analysis VM will be: {0:s}".format(analysis_vm_name)
-    print "Complimentary gcloud command:"
-    print "gcloud compute ssh --project {0:s} {1:s} --zone {2:s}".format(
+    print("Your analysis VM will be: {0:s}".format(analysis_vm_name))
+    print("Complimentary gcloud command:")
+    print("gcloud compute ssh --project {0:s} {1:s} --zone {2:s}".format(
         analysis_project_name,
         analysis_vm_name,
-        zone)
+        zone))
 
     try:
       # TODO: Make creating an analysis VM optional
