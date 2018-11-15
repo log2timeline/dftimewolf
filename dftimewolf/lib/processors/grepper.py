@@ -50,7 +50,7 @@ class GrepperSearch(BaseModule):
         for root, _, files in os.walk(path):
           for filename in files:
             found = set()
-            fullpath = os.path.abspath(root) + '/' + filename
+            fullpath = '{0:s}/{1:s}'.format(os.path.abspath(root), filename)
             if mimetypes.guess_type(filename)[0] == 'application/pdf':
               found = self.grepPDF(fullpath)
             else:
@@ -58,9 +58,9 @@ class GrepperSearch(BaseModule):
                 for line in fp:
                   found.update(set(x.lower() for x in re.findall(
                       self._keywords, line, re.IGNORECASE)))
-            if filter(None, found):
-              output = path + '/' + filename + ':' + ','.join(
-                  filter(None, found))
+            if [item for item in found if item]:
+              output = '{0:s}/{1:s}:{2:s}'.format(path, filename, ','.join(
+                  filter(None, found)))
               if self._final_output:
                 self._final_output += '\n' + output
               else:
@@ -68,25 +68,30 @@ class GrepperSearch(BaseModule):
               print(output)
       except OSError as exception:
         self.state.add_error(exception, critical=True)
+        return
       # Catch all remaining errors since we want to gracefully report them
       except Exception as exception:  # pylint: disable=broad-except
         self.state.add_error(exception, critical=True)
+        return
 
   def grepPDF(self, path):
     """
     Parse PDF files text content for keywords.
 
-    :param path: PDF file path.
-    :return: match: set of unique occurrences of every match
+    Args:
+      path: PDF file path.
+
+    Returns:
+      match: set of unique occurrences of every match.
     """
     with open(path, 'rb') as pdf_file_obj:
       match = set()
-      text = ""
+      text = ''
       pdf_reader = PyPDF2.PdfFileReader(pdf_file_obj)
       pages = pdf_reader.numPages
       for page in range(pages):
         page_obj = pdf_reader.getPage(page)
-        text += "\n" + page_obj.extractText()
+        text += '\n' + page_obj.extractText()
       match.update(set(x.lower() for x in re.findall(
           self._keywords, text, re.IGNORECASE)))
     return match

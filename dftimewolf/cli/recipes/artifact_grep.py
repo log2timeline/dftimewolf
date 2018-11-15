@@ -6,7 +6,7 @@
 from __future__ import unicode_literals
 
 _short_description = ('Fetches requested artifacts from a list of GRR hosts '
-                      'and processes them with grep.')
+                      'and runs grep with a list of provided keywords on them.')
 
 contents = {
     'name':
@@ -47,6 +47,6 @@ args = [
     ('--verify', 'Whether to verify the GRR TLS certificate', True),
     ('--grr_username', 'GRR username', 'admin'),
     ('--grr_password', 'GRR password', 'admin'),
-    ('--keywords', 'Pipe separated list of keywords to search for '
+    ('--keywords', 'Pipe-separated list of keywords to search for '
                    '(e.g. key1|key2|key3', None),
 ]
