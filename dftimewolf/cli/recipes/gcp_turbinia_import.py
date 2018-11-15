@@ -68,6 +68,8 @@ args = [
     ('--analysis_project_name', 'Name of the project where the analysis VM will'
                                 ' be created', None),
     ('--boot_disk_size', 'The size of the analysis VM boot disk (in GB)', 50.0),
-    ('--image_project', 'Name of the project where the analysis VM image is hosted.', 'ubuntu-os-cloud'),
-    ('--image_family', 'Name of the image to use to create the analysis VM.', 'ubuntu-1604-lts'),
+    ('--image_project', 'Name of the project where the analysis VM image is'
+                        ' hosted.', 'ubuntu-os-cloud'),
+    ('--image_family', 'Name of the image to use to create the analysis VM.',
+     'ubuntu-1604-lts'),
 ]
