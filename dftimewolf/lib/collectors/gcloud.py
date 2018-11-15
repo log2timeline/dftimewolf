@@ -45,7 +45,7 @@ class GoogleCloudCollector(module.BaseModule):
           disk.name, new_disk.name))
       self.state.output.append((self.analysis_vm.name, new_disk))
 
-  # pylint: disable=arguments-differ
+  # pylint: disable=arguments-differ,too-many-arguments
   def setup(self,
             analysis_project_name,
             remote_project_name,
@@ -114,6 +114,7 @@ class GoogleCloudCollector(module.BaseModule):
 
     try:
       # TODO: Make creating an analysis VM optional
+      # pylint: disable=too-many-function-args
       self.analysis_vm, _ = libcloudforensics.start_analysis_vm(
           self.analysis_project.project_id, analysis_vm_name, zone,
           boot_disk_size, image_project, image_family)
