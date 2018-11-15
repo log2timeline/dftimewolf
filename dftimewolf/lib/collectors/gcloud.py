@@ -55,8 +55,8 @@ class GoogleCloudCollector(module.BaseModule):
             remote_instance_name=None,
             disk_names=None,
             all_disks=False,
-            ubuntu_project='ubuntu-os-cloud',
-            ubuntu_version='ubuntu-1604-lts'):
+            image_project='ubuntu-os-cloud',
+            image_family='ubuntu-1604-lts'):
     """Sets up a Google cloud collector.
 
     This method creates and starts an analysis VM in the analysis project and
@@ -86,8 +86,8 @@ class GoogleCloudCollector(module.BaseModule):
           containing the disks to be copied (string).
       disk_names: Comma separated string with disk names to copy (string).
       all_disks: Copy all disks attached to the source instance (bool).
-      ubuntu_project: The project from which to get the Analysis VM image from.
-      ubuntu_version: The Ubuntu version of the analysis VM
+      image_project: Name of the project where the analysis VM image is hosted.
+      image_family: Name of the image to use to create the analysis VM.
     """
 
     disk_names = disk_names.split(",") if disk_names else []
@@ -116,7 +116,7 @@ class GoogleCloudCollector(module.BaseModule):
       # TODO: Make creating an analysis VM optional
       self.analysis_vm, _ = libcloudforensics.start_analysis_vm(
           self.analysis_project.project_id, analysis_vm_name, zone,
-          boot_disk_size)
+          boot_disk_size, image_project, image_family)
 
       if disk_names:
         for name in disk_names:
