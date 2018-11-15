@@ -27,6 +27,8 @@ contents = {
             'disk_names': '@disks',
             'all_disks': '@all_disks',
             'boot_disk_size': '@boot_disk_size',
+            'image_project': '@image_project',
+            'image_family': '@image_family',
         },
     }, {
         'name': 'TurbiniaProcessor',
@@ -66,4 +68,8 @@ args = [
     ('--analysis_project_name', 'Name of the project where the analysis VM will'
                                 ' be created', None),
     ('--boot_disk_size', 'The size of the analysis VM boot disk (in GB)', 50.0),
+    ('--image_project', 'Name of the project where the analysis VM image is'
+                        ' hosted.', 'ubuntu-os-cloud'),
+    ('--image_family', 'Name of the image to use to create the analysis VM.',
+     'ubuntu-1604-lts'),
 ]
