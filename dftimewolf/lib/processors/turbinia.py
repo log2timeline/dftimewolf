@@ -103,7 +103,7 @@ class TurbiniaProcessor(BaseModule):
     request.evidence.append(evidence_)
 
     try:
-      print('Creating Turbinia request {0:s} with Evidence {1:s}'.format(
+      print('Creating Turbinia request {0:s} with Evidence {1!s}'.format(
           request.request_id, evidence_.name))
       self.client.send_request(request)
       print('Waiting for Turbinia request {0:s} to complete'.format(
