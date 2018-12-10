@@ -35,7 +35,7 @@ class LocalFilesystemCopy(BaseModule):
       try:
         os.makedirs(target_directory)
       except OSError as exception:
-        message = 'An unknown error occurred: {0:s}'.format(exception)
+        message = 'An unknown error occurred: {0!s}'.format(exception)
         self.state.add_error(message, critical=True)
 
   def cleanup(self):

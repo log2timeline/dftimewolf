@@ -18,6 +18,8 @@ class DependencyDefinition(object):
   Attributes:
     dpkg_name (str): name of the dpkg package that provides the dependency.
     is_optional (bool): True if the dependency is optional.
+    l2tbinaries_macos_name (str): name of the l2tbinaries macos package that
+        provides the dependency.
     l2tbinaries_name (str): name of the l2tbinaries package that provides
         the dependency.
     maximum_version (str): maximum supported version.
@@ -25,12 +27,13 @@ class DependencyDefinition(object):
     name (str): name of (the Python module that provides) the dependency.
     pypi_name (str): name of the PyPI package that provides the dependency.
     python2_only (bool): True if the dependency is only supported by Python 2.
+    python3_only (bool): True if the dependency is only supported by Python 3.
     rpm_name (str): name of the rpm package that provides the dependency.
     version_property (str): name of the version attribute or function.
   """
 
   def __init__(self, name):
-    """Initializes a dependency configuation.
+    """Initializes a dependency configuration.
 
     Args:
       name (str): name of the dependency.
@@ -38,12 +41,14 @@ class DependencyDefinition(object):
     super(DependencyDefinition, self).__init__()
     self.dpkg_name = None
     self.is_optional = False
+    self.l2tbinaries_macos_name = None
     self.l2tbinaries_name = None
     self.maximum_version = None
     self.minimum_version = None
     self.name = name
     self.pypi_name = None
     self.python2_only = False
+    self.python3_only = False
     self.rpm_name = None
     self.version_property = None
 
@@ -54,11 +59,13 @@ class DependencyDefinitionReader(object):
   _VALUE_NAMES = frozenset([
       'dpkg_name',
       'is_optional',
+      'l2tbinaries_macos_name',
       'l2tbinaries_name',
       'maximum_version',
       'minimum_version',
       'pypi_name',
       'python2_only',
+      'python3_only',
       'rpm_name',
       'version_property'])
 
@@ -76,7 +83,7 @@ class DependencyDefinitionReader(object):
     try:
       return config_parser.get(section_name, value_name)
     except configparser.NoOptionError:
-      return
+      return None
 
   def Read(self, file_object):
     """Reads dependency definitions.
@@ -149,9 +156,9 @@ class DependencyHelper(object):
     module_object = self._ImportPythonModule(dependency.name)
     if not module_object:
       status_message = 'missing: {0:s}'.format(dependency.name)
-      return dependency.is_optional, status_message
+      return False, status_message
 
-    if not dependency.version_property or not dependency.minimum_version:
+    if not dependency.version_property:
       return True, dependency.name
 
     return self._CheckPythonModuleVersion(
@@ -212,19 +219,20 @@ class DependencyHelper(object):
           module_name, module_version)
       return False, status_message
 
-    try:
-      minimum_version_map = list(
-          map(int, self._VERSION_SPLIT_REGEX.split(minimum_version)))
-    except ValueError:
-      status_message = 'unable to parse minimum version: {0:s} {1:s}'.format(
-          module_name, minimum_version)
-      return False, status_message
+    if minimum_version:
+      try:
+        minimum_version_map = list(
+            map(int, self._VERSION_SPLIT_REGEX.split(minimum_version)))
+      except ValueError:
+        status_message = 'unable to parse minimum version: {0:s} {1:s}'.format(
+            module_name, minimum_version)
+        return False, status_message
 
-    if module_version_map < minimum_version_map:
-      status_message = (
-          '{0:s} version: {1!s} is too old, {2!s} or later required').format(
-              module_name, module_version, minimum_version)
-      return False, status_message
+      if module_version_map < minimum_version_map:
+        status_message = (
+            '{0:s} version: {1!s} is too old, {2!s} or later required').format(
+                module_name, module_version, minimum_version)
+        return False, status_message
 
     if maximum_version:
       try:
@@ -286,7 +294,7 @@ class DependencyHelper(object):
     try:
       module_object = list(map(__import__, [module_name]))[0]
     except ImportError:
-      return
+      return None
 
     # If the module name contains dots get the upper most module object.
     if '.' in module_name:
@@ -304,6 +312,7 @@ class DependencyHelper(object):
       result (bool): True if the Python module is available and conforms to
             the minimum required version, False otherwise.
       status_message (str): status message.
+      verbose_output (Optional[bool]): True if output should be verbose.
     """
     if not result or dependency.is_optional:
       if dependency.is_optional:
@@ -311,7 +320,7 @@ class DependencyHelper(object):
       else:
         status_indicator = '[FAILURE]'
 
-      print('{0:s}\t{1:s}.'.format(status_indicator, status_message))
+      print('{0:s}\t{1:s}'.format(status_indicator, status_message))
 
     elif verbose_output:
       print('[OK]\t\t{0:s}'.format(status_message))
@@ -334,7 +343,11 @@ class DependencyHelper(object):
       else:
         result, status_message = self._CheckPythonModule(dependency)
 
-      if not result:
+      if not result and module_name == 'lzma':
+        dependency.name = 'backports.lzma'
+        result, status_message = self._CheckPythonModule(dependency)
+
+      if not result and not dependency.is_optional:
         check_result = False
 
       self._PrintCheckDependencyStatus(

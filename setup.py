@@ -1,8 +1,10 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Installation and deployment script."""
 
 from __future__ import print_function
+
+import locale
 import sys
 
 try:
@@ -11,13 +13,30 @@ except ImportError:
   from distutils.core import find_packages, setup
 
 try:
+  from distutils.command.bdist_msi import bdist_msi
+except ImportError:
+  bdist_msi = None
+
+try:
   from distutils.command.bdist_rpm import bdist_rpm
 except ImportError:
   bdist_rpm = None
 
-if sys.version < '2.7':
+version_tuple = (sys.version_info[0], sys.version_info[1])
+if version_tuple[0] not in (2, 3):
   print('Unsupported Python version: {0:s}.'.format(sys.version))
-  print('Supported Python versions are 2.7 or a later 2.x version.')
+  sys.exit(1)
+
+elif version_tuple[0] == 2 and version_tuple < (2, 7):
+  print((
+      'Unsupported Python 2 version: {0:s}, version 2.7 or higher '
+      'required.').format(sys.version))
+  sys.exit(1)
+
+elif version_tuple[0] == 3 and version_tuple < (3, 4):
+  print((
+      'Unsupported Python 3 version: {0:s}, version 3.4 or higher '
+      'required.').format(sys.version))
   sys.exit(1)
 
 # Change PYTHONPATH to include dftimewolf so that we can get the version.
@@ -25,6 +44,19 @@ sys.path.insert(0, '.')
 
 import dftimewolf  # pylint: disable=wrong-import-position
 
+if not bdist_msi:
+  BdistMSICommand = None
+else:
+  class BdistMSICommand(bdist_msi):
+    """Custom handler for the bdist_msi command."""
+
+    def run(self):
+      """Builds an MSI."""
+      # Command bdist_msi does not support the library version, neither a date
+      # as a version but if we suffix it with .1 everything is fine.
+      self.distribution.metadata.version += '.1'
+
+      bdist_msi.run(self)
 
 if not bdist_rpm:
   BdistRPMCommand = None
@@ -71,15 +103,16 @@ else:
         elif line.startswith('%files'):
           # Cannot use %{_libdir} here since it can expand to "lib64".
           lines = [
-              '%files',
+              '%files -n {0:s}-%{{name}}'.format(python_package),
               '%defattr(644,root,root,755)',
-              '%doc ACKNOWLEDGEMENTS AUTHORS LICENSE README',
-              '%{_prefix}/lib/python*/site-packages/dftimewolf/*.py',
+              '%doc ACKNOWLEDGEMENTS AUTHORS LICENSE',
+              '%{_prefix}/lib/python*/site-packages/**/*.py',
               '%{_prefix}/lib/python*/site-packages/dftimewolf*.egg-info/*',
-              '%exclude %{_prefix}/lib/python*/site-packages/dftimewolf/*.pyc',
-              '%exclude %{_prefix}/lib/python*/site-packages/dftimewolf/*.pyo',
-              ('%exclude %{_prefix}/lib/python*/site-packages/dftimewolf/'
-               '__pycache__/*')]
+              '',
+              '%exclude %{_prefix}/share/doc/*',
+              '%exclude %{_prefix}/lib/python*/site-packages/**/*.pyc',
+              '%exclude %{_prefix}/lib/python*/site-packages/**/*.pyo',
+              '%exclude %{_prefix}/lib/python*/site-packages/**/__pycache__/*']
 
           python_spec_file.extend(lines)
           break
@@ -106,34 +139,53 @@ else:
 
       return python_spec_file
 
+if version_tuple[0] == 2:
+  encoding = sys.stdin.encoding  # pylint: disable=invalid-name
+
+  # Note that sys.stdin.encoding can be None.
+  if not encoding:
+    encoding = locale.getpreferredencoding()
+
+  # Make sure the default encoding is set correctly otherwise on Python 2
+  # setup.py sdist will fail to include filenames with Unicode characters.
+  reload(sys)  # pylint: disable=undefined-variable
+
+  sys.setdefaultencoding(encoding)  # pylint: disable=no-member
 
 dftimewolf_description = (
     'Digital forensic orchestration.')
 
 dftimewolf_long_description = (
-    'dfTimeWolf, a framework for orchestrating forensic collection, processing '
-    'and data export.')
+    'dfTimeWolf, a framework for orchestrating forensic collection, processing'
+    ' and data export.')
 
 setup(
     name='dftimewolf',
     version=dftimewolf.__version__,
     description=dftimewolf_description,
     long_description=dftimewolf_long_description,
-    url='https://github.com/log2timeline/dftimewolf',
-    author='DFTimewolf development team',
     license='Apache License, Version 2.0',
+    url='https://github.com/log2timeline/dftimewolf',
+    maintainer='Log2Timeline maintainers',
+    maintainer_email='log2timeline-maintainers@googlegroups.com',
     packages=find_packages(),
     cmdclass={
+        'bdist_msi': BdistMSICommand,
         'bdist_rpm': BdistRPMCommand},
     classifiers=[
         'Development Status :: 4 - Beta',
+        'Environment :: Console',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
     ],
     entry_points={
         'console_scripts': ['dftimewolf=dftimewolf.cli.dftimewolf_recipes:main']
     },
-    data_files=[('dftimewolf', ['dftimewolf/config.json'])],
+    data_files=[
+        ('share/doc/dftimewolf', [
+            'ACKNOWLEDGEMENTS', 'AUTHORS', 'LICENSE']),
+        ('dftimewolf', ['dftimewolf/config.json'])
+    ],
     include_package_data=True,
     zip_safe=False,
     install_requires=[
@@ -143,12 +195,12 @@ setup(
         'grr_api_client',
         'pyyaml',
         'future',
+        'turbinia',
+        'pypdf2',
     ],
     test_suite='nose.collector',
     test_require=[
-        'beautifulsoup4',
         'nose',
-        'mock',
         'pylint<2',
         'coverage',
     ]

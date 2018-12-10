@@ -2,13 +2,12 @@
 
 ## Installation
 
-Ideally you'll want to install dftimewolf in its own virtual environment. We
-leverage `pipenv` for that.
+Ideally you'll want to install dftimewolf in its own virtual environment.
 
 ```
-$ pip install pipenv
 $ git clone https://github.com/log2timeline/dftimewolf.git && cd dftimewolf
-$ pipenv install -e .
+$ pip install -r requirements
+$ pip install -e .
 ```
 
 <div class="admonition note">
@@ -17,7 +16,6 @@ $ pipenv install -e .
   to install them separately and make them available in your virtual environment.</p>
 </div>
 
-Then use `pipenv shell` to activate your freshly created virtual environment.
 You can then invoke the `dftimewolf` command from any directory.
 
 You can still use `python setup.py install` or `pip install -e .` if you'd rather
@@ -38,7 +36,7 @@ recipe `--incident_id` is used by Timesketch as a sketch description.
 Details on a recipe can be obtained using the standard python help flags:
 
 ```
-$ dftimewolf -h      
+$ dftimewolf -h
 usage: dftimewolf [-h]
                   {grr_huntresults_plaso_timesketch,local_plaso,...}
 

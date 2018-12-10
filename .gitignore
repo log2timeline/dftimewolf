@@ -98,3 +98,8 @@ ENV/
 config/vagrant/.vagrant/
 # dftimewolf configuration files
 dftimewolf/user_config.py
+
+# Vscode
+.vscode
+
+.DS_Store
