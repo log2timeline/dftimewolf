@@ -46,6 +46,7 @@ pyasn1==0.4.4
 pycparser==2.19
 pygments==2.2.0
 pyopenssl==18.0.0
+pypdf2==1.26.0
 pytz==2018.5
 pyyaml==3.13
 requests==2.19.1
