@@ -196,6 +196,7 @@ setup(
         'pyyaml',
         'future',
         'turbinia',
+        'pypdf2',
     ],
     test_suite='nose.collector',
     test_require=[

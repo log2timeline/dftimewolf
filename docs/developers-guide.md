@@ -4,6 +4,12 @@ This page gives a few hints on how to develop new recipes and modules for
 dftimewolf. Start with the [architecture](architecture.md)
 page if you haven't read it already.
 
+## Codereview
+As for other Log2Timeline projects, all contributions to dfTimewolf undergo code review. The process is documented [here](https://github.com/log2timeline/l2tdocs/blob/master/process/Code%20review%20process.md). 
+
+## Code style
+dfTimewolf follows the [Log2Timeline style guide](https://github.com/log2timeline/l2tdocs/blob/master/process/Style-guide.md), using snake_case for method names, and not CamelCase.
+
 ## Creating a recipe
 
 If you're not satisfied with the way modules are chained, or default arguments
