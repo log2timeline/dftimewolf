@@ -20,6 +20,7 @@ from dftimewolf.cli.recipes import grr_hunt_file
 from dftimewolf.cli.recipes import grr_huntresults_plaso_timesketch
 from dftimewolf.cli.recipes import local_plaso
 from dftimewolf.cli.recipes import timesketch_upload
+from dftimewolf.cli.recipes import artifact_grep
 
 from dftimewolf.lib import utils
 
@@ -30,6 +31,7 @@ from dftimewolf.lib.exporters import timesketch
 from dftimewolf.lib.exporters import local_filesystem
 from dftimewolf.lib.processors import localplaso
 from dftimewolf.lib.processors import turbinia
+from dftimewolf.lib.processors import grepper
 from dftimewolf.lib.collectors.gcloud import GoogleCloudCollector
 
 from dftimewolf.lib.state import DFTimewolfState
@@ -52,6 +54,7 @@ config.Config.register_module(grr_hunt.GRRHuntDownloader)
 config.Config.register_module(timesketch.TimesketchExporter)
 config.Config.register_module(local_filesystem.LocalFilesystemCopy)
 config.Config.register_module(turbinia.TurbiniaProcessor)
+config.Config.register_module(grepper.GrepperSearch)
 
 # Try to open config.json and load configuration data from it.
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -70,6 +73,7 @@ config.Config.register_recipe(grr_huntresults_plaso_timesketch)
 config.Config.register_recipe(timesketch_upload)
 config.Config.register_recipe(gcp_turbinia)
 config.Config.register_recipe(gcp_turbinia_import)
+config.Config.register_recipe(artifact_grep)
 
 # TODO(tomchop) Change the print statements by a better logging / display system
 
