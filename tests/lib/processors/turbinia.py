@@ -72,7 +72,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
     self.assertEqual(is_critical, True)
 
   @mock.patch('turbinia.client.TurbiniaClient')
-  def tesWrongSetups(self, _mock_TurbiniaClient): # pylint: disable=invalid-name
+  def testWrongSetup(self, _mock_TurbiniaClient): # pylint: disable=invalid-name
     """Tests that invalid setup options generate errors."""
     params = [
         {
