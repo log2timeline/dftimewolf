@@ -19,7 +19,6 @@ os.environ['TURBINIA_CONFIG_PATH'] = os.path.join(current_dir, 'test_data')
 from dftimewolf.lib.processors import turbinia
 
 
-
 class TurbiniaProcessorTest(unittest.TestCase):
   """Tests for the Turbinia processor."""
 
