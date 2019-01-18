@@ -18,6 +18,7 @@ os.environ['TURBINIA_CONFIG_PATH'] = os.path.join(current_dir, 'test_data')
 # pylint: disable=wrong-import-position
 from dftimewolf.lib.processors import turbinia
 
+from dftimewolf import config
 
 
 class TurbiniaProcessorTest(unittest.TestCase):
@@ -25,7 +26,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
 
   def testInitialization(self):
     """Tests that the processor can be initialized."""
-    test_state = state.DFTimewolfState()
+    test_state = state.DFTimewolfState(config.Config)
     turbinia_processor = turbinia.TurbiniaProcessor(test_state)
     self.assertIsNotNone(turbinia_processor)
 
@@ -33,7 +34,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
   # pylint: disable=invalid-name
   def testSetup(self, _mock_TurbiniaClient):
     """Tests that the processor is set up correctly."""
-    test_state = state.DFTimewolfState()
+    test_state = state.DFTimewolfState(config.Config)
     turbinia_processor = turbinia.TurbiniaProcessor(test_state)
     turbinia_processor.setup(
         disk_name='disk-1',
@@ -55,7 +56,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
   # pylint: disable=invalid-name
   def testWrongProject(self, _mock_TurbiniaClient):
     """Tests that specifying the wrong Turbinia project generates an error."""
-    test_state = state.DFTimewolfState()
+    test_state = state.DFTimewolfState(config.Config)
     turbinia_processor = turbinia.TurbiniaProcessor(test_state)
     turbinia_processor.setup(
         disk_name='disk-1',
@@ -95,7 +96,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
                       'specified, bailing out')
 
     for combination in params:
-      test_state = state.DFTimewolfState()
+      test_state = state.DFTimewolfState(config.Config)
       turbinia_processor = turbinia.TurbiniaProcessor(test_state)
       turbinia_processor.setup(**combination)
       self.assertEqual(len(test_state.errors), 1)
@@ -115,7 +116,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
                   mock_exists):
     """Tests that the processor processes data correctly."""
 
-    test_state = state.DFTimewolfState()
+    test_state = state.DFTimewolfState(config.Config)
     turbinia_processor = turbinia.TurbiniaProcessor(test_state)
     turbinia_processor.setup(
         disk_name='disk-1',

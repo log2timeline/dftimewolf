@@ -10,6 +10,9 @@ import mock
 from dftimewolf.lib import state
 from dftimewolf.lib.exporters import local_filesystem
 
+from dftimewolf import config
+
+
 FAKE_PATHS = {
     '/fake/evidence_directory': ['file1', 'file2'],
     '/fake/evidence_file': None
@@ -28,7 +31,7 @@ class LocalFileSystemTest(unittest.TestCase):
 
   def testInitialization(self):
     """Tests that the exporter can be initialized."""
-    test_state = state.DFTimewolfState()
+    test_state = state.DFTimewolfState(config.Config)
     local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
     self.assertIsNotNone(local_filesystem_copy)
 
@@ -45,7 +48,7 @@ class LocalFileSystemTest(unittest.TestCase):
                   mock_copy2,
                   mock_copytree):
     """Tests that the module processes input correctly."""
-    test_state = state.DFTimewolfState()
+    test_state = state.DFTimewolfState(config.Config)
     test_state.input = [
         ('description', '/fake/evidence_directory'),
         ('description2', '/fake/evidence_file'),
@@ -64,7 +67,7 @@ class LocalFileSystemTest(unittest.TestCase):
   def testSetup(self, mock_mkdtemp):
     """Tests that the specified directory is used if created."""
     mock_mkdtemp.return_value = '/fake/random'
-    test_state = state.DFTimewolfState()
+    test_state = state.DFTimewolfState(config.Config)
     local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
     local_filesystem_copy.setup()
     # pylint: disable=protected-access
@@ -74,7 +77,7 @@ class LocalFileSystemTest(unittest.TestCase):
   def testSetupError(self, mock_makedirs):
     """Tests that an error is generated if target_directory is unavailable."""
     mock_makedirs.side_effect = OSError('FAKEERROR')
-    test_state = state.DFTimewolfState()
+    test_state = state.DFTimewolfState(config.Config)
     local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
     local_filesystem_copy.setup(target_directory="/nonexistent")
     self.assertEqual(test_state.errors[0][1], True)
@@ -83,7 +86,7 @@ class LocalFileSystemTest(unittest.TestCase):
   def testSetupManualDir(self, mock_makedirs):
     """Tests that the specified directory is used if created."""
     mock_makedirs.return_value = True
-    test_state = state.DFTimewolfState()
+    test_state = state.DFTimewolfState(config.Config)
     local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
     local_filesystem_copy.setup(target_directory='/nonexistent')
     # pylint: disable=protected-access
