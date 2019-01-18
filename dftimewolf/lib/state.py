@@ -8,6 +8,11 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import sys
+import threading
+
+from dftimewolf.lib import utils
+from dftimewolf.lib.errors import DFTimewolfError
+
 
 class DFTimewolfState(object):
   """The main State class.
@@ -20,14 +25,105 @@ class DFTimewolfState(object):
     current_module: The DFTimewolfModule module that is currently executing.
     input: list, The data that the current module will use as input.
     output: list, The data that the current module generates.
+    store: dict, store of arbitrary data for modules.
   """
 
-  def __init__(self):
+  def __init__(self, config):
     self.errors = []
     self.global_errors = []
     self.current_module = None
     self.input = []
     self.output = []
+    self.store = {}
+    self._module_pool = {}
+    self.config = config
+    self.recipe = None
+    self.events = {}
+
+  def load_recipe(self, recipe):
+    """Populates the internal module pool with modules declared in a recipe.
+
+    Args:
+      recipe: Dict, recipe declaring modules to load.
+    """
+    self.recipe = recipe
+    for module_description in recipe['modules']:
+      # Combine CLI args with args from the recipe description
+      module_name = module_description['name']
+      module = self.config.get_module(module_name)(self)
+      self._module_pool[module_name] = module
+
+  def setup_modules(self, args):
+    """Performs setup tasks for each module in the module pool.
+
+    Threads declared modules' setup() functions. Takes CLI arguments into
+    account when replacing recipe parameters for each module.
+
+    Args:
+      args: Command line arguments that will be used to replace the parameters
+          declared in the recipe.
+    """
+
+    def _setup_module_thread(module_description):
+      """Calls the module's setup() function and sets an Event object for it."""
+      new_args = utils.import_args_from_dict(
+          module_description['args'], vars(args), self.config)
+      module = self._module_pool[module_description['name']]
+      try:
+        module.setup(**new_args)
+      except Exception as error:  # pylint: disable=broad-except
+        self.add_error(
+            'An unknown error occured: {0!s}'.format(error), critical=True)
+      self.events[module_description['name']] = threading.Event()
+
+    threads = []
+    for module_description in self.recipe['modules']:
+      t = threading.Thread(
+          target=_setup_module_thread,
+          args=(module_description, )
+      )
+      threads.append(t)
+      t.start()
+    for t in threads:
+      t.join()
+
+    self.check_errors()
+
+  def run_modules(self):
+    """Performs the actual processing for each module in the module pool."""
+
+    def _run_module_thread(module_description):
+      """Runs the module's process() function.
+
+      Waits for any blockers to have finished before running process(), then
+      sets an Event flag declaring the module has completed.
+      """
+      for blocker in module_description['wants']:
+        self.events[blocker].wait()
+      module = self._module_pool[module_description['name']]
+      try:
+        module.process()
+      except DFTimewolfError as error:
+        self.add_error(error.message, critical=True)
+      except Exception as error:  # pylint: disable=broad-except
+        self.add_error(
+            'An unknown error occured: {0!s}'.format(error), critical=True)
+      print('Module {0:s} completed'.format(module_description['name']))
+      self.events[module_description['name']].set()
+      self.cleanup()
+
+    threads = []
+    for module_description in self.recipe['modules']:
+      t = threading.Thread(
+          target=_run_module_thread,
+          args=(module_description, )
+      )
+      threads.append(t)
+      t.start()
+    for t in threads:
+      t.join()
+
+    self.check_errors()
 
   def add_error(self, error, critical=False):
     """Adds an error to the state.
