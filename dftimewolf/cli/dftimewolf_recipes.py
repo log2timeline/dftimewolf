@@ -35,7 +35,6 @@ from dftimewolf.lib.processors import grepper
 from dftimewolf.lib.collectors.gcloud import GoogleCloudCollector
 
 from dftimewolf.lib.state import DFTimewolfState
-from dftimewolf.lib.errors import DFTimewolfError
 
 signal.signal(signal.SIGINT, utils.signal_handler)
 
@@ -116,7 +115,7 @@ def main():
   print('Loading recipes...')
   state.load_recipe(recipe)
   print('Loaded recipe {0:s} with {1:d} modules'.format(
-    recipe['name'], len(recipe['modules'])))
+      recipe['name'], len(recipe['modules'])))
 
   print('Setting up modules...')
   state.setup_modules(args)
