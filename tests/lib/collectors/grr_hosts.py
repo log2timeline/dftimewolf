@@ -11,13 +11,12 @@ import six
 from grr_response_proto import flows_pb2
 from grr_api_client import errors as grr_errors
 
+from dftimewolf import config
 from dftimewolf.lib import state
 from dftimewolf.lib.collectors import grr_hosts
 from dftimewolf.lib.errors import DFTimewolfError
 
 from tests.lib.collectors.test_data import mock_grr_hosts
-
-from dftimewolf import config
 
 
 # Extensive access to protected members for testing, and mocking of classes.

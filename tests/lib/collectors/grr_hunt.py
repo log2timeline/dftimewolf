@@ -10,11 +10,10 @@ import mock
 
 from grr_response_proto import flows_pb2
 
+from dftimewolf import config
 from dftimewolf.lib import state
 from dftimewolf.lib.collectors import grr_hunt
 from tests.lib.collectors.test_data import mock_grr_hosts
-
-from dftimewolf import config
 
 
 # Mocking of classes.
