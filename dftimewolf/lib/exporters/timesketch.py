@@ -80,7 +80,7 @@ class TimesketchExporter(BaseModule):
       self.timesketch_api.export_artifacts(named_timelines, self.sketch_id)
     except RuntimeError as e:
       self.state.add_error(
-          'Error occured while working with Timesketch: {0:s}'.format(str(e)),
+          'Error occurred while working with Timesketch: {0:s}'.format(str(e)),
           critical=True)
       return
     sketch_url = self.timesketch_api.get_sketch_url(self.sketch_id)
