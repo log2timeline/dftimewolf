@@ -22,7 +22,6 @@ class DFTimewolfState(object):
         cleaned up after each module run using the cleanup() method.
     global_errors: [(str, bool)] the cleanup() method moves non critical errors
         to this attribute for later reporting.
-    current_module: The DFTimewolfModule module that is currently executing.
     input: list, The data that the current module will use as input.
     output: list, The data that the current module generates.
     store: dict, store of arbitrary data for modules.
@@ -31,7 +30,6 @@ class DFTimewolfState(object):
   def __init__(self, config):
     self.errors = []
     self.global_errors = []
-    self.current_module = None
     self.input = []
     self.output = []
     self.store = {}
@@ -134,14 +132,6 @@ class DFTimewolfState(object):
           dfTimewolf will abort.
     """
     self.errors.append((error, critical))
-
-  def set_current_module(self, module):
-    """Sets the current_module for the state.
-
-    Args:
-      module: The dfTimewolfModule to define as current module.
-    """
-    self.current_module = module
 
   def cleanup(self):
     """Basic cleanup after modules.
