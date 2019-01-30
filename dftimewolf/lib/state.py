@@ -63,7 +63,11 @@ class DFTimewolfState(object):
     """
 
     def _setup_module_thread(module_description):
-      """Calls the module's setup() function and sets an Event object for it."""
+      """Calls the module's setup() function and sets an Event object for it.
+
+      Args:
+        module_description (dict): Corresponding recipe module description.
+      """
       new_args = utils.import_args_from_dict(
           module_description['args'], vars(args), self.config)
       module = self._module_pool[module_description['name']]
