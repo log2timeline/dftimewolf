@@ -13,6 +13,7 @@ contents = {
         'artifact_grep',
     'short_description': _short_description,
     'modules': [{
+        'wants': [],
         'name': 'GRRArtifactCollector',
         'args': {
             'hosts': '@hosts',
@@ -27,6 +28,7 @@ contents = {
             'verify': '@verify',
         },
     }, {
+        'wants': ['GRRArtifactCollector'],
         'name': 'GrepperSearch',
         'args': {
             'keywords': '@keywords',
