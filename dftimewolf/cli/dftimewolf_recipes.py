@@ -35,7 +35,6 @@ from dftimewolf.lib.processors import grepper
 from dftimewolf.lib.collectors.gcloud import GoogleCloudCollector
 
 from dftimewolf.lib.state import DFTimewolfState
-from dftimewolf.lib.errors import DFTimewolfError
 
 signal.signal(signal.SIGINT, utils.signal_handler)
 
@@ -112,30 +111,19 @@ def main():
   args = parser.parse_args()
   recipe = args.recipe
 
-  # Thread all collectors.
-  state = DFTimewolfState()
+  state = DFTimewolfState(config.Config)
+  print('Loading recipes...')
+  state.load_recipe(recipe)
+  print('Loaded recipe {0:s} with {1:d} modules'.format(
+      recipe['name'], len(recipe['modules'])))
 
-  for module_description in recipe['modules']:
-    # Combine CLI args with args from the recipe description
-    new_args = utils.import_args_from_dict(
-        module_description['args'], vars(args), config.Config)
+  print('Setting up modules...')
+  state.setup_modules(args)
+  print('Modules sucessfully set up!')
 
-    # Create the module object and start processing
-    module_name = module_description['name']
-    print('Running module {0:s}'.format(module_name))
-    module = config.Config.get_module(module_name)(state)
-    module.setup(**new_args)
-    state.check_errors()
-    try:
-      module.process()
-    except DFTimewolfError as error:
-      state.add_error(error.message, critical=True)
-
-    # Check for eventual errors and clean up after each round.
-    state.check_errors()
-    state.cleanup()
-
-  print('Recipe executed successfully.')
+  print('Running modules...')
+  state.run_modules()
+  print('Recipe {0:s} executed succesfully.'.format(recipe['name']))
 
 
 if __name__ == '__main__':

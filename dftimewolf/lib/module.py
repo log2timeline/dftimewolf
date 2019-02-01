@@ -26,7 +26,6 @@ class BaseModule(threading.Thread):
     super(BaseModule, self).__init__()
     self.critical = critical
     self.state = state
-    self.state.set_current_module(self)
 
   def setup(self, *args, **kwargs):
     """Sets up necessary module configuration options."""

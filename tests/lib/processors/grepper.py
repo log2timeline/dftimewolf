@@ -9,12 +9,15 @@ import unittest
 from dftimewolf.lib import state
 from dftimewolf.lib.processors import grepper
 
+from dftimewolf import config
+
+
 class GrepperTest(unittest.TestCase):
   """Test case for the grep function. """
 
   def TestSingleGrep(self):
     """Test just single keyword grep search on text files."""
-    test_state = state.DFTimewolfState()
+    test_state = state.DFTimewolfState(config.Config)
     base_grepper_search = grepper.GrepperSearch(test_state)
     base_grepper_search.setup(
         keywords='foo|lorem|meow|triage|bar|homebrew'
