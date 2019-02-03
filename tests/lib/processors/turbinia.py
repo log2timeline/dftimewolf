@@ -155,8 +155,8 @@ class TurbiniaProcessorTest(unittest.TestCase):
         'gs://bucket/data3.plaso',
         local_output_dir=turbinia_processor._output_path
     )
-    self.assertEquals(test_state.errors, [])
-    self.assertEquals(test_state.output, [
+    self.assertEqual(test_state.errors, [])
+    self.assertEqual(test_state.output, [
         ('turbinia-project-disk-1', '/fake/data.plaso'),
         ('turbinia-project-disk-1', '/fake/data2.plaso'),
         ('turbinia-project-disk-1', '/fake/local/path')
