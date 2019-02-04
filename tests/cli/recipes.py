@@ -55,17 +55,17 @@ class RecipeTests(unittest.TestCase):
         error_msg = 'module {0:s} in recipe {1:s}'.format(
             module['name'], recipe.contents['name'])
 
-        self.assertIn('wants', module, msg=error_msg)
-        self.assertIn('name', module, msg=error_msg)
-        self.assertIn('args', module, msg=error_msg)
+        self.assertIn('wants', module)
+        self.assertIn('name', module)
+        self.assertIn('args', module)
 
         declared_modules.add(module['name'])
         for wanted in module['wants']:
           wanted_modules.add(wanted)
 
-        self.assertIsInstance(module['wants'], list, msg=error_msg)
-        self.assertIsInstance(module['args'], dict, msg=error_msg)
-        self.assertIsInstance(module['name'], str, msg=error_msg)
+        self.assertIsInstance(module['wants'], list)
+        self.assertIsInstance(module['args'], dict)
+        self.assertIsInstance(module['name'], str)
 
       for wanted_module in wanted_modules:
         self.assertIn(wanted_module, declared_modules,
