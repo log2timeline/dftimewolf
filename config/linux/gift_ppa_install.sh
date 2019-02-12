@@ -89,3 +89,7 @@ fi
 if [[ "$*" =~ "include-plaso" ]]; then
     sudo apt-get -y install plaso-tools
 fi
+
+if [[ "$*" =~ "include-turbinia" ]]; then
+    sudo pip install turbinia==20181004.1
+fi
