@@ -90,6 +90,7 @@ if [[ "$*" =~ "include-plaso" ]]; then
     sudo apt-get -y install plaso-tools
 fi
 
+# pending resolution of https://github.com/log2timeline/l2tdevtools/issues/595
 if [[ "$*" =~ "include-turbinia" ]]; then
     sudo pip install turbinia==20181004.1
 fi
