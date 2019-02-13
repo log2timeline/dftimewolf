@@ -63,7 +63,8 @@ class RecipeTests(unittest.TestCase):
         self.assertIsInstance(module['name'], six.string_types, msg=error_msg)
 
   def testRecipeModulesAllPresent(self):
-    """Tests that a recipe's modules depend only on modules present in the recipe."""
+    """Tests that a recipe's modules depend only on modules present in the
+    recipe."""
     for recipe in self.recipes:
       declared_modules = set()
       wanted_modules = set()
@@ -82,11 +83,11 @@ class RecipeTests(unittest.TestCase):
     for recipe in self.recipes:
       for module in recipe.contents['modules']:
         dependencies = _find_module_dependencies(
-            module['name'],recipe, module['name'])
+            module['name'], recipe, module['name'])
         if module['name'] in dependencies:
           self.fail('Cyclic dependency found in {0:s}: {1:s}'.format(
-            recipe.contents['name'],
-            module['name']
+              recipe.contents['name'],
+              module['name']
           ))
 
 def _find_module_dependencies(module_name, recipe, original_module_name):
@@ -100,6 +101,9 @@ def _find_module_dependencies(module_name, recipe, original_module_name):
     recipe: The dftimewolf recipe
     original_module_name: The original module name for which we want to check
         for cyclic dependencies.
+
+  Returns:
+    A set of depencency names found so far.
   """
 
   module_dependencies = set()
