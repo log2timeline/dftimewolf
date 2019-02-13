@@ -119,11 +119,11 @@ def main():
 
   print('Setting up modules...')
   state.setup_modules(args)
-  print('Modules sucessfully set up!')
+  print('Modules successfully set up!')
 
   print('Running modules...')
   state.run_modules()
-  print('Recipe {0:s} executed succesfully.'.format(recipe['name']))
+  print('Recipe {0:s} executed successfully.'.format(recipe['name']))
 
 
 if __name__ == '__main__':
