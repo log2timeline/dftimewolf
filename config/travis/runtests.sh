@@ -16,7 +16,7 @@ elif test "${TARGET}" = "pylint";
 then
 	pylint --version
 
-	for FILE in $(find setup.py config dftimewolf tests -name \*.py);
+	for FILE in `find setup.py config dftimewolf tests -name \*.py`;
 	do
 		echo "Checking: ${FILE}";
 
@@ -38,6 +38,19 @@ then
 		PYTHONPATH=. python ./tests/end-to-end.py --debug -c config/end-to-end.ini;
 	fi
 
+elif test -n "${FEDORA_VERSION}";
+then
+	CONTAINER_NAME="fedora${FEDORA_VERSION}";
+
+	docker exec "${CONTAINER_NAME}" sh -c "git clone https://github.com/log2timeline/dftimewolf.git";
+
+	if test ${TRAVIS_PYTHON_VERSION} = "2.7";
+	then
+		docker exec "${CONTAINER_NAME}" sh -c "cd dftimewolf && python2 run_tests.py";
+	else
+		docker exec "${CONTAINER_NAME}" sh -c "cd dftimewolf && python3 run_tests.py";
+	fi
+
 elif test "${TRAVIS_OS_NAME}" = "linux";
 then
 	if test -n "${TOXENV}";
@@ -50,23 +63,23 @@ then
 		coverage run --source=dftimewolf --omit="*_test*,*__init__*,*test_lib*" ./run_tests.py
 	else
 		python ./run_tests.py
-	fi
 
-	python ./setup.py build
+		python ./setup.py build
 
-	python ./setup.py sdist
+		python ./setup.py sdist
 
-	python ./setup.py bdist
+		python ./setup.py bdist
 
-	TMPDIR="${PWD}/tmp";
-	TMPSITEPACKAGES="${TMPDIR}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages";
+		TMPDIR="${PWD}/tmp";
+		TMPSITEPACKAGES="${TMPDIR}/lib/python${TRAVIS_PYTHON_VERSION}/site-packages";
 
-	mkdir -p ${TMPSITEPACKAGES};
+		mkdir -p ${TMPSITEPACKAGES};
 
-	PYTHONPATH=${TMPSITEPACKAGES} python ./setup.py install --prefix=${TMPDIR};
+		PYTHONPATH=${TMPSITEPACKAGES} python ./setup.py install --prefix=${TMPDIR};
 
-	if test -f tests/end-to-end.py;
-	then
-		PYTHONPATH=. python ./tests/end-to-end.py --debug -c config/end-to-end.ini;
+		if test -f tests/end-to-end.py;
+		then
+			PYTHONPATH=. python ./tests/end-to-end.py --debug -c config/end-to-end.ini;
+		fi
 	fi
 fi
