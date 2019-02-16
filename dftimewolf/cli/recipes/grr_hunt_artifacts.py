@@ -13,6 +13,7 @@ contents = {
         'grr_hunt_artifacts',
     'short_description': _short_description,
     'modules': [{
+        'wants': [],
         'name': 'GRRHuntArtifactCollector',
         'args': {
             'artifacts': '@artifacts',

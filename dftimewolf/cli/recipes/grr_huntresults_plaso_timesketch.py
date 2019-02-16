@@ -15,6 +15,7 @@ contents = {
         'grr_huntresults_plaso_timesketch',
     'short_description': _short_description,
     'modules': [{
+        'wants': [],
         'name': 'GRRHuntDownloader',
         'args': {
             'hunt_id': '@hunt_id',
@@ -26,11 +27,13 @@ contents = {
             'verify': '@verify',
         },
     }, {
+        'wants': ['GRRHuntDownloader'],
         'name': 'LocalPlasoProcessor',
         'args': {
             'timezone': None,
         },
     }, {
+        'wants': ['LocalPlasoProcessor'],
         'name': 'TimesketchExporter',
         'args': {
             'endpoint': '@ts_endpoint',

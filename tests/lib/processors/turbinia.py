@@ -50,7 +50,8 @@ class TurbiniaProcessorTest(unittest.TestCase):
     self.assertEqual(turbinia_processor.turbinia_region,
                      turbinia.turbinia_config.TURBINIA_REGION)
     # pylint: disable=protected-access
-    six.assertRegex(self, turbinia_processor._output_path, '/tmp/tmp.+')
+    six.assertRegex(self, turbinia_processor._output_path,
+                    '(/tmp/tmp|/var/folders).+')
 
   @mock.patch('turbinia.client.TurbiniaClient')
   # pylint: disable=invalid-name

@@ -13,6 +13,7 @@ contents = {
         'grr_hunt_file',
     'short_description': _short_description,
     'modules': [{
+        'wants': [],
         'name': 'GRRHuntFileCollector',
         'args': {
             'file_path_list': '@file_path_list',
