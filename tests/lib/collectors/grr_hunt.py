@@ -10,9 +10,11 @@ import mock
 
 from grr_response_proto import flows_pb2
 
+from dftimewolf import config
 from dftimewolf.lib import state
 from dftimewolf.lib.collectors import grr_hunt
 from tests.lib.collectors.test_data import mock_grr_hosts
+
 
 # Mocking of classes.
 # pylint: disable=invalid-name
@@ -20,7 +22,7 @@ class GRRHuntArtifactCollectorTest(unittest.TestCase):
   """Tests for the GRR artifact collector."""
 
   def setUp(self):
-    self.test_state = state.DFTimewolfState()
+    self.test_state = state.DFTimewolfState(config.Config)
     self.grr_hunt_artifact_collector = grr_hunt.GRRHuntArtifactCollector(
         self.test_state)
     self.grr_hunt_artifact_collector.setup(
@@ -50,7 +52,7 @@ class GRRHuntFileCollectorTest(unittest.TestCase):
   """Tests for the GRR file collector."""
 
   def setUp(self):
-    self.test_state = state.DFTimewolfState()
+    self.test_state = state.DFTimewolfState(config.Config)
     self.grr_hunt_file_collector = grr_hunt.GRRHuntFileCollector(
         self.test_state)
     self.grr_hunt_file_collector.setup(
@@ -88,7 +90,7 @@ class GRRFHuntDownloader(unittest.TestCase):
   """Tests for the GRR hunt downloader."""
 
   def setUp(self):
-    self.test_state = state.DFTimewolfState()
+    self.test_state = state.DFTimewolfState(config.Config)
     self.grr_hunt_downloader = grr_hunt.GRRHuntDownloader(self.test_state)
     self.grr_hunt_downloader.setup(
         hunt_id='H:12345',

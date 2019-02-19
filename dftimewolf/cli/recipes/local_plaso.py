@@ -16,16 +16,19 @@ contents = {
         'local_plaso',
     'short_description': _short_description,
     'modules': [{
+        'wants': [],
         'name': 'FilesystemCollector',
         'args': {
             'paths': '@paths',
         },
     }, {
+        'wants': ['FilesystemCollector'],
         'name': 'LocalPlasoProcessor',
         'args': {
             'timezone': None,
         },
     }, {
+        'wants': ['LocalPlasoProcessor'],
         'name': 'TimesketchExporter',
         'args': {
             'endpoint': '@ts_endpoint',

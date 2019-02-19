@@ -17,6 +17,7 @@ contents = {
     'name': 'gcp_turbinia_import',
     'short_description': _short_description,
     'modules': [{
+        'wants': [],
         'name': 'GoogleCloudCollector',
         'args': {
             'analysis_project_name': '@analysis_project_name',
@@ -31,6 +32,7 @@ contents = {
             'image_family': '@image_family',
         },
     }, {
+        'wants': ['GoogleCloudCollector'],
         'name': 'TurbiniaProcessor',
         'args': {
             'disk_name': None,  # Taken from GoogleCloudCollector's output
@@ -38,6 +40,7 @@ contents = {
             'turbinia_zone': '@turbinia_zone',
         },
     }, {
+        'wants': ['TurbiniaProcessor'],
         'name': 'TimesketchExporter',
         'args': {
             'endpoint': '@ts_endpoint',

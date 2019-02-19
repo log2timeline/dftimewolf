@@ -8,11 +8,13 @@ contents = {
     'name': 'timesketch_upload',
     'short_description': _short_description,
     'modules': [{
+        'wants': [],
         'name': 'FilesystemCollector',
         'args': {
             'paths': '@files',
         },
     }, {
+        'wants': ['FilesystemCollector'],
         'name': 'TimesketchExporter',
         'args': {
             'endpoint': '@ts_endpoint',
