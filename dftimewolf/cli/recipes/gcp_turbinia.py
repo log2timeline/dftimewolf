@@ -16,6 +16,7 @@ contents = {
     'name': 'gcp_turbinia',
     'short_description': _short_description,
     'modules': [{
+        'wants': [],
         'name': 'TurbiniaProcessor',
         'args': {
             'disk_name': '@disk_name',
@@ -23,6 +24,7 @@ contents = {
             'turbinia_zone': '@turbinia_zone',
         },
     }, {
+        'wants': ['TurbiniaProcessor'],
         'name': 'TimesketchExporter',
         'args': {
             'endpoint': '@ts_endpoint',

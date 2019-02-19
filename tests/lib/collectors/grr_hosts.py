@@ -11,11 +11,13 @@ import six
 from grr_response_proto import flows_pb2
 from grr_api_client import errors as grr_errors
 
+from dftimewolf import config
 from dftimewolf.lib import state
 from dftimewolf.lib.collectors import grr_hosts
 from dftimewolf.lib.errors import DFTimewolfError
 
 from tests.lib.collectors.test_data import mock_grr_hosts
+
 
 # Extensive access to protected members for testing, and mocking of classes.
 # pylint: disable=protected-access,invalid-name
@@ -23,7 +25,7 @@ class GRRFlowTests(unittest.TestCase):
   """Tests for the GRRFlow base class."""
 
   def setUp(self):
-    self.test_state = state.DFTimewolfState()
+    self.test_state = state.DFTimewolfState(config.Config)
     self.grr_flow_module = grr_hosts.GRRFlow(self.test_state)
     self.grr_flow_module.setup(
         reason='random reason',
@@ -160,7 +162,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
   """Tests for the GRR artifact collector."""
 
   def setUp(self):
-    self.test_state = state.DFTimewolfState()
+    self.test_state = state.DFTimewolfState(config.Config)
     self.grr_artifact_collector = grr_hosts.GRRArtifactCollector(
         self.test_state)
     self.grr_artifact_collector.setup(
@@ -254,7 +256,7 @@ class GRRFileCollectorTest(unittest.TestCase):
   """Tests for the GRR file collector."""
 
   def setUp(self):
-    self.test_state = state.DFTimewolfState()
+    self.test_state = state.DFTimewolfState(config.Config)
     self.grr_file_collector = grr_hosts.GRRFileCollector(self.test_state)
     self.grr_file_collector.setup(
         hosts='tomchop,tomchop2',
@@ -303,7 +305,7 @@ class GRRFlowCollector(unittest.TestCase):
   """Tests for the GRR flow collector."""
 
   def setUp(self):
-    self.test_state = state.DFTimewolfState()
+    self.test_state = state.DFTimewolfState(config.Config)
     self.grr_flow_collector = grr_hosts.GRRFlowCollector(self.test_state)
     self.grr_flow_collector.setup(
         host='tomchop',

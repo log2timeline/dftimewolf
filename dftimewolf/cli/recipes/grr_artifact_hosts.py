@@ -15,6 +15,7 @@ contents = {
         'grr_artifact_hosts',
     'short_description': _short_description,
     'modules': [{
+        'wants': [],
         'name': 'GRRArtifactCollector',
         'args': {
             'hosts': '@hosts',
@@ -29,11 +30,13 @@ contents = {
             'verify': '@verify',
         },
     }, {
+        'wants': ['GRRArtifactCollector'],
         'name': 'LocalPlasoProcessor',
         'args': {
             'timezone': None,
         },
     }, {
+        'wants': ['LocalPlasoProcessor'],
         'name': 'TimesketchExporter',
         'args': {
             'endpoint': '@ts_endpoint',
