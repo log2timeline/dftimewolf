@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 """Processes GCP cloud disks using a remote Turbinia instance."""
-from __future__ import unicode_literals
 from __future__ import absolute_import
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import os
 import tempfile
+import time
+
+from dftimewolf.lib.module import BaseModule
 
 from turbinia import client as turbinia_client
 from turbinia import config as turbinia_config
@@ -14,12 +17,8 @@ from turbinia import output_manager
 from turbinia import TurbiniaException
 from turbinia.message import TurbiniaRequest
 
-from dftimewolf.lib.module import BaseModule
 
-# pylint: disable=no-member
-
-
-class TurbiniaProcessor(BaseModule):
+class GoogleTurbiniaProcessor(BaseModule):
   """Process cloud disks with a remote Turbinia instance.
 
   Attributes:
@@ -38,13 +37,14 @@ class TurbiniaProcessor(BaseModule):
     Args:
       state: The dfTimewolf state object
     """
-    super(TurbiniaProcessor, self).__init__(state)
+    super(GoogleTurbiniaProcessor, self).__init__(state)
     self.client = None
     self.disk_name = None
     self.instance = None
     self.project = None
     self.turbinia_region = None
     self.turbinia_zone = None
+    self.structured_intel = None
     self._output_path = None
 
   # pylint: disable=arguments-differ
@@ -56,8 +56,8 @@ class TurbiniaProcessor(BaseModule):
       project (string): The project containing the disk to process
       turbinia_zone (string): The zone containing the disk to process
     """
-    # TODO: Consider the case when multiple disks are provided by the previous
-    # module or by the CLI.
+    # TODO(aaronpeterson): Consider the case when multiple disks are provided
+    # by the previous module or by the CLI.
     if self.state.input and not disk_name:
       _, disk = self.state.input[0]
       disk_name = disk.name
@@ -92,6 +92,57 @@ class TurbiniaProcessor(BaseModule):
   def cleanup(self):
     pass
 
+  def _print_task_data(self, task):
+    print(' {0:s} ({1:s})'.format(task['name'], task['id']))
+    for path in task.get('saved_paths', []):
+      if path.endswith('worker-log.txt'):
+        continue
+      if path.endswith('{0:s}.log'.format(task.get('id'))):
+        continue
+      if path.startswith('/'):
+        continue
+      print('   ' + path)
+
+  def display_task_progress(
+      self, instance, project, region, request_id=None, user=None,
+      poll_interval=60):
+
+    completed_tasks = set()
+    pending_tasks = set()
+    total_completed = 0
+
+    while True:
+      task_results = self.get_task_data(
+          instance, project, region, request_id=request_id, user=user)
+      tasks = {task['id']: task for task in task_results}
+
+      for task in tasks.values():
+        if task.get('successful') is not None:
+          completed_tasks.add(task['id'])
+        else:
+          pending_tasks.add(task['id'])
+
+      if len(completed_tasks) > total_completed:
+        total_completed = len(completed_tasks)
+
+        print('Task status update (completed: {0:d} | pending: {1:d})'.format(
+            len(completed_tasks), len(pending_tasks)))
+
+        print('Completed tasks:')
+        for task_id in completed_tasks:
+          self._print_task_data(tasks[task_id])
+
+        print('Pending tasks:')
+        for task_id in pending_tasks:
+          self._print_task_data(tasks[task_id])
+
+      if len(completed_tasks) == len(task_results):
+        print('All {0:d} Tasks completed'.format(len(task_results)))
+        return
+
+      time.sleep(poll_interval)
+
+
   def process(self):
     """Process files with Turbinia."""
     log_file_path = os.path.join(self._output_path, 'turbinia.log')
@@ -102,25 +153,48 @@ class TurbiniaProcessor(BaseModule):
     request = TurbiniaRequest()
     request.evidence.append(evidence_)
 
+    observables = self.state.store.get('threat_intelligence')
+    if observables:
+      print('Sending {0:d} observables to Turbinia GrepWorkers...'.format(
+          len(observables)))
+      request.recipe['filter_patterns'] = [obs for _, obs in observables]
+
     try:
       print('Creating Turbinia request {0:s} with Evidence {1!s}'.format(
           request.request_id, evidence_.name))
       self.client.send_request(request)
       print('Waiting for Turbinia request {0:s} to complete'.format(
           request.request_id))
-      self.client.wait_for_request(
-          instance=self.instance, project=self.project,
-          region=self.turbinia_region, request_id=request.request_id)
-      task_data = self.client.get_task_data(
-          instance=self.instance, project=self.project,
-          region=self.turbinia_region, request_id=request.request_id)
-      print(self.client.format_task_status(
-          instance=self.instance, project=self.project,
-          region=self.turbinia_region, request_id=request.request_id,
-          all_fields=True))
+      request_dict = {
+          'instance': self.instance,
+          'project': self.project,
+          'region': self.turbinia_region,
+          'request_id': request.request_id
+      }
+      self.display_task_progress(**request_dict)
+      task_data = self.client.get_task_data(**request_dict)
+      message = 'Completed {0:d} Turbinia tasks\n'.format(len(task_data))
+      for task in task_data:
+        message += '{0:s} ({1:s}): {2:s}\n'.format(
+            task.get('name'),
+            task.get('id'),
+            task.get('status', 'No task status'))
+        for path in task.get('saved_paths', []):
+          if path.endswith('worker-log.txt'):
+            continue
+          if path.endswith('{0:s}.log'.format(task.get('id'))):
+            continue
+          if path.startswith('/'):
+            continue
+          message += '  {0:s}\n'.format(path)
+      print(message)
     except TurbiniaException as e:
       self.state.add_error(e, critical=True)
       return
+
+    self.state.store['report'] = message
+
+    self.state.output = []
 
     # This finds all .plaso files in the Turbinia output, and determines if they
     # are local or remote (it's possible this will be running against a local
@@ -146,7 +220,8 @@ class TurbiniaProcessor(BaseModule):
 
     # For files remote in GCS we copy each plaso file back from GCS and then add
     # to output paths
-    # TODO: Externalize fetching files from GCS buckets to a different module.
+    # TODO(aaronpeterson): Externalize fetching files from GCS buckets to a
+    # different module.
     for path in gs_paths:
       local_path = None
       try:
