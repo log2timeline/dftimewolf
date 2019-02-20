@@ -13,6 +13,7 @@ contents = {
         'grr_flow_download',
     'short_description': _short_description,
     'modules': [{
+        'wants': [],
         'name': 'GRRFlowCollector',
         'args': {
             'host': '@host',
@@ -25,6 +26,7 @@ contents = {
             'verify': '@verify',
         },
     }, {
+        'wants': ['GRRFlowCollector'],
         'name': 'LocalFilesystemCopy',
         'args': {
             'target_directory': '@directory',

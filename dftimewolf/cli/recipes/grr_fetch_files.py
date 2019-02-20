@@ -8,6 +8,7 @@ contents = {
         'grr_fetch_files',
     'short_description': _short_description,
     'modules': [{
+        'wants': [],
         'name': 'GRRFileCollector',
         'args': {
             'hosts': '@hosts',
@@ -21,6 +22,7 @@ contents = {
             'verify': '@verify',
         },
     }, {
+        'wants': ['GRRFileCollector'],
         'name': 'LocalFilesystemCopy',
         'args': {
             'target_directory': '@directory',

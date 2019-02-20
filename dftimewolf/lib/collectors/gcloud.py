@@ -41,7 +41,7 @@ class GoogleCloudCollector(module.BaseModule):
           snapshot, disk_name_prefix="incident" + self.incident_id)
       self.analysis_vm.attach_disk(new_disk)
       snapshot.delete()
-      print("Disk {0:s} succesfully copied to {1:s}".format(
+      print("Disk {0:s} successfully copied to {1:s}".format(
           disk.name, new_disk.name))
       self.state.output.append((self.analysis_vm.name, new_disk))
 
