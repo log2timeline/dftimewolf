@@ -94,7 +94,10 @@ class GoogleTurbiniaProcessor(BaseModule):
 
   def _print_task_data(self, task):
     print(' {0:s} ({1:s})'.format(task['name'], task['id']))
-    for path in task.get('saved_paths', []):
+    paths = task.get('saved_paths', [])
+    if not paths:
+      return
+    for path in paths:
       if path.endswith('worker-log.txt'):
         continue
       if path.endswith('{0:s}.log'.format(task.get('id'))):
@@ -112,7 +115,7 @@ class GoogleTurbiniaProcessor(BaseModule):
     total_completed = 0
 
     while True:
-      task_results = self.get_task_data(
+      task_results = self.client.get_task_data(
           instance, project, region, request_id=request_id, user=user)
       tasks = {task['id']: task for task in task_results}
 
@@ -122,7 +125,7 @@ class GoogleTurbiniaProcessor(BaseModule):
         else:
           pending_tasks.add(task['id'])
 
-      if len(completed_tasks) > total_completed:
+      if len(completed_tasks) > total_completed  or not completed_tasks:
         total_completed = len(completed_tasks)
 
         print('Task status update (completed: {0:d} | pending: {1:d})'.format(
