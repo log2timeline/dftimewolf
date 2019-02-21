@@ -93,7 +93,7 @@ class GoogleTurbiniaProcessor(BaseModule):
     pass
 
   def _print_task_data(self, task):
-    print(' {0:s} ({1:s})'.format(task['name'], task['id']))
+    task_data = ' {0:s} ({1:s})'.format(task['name'], task['id'])
     paths = task.get('saved_paths', [])
     if not paths:
       return
@@ -104,7 +104,9 @@ class GoogleTurbiniaProcessor(BaseModule):
         continue
       if path.startswith('/'):
         continue
-      print('   ' + path)
+      task_data += '   ' + path
+    print(task_data)
+    return task_data
 
   def display_task_progress(
       self, instance, project, region, request_id=None, user=None,
@@ -178,18 +180,7 @@ class GoogleTurbiniaProcessor(BaseModule):
       task_data = self.client.get_task_data(**request_dict)
       message = 'Completed {0:d} Turbinia tasks\n'.format(len(task_data))
       for task in task_data:
-        message += '{0:s} ({1:s}): {2:s}\n'.format(
-            task.get('name'),
-            task.get('id'),
-            task.get('status', 'No task status'))
-        for path in task.get('saved_paths', []):
-          if path.endswith('worker-log.txt'):
-            continue
-          if path.endswith('{0:s}.log'.format(task.get('id'))):
-            continue
-          if path.startswith('/'):
-            continue
-          message += '  {0:s}\n'.format(path)
+        message += self._print_task_data(task) + '\n'
       print(message)
     except TurbiniaException as e:
       self.state.add_error(e, critical=True)
