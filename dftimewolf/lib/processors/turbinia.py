@@ -131,14 +131,14 @@ class TurbiniaProcessor(BaseModule):
     # Turbinia run complete, build a human-readable message of results.
     message = 'Completed {0:d} Turbinia tasks\n'.format(len(task_data))
     for task in task_data:
-      message += '{0:s} ({1:s}): {2:s}\n'.format(
+      message += '{0!s} ({1!s}): {2!s}\n'.format(
           task.get('name'),
           task.get('id'),
           task.get('status', 'No task status'))
       for path in task.get('saved_paths') or []:
         if path.endswith('worker-log.txt'):
           continue
-        if path.endswith('{0:s}.log'.format(task.get('id'))):
+        if path.endswith('{0!s}.log'.format(task.get('id'))):
           continue
         if path.startswith('/'):
           continue
