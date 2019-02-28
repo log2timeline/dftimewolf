@@ -102,25 +102,50 @@ class TurbiniaProcessor(BaseModule):
     request = TurbiniaRequest()
     request.evidence.append(evidence_)
 
+    # Get threat intelligence data from any modules that have stored some.
+    observables = self.state.get_data('threat_intelligence')
+    if observables:
+      print('Sending {0:d} observables to Turbinia GrepWorkers...'.format(
+          len(observables)))
+      request.recipe['filter_patterns'] = [obs for _, obs in observables]
+
+    request_dict = {
+        'instance': self.instance,
+        'project': self.project,
+        'region': self.turbinia_region,
+        'request_id': request.request_id
+    }
+
     try:
       print('Creating Turbinia request {0:s} with Evidence {1!s}'.format(
           request.request_id, evidence_.name))
       self.client.send_request(request)
       print('Waiting for Turbinia request {0:s} to complete'.format(
           request.request_id))
-      self.client.wait_for_request(
-          instance=self.instance, project=self.project,
-          region=self.turbinia_region, request_id=request.request_id)
-      task_data = self.client.get_task_data(
-          instance=self.instance, project=self.project,
-          region=self.turbinia_region, request_id=request.request_id)
-      print(self.client.format_task_status(
-          instance=self.instance, project=self.project,
-          region=self.turbinia_region, request_id=request.request_id,
-          all_fields=True))
+      self.client.wait_for_request(**request_dict)
+      task_data = self.client.get_task_data(**request_dict)
     except TurbiniaException as e:
       self.state.add_error(e, critical=True)
       return
+
+    # Turbinia run complete, build a human-readable message of results.
+    message = 'Completed {0:d} Turbinia tasks\n'.format(len(task_data))
+    for task in task_data:
+      message += '{0:s} ({1:s}): {2:s}\n'.format(
+          task.get('name'),
+          task.get('id'),
+          task.get('status', 'No task status'))
+      for path in task.get('saved_paths') or []:
+        if path.endswith('worker-log.txt'):
+          continue
+        if path.endswith('{0:s}.log'.format(task.get('id'))):
+          continue
+        if path.startswith('/'):
+          continue
+        message += '  {0:s}\n'.format(path)
+
+    # Store the message for consumption by any reporting modules.
+    self.state.store_data('report', message)
 
     # This finds all .plaso files in the Turbinia output, and determines if they
     # are local or remote (it's possible this will be running against a local
