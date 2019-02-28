@@ -151,7 +151,6 @@ class TurbiniaProcessorTest(unittest.TestCase):
     # pylint: disable=no-member
     turbinia_processor.client.send_request.assert_called()
     turbinia_processor.client.get_task_data.assert_called()
-    turbinia_processor.client.format_task_status.assert_called()
     # pylint: disable=protected-access
     mock_GCSOutputWriter.assert_called_with(
         'gs://bucket/data3.plaso',
