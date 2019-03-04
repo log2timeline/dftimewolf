@@ -103,6 +103,8 @@ class TurbiniaProcessor(BaseModule):
     request.evidence.append(evidence_)
 
     # Get threat intelligence data from any modules that have stored some.
+    # In this case, observables is a list of (name, regex) tuples.
+    # This will change with issues/138
     observables = self.state.get_data('threat_intelligence')
     if observables:
       print('Sending {0:d} observables to Turbinia GrepWorkers...'.format(
@@ -135,6 +137,7 @@ class TurbiniaProcessor(BaseModule):
           task.get('name'),
           task.get('id'),
           task.get('status', 'No task status'))
+      # saved_paths may be set to None
       for path in task.get('saved_paths') or []:
         if path.endswith('worker-log.txt'):
           continue
@@ -154,7 +157,8 @@ class TurbiniaProcessor(BaseModule):
     gs_paths = []
     timeline_label = '{0:s}-{1:s}'.format(self.project, self.disk_name)
     for task in task_data:
-      for path in task.get('saved_paths', []):
+      # saved_paths may be set to None
+      for path in task.get('saved_paths') or []:
         if path.startswith('/') and path.endswith('.plaso'):
           local_paths.append(path)
         if path.startswith('gs://') and path.endswith('.plaso'):
