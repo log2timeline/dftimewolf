@@ -14,7 +14,8 @@ PYTHON2_DEPENDENCIES="python-bs4
                       python-idna
                       python-requests
                       python-tz
-                      python-urllib3";
+                      python-urllib3
+                      protobuf==3.6.1";
 
 # Additional dependencies for running dftimewolf tests, alphabetized,
 # one per line.
@@ -94,3 +95,6 @@ fi
 if [[ "$*" =~ "include-turbinia" ]]; then
     sudo pip install turbinia==20181004.1
 fi
+
+# Install dftimewolf's pinned requirements
+pip install -r requirements.txt
