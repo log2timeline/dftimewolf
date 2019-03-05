@@ -112,7 +112,7 @@ class TurbiniaProcessor(BaseModule):
     if threatintel:
       print('Sending {0:d} threatintel to Turbinia GrepWorkers...'.format(
           len(threatintel)))
-      indicators = [obs.indicator for _, obs in threatintel]
+      indicators = [item.indicator for item in threatintel]
       request.recipe['filter_patterns'] = indicators
 
     request_dict = {
