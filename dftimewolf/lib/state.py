@@ -33,6 +33,7 @@ class DFTimewolfState(object):
     self.input = []
     self.output = []
     self.store = {}
+    self._store_lock = threading.Lock()
     self._module_pool = {}
     self.config = config
     self.recipe = None
@@ -50,6 +51,28 @@ class DFTimewolfState(object):
       module_name = module_description['name']
       module = self.config.get_module(module_name)(self)
       self._module_pool[module_name] = module
+
+  def store_data(self, key, data):
+    """Thread-safe method to store data in the state's store.
+
+    Args:
+      key: Key in which to store the data.
+      data: The data to store.
+    """
+    with self._store_lock:
+      self.store[key] = data
+
+  def get_data(self, key):
+    """Thread-safe method to retrieve data from the state's store.
+
+    Args:
+      key: The key to retrieve data from.
+
+    Returns:
+      The data that was stored with the given key, or None if key was not set.
+    """
+    with self._store_lock:
+      return self.store.get(key)
 
   def setup_modules(self, args):
     """Performs setup tasks for each module in the module pool.
