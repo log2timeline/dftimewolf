@@ -32,8 +32,8 @@ class LocalFileSystemTest(unittest.TestCase):
     mock_path.exists.return_value = True
     filesystem_collector.process()
     expected_output = [
-        ('/fake/path/1', '/fake/path/1'),
-        ('/fake/path/2', '/fake/path/2')
+        ('1', '/fake/path/1'),
+        ('2', '/fake/path/2')
     ]
     self.assertEqual(test_state.output, expected_output)
 
