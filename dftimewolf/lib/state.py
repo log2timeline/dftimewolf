@@ -67,8 +67,8 @@ class DFTimewolfState(object):
     Args:
       container_type: The CONTAINER_TYPE to filter all data with.
 
-    Returns:
-      A list of AttributeContainer objects of matching CONTAINER_TYPE.
+    Yields:
+      A sequence of AttributeContainer objects of matching CONTAINER_TYPE.
     """
     with self._store_lock:
       for data in self.store:

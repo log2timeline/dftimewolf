@@ -26,7 +26,7 @@ class AttributeContainerIdentifier(object):
 
 class AttributeContainer(object):
   """The attribute container interface.
-  This is the the base class for those object that exists primarily as
+  This is the base class for those object that exists primarily as
   a container of attributes with basic accessors and mutators.
   The CONTAINER_TYPE class attribute contains a string that identifies
   the container type e.g. the container type "event" identifiers an event
