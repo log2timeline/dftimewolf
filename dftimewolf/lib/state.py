@@ -32,7 +32,7 @@ class DFTimewolfState(object):
     self.global_errors = []
     self.input = []
     self.output = []
-    self.store = {}
+    self.store = []
     self._store_lock = threading.Lock()
     self._module_pool = {}
     self.config = config
@@ -52,27 +52,26 @@ class DFTimewolfState(object):
       module = self.config.get_module(module_name)(self)
       self._module_pool[module_name] = module
 
-  def store_data(self, key, data):
+  def store_data(self, data):
     """Thread-safe method to store data in the state's store.
 
     Args:
-      key: Key in which to store the data.
-      data: The data to store.
+      data (datatypes.interface.AttributeContainer): The data to store.
     """
     with self._store_lock:
-      self.store[key] = data
+      self.store.append(data)
 
-  def get_data(self, key):
+  def get_data(self, container_type):
     """Thread-safe method to retrieve data from the state's store.
 
     Args:
-      key: The key to retrieve data from.
+      container_type: The CONTAINER_TYPE to filter all data with.
 
     Returns:
-      The data that was stored with the given key, or None if key was not set.
+      A list of AttributeContainer objects of matching CONTAINER_TYPE.
     """
     with self._store_lock:
-      return self.store.get(key)
+      return filter(lambda x: x.CONTAINER_TYPE == container_type, self.store)
 
   def setup_modules(self, args):
     """Performs setup tasks for each module in the module pool.
