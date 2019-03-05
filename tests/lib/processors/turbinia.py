@@ -78,11 +78,6 @@ class TurbiniaProcessorTest(unittest.TestCase):
     """Tests that invalid setup options generate errors."""
     params = [
         {
-            'disk_name': None,
-            'project': 'turbinia-project',
-            'turbinia_zone': 'europe-west1'
-        },
-        {
             'disk_name': 'disk-1',
             'project': None,
             'turbinia_zone': 'europe-west1'
@@ -93,7 +88,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
             'turbinia_zone': None
         }
     ]
-    expected_error = ('disk_name, project or turbinia_zone are not all '
+    expected_error = ('project or turbinia_zone are not all '
                       'specified, bailing out')
 
     for combination in params:
