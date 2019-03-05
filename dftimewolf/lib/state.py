@@ -71,7 +71,9 @@ class DFTimewolfState(object):
       A list of AttributeContainer objects of matching CONTAINER_TYPE.
     """
     with self._store_lock:
-      return filter(lambda x: x.CONTAINER_TYPE == container_type, self.store)
+      for data in self.store:
+        if data.CONTAINER_TYPE == container_type:
+          yield data
 
   def setup_modules(self, args):
     """Performs setup tasks for each module in the module pool.
