@@ -61,18 +61,18 @@ class DFTimewolfState(object):
     with self._store_lock:
       self.store.append(data)
 
-  def get_data(self, container_type):
+  def get_data(self, container):
     """Thread-safe method to retrieve data from the state's store.
 
     Args:
-      container_type: The CONTAINER_TYPE to filter all data with.
+      container: AttributeContainer class used to filter data.
 
     Yields:
       A sequence of AttributeContainer objects of matching CONTAINER_TYPE.
     """
     with self._store_lock:
       for data in self.store:
-        if data.CONTAINER_TYPE == container_type:
+        if data.CONTAINER_TYPE == container.CONTAINER_TYPE:
           yield data
 
   def setup_modules(self, args):

@@ -108,7 +108,7 @@ class TurbiniaProcessor(BaseModule):
     # Get threat intelligence data from any modules that have stored some.
     # In this case, observables is a list of datatypes.ThreatIntelligence
     # objects.
-    threatintel = list(self.state.get_data('threat_intelligence'))
+    threatintel = list(self.state.get_data(datatypes.ThreatIntelligence))
     if threatintel:
       print('Sending {0:d} threatintel to Turbinia GrepWorkers...'.format(
           len(threatintel)))
