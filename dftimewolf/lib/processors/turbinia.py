@@ -58,16 +58,13 @@ class TurbiniaProcessor(BaseModule):
     """
     # TODO: Consider the case when multiple disks are provided by the previous
     # module or by the CLI.
-    if self.state.input and not disk_name:
-      _, disk = self.state.input[0]
-      disk_name = disk.name
-      print('Using disk {0:s} from previous collector'.format(disk_name))
 
-    if disk_name is None or project is None or turbinia_zone is None:
+    if project is None or turbinia_zone is None:
       self.state.add_error(
-          'disk_name, project or turbinia_zone are not all specified, bailing '
-          'out', critical=True)
+          'project or turbinia_zone are not all specified, bailing out',
+          critical=True)
       return
+
     self.disk_name = disk_name
     self.project = project
     self.turbinia_zone = turbinia_zone
@@ -96,6 +93,11 @@ class TurbiniaProcessor(BaseModule):
     """Process files with Turbinia."""
     log_file_path = os.path.join(self._output_path, 'turbinia.log')
     print('Turbinia log file: {0:s}'.format(log_file_path))
+
+    if self.state.input and not self.disk_name:
+      _, disk = self.state.input[0]
+      self.disk_name = disk.name
+      print('Using disk {0:s} from previous collector'.format(self.disk_name))
 
     evidence_ = evidence.GoogleCloudDisk(
         disk_name=self.disk_name, project=self.project, zone=self.turbinia_zone)
