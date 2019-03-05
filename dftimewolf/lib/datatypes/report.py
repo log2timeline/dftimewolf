@@ -11,12 +11,12 @@ class Report(interface.AttributeContainer):
   """
   CONTAINER_TYPE = 'report'
 
-  def __init__(self, module_name=None, text=None):
+  def __init__(self, module_name, text):
     """Initializes the analysis report.
     Args:
-      module_name (Optional[str]): name of the analysis plugin that generated
+      module_name (str): name of the analysis plugin that generated
           the report.
-      text (Optional[str]): report text.
+      text (str): report text.
     """
     super(Report, self).__init__()
     self.module_name = module_name
