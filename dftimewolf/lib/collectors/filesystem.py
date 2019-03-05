@@ -38,7 +38,7 @@ class FilesystemCollector(BaseModule):
     """Checks whether the paths exists and updates the state accordingly."""
     for path in self._paths:
       if os.path.exists(path):
-        self.state.output.append((path, path))
+        self.state.output.append((os.path.basename(path), path))
       else:
         self.state.add_error(
             'Path {0:s} does not exist'.format(str(path)), critical=False)
