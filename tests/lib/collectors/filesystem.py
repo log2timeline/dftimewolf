@@ -22,14 +22,14 @@ class LocalFileSystemTest(unittest.TestCase):
     filesystem_collector = filesystem.FilesystemCollector(test_state)
     self.assertIsNotNone(filesystem_collector)
 
-  @mock.patch('dftimewolf.lib.collectors.filesystem.os.path')
-  def testOutput(self, mock_path):
+  @mock.patch('os.path.exists')
+  def testOutput(self, mock_exists):
     """Tests that the module ouput is consistent with the input."""
     test_state = state.DFTimewolfState(config.Config)
     filesystem_collector = filesystem.FilesystemCollector(test_state)
     fake_paths = '/fake/path/1,/fake/path/2'
     filesystem_collector.setup(paths=fake_paths)
-    mock_path.exists.return_value = True
+    mock_exists.return_value = True
     filesystem_collector.process()
     expected_output = [
         ('1', '/fake/path/1'),
