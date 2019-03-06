@@ -14,8 +14,7 @@ PYTHON2_DEPENDENCIES="python-bs4
                       python-idna
                       python-requests
                       python-tz
-                      python-urllib3
-                      protobuf==3.6.1";
+                      python-urllib3";
 
 # Additional dependencies for running dftimewolf tests, alphabetized,
 # one per line.
