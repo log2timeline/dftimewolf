@@ -96,4 +96,4 @@ if [[ "$*" =~ "include-turbinia" ]]; then
 fi
 
 # Install dftimewolf's pinned requirements
-pip install -r requirements.txt
+pip install -r ../../requirements.txt
