@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 
 import unittest
 
-from dftimewolf.lib.datatypes import interface
+from dftimewolf.lib.containers import interface
 
 
 class AttributeContainerIdentifierTest(unittest.TestCase):

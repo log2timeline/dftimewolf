@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Report related attribute container definitions."""
 
-from dftimewolf.lib.datatypes import interface
+from dftimewolf.lib.containers import interface
 
 class Report(interface.AttributeContainer):
   """Analysis report attribute container.

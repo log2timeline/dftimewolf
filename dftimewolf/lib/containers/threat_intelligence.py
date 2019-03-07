@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Threat intelligence related attribute container definitions."""
 
-from dftimewolf.lib.datatypes import interface
+from dftimewolf.lib.containers import interface
 
 class ThreatIntelligence(interface.AttributeContainer):
   """Threat Intelligence attribute container.

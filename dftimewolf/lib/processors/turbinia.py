@@ -16,7 +16,7 @@ from turbinia import TurbiniaException
 from turbinia.message import TurbiniaRequest
 
 from dftimewolf.lib.module import BaseModule
-from dftimewolf.lib import datatypes
+from dftimewolf.lib import containers
 
 # pylint: disable=no-member
 
@@ -174,9 +174,9 @@ class TurbiniaProcessor(BaseModule):
     request.evidence.append(evidence_)
 
     # Get threat intelligence data from any modules that have stored some.
-    # In this case, observables is a list of datatypes.ThreatIntelligence
+    # In this case, observables is a list of containers.ThreatIntelligence
     # objects.
-    threatintel = list(self.state.get_data(datatypes.ThreatIntelligence))
+    threatintel = list(self.state.get_data(containers.ThreatIntelligence))
     if threatintel:
       print('Sending {0:d} threatintel to Turbinia GrepWorkers...'.format(
           len(threatintel)))
@@ -221,7 +221,7 @@ class TurbiniaProcessor(BaseModule):
     print(message)
 
     # Store the message for consumption by any reporting modules.
-    report = datatypes.Report(module_name='TurbiniaProcessor', text=message)
+    report = containers.Report(module_name='TurbiniaProcessor', text=message)
     self.state.store_data(report)
 
     # This finds all .plaso files in the Turbinia output, and determines if they

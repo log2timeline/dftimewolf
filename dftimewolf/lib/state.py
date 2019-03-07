@@ -56,7 +56,7 @@ class DFTimewolfState(object):
     """Thread-safe method to store data in the state's store.
 
     Args:
-      data (datatypes.interface.AttributeContainer): The data to store.
+      data (containers.interface.AttributeContainer): The data to store.
     """
     with self._store_lock:
       self.store.append(data)

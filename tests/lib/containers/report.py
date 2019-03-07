@@ -1,22 +1,20 @@
 # -*- coding: utf-8 -*-
-"""Tests for the ThreatIntelligence attribute containers."""
+"""Tests for the Report attribute containers."""
 
 from __future__ import unicode_literals
 
 import unittest
 
-from dftimewolf.lib import datatypes
+from dftimewolf.lib import containers
 
 class ReportDataTest(unittest.TestCase):
   """Tests for the Report data attribute container."""
 
   def testGetAttributeNames(self):
     """Tests the GetAttributeNames function."""
-    attribute_container = datatypes.ThreatIntelligence(
-        name='name',
-        indicator='.*')
+    attribute_container = containers.Report(module_name='name', text='text')
 
-    expected_attribute_names = ['indicator', 'name']
+    expected_attribute_names = ['module_name', 'text']
 
     attribute_names = sorted(attribute_container.GetAttributeNames())
 
