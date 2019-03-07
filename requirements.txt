@@ -38,7 +38,7 @@ pathlib2==2.3.2; python_version in '2.6 2.7 3.2 3.3'
 pexpect==4.6.0; sys_platform != 'win32'
 pickleshare==0.7.5
 prompt-toolkit==1.0.15
-protobuf==3.3.0
+protobuf==3.6.1
 psq==0.7.0
 ptyprocess==0.6.0
 pyasn1-modules==0.2.2
