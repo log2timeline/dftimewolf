@@ -16,6 +16,7 @@ from turbinia import TurbiniaException
 from turbinia.message import TurbiniaRequest
 
 from dftimewolf.lib.module import BaseModule
+from dftimewolf.lib import containers
 
 # pylint: disable=no-member
 
@@ -173,13 +174,14 @@ class TurbiniaProcessor(BaseModule):
     request.evidence.append(evidence_)
 
     # Get threat intelligence data from any modules that have stored some.
-    # In this case, observables is a list of (name, regex) tuples.
-    # This will change with issues/138
-    observables = self.state.get_data('threat_intelligence')
-    if observables:
-      print('Sending {0:d} observables to Turbinia GrepWorkers...'.format(
-          len(observables)))
-      request.recipe['filter_patterns'] = [obs for _, obs in observables]
+    # In this case, observables is a list of containers.ThreatIntelligence
+    # objects.
+    threatintel = self.state.get_containers(containers.ThreatIntelligence)
+    if threatintel:
+      print('Sending {0:d} threatintel to Turbinia GrepWorkers...'.format(
+          len(threatintel)))
+      indicators = [item.indicator for item in threatintel]
+      request.recipe['filter_patterns'] = indicators
 
     request_dict = {
         'instance': self.instance,
@@ -219,7 +221,8 @@ class TurbiniaProcessor(BaseModule):
     print(message)
 
     # Store the message for consumption by any reporting modules.
-    self.state.store_data('report', message)
+    report = containers.Report(module_name='TurbiniaProcessor', text=message)
+    self.state.store_container(report)
 
     # This finds all .plaso files in the Turbinia output, and determines if they
     # are local or remote (it's possible this will be running against a local
