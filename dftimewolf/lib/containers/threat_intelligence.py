@@ -5,6 +5,7 @@ from dftimewolf.lib.containers import interface
 
 class ThreatIntelligence(interface.AttributeContainer):
   """Threat Intelligence attribute container.
+
   Attributes:
     name (string): name of the threat
     indicator (string): regular expression relevant to a threat
@@ -13,6 +14,7 @@ class ThreatIntelligence(interface.AttributeContainer):
 
   def __init__(self, name, indicator):
     """Initializes the Threat Intelligence container.
+
     Args:
       name (string): name of the threat
       indicator (string): regular expression relevant to a threat

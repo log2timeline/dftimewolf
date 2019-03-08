@@ -16,7 +16,7 @@ class AttributeContainerIdentifier(object):
     super(AttributeContainerIdentifier, self).__init__()
     self._identifier = id(self)
 
-  def CopyToString(self):
+  def copy_to_string(self):
     """Copies the identifier to a string representation.
     Returns:
       str: unique identifier or None.
@@ -42,7 +42,7 @@ class AttributeContainer(object):
     self._identifier = AttributeContainerIdentifier()
     self._session_identifier = None
 
-  def CopyFromDict(self, attributes):
+  def copy_from_dict(self, attributes):
     """Copies the attribute container from a dictionary.
     Args:
       attributes (dict[str, object]): attribute values per name.
@@ -53,16 +53,16 @@ class AttributeContainer(object):
         continue
       setattr(self, attribute_name, attribute_value)
 
-  def CopyToDict(self):
+  def copy_to_dict(self):
     """Copies the attribute container to a dictionary.
     Returns:
       dict[str, object]: attribute values per name.
     """
     return {
         attribute_name: attribute_value
-        for attribute_name, attribute_value in self.GetAttributes()}
+        for attribute_name, attribute_value in self.get_attributes()}
 
-  def GetAttributeNames(self):
+  def get_attribute_names(self):
     """Retrieves the names of all attributes.
     Returns:
       list[str]: attribute names.
@@ -76,7 +76,7 @@ class AttributeContainer(object):
 
     return attribute_names
 
-  def GetAttributes(self):
+  def get_attributes(self):
     """Retrieves the attribute names and values.
     Attributes that are set to None are ignored.
     Yields:
@@ -89,14 +89,14 @@ class AttributeContainer(object):
 
       yield attribute_name, attribute_value
 
-  def GetAttributeValuesHash(self):
+  def get_attribute_values_hash(self):
     """Retrieves a comparable string of the attribute values.
     Returns:
       int: hash of comparable string of the attribute values.
     """
-    return hash(self.GetAttributeValuesString())
+    return hash(self.get_attribute_values_string())
 
-  def GetAttributeValuesString(self):
+  def get_attribute_values_string(self):
     """Retrieves a comparable string of the attribute values.
     Returns:
       str: comparable string of the attribute values.
@@ -118,7 +118,7 @@ class AttributeContainer(object):
 
     return ', '.join(attributes)
 
-  def GetIdentifier(self):
+  def get_identifier(self):
     """Retrieves the identifier.
     The identifier is a storage specific value that should not be serialized.
     Returns:
@@ -126,7 +126,7 @@ class AttributeContainer(object):
     """
     return self._identifier
 
-  def GetSessionIdentifier(self):
+  def get_session_identifier(self):
     """Retrieves the session identifier.
     The session identifier is a storage specific value that should not
     be serialized.
@@ -135,7 +135,7 @@ class AttributeContainer(object):
     """
     return self._session_identifier
 
-  def SetIdentifier(self, identifier):
+  def set_identifier(self, identifier):
     """Sets the identifier.
     The identifier is a storage specific value that should not be serialized.
     Args:
@@ -143,7 +143,7 @@ class AttributeContainer(object):
     """
     self._identifier = identifier
 
-  def SetSessionIdentifier(self, session_identifier):
+  def set_session_identifier(self, session_identifier):
     """Sets the session identifier.
     The session identifier is a storage specific value that should not
     be serialized.
