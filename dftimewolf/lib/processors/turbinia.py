@@ -176,7 +176,7 @@ class TurbiniaProcessor(BaseModule):
     # Get threat intelligence data from any modules that have stored some.
     # In this case, observables is a list of containers.ThreatIntelligence
     # objects.
-    threatintel = list(self.state.get_data(containers.ThreatIntelligence))
+    threatintel = self.state.get_containers(containers.ThreatIntelligence)
     if threatintel:
       print('Sending {0:d} threatintel to Turbinia GrepWorkers...'.format(
           len(threatintel)))
@@ -222,7 +222,7 @@ class TurbiniaProcessor(BaseModule):
 
     # Store the message for consumption by any reporting modules.
     report = containers.Report(module_name='TurbiniaProcessor', text=message)
-    self.state.store_data(report)
+    self.state.store_container(report)
 
     # This finds all .plaso files in the Turbinia output, and determines if they
     # are local or remote (it's possible this will be running against a local

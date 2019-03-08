@@ -32,7 +32,7 @@ class DFTimewolfState(object):
     self.global_errors = []
     self.input = []
     self.output = []
-    self.store = []
+    self.store = {}
     self._store_lock = threading.Lock()
     self._module_pool = {}
     self.config = config
@@ -52,28 +52,26 @@ class DFTimewolfState(object):
       module = self.config.get_module(module_name)(self)
       self._module_pool[module_name] = module
 
-  def store_data(self, data):
+  def store_container(self, container):
     """Thread-safe method to store data in the state's store.
 
     Args:
-      data (containers.interface.AttributeContainer): The data to store.
+      container (containers.interface.AttributeContainer): The data to store.
     """
     with self._store_lock:
-      self.store.append(data)
+      self.store.setdefault(container.CONTAINER_TYPE, []).append(container)
 
-  def get_data(self, container):
+  def get_containers(self, container_class):
     """Thread-safe method to retrieve data from the state's store.
 
     Args:
-      container: AttributeContainer class used to filter data.
+      container_class: AttributeContainer class used to filter data.
 
-    Yields:
-      A sequence of AttributeContainer objects of matching CONTAINER_TYPE.
+    Returns:
+      A list of AttributeContainer objects of matching CONTAINER_TYPE.
     """
     with self._store_lock:
-      for data in self.store:
-        if data.CONTAINER_TYPE == container.CONTAINER_TYPE:
-          yield data
+      return self.store.get(container_class.CONTAINER_TYPE, [])
 
   def setup_modules(self, args):
     """Performs setup tasks for each module in the module pool.
@@ -101,6 +99,7 @@ class DFTimewolfState(object):
         self.add_error(
             'An unknown error occurred: {0!s}'.format(error), critical=True)
       self.events[module_description['name']] = threading.Event()
+      self.cleanup()
 
     threads = []
     for module_description in self.recipe['modules']:
@@ -113,7 +112,7 @@ class DFTimewolfState(object):
     for t in threads:
       t.join()
 
-    self.check_errors()
+    self.check_errors(is_global=True)
 
   def run_modules(self):
     """Performs the actual processing for each module in the module pool."""
@@ -149,7 +148,7 @@ class DFTimewolfState(object):
     for t in threads:
       t.join()
 
-    self.check_errors()
+    self.check_errors(is_global=True)
 
   def add_error(self, error, critical=False):
     """Adds an error to the state.
