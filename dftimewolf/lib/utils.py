@@ -150,6 +150,9 @@ def import_args_from_dict(value, args, config):
         key: import_args_from_dict(val, args, config)
         for key, val in value.items()
     }
+  elif isinstance(value, tuple):
+    return (import_args_from_dict(value[0], args, config),
+            import_args_from_dict(value[1], args, config))
   return value
 
 
