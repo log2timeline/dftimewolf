@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 
 import sys
 import threading
+import traceback
 
 from dftimewolf.lib import utils
 from dftimewolf.lib.errors import DFTimewolfError
@@ -52,27 +53,26 @@ class DFTimewolfState(object):
       module = self.config.get_module(module_name)(self)
       self._module_pool[module_name] = module
 
-  def store_data(self, key, data):
+  def store_container(self, container):
     """Thread-safe method to store data in the state's store.
 
     Args:
-      key: Key in which to store the data.
-      data: The data to store.
+      container (containers.interface.AttributeContainer): The data to store.
     """
     with self._store_lock:
-      self.store[key] = data
+      self.store.setdefault(container.CONTAINER_TYPE, []).append(container)
 
-  def get_data(self, key):
+  def get_containers(self, container_class):
     """Thread-safe method to retrieve data from the state's store.
 
     Args:
-      key: The key to retrieve data from.
+      container_class: AttributeContainer class used to filter data.
 
     Returns:
-      The data that was stored with the given key, or None if key was not set.
+      A list of AttributeContainer objects of matching CONTAINER_TYPE.
     """
     with self._store_lock:
-      return self.store.get(key)
+      return self.store.get(container_class.CONTAINER_TYPE, [])
 
   def setup_modules(self, args):
     """Performs setup tasks for each module in the module pool.
@@ -98,8 +98,12 @@ class DFTimewolfState(object):
         module.setup(**new_args)
       except Exception as error:  # pylint: disable=broad-except
         self.add_error(
-            'An unknown error occurred: {0!s}'.format(error), critical=True)
+            'An unknown error occurred: {0!s}\nFull traceback:\n{1:s}'.format(
+                error, traceback.format_exc()),
+            critical=True)
+
       self.events[module_description['name']] = threading.Event()
+      self.cleanup()
 
     threads = []
     for module_description in self.recipe['modules']:
@@ -112,7 +116,7 @@ class DFTimewolfState(object):
     for t in threads:
       t.join()
 
-    self.check_errors()
+    self.check_errors(is_global=True)
 
   def run_modules(self):
     """Performs the actual processing for each module in the module pool."""
@@ -132,7 +136,9 @@ class DFTimewolfState(object):
         self.add_error(error.message, critical=True)
       except Exception as error:  # pylint: disable=broad-except
         self.add_error(
-            'An unknown error occurred: {0!s}'.format(error), critical=True)
+            'An unknown error occurred: {0!s}\nFull traceback:\n{1:s}'.format(
+                error, traceback.format_exc()),
+            critical=True)
       print('Module {0:s} completed'.format(module_description['name']))
       self.events[module_description['name']].set()
       self.cleanup()
@@ -148,7 +154,7 @@ class DFTimewolfState(object):
     for t in threads:
       t.join()
 
-    self.check_errors()
+    self.check_errors(is_global=True)
 
   def add_error(self, error, critical=False):
     """Adds an error to the state.
