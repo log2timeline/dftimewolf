@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 from googleapiclient.errors import HttpError
 from oauth2client.client import AccessTokenRefreshError
+from oauth2client.client import ApplicationDefaultCredentialsError
 from turbinia.lib import libcloudforensics
 
 from dftimewolf.lib import module
@@ -156,6 +157,12 @@ class GoogleCloudCollector(module.BaseModule):
 
     except AccessTokenRefreshError as err:
       self.state.add_error("Something is wrong with your gcloud access token.")
+      self.state.add_error(err, critical=True)
+
+    except ApplicationDefaultCredentialsError as err:
+      self.state.add_error("Something is wrong with your Application Default "
+                           "Credentials. Try running:\n"
+                           "  $ gcloud auth application-default login")
       self.state.add_error(err, critical=True)
 
     except HttpError as err:
