@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 
 import sys
 import threading
+import traceback
 
 from dftimewolf.lib import utils
 from dftimewolf.lib.errors import DFTimewolfError
@@ -97,7 +98,10 @@ class DFTimewolfState(object):
         module.setup(**new_args)
       except Exception as error:  # pylint: disable=broad-except
         self.add_error(
-            'An unknown error occurred: {0!s}'.format(error), critical=True)
+            'An unknown error occurred: {0!s}\nFull traceback:\n{1:s}'.format(
+                error, traceback.format_exc()),
+            critical=True)
+
       self.events[module_description['name']] = threading.Event()
       self.cleanup()
 
@@ -132,7 +136,9 @@ class DFTimewolfState(object):
         self.add_error(error.message, critical=True)
       except Exception as error:  # pylint: disable=broad-except
         self.add_error(
-            'An unknown error occurred: {0!s}'.format(error), critical=True)
+            'An unknown error occurred: {0!s}\nFull traceback:\n{1:s}'.format(
+                error, traceback.format_exc()),
+            critical=True)
       print('Module {0:s} completed'.format(module_description['name']))
       self.events[module_description['name']].set()
       self.cleanup()
