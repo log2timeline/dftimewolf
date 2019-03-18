@@ -28,6 +28,7 @@ contents = {
             'disk_names': '@disks',
             'all_disks': '@all_disks',
             'boot_disk_size': '@boot_disk_size',
+            'cpu_cores': 4,
             'image_project': '@image_project',
             'image_family': '@image_family',
         },
