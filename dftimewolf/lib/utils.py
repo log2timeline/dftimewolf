@@ -150,6 +150,8 @@ def import_args_from_dict(value, args, config):
         key: import_args_from_dict(val, args, config)
         for key, val in value.items()
     }
+  elif isinstance(value, tuple):
+    return tuple(import_args_from_dict(val, args, config) for val in value)
   return value
 
 
@@ -174,6 +176,8 @@ def check_placeholders(value):
     return [check_placeholders(item) for item in value]
   elif isinstance(value, dict):
     return {key: check_placeholders(val) for key, val in value.items()}
+  elif isinstance(value, tuple):
+    return tuple(check_placeholders(val) for val in value)
   return value
 
 def signal_handler(*unused_argvs):
