@@ -53,11 +53,12 @@ class GoogleCloudCollector(module.BaseModule):
             incident_id,
             zone,
             boot_disk_size,
+            cpu_cores,
             remote_instance_name=None,
             disk_names=None,
             all_disks=False,
-            image_project='ubuntu-os-cloud',
-            image_family='ubuntu-1604-lts'):
+            image_project="ubuntu-os-cloud",
+            image_family="ubuntu-1604-lts"):
     """Sets up a Google cloud collector.
 
     This method creates and starts an analysis VM in the analysis project and
@@ -83,6 +84,7 @@ class GoogleCloudCollector(module.BaseModule):
           based (string).
       zone: The zone in which new resources should be created (string).
       boot_disk_size: The size of the analysis VM boot disk (in GB) (float).
+      cpu_cores: The number of CPU cores to create the machine with.
       remote_instance_name: The name of the instance in the remote project
           containing the disks to be copied (string).
       disk_names: Comma separated string with disk names to copy (string).
@@ -117,8 +119,14 @@ class GoogleCloudCollector(module.BaseModule):
       # TODO: Make creating an analysis VM optional
       # pylint: disable=too-many-function-args
       self.analysis_vm, _ = libcloudforensics.start_analysis_vm(
-          self.analysis_project.project_id, analysis_vm_name, zone,
-          boot_disk_size, image_project, image_family)
+          self.analysis_project.project_id,
+          analysis_vm_name,
+          zone,
+          boot_disk_size,
+          int(cpu_cores),
+          attach_disk=None,
+          image_project=image_project,
+          image_family=image_family)
 
       if disk_names:
         for name in disk_names:
