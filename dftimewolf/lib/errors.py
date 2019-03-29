@@ -3,4 +3,6 @@
 class DFTimewolfError(Exception):
   """Class to represent a DFTimewolfError."""
 
-  message = 'An error occurred.'
+  def __init__(self, message=None):
+    super().__init__(message)
+    self.message = message or 'An error occurred.'
