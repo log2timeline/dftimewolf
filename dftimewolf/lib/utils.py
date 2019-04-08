@@ -3,12 +3,19 @@
 
 from __future__ import unicode_literals
 
+import argparse
 import re
 import sys
 
 import six
 
 TOKEN_REGEX = re.compile(r'\@([\w_]+)')
+
+class DFTimewolfFormatterClass(
+    argparse.ArgumentDefaultsHelpFormatter,
+    argparse.RawDescriptionHelpFormatter):
+  """argparse formatter class. Respects whitespace and provides defaults."""
+  pass
 
 
 def import_args_from_dict(value, args, config):
