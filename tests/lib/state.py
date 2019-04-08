@@ -4,7 +4,6 @@
 
 from __future__ import unicode_literals
 
-import argparse
 import unittest
 
 import mock
@@ -27,6 +26,7 @@ class StateTest(unittest.TestCase):
     """Tests that a recipe can be loaded correctly."""
     test_state = state.DFTimewolfState(config.Config)
     test_state.load_recipe(test_recipe.contents)
+    # pylint: disable=protected-access
     self.assertIn('DummyModule1', test_state._module_pool)
     self.assertIn('DummyModule2', test_state._module_pool)
     self.assertEqual(len(test_state._module_pool), 2)
