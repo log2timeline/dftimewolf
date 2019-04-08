@@ -3,13 +3,9 @@
 
 from __future__ import unicode_literals
 
-import argparse
-from datetime import datetime
-import os
 import re
 import sys
 
-import pytz
 import six
 
 TOKEN_REGEX = re.compile(r'\@([\w_]+)')
