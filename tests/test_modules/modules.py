@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Contains dummy modules used in tests."""
 
-from __future__ import unicode_literals
+from __future__ import print_function, unicode_literals
 
 from dftimewolf.lib.module import BaseModule
 
