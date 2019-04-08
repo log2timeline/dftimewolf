@@ -5,4 +5,4 @@ class DFTimewolfError(Exception):
 
   def __init__(self, message=None):
     super().__init__(message)
-    self.message = message or 'An error occurred.'
+    self.message = message or 'An error occurred!'
