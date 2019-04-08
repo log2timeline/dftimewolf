@@ -94,9 +94,8 @@ class StateTest(unittest.TestCase):
     self.assertTrue(critical)
 
 
-
-
-class DummyArgs():
+# pylint: disable=no-init,old-style-class
+class DummyArgs:
   """Fake class to generate an object with an empty __dict__ attribute."""
   pass
 
