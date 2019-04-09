@@ -15,9 +15,10 @@ from tests.test_modules import modules, test_recipe
 
 
 class StateTest(unittest.TestCase):
-  """Tests for the local Plaso processor."""
+  """Tests for the DFTimewolfState class."""
 
   def setUp(self):
+    """Sets up dummy modules and recipe to be used in tests."""
     config.Config.register_module(modules.DummyModule1)
     config.Config.register_module(modules.DummyModule2)
     config.Config.register_recipe(test_recipe)
