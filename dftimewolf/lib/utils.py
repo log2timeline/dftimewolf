@@ -4,113 +4,18 @@
 from __future__ import unicode_literals
 
 import argparse
-from datetime import datetime
-import os
 import re
 import sys
 
-import pytz
 import six
 
 TOKEN_REGEX = re.compile(r'\@([\w_]+)')
-
 
 class DFTimewolfFormatterClass(
     argparse.ArgumentDefaultsHelpFormatter,
     argparse.RawDescriptionHelpFormatter):
   """argparse formatter class. Respects whitespace and provides defaults."""
   pass
-
-
-class DFTimewolfConsoleOutput(object):
-  """Send messages to stdin or stderr."""
-
-  def __init__(self, sender, verbose):
-    """Initialize the DFTimewolf console output object.
-
-    Args:
-      sender: Name of the sender of the message
-      verbose: Boolean indicating if verbose output is to be used
-    """
-    super(DFTimewolfConsoleOutput, self).__init__()
-    self._sender = sender
-    self._verbose = verbose
-
-  def _FormatMessage(self, message):
-    """Format message with timestamp, script name and sender name.
-
-    Args:
-      message: Message to be formatted
-    Returns:
-      String containing formatted message
-    """
-    script_name = os.path.basename(sys.argv[0])
-    timestamp = datetime.now().isoformat()
-    formatted_message = '[{0:s}] {1:s}: {2:s} - {3:s}\n'.format(
-        timestamp, script_name, self._sender, message)
-    return formatted_message
-
-  def StdOut(self, message):
-    """Send message to standard out.
-
-    Args:
-      message: Message to be printed
-    """
-    sys.stdout.write('{0:s}\n'.format(message))
-    sys.stdout.flush()
-
-  def StdErr(self, message, die=False):
-    """Send formatted message to standard error.
-
-    Args:
-      message: Message to be printed
-      die: Boolean indicating whether error is irrecoverable
-    """
-    error_message = self._FormatMessage(message)
-    if die:
-      exit_message = error_message.rstrip('\n')
-      sys.exit(exit_message)
-    sys.stderr.write(error_message)
-    sys.stderr.flush()
-
-  def VerboseOut(self, message):
-    """Send verbose output to standard error.
-
-    Args:
-      message: Message to be printed
-    """
-    if self._verbose:
-      self.StdErr(message, die=False)
-
-
-def ReadFromStdin():
-  """Convenience function to read input from stdin.
-
-  Yields:
-    Tuple of path to artifacts or processed artifacts and a name
-
-  Raises:
-    IndexError: if input from stdin cannot be read.
-  """
-  for line in sys.stdin:
-    path_name = line.strip('\n').split()
-    try:
-      path = path_name[0]
-      name = path_name[1]
-    except IndexError:
-      raise IndexError('Malformed input on stdin')
-    yield (path, name)
-
-
-def IsValidTimezone(timezone):
-  """Check timezone string against known timezones in the pytz package.
-
-  Args:
-    timezone: Timezone name
-  Returns:
-    Boolean indicating if the timezone name is known to the pytz package
-  """
-  return timezone in pytz.all_timezones
 
 
 def import_args_from_dict(value, args, config):
