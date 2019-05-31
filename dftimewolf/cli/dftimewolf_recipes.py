@@ -93,6 +93,7 @@ def main():
       formatter_class=argparse.RawDescriptionHelpFormatter,
       description=generate_help())
 
+  parser.set_defaults(recipe=None)
   subparsers = parser.add_subparsers()
 
   for registered_recipe in config.Config.get_registered_recipes():
@@ -109,6 +110,10 @@ def main():
     subparser.set_defaults(**config.Config.get_extra())
 
   args = parser.parse_args()
+  if not args.recipe:
+    print(parser.format_help())
+    exit(-1)
+
   recipe = args.recipe
 
   state = DFTimewolfState(config.Config)
