@@ -47,7 +47,7 @@ pyopenssl==18.0.0
 pypdf2==1.26.0
 pytz==2018.5
 pyyaml>=4.2b1
-requests>=2.20.1
+requests>=2.21.0
 rsa==4.0
 scandir==1.9.0; python_version < '3.5'
 simplegeneric==0.8.1
