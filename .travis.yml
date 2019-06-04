@@ -27,14 +27,13 @@ matrix:
     sudo: required
     group: edge
     language: python
-    python: 3.3
+    python: 3.6
     virtualenv:
       system_site_packages: false
 install:
 - pip install -r requirements.txt
 - pip install mock
 - if test ${TARGET} = "pylint"; then pip install 'pylint<=2'; fi
-- if test ${TARGET} = "linux-python27"; then pip install coverage; fi
 - if test -n "${TOXENV}"; then pip install tox; fi
 script:
 - ./config/travis/run_with_timeout.sh 30 ./config/travis/runtests.sh
