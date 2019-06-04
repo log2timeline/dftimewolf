@@ -9,6 +9,7 @@ chardet==3.0.4
 cryptography==2.4.2
 decorator==4.4.0
 future==0.16.0
+git+https://github.com/tomchop/turbinia.git@a1120be8071d8bdaf1c2b85e959403b48b78766b#egg=turbinia
 grr-api-client==3.3.0.post0
 grr-response-proto==3.3.0.post0
 idna==2.8
@@ -32,4 +33,3 @@ traitlets==4.3.2
 urllib3==1.24.3
 wcwidth==0.1.7
 werkzeug==0.11.3
-git+https://github.com/tomchop/turbinia.git@dependencies
