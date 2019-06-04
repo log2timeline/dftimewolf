@@ -18,9 +18,8 @@ matrix:
     python: 3.6
 install:
 - pip install -r requirements.txt
-- pip install mock
+- pip install -r requirements-dev.txt
 - if test ${TARGET} = "pylint"; then pip install pylint; fi
-- if test -n "${TOXENV}"; then pip install tox; fi
 script:
 - ./config/travis/run_with_timeout.sh 30 ./config/travis/runtests.sh
 after_success:
