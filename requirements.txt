@@ -1,4 +1,4 @@
-  -i https://pypi.org/simple
+-i https://pypi.org/simple
 appnope==0.1.0 ; sys_platform == 'darwin'
 asn1crypto==0.24.0
 backcall==0.1.0
@@ -32,4 +32,4 @@ traitlets==4.3.2
 urllib3==1.24.3
 wcwidth==0.1.7
 werkzeug==0.11.3
-turbinia
+git+https://github.com/tomchop/turbinia.git@dependencies
