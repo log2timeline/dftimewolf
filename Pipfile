@@ -11,6 +11,9 @@ six = "*"
 "beautifulsoup4" = "*"
 requests = "*"
 "pypdf2" = "*"
+grr-api-client = "*"
+turbinia = {path = "./../turbinia"}
+pyyaml = "*"
 
 [requires]
 python_version = "3.6"
