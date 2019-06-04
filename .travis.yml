@@ -9,7 +9,7 @@ matrix:
     language: python
     python: 3.6
     virtualenv:
-      system_site_packages: true
+      system_site_packages: false
   - name: "Ubuntu Xenial (16.04) with Python 3.6"
     env: TARGET="linux-python36"
     os: linux
@@ -19,7 +19,7 @@ matrix:
     language: python
     python: 3.6
     virtualenv:
-      system_site_packages: true
+      system_site_packages: false
   - name: "Ubuntu Xenial (16.04) with Python 3.6 and tox"
     env: [TARGET="linux-python36-tox", TOXENV="py36"]
     os: linux
