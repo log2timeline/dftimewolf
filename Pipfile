@@ -1,0 +1,16 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[dev-packages]
+mock = "*"
+
+[packages]
+six = "*"
+"beautifulsoup4" = "*"
+requests = "*"
+"pypdf2" = "*"
+
+[requires]
+python_version = "3.6"
