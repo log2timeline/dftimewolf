@@ -8,7 +8,8 @@ class Report(interface.AttributeContainer):
   Attributes:
     module_name (str): name of the module that generated the report.
     text (str): report text.
-    attributes (list of dicts): attribute list, dicts must contain 'name', 'type', 'values' keys.
+    attributes (list of dicts): attribute list, dicts must contain 'name', 
+    'type', 'values' keys.
   """
   CONTAINER_TYPE = 'report'
 
@@ -22,7 +23,7 @@ class Report(interface.AttributeContainer):
     super(Report, self).__init__()
     self.module_name = module_name
     self.text = text
-    if attributes == None: 
+    if attributes is None:
       self.attributes = []
     else:
       self.attributes = attributes
