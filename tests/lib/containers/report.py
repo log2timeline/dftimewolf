@@ -14,7 +14,7 @@ class ReportDataTest(unittest.TestCase):
     """Tests the get_attribute_names function."""
     attribute_container = containers.Report(module_name='name', text='text')
 
-    expected_attribute_names = ['module_name', 'text']
+    expected_attribute_names = ['attributes', 'module_name', 'text']
 
     attribute_names = sorted(attribute_container.get_attribute_names())
 
