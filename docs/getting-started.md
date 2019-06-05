@@ -6,7 +6,7 @@ Ideally you'll want to install dftimewolf in its own virtual environment.
 
 ```
 $ git clone https://github.com/log2timeline/dftimewolf.git && cd dftimewolf
-$ pip install -r requirements
+$ pip install -r requirements.txt
 $ pip install -e .
 ```
 
