@@ -1,4 +1,4 @@
-"""Creates a forensic VM and copies a GCP disk to it for anaysis."""
+"""Creates a forensic VM and copies a GCP disk to it for analysis."""
 from __future__ import print_function
 from __future__ import unicode_literals
 
@@ -30,9 +30,6 @@ class GoogleCloudCollector(module.BaseModule):
     self.incident_id = None
     self.disks_to_copy = []
 
-  def cleanup(self):
-    pass
-
   def process(self):
     """Copy a disk to the analysis project."""
     for disk in self.disks_to_copy:
@@ -58,7 +55,7 @@ class GoogleCloudCollector(module.BaseModule):
             disk_names=None,
             all_disks=False,
             image_project="ubuntu-os-cloud",
-            image_family="ubuntu-1604-lts"):
+            image_family="ubuntu-1804-lts"):
     """Sets up a Google cloud collector.
 
     This method creates and starts an analysis VM in the analysis project and
