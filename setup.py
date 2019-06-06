@@ -4,6 +4,8 @@
 
 from __future__ import print_function
 
+import glob
+import os
 import sys
 
 try:
@@ -157,9 +159,10 @@ setup(
         'console_scripts': ['dftimewolf=dftimewolf.cli.dftimewolf_recipes:main']
     },
     data_files=[
+        ('share/dftimewolf', glob.glob(
+            os.path.join('data', '*'))),
         ('share/doc/dftimewolf', [
             'ACKNOWLEDGEMENTS', 'AUTHORS', 'LICENSE']),
-        ('dftimewolf', ['dftimewolf/config.json'])
     ],
     include_package_data=True,
     zip_safe=False,
