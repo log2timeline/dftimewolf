@@ -5,6 +5,7 @@ name = "pypi"
 
 [dev-packages]
 mock = "*"
+pylint = "*"
 
 [packages]
 six = "*"
@@ -12,7 +13,7 @@ six = "*"
 requests = "*"
 "pypdf2" = "*"
 grr-api-client = "*"
-turbinia = {path = "./../turbinia"}
+turbinia = {git = "https://github.com/tomchop/turbinia.git",ref = "dependencies"}
 pyyaml = "*"
 
 [requires]
