@@ -8,10 +8,10 @@ import os
 import shutil
 import tempfile
 
-from dftimewolf.lib.module import BaseModule
+from dftimewolf.lib import module
 
 
-class LocalFilesystemCopy(BaseModule):
+class LocalFilesystemCopy(module.BaseModule):
   """Copies the files in the previous module's output to a given path.
 
   input: List of paths to copy the files from.
