@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 
+import io
 import unittest
 
 from dftimewolf.lib import resources
@@ -39,6 +40,36 @@ class TestRecipe(resources.Recipe):
 
 class RecipesManagerTest(unittest.TestCase):
   """Tests for the recipes manager."""
+
+  # pylint: disable=protected-access
+
+  _JSON = """{
+    "name": "test",
+    "description": "test recipe",
+    "short_description": "recipe description",
+    "modules": [{
+        "wants": [],
+        "name": "TestModule",
+        "args": {
+            "test": "@test"
+        }
+    }],
+    "args": [
+      ["test", "Test argument", null]
+    ]
+}
+"""
+
+  def testReadRecipeFromFileObject(self):
+    """Tests the _ReadRecipeFromFileObject function."""
+    recipe = manager.RecipesManager._ReadRecipeFromFileObject(
+        io.StringIO(self._JSON))
+
+    self.assertIsNotNone(recipe)
+    self.assertEqual(recipe.name, 'test')
+    self.assertEqual(recipe.description, 'test recipe')
+    self.assertEqual(recipe.contents['modules'][0]['name'], 'TestModule')
+    self.assertEqual(len(recipe.args), 1)
 
   def testRecipeRegistration(self):
     """Tests the RegisterRecipe and DeregisterRecipe functions."""

@@ -1,0 +1,57 @@
+{
+    "name": "grr_artifact_hosts",
+    "description": [
+        "Collect artifacts from hosts using GRR.",
+        "",
+        "- Collect a predefined list of artifacts from hosts using GRR",
+        "- Process them with a local install of plaso",
+        "- Export them to a Timesketch sketch"
+    ],
+    "short_description": "Fetches default artifacts from a list of GRR hosts, processes them with plaso, and sends the results to Timesketch.",
+    "modules": [{
+        "wants": [],
+        "name": "GRRArtifactCollector",
+        "args": {
+            "hosts": "@hosts",
+            "reason": "@reason",
+            "grr_server_url": "@grr_server_url",
+            "grr_username": "@grr_username",
+            "grr_password": "@grr_password",
+            "artifacts": "@artifacts",
+            "extra_artifacts": "@extra_artifacts",
+            "use_tsk": "@use_tsk",
+            "approvers": "@approvers",
+            "verify": "@verify"
+        }
+    }, {
+        "wants": ["GRRArtifactCollector"],
+        "name": "LocalPlasoProcessor",
+        "args": {
+            "timezone": null
+        }
+    }, {
+        "wants": ["LocalPlasoProcessor"],
+        "name": "TimesketchExporter",
+        "args": {
+            "endpoint": "@ts_endpoint",
+            "username": "@ts_username",
+            "password": "@ts_password",
+            "incident_id": "@reason",
+            "sketch_id": "@sketch_id"
+        }
+    }],
+    "args": [
+        ["hosts", "Comma-separated list of hosts to process", null],
+        ["reason", "Reason for collection", null],
+        ["--artifacts", "Comma-separated list of artifacts to fetch (override default artifacts)", null],
+        ["--extra_artifacts", "Comma-separated list of artifacts to append to the default artifact list", null],
+        ["--use_tsk", "Use TSK to fetch artifacts", false],
+        ["--approvers", "Emails for GRR approval request", null],
+        ["--sketch_id", "Sketch to which the timeline should be added", null],
+        ["--incident_id", "Incident ID (used for Timesketch description)", null],
+        ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
+        ["--verify", "Whether to verify the GRR TLS certificate", true],
+        ["--grr_username", "GRR username", "admin"],
+        ["--grr_password", "GRR password", "admin"]
+    ]
+}
