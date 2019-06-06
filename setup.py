@@ -160,7 +160,9 @@ setup(
     },
     data_files=[
         ('share/dftimewolf', glob.glob(
-            os.path.join('data', '*'))),
+            os.path.join('data', '*.json'))),
+        ('share/dftimewolf/recipes', glob.glob(
+            os.path.join('data', 'recipes', '*.json'))),
         ('share/doc/dftimewolf', [
             'ACKNOWLEDGEMENTS', 'AUTHORS', 'LICENSE']),
     ],
