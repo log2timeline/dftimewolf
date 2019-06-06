@@ -11,6 +11,8 @@ import six
 
 TOKEN_REGEX = re.compile(r'\@([\w_]+)')
 
+# preserve python2 compatibility
+# pylint: disable=unnecessary-pass
 class DFTimewolfFormatterClass(
     argparse.ArgumentDefaultsHelpFormatter,
     argparse.RawDescriptionHelpFormatter):
