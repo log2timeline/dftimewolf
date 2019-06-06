@@ -16,14 +16,6 @@ matrix:
     group: edge
     language: python
     python: 3.6
-  - name: "Ubuntu Xenial (16.04) with Python 2.7"
-    env: TARGET="linux-python27"
-    os: linux
-    dist: xenial
-    sudo: required
-    group: edge
-    language: python
-    python: 2.7
 install:
 - pip install -r requirements.txt
 - pip install -r requirements-dev.txt
