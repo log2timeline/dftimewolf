@@ -75,12 +75,12 @@ class TurbiniaProcessor(BaseModule):
       turbinia_config.LoadConfig()
       self.turbinia_region = turbinia_config.TURBINIA_REGION
       self.instance = turbinia_config.PUBSUB_TOPIC
-      if turbinia_config.PROJECT != self.project:
+      if turbinia_config.TURBINIA_PROJECT != self.project:
         self.state.add_error(
             'Specified project {0:s} does not match Turbinia configured '
             'project {1:s}. Use gcp_turbinia_import recipe to copy the disk '
             'into the same project.'.format(
-                self.project, turbinia_config.PROJECT), critical=True)
+                self.project, turbinia_config.TURBINIA_PROJECT), critical=True)
         return
       self._output_path = tempfile.mkdtemp()
       self.client = turbinia_client.TurbiniaClient()
