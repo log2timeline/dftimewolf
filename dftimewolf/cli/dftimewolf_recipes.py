@@ -86,9 +86,20 @@ def generate_help():
     help_text += ' {0:<35s}{1:s}\n'.format(recipe.name, short_description)
   return help_text
 
+def check_python_version():
+  """Checks that we're running a compatible version of Python."""
+  version_tuple = (sys.version_info[0], sys.version_info[1])
+  if version_tuple[0] != 3 or version_tuple < (3, 6):
+  print((
+      'Unsupported Python version: {0:s}, version 3.6 or higher '
+      'required.').format(sys.version))
+  sys.exit(1)
+
 
 def main():
   """Main function for DFTimewolf."""
+  check_python_version()
+
   parser = argparse.ArgumentParser(
       formatter_class=argparse.RawDescriptionHelpFormatter,
       description=generate_help())

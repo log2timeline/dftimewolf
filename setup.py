@@ -23,19 +23,9 @@ except ImportError:
   bdist_rpm = None
 
 version_tuple = (sys.version_info[0], sys.version_info[1])
-if version_tuple[0] not in (2, 3):
-  print('Unsupported Python version: {0:s}.'.format(sys.version))
-  sys.exit(1)
-
-elif version_tuple[0] == 2 and version_tuple < (2, 7):
+if version_tuple[0] != 3 or version_tuple < (3, 6):
   print((
-      'Unsupported Python 2 version: {0:s}, version 2.7 or higher '
-      'required.').format(sys.version))
-  sys.exit(1)
-
-elif version_tuple[0] == 3 and version_tuple < (3, 4):
-  print((
-      'Unsupported Python 3 version: {0:s}, version 3.4 or higher '
+      'Unsupported Python version: {0:s}, version 3.6 or higher '
       'required.').format(sys.version))
   sys.exit(1)
 
@@ -138,19 +128,6 @@ else:
         python_spec_file.append(line)
 
       return python_spec_file
-
-if version_tuple[0] == 2:
-  encoding = sys.stdin.encoding  # pylint: disable=invalid-name
-
-  # Note that sys.stdin.encoding can be None.
-  if not encoding:
-    encoding = locale.getpreferredencoding()
-
-  # Make sure the default encoding is set correctly otherwise on Python 2
-  # setup.py sdist will fail to include filenames with Unicode characters.
-  reload(sys)  # pylint: disable=undefined-variable
-
-  sys.setdefaultencoding(encoding)  # pylint: disable=no-member
 
 dftimewolf_description = (
     'Digital forensic orchestration.')
