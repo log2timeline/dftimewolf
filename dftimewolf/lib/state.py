@@ -96,10 +96,10 @@ class DFTimewolfState(object):
       module = self._module_pool[module_description['name']]
       try:
         module.setup(**new_args)
-      except Exception as error:  # pylint: disable=broad-except
+      except Exception as exception:  # pylint: disable=broad-except
         self.add_error(
             'An unknown error occurred: {0!s}\nFull traceback:\n{1:s}'.format(
-                error, traceback.format_exc()),
+                exception, traceback.format_exc()),
             critical=True)
 
       self.events[module_description['name']] = threading.Event()
@@ -132,12 +132,12 @@ class DFTimewolfState(object):
       module = self._module_pool[module_description['name']]
       try:
         module.process()
-      except DFTimewolfError as error:
-        self.add_error(error.message, critical=True)
-      except Exception as error:  # pylint: disable=broad-except
+      except DFTimewolfError as exception:
+        self.add_error(exception.message, critical=True)
+      except Exception as exception:  # pylint: disable=broad-except
         self.add_error(
             'An unknown error occurred: {0!s}\nFull traceback:\n{1:s}'.format(
-                error, traceback.format_exc()),
+                exception, traceback.format_exc()),
             critical=True)
       print('Module {0:s} completed'.format(module_description['name']))
       self.events[module_description['name']].set()
