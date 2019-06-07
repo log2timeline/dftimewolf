@@ -8,6 +8,8 @@ import argparse
 import os
 import signal
 
+ASKING_FOR_HELP = '-h' in sys.argv or '--help' in sys.argv or len(sys.argv) < 2
+
 from dftimewolf import config
 
 from dftimewolf.cli.recipes import gcp_turbinia
@@ -24,36 +26,39 @@ from dftimewolf.cli.recipes import artifact_grep
 
 from dftimewolf.lib import utils
 
-from dftimewolf.lib.collectors import filesystem
-from dftimewolf.lib.collectors import grr_hosts
-from dftimewolf.lib.collectors import grr_hunt
-from dftimewolf.lib.exporters import timesketch
-from dftimewolf.lib.exporters import local_filesystem
-from dftimewolf.lib.processors import localplaso
-from dftimewolf.lib.processors import turbinia
-from dftimewolf.lib.processors import grepper
-from dftimewolf.lib.collectors.gcloud import GoogleCloudCollector
+# pylint: disable=g-import-not-at-top
+if not ASKING_FOR_HELP:
+  from dftimewolf.lib.collectors import filesystem
+  from dftimewolf.lib.collectors import grr_hosts
+  from dftimewolf.lib.collectors import grr_hunt
+  from dftimewolf.lib.exporters import timesketch
+  from dftimewolf.lib.exporters import local_filesystem
+  from dftimewolf.lib.processors import localplaso
+  from dftimewolf.lib.processors import turbinia
+  from dftimewolf.lib.processors import grepper
+  from dftimewolf.lib.collectors.gcloud import GoogleCloudCollector
 
 from dftimewolf.lib.state import DFTimewolfState
 
 signal.signal(signal.SIGINT, utils.signal_handler)
 
-config.Config.register_module(filesystem.FilesystemCollector)
-config.Config.register_module(localplaso.LocalPlasoProcessor)
-config.Config.register_module(timesketch.TimesketchExporter)
-config.Config.register_module(GoogleCloudCollector)
+if not ASKING_FOR_HELP:
+  config.Config.register_module(filesystem.FilesystemCollector)
+  config.Config.register_module(localplaso.LocalPlasoProcessor)
+  config.Config.register_module(timesketch.TimesketchExporter)
+  config.Config.register_module(GoogleCloudCollector)
 
-config.Config.register_module(grr_hosts.GRRArtifactCollector)
-config.Config.register_module(grr_hosts.GRRFileCollector)
-config.Config.register_module(grr_hosts.GRRFlowCollector)
-config.Config.register_module(grr_hunt.GRRHuntArtifactCollector)
-config.Config.register_module(grr_hunt.GRRHuntFileCollector)
-config.Config.register_module(grr_hunt.GRRHuntDownloader)
+  config.Config.register_module(grr_hosts.GRRArtifactCollector)
+  config.Config.register_module(grr_hosts.GRRFileCollector)
+  config.Config.register_module(grr_hosts.GRRFlowCollector)
+  config.Config.register_module(grr_hunt.GRRHuntArtifactCollector)
+  config.Config.register_module(grr_hunt.GRRHuntFileCollector)
+  config.Config.register_module(grr_hunt.GRRHuntDownloader)
 
-config.Config.register_module(timesketch.TimesketchExporter)
-config.Config.register_module(local_filesystem.LocalFilesystemCopy)
-config.Config.register_module(turbinia.TurbiniaProcessor)
-config.Config.register_module(grepper.GrepperSearch)
+  config.Config.register_module(timesketch.TimesketchExporter)
+  config.Config.register_module(local_filesystem.LocalFilesystemCopy)
+  config.Config.register_module(turbinia.TurbiniaProcessor)
+  config.Config.register_module(grepper.GrepperSearch)
 
 # Try to open config.json and load configuration data from it.
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
