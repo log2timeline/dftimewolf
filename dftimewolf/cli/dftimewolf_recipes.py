@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 import argparse
 import os
 import signal
+import sys
 
 # Make dftimewolf faster by only importing modules if we're not actually
 # just asking for help
