@@ -192,7 +192,7 @@ class DFTimewolfState(object):
     if errors:
       print('dfTimewolf encountered one or more errors:')
       for error, critical in errors:
-        print('{0:s}  {1:s}'.format('CRITICAL: ' if critical else '', error))
+        print('{0:s}  {1!s}'.format('CRITICAL: ' if critical else '', error))
         if critical:
           print('Critical error found. Aborting.')
           sys.exit(-1)
