@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 """Class definition for DFTimewolf modules."""
 
-import threading
 
-
-class BaseModule(threading.Thread):
+class BaseModule(object):
   """Base class for Modules.
 
   Attributes:
