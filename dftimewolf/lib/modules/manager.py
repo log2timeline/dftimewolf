@@ -16,7 +16,8 @@ class ModulesManager(object):
     The module classes are identified based on their class name.
 
     Args:
-      module_class (type): class of the module.
+      module_class (type): class of the module, which is a subclass of
+          BaseModule.
 
     Raises:
       KeyError: if module class is not set for the corresponding class name.
@@ -28,13 +29,27 @@ class ModulesManager(object):
     del cls._module_classes[class_name]
 
   @classmethod
+  def GetModuleByName(cls, name):
+    """Retrieves a specific by its name.
+
+    Args:
+      name (str): name of the module.
+
+    Returns:
+      type: the module class, which is a subclass of BaseModule, or None if
+          no corresponding module was found.
+    """
+    return cls._module_classes.get(name, None)
+
+  @classmethod
   def RegisterModule(cls, module_class):
     """Registers a module class.
 
     The module classes are identified based on their class name.
 
     Args:
-      module_class (type): class of the module.
+      module_class (type): class of the module, which is a subclass of
+          BaseModule.
 
     Raises:
       KeyError: if module class is already set for the corresponding class name.
@@ -52,7 +67,8 @@ class ModulesManager(object):
     The module classes are identified based on their class name.
 
     Args:
-      module_classes (list[type]): classes of the modules.
+      module_classes (list[type]): classes of the modules, which are subclasses of
+          BaseModule.
 
     Raises:
       KeyError: if module class is already set for the corresponding class name.

@@ -12,6 +12,7 @@ import yaml
 from grr_response_proto import flows_pb2
 
 from dftimewolf.lib.collectors import grr_base
+from dftimewolf.lib.modules import manager as modules_manager
 
 
 # GRRHunt should be extended by classes that actually implement the process()
@@ -336,3 +337,7 @@ class GRRHuntDownloader(GRRHunt):
     """
     hunt = self.grr_api.Hunt(self.hunt_id).Get()
     self.state.output = self.collect_hunt_results(hunt)
+
+
+modules_manager.ModulesManager.RegisterModules([
+    GRRHuntArtifactCollector, GRRHuntFileCollector, GRRHuntDownloader])

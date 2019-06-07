@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import os
 
 from dftimewolf.lib import module
+from dftimewolf.lib.modules import manager as modules_manager
 
 
 class FilesystemCollector(module.BaseModule):
@@ -44,3 +45,6 @@ class FilesystemCollector(module.BaseModule):
             'Path {0:s} does not exist'.format(str(path)), critical=False)
     if not self.state.output:
       self.state.add_error('No valid paths collected, bailing', critical=True)
+
+
+modules_manager.ModulesManager.RegisterModule(FilesystemCollector)

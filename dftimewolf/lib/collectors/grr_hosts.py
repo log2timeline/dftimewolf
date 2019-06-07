@@ -16,6 +16,8 @@ from grr_response_proto import flows_pb2
 
 from dftimewolf.lib.collectors.grr_base import GRRBaseModule
 from dftimewolf.lib.errors import DFTimewolfError
+from dftimewolf.lib.modules import manager as modules_manager
+
 
 # GRRFlow should be extended by classes that actually implement the process()
 # method
@@ -483,3 +485,8 @@ class GRRFlowCollector(GRRFlow):
           self.flow_id, collected_flow_data))
       fqdn = client.data.os_info.fqdn.lower()
       self.state.output.append((fqdn, collected_flow_data))
+
+
+modules_manager.ModulesManager.RegisterModules([
+    GRRArtifactCollector, GRRFileCollector, GRRFlowCollector])
+
