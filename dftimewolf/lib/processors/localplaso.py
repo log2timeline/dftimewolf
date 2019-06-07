@@ -75,8 +75,8 @@ class LocalPlasoProcessor(BaseModule):
                      ' Check log file for details.').format(full_cmd, error)
           self.state.add_error(message, critical=True)
         self.state.output.append((description, plaso_storage_file_path))
-      except OSError as error:
-        self.state.add_error(str(error), critical=True)
+      except OSError as exception:
+        self.state.add_error(str(exception), critical=True)
       # Catch all remaining errors since we want to gracefully report them
-      except Exception as error:  # pylint: disable=broad-except
-        self.state.add_error(str(error), critical=True)
+      except Exception as exception:  # pylint: disable=broad-except
+        self.state.add_error(str(exception), critical=True)
