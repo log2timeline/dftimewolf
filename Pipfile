@@ -15,6 +15,7 @@ requests = "*"
 grr-api-client = "*"
 turbinia = {git = "https://github.com/tomchop/turbinia.git",ref = "dependencies"}
 pyyaml = "*"
+google-cloud-logging = "*"
 
 [requires]
 python_version = "3.6"
