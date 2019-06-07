@@ -27,8 +27,10 @@ from dftimewolf.cli.recipes import grr_huntresults_plaso_timesketch
 from dftimewolf.cli.recipes import local_plaso
 from dftimewolf.cli.recipes import timesketch_upload
 from dftimewolf.cli.recipes import artifact_grep
+from dftimewolf.cli.recipes import stackdriver_collect
 
 from dftimewolf.lib import utils
+
 
 if not _ASKING_FOR_HELP:
   from dftimewolf.lib.collectors import filesystem
@@ -44,6 +46,7 @@ if not _ASKING_FOR_HELP:
 from dftimewolf.lib.state import DFTimewolfState
 
 signal.signal(signal.SIGINT, utils.signal_handler)
+
 
 if not _ASKING_FOR_HELP:
   config.Config.register_module(filesystem.FilesystemCollector)
@@ -63,6 +66,7 @@ if not _ASKING_FOR_HELP:
   config.Config.register_module(turbinia.TurbiniaProcessor)
   config.Config.register_module(grepper.GrepperSearch)
 
+
 # Try to open config.json and load configuration data from it.
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 USER_DIR = os.path.expanduser('~')
@@ -81,6 +85,7 @@ config.Config.register_recipe(timesketch_upload)
 config.Config.register_recipe(gcp_turbinia)
 config.Config.register_recipe(gcp_turbinia_import)
 config.Config.register_recipe(artifact_grep)
+config.Config.register_recipe(stackdriver_collect)
 
 # TODO(tomchop) Change the print statements by a better logging / display system
 
