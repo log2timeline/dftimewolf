@@ -6,6 +6,8 @@ from __future__ import unicode_literals
 import json
 import sys
 
+from dftimewolf.lib import resources
+
 
 class Config(object):
   """Class that handles DFTimewolf's configuration parameters."""
@@ -89,20 +91,20 @@ class Config(object):
     """Registers a dftimewolf recipe.
 
     Args:
-      recipe: imported python module representing the recipe.
+      recipe [module]: module that contains the recipe.
     """
     recipe_name = recipe.contents['name']
-    cls._recipe_classes[recipe_name] = (
-        recipe.contents, recipe.args, recipe.__doc__)
+    cls._recipe_classes[recipe_name] = resources.Recipe(
+        recipe.__doc__, recipe.contents, recipe.args)
 
   @classmethod
   def get_registered_recipes(cls):
     """Fetches all registered recipes.
 
     Returns:
-      List of registered (recipe, args) tuples.
+      list[Recipe]: recipes sorted by name.
     """
-    return cls._recipe_classes.values()
+    return sorted(cls._recipe_classes.values(), key=lambda recipe: recipe.name)
 
   @classmethod
   def register_module(cls, module_class):

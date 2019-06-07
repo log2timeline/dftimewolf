@@ -80,10 +80,10 @@ config.Config.register_recipe(artifact_grep)
 def generate_help():
   """Generates help text with alphabetically sorted recipes."""
   help_text = '\nAvailable recipes:\n\n'
-  recipes = config.Config.get_registered_recipes()
-  for contents, _, _ in sorted(recipes, key=lambda k: k[0]['name']):
-    help_text += ' {0:<35s}{1:s}\n'.format(
-        contents['name'], contents.get('short_description', 'No description'))
+  for recipe in config.Config.get_registered_recipes():
+    short_description = recipe.contents.get(
+        'short_description', 'No description')
+    help_text += ' {0:<35s}{1:s}\n'.format(recipe.name, short_description)
   return help_text
 
 
@@ -96,14 +96,13 @@ def main():
   parser.set_defaults(recipe=None)
   subparsers = parser.add_subparsers()
 
-  for registered_recipe in config.Config.get_registered_recipes():
-    recipe, recipe_args, documentation = registered_recipe
+  for recipe in config.Config.get_registered_recipes():
     subparser = subparsers.add_parser(
-        recipe['name'],
-        formatter_class=utils.DFTimewolfFormatterClass,
-        description='{0:s}'.format(documentation))
-    subparser.set_defaults(recipe=recipe)
-    for switch, help_text, default in recipe_args:
+        recipe.name, formatter_class=utils.DFTimewolfFormatterClass,
+        description='{0:s}'.format(recipe.description))
+    subparser.set_defaults(recipe=recipe.content)
+
+    for switch, help_text, default in recipe.args:
       subparser.add_argument(switch, help=help_text, default=default)
     # Override recipe defaults with those specified in Config
     # so that they can in turn be overridden in the commandline
