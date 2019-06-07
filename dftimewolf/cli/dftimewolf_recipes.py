@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 import argparse
 import os
 import signal
+import sys
 
 from dftimewolf import config
 
