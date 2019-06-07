@@ -19,7 +19,7 @@ class Scp(BaseModule):
     super(Scp, self).__init__(state)
     self._target_directory = None
 
-  def setup(self, paths, destination, user=None, hostname=None, id_file=None):
+  def setup(self, paths, destination, user, hostname, id_file):
     """Sets up the _target_directory attribute.
 
     Args:
@@ -31,7 +31,7 @@ class Scp(BaseModule):
       id_file: Identity file to use.
     """
     self._paths = paths.split(",")
-    self._user = user if user else getpass.getuser()
+    self._user = user
     self._hostname = hostname
     self._destination = destination
     self._id_file = id_file
@@ -44,22 +44,22 @@ class Scp(BaseModule):
 
   def process(self):
     """copies the list of paths to the destination on user@hostname"""
+    dest = self._destination
     if self._hostname:
       dest = "{0:s}@{1:s}:{2:s}".format(self._user, self._hostname, self._destination)
-    dest = self._destination
-
     cmd = ["scp"]
     cmd.extend(self._paths)
     cmd.append(dest)
-    if subprocess.call(cmd):
+    ret = subprocess.call(cmd)
+    if ret:
       self.state.add_error("Failed copying {0:s}".format(self._paths), critical=False)
 
   def _ssh_available(self):
     """returns true if host can be reached, false otherwise"""
     if not self._hostname:
       return True
-
-    command = ["ssh", "-q", self._hostname]
+    command = ["ssh", "-q", "-l", self._user ,self._hostname, "true"]
     if self._id_file:
       command.extend(["-i", self._id_file])
-    return not subprocess.call(command)
+    ret = subprocess.call(command)
+    return not ret

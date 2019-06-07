@@ -17,9 +17,9 @@ contents = {
         'args': {
             'paths': '@paths',
             'destination': '@destination',
-            'hostname': '',
-            'user': '',
-            'id_file': '',
+            'hostname': '@hostname',
+            'user': '@user',
+            'id_file': '@id_file',
         },
     }]
 }
