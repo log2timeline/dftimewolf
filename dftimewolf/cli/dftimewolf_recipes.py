@@ -99,7 +99,7 @@ def main():
     subparser = subparsers.add_parser(
         recipe.name, formatter_class=utils.DFTimewolfFormatterClass,
         description='{0:s}'.format(recipe.description))
-    subparser.set_defaults(recipe=recipe.content)
+    subparser.set_defaults(recipe=recipe.contents)
 
     for switch, help_text, default in recipe.args:
       subparser.add_argument(switch, help=help_text, default=default)
