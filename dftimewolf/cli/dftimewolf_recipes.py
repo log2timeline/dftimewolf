@@ -8,7 +8,9 @@ import argparse
 import os
 import signal
 
-ASKING_FOR_HELP = '-h' in sys.argv or '--help' in sys.argv or len(sys.argv) < 2
+# Make dftimewolf faster by only importing modules if we're not actually
+# just asking for help
+_ASKING_FOR_HELP = '-h' in sys.argv or '--help' in sys.argv or len(sys.argv) < 2
 
 from dftimewolf import config
 
@@ -27,7 +29,7 @@ from dftimewolf.cli.recipes import artifact_grep
 from dftimewolf.lib import utils
 
 # pylint: disable=g-import-not-at-top
-if not ASKING_FOR_HELP:
+if not _ASKING_FOR_HELP:
   from dftimewolf.lib.collectors import filesystem
   from dftimewolf.lib.collectors import grr_hosts
   from dftimewolf.lib.collectors import grr_hunt
@@ -42,7 +44,7 @@ from dftimewolf.lib.state import DFTimewolfState
 
 signal.signal(signal.SIGINT, utils.signal_handler)
 
-if not ASKING_FOR_HELP:
+if not _ASKING_FOR_HELP:
   config.Config.register_module(filesystem.FilesystemCollector)
   config.Config.register_module(localplaso.LocalPlasoProcessor)
   config.Config.register_module(timesketch.TimesketchExporter)
