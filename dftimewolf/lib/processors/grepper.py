@@ -68,11 +68,11 @@ class GrepperSearch(module.BaseModule):
                 self._final_output = output
               print(output)
       except OSError as exception:
-        self.state.add_error(exception, critical=True)
+        self.state.add_error(str(exception), critical=True)
         return
       # Catch all remaining errors since we want to gracefully report them
       except Exception as exception:  # pylint: disable=broad-except
-        self.state.add_error(exception, critical=True)
+        self.state.add_error(str(exception), critical=True)
         return
 
   def grepPDF(self, path):
