@@ -7,12 +7,16 @@ import json
 import sys
 
 from dftimewolf.lib import resources
+from dftimewolf.lib.recipes import manager as recipes_manager
 
 
 class Config(object):
   """Class that handles DFTimewolf's configuration parameters."""
 
-  _recipe_classes = {}
+  # TODO: make this an instance instead of a class after moving recipes
+  # to JSON files.
+  _recipes_manager = recipes_manager.RecipesManager
+
   _module_classes = {}
 
   _extra_config = {}
@@ -93,9 +97,8 @@ class Config(object):
     Args:
       recipe [module]: module that contains the recipe.
     """
-    recipe_name = recipe.contents['name']
-    cls._recipe_classes[recipe_name] = resources.Recipe(
-        recipe.__doc__, recipe.contents, recipe.args)
+    recipe = resources.Recipe(recipe.__doc__, recipe.contents, recipe.args)
+    cls._recipes_manager.RegisterRecipe(recipe)
 
   @classmethod
   def get_registered_recipes(cls):
@@ -104,7 +107,7 @@ class Config(object):
     Returns:
       list[Recipe]: recipes sorted by name.
     """
-    return sorted(cls._recipe_classes.values(), key=lambda recipe: recipe.name)
+    return cls._recipes_manager.GetRecipes()
 
   @classmethod
   def register_module(cls, module_class):
