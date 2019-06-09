@@ -8,10 +8,10 @@ import subprocess
 import tempfile
 import uuid
 
-from dftimewolf.lib.module import BaseModule
+from dftimewolf.lib import module
 
 
-class LocalPlasoProcessor(BaseModule):
+class LocalPlasoProcessor(module.BaseModule):
   """Processes a list of file paths with Plaso (log2timeline).
 
   input: A list of file paths to process.

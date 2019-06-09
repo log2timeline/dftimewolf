@@ -5,10 +5,10 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from dftimewolf.lib import timesketch_utils
-from dftimewolf.lib.module import BaseModule
+from dftimewolf.lib import module
 
 
-class TimesketchExporter(BaseModule):
+class TimesketchExporter(module.BaseModule):
   """Exports a given set of plaso or CSV files to Timesketch.
 
   input: A list of paths to plaso or CSV files.
