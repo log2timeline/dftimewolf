@@ -15,13 +15,13 @@ from turbinia import output_manager
 from turbinia import TurbiniaException
 from turbinia.message import TurbiniaRequest
 
-from dftimewolf.lib.module import BaseModule
 from dftimewolf.lib import containers
+from dftimewolf.lib import module
 
 # pylint: disable=no-member
 
 
-class TurbiniaProcessor(BaseModule):
+class TurbiniaProcessor(module.BaseModule):
   """Process cloud disks with a remote Turbinia instance.
 
   Attributes:

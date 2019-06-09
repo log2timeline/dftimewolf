@@ -5,10 +5,10 @@ from __future__ import unicode_literals
 
 import os
 
-from dftimewolf.lib.module import BaseModule
+from dftimewolf.lib import module
 
 
-class FilesystemCollector(BaseModule):
+class FilesystemCollector(module.BaseModule):
   """Collect artifacts from the local filesystem.
 
   input: None, takes input from parameters only.
