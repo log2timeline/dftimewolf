@@ -4,7 +4,8 @@
 
 from __future__ import print_function
 
-import locale
+import glob
+import os
 import sys
 
 try:
@@ -23,20 +24,9 @@ except ImportError:
   bdist_rpm = None
 
 version_tuple = (sys.version_info[0], sys.version_info[1])
-if version_tuple[0] not in (2, 3):
-  print('Unsupported Python version: {0:s}.'.format(sys.version))
-  sys.exit(1)
-
-elif version_tuple[0] == 2 and version_tuple < (2, 7):
-  print((
-      'Unsupported Python 2 version: {0:s}, version 2.7 or higher '
-      'required.').format(sys.version))
-  sys.exit(1)
-
-elif version_tuple[0] == 3 and version_tuple < (3, 4):
-  print((
-      'Unsupported Python 3 version: {0:s}, version 3.4 or higher '
-      'required.').format(sys.version))
+if version_tuple[0] != 3 or version_tuple < (3, 6):
+  print(('Unsupported Python version: {0:s}, version 3.6 or higher '
+         'required.').format(sys.version))
   sys.exit(1)
 
 # Change PYTHONPATH to include dftimewolf so that we can get the version.
@@ -139,19 +129,6 @@ else:
 
       return python_spec_file
 
-if version_tuple[0] == 2:
-  encoding = sys.stdin.encoding  # pylint: disable=invalid-name
-
-  # Note that sys.stdin.encoding can be None.
-  if not encoding:
-    encoding = locale.getpreferredencoding()
-
-  # Make sure the default encoding is set correctly otherwise on Python 2
-  # setup.py sdist will fail to include filenames with Unicode characters.
-  reload(sys)  # pylint: disable=undefined-variable
-
-  sys.setdefaultencoding(encoding)  # pylint: disable=no-member
-
 dftimewolf_description = (
     'Digital forensic orchestration.')
 
@@ -182,9 +159,10 @@ setup(
         'console_scripts': ['dftimewolf=dftimewolf.cli.dftimewolf_recipes:main']
     },
     data_files=[
+        ('share/dftimewolf', glob.glob(
+            os.path.join('data', '*'))),
         ('share/doc/dftimewolf', [
             'ACKNOWLEDGEMENTS', 'AUTHORS', 'LICENSE']),
-        ('dftimewolf', ['dftimewolf/config.json'])
     ],
     include_package_data=True,
     zip_safe=False,

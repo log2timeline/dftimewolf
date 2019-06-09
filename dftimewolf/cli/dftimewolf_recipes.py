@@ -68,11 +68,16 @@ if not _ASKING_FOR_HELP:
 
 
 # Try to open config.json and load configuration data from it.
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(
+    os.path.realpath(__file__))))
+config.Config.load_extra(os.path.join(ROOT_DIR, 'data', 'config.json'))
+
 USER_DIR = os.path.expanduser('~')
-config.Config.load_extra(os.path.join(ROOT_DIR, 'config.json'))
 config.Config.load_extra(os.path.join(USER_DIR, '.dftimewolfrc'))
+
 config.Config.load_extra(os.path.join('/', 'etc', 'dftimewolf.conf'))
+config.Config.load_extra(os.path.join(
+    '/', 'usr', 'share', 'dftimewolf', 'dftimewolf.conf'))
 
 config.Config.register_recipe(local_plaso)
 config.Config.register_recipe(grr_artifact_hosts)
@@ -100,8 +105,19 @@ def generate_help():
   return help_text
 
 
+def check_python_version():
+  """Checks that we're running a compatible version of Python."""
+  version_tuple = (sys.version_info[0], sys.version_info[1])
+  if version_tuple[0] != 3 or version_tuple < (3, 6):
+    print(('Unsupported Python version: {0:s}, version 3.6 or higher '
+           'required.').format(sys.version))
+    sys.exit(1)
+
+
 def main():
   """Main function for DFTimewolf."""
+  check_python_version()
+
   parser = argparse.ArgumentParser(
       formatter_class=argparse.RawDescriptionHelpFormatter,
       description=generate_help())
