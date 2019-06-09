@@ -91,6 +91,7 @@ def generate_help():
     help_text += ' {0:<35s}{1:s}\n'.format(recipe.name, short_description)
   return help_text
 
+
 def check_python_version():
   """Checks that we're running a compatible version of Python."""
   version_tuple = (sys.version_info[0], sys.version_info[1])
