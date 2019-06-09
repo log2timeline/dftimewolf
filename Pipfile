@@ -1,0 +1,21 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[dev-packages]
+mock = "*"
+pylint = "*"
+
+[packages]
+six = "*"
+"beautifulsoup4" = "*"
+requests = "*"
+"pypdf2" = "*"
+grr-api-client = "*"
+turbinia = {git = "https://github.com/tomchop/turbinia.git",ref = "dependencies"}
+pyyaml = "*"
+google-cloud-logging = "*"
+
+[requires]
+python_version = "3.6"

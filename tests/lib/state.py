@@ -9,8 +9,12 @@ import unittest
 import mock
 
 from dftimewolf import config
-from dftimewolf.lib import containers, state
+from dftimewolf.lib import containers
+from dftimewolf.lib import resources
+from dftimewolf.lib import state
 from dftimewolf.lib.errors import DFTimewolfError
+from dftimewolf.lib.recipes import manager as recipes_manager
+
 from tests.test_modules import modules, test_recipe
 
 
@@ -18,10 +22,17 @@ class StateTest(unittest.TestCase):
   """Tests for the DFTimewolfState class."""
 
   def setUp(self):
-    """Sets up dummy modules and recipe to be used in tests."""
+    """Registers the dummy modules and recipe to be used in tests."""
     config.Config.register_module(modules.DummyModule1)
     config.Config.register_module(modules.DummyModule2)
-    config.Config.register_recipe(test_recipe)
+
+    self._recipe = resources.Recipe(
+        test_recipe.__doc__, test_recipe.contents, test_recipe.args)
+    recipes_manager.RecipesManager.RegisterRecipe(self._recipe)
+
+  def tearDown(self):
+    """Deregister the recipe used in tests."""
+    recipes_manager.RecipesManager.DeregisterRecipe(self._recipe)
 
   def testLoadRecipe(self):
     """Tests that a recipe can be loaded correctly."""
@@ -95,7 +106,7 @@ class StateTest(unittest.TestCase):
     self.assertTrue(critical)
 
 
-# pylint: disable=no-init,old-style-class
+# pylint: disable=no-init,unnecessary-pass
 class DummyArgs:
   """Fake class to generate an object with an empty __dict__ attribute."""
   pass
