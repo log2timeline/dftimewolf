@@ -49,11 +49,16 @@ config.Config.register_module(grepper.GrepperSearch)
 config.Config.register_module(stackdriver.StackdriverLogsCollector)
 
 # Try to open config.json and load configuration data from it.
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(
+    os.path.realpath(__file__))))
+config.Config.load_extra(os.path.join(ROOT_DIR, 'data', 'config.json'))
+
 USER_DIR = os.path.expanduser('~')
-config.Config.load_extra(os.path.join(ROOT_DIR, 'config.json'))
 config.Config.load_extra(os.path.join(USER_DIR, '.dftimewolfrc'))
+
 config.Config.load_extra(os.path.join('/', 'etc', 'dftimewolf.conf'))
+config.Config.load_extra(os.path.join(
+    '/', 'usr', 'share', 'dftimewolf', 'dftimewolf.conf'))
 
 config.Config.register_recipe(local_plaso)
 config.Config.register_recipe(grr_artifact_hosts)
