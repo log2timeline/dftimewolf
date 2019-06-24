@@ -67,8 +67,8 @@ class ModulesManager(object):
     The module classes are identified based on their class name.
 
     Args:
-      module_classes (list[type]): classes of the modules, which are subclasses of
-          BaseModule.
+      module_classes (list[type]): classes of the modules, which are subclasses
+          of BaseModule.
 
     Raises:
       KeyError: if module class is already set for the corresponding class name.
