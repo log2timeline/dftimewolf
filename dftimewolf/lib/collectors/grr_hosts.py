@@ -489,4 +489,3 @@ class GRRFlowCollector(GRRFlow):
 
 modules_manager.ModulesManager.RegisterModules([
     GRRArtifactCollector, GRRFileCollector, GRRFlowCollector])
-
