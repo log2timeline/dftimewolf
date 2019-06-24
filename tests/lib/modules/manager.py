@@ -34,6 +34,8 @@ class ModulesManagerTest(unittest.TestCase):
     self.assertEqual(
         len(manager.ModulesManager._module_classes), number_of_module_classes)
 
+  # TODO: add tests for GetModuleByName
+
   def testRegisterModules(self):
     """Tests the RegisterModules function."""
     # pylint: disable=protected-access

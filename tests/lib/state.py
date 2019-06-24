@@ -13,6 +13,7 @@ from dftimewolf.lib import containers
 from dftimewolf.lib import resources
 from dftimewolf.lib import state
 from dftimewolf.lib.errors import DFTimewolfError
+from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.recipes import manager as recipes_manager
 
 from tests.test_modules import modules, test_recipe
@@ -23,8 +24,8 @@ class StateTest(unittest.TestCase):
 
   def setUp(self):
     """Registers the dummy modules and recipe to be used in tests."""
-    config.Config.register_module(modules.DummyModule1)
-    config.Config.register_module(modules.DummyModule2)
+    modules_manager.ModulesManager.RegisterModules([
+        modules.DummyModule1, modules.DummyModule2])
 
     self._recipe = resources.Recipe(
         test_recipe.__doc__, test_recipe.contents, test_recipe.args)
@@ -33,6 +34,9 @@ class StateTest(unittest.TestCase):
   def tearDown(self):
     """Deregister the recipe used in tests."""
     recipes_manager.RecipesManager.DeregisterRecipe(self._recipe)
+
+    modules_manager.ModulesManager.DeregisterModule(modules.DummyModule1)
+    modules_manager.ModulesManager.DeregisterModule(modules.DummyModule2)
 
   def testLoadRecipe(self):
     """Tests that a recipe can be loaded correctly."""
