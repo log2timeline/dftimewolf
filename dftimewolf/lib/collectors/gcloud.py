@@ -8,6 +8,7 @@ from oauth2client.client import ApplicationDefaultCredentialsError
 from turbinia.lib import libcloudforensics
 
 from dftimewolf.lib import module
+from dftimewolf.lib.modules import manager as modules_manager
 
 
 class GoogleCloudCollector(module.BaseModule):
@@ -175,3 +176,6 @@ class GoogleCloudCollector(module.BaseModule):
             "GCP resource not found. Maybe a typo in the project / instance / "
             "disk name?")
       self.state.add_error(err, critical=True)
+
+
+modules_manager.ModulesManager.RegisterModule(GoogleCloudCollector)

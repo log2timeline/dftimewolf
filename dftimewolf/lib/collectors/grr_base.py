@@ -3,6 +3,7 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import abc
 import tempfile
 import time
 
@@ -12,8 +13,7 @@ from grr_api_client import errors as grr_errors
 from dftimewolf.lib import module
 
 
-# This class does not implement process() since it is a base class.
-class GRRBaseModule(module.BaseModule):  # pylint: disable=abstract-method
+class GRRBaseModule(module.BaseModule):
   """Base module for GRR hunt and flow modules.
 
   Attributes:
@@ -25,6 +25,11 @@ class GRRBaseModule(module.BaseModule):  # pylint: disable=abstract-method
   _CHECK_APPROVAL_INTERVAL_SEC = 10
 
   def __init__(self, state):
+    """Initializes a GRR hunt or flow module.
+
+    Args:
+      state (DFTimewolfState): a state.
+    """
     super(GRRBaseModule, self).__init__(state)
     self.reason = None
     self.grr_api = None
@@ -32,8 +37,9 @@ class GRRBaseModule(module.BaseModule):  # pylint: disable=abstract-method
     self.output_path = None
 
   # pylint: disable=arguments-differ
-  def setup(self, reason, grr_server_url, grr_username, grr_password,
-            approvers=None, verify=True):
+  def setup(
+      self, reason, grr_server_url, grr_username, grr_password, approvers=None,
+      verify=True):
     """Initializes a GRR hunt result collector.
 
     Args:
@@ -95,4 +101,13 @@ class GRRBaseModule(module.BaseModule):  # pylint: disable=abstract-method
             grr_object, self.approvers, self.reason))
 
   def cleanup(self):
-    pass
+    """Cleans up module output to prepare it for the next module."""
+    return
+
+  @abc.abstractmethod
+  def process(self):
+    """Processes input and builds the module's output attribute.
+
+    Modules take input information and process it into output information,
+    which can in turn be ingested as input information by other modules.
+    """
