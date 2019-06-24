@@ -9,6 +9,11 @@ import os
 import signal
 import sys
 
+# Make dftimewolf faster by only importing modules if we're not actually
+# just asking for help
+_ASKING_FOR_HELP = '-h' in sys.argv or '--help' in sys.argv or len(sys.argv) < 2
+
+# pylint: disable=wrong-import-position
 from dftimewolf import config
 
 from dftimewolf.cli.recipes import gcp_turbinia
@@ -26,27 +31,42 @@ from dftimewolf.cli.recipes import stackdriver_collect
 
 from dftimewolf.lib import utils
 
-# Import the collector modules.
-from dftimewolf.lib import collectors  # pylint: disable=unused-import
-
-from dftimewolf.lib.exporters import timesketch
-from dftimewolf.lib.exporters import local_filesystem
-from dftimewolf.lib.processors import localplaso
-from dftimewolf.lib.processors import turbinia
-from dftimewolf.lib.processors import grepper
+if not _ASKING_FOR_HELP:
+  # Import the collector modules.
+  from dftimewolf.lib import collectors  # pylint: disable=unused-import
+  from dftimewolf.lib.collectors import filesystem
+  from dftimewolf.lib.collectors import grr_hosts
+  from dftimewolf.lib.collectors import grr_hunt
+  from dftimewolf.lib.collectors import gcloud
+  from dftimewolf.lib.exporters import timesketch
+  from dftimewolf.lib.exporters import local_filesystem
+  from dftimewolf.lib.processors import localplaso
+  from dftimewolf.lib.processors import turbinia
+  from dftimewolf.lib.processors import grepper
+  from dftimewolf.lib.collectors import gcloud
+  from dftimewolf.lib.collectors import stackdriver
 
 from dftimewolf.lib.state import DFTimewolfState
 
 signal.signal(signal.SIGINT, utils.signal_handler)
 
-config.Config.register_module(localplaso.LocalPlasoProcessor)
-config.Config.register_module(timesketch.TimesketchExporter)
+if not _ASKING_FOR_HELP:
+  config.Config.register_module(filesystem.FilesystemCollector)
+  config.Config.register_module(localplaso.LocalPlasoProcessor)
+  config.Config.register_module(gcloud.GoogleCloudCollector)
 
-config.Config.register_module(timesketch.TimesketchExporter)
-config.Config.register_module(local_filesystem.LocalFilesystemCopy)
-config.Config.register_module(turbinia.TurbiniaProcessor)
-config.Config.register_module(grepper.GrepperSearch)
-config.Config.register_module(stackdriver.StackdriverLogsCollector)
+  config.Config.register_module(grr_hosts.GRRArtifactCollector)
+  config.Config.register_module(grr_hosts.GRRFileCollector)
+  config.Config.register_module(grr_hosts.GRRFlowCollector)
+  config.Config.register_module(grr_hunt.GRRHuntArtifactCollector)
+  config.Config.register_module(grr_hunt.GRRHuntFileCollector)
+  config.Config.register_module(grr_hunt.GRRHuntDownloader)
+
+  config.Config.register_module(timesketch.TimesketchExporter)
+  config.Config.register_module(local_filesystem.LocalFilesystemCopy)
+  config.Config.register_module(turbinia.TurbiniaProcessor)
+  config.Config.register_module(grepper.GrepperSearch)
+  config.Config.register_module(stackdriver.StackdriverLogsCollector)
 
 # Try to open config.json and load configuration data from it.
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(
