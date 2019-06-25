@@ -5,10 +5,11 @@ from __future__ import unicode_literals
 
 import os
 
-from dftimewolf.lib.module import BaseModule
+from dftimewolf.lib import module
+from dftimewolf.lib.modules import manager as modules_manager
 
 
-class FilesystemCollector(BaseModule):
+class FilesystemCollector(module.BaseModule):
   """Collect artifacts from the local filesystem.
 
   input: None, takes input from parameters only.
@@ -44,3 +45,6 @@ class FilesystemCollector(BaseModule):
             'Path {0:s} does not exist'.format(str(path)), critical=False)
     if not self.state.output:
       self.state.add_error('No valid paths collected, bailing', critical=True)
+
+
+modules_manager.ModulesManager.RegisterModule(FilesystemCollector)

@@ -3,16 +3,17 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import os
-import tempfile
-import re
 import mimetypes
+import os
+import re
+import tempfile
+
 import PyPDF2
 
-from dftimewolf.lib.module import BaseModule
+from dftimewolf.lib import module
 
 
-class GrepperSearch(BaseModule):
+class GrepperSearch(module.BaseModule):
   """Processes a list of file paths with to search for
   specific keywords.
 
@@ -67,11 +68,11 @@ class GrepperSearch(BaseModule):
                 self._final_output = output
               print(output)
       except OSError as exception:
-        self.state.add_error(exception, critical=True)
+        self.state.add_error(str(exception), critical=True)
         return
       # Catch all remaining errors since we want to gracefully report them
       except Exception as exception:  # pylint: disable=broad-except
-        self.state.add_error(exception, critical=True)
+        self.state.add_error(str(exception), critical=True)
         return
 
   def grepPDF(self, path):

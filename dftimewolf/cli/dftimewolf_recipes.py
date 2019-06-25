@@ -7,7 +7,13 @@ from __future__ import unicode_literals
 import argparse
 import os
 import signal
+import sys
 
+# Make dftimewolf faster by only importing modules if we're not actually
+# just asking for help
+_ASKING_FOR_HELP = '-h' in sys.argv or '--help' in sys.argv or len(sys.argv) < 2
+
+# pylint: disable=wrong-import-position
 from dftimewolf import config
 
 from dftimewolf.cli.recipes import gcp_turbinia
@@ -21,49 +27,62 @@ from dftimewolf.cli.recipes import grr_huntresults_plaso_timesketch
 from dftimewolf.cli.recipes import local_plaso
 from dftimewolf.cli.recipes import timesketch_upload
 from dftimewolf.cli.recipes import artifact_grep
+from dftimewolf.cli.recipes import stackdriver_collect
 from dftimewolf.cli.recipes import scp_rec
 
 from dftimewolf.lib import utils
 
-from dftimewolf.lib.collectors import filesystem
-from dftimewolf.lib.collectors import grr_hosts
-from dftimewolf.lib.collectors import grr_hunt
-from dftimewolf.lib.exporters import timesketch
-from dftimewolf.lib.exporters import local_filesystem
-from dftimewolf.lib.exporters import scp_ex
-from dftimewolf.lib.processors import localplaso
-from dftimewolf.lib.processors import turbinia
-from dftimewolf.lib.processors import grepper
-from dftimewolf.lib.collectors.gcloud import GoogleCloudCollector
+if not _ASKING_FOR_HELP:
+  # Import the collector modules.
+  from dftimewolf.lib import collectors  # pylint: disable=unused-import
+  from dftimewolf.lib.collectors import filesystem
+  from dftimewolf.lib.collectors import grr_hosts
+  from dftimewolf.lib.collectors import grr_hunt
+  from dftimewolf.lib.collectors import gcloud
+  from dftimewolf.lib.exporters import timesketch
+  from dftimewolf.lib.exporters import local_filesystem
+  from dftimewolf.lib.exporters import scp_ex
+  from dftimewolf.lib.processors import localplaso
+  from dftimewolf.lib.processors import turbinia
+  from dftimewolf.lib.processors import grepper
+  from dftimewolf.lib.collectors import gcloud
+  from dftimewolf.lib.collectors import stackdriver
 
 from dftimewolf.lib.state import DFTimewolfState
 
 signal.signal(signal.SIGINT, utils.signal_handler)
 
-config.Config.register_module(filesystem.FilesystemCollector)
-config.Config.register_module(localplaso.LocalPlasoProcessor)
-config.Config.register_module(timesketch.TimesketchExporter)
-config.Config.register_module(GoogleCloudCollector)
+if not _ASKING_FOR_HELP:
+  config.Config.register_module(filesystem.FilesystemCollector)
+  config.Config.register_module(localplaso.LocalPlasoProcessor)
+  config.Config.register_module(gcloud.GoogleCloudCollector)
 
-config.Config.register_module(grr_hosts.GRRArtifactCollector)
-config.Config.register_module(grr_hosts.GRRFileCollector)
-config.Config.register_module(grr_hosts.GRRFlowCollector)
-config.Config.register_module(grr_hunt.GRRHuntArtifactCollector)
-config.Config.register_module(grr_hunt.GRRHuntFileCollector)
-config.Config.register_module(grr_hunt.GRRHuntDownloader)
+  config.Config.register_module(grr_hosts.GRRArtifactCollector)
+  config.Config.register_module(grr_hosts.GRRFileCollector)
+  config.Config.register_module(grr_hosts.GRRFlowCollector)
+  config.Config.register_module(grr_hunt.GRRHuntArtifactCollector)
+  config.Config.register_module(grr_hunt.GRRHuntFileCollector)
+  config.Config.register_module(grr_hunt.GRRHuntDownloader)
 
-config.Config.register_module(timesketch.TimesketchExporter)
-config.Config.register_module(local_filesystem.LocalFilesystemCopy)
-config.Config.register_module(turbinia.TurbiniaProcessor)
-config.Config.register_module(grepper.GrepperSearch)
-config.Config.register_module(scp_ex.Scp)
+  config.Config.register_module(timesketch.TimesketchExporter)
+  config.Config.register_module(local_filesystem.LocalFilesystemCopy)
+  config.Config.register_module(turbinia.TurbiniaProcessor)
+  config.Config.register_module(grepper.GrepperSearch)
+  config.Config.register_module(stackdriver.StackdriverLogsCollector)
+  config.Config.register_module(scp_ex.Scp)
+
 
 # Try to open config.json and load configuration data from it.
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(
+    os.path.realpath(__file__))))
+config.Config.load_extra(os.path.join(ROOT_DIR, 'data', 'config.json'))
+
 USER_DIR = os.path.expanduser('~')
-config.Config.load_extra(os.path.join(ROOT_DIR, 'config.json'))
 config.Config.load_extra(os.path.join(USER_DIR, '.dftimewolfrc'))
+
 config.Config.load_extra(os.path.join('/', 'etc', 'dftimewolf.conf'))
+config.Config.load_extra(os.path.join(
+    '/', 'usr', 'share', 'dftimewolf', 'dftimewolf.conf'))
 
 config.Config.register_recipe(local_plaso)
 config.Config.register_recipe(grr_artifact_hosts)
@@ -76,7 +95,9 @@ config.Config.register_recipe(timesketch_upload)
 config.Config.register_recipe(gcp_turbinia)
 config.Config.register_recipe(gcp_turbinia_import)
 config.Config.register_recipe(artifact_grep)
+config.Config.register_recipe(stackdriver_collect)
 config.Config.register_recipe(scp_rec)
+
 
 # TODO(tomchop) Change the print statements by a better logging / display system
 
@@ -91,8 +112,19 @@ def generate_help():
   return help_text
 
 
+def check_python_version():
+  """Checks that we're running a compatible version of Python."""
+  version_tuple = (sys.version_info[0], sys.version_info[1])
+  if version_tuple[0] != 3 or version_tuple < (3, 6):
+    print(('Unsupported Python version: {0:s}, version 3.6 or higher '
+           'required.').format(sys.version))
+    sys.exit(1)
+
+
 def main():
   """Main function for DFTimewolf."""
+  check_python_version()
+
   parser = argparse.ArgumentParser(
       formatter_class=argparse.RawDescriptionHelpFormatter,
       description=generate_help())

@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """Class definition for DFTimewolf modules."""
 
-import threading
+import abc
 
 
-class BaseModule(threading.Thread):
-  """Base class for Modules.
+class BaseModule(object):
+  """Base class for modules.
 
   Attributes:
     critical: Boolean indicating whether the execution of this module is
@@ -16,29 +16,29 @@ class BaseModule(threading.Thread):
   """
 
   def __init__(self, state, critical=False):
-    """Initialize the base collector object.
+    """Initialize a module.
 
     Args:
-      state: a DFTimewolfState object.
-      critical: Whether the module is critical or not. If True and the module
-          encounters an error, then the whole recipe will fail.
+      state (DFTimewolfState): a state.
+      critical (Optional[bool]): True if the module is critical, which causes
+          the entire recipe to fail if the module encounters an error.
     """
     super(BaseModule, self).__init__()
     self.critical = critical
     self.state = state
 
-  def setup(self, *args, **kwargs):
-    """Sets up necessary module configuration options."""
-    raise NotImplementedError
-
+  @abc.abstractmethod
   def cleanup(self):
     """Cleans up module output to prepare it for the next module."""
-    raise NotImplementedError
 
+  @abc.abstractmethod
   def process(self):
     """Processes input and builds the module's output attribute.
 
     Modules take input information and process it into output information,
     which can in turn be ingested as input information by other modules.
     """
-    raise NotImplementedError
+
+  @abc.abstractmethod
+  def setup(self, *args, **kwargs):
+    """Sets up necessary module configuration options."""

@@ -7,13 +7,16 @@ import json
 import sys
 
 from dftimewolf.lib import resources
+from dftimewolf.lib.modules import manager as modules_manager
+from dftimewolf.lib.recipes import manager as recipes_manager
 
 
 class Config(object):
   """Class that handles DFTimewolf's configuration parameters."""
 
-  _recipe_classes = {}
-  _module_classes = {}
+  # TODO: make this an instance instead of a class after moving recipes
+  # to JSON files.
+  _recipes_manager = recipes_manager.RecipesManager
 
   _extra_config = {}
 
@@ -93,9 +96,8 @@ class Config(object):
     Args:
       recipe [module]: module that contains the recipe.
     """
-    recipe_name = recipe.contents['name']
-    cls._recipe_classes[recipe_name] = resources.Recipe(
-        recipe.__doc__, recipe.contents, recipe.args)
+    recipe = resources.Recipe(recipe.__doc__, recipe.contents, recipe.args)
+    cls._recipes_manager.RegisterRecipe(recipe)
 
   @classmethod
   def get_registered_recipes(cls):
@@ -104,25 +106,26 @@ class Config(object):
     Returns:
       list[Recipe]: recipes sorted by name.
     """
-    return sorted(cls._recipe_classes.values(), key=lambda recipe: recipe.name)
+    return cls._recipes_manager.GetRecipes()
 
   @classmethod
   def register_module(cls, module_class):
     """Registers a dftimewolf collector.
 
     Args:
-      module_class: Python class extending BaseModule.
+      module_class [type]: the module class, which is a subclass of BaseModule.
     """
-    cls._module_classes[module_class.__name__] = module_class
+    modules_manager.ModulesManager.RegisterModule(module_class)
 
   @classmethod
   def get_module(cls, name):
-    """Fetches a previously registered collector.
+    """Fetches a previously registered module.
 
     Args:
-      name: str, name with which the collector was registered.
+      name [str]: name with which the module was registered.
 
     Returns:
-      Corresponding class extending BaseCollector.
+      type: the module class, which is a subclass of BaseModule, or None if
+          no corresponding module was found.
     """
-    return cls._module_classes[name]
+    return modules_manager.ModulesManager.GetModuleByName(name)
