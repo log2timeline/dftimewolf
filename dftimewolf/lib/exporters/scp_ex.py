@@ -4,7 +4,6 @@
 from __future__ import unicode_literals
 
 import subprocess
-import getpass
 
 from dftimewolf.lib.module import BaseModule
 
