@@ -16,13 +16,17 @@ class Scp(BaseModule):
 
   def __init__(self, state):
     super(Scp, self).__init__(state)
-    self._target_directory = None
+    self._paths = None
+    self._user = None
+    self._hostname = None
+    self._destination = None
+    self._id_file = None
 
-  def setup(self, paths, destination, user, hostname, id_file):
+  def setup(self, # pylint: disable=arguments-differ
+            paths, destination, user, hostname, id_file):
     """Sets up the _target_directory attribute.
 
     Args:
-      target_directory: Directory in which collected files will be dumped.
       paths: List of files to copy.
       user: Username at destination host.
       hostname: Hostname of destination.
@@ -45,19 +49,21 @@ class Scp(BaseModule):
     """copies the list of paths to the destination on user@hostname"""
     dest = self._destination
     if self._hostname:
-      dest = "{0:s}@{1:s}:{2:s}".format(self._user, self._hostname, self._destination)
+      dest = "{0:s}@{1:s}:{2:s}".format(self._user, self._hostname,
+                                        self._destination)
     cmd = ["scp"]
     cmd.extend(self._paths)
     cmd.append(dest)
     ret = subprocess.call(cmd)
     if ret:
-      self.state.add_error("Failed copying {0:s}".format(self._paths), critical=False)
+      self.state.add_error("Failed copying {0:s}".format(self._paths),
+                           critical=False)
 
   def _ssh_available(self):
     """returns true if host can be reached, false otherwise"""
     if not self._hostname:
       return True
-    command = ["ssh", "-q", "-l", self._user ,self._hostname, "true"]
+    command = ["ssh", "-q", "-l", self._user, self._hostname, "true"]
     if self._id_file:
       command.extend(["-i", self._id_file])
     ret = subprocess.call(command)
