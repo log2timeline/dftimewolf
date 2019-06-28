@@ -1,0 +1,29 @@
+{
+    "name": "timesketch_upload",
+    "description": [
+        "Upload a CSV file or Plaso file to Timesketch."
+    ],
+    "short_description": "Uploads a .plaso file to Timesketch.",
+    "modules": [{
+        "wants": [],
+        "name": "FilesystemCollector",
+        "args": {
+            "paths": "@files"
+        }
+    }, {
+        "wants": ["FilesystemCollector"],
+        "name": "TimesketchExporter",
+        "args": {
+            "endpoint": "@ts_endpoint",
+            "username": "@ts_username",
+            "password": "@ts_password",
+            "incident_id": "@incident_id",
+            "sketch_id": "@sketch_id"
+        }
+    }],
+    "args": [
+        ["files", "Comma-separated list of paths to CSV files or Plaso storage files", null],
+        ["--sketch_id", "Sketch to which the timeline should be added", null],
+        ["--incident_id", "Incident ID (used for Timesketch description)", null]
+    ]
+}
