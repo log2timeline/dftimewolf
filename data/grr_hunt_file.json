@@ -1,0 +1,33 @@
+{
+    "name": "grr_hunt_file",
+    "description": [
+        "Start a GRR file hunt.",
+        "",
+        "Consists of a single collector that starts the hunt and provides a Hunt ID to the user. Feed the Hunt ID to grr_huntresults_plaso_timesketch to process them through plaso and send them to Timesketch."
+    ],
+    "short_description": "Starts a GRR hunt for a list of files.",
+    "modules": [{
+        "wants": [],
+        "name": "GRRHuntFileCollector",
+        "args": {
+            "file_path_list": "@file_path_list",
+            "reason": "@reason",
+            "grr_server_url": "@grr_server_url",
+            "grr_username": "@grr_username",
+            "grr_password": "@grr_password",
+            "approvers": "@approvers",
+            "verify": "@verify"
+        }
+    }],
+    "processors": [],
+    "exporters": [],
+    "args":  [
+        ["file_path_list", "Comma-separated list of file paths to hunt for", null],
+        ["reason", "Reason for collection", null],
+        ["--approvers", "Emails for GRR approval request", null],
+        ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
+        ["--verify", "Whether to verify the GRR TLS certificate", true],
+        ["--grr_username", "GRR username", "admin"],
+        ["--grr_password", "GRR password", "admin"]
+    ]
+}
