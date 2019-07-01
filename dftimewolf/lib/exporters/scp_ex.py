@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Collect artifacts from the local filesystem."""
+"""Send files using scp."""
 
 from __future__ import unicode_literals
 
@@ -12,6 +12,13 @@ class Scp(BaseModule):
 
   input: List of paths to copy the files from.
   output: The directory in which the files have been copied.
+
+  Attributes:
+    _paths (list[str]): List of files to copy.
+    _user (str): Username at destination host.
+    _hostname (str): Hostname of destination.
+    _destination (str): Path to destination on host.
+    _id_file (str): Identity file to use.
   """
 
   def __init__(self, state):
@@ -27,17 +34,17 @@ class Scp(BaseModule):
     """Sets up the _target_directory attribute.
 
     Args:
-      paths: List of files to copy.
-      user: Username at destination host.
-      hostname: Hostname of destination.
-      destination: Path to destination on host.
-      id_file: Identity file to use.
+      paths (list[str]): List of files to copy.
+      user (str): Username at destination host.
+      hostname (str): Hostname of destination.
+      destination (str): Path to destination on host.
+      id_file (str): Identity file to use.
     """
+    self._destination = destination
+    self._hostname = hostname
+    self._id_file = id_file
     self._paths = paths.split(",")
     self._user = user
-    self._hostname = hostname
-    self._destination = destination
-    self._id_file = id_file
 
     if not self._ssh_available():
       self.state.add_error("Unable to connect to host.", critical=True)
@@ -46,7 +53,7 @@ class Scp(BaseModule):
     pass
 
   def process(self):
-    """copies the list of paths to the destination on user@hostname"""
+    """Copies the list of paths to the destination on user@hostname"""
     dest = self._destination
     if self._hostname:
       dest = "{0:s}@{1:s}:{2:s}".format(self._user, self._hostname,
@@ -60,7 +67,11 @@ class Scp(BaseModule):
                            critical=False)
 
   def _ssh_available(self):
-    """returns true if host can be reached, false otherwise"""
+    """Checks that the SSH authentication succeeds on a given host.
+
+    Returns:
+      True if host can be reached, false otherwise.
+    """
     if not self._hostname:
       return True
     command = ["ssh", "-q", "-l", self._user, self._hostname, "true"]
