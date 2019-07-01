@@ -3,11 +3,36 @@
 
 from __future__ import unicode_literals
 
+import io
+import json
+
+from dftimewolf.lib import resources
+
 
 class RecipesManager(object):
   """Recipes manager."""
 
   _recipes = {}
+
+  @classmethod
+  def _ReadRecipeFromFileObject(cls, file_object):
+    """Reads a recipe from a JSON file-like object.
+
+    Args:
+      file_object (file): JSON file-like object that contains the recipe.
+
+    Returns:
+      Recipe: recipe.
+    """
+    json_dict = json.load(file_object)
+
+    description = json_dict['description']
+    del json_dict['description']
+
+    args = json_dict['args']
+    del json_dict['args']
+
+    return resources.Recipe(description, json_dict, args)
 
   @classmethod
   def DeregisterRecipe(cls, recipe):
@@ -35,6 +60,18 @@ class RecipesManager(object):
       list[Recipe]: the recipes sorted by name.
     """
     return sorted(cls._recipes.values(), key=lambda recipe: recipe.name)
+
+  @classmethod
+  def ReadRecipeFromFile(cls, path):
+    """Reads a recipe from a JSON file.
+
+    Args:
+      path (str): path of the recipe JSON file.
+    """
+    with io.open(path, 'r', encoding='utf-8') as file_object:
+      recipe = cls._ReadRecipeFromFileObject(file_object)
+
+    cls.RegisterRecipe(recipe)
 
   @classmethod
   def RegisterRecipe(cls, recipe):
