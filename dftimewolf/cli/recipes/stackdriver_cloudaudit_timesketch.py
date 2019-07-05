@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-"""Puts GCE logs into Stackdriver."""
+"""Loads GCP Cloud Audit Logs into Timesketch."""
 
 from __future__ import unicode_literals
 
 _short_description = (
-    'Collects GCE stackdriver cloud audit logs from a project.')
+    'Loads GCP Cloud Audit Logs from a GCP project into Timesketch.')
 
 contents = {
     'name':

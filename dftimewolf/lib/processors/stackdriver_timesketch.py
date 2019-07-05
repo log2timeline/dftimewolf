@@ -49,7 +49,7 @@ class StackdriverTimesketch(BaseModule):
     if resource:
       labels = resource.get('labels', None)
       if labels:
-        for attribute, value in iter(labels.items()):
+        for attribute, value in labels.items():
           timesketch_attribute = 'resource_label_{0:s}'.format(attribute)
           timesketch_record[timesketch_attribute] = value
 
