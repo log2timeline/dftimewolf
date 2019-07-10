@@ -88,9 +88,6 @@ class TurbiniaProcessor(module.BaseModule):
       self.state.add_error(e, critical=True)
       return
 
-  def cleanup(self):
-    pass
-
   def _print_task_data(self, task):
     """Pretty-prints task data.
 

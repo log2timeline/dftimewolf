@@ -100,10 +100,6 @@ class GRRBaseModule(module.BaseModule):
         print('{0!s}: approval request sent to: {1!s} (reason: {2:s})'.format(
             grr_object, self.approvers, self.reason))
 
-  def cleanup(self):
-    """Cleans up module output to prepare it for the next module."""
-    return
-
   @abc.abstractmethod
   def process(self):
     """Processes input and builds the module's output attribute.

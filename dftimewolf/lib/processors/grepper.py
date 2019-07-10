@@ -36,9 +36,6 @@ class GrepperSearch(module.BaseModule):
     self._keywords = keywords
     self._output_path = tempfile.mkdtemp()
 
-  def cleanup(self):
-    pass
-
   def process(self):
     """Execute the grep command"""
 

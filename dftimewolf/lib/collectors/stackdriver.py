@@ -35,9 +35,6 @@ logging.entries.ProtobufEntry.to_api_repr = custom_to_api_repr
 class StackdriverLogsCollector(module.BaseModule):
   """Collector for Stackdriver logs."""
 
-  def cleanup(self):
-    pass
-
   def __init__(self, state):
     """Initializes a Stackdriver logs collector."""
     super(StackdriverLogsCollector, self).__init__(state)

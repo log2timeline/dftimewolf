@@ -32,9 +32,6 @@ class FilesystemCollector(module.BaseModule):
     else:
       self._paths = [path.strip() for path in paths.strip().split(',')]
 
-  def cleanup(self):
-    pass
-
   def process(self):
     """Checks whether the paths exists and updates the state accordingly."""
     for path in self._paths:

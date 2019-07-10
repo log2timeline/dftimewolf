@@ -19,7 +19,7 @@ object that is attached to each module.
 
 Modules all extend the `BaseModule`
 [class](https://github.com/log2timeline/dftimewolf/blob/master/dftimewolf/lib/module.py),
-and implement the `setup`, `process` and `cleanup` methods.
+and implement the `setup`, `process` and `CleanUp` methods.
 
 `setup` is what is called with the recipe's modified arguments. Actions here
 should include things that have low overhead and can be accomplished
@@ -33,7 +33,7 @@ module's output as you go. You can access a previous module's output (i.e. your
 input) using `self.state.input` and manipulate the current module's output using
 `self.state.output`.
 
-`cleanup` is mostly optional, in case you manipulated the state in a way that
+`CleanUp` is mostly optional, in case you manipulated the state in a way that
 needs post-processing (e.g. adding a "# out of #" description to the module's
 output)
 
@@ -72,7 +72,7 @@ It has a couple of useful methods:
     errors were added, dftimewolf will stop the execution of the recipe and
     exit. Non-critical errors will just be displayed and execution will
     continue.
-*   `cleanup`: Resets the state: moves the output data to the input attribute
+*   `CleanUp`: Resets the state: moves the output data to the input attribute
     and clears the output for the next Module. Moves remaining (and therefore
     non-critical) errors to global_errors for later processing.
 
