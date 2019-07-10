@@ -256,7 +256,7 @@ class GRRArtifactCollector(GRRFlow):
     self.keepalive = False
 
   # pylint: disable=arguments-differ,too-many-arguments
-  def setup(self,
+  def SetUp(self,
             hosts, artifacts, extra_artifacts, use_tsk,
             reason, grr_server_url, grr_username, grr_password, approvers=None,
             verify=True):
@@ -274,7 +274,7 @@ class GRRArtifactCollector(GRRFlow):
       approvers: list of GRR approval recipients.
       verify: boolean, whether to verify the GRR server's x509 certificate.
     """
-    super(GRRArtifactCollector, self).setup(
+    super(GRRArtifactCollector, self).SetUp(
         reason, grr_server_url, grr_username, grr_password, approvers=approvers,
         verify=verify)
 
@@ -365,7 +365,7 @@ class GRRFileCollector(GRRFlow):
     self.keepalive = False
 
   # pylint: disable=arguments-differ
-  def setup(self,
+  def SetUp(self,
             hosts, files, use_tsk,
             reason, grr_server_url, grr_username, grr_password, approvers=None,
             verify=True):
@@ -382,7 +382,7 @@ class GRRFileCollector(GRRFlow):
       approvers: list of GRR approval recipients.
       verify: boolean, whether to verify the GRR server's x509 certificate.
     """
-    super(GRRFileCollector, self).setup(
+    super(GRRFileCollector, self).SetUp(
         reason, grr_server_url, grr_username, grr_password,
         approvers=approvers, verify=verify)
 
@@ -451,7 +451,7 @@ class GRRFlowCollector(GRRFlow):
     self.host = None
 
   # pylint: disable=arguments-differ
-  def setup(self,
+  def SetUp(self,
             host, flow_id,
             reason, grr_server_url, grr_username, grr_password, approvers=None,
             verify=True):
@@ -467,7 +467,7 @@ class GRRFlowCollector(GRRFlow):
       approvers: list of GRR approval recipients.
       verify: boolean, whether to verify the GRR server's x509 certificate.
     """
-    super(GRRFlowCollector, self).setup(
+    super(GRRFlowCollector, self).SetUp(
         reason, grr_server_url, grr_username, grr_password,
         approvers=approvers, verify=verify)
     self.flow_id = flow_id

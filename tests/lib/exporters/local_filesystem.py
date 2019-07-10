@@ -55,7 +55,7 @@ class LocalFileSystemTest(unittest.TestCase):
     ]
     mock_mkdtemp.return_value = '/fake/random'
     local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
-    local_filesystem_copy.setup()
+    local_filesystem_copy.SetUp()
     local_filesystem_copy.Process()
     mock_copytree.assert_has_calls([
         mock.call('/fake/evidence_directory/file1', '/fake/random/file1'),
@@ -69,7 +69,7 @@ class LocalFileSystemTest(unittest.TestCase):
     mock_mkdtemp.return_value = '/fake/random'
     test_state = state.DFTimewolfState(config.Config)
     local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
-    local_filesystem_copy.setup()
+    local_filesystem_copy.SetUp()
     # pylint: disable=protected-access
     self.assertEqual(local_filesystem_copy._target_directory, '/fake/random')
 
@@ -79,7 +79,7 @@ class LocalFileSystemTest(unittest.TestCase):
     mock_makedirs.side_effect = OSError('FAKEERROR')
     test_state = state.DFTimewolfState(config.Config)
     local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
-    local_filesystem_copy.setup(target_directory="/nonexistent")
+    local_filesystem_copy.SetUp(target_directory="/nonexistent")
     self.assertEqual(test_state.errors[0][1], True)
 
   @mock.patch('os.makedirs')
@@ -88,7 +88,7 @@ class LocalFileSystemTest(unittest.TestCase):
     mock_makedirs.return_value = True
     test_state = state.DFTimewolfState(config.Config)
     local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
-    local_filesystem_copy.setup(target_directory='/nonexistent')
+    local_filesystem_copy.SetUp(target_directory='/nonexistent')
     # pylint: disable=protected-access
     self.assertEqual(local_filesystem_copy._target_directory, '/nonexistent')
 

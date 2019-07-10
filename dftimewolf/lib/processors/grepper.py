@@ -27,7 +27,7 @@ class GrepperSearch(module.BaseModule):
     self._output_path = None
     self._final_output = None
 
-  def setup(self, keywords=None):  # pylint: disable=arguments-differ
+  def SetUp(self, keywords=None):  # pylint: disable=arguments-differ
     """Sets up the _keywords attribute.
 
     Args:

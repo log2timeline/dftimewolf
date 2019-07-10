@@ -37,7 +37,7 @@ class GRRBaseModule(module.BaseModule):
     self.output_path = None
 
   # pylint: disable=arguments-differ
-  def setup(
+  def SetUp(
       self, reason, grr_server_url, grr_username, grr_password, approvers=None,
       verify=True):
     """Initializes a GRR hunt result collector.

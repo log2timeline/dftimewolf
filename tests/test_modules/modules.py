@@ -13,7 +13,7 @@ class DummyModule1(BaseModule):
     super(DummyModule1, self).__init__(state)
     self.name = 'Dummy1'
 
-  def setup(self):  # pylint: disable=arguments-differ
+  def SetUp(self):  # pylint: disable=arguments-differ
     """Dummy setup function."""
     print(self.name + ' Setup!')
 
@@ -29,7 +29,7 @@ class DummyModule2(BaseModule):
     super(DummyModule2, self).__init__(state)
     self.name = 'Dummy2'
 
-  def setup(self):  # pylint: disable=arguments-differ
+  def SetUp(self):  # pylint: disable=arguments-differ
     """Dummy setup function."""
     print(self.name + ' Setup!')
 

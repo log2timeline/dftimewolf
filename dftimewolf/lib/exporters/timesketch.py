@@ -21,7 +21,7 @@ class TimesketchExporter(module.BaseModule):
     self.incident_id = None
     self.sketch_id = None
 
-  def setup(self,  # pylint: disable=arguments-differ
+  def SetUp(self,  # pylint: disable=arguments-differ
             endpoint=None,
             username=None,
             password=None,

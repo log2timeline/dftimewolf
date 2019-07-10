@@ -42,7 +42,7 @@ class StackdriverLogsCollector(module.BaseModule):
     self._filter_expression = None
 
   # pylint: disable=arguments-differ
-  def setup(self, project_name, filter_expression):
+  def SetUp(self, project_name, filter_expression):
     """Sets up a a Stackdriver logs collector.
 
     Args:
