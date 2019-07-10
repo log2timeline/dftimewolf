@@ -33,7 +33,7 @@ class BaseModule(object):
     return
 
   @abc.abstractmethod
-  def process(self):
+  def Process(self):
     """Processes input and builds the module's output attribute.
 
     Modules take input information and process it into output information,

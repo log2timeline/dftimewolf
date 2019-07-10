@@ -52,7 +52,7 @@ class StackdriverLogsCollector(module.BaseModule):
     self._project_name = project_name
     self._filter_expression = filter_expression
 
-  def process(self):
+  def Process(self):
     """Copies logs from a cloud project."""
     descending = logging.DESCENDING
 

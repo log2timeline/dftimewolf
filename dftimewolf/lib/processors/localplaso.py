@@ -32,8 +32,8 @@ class LocalPlasoProcessor(module.BaseModule):
     self._timezone = timezone
     self._output_path = tempfile.mkdtemp()
 
-  def process(self):
-    """Execute the Plaso process."""
+  def Process(self):
+    """Executes log2timeline.py on the module input."""
     for description, path in self.state.input:
       log_file_path = os.path.join(self._output_path, 'plaso.log')
       print('Log file: {0:s}'.format(log_file_path))

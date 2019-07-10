@@ -32,7 +32,7 @@ class FilesystemCollector(module.BaseModule):
     else:
       self._paths = [path.strip() for path in paths.strip().split(',')]
 
-  def process(self):
+  def Process(self):
     """Checks whether the paths exists and updates the state accordingly."""
     for path in self._paths:
       if os.path.exists(path):

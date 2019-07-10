@@ -135,7 +135,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
     local_mock.copy_from.return_value = '/fake/local/path'
     mock_GCSOutputWriter.return_value = local_mock
 
-    turbinia_processor.process()
+    turbinia_processor.Process()
 
     mock_GoogleCloudDisk.assert_called_with(
         disk_name='disk-1',

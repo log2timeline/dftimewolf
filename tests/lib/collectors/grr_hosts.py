@@ -218,7 +218,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
         approvers='approver1,approver2',
         verify=False
     )
-    self.grr_artifact_collector.process()
+    self.grr_artifact_collector.Process()
     kwargs = mock_ArtifactCollectorFlowArgs.call_args[1]
     # raise ValueError(str(kwargs[1]))
     self.assertFalse(kwargs['apply_parsers'])  # default argument
@@ -238,7 +238,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     mock_CreateFlow.return_value = mock_grr_hosts.MOCK_FLOW
     mock_DownloadFiles.return_value = '/tmp/tmpRandom/tomchop'
     mock_Get.return_value = mock_grr_hosts.MOCK_FLOW
-    self.grr_artifact_collector.process()
+    self.grr_artifact_collector.Process()
     # Flow ID is F:12345, Client ID is C.0000000000000001
     mock_SearchClients.assert_any_call('tomchop')
     mock_SearchClients.assert_any_call('tomchop2')
@@ -288,7 +288,7 @@ class GRRFileCollectorTest(unittest.TestCase):
     """Tests that processing launches appropriate flows."""
     mock_SearchClients.return_value = mock_grr_hosts.MOCK_CLIENT_LIST
     mock_download_files.return_value = '/tmp/something'
-    self.grr_file_collector.process()
+    self.grr_file_collector.Process()
     mock_launch_flow.assert_called_with(
         mock_grr_hosts.MOCK_CLIENT_RECENT,
         'FileFinder',
@@ -327,7 +327,7 @@ class GRRFlowCollector(unittest.TestCase):
     """Tests that the collector can be initialized."""
     mock_SearchClients.return_value = mock_grr_hosts.MOCK_CLIENT_LIST
     mock_download_files.return_value = '/tmp/something'
-    self.grr_flow_collector.process()
+    self.grr_flow_collector.Process()
     mock_download_files.assert_called_once_with(
         mock_grr_hosts.MOCK_CLIENT_RECENT, 'F:12345')
     self.assertEqual(self.test_state.output[0], ('tomchop', '/tmp/something'))

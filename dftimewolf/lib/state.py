@@ -122,16 +122,16 @@ class DFTimewolfState(object):
     """Performs the actual processing for each module in the module pool."""
 
     def _run_module_thread(module_description):
-      """Runs the module's process() function.
+      """Runs the module's Process() function.
 
-      Waits for any blockers to have finished before running process(), then
+      Waits for any blockers to have finished before running Process(), then
       sets an Event flag declaring the module has completed.
       """
       for blocker in module_description['wants']:
         self.events[blocker].wait()
       module = self._module_pool[module_description['name']]
       try:
-        module.process()
+        module.Process()
       except DFTimewolfError as exception:
         self.add_error(exception.message, critical=True)
       except Exception as exception:  # pylint: disable=broad-except

@@ -155,7 +155,7 @@ class TurbiniaProcessor(module.BaseModule):
 
       time.sleep(poll_interval)
 
-  def process(self):
+  def Process(self):
     """Process files with Turbinia."""
     log_file_path = os.path.join(self._output_path, 'turbinia.log')
     print('Turbinia log file: {0:s}'.format(log_file_path))
