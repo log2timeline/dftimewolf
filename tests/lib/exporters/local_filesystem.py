@@ -18,13 +18,16 @@ FAKE_PATHS = {
     '/fake/evidence_file': None
 }
 
+
 def fake_isdir(string):
   """Fake isdir function for mocking purposes."""
   return bool(FAKE_PATHS[string])
 
+
 def fake_listdir(string):
   """Fake listdir function for mocking purposes."""
   return FAKE_PATHS[string]
+
 
 class LocalFileSystemTest(unittest.TestCase):
   """Tests for the local filesystem exporter."""
