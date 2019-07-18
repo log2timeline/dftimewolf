@@ -76,8 +76,8 @@ class StateTest(unittest.TestCase):
     mock_setup1.assert_called_with()
     mock_setup2.assert_called_with()
 
-  @mock.patch('tests.test_modules.modules.DummyModule2.process')
-  @mock.patch('tests.test_modules.modules.DummyModule1.process')
+  @mock.patch('tests.test_modules.modules.DummyModule2.Process')
+  @mock.patch('tests.test_modules.modules.DummyModule1.Process')
   def testProcessModules(self, mock_process1, mock_process2):
     """Tests that modules' process functions are correctly called."""
     test_state = state.DFTimewolfState(config.Config)
@@ -87,8 +87,8 @@ class StateTest(unittest.TestCase):
     mock_process1.assert_called_with()
     mock_process2.assert_called_with()
 
-  @mock.patch('tests.test_modules.modules.DummyModule2.process')
-  @mock.patch('tests.test_modules.modules.DummyModule1.process')
+  @mock.patch('tests.test_modules.modules.DummyModule2.Process')
+  @mock.patch('tests.test_modules.modules.DummyModule1.Process')
   @mock.patch('sys.exit')
   def testProcessErrors(self, mock_exit, mock_process1, mock_process2):
     """Tests that module's errors arre correctly caught."""

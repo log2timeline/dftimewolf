@@ -56,7 +56,7 @@ class LocalFileSystemTest(unittest.TestCase):
     mock_mkdtemp.return_value = '/fake/random'
     local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
     local_filesystem_copy.setup()
-    local_filesystem_copy.process()
+    local_filesystem_copy.Process()
     mock_copytree.assert_has_calls([
         mock.call('/fake/evidence_directory/file1', '/fake/random/file1'),
         mock.call('/fake/evidence_directory/file2', '/fake/random/file2'),

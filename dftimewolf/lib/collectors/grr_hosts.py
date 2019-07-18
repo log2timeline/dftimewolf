@@ -19,8 +19,8 @@ from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.modules import manager as modules_manager
 
 
-# GRRFlow should be extended by classes that actually implement the process()
-# method
+# TODO: GRRFlow should be extended by classes that actually implement
+# the Process() method.
 class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
   """Launches and collects GRR flows.
 
@@ -330,8 +330,8 @@ class GRRArtifactCollector(GRRFlow):
       fqdn = client.data.os_info.fqdn.lower()
       self.state.output.append((fqdn, collected_flow_data))
 
-  def process(self):
-    """Collect the artifacts.
+  def Process(self):
+    """Collects artifacts from a host with GRR.
 
     Raises:
       DFTimewolfError: if no artifacts specified nor resolved by platform.
@@ -345,6 +345,7 @@ class GRRArtifactCollector(GRRFlow):
 
     for thread in threads:
       thread.join()
+
 
 class GRRFileCollector(GRRFlow):
   """File collector for GRR flows.
@@ -415,8 +416,8 @@ class GRRFileCollector(GRRFlow):
       fqdn = client.data.os_info.fqdn.lower()
       self.state.output.append((fqdn, collected_flow_data))
 
-  def process(self):
-    """Collect the files.
+  def Process(self):
+    """Collects files from a host with GRR.
 
     Raises:
       DFTimewolfError: if no files specified.
@@ -429,6 +430,7 @@ class GRRFileCollector(GRRFlow):
 
     for thread in threads:
       thread.join()
+
 
 class GRRFlowCollector(GRRFlow):
   """Flow collector.
@@ -471,8 +473,8 @@ class GRRFlowCollector(GRRFlow):
     self.flow_id = flow_id
     self.host = host
 
-  def process(self):
-    """Collect the results.
+  def Process(self):
+    """Downloads the results of a GRR collection flow.
 
     Raises:
       DFTimewolfError: if no files specified

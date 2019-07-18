@@ -30,7 +30,7 @@ class LocalFileSystemTest(unittest.TestCase):
     fake_paths = '/fake/path/1,/fake/path/2'
     filesystem_collector.setup(paths=fake_paths)
     mock_exists.return_value = True
-    filesystem_collector.process()
+    filesystem_collector.Process()
     expected_output = [
         ('1', '/fake/path/1'),
         ('2', '/fake/path/2')

@@ -26,7 +26,7 @@ class GrepperTest(unittest.TestCase):
     # above keyword. This is to simulate the path received an input from GRR
     base_grepper_search.state.input = \
       [['Test description', '../collectors/test_data/grepper_test_dir']]
-    base_grepper_search.process()
+    base_grepper_search.Process()
     # pylint: disable=protected-access
     self.assertEqual(
         base_grepper_search._keywords, 'foo|lorem|meow|triage|bar|homebrew')
