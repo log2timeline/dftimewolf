@@ -9,14 +9,14 @@ import tempfile
 import zipfile
 import yaml
 
-from grr_response_proto import flows_pb2
+from grr_response_proto import flows_pb2 as grr_flows
 
 from dftimewolf.lib.collectors import grr_base
 from dftimewolf.lib.modules import manager as modules_manager
 
 
-# GRRHunt should be extended by classes that actually implement the process()
-# method
+# TODO: GRRHunt should be extended by classes that actually implement
+# the Process() method.
 class GRRHunt(grr_base.GRRBaseModule):  # pylint: disable=abstract-method
   """This class groups functions generic to all GRR Hunt modules.
 
@@ -87,23 +87,19 @@ class GRRHuntArtifactCollector(GRRHunt):
       self.state.add_error('No artifacts were specified.', critical=True)
     self.use_tsk = use_tsk
 
-  def process(self):
-    """Construct and start new Artifact Collection hunt.
-
-    Returns:
-      The newly created GRR hunt object.
+  def Process(self):
+    """Starts a new Artifact Collection GRR hunt.
 
     Raises:
       RuntimeError: if no items specified for collection.
     """
-
     print('Artifacts to be collected: {0!s}'.format(self.artifacts))
-    hunt_args = flows_pb2.ArtifactCollectorFlowArgs(
+    hunt_args = grr_flows.ArtifactCollectorFlowArgs(
         artifact_list=self.artifacts,
         use_tsk=self.use_tsk,
         ignore_interpolation_errors=True,
         apply_parsers=False,)
-    return self._create_hunt('ArtifactCollectorFlow', hunt_args)
+    self._create_hunt('ArtifactCollectorFlow', hunt_args)
 
 
 class GRRHuntFileCollector(GRRHunt):
@@ -143,22 +139,19 @@ class GRRHuntFileCollector(GRRHunt):
     if not file_path_list:
       self.state.add_error('Files must be specified for hunts', critical=True)
 
-  def process(self):
-    """Construct and start a new File hunt.
-
-    Returns:
-      The newly created GRR hunt object.
+  def Process(self):
+    """Starts a new File Finder GRR hunt.
 
     Raises:
       RuntimeError: if no items specified for collection.
     """
     print('Hunt to collect {0:d} items'.format(len(self.file_path_list)))
     print('Files to be collected: {0!s}'.format(self.file_path_list))
-    hunt_action = flows_pb2.FileFinderAction(
-        action_type=flows_pb2.FileFinderAction.DOWNLOAD)
-    hunt_args = flows_pb2.FileFinderArgs(
+    hunt_action = grr_flows.FileFinderAction(
+        action_type=grr_flows.FileFinderAction.DOWNLOAD)
+    hunt_args = grr_flows.FileFinderArgs(
         paths=self.file_path_list, action=hunt_action)
-    return self._create_hunt('FileFinder', hunt_args)
+    self._create_hunt('FileFinder', hunt_args)
 
 
 class GRRHuntDownloader(GRRHunt):
@@ -329,8 +322,8 @@ class GRRHuntDownloader(GRRHunt):
 
     return fqdn_collection_paths
 
-  def process(self):
-    """Construct and start a new File hunt.
+  def Process(self):
+    """Downloads the results of a GRR hunt.
 
     Raises:
       RuntimeError: if no items specified for collection.

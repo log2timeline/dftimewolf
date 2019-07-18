@@ -17,7 +17,7 @@ class DummyModule1(BaseModule):
     """Dummy setup function."""
     print(self.name + ' Setup!')
 
-  def process(self):
+  def Process(self):
     """Dummy Process function."""
     print(self.name + ' Process!')
 
@@ -33,6 +33,6 @@ class DummyModule2(BaseModule):
     """Dummy setup function."""
     print(self.name + ' Setup!')
 
-  def process(self):
+  def Process(self):
     """Dummy Process function."""
     print(self.name + ' Process!')

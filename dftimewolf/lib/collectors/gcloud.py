@@ -31,8 +31,8 @@ class GoogleCloudCollector(module.BaseModule):
     self.incident_id = None
     self.disks_to_copy = []
 
-  def process(self):
-    """Copy a disk to the analysis project."""
+  def Process(self):
+    """Copies a disk to the analysis project."""
     for disk in self.disks_to_copy:
       print("Disk copy of {0:s} started...".format(disk.name))
       snapshot = disk.snapshot()

@@ -38,7 +38,7 @@ class LocalFilesystemCopy(module.BaseModule):
         message = 'An unknown error occurred: {0!s}'.format(exception)
         self.state.add_error(message, critical=True)
 
-  def process(self):
+  def Process(self):
     """Checks whether the paths exists and updates the state accordingly."""
     for _, path in self.state.input:
       self._copy_file_or_directory(path, self._target_directory)

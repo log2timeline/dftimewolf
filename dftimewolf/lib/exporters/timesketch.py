@@ -59,7 +59,7 @@ class TimesketchExporter(module.BaseModule):
           sketch_name, sketch_description)
       print('Sketch {0:d} created'.format(self.sketch_id))
 
-  def process(self):
+  def Process(self):
     """Executes a Timesketch export."""
     # This is not the best way of catching errors, but timesketch_utils will be
     # deprecated soon.

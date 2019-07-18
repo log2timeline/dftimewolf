@@ -36,9 +36,8 @@ class GrepperSearch(module.BaseModule):
     self._keywords = keywords
     self._output_path = tempfile.mkdtemp()
 
-  def process(self):
-    """Execute the grep command"""
-
+  def Process(self):
+    """Executes grep on the module input."""
     for _, path in self.state.input:
       log_file_path = os.path.join(self._output_path, 'grepper.log')
       print('Log file: {0:s}'.format(log_file_path))

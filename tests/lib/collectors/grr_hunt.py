@@ -38,7 +38,7 @@ class GRRHuntArtifactCollectorTest(unittest.TestCase):
   @mock.patch('grr_api_client.hunt.CreateHunt')
   def testProcess(self, mock_CreateHunt):
     """Tests that the process function issues correct GRR API calls."""
-    self.grr_hunt_artifact_collector.process()
+    self.grr_hunt_artifact_collector.Process()
     call_kwargs = mock_CreateHunt.call_args[1]  # extract call kwargs
     self.assertEqual(call_kwargs['flow_args'].artifact_list,
                      ['RandomArtifact'])
@@ -74,7 +74,7 @@ class GRRHuntFileCollectorTest(unittest.TestCase):
   @mock.patch('grr_api_client.hunt.CreateHunt')
   def testProcess(self, mock_CreateHunt):
     """Tests that the process method invokes the correct GRR API calls."""
-    self.grr_hunt_file_collector.process()
+    self.grr_hunt_file_collector.Process()
     call_kwargs = mock_CreateHunt.call_args[1]  # extract call kwargs
     self.assertEqual(call_kwargs['flow_args'].paths,
                      ['/etc/passwd', '/etc/shadow'])
@@ -115,7 +115,7 @@ class GRRFHuntDownloader(unittest.TestCase):
                              mock_extract_hunt_results):
     """Tests that hunt results are downloaded to the correct file."""
     mock_Get.return_value = mock_grr_hosts.MOCK_HUNT
-    self.grr_hunt_downloader.process()
+    self.grr_hunt_downloader.Process()
     mock_get_write_archive.assert_called_with(mock_grr_hosts.MOCK_HUNT,
                                               '/tmp/test/H:12345.zip')
     mock_extract_hunt_results.assert_called_with('/tmp/test/H:12345.zip')
