@@ -32,9 +32,6 @@ class LocalPlasoProcessor(module.BaseModule):
     self._timezone = timezone
     self._output_path = tempfile.mkdtemp()
 
-  def cleanup(self):
-    pass
-
   def process(self):
     """Execute the Plaso process."""
     for description, path in self.state.input:

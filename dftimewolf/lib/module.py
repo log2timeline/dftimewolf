@@ -27,9 +27,10 @@ class BaseModule(object):
     self.critical = critical
     self.state = state
 
-  @abc.abstractmethod
-  def cleanup(self):
+  def CleanUp(self):
     """Cleans up module output to prepare it for the next module."""
+    # No clean up is required.
+    return
 
   @abc.abstractmethod
   def process(self):

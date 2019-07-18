@@ -31,10 +31,6 @@ class GoogleCloudCollector(module.BaseModule):
     self.incident_id = None
     self.disks_to_copy = []
 
-  def cleanup(self):
-    """Cleans up module output to prepare it for the next module."""
-    # No clean up is required.
-
   def process(self):
     """Copy a disk to the analysis project."""
     for disk in self.disks_to_copy:
