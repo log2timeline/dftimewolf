@@ -17,9 +17,6 @@ class DummyModule1(BaseModule):
     """Dummy setup function."""
     print(self.name + ' Setup!')
 
-  def cleanup(self):
-    pass
-
   def process(self):
     """Dummy Process function."""
     print(self.name + ' Process!')
@@ -35,9 +32,6 @@ class DummyModule2(BaseModule):
   def setup(self):  # pylint: disable=arguments-differ
     """Dummy setup function."""
     print(self.name + ' Setup!')
-
-  def cleanup(self):
-    pass
 
   def process(self):
     """Dummy Process function."""
