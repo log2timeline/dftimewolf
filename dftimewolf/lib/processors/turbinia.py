@@ -50,7 +50,7 @@ class TurbiniaProcessor(module.BaseModule):
     self._output_path = None
 
   # pylint: disable=arguments-differ
-  def setup(self, disk_name, project, turbinia_zone):
+  def SetUp(self, disk_name, project, turbinia_zone):
     """Sets up the object attributes.
 
     Args:

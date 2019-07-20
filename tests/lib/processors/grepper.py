@@ -19,7 +19,7 @@ class GrepperTest(unittest.TestCase):
     """Test just single keyword grep search on text files."""
     test_state = state.DFTimewolfState(config.Config)
     base_grepper_search = grepper.GrepperSearch(test_state)
-    base_grepper_search.setup(
+    base_grepper_search.SetUp(
         keywords='foo|lorem|meow|triage|bar|homebrew'
     )
     # Put here a path to a test directory where you have files to grep on the

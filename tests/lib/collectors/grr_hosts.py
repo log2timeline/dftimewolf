@@ -27,7 +27,7 @@ class GRRFlowTests(unittest.TestCase):
   def setUp(self):
     self.test_state = state.DFTimewolfState(config.Config)
     self.grr_flow_module = grr_hosts.GRRFlow(self.test_state)
-    self.grr_flow_module.setup(
+    self.grr_flow_module.SetUp(
         reason='random reason',
         grr_server_url='http://fake/endpoint',
         grr_username='admin1',
@@ -165,7 +165,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     self.test_state = state.DFTimewolfState(config.Config)
     self.grr_artifact_collector = grr_hosts.GRRArtifactCollector(
         self.test_state)
-    self.grr_artifact_collector.setup(
+    self.grr_artifact_collector.SetUp(
         hosts='tomchop,tomchop2',
         artifacts=None,
         extra_artifacts=None,
@@ -206,7 +206,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     mock_CreateFlow.return_value = mock_grr_hosts.MOCK_FLOW
     self.grr_artifact_collector = grr_hosts.GRRArtifactCollector(
         self.test_state)
-    self.grr_artifact_collector.setup(
+    self.grr_artifact_collector.SetUp(
         hosts='tomchop,tomchop2',
         artifacts='RandomArtifact',
         extra_artifacts='AnotherArtifact',
@@ -258,7 +258,7 @@ class GRRFileCollectorTest(unittest.TestCase):
   def setUp(self):
     self.test_state = state.DFTimewolfState(config.Config)
     self.grr_file_collector = grr_hosts.GRRFileCollector(self.test_state)
-    self.grr_file_collector.setup(
+    self.grr_file_collector.SetUp(
         hosts='tomchop,tomchop2',
         files='/etc/passwd',
         use_tsk=True,
@@ -307,7 +307,7 @@ class GRRFlowCollector(unittest.TestCase):
   def setUp(self):
     self.test_state = state.DFTimewolfState(config.Config)
     self.grr_flow_collector = grr_hosts.GRRFlowCollector(self.test_state)
-    self.grr_flow_collector.setup(
+    self.grr_flow_collector.SetUp(
         host='tomchop',
         flow_id='F:12345',
         reason='random reason',

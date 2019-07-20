@@ -62,7 +62,7 @@ class GRRHuntArtifactCollector(GRRHunt):
     self.hunt = None
 
   # pylint: disable=arguments-differ
-  def setup(self,
+  def SetUp(self,
             artifacts, use_tsk,
             reason, grr_server_url, grr_username, grr_password, approvers=None,
             verify=True):
@@ -78,7 +78,7 @@ class GRRHuntArtifactCollector(GRRHunt):
       approvers: str, comma-separated list of GRR approval recipients.
       verify: boolean, whether to verify the GRR server's x509 certificate.
     """
-    super(GRRHuntArtifactCollector, self).setup(
+    super(GRRHuntArtifactCollector, self).SetUp(
         reason, grr_server_url, grr_username, grr_password,
         approvers=approvers, verify=verify)
 
@@ -116,7 +116,7 @@ class GRRHuntFileCollector(GRRHunt):
     self.file_path_list = None
 
   # pylint: disable=arguments-differ
-  def setup(self,
+  def SetUp(self,
             file_path_list,
             reason, grr_server_url, grr_username, grr_password, approvers=None,
             verify=True):
@@ -131,7 +131,7 @@ class GRRHuntFileCollector(GRRHunt):
       approvers: comma-separated list of GRR approval recipients.
       verify: boolean, whether to verify the GRR server's x509 certificate.
     """
-    super(GRRHuntFileCollector, self).setup(
+    super(GRRHuntFileCollector, self).SetUp(
         reason, grr_server_url, grr_username, grr_password,
         approvers=approvers, verify=verify)
     self.file_path_list = [item.strip() for item
@@ -168,7 +168,7 @@ class GRRHuntDownloader(GRRHunt):
     self.output_path = None
 
   # pylint: disable=arguments-differ
-  def setup(self,
+  def SetUp(self,
             hunt_id,
             reason, grr_server_url, grr_username, grr_password, approvers=None,
             verify=True):
@@ -183,7 +183,7 @@ class GRRHuntDownloader(GRRHunt):
       approvers: comma-separated list of GRR approval recipients.
       verify: boolean, whether to verify the GRR server's x509 certificate.
     """
-    super(GRRHuntDownloader, self).setup(
+    super(GRRHuntDownloader, self).SetUp(
         reason, grr_server_url, grr_username, grr_password,
         approvers=approvers, verify=verify)
     self.hunt_id = hunt_id

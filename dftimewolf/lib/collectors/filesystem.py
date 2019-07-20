@@ -20,7 +20,7 @@ class FilesystemCollector(module.BaseModule):
     super(FilesystemCollector, self).__init__(state)
     self._paths = None
 
-  def setup(self, paths=None):  # pylint: disable=arguments-differ
+  def SetUp(self, paths=None):  # pylint: disable=arguments-differ
     """Sets up the _paths attribute.
 
     Args:

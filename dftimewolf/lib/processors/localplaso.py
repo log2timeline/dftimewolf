@@ -23,7 +23,7 @@ class LocalPlasoProcessor(module.BaseModule):
     self._timezone = None
     self._output_path = None
 
-  def setup(self, timezone=None):  # pylint: disable=arguments-differ
+  def SetUp(self, timezone=None):  # pylint: disable=arguments-differ
     """Sets up the _timezone attribute.
 
     Args:

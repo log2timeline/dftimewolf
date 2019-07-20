@@ -25,7 +25,7 @@ class GRRHuntArtifactCollectorTest(unittest.TestCase):
     self.test_state = state.DFTimewolfState(config.Config)
     self.grr_hunt_artifact_collector = grr_hunt.GRRHuntArtifactCollector(
         self.test_state)
-    self.grr_hunt_artifact_collector.setup(
+    self.grr_hunt_artifact_collector.SetUp(
         artifacts='RandomArtifact',
         use_tsk=True,
         reason='random reason',
@@ -55,7 +55,7 @@ class GRRHuntFileCollectorTest(unittest.TestCase):
     self.test_state = state.DFTimewolfState(config.Config)
     self.grr_hunt_file_collector = grr_hunt.GRRHuntFileCollector(
         self.test_state)
-    self.grr_hunt_file_collector.setup(
+    self.grr_hunt_file_collector.SetUp(
         file_path_list='/etc/passwd,/etc/shadow',
         reason='random reason',
         grr_server_url='http://fake/endpoint',
@@ -92,7 +92,7 @@ class GRRFHuntDownloader(unittest.TestCase):
   def setUp(self):
     self.test_state = state.DFTimewolfState(config.Config)
     self.grr_hunt_downloader = grr_hunt.GRRHuntDownloader(self.test_state)
-    self.grr_hunt_downloader.setup(
+    self.grr_hunt_downloader.SetUp(
         hunt_id='H:12345',
         reason='random reason',
         grr_server_url='http://fake/endpoint',

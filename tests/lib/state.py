@@ -66,8 +66,8 @@ class StateTest(unittest.TestCase):
     self.assertEqual(len(reports), 1)
     self.assertIsInstance(reports[0], containers.Report)
 
-  @mock.patch('tests.test_modules.modules.DummyModule2.setup')
-  @mock.patch('tests.test_modules.modules.DummyModule1.setup')
+  @mock.patch('tests.test_modules.modules.DummyModule2.SetUp')
+  @mock.patch('tests.test_modules.modules.DummyModule1.SetUp')
   def testSetupModules(self, mock_setup1, mock_setup2):
     """Tests that module's setup functions are correctly called."""
     test_state = state.DFTimewolfState(config.Config)

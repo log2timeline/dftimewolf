@@ -22,7 +22,7 @@ class LocalFilesystemCopy(module.BaseModule):
     super(LocalFilesystemCopy, self).__init__(state)
     self._target_directory = None
 
-  def setup(self, target_directory=None):  # pylint: disable=arguments-differ
+  def SetUp(self, target_directory=None):  # pylint: disable=arguments-differ
     """Sets up the _target_directory attribute.
 
     Args:
