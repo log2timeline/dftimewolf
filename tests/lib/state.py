@@ -16,7 +16,8 @@ from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.recipes import manager as recipes_manager
 
-from tests.test_modules import modules, test_recipe
+from tests.test_modules import modules
+from tests.test_modules import test_recipe
 
 
 class StateTest(unittest.TestCase):
@@ -29,11 +30,12 @@ class StateTest(unittest.TestCase):
 
     self._recipe = resources.Recipe(
         test_recipe.__doc__, test_recipe.contents, test_recipe.args)
-    recipes_manager.RecipesManager.RegisterRecipe(self._recipe)
+    self._recipes_manager = recipes_manager.RecipesManager()
+    self._recipes_manager.RegisterRecipe(self._recipe)
 
   def tearDown(self):
     """Deregister the recipe used in tests."""
-    recipes_manager.RecipesManager.DeregisterRecipe(self._recipe)
+    self._recipes_manager.DeregisterRecipe(self._recipe)
 
     modules_manager.ModulesManager.DeregisterModule(modules.DummyModule1)
     modules_manager.ModulesManager.DeregisterModule(modules.DummyModule2)

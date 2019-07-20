@@ -6,17 +6,13 @@ from __future__ import unicode_literals
 import json
 import sys
 
-from dftimewolf.lib import resources
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.recipes import manager as recipes_manager
 
 
 class Config(object):
   """Class that handles DFTimewolf's configuration parameters."""
 
-  # TODO: make this an instance instead of a class after moving recipes
-  # to JSON files.
-  _recipes_manager = recipes_manager.RecipesManager
+  _module_classes = {}
 
   _extra_config = {}
 
@@ -88,25 +84,6 @@ class Config(object):
   def clear_extra(cls):
     """Clears any extra arguments loaded from a config JSON blob."""
     cls._extra_config = {}
-
-  @classmethod
-  def register_recipe(cls, recipe):
-    """Registers a dftimewolf recipe.
-
-    Args:
-      recipe [module]: module that contains the recipe.
-    """
-    recipe = resources.Recipe(recipe.__doc__, recipe.contents, recipe.args)
-    cls._recipes_manager.RegisterRecipe(recipe)
-
-  @classmethod
-  def get_registered_recipes(cls):
-    """Fetches all registered recipes.
-
-    Returns:
-      list[Recipe]: recipes sorted by name.
-    """
-    return cls._recipes_manager.GetRecipes()
 
   @classmethod
   def register_module(cls, module_class):

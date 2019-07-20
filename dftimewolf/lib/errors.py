@@ -7,3 +7,7 @@ class DFTimewolfError(Exception):
     """Initializes the DFTimewolfError with provided or default message."""
     super(DFTimewolfError, self).__init__(message)
     self.message = message or 'An error occurred.'
+
+
+class RecipeParseError(DFTimewolfError):
+  """Error when parsing a recipe."""
