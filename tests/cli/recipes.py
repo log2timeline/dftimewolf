@@ -4,44 +4,30 @@
 
 from __future__ import unicode_literals
 
+import os
 import unittest
+
 import six
 
-from dftimewolf.cli.recipes import artifact_grep
-from dftimewolf.cli.recipes import gcp_turbinia_import
-from dftimewolf.cli.recipes import gcp_turbinia
-from dftimewolf.cli.recipes import grr_artifact_hosts
-from dftimewolf.cli.recipes import grr_fetch_files
-from dftimewolf.cli.recipes import grr_flow_download
-from dftimewolf.cli.recipes import grr_hunt_artifacts
-from dftimewolf.cli.recipes import grr_hunt_file
-from dftimewolf.cli.recipes import grr_huntresults_plaso_timesketch
-from dftimewolf.cli.recipes import local_plaso
-from dftimewolf.cli.recipes import timesketch_upload
+from dftimewolf.lib.recipes import manager as recipes_manager
+
 
 class RecipeTests(unittest.TestCase):
   """Tests for recipe construction."""
 
   def setUp(self):
-    self.recipes = [
-        artifact_grep,
-        gcp_turbinia_import,
-        gcp_turbinia,
-        grr_artifact_hosts,
-        grr_fetch_files,
-        grr_flow_download,
-        grr_hunt_artifacts,
-        grr_hunt_file,
-        grr_huntresults_plaso_timesketch,
-        local_plaso,
-        timesketch_upload,
-    ]
+    recipes_path = os.path.dirname(__file__)
+    recipes_path = os.path.dirname(recipes_path)
+    recipes_path = os.path.join(recipes_path, 'data', 'recipes')
+
+    self._recipes_manager = recipes_manager.RecipesManager()
+    self._recipes_manager.ReadRecipesFromDirectory(recipes_path)
 
   def testRecipeHasFields(self):
     """Tests that all recipes have the correct fields."""
-    for recipe in self.recipes:
-      self.assertIn('name', recipe.contents)
-      self.assertIn('short_description', recipe.contents)
+    for recipe in self._recipes_manager.GetRecipes():
+      self.assertIsNotNone(recipe.name)
+      self.assertIsNotNone(recipe.description)
       self.assertIn('modules', recipe.contents)
       self.assertIsInstance(recipe.contents['modules'], list)
 
@@ -49,7 +35,7 @@ class RecipeTests(unittest.TestCase):
 
   def testRecipeModulesHaveFields(self):
     """Tests that modules defined in the recipe have the correct fields."""
-    for recipe in self.recipes:
+    for recipe in self._recipes_manager.GetRecipes():
       for module in recipe.contents['modules']:
         error_msg = 'module {0:s} in recipe {1:s}'.format(
             module['name'], recipe.contents['name'])
@@ -65,7 +51,7 @@ class RecipeTests(unittest.TestCase):
   def testRecipeModulesAllPresent(self):
     """Tests that a recipe's modules depend only on modules present in the
     recipe."""
-    for recipe in self.recipes:
+    for recipe in self._recipes_manager.GetRecipes():
       declared_modules = set()
       wanted_modules = set()
       for module in recipe.contents['modules']:
@@ -80,7 +66,7 @@ class RecipeTests(unittest.TestCase):
 
   def testNoDeadlockInRecipe(self):
     """Tests that a recipe will not deadlock."""
-    for recipe in self.recipes:
+    for recipe in self._recipes_manager.GetRecipes():
       for module in recipe.contents['modules']:
         dependencies = _find_module_dependencies(
             module['name'], recipe, module['name'])

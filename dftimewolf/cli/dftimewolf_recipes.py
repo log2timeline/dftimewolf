@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """dftimewolf main entrypoint."""
 
@@ -16,39 +17,25 @@ _ASKING_FOR_HELP = '-h' in sys.argv or '--help' in sys.argv or len(sys.argv) < 2
 # pylint: disable=wrong-import-position
 from dftimewolf import config
 
-from dftimewolf.cli.recipes import gcp_turbinia
-from dftimewolf.cli.recipes import gcp_turbinia_import
-from dftimewolf.cli.recipes import grr_artifact_hosts
-from dftimewolf.cli.recipes import grr_flow_download
-from dftimewolf.cli.recipes import grr_fetch_files
-from dftimewolf.cli.recipes import grr_hunt_artifacts
-from dftimewolf.cli.recipes import grr_hunt_file
-from dftimewolf.cli.recipes import grr_huntresults_plaso_timesketch
-from dftimewolf.cli.recipes import local_plaso
-from dftimewolf.cli.recipes import timesketch_upload
-from dftimewolf.cli.recipes import artifact_grep
-from dftimewolf.cli.recipes import stackdriver_collect
-
+from dftimewolf.lib import errors
 from dftimewolf.lib import utils
 
 if not _ASKING_FOR_HELP:
   # Import the collector modules.
   from dftimewolf.lib import collectors  # pylint: disable=unused-import
   from dftimewolf.lib.collectors import filesystem
+  from dftimewolf.lib.collectors import gcloud
   from dftimewolf.lib.collectors import grr_hosts
   from dftimewolf.lib.collectors import grr_hunt
-  from dftimewolf.lib.collectors import gcloud
-  from dftimewolf.lib.exporters import timesketch
+  from dftimewolf.lib.collectors import stackdriver
   from dftimewolf.lib.exporters import local_filesystem
+  from dftimewolf.lib.exporters import timesketch
+  from dftimewolf.lib.processors import grepper
   from dftimewolf.lib.processors import localplaso
   from dftimewolf.lib.processors import turbinia
-  from dftimewolf.lib.processors import grepper
-  from dftimewolf.lib.collectors import gcloud
-  from dftimewolf.lib.collectors import stackdriver
 
+from dftimewolf.lib.recipes import manager as recipes_manager
 from dftimewolf.lib.state import DFTimewolfState
-
-signal.signal(signal.SIGINT, utils.signal_handler)
 
 if not _ASKING_FOR_HELP:
   config.Config.register_module(filesystem.FilesystemCollector)
@@ -68,92 +55,188 @@ if not _ASKING_FOR_HELP:
   config.Config.register_module(grepper.GrepperSearch)
   config.Config.register_module(stackdriver.StackdriverLogsCollector)
 
-# Try to open config.json and load configuration data from it.
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.realpath(__file__))))
-config.Config.load_extra(os.path.join(ROOT_DIR, 'data', 'config.json'))
 
-USER_DIR = os.path.expanduser('~')
-config.Config.load_extra(os.path.join(USER_DIR, '.dftimewolfrc'))
-
-config.Config.load_extra(os.path.join('/', 'etc', 'dftimewolf.conf'))
-config.Config.load_extra(os.path.join(
-    '/', 'usr', 'share', 'dftimewolf', 'dftimewolf.conf'))
-
-config.Config.register_recipe(local_plaso)
-config.Config.register_recipe(grr_artifact_hosts)
-config.Config.register_recipe(grr_flow_download)
-config.Config.register_recipe(grr_fetch_files)
-config.Config.register_recipe(grr_hunt_artifacts)
-config.Config.register_recipe(grr_hunt_file)
-config.Config.register_recipe(grr_huntresults_plaso_timesketch)
-config.Config.register_recipe(timesketch_upload)
-config.Config.register_recipe(gcp_turbinia)
-config.Config.register_recipe(gcp_turbinia_import)
-config.Config.register_recipe(artifact_grep)
-config.Config.register_recipe(stackdriver_collect)
 
 # TODO(tomchop) Change the print statements by a better logging / display system
 
 
-def generate_help():
-  """Generates help text with alphabetically sorted recipes."""
-  help_text = '\nAvailable recipes:\n\n'
-  for recipe in config.Config.get_registered_recipes():
-    short_description = recipe.contents.get(
-        'short_description', 'No description')
-    help_text += ' {0:<35s}{1:s}\n'.format(recipe.name, short_description)
-  return help_text
+class DFTimewolfTool(object):
+  """DFTimewolf tool."""
+
+  _DEFAULT_DATA_FILES_PATH = os.path.join('/', 'usr', 'share', 'dftimewolf')
+
+  def __init__(self):
+    """Initializes a DFTimewolf tool."""
+    super(DFTimewolfTool, self).__init__()
+    self._command_line_options = None
+    self._data_files_path = None
+    self._recipes_manager = recipes_manager.RecipesManager()
+    self._recipe = None
+    self._state = None
+
+    self._DetermineDataFilesPath()
+
+  def _AddRecipeOptions(self, argument_parser):
+    """Adds the recipe options to the argument group.
+
+    Args:
+      argument_parser (argparse.ArgumentParser): argparse argument parser.
+    """
+    subparsers = argument_parser.add_subparsers()
+
+    for recipe in self._recipes_manager.GetRecipes():
+      description = '\n'.join(recipe.description)
+      subparser = subparsers.add_parser(
+          recipe.name, formatter_class=utils.DFTimewolfFormatterClass,
+          description=description)
+      subparser.set_defaults(recipe=recipe.contents)
+
+      for switch, help_text, default in recipe.args:
+        subparser.add_argument(switch, help=help_text, default=default)
+
+      # Override recipe defaults with those specified in Config
+      # so that they can in turn be overridden in the commandline
+      subparser.set_defaults(**config.Config.get_extra())
+
+  def _DetermineDataFilesPath(self):
+    """Determines the data files path."""
+    data_files_path = os.path.realpath(__file__)
+    data_files_path = os.path.dirname(data_files_path)
+    data_files_path = os.path.dirname(data_files_path)
+    data_files_path = os.path.dirname(data_files_path)
+    data_files_path = os.path.join(data_files_path, 'data')
+
+    if not os.path.isdir(data_files_path):
+      data_files_path = self._DEFAULT_DATA_FILES_PATH
+
+    self._data_files_path = data_files_path
+
+  def _GenerateHelpText(self):
+    """Generates help text with alphabetically sorted recipes.
+
+    Returns:
+      str: help text.
+    """
+    recipes = self._recipes_manager.GetRecipes()
+    if not recipes:
+      help_text = '\nNo recipes found.'
+    else:
+      help_text = '\nAvailable recipes:\n\n'
+      for recipe in recipes:
+        short_description = recipe.contents.get(
+            'short_description', 'No description')
+        help_text += ' {0:<35s}{1:s}\n'.format(recipe.name, short_description)
+
+    return help_text
+
+  def LoadConfiguration(self):
+    """Loads the configuration."""
+    configuration_file_path = os.path.join(self._data_files_path, 'config.json')
+    # Try to open config.json and load configuration data from it.
+    config.Config.load_extra(configuration_file_path)
+
+    user_directory = os.path.expanduser('~')
+    configuration_file_path = os.path.join(user_directory, '.dftimewolfrc')
+    config.Config.load_extra(configuration_file_path)
+
+    configuration_file_path = os.path.join('/', 'etc', 'dftimewolf.conf')
+    config.Config.load_extra(configuration_file_path)
+
+    configuration_file_path = os.path.join(
+        '/', 'usr', 'share', 'dftimewolf', 'dftimewolf.conf')
+    config.Config.load_extra(configuration_file_path)
+
+  def ParseArguments(self, arguments):
+    """Parses the command line arguments.
+
+    Args:
+      arguments (list[str]): command line arguments.
+
+    Returns:
+      bool: True if the arguments were successfully parsed.
+    """
+    help_text = self._GenerateHelpText()
+
+    argument_parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=help_text)
+
+    self._AddRecipeOptions(argument_parser)
+
+    self._command_line_options = argument_parser.parse_args(arguments)
+    self._recipe = self._command_line_options.recipe
+
+    self._state = DFTimewolfState(config.Config)
+    print('Loading recipe...')
+    self._state.load_recipe(self._recipe)
+
+    number_of_modules = len(self._recipe['modules'])
+    print('Loaded recipe {0:s} with {1:d} modules'.format(
+        self._recipe['name'], number_of_modules))
+
+    return True
+
+  def ReadRecipes(self):
+    """Reads the recipe files."""
+    if os.path.isdir(self._data_files_path):
+      recipes_path = os.path.join(self._data_files_path, 'recipes')
+      if os.path.isdir(recipes_path):
+        self._recipes_manager.ReadRecipesFromDirectory(recipes_path)
+
+  def RunModules(self):
+    """Runs the modules."""
+    print('Running modules...')
+    self._state.run_modules()
+    print('Recipe {0:s} executed successfully.'.format(self._recipe['name']))
+
+  def SetupModules(self):
+    """Sets up the modules."""
+    # TODO: refactor to only load modules that are used by the recipe.
+
+    print('Setting up modules...')
+    self._state.setup_modules(self._command_line_options)
+    print('Modules successfully set up!')
 
 
-def check_python_version():
-  """Checks that we're running a compatible version of Python."""
+def main():
+  """Main function for DFTimewolf.
+
+  Returns:
+    bool: True if DFTimewolf could be run successfully, False otherwise.
+  """
   version_tuple = (sys.version_info[0], sys.version_info[1])
   if version_tuple[0] != 3 or version_tuple < (3, 6):
     print(('Unsupported Python version: {0:s}, version 3.6 or higher '
            'required.').format(sys.version))
-    sys.exit(1)
+    return False
 
+  tool = DFTimewolfTool()
 
-def main():
-  """Main function for DFTimewolf."""
-  check_python_version()
+  # TODO: print errors if this fails.
+  tool.LoadConfiguration()
 
-  parser = argparse.ArgumentParser(
-      formatter_class=argparse.RawDescriptionHelpFormatter,
-      description=generate_help())
+  try:
+    tool.ReadRecipes()
+  except (KeyError, errors.RecipeParseError) as exception:
+    print('{0!s}'.format(exception))
+    return False
 
-  subparsers = parser.add_subparsers()
+  if not tool.ParseArguments(sys.argv[1:]):
+    # TODO: print errors if this fails.
+    return False
 
-  for recipe in config.Config.get_registered_recipes():
-    subparser = subparsers.add_parser(
-        recipe.name, formatter_class=utils.DFTimewolfFormatterClass,
-        description='{0:s}'.format(recipe.description))
-    subparser.set_defaults(recipe=recipe.contents)
+  # TODO: print errors if this fails.
+  tool.SetupModules()
 
-    for switch, help_text, default in recipe.args:
-      subparser.add_argument(switch, help=help_text, default=default)
-    # Override recipe defaults with those specified in Config
-    # so that they can in turn be overridden in the commandline
-    subparser.set_defaults(**config.Config.get_extra())
+  # TODO: print errors if this fails.
+  tool.RunModules()
 
-  args = parser.parse_args()
-  recipe = args.recipe
-
-  state = DFTimewolfState(config.Config)
-  print('Loading recipes...')
-  state.load_recipe(recipe)
-  print('Loaded recipe {0:s} with {1:d} modules'.format(
-      recipe['name'], len(recipe['modules'])))
-
-  print('Setting up modules...')
-  state.setup_modules(args)
-  print('Modules successfully set up!')
-
-  print('Running modules...')
-  state.run_modules()
-  print('Recipe {0:s} executed successfully.'.format(recipe['name']))
+  return True
 
 
 if __name__ == '__main__':
-  main()
+  signal.signal(signal.SIGINT, utils.signal_handler)
+  if main():
+    sys.exit(0)
+  else:
+    sys.exit(1)
