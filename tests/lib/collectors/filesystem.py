@@ -28,7 +28,7 @@ class LocalFileSystemTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     filesystem_collector = filesystem.FilesystemCollector(test_state)
     fake_paths = '/fake/path/1,/fake/path/2'
-    filesystem_collector.setup(paths=fake_paths)
+    filesystem_collector.SetUp(paths=fake_paths)
     mock_exists.return_value = True
     filesystem_collector.Process()
     expected_output = [
@@ -42,7 +42,7 @@ class LocalFileSystemTest(unittest.TestCase):
     """Tests that no paths specified in setup will generate an error."""
     test_state = state.DFTimewolfState(config.Config)
     filesystem_collector = filesystem.FilesystemCollector(test_state)
-    filesystem_collector.setup(paths=None)
+    filesystem_collector.SetUp(paths=None)
     mock_add_error.assert_called_with(
         'No `paths` argument provided in recipe, bailing', critical=True)
     self.assertIsNone(filesystem_collector._paths)  # pylint: disable=protected-access

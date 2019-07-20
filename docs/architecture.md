@@ -51,7 +51,7 @@ specific keys:
     arguments.
     *   `name`: The name of the module class that will be instantiated
     *   `args`: A list of (argument_name, argument) tuples that will be passed
-        on to the module's `setup()` method. If `argument` starts with an `@`,
+        on to the module's `SetUp()` method. If `argument` starts with an `@`,
         it will be replaced with its corresponding value from the command-line
         or the `~/.dftimewolfrc` file.
 

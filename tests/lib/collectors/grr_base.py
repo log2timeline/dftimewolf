@@ -48,7 +48,7 @@ class GRRBaseModuleTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     grr_base_module = grr_base.GRRBaseModule(test_state)
     mock_mkdtemp.return_value = '/fake'
-    grr_base_module.setup(
+    grr_base_module.SetUp(
         reason='random reason',
         grr_server_url='http://fake/endpoint',
         grr_username='admin1',
@@ -68,7 +68,7 @@ class GRRBaseModuleTest(unittest.TestCase):
     """Tests that the approval wrapper works correctly."""
     test_state = state.DFTimewolfState(config.Config)
     grr_base_module = grr_base.GRRBaseModule(test_state)
-    grr_base_module.setup(
+    grr_base_module.SetUp(
         reason='random reason',
         grr_server_url='http://fake/endpoint',
         grr_username='admin1',
@@ -107,7 +107,7 @@ class GRRBaseModuleTest(unittest.TestCase):
     """
     test_state = state.DFTimewolfState(config.Config)
     grr_base_module = grr_base.GRRBaseModule(test_state)
-    grr_base_module.setup(
+    grr_base_module.SetUp(
         reason='random',
         grr_server_url='http://fake/url',
         grr_username='admin1',

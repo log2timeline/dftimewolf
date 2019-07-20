@@ -45,7 +45,7 @@ class GoogleCloudCollector(module.BaseModule):
       self.state.output.append((self.analysis_vm.name, new_disk))
 
   # pylint: disable=arguments-differ,too-many-arguments
-  def setup(self,
+  def SetUp(self,
             analysis_project_name,
             remote_project_name,
             incident_id,

@@ -77,7 +77,7 @@ class DFTimewolfState(object):
   def setup_modules(self, args):
     """Performs setup tasks for each module in the module pool.
 
-    Threads declared modules' setup() functions. Takes CLI arguments into
+    Threads declared modules' SetUp() functions. Takes CLI arguments into
     account when replacing recipe parameters for each module.
 
     Args:
@@ -86,7 +86,7 @@ class DFTimewolfState(object):
     """
 
     def _setup_module_thread(module_description):
-      """Calls the module's setup() function and sets an Event object for it.
+      """Calls the module's SetUp() function and sets an Event object for it.
 
       Args:
         module_description (dict): Corresponding recipe module description.
@@ -95,7 +95,7 @@ class DFTimewolfState(object):
           module_description['args'], vars(args), self.config)
       module = self._module_pool[module_description['name']]
       try:
-        module.setup(**new_args)
+        module.SetUp(**new_args)
       except Exception as exception:  # pylint: disable=broad-except
         self.add_error(
             'An unknown error occurred: {0!s}\nFull traceback:\n{1:s}'.format(

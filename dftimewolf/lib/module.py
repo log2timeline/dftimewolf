@@ -41,5 +41,5 @@ class BaseModule(object):
     """
 
   @abc.abstractmethod
-  def setup(self, *args, **kwargs):
+  def SetUp(self, *args, **kwargs):
     """Sets up necessary module configuration options."""
