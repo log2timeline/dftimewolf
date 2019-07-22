@@ -1,4 +1,6 @@
-"""Creates a forensic VM and copies a GCP disk to it for analysis."""
+# -*- coding: utf-8 -*-
+"""Creates an analysis VM and copies GCP disks to it for analysis."""
+
 from __future__ import print_function
 from __future__ import unicode_literals
 
@@ -12,20 +14,27 @@ from dftimewolf.lib.modules import manager as modules_manager
 
 
 class GoogleCloudCollector(module.BaseModule):
-  """Class for Google Cloud Collector.
+  """Google Cloud (GCP) Collector.
 
   Attributes:
-    analysis_project: The project that contains the analysis VM (instance of
-        libcloudforensics.GoogleCloudProject).
-    analysis_vm: The analysis VM on which the disk copy will be attached
-        (instance of libcloudforensics.GoogleComputeInstance).
-    incident_id: The incident ID used to name the Analysis VM (string).
-    disks_to_copy: A list containing the disks to copy to the analysis project
-        (instances of libcloudforensics.GoogleComputeDisk).
+    analysis_project (libcloudforensics.GoogleCloudProject): project that
+        contains the analysis VM.
+    analysis_vm (libcloudforensics.GoogleComputeInstance): analysis VM on
+         which the disk copy will be attached.
+    incident_id (str): incident identifier used to name the analysis VM.
+    disks_to_copy (list[libcloudforensics.GoogleComputeDisk]): the disks
+        to copy to the analysis project.
   """
 
-  def __init__(self, state):
-    super(GoogleCloudCollector, self).__init__(state)
+  def __init__(self, state, critical=False):
+    """Initializes a Google Cloud (GCP) collector.
+
+    Args:
+      state (DFTimewolfState): recipe state.
+      critical (Optional[bool]): True if the module is critical, which causes
+          the entire recipe to fail if the module encounters an error.
+    """
+    super(GoogleCloudCollector, self).__init__(state, critical=critical)
     self.analysis_project = None
     self.analysis_vm = None
     self.incident_id = None
@@ -57,7 +66,7 @@ class GoogleCloudCollector(module.BaseModule):
             all_disks=False,
             image_project="ubuntu-os-cloud",
             image_family="ubuntu-1804-lts"):
-    """Sets up a Google cloud collector.
+    """Sets up a Google Cloud (GCP) collector.
 
     This method creates and starts an analysis VM in the analysis project and
     selects disks to copy from the remote project.
@@ -66,31 +75,33 @@ class GoogleCloudCollector(module.BaseModule):
     project, ignoring disks belonging to any specific instances.
 
     If remote_instance_name is specified, two behaviors are possible:
-      - If no other parameters are specified, it will select the instance's boot
-        disk
-      - if all_disks is set to True, it will select all disks in the project
-        that are attached to the instance
+    * If no other parameters are specified, it will select the instance's boot
+      disk
+    * if all_disks is set to True, it will select all disks in the project
+      that are attached to the instance
 
     disk_names takes precedence over instance_names
 
     Args:
-      analysis_project_name: The name of the project that contains the analysis
-          VM (string).
-      remote_project_name: The name of the remote project where the disks must
-          be copied from (string).
-      incident_id: The incident ID on which the name of the analysis VM will be
-          based (string).
-      zone: The zone in which new resources should be created (string).
-      boot_disk_size: The size of the analysis VM boot disk (in GB) (float).
-      cpu_cores: The number of CPU cores to create the machine with.
-      remote_instance_name: The name of the instance in the remote project
-          containing the disks to be copied (string).
-      disk_names: Comma separated string with disk names to copy (string).
-      all_disks: Copy all disks attached to the source instance (bool).
-      image_project: Name of the project where the analysis VM image is hosted.
-      image_family: Name of the image to use to create the analysis VM.
+      analysis_project_name (str): name of the project that contains
+          the analysis VM.
+      remote_project_name (str): name of the remote project where the disks
+          must be copied from.
+      incident_id (str): incident identifier on which the name of the analysis
+          VM will be based.
+      zone (str): GCP zone in which new resources should be created.
+      boot_disk_size (float): size of the analysis VM boot disk (in GB).
+      cpu_cores (int): number of CPU cores to create the VM with.
+      remote_instance_name (Optional[str]): name of the instance in
+          the remote project containing the disks to be copied.
+      disk_names (Optional[str]): Comma separated disk names to copy.
+      all_disks (Optional[bool]): True if all disks attached to the source
+          instance should be copied.
+      image_project (Optional[str]): name of the project where the analysis
+          VM image is hosted.
+      image_family (Optional[str]): name of the image to use to create the
+          analysis VM.
     """
-
     disk_names = disk_names.split(",") if disk_names else []
 
     self.analysis_project = libcloudforensics.GoogleCloudProject(

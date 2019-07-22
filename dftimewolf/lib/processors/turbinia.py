@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-"""Processes GCP cloud disks using a remote Turbinia instance."""
+"""Processes GCP cloud disks using Turbinia."""
+
 from __future__ import unicode_literals
 from __future__ import absolute_import
 from __future__ import print_function
 
 import os
 import tempfile
-import time
 
 from turbinia import client as turbinia_client
 from turbinia import config as turbinia_config
@@ -22,41 +22,42 @@ from dftimewolf.lib import module
 
 
 class TurbiniaProcessor(module.BaseModule):
-  """Process cloud disks with a remote Turbinia instance.
+  """Processes Google Cloud (GCP) disks with Turbinia.
 
   Attributes:
-    client: A TurbiniaClient object
-    disk_name (string): Name of the disk to process
-    instance (string): The name of the Turbinia instance
-    project (string): The project containing the disk to process
-    turbinia_region (string): The region Turbinia is in
-    turbinia_zone (string): The zone Turbinia is in
-    _output_path: The path to output files
+    client (TurbiniaClient): Turbinia client.
+    disk_name (str): name of the disk to process.
+    instance (str): name of the Turbinia instance
+    project (str): name of the GPC project containing the disk to process.
+    turbinia_region (str): GCP region in which the Turbinia server is running.
+    turbinia_zone (str): GCP zone in which the Turbinia server is running.
   """
 
-  def __init__(self, state):
-    """Initialize the Turbinia artifact processor object.
+  def __init__(self, state, critical=False):
+    """Initializes a Turbinia Google Cloud (GCP) disks processor.
 
     Args:
-      state: The dfTimewolf state object
+      state (DFTimewolfState): recipe state.
+      critical (Optional[bool]): True if the module is critical, which causes
+          the entire recipe to fail if the module encounters an error.
     """
-    super(TurbiniaProcessor, self).__init__(state)
+    super(TurbiniaProcessor, self).__init__(state, critical=critical)
+    self._output_path = None
     self.client = None
     self.disk_name = None
     self.instance = None
     self.project = None
     self.turbinia_region = None
     self.turbinia_zone = None
-    self._output_path = None
 
   # pylint: disable=arguments-differ
   def SetUp(self, disk_name, project, turbinia_zone):
     """Sets up the object attributes.
 
     Args:
-      disk_name (string): Name of the disk to process
-      project (string): The project containing the disk to process
-      turbinia_zone (string): The zone containing the disk to process
+      disk_name (str): name of the disk to process.
+      project (str): name of the GPC project containing the disk to process.
+      turbinia_zone (str): GCP zone in which the Turbinia server is running.
     """
     # TODO: Consider the case when multiple disks are provided by the previous
     # module or by the CLI.
@@ -88,7 +89,7 @@ class TurbiniaProcessor(module.BaseModule):
       self.state.add_error(e, critical=True)
       return
 
-  def _print_task_data(self, task):
+  def _PrintTaskData(self, task):
     """Pretty-prints task data.
 
     Args:
@@ -106,54 +107,6 @@ class TurbiniaProcessor(module.BaseModule):
       if path.startswith('/'):
         continue
       print('   ' + path)
-
-  def display_task_progress(
-      self, instance, project, region, request_id=None, user=None,
-      poll_interval=60):
-    """Displays the overall progress of tasks in a Turbinia job.
-
-    Args:
-      instance (string): The name of the Turbinia instance
-      project (string): The project containing the disk to process
-      region (string): Region where turbinia is configured.
-      request_id (string): The request ID provided by Turbinia.
-      user (string): The username to filter tasks by.
-      poll_interval (int): The interval at which to poll for new results.
-    """
-    total_completed = 0
-
-    while True:
-      task_results = self.client.get_task_data(
-          instance, project, region, request_id=request_id, user=user)
-      tasks = {task['id']: task for task in task_results}
-      completed_tasks = set()
-      pending_tasks = set()
-
-      for task in tasks.values():
-        if task.get('successful') is not None:
-          completed_tasks.add(task['id'])
-        else:
-          pending_tasks.add(task['id'])
-
-      if len(completed_tasks) > total_completed or not completed_tasks:
-        total_completed = len(completed_tasks)
-
-        print('Task status update (completed: {0:d} | pending: {1:d})'.format(
-            len(completed_tasks), len(pending_tasks)))
-
-        print('Completed tasks:')
-        for task_id in completed_tasks:
-          self._print_task_data(tasks[task_id])
-
-        print('Pending tasks:')
-        for task_id in pending_tasks:
-          self._print_task_data(tasks[task_id])
-
-      if len(completed_tasks) == len(task_results) and completed_tasks:
-        print('All {0:d} Tasks completed'.format(len(task_results)))
-        return
-
-      time.sleep(poll_interval)
 
   def Process(self):
     """Process files with Turbinia."""

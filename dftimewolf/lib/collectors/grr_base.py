@@ -17,20 +17,23 @@ class GRRBaseModule(module.BaseModule):
   """Base module for GRR hunt and flow modules.
 
   Attributes:
-    output_path: Path to store collected artifacts.
+    output_path (str): path to store collected artifacts.
     grr_api: GRR HTTP API client.
-    reason: Justification for GRR access.
+    reason (str): justification for GRR access.
     approvers: list of GRR approval recipients.
   """
+
   _CHECK_APPROVAL_INTERVAL_SEC = 10
 
-  def __init__(self, state):
+  def __init__(self, state, critical=False):
     """Initializes a GRR hunt or flow module.
 
     Args:
-      state (DFTimewolfState): a state.
+      state (DFTimewolfState): recipe state.
+      critical (Optional[bool]): True if the module is critical, which causes
+          the entire recipe to fail if the module encounters an error.
     """
-    super(GRRBaseModule, self).__init__(state)
+    super(GRRBaseModule, self).__init__(state, critical=critical)
     self.reason = None
     self.grr_api = None
     self.approvers = None
@@ -43,25 +46,29 @@ class GRRBaseModule(module.BaseModule):
     """Initializes a GRR hunt result collector.
 
     Args:
-      reason: justification for GRR access.
-      grr_server_url: GRR server URL.
-      grr_username: GRR username.
-      grr_password: GRR password.
-      approvers: list of GRR approval recipients.
-      verify: boolean, whether to verify the GRR server's x509 certificate.
+      reason (str): justification for GRR access.
+      grr_server_url (str): GRR server URL.
+      grr_username (str): GRR username.
+      grr_password (str): GRR password.
+      approvers (Optional[str]): comma-separated GRR approval recipients.
+      verify (Optional[bool]): True to indicate GRR server's x509 certificate
+          should be verified.
     """
     grr_auth = (grr_username, grr_password)
     self.approvers = []
     if approvers:
-      self.approvers = [item.strip() for item in approvers.strip().split(',')]
+      self.approvers = [item.strip() for item in approvers.split(',')]
     self.grr_api = grr_api.InitHttp(api_endpoint=grr_server_url,
                                     auth=grr_auth,
                                     verify=verify)
     self.output_path = tempfile.mkdtemp()
     self.reason = reason
 
-  def _check_approval_wrapper(self, grr_object, grr_function, *args, **kwargs):
-    """Wraps a call to GRR functions checking for approval.
+  def _WrapGRRRequestWithApproval(
+      self, grr_object, grr_function, *args, **kwargs):
+    """Wraps a GRR request with approval.
+
+    This method will request the approval if not yet granted.
 
     Args:
       grr_object: the GRR object to create the eventual approval on.
