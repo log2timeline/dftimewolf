@@ -27,10 +27,10 @@ class TimesketchApiClient(object):
     self.host_url = host_url
     self.api_base_url = '{0:s}/api/v1'.format(self.host_url)
     self.username = username
-    self.session = self._create_session(username, password)
+    self.session = self._CreateSession(username, password)
 
-  def _create_session(self, username, password):
-    """Create HTTP session.
+  def _CreateSession(self, username, password):
+    """Create a session with a Timesketch server.
 
     Args:
       username (str): Timesketch username
@@ -56,15 +56,15 @@ class TimesketchApiClient(object):
     _ = session.post('{0:s}/login/'.format(self.host_url), data=login_data)
     return session
 
-  def create_sketch(self, name, description):
-    """Create a new sketch with the specified name and description.
+  def CreateSketch(self, name, description):
+    """Creates a new sketch on a Timesketch server.
 
     Args:
-      name (str): Title of sketch
-      description (str): Description of sketch
+      name (str): title of the sketch.
+      description (str): description of the sketch.
 
     Returns:
-      int: ID of created sketch
+      int: identifier of the sketch on the Timesketch server.
     """
     resource_url = '{0:s}/sketches/'.format(self.api_base_url)
     form_data = {'name': name, 'description': description}
@@ -73,18 +73,21 @@ class TimesketchApiClient(object):
     sketch_id = response_dict['objects'][0]['id']
     return sketch_id
 
-  def upload_timeline(self, timeline_name, plaso_storage_path):
-    """Create a timeline with the specified name from the given plaso file.
+  def _UploadTimeline(self, timeline_name, plaso_storage_path):
+    """Uploades a plaso storage file to a timeline on a Timesketch server.
+
+    The Timesketch server will create the timeline if it does not exist.
 
     Args:
-      timeline_name (str): Name of timeline
-      plaso_storage_path (str): Local path of plaso file to be uploaded
+      timeline_name (str): name of the timeline.
+      plaso_storage_path (str): local path of the plaso storage file to
+          be uploaded.
 
     Returns:
-      int: ID of uploaded timeline
+      int: identifier of the timeline on the Timesketch server.
 
     Raises:
-      RuntimeError: When the JSON response from Timesketch cannot be decoded.
+      RuntimeError: If the JSON response from Timesketch cannot be decoded.
     """
     resource_url = '{0:s}/upload/'.format(self.api_base_url)
     files = {'file': open(plaso_storage_path, 'rb')}
@@ -98,69 +101,48 @@ class TimesketchApiClient(object):
           ' (Status {0:d}):\n{1:s}'.format(
               response.status_code, response.content))
 
-    index_id = response_dict['objects'][0]['id']
-    return index_id
+    return response_dict['objects'][0]['id']
 
-  def export_artifacts(self, processed_artifacts, sketch_id):
+  def ExportArtifacts(self, processed_artifacts, sketch_id):
     """Upload provided artifacts to specified, or new if non-existent, sketch.
 
     Args:
-      processed_artifacts:  List of (timeline_name, artifact_path) tuples
-      sketch_id: ID of sketch to append the timeline to
+      processed_artifacts (list[tuple[str, str]): pairs of timeline names and
+          artifact paths to upload to a Timesketch server.
+      sketch_id (int): identifier of sketch to append the timeline to.
 
     Returns:
-      int: ID of sketch.
+      int: identifier of the sketch on the Timesketch server.
     """
-
     # Export processed timeline(s)
     for timeline_name, artifact_path in processed_artifacts:
       print('Uploading {0:s} to timeline {1:s}'.format(
           artifact_path, timeline_name))
-      new_timeline_id = self.upload_timeline(timeline_name, artifact_path)
-      self.add_timeline_to_sketch(sketch_id, new_timeline_id)
+      new_timeline_id = self._UploadTimeline(timeline_name, artifact_path)
+      self._AddTimelineToSketch(sketch_id, new_timeline_id)
 
     return sketch_id
 
-  def add_timeline_to_sketch(self, sketch_id, index_id):
-    """Associate the specified timeline and sketch.
+  def _AddTimelineToSketch(self, sketch_id, index_id):
+    """Associates a timeline with a sketch.
 
     Args:
-      sketch_id (int): ID of sketch
-      index_id (int): ID of timeline to add to sketch
+      sketch_id (int): identifier of the sketch on the Timesketch server.
+      index_id (int): identifier of timeline on the Timesketch server to
+          add to sketch.
     """
     resource_url = '{0:s}/sketches/{1:d}/timelines/'.format(
         self.api_base_url, sketch_id)
     form_data = {'timeline': [index_id]}
     self.session.post(resource_url, json=form_data)
 
-  def get_sketch(self, sketch_id):
-    """Get information on the specified sketch.
+  def GetSketchUrl(self, sketch_id):
+    """Retrieves the full URL of a sketch.
 
     Args:
-      sketch_id (int): ID of sketch
+      sketch_id (int): identifier of the sketch on the Timesketch server.
 
     Returns:
-      dict: Dictionary of sketch information
-
-    Raises:
-      ValueError: Sketch is inaccessible
+      str: URL of sketch.
     """
-    resource_url = '{0:s}/sketches/{1:d}/'.format(self.api_base_url, sketch_id)
-    response = self.session.get(resource_url)
-    response_dict = response.json()
-    try:
-      response_dict['objects']
-    except KeyError:
-      raise ValueError('Sketch does not exist or you have no access')
-    return response_dict
-
-  def get_sketch_url(self, sketch_id):
-    """Get the full URL of the specified sketch.
-
-    Args:
-      sketch_id: ID of sketch
-    Returns:
-      str: URL of sketch
-    """
-    resource_url = '{0:s}/sketch/{1:d}/'.format(self.host_url, sketch_id)
-    return resource_url
+    return '{0:s}/sketch/{1:d}/'.format(self.host_url, sketch_id)

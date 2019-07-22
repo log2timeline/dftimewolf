@@ -31,9 +31,15 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
 
   _CLIENT_ID_REGEX = re.compile(r'^c\.[0-9a-f]{16}$', re.IGNORECASE)
 
-  def __init__(self, state):
-    """Sets the keepalive attribute to False for GRRFlow objects."""
-    super(GRRFlow, self).__init__(state)
+  def __init__(self, state, critical=False):
+    """Initializes a GRR flow module.
+
+    Args:
+      state (DFTimewolfState): recipe state.
+      critical (Optional[bool]): True if the module is critical, which causes
+          the entire recipe to fail if the module encounters an error.
+    """
+    super(GRRFlow, self).__init__(state, critical=critical)
     self.keepalive = False
 
   def _get_client_by_hostname(self, hostname):
@@ -112,7 +118,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     """
     client = self.grr_api.Client(client_id)
     print('Checking for client approval')
-    self._check_approval_wrapper(client, client.ListFlows)
+    self._WrapGRRRequestWithApproval(client, client.ListFlows)
     print('{0:s}: Client approval is valid'.format(client_id))
     return client.Get()
 
@@ -128,7 +134,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
       string containing ID of launched flow
     """
     # Start the flow and get the flow ID
-    flow = self._check_approval_wrapper(
+    flow = self._WrapGRRRequestWithApproval(
         client, client.CreateFlow, name=name, args=args)
     flow_id = flow.flow_id
     print('{0:s}: Scheduled'.format(flow_id))

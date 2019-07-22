@@ -5,21 +5,20 @@ import abc
 
 
 class BaseModule(object):
-  """Base class for modules.
+  """Interface of a DFTimewolf module.
 
   Attributes:
-    critical: Boolean indicating whether the execution of this module is
-        critical to the execution of the recipe. If set to True, and the module
-        fails to properly run, the recipe will be aborted.
-    input: variable containing elements to be processed by a module.
-    output: variable containing the output of a module's execution.
+    critical (bool): True if this module is critical to the execution of
+        the recipe. If set to True, and the module fails to properly run,
+        the recipe will be aborted.
+    state (DFTimewolfState): recipe state.
   """
 
   def __init__(self, state, critical=False):
     """Initialize a module.
 
     Args:
-      state (DFTimewolfState): a state.
+      state (DFTimewolfState): recipe state.
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """

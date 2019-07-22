@@ -81,7 +81,7 @@ class GRRBaseModuleTest(unittest.TestCase):
     mock_grr_object = MockGRRObject()
     mock_forbidden_function = mock.Mock(
         wraps=mock_grr_object.forbidden_function)
-    result = grr_base_module._check_approval_wrapper(
+    result = grr_base_module._WrapGRRRequestWithApproval(
         mock_grr_object,
         mock_forbidden_function,
         'random1',
@@ -120,7 +120,7 @@ class GRRBaseModuleTest(unittest.TestCase):
     mock_grr_object = MockGRRObject()
     mock_forbidden_function = mock.Mock(
         wraps=mock_grr_object.forbidden_function)
-    result = grr_base_module._check_approval_wrapper(
+    result = grr_base_module._WrapGRRRequestWithApproval(
         mock_grr_object,
         mock_forbidden_function,
         'random1',
