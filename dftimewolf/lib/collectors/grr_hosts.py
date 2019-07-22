@@ -25,6 +25,9 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
   """Launches and collects GRR flows.
 
   Modules that use GRR flows or interact with hosts should extend this class.
+
+  Attributes:
+    keepalive (bool): True if the GRR keepalive functionality should be used.
   """
   _CHECK_APPROVAL_INTERVAL_SEC = 10
   _CHECK_FLOW_INTERVAL_SEC = 10
@@ -42,14 +45,15 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     super(GRRFlow, self).__init__(state, critical=critical)
     self.keepalive = False
 
-  def _get_client_by_hostname(self, hostname):
-    """Search GRR by hostname and get the latest active client.
+  # TODO: change object to more specific GRR type information.
+  def _GetClientByHostname(self, hostname):
+    """Searches GRR by hostname and get the latest active client.
 
     Args:
-      hostname: hostname to search for.
+      hostname (str): hostname to search for.
 
     Returns:
-      GRR API Client object
+      object: GRR API Client object
 
     Raises:
       DFTimewolfError: if no client ID found for hostname.
@@ -92,46 +96,34 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
 
     return client
 
-  def find_clients(self, hosts):
+  # TODO: change object to more specific GRR type information.
+  def _FindClients(self, hosts):
     """Finds GRR clients given a list of hosts.
 
     Args:
-      hosts: List of hostname FQDNs
+      hosts (list[str]): FQDNs of hosts.
 
     Returns:
-      List of GRR client objects.
+      list[object]: GRR client objects.
     """
     # TODO(tomchop): Thread this
     clients = []
     for host in hosts:
-      clients.append(self._get_client_by_hostname(host))
+      clients.append(self._GetClientByHostname(host))
     return [client for client in clients if client is not None]
 
-  def _get_client_by_id(self, client_id):
-    """Get GRR client dictionary and make sure valid approvals exist.
+  # TODO: change object to more specific GRR type information.
+  def _LaunchFlow(self, client, name, args):
+    """Creates the specified flow, setting KeepAlive if requested.
 
     Args:
-      client_id: GRR client ID.
+      client (object): GRR Client object on which to launch the flow.
+      name (str): name of the GRR flow.
+      args (object): arguments specific for type of flow, as defined in GRR
+          flow proto (FlowArgs).
 
     Returns:
-      GRR API Client object
-    """
-    client = self.grr_api.Client(client_id)
-    print('Checking for client approval')
-    self._WrapGRRRequestWithApproval(client, client.ListFlows)
-    print('{0:s}: Client approval is valid'.format(client_id))
-    return client.Get()
-
-  def _launch_flow(self, client, name, args):
-    """Create specified flow, setting KeepAlive if requested.
-
-    Args:
-      client: GRR Client object on which to launch the flow.
-      name: string containing flow name.
-      args: proto (*FlowArgs) for type of flow, as defined in GRR flow proto.
-
-    Returns:
-      string containing ID of launched flow
+      str: GRR identifier of launched flow.
     """
     # Start the flow and get the flow ID
     flow = self._WrapGRRRequestWithApproval(
@@ -146,17 +138,17 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
 
     return flow_id
 
-  def _await_flow(self, client, flow_id):
-    """Awaits flow completion.
+  # TODO: change object to more specific GRR type information.
+  def _AwaitFlow(self, client, flow_id):
+    """Waits for a specific GRR flow to complete.
 
     Args:
-      client: GRR Client object in which to await the flow.
-      flow_id: string containing ID of flow to await.
+      client (object): GRR Client object in which to await the flow.
+      flow_id (str): GRR identifier of the flow to await.
 
     Raises:
       DFTimewolfError: if flow error encountered.
     """
-    # Wait for the flow to finish
     print('{0:s}: Waiting to finish'.format(flow_id))
     while True:
       try:
@@ -183,12 +175,13 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
         break
       time.sleep(self._CHECK_FLOW_INTERVAL_SEC)
 
-  def _download_files(self, client, flow_id):
+  # TODO: change object to more specific GRR type information.
+  def _DownloadFiles(self, client, flow_id):
     """Download files from the specified flow.
 
     Args:
-      client: GRR Client object to which to download flow data from.
-      flow_id: GRR flow ID.
+      client (object): GRR Client object to which to download flow data from.
+      flow_id (str): GRR identifier of the flow.
 
     Returns:
       str: path of downloaded files.
@@ -221,11 +214,13 @@ class GRRArtifactCollector(GRRFlow):
   """Artifact collector for GRR flows.
 
   Attributes:
-    artifacts: comma-separated list of GRR-defined artifacts.
-    use_tsk: Toggle for use_tsk flag on GRR flow.
-    reason: Justification for GRR access.
-    approvers: list of GRR approval recipients.
+    artifacts (list[str]): artifact definition names.
+    extra_artifacts (list[str]): extra artifact definition names.
+    hostnames (list[str]): FDQNs of the GRR client hosts.
+    use_tsk (bool): True if GRR should use Sleuthkit (TSK) to collect file
+        system artifacts.
   """
+
   _DEFAULT_ARTIFACTS_LINUX = [
       'LinuxAuditLogs', 'LinuxAuthLogs', 'LinuxCronLogs', 'LinuxWtmp',
       'AllUsersShellHistory', 'ZeitgeistDatabase'
@@ -254,12 +249,11 @@ class GRRArtifactCollector(GRRFlow):
 
   def __init__(self, state):
     super(GRRArtifactCollector, self).__init__(state)
+    self._clients = []
     self.artifacts = []
     self.extra_artifacts = []
     self.hostnames = None
-    self._clients = []
     self.use_tsk = False
-    self.keepalive = False
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
@@ -269,16 +263,18 @@ class GRRArtifactCollector(GRRFlow):
     """Initializes a GRR artifact collector.
 
     Args:
-      hosts: Comma-separated list of hostnames to launch the flow on.
-      artifacts: list of GRR-defined artifacts.
-      extra_artifacts: list of GRR-defined artifacts to append.
-      use_tsk: toggle for use_tsk flag on GRR flow.
-      reason: justification for GRR access.
-      grr_server_url: GRR server URL.
-      grr_username: GRR username.
-      grr_password: GRR password.
-      approvers: list of GRR approval recipients.
-      verify: boolean, whether to verify the GRR server's x509 certificate.
+      hosts (str): comma-separated hostnames to launch the flow on.
+      artifacts (str): comma-separated artifact definition names.
+      extra_artifacts (str): comma-separated extra artifact definition names.
+      use_tsk (bool): True if GRR should use Sleuthkit (TSK) to collect file
+          system artifacts.
+      reason (str): justification for GRR access.
+      grr_server_url (str): GRR server URL.
+      grr_username (str): GRR username.
+      grr_password (str): GRR password.
+      approvers (Optional[str]): list of GRR approval recipients.
+      verify (Optional[bool]): True to indicate GRR server's x509 certificate
+          should be verified.
     """
     super(GRRArtifactCollector, self).SetUp(
         reason, grr_server_url, grr_username, grr_password, approvers=approvers,
@@ -294,11 +290,14 @@ class GRRArtifactCollector(GRRFlow):
     self.hostnames = [item.strip() for item in hosts.strip().split(',')]
     self.use_tsk = use_tsk
 
-  def _process_thread(self, client):
-    """Process a single GRR client.
+  # TODO: change object to more specific GRR type information.
+  def _ProcessThread(self, client):
+    """Processes a single GRR client.
+
+    This function is used as a callback for the processing thread.
 
     Args:
-      client: a GRR client object.
+      client (object): a GRR client object.
     """
     system_type = client.data.os_info.system
     print('System type: {0:s}'.format(system_type))
@@ -328,9 +327,9 @@ class GRRArtifactCollector(GRRFlow):
         use_tsk=self.use_tsk,
         ignore_interpolation_errors=True,
         apply_parsers=False)
-    flow_id = self._launch_flow(client, 'ArtifactCollectorFlow', flow_args)
-    self._await_flow(client, flow_id)
-    collected_flow_data = self._download_files(client, flow_id)
+    flow_id = self._LaunchFlow(client, 'ArtifactCollectorFlow', flow_args)
+    self._AwaitFlow(client, flow_id)
+    collected_flow_data = self._DownloadFiles(client, flow_id)
     if collected_flow_data:
       print('{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
       fqdn = client.data.os_info.fqdn.lower()
@@ -343,9 +342,9 @@ class GRRArtifactCollector(GRRFlow):
       DFTimewolfError: if no artifacts specified nor resolved by platform.
     """
     threads = []
-    for client in self.find_clients(self.hostnames):
+    for client in self._FindClients(self.hostnames):
       print(client)
-      thread = threading.Thread(target=self._process_thread, args=(client, ))
+      thread = threading.Thread(target=self._ProcessThread, args=(client, ))
       threads.append(thread)
       thread.start()
 
@@ -357,18 +356,17 @@ class GRRFileCollector(GRRFlow):
   """File collector for GRR flows.
 
   Attributes:
-    files: list of file paths.
-    reason: Justification for GRR access.
-    approvers: list of GRR approval recipients.
+    files (list[str]): file paths.
+    hostnames (list[str]): FDQNs of the GRR client hosts.
+    use_tsk (bool): True if GRR should use Sleuthkit (TSK) to collect files.
   """
 
   def __init__(self, state):
     super(GRRFileCollector, self).__init__(state)
+    self._clients = []
     self.files = []
     self.hostnames = None
-    self._clients = []
     self.use_tsk = False
-    self.keepalive = False
 
   # pylint: disable=arguments-differ
   def SetUp(self,
@@ -378,15 +376,16 @@ class GRRFileCollector(GRRFlow):
     """Initializes a GRR file collector.
 
     Args:
-      hosts: Comma-separated list of hostnames to launch the flow on.
-      files: list of file paths.
-      use_tsk: toggle for use_tsk flag on GRR flow.
-      reason: justification for GRR access.
-      grr_server_url: GRR server URL.
-      grr_username: GRR username.
-      grr_password: GRR password.
-      approvers: list of GRR approval recipients.
-      verify: boolean, whether to verify the GRR server's x509 certificate.
+      hosts (str): comma-separated hostnames to launch the flow on.
+      files (str): comma-separated file paths.
+      use_tsk (bool): True if GRR should use Sleuthkit (TSK) to collect files.
+      reason (str): justification for GRR access.
+      grr_server_url (str): GRR server URL.
+      grr_username (str): GRR username.
+      grr_password (str): GRR password.
+      approvers (Optional[str]): list of GRR approval recipients.
+      verify (Optional[bool]): True to indicate GRR server's x509 certificate
+          should be verified.
     """
     super(GRRFileCollector, self).SetUp(
         reason, grr_server_url, grr_username, grr_password,
@@ -398,11 +397,14 @@ class GRRFileCollector(GRRFlow):
     self.hostnames = [item.strip() for item in hosts.strip().split(',')]
     self.use_tsk = use_tsk
 
-  def _process_thread(self, client):
-    """Process a single client.
+  # TODO: change object to more specific GRR type information.
+  def _ProcessThread(self, client):
+    """Processes a single client.
+
+    This function is used as a callback for the processing thread.
 
     Args:
-      client: GRR client object to act on.
+      client (object): GRR client object to act on.
     """
     file_list = self.files
     if not file_list:
@@ -414,9 +416,9 @@ class GRRFileCollector(GRRFlow):
     flow_args = flows_pb2.FileFinderArgs(
         paths=file_list,
         action=flow_action,)
-    flow_id = self._launch_flow(client, 'FileFinder', flow_args)
-    self._await_flow(client, flow_id)
-    collected_flow_data = self._download_files(client, flow_id)
+    flow_id = self._LaunchFlow(client, 'FileFinder', flow_args)
+    self._AwaitFlow(client, flow_id)
+    collected_flow_data = self._DownloadFiles(client, flow_id)
     if collected_flow_data:
       print('{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
       fqdn = client.data.os_info.fqdn.lower()
@@ -429,8 +431,8 @@ class GRRFileCollector(GRRFlow):
       DFTimewolfError: if no files specified.
     """
     threads = []
-    for client in self.find_clients(self.hostnames):
-      thread = threading.Thread(target=self._process_thread, args=(client, ))
+    for client in self._FindClients(self.hostnames):
+      thread = threading.Thread(target=self._ProcessThread, args=(client, ))
       threads.append(thread)
       thread.start()
 
@@ -442,12 +444,9 @@ class GRRFlowCollector(GRRFlow):
   """Flow collector.
 
   Attributes:
-    output_path: Path to where to store collected items.
-    grr_api: GRR HTTP API client.
-    host: Target of GRR collection.
-    flow_id: ID of GRR flow to retrieve.
-    reason: Justification for GRR access.
-    approvers: list of GRR approval recipients.
+    client_id (str): GRR identifier of the client.
+    flow_id (str): GRR identifier of the flow to retrieve.
+    host (str): Target of GRR collection.
   """
 
   def __init__(self, state):
@@ -464,14 +463,15 @@ class GRRFlowCollector(GRRFlow):
     """Initializes a GRR flow collector.
 
     Args:
-      host: hostname of machine.
-      flow_id: ID of GRR flow to retrieve.
-      reason: justification for GRR access.
-      grr_server_url: GRR server URL.
-      grr_username: GRR username.
-      grr_password: GRR password.
-      approvers: list of GRR approval recipients.
-      verify: boolean, whether to verify the GRR server's x509 certificate.
+      host (str): hostname of machine.
+      flow_id (str): GRR identifier of the flow to retrieve.
+      reason (str): justification for GRR access.
+      grr_server_url (str): GRR server URL.
+      grr_username (str): GRR username.
+      grr_password (str): GRR password.
+      approvers (Optional[str]): list of GRR approval recipients.
+      verify (Optional[bool]): True to indicate GRR server's x509 certificate
+          should be verified.
     """
     super(GRRFlowCollector, self).SetUp(
         reason, grr_server_url, grr_username, grr_password,
@@ -485,9 +485,9 @@ class GRRFlowCollector(GRRFlow):
     Raises:
       DFTimewolfError: if no files specified
     """
-    client = self._get_client_by_hostname(self.host)
-    self._await_flow(client, self.flow_id)
-    collected_flow_data = self._download_files(client, self.flow_id)
+    client = self._GetClientByHostname(self.host)
+    self._AwaitFlow(client, self.flow_id)
+    collected_flow_data = self._DownloadFiles(client, self.flow_id)
     if collected_flow_data:
       print('{0:s}: Downloaded: {1:s}'.format(
           self.flow_id, collected_flow_data))

@@ -23,15 +23,17 @@ class GRRHunt(grr_base.GRRBaseModule):  # pylint: disable=abstract-method
   Should be extended by the modules that interact with GRR hunts.
   """
 
+  # TODO: change object to more specific GRR type information.
   def _CreateHunt(self, name, args):
     """Creates a GRR hunt.
 
     Args:
       name (str): name of the hunt.
-      args: proto (*FlowArgs) for type of hunt, as defined in GRR flow proto.
+      args (object): arguments specific for type of flow, as defined in GRR
+          flow proto (FlowArgs).
 
     Returns:
-      The newly created GRR hunt object.
+      object: a GRR hunt object.
 
     Raises:
       ValueError: if approval is needed and approvers were not specified.
@@ -140,7 +142,7 @@ class GRRHuntFileCollector(GRRHunt):
     """Initializes a GRR Hunt file collector.
 
     Args:
-      file_path_list: comma-separated list of file paths.
+      file_path_list (str): comma-separated file paths.
       reason (str): justification for GRR access.
       grr_server_url (str): GRR server URL.
       grr_username (str): GRR username.
@@ -201,7 +203,7 @@ class GRRHuntDownloader(GRRHunt):
     """Initializes a GRR Hunt file collector.
 
     Args:
-      hunt_id: Hunt ID to download results from.
+      hunt_id (str): GRR identifier of the hunt for which to download results.
       reason (str): justification for GRR access.
       grr_server_url (str): GRR server URL.
       grr_username (str): GRR username.
@@ -216,17 +218,17 @@ class GRRHuntDownloader(GRRHunt):
     self.hunt_id = hunt_id
     self.output_path = tempfile.mkdtemp()
 
-  def collect_hunt_results(self, hunt):
-    """Download current set of files in results.
+  # TODO: change object to more specific GRR type information.
+  def _CollectHuntResults(self, hunt):
+    """Downloads the current set of files in results.
 
     Args:
-      hunt: The GRR hunt object to download files from.
+      hunt (object): GRR hunt object to download files from.
 
     Returns:
-      list: tuples containing:
-          str: human-readable description of the source of the collection. For
-              example, the name of the source host.
-          str: path to the collected data.
+      list[tuple[str, str]]: pairs of human-readable description of the source
+          of the collection, for example the name of the source host, and
+          the path to the collected data.
 
     Raises:
       ValueError: if approval is needed and approvers were not specified.
@@ -242,41 +244,43 @@ class GRRHuntDownloader(GRRHunt):
       return None
 
     self._WrapGRRRequestWithApproval(
-        hunt, self._get_and_write_archive, hunt, output_file_path)
+        hunt, self._GetAndWriteArchive, hunt, output_file_path)
 
-    results = self._extract_hunt_results(output_file_path)
+    results = self._ExtractHuntResults(output_file_path)
     print('Wrote results of {0:s} to {1:s}'.format(
         hunt.hunt_id, output_file_path))
     return results
 
-  def _get_and_write_archive(self, hunt, output_file_path):
-    """Gets and writes a hunt archive.
+  # TODO: change object to more specific GRR type information.
+  def _GetAndWriteArchive(self, hunt, output_file_path):
+    """Retrieves and writes a hunt archive.
 
     Function is necessary for the _WrapGRRRequestWithApproval to work.
 
     Args:
-      hunt: The GRR hunt object.
-      output_file_path: The output path where to write the Hunt Archive.
+      hunt (object): GRR hunt object.
+      output_file_path (str): output path where to write the Hunt Archive.
     """
     hunt_archive = hunt.GetFilesArchive()
     hunt_archive.WriteToFile(output_file_path)
 
-  def _get_client_fqdn(self, client_info_contents):
+  def _GetClientFQDN(self, client_info_contents):
     """Extracts a GRR client's FQDN from its client_info.yaml file.
 
     Args:
-      client_info_contents: The contents of the client_info.yaml file.
+      client_info_contents (str): contents of the client_info.yaml file.
 
     Returns:
       tuple[str, str]: client identifier and client FQDN.
     """
+    # TODO: handle incorrect file contents.
     yamldict = yaml.safe_load(client_info_contents)
     fqdn = yamldict['system_info']['fqdn']
     client_id = yamldict['client_id'].split('/')[1]
     return client_id, fqdn
 
-  def _extract_hunt_results(self, output_file_path):
-    """Open a hunt output archive and extract files.
+  def _ExtractHuntResults(self, output_file_path):
+    """Opens a hunt output archive and extract files.
 
     Args:
       output_file_path (str): path where the hunt results archive file is
@@ -302,7 +306,7 @@ class GRRHuntDownloader(GRRHunt):
           # If we're dealing with client_info.yaml, use it to build a client
           # ID to FQDN correspondence table & skip extraction.
           if f.filename.split('/')[-1] == 'client_info.yaml':
-            client_id, fqdn = self._get_client_fqdn(archive.read(f))
+            client_id, fqdn = self._GetClientFQDN(archive.read(f))
             client_id_to_fqdn[client_id] = fqdn
             continue
 
@@ -357,7 +361,7 @@ class GRRHuntDownloader(GRRHunt):
       RuntimeError: if no items specified for collection.
     """
     hunt = self.grr_api.Hunt(self.hunt_id).Get()
-    self.state.output = self.collect_hunt_results(hunt)
+    self.state.output = self._CollectHuntResults(hunt)
 
 
 modules_manager.ModulesManager.RegisterModules([
