@@ -22,14 +22,14 @@ from dftimewolf.lib.collectors import audit_log_pb2 as _
 
 # Monkey patching the ProtobufEntry because of various issues, notably
 # https://github.com/googleapis/google-cloud-python/issues/7918
-def custom_to_api_repr(self):
+def _CustomToAPIRepr(self):
   """API repr (JSON format) for entry."""
   info = super(logging.entries.ProtobufEntry, self).to_api_repr()
   info['protoPayload'] = self.payload
   return info
 
 
-logging.entries.ProtobufEntry.to_api_repr = custom_to_api_repr
+logging.entries.ProtobufEntry.to_api_repr = _CustomToAPIRepr
 
 
 class StackdriverLogsCollector(module.BaseModule):
@@ -38,8 +38,8 @@ class StackdriverLogsCollector(module.BaseModule):
   def __init__(self, state):
     """Initializes a Stackdriver logs collector."""
     super(StackdriverLogsCollector, self).__init__(state)
-    self._project_name = None
     self._filter_expression = None
+    self._project_name = None
 
   # pylint: disable=arguments-differ
   def SetUp(self, project_name, filter_expression):

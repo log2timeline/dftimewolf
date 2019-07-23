@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Collect artifacts from the local filesystem."""
+"""Local file system exporter module."""
 
 from __future__ import print_function
 from __future__ import unicode_literals
@@ -19,6 +19,7 @@ class LocalFilesystemCopy(module.BaseModule):
   """
 
   def __init__(self, state):
+    """Initializes a local file system exporter module."""
     super(LocalFilesystemCopy, self).__init__(state)
     self._target_directory = None
 
@@ -26,7 +27,8 @@ class LocalFilesystemCopy(module.BaseModule):
     """Sets up the _target_directory attribute.
 
     Args:
-      target_directory: Directory in which collected files will be dumped.
+      target_directory (Optional[str]): path of the directory in which
+          collected files will be copied.
     """
     self._target_directory = target_directory
     if not target_directory:
@@ -41,15 +43,17 @@ class LocalFilesystemCopy(module.BaseModule):
   def Process(self):
     """Checks whether the paths exists and updates the state accordingly."""
     for _, path in self.state.input:
-      self._copy_file_or_directory(path, self._target_directory)
+      self._CopyFileOrDirectory(path, self._target_directory)
       print('{0:s} -> {1:s}'.format(path, self._target_directory))
 
-  def _copy_file_or_directory(self, source, destination_directory):
+  def _CopyFileOrDirectory(self, source, destination_directory):
     """Recursively copies files from source to destination_directory.
 
     Args:
-        source: source file or directory to copy into destination_directory
-        destination_directory: destination directory in which to copy source
+      source (str): source file or directory to copy into the destination
+          directory.
+      destination_directory (str): destination directory in which to copy
+          source.
     """
     if os.path.isdir(source):
       for item in os.listdir(source):
