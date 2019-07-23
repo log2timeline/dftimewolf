@@ -198,7 +198,7 @@ class DFTimewolfTool(object):
     print('Modules successfully set up!')
 
 
-def main():
+def Main():
   """Main function for DFTimewolf.
 
   Returns:
@@ -236,7 +236,7 @@ def main():
 
 if __name__ == '__main__':
   signal.signal(signal.SIGINT, utils.signal_handler)
-  if main():
+  if Main():
     sys.exit(0)
   else:
     sys.exit(1)

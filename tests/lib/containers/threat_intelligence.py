@@ -10,15 +10,15 @@ from dftimewolf.lib import containers
 class ReportDataTest(unittest.TestCase):
   """Tests for the Report data attribute container."""
 
-  def test_get_attribute_names(self):
-    """Tests the get_attribute_names function."""
+  def testGetAttributeNames(self):
+    """Tests the GetAttributeNames function."""
     attribute_container = containers.ThreatIntelligence(
         name='name',
         indicator='.*')
 
     expected_attribute_names = ['indicator', 'name']
 
-    attribute_names = sorted(attribute_container.get_attribute_names())
+    attribute_names = sorted(attribute_container.GetAttributeNames())
 
     self.assertEqual(attribute_names, expected_attribute_names)
 
