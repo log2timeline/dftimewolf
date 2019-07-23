@@ -17,6 +17,7 @@ from dftimewolf import config
 
 ACCESS_FORBIDDEN_MAX = 3
 
+
 class MockGRRObject(object):
   """Fake GRR object that will be used in the access forbidden wrapper test"""
   _access_forbidden_counter = 0
@@ -24,13 +25,15 @@ class MockGRRObject(object):
 
   hunt_id = "123"
   client_id = "321"
+
   # pylint: disable=unused-argument
-  def forbidden_function(self, random1, random2, random3=None, random4=None):
+  def ForbiddenFunction(self, random1, random2, random3=None, random4=None):
     """Will raise a grr_errors.AccessForbiddenError three times, and return."""
     while ACCESS_FORBIDDEN_MAX > self._access_forbidden_counter:
       self._access_forbidden_counter += 1
       raise grr_errors.AccessForbiddenError
     return 4
+
 
 class GRRBaseModuleTest(unittest.TestCase):
   """Tests for the GRR base collector."""
@@ -80,7 +83,7 @@ class GRRBaseModuleTest(unittest.TestCase):
     grr_base_module._CHECK_APPROVAL_INTERVAL_SEC = 0
     mock_grr_object = MockGRRObject()
     mock_forbidden_function = mock.Mock(
-        wraps=mock_grr_object.forbidden_function)
+        wraps=mock_grr_object.ForbiddenFunction)
     result = grr_base_module._WrapGRRRequestWithApproval(
         mock_grr_object,
         mock_forbidden_function,
@@ -119,7 +122,7 @@ class GRRBaseModuleTest(unittest.TestCase):
     grr_base_module._CHECK_APPROVAL_INTERVAL_SEC = 0
     mock_grr_object = MockGRRObject()
     mock_forbidden_function = mock.Mock(
-        wraps=mock_grr_object.forbidden_function)
+        wraps=mock_grr_object.ForbiddenFunction)
     result = grr_base_module._WrapGRRRequestWithApproval(
         mock_grr_object,
         mock_forbidden_function,
