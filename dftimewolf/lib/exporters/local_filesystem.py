@@ -9,6 +9,7 @@ import shutil
 import tempfile
 
 from dftimewolf.lib import module
+from dftimewolf.lib.modules import manager as modules_manager
 
 
 class LocalFilesystemCopy(module.BaseModule):
@@ -62,3 +63,6 @@ class LocalFilesystemCopy(module.BaseModule):
         shutil.copytree(full_source, full_destination)
     else:
       shutil.copy2(source, destination_directory)
+
+
+modules_manager.ModulesManager.RegisterModule(LocalFilesystemCopy)

@@ -22,7 +22,9 @@ from dftimewolf.lib import utils
 
 if not _ASKING_FOR_HELP:
   # Import the collector modules.
-  from dftimewolf.lib import collectors  # pylint: disable=unused-import
+  # These will be registered automatically upon import
+  # pylint: disable=unused-import
+  from dftimewolf.lib import collectors
   from dftimewolf.lib.collectors import filesystem
   from dftimewolf.lib.collectors import gcloud
   from dftimewolf.lib.collectors import grr_hosts
@@ -36,28 +38,6 @@ if not _ASKING_FOR_HELP:
 
 from dftimewolf.lib.recipes import manager as recipes_manager
 from dftimewolf.lib.state import DFTimewolfState
-
-if not _ASKING_FOR_HELP:
-  config.Config.register_module(filesystem.FilesystemCollector)
-  config.Config.register_module(localplaso.LocalPlasoProcessor)
-  config.Config.register_module(gcloud.GoogleCloudCollector)
-
-  config.Config.register_module(grr_hosts.GRRArtifactCollector)
-  config.Config.register_module(grr_hosts.GRRFileCollector)
-  config.Config.register_module(grr_hosts.GRRFlowCollector)
-  config.Config.register_module(grr_hunt.GRRHuntArtifactCollector)
-  config.Config.register_module(grr_hunt.GRRHuntFileCollector)
-  config.Config.register_module(grr_hunt.GRRHuntDownloader)
-
-  config.Config.register_module(timesketch.TimesketchExporter)
-  config.Config.register_module(local_filesystem.LocalFilesystemCopy)
-  config.Config.register_module(turbinia.TurbiniaProcessor)
-  config.Config.register_module(grepper.GrepperSearch)
-  config.Config.register_module(stackdriver.StackdriverLogsCollector)
-
-
-
-# TODO(tomchop) Change the print statements by a better logging / display system
 
 
 class DFTimewolfTool(object):
