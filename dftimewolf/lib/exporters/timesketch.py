@@ -13,13 +13,19 @@ class TimesketchExporter(module.BaseModule):
 
   input: A list of paths to plaso or CSV files.
   output: A URL to the generated timeline.
+
+  Attributes:
+    incident_id (str): Incident ID or reference. Used in sketch description.
+    sketch_id (int): Sketch ID to add the resulting timeline to. If not
+        provided, a new sketch is created.
+    timesketch_api (TimesketchApiClient): Timesketch API client.
   """
 
   def __init__(self, state):
     super(TimesketchExporter, self).__init__(state)
-    self.timesketch_api = None
     self.incident_id = None
     self.sketch_id = None
+    self.timesketch_api = None
 
   def SetUp(self,  # pylint: disable=arguments-differ
             endpoint=None,
@@ -30,12 +36,16 @@ class TimesketchExporter(module.BaseModule):
     """Setup a connection to a Timesketch server and create a sketch if needed.
 
     Args:
-      endpoint: str, Timesketch endpoint (e.g. http://timesketch.com/)
-      username: str, Username to authenticate against the Timesketch endpoint.
-      password: str, Password to authenticate against the Timesketch endpoint.
-      incident_id: str, Incident ID or reference. Used in sketch description.
-      sketch_id: int, Sketch ID to add the resulting timeline to. If not
-          provided, a new sketch is created.
+      endpoint (Optional[str]): Timesketch endpoint, for example
+          http://timesketch.com/.
+      username (Optional[str]): Username to authenticate against
+          the Timesketch endpoint.
+      password (Optional[str]): Password to authenticate against
+          the Timesketch endpoint.
+      incident_id (Optional[str]): Incident ID or reference. Used in sketch
+          description.
+      sketch_id (Optional[int]): Sketch ID to add the resulting timeline to.
+          If not provided, a new sketch is created.
     """
     self.timesketch_api = timesketch_utils.TimesketchApiClient(
         endpoint, username, password)
