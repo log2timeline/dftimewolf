@@ -15,7 +15,7 @@ then
 elif test "${TARGET}" = "pylint";
 then
 	pylint --version
-	pylint --rcfile=.pylintrc setup.py config dftimewolf tests
+	pylint --rcfile=.pylintrc setup.py dftimewolf tests
 
 elif test "${TRAVIS_OS_NAME}" = "osx";
 then
