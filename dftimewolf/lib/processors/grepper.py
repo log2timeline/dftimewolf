@@ -11,6 +11,7 @@ import tempfile
 import PyPDF2
 
 from dftimewolf.lib import module
+from dftimewolf.lib.modules import manager as modules_manager
 
 
 class GrepperSearch(module.BaseModule):
@@ -92,3 +93,5 @@ class GrepperSearch(module.BaseModule):
       match.update(set(x.lower() for x in re.findall(
           self._keywords, text, re.IGNORECASE)))
     return match
+
+modules_manager.ModulesManager.RegisterModule(GrepperSearch)
