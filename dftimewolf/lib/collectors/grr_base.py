@@ -64,6 +64,7 @@ class GRRBaseModule(module.BaseModule):
     self.output_path = tempfile.mkdtemp()
     self.reason = reason
 
+  # TODO: change object to more specific GRR type information.
   def _WrapGRRRequestWithApproval(
       self, grr_object, grr_function, *args, **kwargs):
     """Wraps a GRR request with approval.
@@ -71,19 +72,22 @@ class GRRBaseModule(module.BaseModule):
     This method will request the approval if not yet granted.
 
     Args:
-      grr_object: the GRR object to create the eventual approval on.
-      grr_function: The GRR function requiring approval.
-      *args: Positional arguments that are to be passed to `grr_function`.
-      **kwargs: Keyword arguments that are to be passed to `grr_function`.
+      grr_object (object): GRR object to create the eventual approval on.
+      grr_function (function): GRR function requiring approval.
+      args (list[object]): Positional arguments that are to be passed
+          to `grr_function`.
+      kwargs (dict[str, object]): keyword arguments that are to be passed
+          to `grr_function`.
 
     Returns:
-      The return value of the execution of grr_function(*args, **kwargs).
+      object: return value of the execution of grr_function(*args, **kwargs).
     """
     approval_sent = False
 
     while True:
       try:
         return grr_function(*args, **kwargs)
+
       except grr_errors.AccessForbiddenError as exception:
         print('No valid approval found: {0!s}'.format(exception))
         # If approval was already sent, just wait a bit more.
