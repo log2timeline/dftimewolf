@@ -18,6 +18,7 @@ from dftimewolf.lib.containers import StackdriverLogs
 # Need to register with in the protobuf registry.
 # pylint: disable=unused-import
 from dftimewolf.lib.collectors import audit_log_pb2 as _
+from dftimewolf.lib.modules import manager as modules_manager
 
 
 # Monkey patching the ProtobufEntry because of various issues, notably
@@ -115,3 +116,6 @@ class StackdriverLogsCollector(module.BaseModule):
         path=output_path, filter_expression=self._filter_expression,
         project_name=self._project_name)
     self.state.store_container(logs_report)
+
+
+modules_manager.ModulesManager.RegisterModule(StackdriverLogsCollector)
