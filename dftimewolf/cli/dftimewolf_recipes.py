@@ -152,8 +152,8 @@ class DFTimewolfTool(object):
     Args:
       arguments (list[str]): command line arguments.
 
-    Returns:
-      bool: True if the arguments were successfully parsed.
+    Raises:
+      CommandLineParseError: If arguments could not be parsed.
     """
     help_text = self._GenerateHelpText()
 
@@ -164,6 +164,11 @@ class DFTimewolfTool(object):
     self._AddRecipeOptions(argument_parser)
 
     self._command_line_options = argument_parser.parse_args(arguments)
+
+    if not hasattr(self._command_line_options, 'recipe'):
+      error_message = '\nPlease specify a recipe.\n' + help_text
+      raise errors.CommandLineParseError(error_message)
+
     self._recipe = self._command_line_options.recipe
 
     self._state = DFTimewolfState(config.Config)
@@ -173,8 +178,6 @@ class DFTimewolfTool(object):
     number_of_modules = len(self._recipe['modules'])
     print('Loaded recipe {0:s} with {1:d} modules'.format(
         self._recipe['name'], number_of_modules))
-
-    return True
 
   def ReadRecipes(self):
     """Reads the recipe files."""
@@ -221,8 +224,10 @@ def Main():
     print('{0!s}'.format(exception))
     return False
 
-  if not tool.ParseArguments(sys.argv[1:]):
-    # TODO: print errors if this fails.
+  try:
+    tool.ParseArguments(sys.argv[1:])
+  except errors.CommandLineParseError as exception:
+    sys.stderr.write(str(exception))
     return False
 
   # TODO: print errors if this fails.
