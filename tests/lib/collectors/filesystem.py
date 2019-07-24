@@ -37,7 +37,7 @@ class LocalFileSystemTest(unittest.TestCase):
     ]
     self.assertEqual(test_state.output, expected_output)
 
-  @mock.patch('dftimewolf.lib.state.DFTimewolfState.add_error')
+  @mock.patch('dftimewolf.lib.state.DFTimewolfState.AddError')
   def testSetup(self, mock_add_error):
     """Tests that no paths specified in setup will generate an error."""
     test_state = state.DFTimewolfState(config.Config)

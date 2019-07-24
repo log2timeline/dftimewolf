@@ -34,7 +34,7 @@ class FilesystemCollector(module.BaseModule):
       paths (Optional[str]): Comma-separated paths to collect.
     """
     if not paths:
-      self.state.add_error(
+      self.state.AddError(
           'No `paths` argument provided in recipe, bailing', critical=True)
     else:
       self._paths = [path.strip() for path in paths.split(',')]
@@ -45,10 +45,10 @@ class FilesystemCollector(module.BaseModule):
       if os.path.exists(path):
         self.state.output.append((os.path.basename(path), path))
       else:
-        self.state.add_error(
+        self.state.AddError(
             'Path {0:s} does not exist'.format(str(path)), critical=False)
     if not self.state.output:
-      self.state.add_error('No valid paths collected, bailing', critical=True)
+      self.state.AddError('No valid paths collected, bailing', critical=True)
 
 
 modules_manager.ModulesManager.RegisterModule(FilesystemCollector)
