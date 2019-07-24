@@ -64,7 +64,7 @@ class TurbiniaProcessor(module.BaseModule):
     # module or by the CLI.
 
     if project is None or turbinia_zone is None:
-      self.state.add_error(
+      self.state.AddError(
           'project or turbinia_zone are not all specified, bailing out',
           critical=True)
       return
@@ -78,7 +78,7 @@ class TurbiniaProcessor(module.BaseModule):
       self.turbinia_region = turbinia_config.TURBINIA_REGION
       self.instance = turbinia_config.PUBSUB_TOPIC
       if turbinia_config.TURBINIA_PROJECT != self.project:
-        self.state.add_error(
+        self.state.AddError(
             'Specified project {0:s} does not match Turbinia configured '
             'project {1:s}. Use gcp_turbinia_import recipe to copy the disk '
             'into the same project.'.format(
@@ -86,8 +86,10 @@ class TurbiniaProcessor(module.BaseModule):
         return
       self._output_path = tempfile.mkdtemp()
       self.client = turbinia_client.TurbiniaClient()
-    except TurbiniaException as e:
-      self.state.add_error(e, critical=True)
+    except TurbiniaException as exception:
+      # TODO: determine if exception should be converted into a string as
+      # elsewhere in the codebase.
+      self.state.AddError(exception, critical=True)
       return
 
   def _PrintTaskData(self, task):
@@ -149,8 +151,10 @@ class TurbiniaProcessor(module.BaseModule):
           request.request_id))
       self.client.wait_for_request(**request_dict)
       task_data = self.client.get_task_data(**request_dict)
-    except TurbiniaException as e:
-      self.state.add_error(e, critical=True)
+    except TurbiniaException as exception:
+      # TODO: determine if exception should be converted into a string as
+      # elsewhere in the codebase.
+      self.state.AddError(exception, critical=True)
       return
 
     # Turbinia run complete, build a human-readable message of results.
@@ -190,7 +194,7 @@ class TurbiniaProcessor(module.BaseModule):
           gs_paths.append(path)
 
     if not local_paths and not gs_paths:
-      self.state.add_error(
+      self.state.AddError(
           'No .plaso files found in Turbinia output.', critical=True)
       return
 
@@ -207,15 +211,17 @@ class TurbiniaProcessor(module.BaseModule):
         output_writer = output_manager.GCSOutputWriter(
             path, local_output_dir=self._output_path)
         local_path = output_writer.copy_from(path)
-      except TurbiniaException as e:
-        self.state.add_error(e, critical=True)
+      except TurbiniaException as exception:
+        # TODO: determine if exception should be converted into a string as
+        # elsewhere in the codebase.
+        self.state.AddError(exception, critical=True)
         return
 
       if local_path:
         self.state.output.append((timeline_label, local_path))
 
     if not self.state.output:
-      self.state.add_error('No .plaso files could be found.', critical=True)
+      self.state.AddError('No .plaso files could be found.', critical=True)
 
 
 modules_manager.ModulesManager.RegisterModule(TurbiniaProcessor)

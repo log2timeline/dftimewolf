@@ -56,7 +56,7 @@ class TimesketchExporter(module.BaseModule):
     # Check that we have a timesketch session
     if not self.timesketch_api.session:
       message = 'Could not connect to Timesketch server at ' + endpoint
-      self.state.add_error(message, critical=True)
+      self.state.AddError(message, critical=True)
       return
 
     if not self.sketch_id:  # No sketch id is provided, create it
@@ -77,7 +77,7 @@ class TimesketchExporter(module.BaseModule):
     # TODO(tomchop): Consider using the official Timesketch python API.
     if not self.timesketch_api.session:
       message = 'Could not connect to Timesketch server'
-      self.state.add_error(message, critical=True)
+      self.state.AddError(message, critical=True)
 
     named_timelines = []
     for description, path in self.state.input:
@@ -86,10 +86,10 @@ class TimesketchExporter(module.BaseModule):
       named_timelines.append((description, path))
     try:
       self.timesketch_api.ExportArtifacts(named_timelines, self.sketch_id)
-    except RuntimeError as e:
-      self.state.add_error(
-          'Error occurred while working with Timesketch: {0:s}'.format(str(e)),
-          critical=True)
+    except RuntimeError as exception:
+      self.state.AddError(
+          'An error occurred while working with Timesketch: {0!s}'.format(
+              exception), critical=True)
       return
 
     sketch_url = self.timesketch_api.GetSketchUrl(self.sketch_id)

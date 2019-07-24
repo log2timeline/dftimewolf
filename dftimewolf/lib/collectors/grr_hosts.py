@@ -63,7 +63,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     try:
       search_result = self.grr_api.SearchClients(hostname)
     except grr_errors.UnknownError as exception:
-      self.state.add_error('Could not search for host {0:s}: {1!s}'.format(
+      self.state.AddError('Could not search for host {0:s}: {1!s}'.format(
           hostname, exception
       ), critical=True)
       return None
@@ -74,8 +74,8 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
         result.append((client.data.last_seen_at, client))
 
     if not result:
-      self.state.add_error(
-          'Could not get client_id for {0:s}'.format(hostname), critical=True)
+      self.state.AddError('Could not get client_id for {0:s}'.format(
+          hostname), critical=True)
       return None
 
     last_seen, client = sorted(result, key=lambda x: x[0], reverse=True)[0]
@@ -156,7 +156,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
       except grr_errors.UnknownError:
         msg = 'Unable to stat flow {0:s} for host {1:s}'.format(
             flow_id, client.data.os_info.fqdn.lower())
-        self.state.add_error(msg)
+        self.state.AddError(msg)
         raise DFTimewolfError(
             'Unable to stat flow {0:s} for host {1:s}'.format(
                 flow_id, client.data.os_info.fqdn.lower()))
