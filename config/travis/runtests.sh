@@ -51,12 +51,10 @@ then
 	then
 		tox --sitepackages ${TOXENV};
 
-	elif test "${TRAVIS_PYTHON_VERSION}" = "2.7";
-	then
-		coverage erase
-		coverage run --source=dftimewolf --omit="*_test*,*__init__*,*test_lib*" ./run_tests.py
 	else
-		python ./run_tests.py
+		coverage erase
+
+		coverage run --source=dftimewolf --omit="*_test*,*__init__*,*test_lib*" ./run_tests.py
 
 		python ./setup.py build
 
