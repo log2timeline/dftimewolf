@@ -104,7 +104,7 @@ class DFTimewolfState(object):
       try:
         module.SetUp(**new_args)
       except Exception as exception:  # pylint: disable=broad-except
-        self.add_error(
+        self.AddError(
             'An unknown error occurred: {0!s}\nFull traceback:\n{1:s}'.format(
                 exception, traceback.format_exc()),
             critical=True)
@@ -143,9 +143,9 @@ class DFTimewolfState(object):
       try:
         module.Process()
       except DFTimewolfError as exception:
-        self.add_error(exception.message, critical=True)
+        self.AddError(exception.message, critical=True)
       except Exception as exception:  # pylint: disable=broad-except
-        self.add_error(
+        self.AddError(
             'An unknown error occurred: {0!s}\nFull traceback:\n{1:s}'.format(
                 exception, traceback.format_exc()),
             critical=True)
@@ -166,7 +166,7 @@ class DFTimewolfState(object):
 
     self.CheckErrors(is_global=True)
 
-  def add_error(self, error, critical=False):
+  def AddError(self, error, critical=False):
     """Adds an error to the state.
 
     Args:

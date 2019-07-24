@@ -101,7 +101,7 @@ class GRRBaseModule(module.BaseModule):
         if not self.approvers:
           message = ('GRR needs approval but no approvers specified '
                      '(hint: use --approvers)')
-          self.state.add_error(message, critical=True)
+          self.state.AddError(message, critical=True)
           return None
 
         # Otherwise, send a request for approval

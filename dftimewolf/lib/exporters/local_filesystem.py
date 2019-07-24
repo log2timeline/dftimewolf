@@ -39,7 +39,7 @@ class LocalFilesystemCopy(module.BaseModule):
         os.makedirs(target_directory)
       except OSError as exception:
         message = 'An unknown error occurred: {0!s}'.format(exception)
-        self.state.add_error(message, critical=True)
+        self.state.AddError(message, critical=True)
 
   def Process(self):
     """Checks whether the paths exists and updates the state accordingly."""
