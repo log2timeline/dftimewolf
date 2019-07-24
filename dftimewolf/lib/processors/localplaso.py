@@ -71,13 +71,13 @@ class LocalPlasoProcessor(module.BaseModule):
           # self.console_out.StdErr(errors)
           message = ('The log2timeline command {0:s} failed: {1!s}.'
                      ' Check log file for details.').format(full_cmd, error)
-          self.state.add_error(message, critical=True)
+          self.state.AddError(message, critical=True)
         self.state.output.append((description, plaso_storage_file_path))
       except OSError as exception:
-        self.state.add_error(str(exception), critical=True)
+        self.state.AddError(str(exception), critical=True)
       # Catch all remaining errors since we want to gracefully report them
       except Exception as exception:  # pylint: disable=broad-except
-        self.state.add_error(str(exception), critical=True)
+        self.state.AddError(str(exception), critical=True)
 
 
 modules_manager.ModulesManager.RegisterModule(LocalPlasoProcessor)

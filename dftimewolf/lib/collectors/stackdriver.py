@@ -75,38 +75,44 @@ class StackdriverLogsCollector(module.BaseModule):
         output_file.write('\n')
 
     except google_api_exceptions.NotFound as exception:
-      self.state.add_error(
+      self.state.AddError(
           'Error accessing project: {0!s}'.format(exception), critical=True)
       return
 
     except google_api_exceptions.InvalidArgument as exception:
-      self.state.add_error(
+      self.state.AddError(
           'Unable to parse filter {0:s} with error {1:s}'.format(
               self._filter_expression, exception), critical=True)
       return
 
     except AccessTokenRefreshError as exception:
-      self.state.add_error(
+      self.state.AddError(
           'Something is wrong with your gcloud access token.')
-      self.state.add_error(exception, critical=True)
+      # TODO: determine if exception should be converted into a string as
+      # elsewhere in the codebase.
+      self.state.AddError(exception, critical=True)
       return
 
     except (ApplicationDefaultCredentialsError,
             google_auth_exceptions.DefaultCredentialsError) as exception:
-      self.state.add_error(
+      self.state.AddError(
           'Something is wrong with your Application Default Credentials. '
           'Try running:\n $ gcloud auth application-default login')
-      self.state.add_error(exception, critical=True)
+      # TODO: determine if exception should be converted into a string as
+      # elsewhere in the codebase.
+      self.state.AddError(exception, critical=True)
       return
 
     except HttpError as exception:
       if exception.resp.status == 403:
-        self.state.add_error(
+        self.state.AddError(
             'Make sure you have the appropriate permissions on the project')
       if exception.resp.status == 404:
-        self.state.add_error(
+        self.state.AddError(
             'GCP resource not found. Maybe a typo in the project name?')
-      self.state.add_error(exception, critical=True)
+      # TODO: determine if exception should be converted into a string as
+      # elsewhere in the codebase.
+      self.state.AddError(exception, critical=True)
       return
 
     print('[stackdriver] Downloaded logs to {0:s}'.format(output_path))

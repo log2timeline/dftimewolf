@@ -66,7 +66,7 @@ The State object is an instance of the [DFTimewolfState
 class](https://github.com/log2timeline/dftimewolf/blob/master/dftimewolf/lib/state.py).
 It has a couple of useful methods:
 
-*   `add_error`: Used by modules to indicate that an error occurred during
+*   `AddError`: Used by modules to indicate that an error occurred during
     execution (e.g. missing file, unauthorized access).
 *   `check_errors`: Display any errors that have been added. If any critical
     errors were added, dftimewolf will stop the execution of the recipe and

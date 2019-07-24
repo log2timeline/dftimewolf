@@ -43,13 +43,13 @@ class GoogleCloudCollector(module.BaseModule):
   def Process(self):
     """Copies a disk to the analysis project."""
     for disk in self.disks_to_copy:
-      print("Disk copy of {0:s} started...".format(disk.name))
+      print('Disk copy of {0:s} started...'.format(disk.name))
       snapshot = disk.snapshot()
       new_disk = self.analysis_project.create_disk_from_snapshot(
-          snapshot, disk_name_prefix="incident" + self.incident_id)
+          snapshot, disk_name_prefix='incident' + self.incident_id)
       self.analysis_vm.attach_disk(new_disk)
       snapshot.delete()
-      print("Disk {0:s} successfully copied to {1:s}".format(
+      print('Disk {0:s} successfully copied to {1:s}'.format(
           disk.name, new_disk.name))
       self.state.output.append((self.analysis_vm.name, new_disk))
 
@@ -64,8 +64,8 @@ class GoogleCloudCollector(module.BaseModule):
             remote_instance_name=None,
             disk_names=None,
             all_disks=False,
-            image_project="ubuntu-os-cloud",
-            image_family="ubuntu-1804-lts"):
+            image_project='ubuntu-os-cloud',
+            image_family='ubuntu-1804-lts'):
     """Sets up a Google Cloud (GCP) collector.
 
     This method creates and starts an analysis VM in the analysis project and
@@ -102,7 +102,7 @@ class GoogleCloudCollector(module.BaseModule):
       image_family (Optional[str]): name of the image to use to create the
           analysis VM.
     """
-    disk_names = disk_names.split(",") if disk_names else []
+    disk_names = disk_names.split(',') if disk_names else []
 
     self.analysis_project = libcloudforensics.GoogleCloudProject(
         analysis_project_name, default_zone=zone)
@@ -110,16 +110,16 @@ class GoogleCloudCollector(module.BaseModule):
         remote_project_name)
 
     if not (remote_instance_name or disk_names):
-      self.state.add_error(
-          "You need to specify at least an instance name or disks to copy",
+      self.state.AddError(
+          'You need to specify at least an instance name or disks to copy',
           critical=True)
       return
 
     self.incident_id = incident_id
-    analysis_vm_name = "gcp-forensics-vm-{0:s}".format(incident_id)
-    print("Your analysis VM will be: {0:s}".format(analysis_vm_name))
-    print("Complimentary gcloud command:")
-    print("gcloud compute ssh --project {0:s} {1:s} --zone {2:s}".format(
+    analysis_vm_name = 'gcp-forensics-vm-{0:s}'.format(incident_id)
+    print('Your analysis VM will be: {0:s}'.format(analysis_vm_name))
+    print('Complimentary gcloud command:')
+    print('gcloud compute ssh --project {0:s} {1:s} --zone {2:s}'.format(
         analysis_project_name,
         analysis_vm_name,
         zone))
@@ -142,8 +142,8 @@ class GoogleCloudCollector(module.BaseModule):
           try:
             self.disks_to_copy.append(remote_project.get_disk(name))
           except RuntimeError:
-            self.state.add_error(
-                "Disk '{0:s}' was not found in project {1:s}".format(
+            self.state.AddError(
+                'Disk "{0:s}" was not found in project {1:s}'.format(
                     name, remote_project_name),
                 critical=True)
             break
@@ -161,28 +161,28 @@ class GoogleCloudCollector(module.BaseModule):
           self.disks_to_copy = [remote_instance.get_boot_disk()]
 
         if not self.disks_to_copy:
-          self.state.add_error("Could not find any disks to copy",
-                               critical=True)
+          self.state.AddError(
+              'Could not find any disks to copy', critical=True)
 
     except AccessTokenRefreshError as err:
-      self.state.add_error("Something is wrong with your gcloud access token.")
-      self.state.add_error(err, critical=True)
+      self.state.AddError('Something is wrong with your gcloud access token.')
+      self.state.AddError(err, critical=True)
 
     except ApplicationDefaultCredentialsError as err:
-      self.state.add_error("Something is wrong with your Application Default "
-                           "Credentials. Try running:\n"
-                           "  $ gcloud auth application-default login")
-      self.state.add_error(err, critical=True)
+      self.state.AddError(
+          'Something is wrong with your Application Default Credentials. '
+          'Try running:\n  $ gcloud auth application-default login')
+      self.state.AddError(err, critical=True)
 
     except HttpError as err:
       if err.resp.status == 403:
-        self.state.add_error(
-            "Make sure you have the appropriate permissions on the project")
+        self.state.AddError(
+            'Make sure you have the appropriate permissions on the project')
       if err.resp.status == 404:
-        self.state.add_error(
-            "GCP resource not found. Maybe a typo in the project / instance / "
-            "disk name?")
-      self.state.add_error(err, critical=True)
+        self.state.AddError(
+            'GCP resource not found. Maybe a typo in the project / instance / '
+            'disk name?')
+      self.state.AddError(err, critical=True)
 
 
 modules_manager.ModulesManager.RegisterModule(GoogleCloudCollector)
