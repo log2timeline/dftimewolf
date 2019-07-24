@@ -76,7 +76,7 @@ class DFTimewolfTool(object):
 
       # Override recipe defaults with those specified in Config
       # so that they can in turn be overridden in the commandline
-      subparser.set_defaults(**config.Config.get_extra())
+      subparser.set_defaults(**config.Config.GetExtra())
 
   def _DetermineDataFilesPath(self):
     """Determines the data files path."""
@@ -113,18 +113,18 @@ class DFTimewolfTool(object):
     """Loads the configuration."""
     configuration_file_path = os.path.join(self._data_files_path, 'config.json')
     # Try to open config.json and load configuration data from it.
-    config.Config.load_extra(configuration_file_path)
+    config.Config.LoadExtra(configuration_file_path)
 
     user_directory = os.path.expanduser('~')
     configuration_file_path = os.path.join(user_directory, '.dftimewolfrc')
-    config.Config.load_extra(configuration_file_path)
+    config.Config.LoadExtra(configuration_file_path)
 
     configuration_file_path = os.path.join('/', 'etc', 'dftimewolf.conf')
-    config.Config.load_extra(configuration_file_path)
+    config.Config.LoadExtra(configuration_file_path)
 
     configuration_file_path = os.path.join(
         '/', 'usr', 'share', 'dftimewolf', 'dftimewolf.conf')
-    config.Config.load_extra(configuration_file_path)
+    config.Config.LoadExtra(configuration_file_path)
 
   def ParseArguments(self, arguments):
     """Parses the command line arguments.
@@ -153,7 +153,7 @@ class DFTimewolfTool(object):
 
     self._state = DFTimewolfState(config.Config)
     print('Loading recipe...')
-    self._state.load_recipe(self._recipe)
+    self._state.LoadRecipe(self._recipe)
 
     number_of_modules = len(self._recipe['modules'])
     print('Loaded recipe {0:s} with {1:d} modules'.format(
@@ -169,7 +169,7 @@ class DFTimewolfTool(object):
   def RunModules(self):
     """Runs the modules."""
     print('Running modules...')
-    self._state.run_modules()
+    self._state.RunModules()
     print('Recipe {0:s} executed successfully.'.format(self._recipe['name']))
 
   def SetupModules(self):
@@ -177,8 +177,14 @@ class DFTimewolfTool(object):
     # TODO: refactor to only load modules that are used by the recipe.
 
     print('Setting up modules...')
-    self._state.setup_modules(self._command_line_options)
+    self._state.SetupModules(self._command_line_options)
     print('Modules successfully set up!')
+
+
+def SignalHandler(*unused_argvs):
+  """Catches Ctrl + C to exit cleanly."""
+  sys.stderr.write("\nCtrl^C caught, bailing...\n")
+  sys.exit(0)
 
 
 def Main():
@@ -220,7 +226,7 @@ def Main():
 
 
 if __name__ == '__main__':
-  signal.signal(signal.SIGINT, utils.signal_handler)
+  signal.signal(signal.SIGINT, SignalHandler)
   if Main():
     sys.exit(0)
   else:

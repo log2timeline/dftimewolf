@@ -19,12 +19,12 @@ FAKE_PATHS = {
 }
 
 
-def fake_isdir(string):
+def FakeIsDir(string):
   """Fake isdir function for mocking purposes."""
   return bool(FAKE_PATHS[string])
 
 
-def fake_listdir(string):
+def FakeListDir(string):
   """Fake listdir function for mocking purposes."""
   return FAKE_PATHS[string]
 
@@ -40,8 +40,8 @@ class LocalFileSystemTest(unittest.TestCase):
 
   @mock.patch('shutil.copytree')
   @mock.patch('shutil.copy2')
-  @mock.patch('os.path.isdir', side_effect=fake_isdir)
-  @mock.patch('os.listdir', side_effect=fake_listdir)
+  @mock.patch('os.path.isdir', side_effect=FakeIsDir)
+  @mock.patch('os.listdir', side_effect=FakeListDir)
   @mock.patch('tempfile.mkdtemp')
   # pylint: disable=unused-argument
   def testProcess(self,
