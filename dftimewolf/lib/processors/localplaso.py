@@ -9,6 +9,7 @@ import tempfile
 import uuid
 
 from dftimewolf.lib import module
+from dftimewolf.lib.modules import manager as modules_manager
 
 
 class LocalPlasoProcessor(module.BaseModule):
@@ -77,3 +78,6 @@ class LocalPlasoProcessor(module.BaseModule):
       # Catch all remaining errors since we want to gracefully report them
       except Exception as exception:  # pylint: disable=broad-except
         self.state.add_error(str(exception), critical=True)
+
+
+modules_manager.ModulesManager.RegisterModule(LocalPlasoProcessor)

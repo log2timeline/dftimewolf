@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 from dftimewolf.lib import timesketch_utils
 from dftimewolf.lib import module
+from dftimewolf.lib.modules import manager as modules_manager
 
 
 class TimesketchExporter(module.BaseModule):
@@ -94,3 +95,6 @@ class TimesketchExporter(module.BaseModule):
     sketch_url = self.timesketch_api.GetSketchUrl(self.sketch_id)
     print('Your Timesketch URL is: {0:s}'.format(sketch_url))
     self.state.output = sketch_url
+
+
+modules_manager.ModulesManager.RegisterModule(TimesketchExporter)

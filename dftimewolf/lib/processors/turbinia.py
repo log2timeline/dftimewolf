@@ -17,6 +17,7 @@ from turbinia.message import TurbiniaRequest
 
 from dftimewolf.lib import containers
 from dftimewolf.lib import module
+from dftimewolf.lib.modules import manager as modules_manager
 
 # pylint: disable=no-member
 
@@ -215,3 +216,6 @@ class TurbiniaProcessor(module.BaseModule):
 
     if not self.state.output:
       self.state.add_error('No .plaso files could be found.', critical=True)
+
+
+modules_manager.ModulesManager.RegisterModule(TurbiniaProcessor)
