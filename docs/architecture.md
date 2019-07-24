@@ -68,7 +68,7 @@ It has a couple of useful methods:
 
 *   `AddError`: Used by modules to indicate that an error occurred during
     execution (e.g. missing file, unauthorized access).
-*   `check_errors`: Display any errors that have been added. If any critical
+*   `CheckErrors`: Display any errors that have been added. If any critical
     errors were added, dftimewolf will stop the execution of the recipe and
     exit. Non-critical errors will just be displayed and execution will
     continue.

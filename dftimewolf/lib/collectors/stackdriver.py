@@ -121,7 +121,7 @@ class StackdriverLogsCollector(module.BaseModule):
     logs_report = StackdriverLogs(
         path=output_path, filter_expression=self._filter_expression,
         project_name=self._project_name)
-    self.state.store_container(logs_report)
+    self.state.StoreContainer(logs_report)
 
 
 modules_manager.ModulesManager.RegisterModule(StackdriverLogsCollector)

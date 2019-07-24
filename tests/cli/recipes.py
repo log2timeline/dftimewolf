@@ -68,7 +68,7 @@ class RecipeTests(unittest.TestCase):
     """Tests that a recipe will not deadlock."""
     for recipe in self._recipes_manager.GetRecipes():
       for module in recipe.contents['modules']:
-        dependencies = _find_module_dependencies(
+        dependencies = _FindModuleDependencies(
             module['name'], recipe, module['name'])
         if module['name'] in dependencies:
           self.fail('Cyclic dependency found in {0:s}: {1:s}'.format(
@@ -76,22 +76,22 @@ class RecipeTests(unittest.TestCase):
               module['name']
           ))
 
-def _find_module_dependencies(module_name, recipe, original_module_name):
+
+def _FindModuleDependencies(module_name, recipe, original_module_name):
   """Recursively looks for module dependencies.
 
   Will stop whenever the original module is found to be a dependency of itself,
   or when all dependencies are found.
 
   Args:
-    module_name: The module to check dependencies for
-    recipe: The dftimewolf recipe
-    original_module_name: The original module name for which we want to check
+    module_name (str): name of the module to check dependencies for
+    recipe (str): name of the dftimewolf recipe
+    original_module_name (str): original module name for which we want to check
         for cyclic dependencies.
 
   Returns:
-    A set of depencency names found so far.
+    set[str]: depencency names found.
   """
-
   module_dependencies = set()
   for module in recipe.contents['modules']:
     if module_name == module['name']:
@@ -103,7 +103,7 @@ def _find_module_dependencies(module_name, recipe, original_module_name):
 
   # otherwise, check for another level of dependencies.
   for dependency in list(module_dependencies):
-    module_dependencies.update(_find_module_dependencies(
+    module_dependencies.update(_FindModuleDependencies(
         dependency, recipe, original_module_name))
 
   return module_dependencies
