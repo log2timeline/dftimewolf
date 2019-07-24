@@ -19,7 +19,7 @@ matrix:
 install:
 - pip install -r requirements.txt
 - pip install -r requirements-dev.txt
-- if test ${TARGET} = "pylint"; then pip install pylint; fi
+- if test ${TARGET} = "pylint"; then pip install pylint; else pip install coverage; fi
 script:
 - ./config/travis/run_with_timeout.sh 30 ./config/travis/runtests.sh
 after_success:
