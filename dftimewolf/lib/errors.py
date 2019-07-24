@@ -12,5 +12,6 @@ class DFTimewolfError(Exception):
 class RecipeParseError(DFTimewolfError):
   """Error when parsing a recipe."""
 
+
 class CommandLineParseError(DFTimewolfError):
   """Error when parsing the command-line arguments."""
