@@ -40,6 +40,7 @@ else:
   class BdistMSICommand(bdist_msi):
     """Custom handler for the bdist_msi command."""
 
+    # pylint: disable=invalid-name
     def run(self):
       """Builds an MSI."""
       # Command bdist_msi does not support the library version, neither a date
@@ -47,6 +48,7 @@ else:
       self.distribution.metadata.version += '.1'
 
       bdist_msi.run(self)
+
 
 if not bdist_rpm:
   BdistRPMCommand = None
@@ -128,6 +130,7 @@ else:
         python_spec_file.append(line)
 
       return python_spec_file
+
 
 dftimewolf_description = (
     'Digital forensic orchestration.')
