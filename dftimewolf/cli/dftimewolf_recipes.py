@@ -145,7 +145,7 @@ class DFTimewolfTool(object):
 
     self._command_line_options = argument_parser.parse_args(arguments)
 
-    if not hasattr(self._command_line_options, 'recipe', None):
+    if not getattr(self._command_line_options, 'recipe', None):
       error_message = '\nPlease specify a recipe.\n' + help_text
       raise errors.CommandLineParseError(error_message)
 
