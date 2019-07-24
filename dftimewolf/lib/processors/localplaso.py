@@ -25,10 +25,10 @@ class LocalPlasoProcessor(module.BaseModule):
     self._output_path = None
 
   def SetUp(self, timezone=None):  # pylint: disable=arguments-differ
-    """Sets up the _timezone attribute.
+    """Sets up the local time zone with Plaso (log2timeline) should use.
 
     Args:
-      timezone: Timezone name (optional)
+      timezone (Optional[str]): name of the local time zone.
     """
     self._timezone = timezone
     self._output_path = tempfile.mkdtemp()

@@ -10,6 +10,7 @@ from grr_response_proto import flows_pb2
 
 from google.protobuf import text_format
 
+
 client_proto1 = """
   urn: "aff4:/C.0000000000000000"
   os_info {
