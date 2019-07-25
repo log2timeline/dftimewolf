@@ -5,9 +5,15 @@ from __future__ import unicode_literals
 
 
 class ModulesManager(object):
-  """Modules manager."""
+  """Modules manager.
+
+  Attribs:
+    enable_overwrite: Whether an exception is raised if an existing module is
+        registered more than once.
+  """
 
   _module_classes = {}
+  enable_overwrite = False
 
   @classmethod
   def DeregisterModule(cls, module_class):
@@ -55,7 +61,7 @@ class ModulesManager(object):
       KeyError: if module class is already set for the corresponding class name.
     """
     class_name = module_class.__name__
-    if class_name in cls._module_classes:
+    if class_name in cls._module_classes and not cls.enable_overwrite:
       raise KeyError('Module class already set for: {0:s}.'.format(class_name))
 
     cls._module_classes[class_name] = module_class

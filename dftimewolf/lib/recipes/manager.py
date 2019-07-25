@@ -13,9 +13,17 @@ from dftimewolf.lib import resources
 
 
 class RecipesManager(object):
-  """Recipes manager."""
+  """Recipes manager.
+
+  Attribs:
+    enable_overwrite: Whether an exception is raised if an existing module is
+        registered more than once.
+  """
 
   _recipes = {}
+
+  def __init__(self):
+    self.enable_overwrite = False
 
   def _ReadRecipeFromFileObject(self, file_object):
     """Reads a recipe from a JSON file-like object.
@@ -101,7 +109,7 @@ class RecipesManager(object):
       KeyError: if recipe is already set for the corresponding name.
     """
     recipe_name = recipe.name.lower()
-    if recipe_name in self._recipes:
+    if recipe_name in self._recipes and not self.enable_overwrite:
       raise KeyError('Recipe already set for name: {0:s}.'.format(recipe.name))
 
     self._recipes[recipe_name] = recipe
