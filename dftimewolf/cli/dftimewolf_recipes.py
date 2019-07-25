@@ -153,6 +153,7 @@ class DFTimewolfTool(object):
 
     self._state = DFTimewolfState(config.Config)
     print('Loading recipe...')
+    # Raises errors.RecipeParseError on error.
     self._state.LoadRecipe(self._recipe)
 
     number_of_modules = len(self._recipe['modules'])
@@ -212,8 +213,8 @@ def Main():
 
   try:
     tool.ParseArguments(sys.argv[1:])
-  except errors.CommandLineParseError as exception:
-    sys.stderr.write(str(exception))
+  except (errors.CommandLineParseError, errors.RecipeParseError) as exception:
+    sys.stderr.write('{0!s}'.format(exception))
     return False
 
   # TODO: print errors if this fails.
