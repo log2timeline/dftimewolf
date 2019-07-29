@@ -17,12 +17,13 @@ class TestModule(module.BaseModule):  # pylint: disable=abstract-method
 class ModulesManagerTest(unittest.TestCase):
   """Tests for the modules manager."""
 
+  # pylint: disable=protected-access
+
   def setUp(self):
     manager.ModulesManager.ALLOW_MODULE_OVERRIDE = False
 
   def testModuleRegistration(self):
     """Tests the RegisterModule and DeregisterModule functions."""
-    # pylint: disable=protected-access
     number_of_module_classes = len(manager.ModulesManager._module_classes)
 
     manager.ModulesManager.RegisterModule(TestModule)
