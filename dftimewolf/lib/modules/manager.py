@@ -7,6 +7,9 @@ from __future__ import unicode_literals
 class ModulesManager(object):
   """Modules manager."""
 
+  # Allow a previously registered module to be overridden.
+  ALLOW_MODULE_OVERRIDE = False
+
   _module_classes = {}
 
   @classmethod
@@ -55,7 +58,7 @@ class ModulesManager(object):
       KeyError: if module class is already set for the corresponding class name.
     """
     class_name = module_class.__name__
-    if class_name in cls._module_classes:
+    if class_name in cls._module_classes and not cls.ALLOW_MODULE_OVERRIDE:
       raise KeyError('Module class already set for: {0:s}.'.format(class_name))
 
     cls._module_classes[class_name] = module_class
