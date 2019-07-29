@@ -9,6 +9,10 @@ class DFTimewolfError(Exception):
     self.message = message or 'An error occurred.'
 
 
+class BadConfigurationError(DFTimewolfError):
+  """Error when an issue with the configuration is encountered."""
+
+
 class RecipeParseError(DFTimewolfError):
   """Error when parsing a recipe."""
 
