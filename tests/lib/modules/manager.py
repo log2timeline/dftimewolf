@@ -17,6 +17,9 @@ class TestModule(module.BaseModule):  # pylint: disable=abstract-method
 class ModulesManagerTest(unittest.TestCase):
   """Tests for the modules manager."""
 
+  def setUp(self):
+    manager.ModulesManager.ALLOW_MODULE_OVERRIDE = False
+
   def testModuleRegistration(self):
     """Tests the RegisterModule and DeregisterModule functions."""
     # pylint: disable=protected-access
@@ -29,6 +32,27 @@ class ModulesManagerTest(unittest.TestCase):
 
     with self.assertRaises(KeyError):
       manager.ModulesManager.RegisterModule(TestModule)
+
+    manager.ModulesManager.DeregisterModule(TestModule)
+    self.assertEqual(
+        len(manager.ModulesManager._module_classes), number_of_module_classes)
+
+  def testOverrideModuleRegistration(self):
+    """Tests the RegisterModule with override functionality."""
+    # pylint: disable=protected-access
+    manager.ModulesManager.ALLOW_MODULE_OVERRIDE = True
+    number_of_module_classes = len(manager.ModulesManager._module_classes)
+
+    manager.ModulesManager.RegisterModule(TestModule)
+    self.assertEqual(
+        len(manager.ModulesManager._module_classes),
+        number_of_module_classes + 1)
+
+    # Registering the same module twice should not raise an exception.
+    manager.ModulesManager.RegisterModule(TestModule)
+    self.assertEqual(
+        len(manager.ModulesManager._module_classes),
+        number_of_module_classes + 1)
 
     manager.ModulesManager.DeregisterModule(TestModule)
     self.assertEqual(
