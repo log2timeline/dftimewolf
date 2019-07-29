@@ -40,7 +40,6 @@ class ModulesManagerTest(unittest.TestCase):
 
   def testOverrideModuleRegistration(self):
     """Tests the RegisterModule with override functionality."""
-    # pylint: disable=protected-access
     manager.ModulesManager.ALLOW_MODULE_OVERRIDE = True
     number_of_module_classes = len(manager.ModulesManager._module_classes)
 
@@ -63,7 +62,6 @@ class ModulesManagerTest(unittest.TestCase):
 
   def testRegisterModules(self):
     """Tests the RegisterModules function."""
-    # pylint: disable=protected-access
     number_of_module_classes = len(manager.ModulesManager._module_classes)
 
     manager.ModulesManager.RegisterModules([TestModule])

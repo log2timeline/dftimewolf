@@ -83,7 +83,6 @@ class RecipesManagerTest(unittest.TestCase):
 
     test_recipe = TestRecipe()
 
-    # pylint: disable=protected-access
     number_of_recipes = len(test_manager._recipes)
 
     test_manager.RegisterRecipe(test_recipe)
@@ -102,7 +101,6 @@ class RecipesManagerTest(unittest.TestCase):
 
     test_recipe = TestRecipe()
 
-    # pylint: disable=protected-access
     number_of_recipes = len(test_manager._recipes)
 
     test_manager.RegisterRecipe(test_recipe)
@@ -136,7 +134,6 @@ class RecipesManagerTest(unittest.TestCase):
 
     test_recipe = TestRecipe()
 
-    # pylint: disable=protected-access
     number_of_recipes = len(test_manager._recipes)
 
     test_manager.RegisterRecipes([test_recipe])
