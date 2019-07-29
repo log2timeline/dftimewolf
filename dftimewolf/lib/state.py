@@ -11,8 +11,8 @@ import sys
 import threading
 import traceback
 
+from dftimewolf.lib import errors
 from dftimewolf.lib import utils
-from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.modules import manager as modules_manager
 
 
@@ -52,12 +52,19 @@ class DFTimewolfState(object):
 
     Args:
       recipe (dict[str, str]): recipe declaring modules to load.
+
+    Raises:
+      RecipeParseError: if a module in the recipe does not exist.
     """
     self.recipe = recipe
     for module_description in recipe['modules']:
       # Combine CLI args with args from the recipe description
       module_name = module_description['name']
       module_class = modules_manager.ModulesManager.GetModuleByName(module_name)
+      if not module_class:
+        raise errors.RecipeParseError(
+            'Recipe uses unknown module: {0:s}'.format(module_name))
+
       self._module_pool[module_name] = module_class(self)
 
   def StoreContainer(self, container):
@@ -143,7 +150,7 @@ class DFTimewolfState(object):
       module = self._module_pool[module_description['name']]
       try:
         module.Process()
-      except DFTimewolfError as exception:
+      except errors.DFTimewolfError as exception:
         self.AddError(exception.message, critical=True)
       except Exception as exception:  # pylint: disable=broad-except
         self.AddError(
@@ -199,10 +206,10 @@ class DFTimewolfState(object):
       is_global (Optional[bool]): True if the global_errors attribute should
           be checked. False if the error attribute should be checked.
     """
-    errors = self.global_errors if is_global else self.errors
-    if errors:
+    error_objects = self.global_errors if is_global else self.errors
+    if error_objects:
       print('dfTimewolf encountered one or more errors:')
-      for error, critical in errors:
+      for error, critical in error_objects:
         print('{0:s}  {1!s}'.format('CRITICAL: ' if critical else '', error))
         if critical:
           print('Critical error found. Aborting.')

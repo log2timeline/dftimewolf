@@ -4,19 +4,18 @@
 from __future__ import unicode_literals
 
 import json
-import sys
+
+from dftimewolf.lib import errors
 
 
 class Config(object):
   """Class that handles DFTimewolf's configuration parameters."""
 
-  _module_classes = {}
-
   _extra_config = {}
 
   @classmethod
   def GetExtra(cls, name=None):
-    """Gets extra configuration parameters.
+    """Retrieves extra configuration parameters.
 
     These parameters should be loaded through LoadExtra or LoadExtraData.
 
@@ -37,37 +36,34 @@ class Config(object):
 
     Args:
       filename (str): name of the JSON configuration file.
-
-    Returns:
-      bool: True if the extra configuration parameters were read.
     """
     try:
       with open(filename, 'rb') as configuration_file:
-        cls.LoadExtraData(configuration_file.read())
-        sys.stderr.write("Config successfully loaded from {0:s}\n".format(
-            filename))
-        return True
+        json_string = configuration_file.read()
+        cls.LoadExtraData(json_string)
     except (IOError, OSError):
-      return False
+      pass
 
   @classmethod
-  def LoadExtraData(cls, data):
-    """Loads extra configuration parameters from a JSON data.
+  def LoadExtraData(cls, json_string):
+    """Loads extra configuration parameters from a JSON string.
 
     Args:
-      data (str): JSON data that contains the configuration.
+      json_string (str): JSON string that contains the configuration.
+
+    Raises:
+      BadConfigurationError: if the JSON string cannot be read.
     """
     try:
-      json_dict = json.loads(data)
-      cls._extra_config.update(json_dict)
-
-    # TODO: catch JSON errors.
+      json_dict = json.loads(json_string)
     except ValueError as exception:
-      sys.stderr.write('Could convert to JSON. {0:s}'.format(exception))
-      # TODO: do not hard exit here but raise BadConfig exception or equiv.
-      exit(-1)
+      raise errors.BadConfigurationError((
+          'Unable to read configuration from JSON string with error: '
+          '{0!s}').format(exception))
 
-  # Not that this methos is only used by tests.
+    cls._extra_config.update(json_dict)
+
+  # Note that this method is only used by tests.
   @classmethod
   def ClearExtra(cls):
     """Clears any extra arguments loaded from a config JSON blob."""

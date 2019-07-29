@@ -109,22 +109,35 @@ class DFTimewolfTool(object):
 
     return help_text
 
+  def _LoadConfigurationFromFile(self, configuration_file_path):
+    """Loads a configuration from file.
+
+    Args:
+      configuration_file_path (str): path of the configuration file.
+    """
+    try:
+      config.Config.LoadExtra(configuration_file_path)
+      sys.stderr.write('Configuration loaded from: {0:s}\n'.format(
+          configuration_file_path))
+
+    except errors.BadConfigurationError as exception:
+      sys.stderr.write('{0!s}'.format(exception))
+
   def LoadConfiguration(self):
     """Loads the configuration."""
     configuration_file_path = os.path.join(self._data_files_path, 'config.json')
-    # Try to open config.json and load configuration data from it.
-    config.Config.LoadExtra(configuration_file_path)
+    self._LoadConfigurationFromFile(configuration_file_path)
 
     user_directory = os.path.expanduser('~')
     configuration_file_path = os.path.join(user_directory, '.dftimewolfrc')
-    config.Config.LoadExtra(configuration_file_path)
+    self._LoadConfigurationFromFile(configuration_file_path)
 
     configuration_file_path = os.path.join('/', 'etc', 'dftimewolf.conf')
-    config.Config.LoadExtra(configuration_file_path)
+    self._LoadConfigurationFromFile(configuration_file_path)
 
     configuration_file_path = os.path.join(
         '/', 'usr', 'share', 'dftimewolf', 'dftimewolf.conf')
-    config.Config.LoadExtra(configuration_file_path)
+    self._LoadConfigurationFromFile(configuration_file_path)
 
   def ParseArguments(self, arguments):
     """Parses the command line arguments.
@@ -153,6 +166,7 @@ class DFTimewolfTool(object):
 
     self._state = DFTimewolfState(config.Config)
     print('Loading recipe...')
+    # Raises errors.RecipeParseError on error.
     self._state.LoadRecipe(self._recipe)
 
     number_of_modules = len(self._recipe['modules'])
@@ -212,8 +226,8 @@ def Main():
 
   try:
     tool.ParseArguments(sys.argv[1:])
-  except errors.CommandLineParseError as exception:
-    sys.stderr.write(str(exception))
+  except (errors.CommandLineParseError, errors.RecipeParseError) as exception:
+    sys.stderr.write('{0!s}'.format(exception))
     return False
 
   # TODO: print errors if this fails.
