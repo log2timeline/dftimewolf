@@ -60,6 +60,9 @@ class RecipesManagerTest(unittest.TestCase):
 }
 """
 
+  def setUp(self):
+    manager.RecipesManager.ALLOW_RECIPE_OVERRIDE = False
+
   def testReadRecipeFromFileObject(self):
     """Tests the _ReadRecipeFromFileObject function."""
     test_manager = manager.RecipesManager()
@@ -80,7 +83,6 @@ class RecipesManagerTest(unittest.TestCase):
 
     test_recipe = TestRecipe()
 
-    # pylint: disable=protected-access
     number_of_recipes = len(test_manager._recipes)
 
     test_manager.RegisterRecipe(test_recipe)
@@ -91,6 +93,27 @@ class RecipesManagerTest(unittest.TestCase):
 
     test_manager.DeregisterRecipe(test_recipe)
     self.assertEqual(len(test_manager._recipes), number_of_recipes)
+
+  def testOverrideRecipeRegistration(self):
+    """Tests the RegisterRecipe with override functionality."""
+    manager.RecipesManager.ALLOW_RECIPE_OVERRIDE = True
+    test_manager = manager.RecipesManager()
+
+    test_recipe = TestRecipe()
+
+    number_of_recipes = len(test_manager._recipes)
+
+    test_manager.RegisterRecipe(test_recipe)
+    self.assertEqual(len(test_manager._recipes), number_of_recipes + 1)
+
+    override = TestRecipe()
+    override.description = 'override'
+    test_manager.RegisterRecipe(override)
+
+    self.assertEqual(len(test_manager._recipes), number_of_recipes + 1)
+    self.assertEqual(test_manager._recipes['test'].description, 'override')
+
+    test_manager.DeregisterRecipe(override)
 
   def testGetRecipes(self):
     """Tests the GetRecipes function."""
@@ -111,7 +134,6 @@ class RecipesManagerTest(unittest.TestCase):
 
     test_recipe = TestRecipe()
 
-    # pylint: disable=protected-access
     number_of_recipes = len(test_manager._recipes)
 
     test_manager.RegisterRecipes([test_recipe])
