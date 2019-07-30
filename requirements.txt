@@ -10,7 +10,7 @@ chardet==3.0.4
 cryptography==2.4.2
 decorator==4.4.0
 future==0.16.0
-git+https://github.com/tomchop/turbinia.git@ec9e391804d4759249db15fae5a31411a1450d69#egg=turbinia
+git+https://github.com/tomchop/turbinia.git@db04a3df10945cefb9ca1f0415a45e4b26466511#egg=turbinia
 google-api-core[grpc]==1.12.0
 google-auth==1.6.3
 google-cloud-core==1.0.2
