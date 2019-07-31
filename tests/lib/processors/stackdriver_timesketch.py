@@ -106,7 +106,7 @@ class StackdriverTimesketchTest(unittest.TestCase):
     }
 
     # pylint: disable=protected-access
-    actual_timesketch_record = processor._process_log_line(
+    actual_timesketch_record = processor._ProcessLogLine(
         firewall_addition_json, 'test_query', 'test_project')
     actual_timesketch_record = json.loads(actual_timesketch_record)
     self.assertDictEqual(expected_addition_record, actual_timesketch_record)
@@ -248,7 +248,7 @@ class StackdriverTimesketchTest(unittest.TestCase):
             'projects/ketchup-research/global/firewalls/deny-tomchop-access'
     }
 
-    actual_timesketch_record = processor._process_log_line(
+    actual_timesketch_record = processor._ProcessLogLine(
         firewall_creation_json, 'test_query', 'test_project')
     actual_timesketch_record = json.loads(actual_timesketch_record)
     self.assertDictEqual(expected_creation_record, actual_timesketch_record)
@@ -336,7 +336,7 @@ class StackdriverTimesketchTest(unittest.TestCase):
     }
 
     # pylint: disable=protected-access
-    actual_timesketch_record = processor._process_log_line(
+    actual_timesketch_record = processor._ProcessLogLine(
         gce_creation, 'test_query', 'test_project')
     actual_timesketch_record = json.loads(actual_timesketch_record)
     self.assertDictEqual(expected_timesketch_record, actual_timesketch_record)
