@@ -13,20 +13,18 @@ from dftimewolf.lib.containers import StackdriverLogs
 class StackdriverTimesketch(BaseModule):
   """Transforms Stackdriver logs for Timesketch."""
 
+  def SetUp(self, *args, **kwargs):
+    """Sets up necessary module configuration options."""
+    # No configuration required.
+
   def __init__(self, state):
     super(StackdriverTimesketch, self).__init__(state)
 
-  def setup(self, *args, **kwargs):
-    """Sets up necessary module configuration options."""
-
-  def cleanup(self):
-    """Cleans up module output to prepare it for the next module."""
-
-  def _process_log_line(self, log_line, query, project_name):
-    """Processes a single JSON formatted Stackdriver log.
+  def _ProcessLogLine(self, log_line, query, project_name):
+    """Processes a single JSON formatted Stackdriver log line.
 
     Args:
-      log_line (str): a JSON formatted stackdriver log entry.
+      log_line (str): a JSON formatted Stackdriver log entry.
       query (str): the Stackdriver query used to retrieve the log.
       project_name (str): name of the GCP project associated with the query.
 
@@ -57,7 +55,7 @@ class StackdriverTimesketch(BaseModule):
     # textPayload.
     json_payload = log_record.get('jsonPayload', None)
     if json_payload:
-      self._parse_json_payload(json_payload, timesketch_record)
+      self._ParseJSONPayload(json_payload, timesketch_record)
 
     proto_payload = log_record.get('protoPayload', None)
     if proto_payload:
@@ -67,7 +65,7 @@ class StackdriverTimesketch(BaseModule):
     if text_payload:
       timesketch_record['textPayload'] = text_payload
 
-    self._build_message_string(timesketch_record)
+    self._BuildMessageString(timesketch_record)
 
     return json.dumps(timesketch_record)
 
@@ -89,7 +87,7 @@ class StackdriverTimesketch(BaseModule):
 
     request_metadata = proto_payload.get('requestMetadata', None)
     if request_metadata:
-      for attribute, value in iter(request_metadata.items()):
+      for attribute, value in request_metadata.items():
         timesketch_attribute = 'requestMetadata_{0:s}'.format(attribute)
         timesketch_record[timesketch_attribute] = value
 
@@ -101,9 +99,9 @@ class StackdriverTimesketch(BaseModule):
 
     request = proto_payload.get('request', None)
     if request:
-      self._parse_proto_payload_request(request, timesketch_record)
+      self._ParseProtoPayloadRequest(request, timesketch_record)
 
-  def _parse_proto_payload_request(self, request, timesketch_record):
+  def _ParseProtoPayloadRequest(self, request, timesketch_record):
     """Extracts information from the request field of a protoPayload field.
 
     Args:
@@ -147,7 +145,7 @@ class StackdriverTimesketch(BaseModule):
       service_account_name = request['service_account'].get('display_name')
       timesketch_record['service_account_display_name'] = service_account_name
 
-  def _parse_json_payload(self, json_payload, timesketch_record):
+  def _ParseJSONPayload(self, json_payload, timesketch_record):
     """Extracts information from a json_payload.
 
     Args:
@@ -165,7 +163,7 @@ class StackdriverTimesketch(BaseModule):
       if 'user' in actor:
         timesketch_record['user'] = actor['user']
 
-  def _build_message_string(self, timesketch_record):
+  def _BuildMessageString(self, timesketch_record):
     """Builds a Timesketch message string from a Timesketch record.
 
     Args:
@@ -198,7 +196,7 @@ class StackdriverTimesketch(BaseModule):
         user, action, resource)
     timesketch_record['message'] = message
 
-  def _process_log_container(self, logs_container):
+  def _ProcessLogContainer(self, logs_container):
     """Processes a Stackdriver logs container.
 
     Args:
@@ -213,7 +211,7 @@ class StackdriverTimesketch(BaseModule):
 
     with open(logs_container.path, 'r') as input_file:
       for line in input_file:
-        transformed_line = self._process_log_line(
+        transformed_line = self._ProcessLogLine(
             line, logs_container.filter_expression, logs_container.project_name)
         if transformed_line:
           output_file.write(transformed_line)
@@ -225,8 +223,8 @@ class StackdriverTimesketch(BaseModule):
 
     self.state.input.append([timeline_name, output_path])
 
-  def process(self):
-    """Inserts Stackdriver logs containers for insertion into Timesketch."""
+  def Process(self):
+    """Processes Stackdriver logs containers for insertion into Timesketch."""
     logs_containers = self.state.get_containers(StackdriverLogs)
     for logs_container in logs_containers:
-      self._process_log_container(logs_container)
+      self._ProcessLogContainer(logs_container)
