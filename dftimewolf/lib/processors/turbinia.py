@@ -123,6 +123,12 @@ class TurbiniaProcessor(module.BaseModule):
 
     evidence_ = evidence.GoogleCloudDisk(
         disk_name=self.disk_name, project=self.project, zone=self.turbinia_zone)
+    try:
+      evidence_.validate()
+    except TurbiniaException as exception:
+      self.state.AddError(exception, critical=True)
+      return
+
     request = TurbiniaRequest()
     request.evidence.append(evidence_)
 
