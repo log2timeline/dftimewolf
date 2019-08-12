@@ -31,7 +31,7 @@ sudo apt-get install -y ${PYTHON2_DEPENDENCIES}
 
 # Pending resolution of https://github.com/log2timeline/l2tdevtools/issues/233.
 sudo apt-get install -y python-pip
-sudo pip install grr-api-client
+sudo pip3 install grr-api-client
 
 if [[ "$*" =~ "include-development" ]]; then
     sudo apt-get install -y ${DEVELOPMENT_DEPENDENCIES}
@@ -92,8 +92,8 @@ fi
 
 # pending resolution of https://github.com/log2timeline/l2tdevtools/issues/595
 if [[ "$*" =~ "include-turbinia" ]]; then
-    sudo pip install turbinia==20181004.1
+    sudo pip3 install turbinia
 fi
 
 # Install dftimewolf's pinned requirements
-pip install -r ../../requirements.txt
+pip3 install -r ../../requirements.txt
