@@ -54,9 +54,11 @@ class SCPExporter(module.BaseModule):
   def Process(self):
     """Copies the list of paths to the destination on user@hostname"""
     dest = self._destination
+    user = ""
+    if self._user:
+      user = "{0:s}@".format(self._user)
     if self._hostname:
-      dest = "{0:s}@{1:s}:{2:s}".format(self._user, self._hostname,
-                                        self._destination)
+      dest = "{0:s}{1:s}:{2:s}".format(user, self._hostname, self._destination)
     cmd = ["scp"]
     cmd.extend(self._paths)
     cmd.append(dest)
