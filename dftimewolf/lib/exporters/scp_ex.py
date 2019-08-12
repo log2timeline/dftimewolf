@@ -36,7 +36,7 @@ class SCPExporter(module.BaseModule):
     """Sets up the _target_directory attribute.
 
     Args:
-      paths (list[str]): List of files to copy.
+      paths (str): Comma-separated list of files to copy.
       user (str): Username at destination host.
       hostname (str): Hostname of destination.
       destination (str): Path to destination on host.
@@ -61,9 +61,9 @@ class SCPExporter(module.BaseModule):
     cmd.extend(self._paths)
     cmd.append(dest)
     ret = subprocess.call(cmd)
-    if ret:
-      self.state.AddError("Failed copying {0:s}".format(self._paths),
-                           critical=False)
+    if ret != 0:
+      self.state.AddError("Failed copying {0!s}".format(self._paths),
+                          critical=True)
 
   def _SSHAvailable(self):
     """Checks that the SSH authentication succeeds on a given host.
@@ -77,6 +77,6 @@ class SCPExporter(module.BaseModule):
     if self._id_file:
       command.extend(["-i", self._id_file])
     ret = subprocess.call(command)
-    return not ret
+    return ret == 0
 
 modules_manager.ModulesManager.RegisterModule(SCPExporter)
