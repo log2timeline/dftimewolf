@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
-"""Send files using scp."""
+"""Send files using SCP."""
 
 from __future__ import unicode_literals
 
 import subprocess
 
-from dftimewolf.lib.module import BaseModule
+from dftimewolf.lib import module
+from dftimewolf.lib.modules import manager as modules_manager
 
-class Scp(BaseModule):
+
+class SCPExporter(module.BaseModule):
   """Copies the files in the previous module's output to a given path.
 
   input: List of paths to copy the files from.
@@ -22,14 +24,14 @@ class Scp(BaseModule):
   """
 
   def __init__(self, state):
-    super(Scp, self).__init__(state)
+    super(SCPExporter, self).__init__(state)
     self._paths = None
     self._user = None
     self._hostname = None
     self._destination = None
     self._id_file = None
 
-  def setup(self, # pylint: disable=arguments-differ
+  def SetUp(self, # pylint: disable=arguments-differ
             paths, destination, user, hostname, id_file):
     """Sets up the _target_directory attribute.
 
@@ -46,13 +48,10 @@ class Scp(BaseModule):
     self._paths = paths.split(",")
     self._user = user
 
-    if not self._ssh_available():
+    if not self._SSHAvailable():
       self.state.add_error("Unable to connect to host.", critical=True)
 
-  def cleanup(self):
-    pass
-
-  def process(self):
+  def Process(self):
     """Copies the list of paths to the destination on user@hostname"""
     dest = self._destination
     if self._hostname:
@@ -66,11 +65,11 @@ class Scp(BaseModule):
       self.state.add_error("Failed copying {0:s}".format(self._paths),
                            critical=False)
 
-  def _ssh_available(self):
+  def _SSHAvailable(self):
     """Checks that the SSH authentication succeeds on a given host.
 
     Returns:
-      True if host can be reached, false otherwise.
+      bool: True if host can be reached, False otherwise.
     """
     if not self._hostname:
       return True
@@ -79,3 +78,5 @@ class Scp(BaseModule):
       command.extend(["-i", self._id_file])
     ret = subprocess.call(command)
     return not ret
+
+modules_manager.ModulesManager.RegisterModule(SCPExporter)
