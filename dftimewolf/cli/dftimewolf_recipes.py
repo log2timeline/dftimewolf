@@ -31,6 +31,7 @@ if not _ASKING_FOR_HELP:
   from dftimewolf.lib.collectors import grr_hunt
   from dftimewolf.lib.collectors import stackdriver
   from dftimewolf.lib.exporters import local_filesystem
+  from dftimewolf.lib.exporters import scp_ex
   from dftimewolf.lib.exporters import timesketch
   from dftimewolf.lib.processors import grepper
   from dftimewolf.lib.processors import localplaso
@@ -38,7 +39,6 @@ if not _ASKING_FOR_HELP:
 
 from dftimewolf.lib.recipes import manager as recipes_manager
 from dftimewolf.lib.state import DFTimewolfState
-
 
 class DFTimewolfTool(object):
   """DFTimewolf tool."""
