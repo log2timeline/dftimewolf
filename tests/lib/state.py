@@ -16,7 +16,8 @@ from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.recipes import manager as recipes_manager
 
-from tests.test_modules import modules, test_recipe
+from tests.test_modules import modules
+from tests.test_modules import test_recipe
 
 
 class StateTest(unittest.TestCase):
@@ -29,11 +30,12 @@ class StateTest(unittest.TestCase):
 
     self._recipe = resources.Recipe(
         test_recipe.__doc__, test_recipe.contents, test_recipe.args)
-    recipes_manager.RecipesManager.RegisterRecipe(self._recipe)
+    self._recipes_manager = recipes_manager.RecipesManager()
+    self._recipes_manager.RegisterRecipe(self._recipe)
 
   def tearDown(self):
     """Deregister the recipe used in tests."""
-    recipes_manager.RecipesManager.DeregisterRecipe(self._recipe)
+    self._recipes_manager.DeregisterRecipe(self._recipe)
 
     modules_manager.ModulesManager.DeregisterModule(modules.DummyModule1)
     modules_manager.ModulesManager.DeregisterModule(modules.DummyModule2)
@@ -41,7 +43,7 @@ class StateTest(unittest.TestCase):
   def testLoadRecipe(self):
     """Tests that a recipe can be loaded correctly."""
     test_state = state.DFTimewolfState(config.Config)
-    test_state.load_recipe(test_recipe.contents)
+    test_state.LoadRecipe(test_recipe.contents)
     # pylint: disable=protected-access
     self.assertIn('DummyModule1', test_state._module_pool)
     self.assertIn('DummyModule2', test_state._module_pool)
@@ -50,8 +52,8 @@ class StateTest(unittest.TestCase):
   def testStoreContainer(self):
     """Tests that containers are stored correctly."""
     test_state = state.DFTimewolfState(config.Config)
-    test_state.store_container(
-        containers.Report(module_name='foo', text='bar'))
+    test_report = containers.Report(module_name='foo', text='bar')
+    test_state.StoreContainer(test_report)
     self.assertEqual(len(test_state.store), 1)
     self.assertIn('report', test_state.store)
     self.assertEqual(len(test_state.store['report']), 1)
@@ -60,44 +62,44 @@ class StateTest(unittest.TestCase):
   def testGetContainer(self):
     """Tests that containers can be retrieved."""
     test_state = state.DFTimewolfState(config.Config)
-    dummy_report = containers.Report(module_name='foo', text='bar')
-    test_state.store_container(dummy_report)
-    reports = test_state.get_containers(containers.Report)
+    test_report = containers.Report(module_name='foo', text='bar')
+    test_state.StoreContainer(test_report)
+    reports = test_state.GetContainers(containers.Report)
     self.assertEqual(len(reports), 1)
     self.assertIsInstance(reports[0], containers.Report)
 
-  @mock.patch('tests.test_modules.modules.DummyModule2.setup')
-  @mock.patch('tests.test_modules.modules.DummyModule1.setup')
+  @mock.patch('tests.test_modules.modules.DummyModule2.SetUp')
+  @mock.patch('tests.test_modules.modules.DummyModule1.SetUp')
   def testSetupModules(self, mock_setup1, mock_setup2):
     """Tests that module's setup functions are correctly called."""
     test_state = state.DFTimewolfState(config.Config)
-    test_state.load_recipe(test_recipe.contents)
-    test_state.setup_modules(DummyArgs())
+    test_state.LoadRecipe(test_recipe.contents)
+    test_state.SetupModules(DummyArgs())
     mock_setup1.assert_called_with()
     mock_setup2.assert_called_with()
 
-  @mock.patch('tests.test_modules.modules.DummyModule2.process')
-  @mock.patch('tests.test_modules.modules.DummyModule1.process')
+  @mock.patch('tests.test_modules.modules.DummyModule2.Process')
+  @mock.patch('tests.test_modules.modules.DummyModule1.Process')
   def testProcessModules(self, mock_process1, mock_process2):
     """Tests that modules' process functions are correctly called."""
     test_state = state.DFTimewolfState(config.Config)
-    test_state.load_recipe(test_recipe.contents)
-    test_state.setup_modules(DummyArgs())
-    test_state.run_modules()
+    test_state.LoadRecipe(test_recipe.contents)
+    test_state.SetupModules(DummyArgs())
+    test_state.RunModules()
     mock_process1.assert_called_with()
     mock_process2.assert_called_with()
 
-  @mock.patch('tests.test_modules.modules.DummyModule2.process')
-  @mock.patch('tests.test_modules.modules.DummyModule1.process')
+  @mock.patch('tests.test_modules.modules.DummyModule2.Process')
+  @mock.patch('tests.test_modules.modules.DummyModule1.Process')
   @mock.patch('sys.exit')
   def testProcessErrors(self, mock_exit, mock_process1, mock_process2):
     """Tests that module's errors arre correctly caught."""
     test_state = state.DFTimewolfState(config.Config)
-    test_state.load_recipe(test_recipe.contents)
-    test_state.setup_modules(DummyArgs())
+    test_state.LoadRecipe(test_recipe.contents)
+    test_state.SetupModules(DummyArgs())
     mock_process1.side_effect = Exception('asd')
     mock_process2.side_effect = DFTimewolfError('dfTimewolf Error')
-    test_state.run_modules()
+    test_state.RunModules()
     mock_process1.assert_called_with()
     mock_process2.assert_called_with()
     mock_exit.assert_called_with(-1)

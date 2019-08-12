@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Collect artifacts from the local filesystem."""
+"""Collects artifacts from the local file system."""
 
 from __future__ import unicode_literals
 
@@ -10,41 +10,45 @@ from dftimewolf.lib.modules import manager as modules_manager
 
 
 class FilesystemCollector(module.BaseModule):
-  """Collect artifacts from the local filesystem.
+  """Local file system collector.
 
   input: None, takes input from parameters only.
   output: A list of existing file paths.
   """
 
-  def __init__(self, state):
-    super(FilesystemCollector, self).__init__(state)
-    self._paths = None
-
-  def setup(self, paths=None):  # pylint: disable=arguments-differ
-    """Sets up the _paths attribute.
+  def __init__(self, state, critical=False):
+    """Initializes a local file system collector.
 
     Args:
-      paths: Comma-separated list of strings representing the paths to collect.
+      state (DFTimewolfState): recipe state.
+      critical (Optional[bool]): True if the module is critical, which causes
+          the entire recipe to fail if the module encounters an error.
+    """
+    super(FilesystemCollector, self).__init__(state, critical=critical)
+    self._paths = None
+
+  def SetUp(self, paths=None):  # pylint: disable=arguments-differ
+    """Sets up the paths to collect.
+
+    Args:
+      paths (Optional[str]): Comma-separated paths to collect.
     """
     if not paths:
-      self.state.add_error(
+      self.state.AddError(
           'No `paths` argument provided in recipe, bailing', critical=True)
     else:
-      self._paths = [path.strip() for path in paths.strip().split(',')]
+      self._paths = [path.strip() for path in paths.split(',')]
 
-  def cleanup(self):
-    pass
-
-  def process(self):
-    """Checks whether the paths exists and updates the state accordingly."""
+  def Process(self):
+    """Collects paths from the local file system."""
     for path in self._paths:
       if os.path.exists(path):
         self.state.output.append((os.path.basename(path), path))
       else:
-        self.state.add_error(
+        self.state.AddError(
             'Path {0:s} does not exist'.format(str(path)), critical=False)
     if not self.state.output:
-      self.state.add_error('No valid paths collected, bailing', critical=True)
+      self.state.AddError('No valid paths collected, bailing', critical=True)
 
 
 modules_manager.ModulesManager.RegisterModule(FilesystemCollector)

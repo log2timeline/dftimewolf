@@ -27,7 +27,7 @@ class GRRFlowTests(unittest.TestCase):
   def setUp(self):
     self.test_state = state.DFTimewolfState(config.Config)
     self.grr_flow_module = grr_hosts.GRRFlow(self.test_state)
-    self.grr_flow_module.setup(
+    self.grr_flow_module.SetUp(
         reason='random reason',
         grr_server_url='http://fake/endpoint',
         grr_username='admin1',
@@ -44,7 +44,7 @@ class GRRFlowTests(unittest.TestCase):
   def testGetClientByHostname(self, mock_SearchClients):
     """Tests that GetClientByHostname fetches the most recent GRR client."""
     mock_SearchClients.return_value = mock_grr_hosts.MOCK_CLIENT_LIST
-    client = self.grr_flow_module._get_client_by_hostname('tomchop')
+    client = self.grr_flow_module._GetClientByHostname('tomchop')
     mock_SearchClients.assert_called_with('tomchop')
     self.assertEqual(
         client.data.client_id, mock_grr_hosts.MOCK_CLIENT_RECENT.data.client_id)
@@ -53,7 +53,7 @@ class GRRFlowTests(unittest.TestCase):
   def testGetClientByHostnameError(self, mock_SearchClients):
     """Tests that GetClientByHostname fetches the most recent GRR client."""
     mock_SearchClients.side_effect = grr_errors.UnknownError
-    self.grr_flow_module._get_client_by_hostname('tomchop')
+    self.grr_flow_module._GetClientByHostname('tomchop')
     self.assertEqual(len(self.test_state.errors), 1)
     self.assertEqual(
         self.test_state.errors[0],
@@ -64,32 +64,17 @@ class GRRFlowTests(unittest.TestCase):
   def testLaunchFlow(self, mock_CreateFlow):
     """Tests that CreateFlow is correctly called."""
     mock_CreateFlow.return_value = mock_grr_hosts.MOCK_FLOW
-    flow_id = self.grr_flow_module._launch_flow(
+    flow_id = self.grr_flow_module._LaunchFlow(
         mock_grr_hosts.MOCK_CLIENT, "FlowName", "FlowArgs")
     self.assertEqual(flow_id, 'F:12345')
     mock_CreateFlow.assert_called_once_with(name="FlowName", args="FlowArgs")
-
-  @mock.patch('grr_api_client.client.ClientRef.Get')
-  @mock.patch('grr_api_client.api.GrrApi.Client')
-  @mock.patch('grr_api_client.client.ClientBase.ListFlows')
-  def testGetClientById(self, mock_ListFlows, mock_Client,
-                        mock_ClientRefGet):
-    """Tests that _get_client_by_id calls the correct methods."""
-    mock_ListFlows.return_value = [mock_grr_hosts.MOCK_FLOW]
-    mock_Client.return_value = mock_grr_hosts.MOCK_CLIENT_REF
-    mock_ClientRefGet.return_value = mock_grr_hosts.MOCK_CLIENT
-    client = self.grr_flow_module._get_client_by_id(
-        mock_grr_hosts.MOCK_CLIENT.client_id)
-    mock_Client.assert_called_once_with(mock_grr_hosts.MOCK_CLIENT.client_id)
-    mock_ListFlows.assert_called_once()
-    self.assertEqual(client, mock_grr_hosts.MOCK_CLIENT)
 
   @mock.patch('grr_api_client.client.ClientBase.CreateFlow')
   def testLaunchFlowKeepalive(self, mock_CreateFlow):
     """Tests that keepalive flows are correctly created."""
     mock_CreateFlow.return_value = mock_grr_hosts.MOCK_FLOW
     self.grr_flow_module.keepalive = True
-    flow_id = self.grr_flow_module._launch_flow(
+    flow_id = self.grr_flow_module._LaunchFlow(
         mock_grr_hosts.MOCK_CLIENT, "FlowName", "FlowArgs")
     self.assertEqual(flow_id, 'F:12345')
     self.assertEqual(mock_CreateFlow.call_count, 2)
@@ -101,7 +86,7 @@ class GRRFlowTests(unittest.TestCase):
   def testAwaitFlow(self, mock_FlowGet):
     """Test that no errors are generated when GRR flow succeeds."""
     mock_FlowGet.return_value = mock_grr_hosts.MOCK_FLOW
-    self.grr_flow_module._await_flow(mock_grr_hosts.MOCK_CLIENT, "F:12345")
+    self.grr_flow_module._AwaitFlow(mock_grr_hosts.MOCK_CLIENT, "F:12345")
     mock_FlowGet.assert_called_once()
     self.assertEqual(self.test_state.errors, [])
 
@@ -111,7 +96,7 @@ class GRRFlowTests(unittest.TestCase):
     mock_FlowGet.return_value = mock_grr_hosts.MOCK_FLOW_ERROR
     error_msg = 'F:12345: FAILED! Message from GRR:'
     with six.assertRaisesRegex(self, DFTimewolfError, error_msg):
-      self.grr_flow_module._await_flow(mock_grr_hosts.MOCK_CLIENT, "F:12345")
+      self.grr_flow_module._AwaitFlow(mock_grr_hosts.MOCK_CLIENT, "F:12345")
 
   @mock.patch('grr_api_client.flow.FlowRef.Get')
   def testAwaitFlowGRRError(self, mock_FlowGet):
@@ -119,7 +104,7 @@ class GRRFlowTests(unittest.TestCase):
     mock_FlowGet.side_effect = grr_errors.UnknownError
     error_msg = 'Unable to stat flow F:12345 for host'
     with six.assertRaisesRegex(self, DFTimewolfError, error_msg):
-      self.grr_flow_module._await_flow(mock_grr_hosts.MOCK_CLIENT, "F:12345")
+      self.grr_flow_module._AwaitFlow(mock_grr_hosts.MOCK_CLIENT, "F:12345")
 
   @mock.patch('os.remove')
   @mock.patch('os.path.isdir')
@@ -135,7 +120,7 @@ class GRRFlowTests(unittest.TestCase):
     self.grr_flow_module.output_path = '/tmp/random'
     mock_isdir.return_value = False  # Return false so makedirs is called
 
-    return_value = self.grr_flow_module._download_files(
+    return_value = self.grr_flow_module._DownloadFiles(
         mock_grr_hosts.MOCK_CLIENT, "F:12345")
     self.assertEqual(return_value, '/tmp/random/tomchop')
     mock_GetFilesArchive.assert_called_once()
@@ -155,7 +140,7 @@ class GRRFlowTests(unittest.TestCase):
     self.grr_flow_module.output_path = '/tmp/random'
     mock_exists.return_value = True  # Simulate existing flow directory
 
-    self.grr_flow_module._download_files(mock_grr_hosts.MOCK_CLIENT, "F:12345")
+    self.grr_flow_module._DownloadFiles(mock_grr_hosts.MOCK_CLIENT, "F:12345")
     mock_GetFilesArchive.assert_not_called()
 
 class GRRArtifactCollectorTest(unittest.TestCase):
@@ -165,7 +150,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     self.test_state = state.DFTimewolfState(config.Config)
     self.grr_artifact_collector = grr_hosts.GRRArtifactCollector(
         self.test_state)
-    self.grr_artifact_collector.setup(
+    self.grr_artifact_collector.SetUp(
         hosts='tomchop,tomchop2',
         artifacts=None,
         extra_artifacts=None,
@@ -192,7 +177,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     self.assertTrue(self.grr_artifact_collector.use_tsk)
 
   @mock.patch('grr_api_client.client.ClientBase.CreateFlow')
-  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._download_files')
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
   @mock.patch('grr_response_proto.flows_pb2.ArtifactCollectorFlowArgs')
   @mock.patch('grr_api_client.api.GrrApi.SearchClients')
   def testProcessSpecificArtifacts(self,
@@ -206,7 +191,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     mock_CreateFlow.return_value = mock_grr_hosts.MOCK_FLOW
     self.grr_artifact_collector = grr_hosts.GRRArtifactCollector(
         self.test_state)
-    self.grr_artifact_collector.setup(
+    self.grr_artifact_collector.SetUp(
         hosts='tomchop,tomchop2',
         artifacts='RandomArtifact',
         extra_artifacts='AnotherArtifact',
@@ -218,7 +203,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
         approvers='approver1,approver2',
         verify=False
     )
-    self.grr_artifact_collector.process()
+    self.grr_artifact_collector.Process()
     kwargs = mock_ArtifactCollectorFlowArgs.call_args[1]
     # raise ValueError(str(kwargs[1]))
     self.assertFalse(kwargs['apply_parsers'])  # default argument
@@ -227,7 +212,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     sorted_artifacts = sorted(['AnotherArtifact', 'RandomArtifact'])
     self.assertEqual(sorted(kwargs['artifact_list']), sorted_artifacts)
 
-  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._download_files')
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
   @mock.patch('grr_api_client.flow.FlowBase.Get')
   @mock.patch('grr_api_client.client.ClientBase.CreateFlow')
   @mock.patch('grr_api_client.api.GrrApi.SearchClients')
@@ -238,7 +223,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     mock_CreateFlow.return_value = mock_grr_hosts.MOCK_FLOW
     mock_DownloadFiles.return_value = '/tmp/tmpRandom/tomchop'
     mock_Get.return_value = mock_grr_hosts.MOCK_FLOW
-    self.grr_artifact_collector.process()
+    self.grr_artifact_collector.Process()
     # Flow ID is F:12345, Client ID is C.0000000000000001
     mock_SearchClients.assert_any_call('tomchop')
     mock_SearchClients.assert_any_call('tomchop2')
@@ -258,7 +243,7 @@ class GRRFileCollectorTest(unittest.TestCase):
   def setUp(self):
     self.test_state = state.DFTimewolfState(config.Config)
     self.grr_file_collector = grr_hosts.GRRFileCollector(self.test_state)
-    self.grr_file_collector.setup(
+    self.grr_file_collector.SetUp(
         hosts='tomchop,tomchop2',
         files='/etc/passwd',
         use_tsk=True,
@@ -276,20 +261,20 @@ class GRRFileCollectorTest(unittest.TestCase):
                      ['tomchop', 'tomchop2'])
     self.assertEqual(self.grr_file_collector.files, ['/etc/passwd'])
 
-  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._await_flow')
-  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._download_files')
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow')
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
   @mock.patch('grr_api_client.api.GrrApi.SearchClients')
-  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._launch_flow')
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._LaunchFlow')
   def testProcess(self,
-                  mock_launch_flow,
+                  mock_LaunchFlow,
                   mock_SearchClients,
-                  mock_download_files,
+                  mock_DownloadFiles,
                   _):
     """Tests that processing launches appropriate flows."""
     mock_SearchClients.return_value = mock_grr_hosts.MOCK_CLIENT_LIST
-    mock_download_files.return_value = '/tmp/something'
-    self.grr_file_collector.process()
-    mock_launch_flow.assert_called_with(
+    mock_DownloadFiles.return_value = '/tmp/something'
+    self.grr_file_collector.Process()
+    mock_LaunchFlow.assert_called_with(
         mock_grr_hosts.MOCK_CLIENT_RECENT,
         'FileFinder',
         flows_pb2.FileFinderArgs(
@@ -307,7 +292,7 @@ class GRRFlowCollector(unittest.TestCase):
   def setUp(self):
     self.test_state = state.DFTimewolfState(config.Config)
     self.grr_flow_collector = grr_hosts.GRRFlowCollector(self.test_state)
-    self.grr_flow_collector.setup(
+    self.grr_flow_collector.SetUp(
         host='tomchop',
         flow_id='F:12345',
         reason='random reason',
@@ -317,18 +302,18 @@ class GRRFlowCollector(unittest.TestCase):
         approvers='approver1,approver2'
     )
 
-  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._download_files')
-  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._await_flow')
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow')
   @mock.patch('grr_api_client.api.GrrApi.SearchClients')
   def testProcess(self,
                   mock_SearchClients,
                   _,
-                  mock_download_files):
+                  mock_DownloadFiles):
     """Tests that the collector can be initialized."""
     mock_SearchClients.return_value = mock_grr_hosts.MOCK_CLIENT_LIST
-    mock_download_files.return_value = '/tmp/something'
-    self.grr_flow_collector.process()
-    mock_download_files.assert_called_once_with(
+    mock_DownloadFiles.return_value = '/tmp/something'
+    self.grr_flow_collector.Process()
+    mock_DownloadFiles.assert_called_once_with(
         mock_grr_hosts.MOCK_CLIENT_RECENT, 'F:12345')
     self.assertEqual(self.test_state.output[0], ('tomchop', '/tmp/something'))
 

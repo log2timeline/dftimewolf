@@ -11,6 +11,7 @@ import tempfile
 import PyPDF2
 
 from dftimewolf.lib import module
+from dftimewolf.lib.modules import manager as modules_manager
 
 
 class GrepperSearch(module.BaseModule):
@@ -27,21 +28,17 @@ class GrepperSearch(module.BaseModule):
     self._output_path = None
     self._final_output = None
 
-  def setup(self, keywords=None):  # pylint: disable=arguments-differ
+  def SetUp(self, keywords=None):  # pylint: disable=arguments-differ
     """Sets up the _keywords attribute.
 
     Args:
-      keywords: pipe separated list of keyword to search
+      keywords (Optional[str]): pipe separated keywords to search
     """
     self._keywords = keywords
     self._output_path = tempfile.mkdtemp()
 
-  def cleanup(self):
-    pass
-
-  def process(self):
-    """Execute the grep command"""
-
+  def Process(self):
+    """Executes grep on the module input."""
     for _, path in self.state.input:
       log_file_path = os.path.join(self._output_path, 'grepper.log')
       print('Log file: {0:s}'.format(log_file_path))
@@ -53,7 +50,7 @@ class GrepperSearch(module.BaseModule):
             found = set()
             fullpath = '{0:s}/{1:s}'.format(os.path.abspath(root), filename)
             if mimetypes.guess_type(filename)[0] == 'application/pdf':
-              found = self.grepPDF(fullpath)
+              found = self.GrepPDF(fullpath)
             else:
               with open(fullpath, 'r') as fp:
                 for line in fp:
@@ -68,31 +65,33 @@ class GrepperSearch(module.BaseModule):
                 self._final_output = output
               print(output)
       except OSError as exception:
-        self.state.add_error(str(exception), critical=True)
+        self.state.AddError(str(exception), critical=True)
         return
       # Catch all remaining errors since we want to gracefully report them
       except Exception as exception:  # pylint: disable=broad-except
-        self.state.add_error(str(exception), critical=True)
+        self.state.AddError(str(exception), critical=True)
         return
 
-  def grepPDF(self, path):
-    """
-    Parse PDF files text content for keywords.
+  def GrepPDF(self, path):
+    """Parses a PDF files text content for keywords.
 
     Args:
-      path: PDF file path.
+      path (str): PDF file path.
 
     Returns:
-      match: set of unique occurrences of every match.
+      set[str]: unique occurrences of every match.
     """
     with open(path, 'rb') as pdf_file_obj:
-      match = set()
+      matches = set()
       text = ''
       pdf_reader = PyPDF2.PdfFileReader(pdf_file_obj)
       pages = pdf_reader.numPages
       for page in range(pages):
         page_obj = pdf_reader.getPage(page)
         text += '\n' + page_obj.extractText()
-      match.update(set(x.lower() for x in re.findall(
+      matches.update(set(x.lower() for x in re.findall(
           self._keywords, text, re.IGNORECASE)))
-    return match
+    return matches
+
+
+modules_manager.ModulesManager.RegisterModule(GrepperSearch)

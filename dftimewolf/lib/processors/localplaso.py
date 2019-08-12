@@ -9,6 +9,7 @@ import tempfile
 import uuid
 
 from dftimewolf.lib import module
+from dftimewolf.lib.modules import manager as modules_manager
 
 
 class LocalPlasoProcessor(module.BaseModule):
@@ -23,20 +24,17 @@ class LocalPlasoProcessor(module.BaseModule):
     self._timezone = None
     self._output_path = None
 
-  def setup(self, timezone=None):  # pylint: disable=arguments-differ
-    """Sets up the _timezone attribute.
+  def SetUp(self, timezone=None):  # pylint: disable=arguments-differ
+    """Sets up the local time zone with Plaso (log2timeline) should use.
 
     Args:
-      timezone: Timezone name (optional)
+      timezone (Optional[str]): name of the local time zone.
     """
     self._timezone = timezone
     self._output_path = tempfile.mkdtemp()
 
-  def cleanup(self):
-    pass
-
-  def process(self):
-    """Execute the Plaso process."""
+  def Process(self):
+    """Executes log2timeline.py on the module input."""
     for description, path in self.state.input:
       log_file_path = os.path.join(self._output_path, 'plaso.log')
       print('Log file: {0:s}'.format(log_file_path))
@@ -73,10 +71,13 @@ class LocalPlasoProcessor(module.BaseModule):
           # self.console_out.StdErr(errors)
           message = ('The log2timeline command {0:s} failed: {1!s}.'
                      ' Check log file for details.').format(full_cmd, error)
-          self.state.add_error(message, critical=True)
+          self.state.AddError(message, critical=True)
         self.state.output.append((description, plaso_storage_file_path))
       except OSError as exception:
-        self.state.add_error(str(exception), critical=True)
+        self.state.AddError(str(exception), critical=True)
       # Catch all remaining errors since we want to gracefully report them
       except Exception as exception:  # pylint: disable=broad-except
-        self.state.add_error(str(exception), critical=True)
+        self.state.AddError(str(exception), critical=True)
+
+
+modules_manager.ModulesManager.RegisterModule(LocalPlasoProcessor)

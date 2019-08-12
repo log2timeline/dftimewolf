@@ -15,13 +15,7 @@ then
 elif test "${TARGET}" = "pylint";
 then
 	pylint --version
-
-	for FILE in `find setup.py config dftimewolf tests -name \*.py`;
-	do
-		echo "Checking: ${FILE}";
-
-		pylint --rcfile=.pylintrc ${FILE};
-	done
+	pylint --rcfile=.pylintrc setup.py dftimewolf tests
 
 elif test "${TRAVIS_OS_NAME}" = "osx";
 then
@@ -57,12 +51,10 @@ then
 	then
 		tox --sitepackages ${TOXENV};
 
-	elif test "${TRAVIS_PYTHON_VERSION}" = "2.7";
-	then
-		coverage erase
-		coverage run --source=dftimewolf --omit="*_test*,*__init__*,*test_lib*" ./run_tests.py
 	else
-		python ./run_tests.py
+		coverage erase
+
+		coverage run --source=dftimewolf --omit="*_test*,*__init__*,*test_lib*" ./run_tests.py
 
 		python ./setup.py build
 

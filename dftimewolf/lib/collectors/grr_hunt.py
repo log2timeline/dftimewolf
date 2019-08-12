@@ -9,29 +9,31 @@ import tempfile
 import zipfile
 import yaml
 
-from grr_response_proto import flows_pb2
+from grr_response_proto import flows_pb2 as grr_flows
 
 from dftimewolf.lib.collectors import grr_base
 from dftimewolf.lib.modules import manager as modules_manager
 
 
-# GRRHunt should be extended by classes that actually implement the process()
-# method
+# TODO: GRRHunt should be extended by classes that actually implement
+# the Process() method.
 class GRRHunt(grr_base.GRRBaseModule):  # pylint: disable=abstract-method
   """This class groups functions generic to all GRR Hunt modules.
 
   Should be extended by the modules that interact with GRR hunts.
   """
 
-  def _create_hunt(self, name, args):
-    """Create specified hunt.
+  # TODO: change object to more specific GRR type information.
+  def _CreateHunt(self, name, args):
+    """Creates a GRR hunt.
 
     Args:
-      name: string containing hunt name.
-      args: proto (*FlowArgs) for type of hunt, as defined in GRR flow proto.
+      name (str): name of the hunt.
+      args (object): arguments specific for type of flow, as defined in GRR
+          flow proto (FlowArgs).
 
     Returns:
-      The newly created GRR hunt object.
+      object: a GRR hunt object.
 
     Raises:
       ValueError: if approval is needed and approvers were not specified.
@@ -41,7 +43,7 @@ class GRRHunt(grr_base.GRRBaseModule):  # pylint: disable=abstract-method
     hunt = self.grr_api.CreateHunt(
         flow_name=name, flow_args=args, hunt_runner_args=runner_args)
     print('{0!s}: Hunt created'.format(hunt.hunt_id))
-    self._check_approval_wrapper(hunt, hunt.Start)
+    self._WrapGRRRequestWithApproval(hunt, hunt.Start)
     return hunt
 
 
@@ -49,164 +51,185 @@ class GRRHuntArtifactCollector(GRRHunt):
   """Artifact collector for GRR hunts.
 
   Attributes:
-    reason: Justification for GRR access.
-    approvers: list of GRR approval recipients.
-    artifacts: comma-separated list of GRR-defined artifacts.
-    use_tsk: toggle for use_tsk flag.
+    reason (str): justification for GRR access.
+    approvers (str): comma-separated GRR approval recipients.
+    artifacts (str): comma-separated list of GRR-defined artifacts.
+    use_tsk (bool): True if GRR should use Sleuthkit (TSK) to collect file
+        system artifacts.
   """
 
-  def __init__(self, state):
-    super(GRRHuntArtifactCollector, self).__init__(state)
+  def __init__(self, state, critical=False):
+    """Initializes a GRR artifact collector hunt.
+
+    Args:
+      state (DFTimewolfState): recipe state.
+      critical (Optional[bool]): True if the module is critical, which causes
+          the entire recipe to fail if the module encounters an error.
+    """
+    super(GRRHuntArtifactCollector, self).__init__(state, critical=critical)
     self.artifacts = None
     self.use_tsk = None
     self.hunt = None
 
   # pylint: disable=arguments-differ
-  def setup(self,
+  def SetUp(self,
             artifacts, use_tsk,
             reason, grr_server_url, grr_username, grr_password, approvers=None,
             verify=True):
     """Initializes a GRR Hunt artifact collector.
 
     Args:
-      artifacts: str, comma-separated list of GRR-defined artifacts.
-      use_tsk: toggle for use_tsk flag.
-      reason: justification for GRR access.
-      grr_server_url: GRR server URL.
-      grr_username: GRR username.
-      grr_password: GRR password.
-      approvers: str, comma-separated list of GRR approval recipients.
-      verify: boolean, whether to verify the GRR server's x509 certificate.
+      artifacts (str): comma-separated list of GRR-defined artifacts.
+      use_tsk (bool): True if GRR should use Sleuthkit (TSK) to collect file
+          system artifacts.
+      reason (str): justification for GRR access.
+      grr_server_url (str): GRR server URL.
+      grr_username (str): GRR username.
+      grr_password (str): GRR password.
+      approvers (Optional[str]): comma-separated GRR approval recipients.
+      verify (Optional[bool]): True to indicate GRR server's x509 certificate
+          should be verified.
     """
-    super(GRRHuntArtifactCollector, self).setup(
+    super(GRRHuntArtifactCollector, self).SetUp(
         reason, grr_server_url, grr_username, grr_password,
         approvers=approvers, verify=verify)
 
     self.artifacts = [item.strip() for item in artifacts.strip().split(',')]
     if not artifacts:
-      self.state.add_error('No artifacts were specified.', critical=True)
+      self.state.AddError('No artifacts were specified.', critical=True)
     self.use_tsk = use_tsk
 
-  def process(self):
-    """Construct and start new Artifact Collection hunt.
-
-    Returns:
-      The newly created GRR hunt object.
+  def Process(self):
+    """Starts a new Artifact Collection GRR hunt.
 
     Raises:
       RuntimeError: if no items specified for collection.
     """
-
     print('Artifacts to be collected: {0!s}'.format(self.artifacts))
-    hunt_args = flows_pb2.ArtifactCollectorFlowArgs(
+    hunt_args = grr_flows.ArtifactCollectorFlowArgs(
         artifact_list=self.artifacts,
         use_tsk=self.use_tsk,
         ignore_interpolation_errors=True,
         apply_parsers=False,)
-    return self._create_hunt('ArtifactCollectorFlow', hunt_args)
+    self._CreateHunt('ArtifactCollectorFlow', hunt_args)
 
 
 class GRRHuntFileCollector(GRRHunt):
   """File collector for GRR hunts.
 
   Attributes:
-    reason: Justification for GRR access.
-    approvers: list of GRR approval recipients.
+    reason (str): justification for GRR access.
+    approvers (str): comma-separated GRR approval recipients.
     file_path_list: comma-separated list of file paths.
   """
 
-  def __init__(self, state):
-    super(GRRHuntFileCollector, self).__init__(state)
+  def __init__(self, state, critical=False):
+    """Initializes a GRR file collector hunt.
+
+    Args:
+      state (DFTimewolfState): recipe state.
+      critical (Optional[bool]): True if the module is critical, which causes
+          the entire recipe to fail if the module encounters an error.
+    """
+    super(GRRHuntFileCollector, self).__init__(state, critical=critical)
     self.file_path_list = None
 
   # pylint: disable=arguments-differ
-  def setup(self,
+  def SetUp(self,
             file_path_list,
             reason, grr_server_url, grr_username, grr_password, approvers=None,
             verify=True):
     """Initializes a GRR Hunt file collector.
 
     Args:
-      file_path_list: comma-separated list of file paths.
-      reason: justification for GRR access.
-      grr_server_url: GRR server URL.
-      grr_username: GRR username.
-      grr_password: GRR password.
-      approvers: comma-separated list of GRR approval recipients.
-      verify: boolean, whether to verify the GRR server's x509 certificate.
+      file_path_list (str): comma-separated file paths.
+      reason (str): justification for GRR access.
+      grr_server_url (str): GRR server URL.
+      grr_username (str): GRR username.
+      grr_password (str): GRR password.
+      approvers (Optional[str]): comma-separated GRR approval recipients.
+      verify (Optional[bool]): True to indicate GRR server's x509 certificate
+          should be verified.
     """
-    super(GRRHuntFileCollector, self).setup(
+    super(GRRHuntFileCollector, self).SetUp(
         reason, grr_server_url, grr_username, grr_password,
         approvers=approvers, verify=verify)
     self.file_path_list = [item.strip() for item
                            in file_path_list.strip().split(',')]
     if not file_path_list:
-      self.state.add_error('Files must be specified for hunts', critical=True)
+      self.state.AddError('Files must be specified for hunts', critical=True)
 
-  def process(self):
-    """Construct and start a new File hunt.
-
-    Returns:
-      The newly created GRR hunt object.
+  # TODO: this method does not raise itself, indicate what function call does.
+  def Process(self):
+    """Starts a new File Finder GRR hunt.
 
     Raises:
       RuntimeError: if no items specified for collection.
     """
     print('Hunt to collect {0:d} items'.format(len(self.file_path_list)))
     print('Files to be collected: {0!s}'.format(self.file_path_list))
-    hunt_action = flows_pb2.FileFinderAction(
-        action_type=flows_pb2.FileFinderAction.DOWNLOAD)
-    hunt_args = flows_pb2.FileFinderArgs(
+    hunt_action = grr_flows.FileFinderAction(
+        action_type=grr_flows.FileFinderAction.DOWNLOAD)
+    hunt_args = grr_flows.FileFinderArgs(
         paths=self.file_path_list, action=hunt_action)
-    return self._create_hunt('FileFinder', hunt_args)
+    self._CreateHunt('FileFinder', hunt_args)
 
 
 class GRRHuntDownloader(GRRHunt):
   """Downloads results from a GRR Hunt.
 
   Attributes:
-    reason: Justification for GRR access.
-    approvers: list of GRR approval recipients.
+    reason (str): justification for GRR access.
+    approvers (str): comma-separated GRR approval recipients.
   """
 
-  def __init__(self, state):
-    super(GRRHuntDownloader, self).__init__(state)
+  def __init__(self, state, critical=False):
+    """Initializes a GRR hunt results downloader.
+
+    Args:
+      state (DFTimewolfState): recipe state.
+      critical (Optional[bool]): True if the module is critical, which causes
+          the entire recipe to fail if the module encounters an error.
+    """
+    super(GRRHuntDownloader, self).__init__(state, critical=critical)
     self.hunt_id = None
     self.output_path = None
 
   # pylint: disable=arguments-differ
-  def setup(self,
+  def SetUp(self,
             hunt_id,
             reason, grr_server_url, grr_username, grr_password, approvers=None,
             verify=True):
     """Initializes a GRR Hunt file collector.
 
     Args:
-      hunt_id: Hunt ID to download results from.
-      reason: justification for GRR access.
-      grr_server_url: GRR server URL.
-      grr_username: GRR username.
-      grr_password: GRR password.
-      approvers: comma-separated list of GRR approval recipients.
-      verify: boolean, whether to verify the GRR server's x509 certificate.
+      hunt_id (str): GRR identifier of the hunt for which to download results.
+      reason (str): justification for GRR access.
+      grr_server_url (str): GRR server URL.
+      grr_username (str): GRR username.
+      grr_password (str): GRR password.
+      approvers (Optional[str]): comma-separated GRR approval recipients.
+      verify (Optional[bool]): True to indicate GRR server's x509 certificate
+          should be verified.
     """
-    super(GRRHuntDownloader, self).setup(
+    super(GRRHuntDownloader, self).SetUp(
         reason, grr_server_url, grr_username, grr_password,
         approvers=approvers, verify=verify)
     self.hunt_id = hunt_id
     self.output_path = tempfile.mkdtemp()
 
-  def collect_hunt_results(self, hunt):
-    """Download current set of files in results.
+  # TODO: change object to more specific GRR type information.
+  def _CollectHuntResults(self, hunt):
+    """Downloads the current set of files in results.
 
     Args:
-      hunt: The GRR hunt object to download files from.
+      hunt (object): GRR hunt object to download files from.
 
     Returns:
-      list: tuples containing:
-          str: human-readable description of the source of the collection. For
-              example, the name of the source host.
-          str: path to the collected data.
+      list[tuple[str, str]]: pairs of human-readable description of the source
+          of the collection, for example the name of the source host, and
+          the path to the collected data.
+
     Raises:
       ValueError: if approval is needed and approvers were not specified.
     """
@@ -220,50 +243,52 @@ class GRRHuntDownloader(GRRHunt):
       print('{0:s} already exists: Skipping'.format(output_file_path))
       return None
 
-    self._check_approval_wrapper(
-        hunt, self._get_and_write_archive, hunt, output_file_path)
+    self._WrapGRRRequestWithApproval(
+        hunt, self._GetAndWriteArchive, hunt, output_file_path)
 
-    results = self._extract_hunt_results(output_file_path)
+    results = self._ExtractHuntResults(output_file_path)
     print('Wrote results of {0:s} to {1:s}'.format(
         hunt.hunt_id, output_file_path))
     return results
 
-  def _get_and_write_archive(self, hunt, output_file_path):
-    """Gets and writes a hunt archive.
+  # TODO: change object to more specific GRR type information.
+  def _GetAndWriteArchive(self, hunt, output_file_path):
+    """Retrieves and writes a hunt archive.
 
-    Function is necessary for the _check_approval_wrapper to work.
+    Function is necessary for the _WrapGRRRequestWithApproval to work.
 
     Args:
-      hunt: The GRR hunt object.
-      output_file_path: The output path where to write the Hunt Archive.
+      hunt (object): GRR hunt object.
+      output_file_path (str): output path where to write the Hunt Archive.
     """
     hunt_archive = hunt.GetFilesArchive()
     hunt_archive.WriteToFile(output_file_path)
 
-  def _get_client_fqdn(self, client_info_contents):
+  def _GetClientFQDN(self, client_info_contents):
     """Extracts a GRR client's FQDN from its client_info.yaml file.
 
     Args:
-      client_info_contents: The contents of the client_info.yaml file.
+      client_info_contents (str): contents of the client_info.yaml file.
 
     Returns:
-      A (str, str) tuple representing client ID and client FQDN.
+      tuple[str, str]: client identifier and client FQDN.
     """
+    # TODO: handle incorrect file contents.
     yamldict = yaml.safe_load(client_info_contents)
     fqdn = yamldict['system_info']['fqdn']
     client_id = yamldict['client_id'].split('/')[1]
     return client_id, fqdn
 
-  def _extract_hunt_results(self, output_file_path):
-    """Open a hunt output archive and extract files.
+  def _ExtractHuntResults(self, output_file_path):
+    """Opens a hunt output archive and extract files.
 
     Args:
-      output_file_path: The path where the hunt archive is downloaded to.
+      output_file_path (str): path where the hunt results archive file is
+          downloaded to.
 
     Returns:
-      list: tuples containing:
-          str: The name of the client from where the files were downloaded.
-          str: The directory where the files were downloaded to.
+      list[tuple[str, str]]: pairs of names of the GRR clients, from which
+          the files were collected, and path where the files were downloaded to.
     """
     # Extract items from archive by host for processing
     collection_paths = []
@@ -281,7 +306,7 @@ class GRRHuntDownloader(GRRHunt):
           # If we're dealing with client_info.yaml, use it to build a client
           # ID to FQDN correspondence table & skip extraction.
           if f.filename.split('/')[-1] == 'client_info.yaml':
-            client_id, fqdn = self._get_client_fqdn(archive.read(f))
+            client_id, fqdn = self._GetClientFQDN(archive.read(f))
             client_id_to_fqdn[client_id] = fqdn
             continue
 
@@ -301,12 +326,12 @@ class GRRHuntDownloader(GRRHunt):
     except OSError as exception:
       msg = 'Error manipulating file {0:s}: {1!s}'.format(
           output_file_path, exception)
-      self.state.add_error(msg, critical=True)
+      self.state.AddError(msg, critical=True)
       return []
     except zipfile.BadZipfile as exception:
       msg = 'Bad zipfile {0:s}: {1!s}'.format(
           output_file_path, exception)
-      self.state.add_error(msg, critical=True)
+      self.state.AddError(msg, critical=True)
       return []
 
     try:
@@ -323,20 +348,20 @@ class GRRHuntDownloader(GRRHunt):
       fqdn_collection_paths.append((fqdn, path))
 
     if not fqdn_collection_paths:
-      self.state.add_error('Nothing was extracted from the hunt archive',
-                           critical=True)
+      self.state.AddError(
+          'Nothing was extracted from the hunt archive', critical=True)
       return []
 
     return fqdn_collection_paths
 
-  def process(self):
-    """Construct and start a new File hunt.
+  def Process(self):
+    """Downloads the results of a GRR hunt.
 
     Raises:
       RuntimeError: if no items specified for collection.
     """
     hunt = self.grr_api.Hunt(self.hunt_id).Get()
-    self.state.output = self.collect_hunt_results(hunt)
+    self.state.output = self._CollectHuntResults(hunt)
 
 
 modules_manager.ModulesManager.RegisterModules([

@@ -5,21 +5,20 @@ import abc
 
 
 class BaseModule(object):
-  """Base class for modules.
+  """Interface of a DFTimewolf module.
 
   Attributes:
-    critical: Boolean indicating whether the execution of this module is
-        critical to the execution of the recipe. If set to True, and the module
-        fails to properly run, the recipe will be aborted.
-    input: variable containing elements to be processed by a module.
-    output: variable containing the output of a module's execution.
+    critical (bool): True if this module is critical to the execution of
+        the recipe. If set to True, and the module fails to properly run,
+        the recipe will be aborted.
+    state (DFTimewolfState): recipe state.
   """
 
   def __init__(self, state, critical=False):
     """Initialize a module.
 
     Args:
-      state (DFTimewolfState): a state.
+      state (DFTimewolfState): recipe state.
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
@@ -27,12 +26,13 @@ class BaseModule(object):
     self.critical = critical
     self.state = state
 
-  @abc.abstractmethod
-  def cleanup(self):
+  def CleanUp(self):
     """Cleans up module output to prepare it for the next module."""
+    # No clean up is required.
+    return
 
   @abc.abstractmethod
-  def process(self):
+  def Process(self):
     """Processes input and builds the module's output attribute.
 
     Modules take input information and process it into output information,
@@ -40,5 +40,5 @@ class BaseModule(object):
     """
 
   @abc.abstractmethod
-  def setup(self, *args, **kwargs):
+  def SetUp(self, *args, **kwargs):
     """Sets up necessary module configuration options."""

@@ -36,7 +36,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
     """Tests that the processor is set up correctly."""
     test_state = state.DFTimewolfState(config.Config)
     turbinia_processor = turbinia.TurbiniaProcessor(test_state)
-    turbinia_processor.setup(
+    turbinia_processor.SetUp(
         disk_name='disk-1',
         project='turbinia-project',
         turbinia_zone='europe-west1')
@@ -59,7 +59,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
     """Tests that specifying the wrong Turbinia project generates an error."""
     test_state = state.DFTimewolfState(config.Config)
     turbinia_processor = turbinia.TurbiniaProcessor(test_state)
-    turbinia_processor.setup(
+    turbinia_processor.SetUp(
         disk_name='disk-1',
         project='turbinia-wrong-project',
         turbinia_zone='europe-west1')
@@ -94,7 +94,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
     for combination in params:
       test_state = state.DFTimewolfState(config.Config)
       turbinia_processor = turbinia.TurbiniaProcessor(test_state)
-      turbinia_processor.setup(**combination)
+      turbinia_processor.SetUp(**combination)
       self.assertEqual(len(test_state.errors), 1)
       error_msg, is_critical = test_state.errors[0]
       self.assertEqual(error_msg, expected_error)
@@ -114,7 +114,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
 
     test_state = state.DFTimewolfState(config.Config)
     turbinia_processor = turbinia.TurbiniaProcessor(test_state)
-    turbinia_processor.setup(
+    turbinia_processor.SetUp(
         disk_name='disk-1',
         project='turbinia-project',
         turbinia_zone='europe-west1')
@@ -135,7 +135,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
     local_mock.copy_from.return_value = '/fake/local/path'
     mock_GCSOutputWriter.return_value = local_mock
 
-    turbinia_processor.process()
+    turbinia_processor.Process()
 
     mock_GoogleCloudDisk.assert_called_with(
         disk_name='disk-1',

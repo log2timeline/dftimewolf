@@ -1,0 +1,19 @@
+{
+    "name": "stackdriver_collect",
+    "description": [
+        "Collects stackdriver logs from a project."
+    ],
+    "short_description": "Collects stackdriver logs from a project.",
+    "modules": [{
+        "wants": [],
+        "name": "StackdriverLogsCollector",
+        "args": {
+            "project_name": "@project_name",
+            "filter_expression": "@filter_expression"
+        }
+    }],
+    "args": [
+        ["project_name", "Name of GCP project to collect logs from", null],
+        ["filter_expression", "Filter expression to use to query Stackdriver logs", "resource.type = 'gce_instance'"]
+    ]
+}

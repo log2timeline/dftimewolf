@@ -4,128 +4,67 @@
 from __future__ import unicode_literals
 
 import json
-import sys
 
-from dftimewolf.lib import resources
-from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.recipes import manager as recipes_manager
+from dftimewolf.lib import errors
 
 
 class Config(object):
   """Class that handles DFTimewolf's configuration parameters."""
 
-  # TODO: make this an instance instead of a class after moving recipes
-  # to JSON files.
-  _recipes_manager = recipes_manager.RecipesManager
-
   _extra_config = {}
 
   @classmethod
-  def get_extra(cls, name=None):
-    """Gets extra configuration parameters.
+  def GetExtra(cls, name=None):
+    """Retrieves extra configuration parameters.
 
-    These parameters should be loaded through load_extra or load_extra_data.
+    These parameters should be loaded through LoadExtra or LoadExtraData.
 
     Args:
-      name: str, the name of the configuration data to load.
+      name (str): name of the configuration data to load.
 
     Returns:
-      A dictionary containing the requested configuration data. None if
-      data was never loaded under that name.
+      dict[str, object]: extra configuration data or None if not configuration
+          data is available.
     """
     if not name:
       return cls._extra_config
     return cls._extra_config.get(name, None)
 
   @classmethod
-  def has_extra(cls, name):
-    """Checks if an named configuration parameter has been provided.
+  def LoadExtra(cls, filename):
+    """Loads extra configuration parameters from a JSON configuration file.
 
     Args:
-      name: str, the name of the configuration data to load.
-
-    Returns:
-      True if parameter is provided in the extra configuration data, false
-      otherwise.
-    """
-    return name in cls._extra_config
-
-  @classmethod
-  def load_extra(cls, filename):
-    """Loads extra JSON configuration parameters from a file on the filesystem.
-
-    Args:
-      filename: str, the filename to open.
-
-    Returns:
-      bool: True if the extra configuration parameters were read.
+      filename (str): name of the JSON configuration file.
     """
     try:
       with open(filename, 'rb') as configuration_file:
-        cls.load_extra_data(configuration_file.read())
-        sys.stderr.write("Config successfully loaded from {0:s}\n".format(
-            filename))
-        return True
-    except IOError:
-      return False
+        json_string = configuration_file.read()
+        cls.LoadExtraData(json_string)
+    except (IOError, OSError):
+      pass
 
   @classmethod
-  def load_extra_data(cls, data):
-    """Loads extra JSON configuration parameters from a data buffer.
-
-    The data buffer must represent a JSON object.
+  def LoadExtraData(cls, json_string):
+    """Loads extra configuration parameters from a JSON string.
 
     Args:
-      data: str, the buffer to load the JSON data from.
+      json_string (str): JSON string that contains the configuration.
+
+    Raises:
+      BadConfigurationError: if the JSON string cannot be read.
     """
     try:
-      cls._extra_config.update(json.loads(data))
+      json_dict = json.loads(json_string)
     except ValueError as exception:
-      sys.stderr.write('Could convert to JSON. {0:s}'.format(exception))
-      exit(-1)
+      raise errors.BadConfigurationError((
+          'Unable to read configuration from JSON string with error: '
+          '{0!s}').format(exception))
 
+    cls._extra_config.update(json_dict)
+
+  # Note that this method is only used by tests.
   @classmethod
-  def clear_extra(cls):
+  def ClearExtra(cls):
     """Clears any extra arguments loaded from a config JSON blob."""
     cls._extra_config = {}
-
-  @classmethod
-  def register_recipe(cls, recipe):
-    """Registers a dftimewolf recipe.
-
-    Args:
-      recipe [module]: module that contains the recipe.
-    """
-    recipe = resources.Recipe(recipe.__doc__, recipe.contents, recipe.args)
-    cls._recipes_manager.RegisterRecipe(recipe)
-
-  @classmethod
-  def get_registered_recipes(cls):
-    """Fetches all registered recipes.
-
-    Returns:
-      list[Recipe]: recipes sorted by name.
-    """
-    return cls._recipes_manager.GetRecipes()
-
-  @classmethod
-  def register_module(cls, module_class):
-    """Registers a dftimewolf collector.
-
-    Args:
-      module_class [type]: the module class, which is a subclass of BaseModule.
-    """
-    modules_manager.ModulesManager.RegisterModule(module_class)
-
-  @classmethod
-  def get_module(cls, name):
-    """Fetches a previously registered module.
-
-    Args:
-      name [str]: name with which the module was registered.
-
-    Returns:
-      type: the module class, which is a subclass of BaseModule, or None if
-          no corresponding module was found.
-    """
-    return modules_manager.ModulesManager.GetModuleByName(name)

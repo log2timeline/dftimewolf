@@ -19,14 +19,14 @@ class GrepperTest(unittest.TestCase):
     """Test just single keyword grep search on text files."""
     test_state = state.DFTimewolfState(config.Config)
     base_grepper_search = grepper.GrepperSearch(test_state)
-    base_grepper_search.setup(
+    base_grepper_search.SetUp(
         keywords='foo|lorem|meow|triage|bar|homebrew'
     )
     # Put here a path to a test directory where you have files to grep on the
     # above keyword. This is to simulate the path received an input from GRR
     base_grepper_search.state.input = \
       [['Test description', '../collectors/test_data/grepper_test_dir']]
-    base_grepper_search.process()
+    base_grepper_search.Process()
     # pylint: disable=protected-access
     self.assertEqual(
         base_grepper_search._keywords, 'foo|lorem|meow|triage|bar|homebrew')
