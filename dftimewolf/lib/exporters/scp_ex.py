@@ -49,7 +49,7 @@ class SCPExporter(module.BaseModule):
     self._user = user
 
     if not self._SSHAvailable():
-      self.state.add_error("Unable to connect to host.", critical=True)
+      self.state.AddError("Unable to connect to host.", critical=True)
 
   def Process(self):
     """Copies the list of paths to the destination on user@hostname"""
@@ -62,7 +62,7 @@ class SCPExporter(module.BaseModule):
     cmd.append(dest)
     ret = subprocess.call(cmd)
     if ret:
-      self.state.add_error("Failed copying {0:s}".format(self._paths),
+      self.state.AddError("Failed copying {0:s}".format(self._paths),
                            critical=False)
 
   def _SSHAvailable(self):
