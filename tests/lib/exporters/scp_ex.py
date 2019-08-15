@@ -29,7 +29,7 @@ class LocalFileSystemTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     scp_exporter = scp_ex.SCPExporter(test_state)
     scp_exporter.SetUp('/path1,/path2', '/destination', 'fakeuser',
-                       'fakehost', 'fakeid')
+                       'fakehost', 'fakeid', True)
 
     mock_subprocess_call.assert_called_with(
         ['ssh', '-q', '-l', 'fakeuser', 'fakehost', 'true', '-i', 'fakeid'])
@@ -47,7 +47,7 @@ class LocalFileSystemTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     scp_exporter = scp_ex.SCPExporter(test_state)
     scp_exporter.SetUp('/path1,/path2', '/destination', 'fakeuser',
-                       'fakehost', 'fakeid')
+                       'fakehost', 'fakeid', True)
     scp_exporter.Process()
 
     mock_subprocess_call.assert_called_with(
@@ -60,7 +60,7 @@ class LocalFileSystemTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     scp_exporter = scp_ex.SCPExporter(test_state)
     scp_exporter.SetUp('/path1,/path2', '/destination', 'fakeuser',
-                       'fakehost', 'fakeid')
+                       'fakehost', 'fakeid', True)
 
     self.assertEqual(test_state.errors[0], ('Unable to connect to host.', True))
 
@@ -71,7 +71,7 @@ class LocalFileSystemTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     scp_exporter = scp_ex.SCPExporter(test_state)
     scp_exporter.SetUp('/path1,/path2', '/destination', 'fakeuser',
-                       'fakehost', 'fakeid')
+                       'fakehost', 'fakeid', True)
 
     mock_subprocess_call.return_value = -1
     scp_exporter.Process()

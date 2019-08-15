@@ -11,7 +11,8 @@
         "destination": "@destination",
         "hostname": "@hostname",
         "user": "@user",
-        "id_file": "@id_file"
+        "id_file": "@id_file",
+        "check_ssh": true
       }
     }
   ],
