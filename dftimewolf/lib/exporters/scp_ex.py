@@ -32,7 +32,7 @@ class SCPExporter(module.BaseModule):
     self._id_file = None
 
   def SetUp(self, # pylint: disable=arguments-differ
-            paths, destination, user, hostname, id_file):
+            paths, destination, user, hostname, id_file, check_ssh):
     """Sets up the _target_directory attribute.
 
     Args:
@@ -41,6 +41,8 @@ class SCPExporter(module.BaseModule):
       hostname (str): Hostname of destination.
       destination (str): Path to destination on host.
       id_file (str): Identity file to use.
+      check_ssh (boolean): Whether to check for SSH connectivity on module
+          setup.
     """
     self._destination = destination
     self._hostname = hostname
@@ -48,7 +50,7 @@ class SCPExporter(module.BaseModule):
     self._paths = paths.split(",")
     self._user = user
 
-    if not self._SSHAvailable():
+    if check_ssh and not self._SSHAvailable():
       self.state.AddError("Unable to connect to host.", critical=True)
 
   def Process(self):
