@@ -9,6 +9,8 @@ import json
 from dftimewolf.lib.module import BaseModule
 from dftimewolf.lib.containers import StackdriverLogs
 
+from dftimewolf.lib.modules import manager as modules_manager
+
 
 class StackdriverTimesketch(BaseModule):
   """Transforms Stackdriver logs for Timesketch."""
@@ -228,3 +230,5 @@ class StackdriverTimesketch(BaseModule):
     logs_containers = self.state.get_containers(StackdriverLogs)
     for logs_container in logs_containers:
       self._ProcessLogContainer(logs_container)
+
+modules_manager.ModulesManager.RegisterModule(StackdriverTimesketch)
