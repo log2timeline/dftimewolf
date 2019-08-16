@@ -14,7 +14,7 @@
     }, {
         "wants": ["StackdriverLogsCollector"],
         "name": "StackdriverTimesketch",
-        "args": []
+        "args": {}
     }, {
         "wants": ["StackdriverTimesketch"],
         "name": "TimesketchExporter",
