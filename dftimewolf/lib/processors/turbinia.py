@@ -182,7 +182,8 @@ class TurbiniaProcessor(module.BaseModule):
     print(message)
 
     # Store the message for consumption by any reporting modules.
-    report = containers.Report(module_name='TurbiniaProcessor', text=message)
+    report = containers.Report(
+        module_name='TurbiniaProcessor', text=message, text_format='markdown')
     self.state.StoreContainer(report)
 
     # This finds all .plaso files in the Turbinia output, and determines if they
