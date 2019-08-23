@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 from __future__ import print_function
 
+import getpass
 import os
 import tempfile
 
@@ -52,13 +53,14 @@ class TurbiniaProcessor(module.BaseModule):
     self.turbinia_zone = None
 
   # pylint: disable=arguments-differ
-  def SetUp(self, disk_name, project, turbinia_zone):
+  def SetUp(self, disk_name, project, turbinia_zone, sketch_id):
     """Sets up the object attributes.
 
     Args:
       disk_name (str): name of the disk to process.
       project (str): name of the GPC project containing the disk to process.
       turbinia_zone (str): GCP zone in which the Turbinia server is running.
+      sketch_id (str): The Timesketch sketch id
     """
     # TODO: Consider the case when multiple disks are provided by the previous
     # module or by the CLI.
@@ -72,6 +74,7 @@ class TurbiniaProcessor(module.BaseModule):
     self.disk_name = disk_name
     self.project = project
     self.turbinia_zone = turbinia_zone
+    self.sketch_id = sketch_id
 
     try:
       turbinia_config.LoadConfig()
@@ -129,8 +132,10 @@ class TurbiniaProcessor(module.BaseModule):
       self.state.AddError(exception, critical=True)
       return
 
-    request = TurbiniaRequest()
+    request = TurbiniaRequest(requester=getpass.getuser())
     request.evidence.append(evidence_)
+    if self.sketch_id:
+      request.recipe['sketch_id'] = self.sketch_id
 
     # Get threat intelligence data from any modules that have stored some.
     # In this case, observables is a list of containers.ThreatIntelligence
