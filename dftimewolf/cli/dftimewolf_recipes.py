@@ -35,6 +35,7 @@ if not _ASKING_FOR_HELP:
   from dftimewolf.lib.exporters import timesketch
   from dftimewolf.lib.processors import grepper
   from dftimewolf.lib.processors import localplaso
+  from dftimewolf.lib.processors import stackdriver_timesketch
   from dftimewolf.lib.processors import turbinia
 
 from dftimewolf.lib.recipes import manager as recipes_manager
