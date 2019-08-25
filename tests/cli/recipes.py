@@ -18,10 +18,15 @@ class RecipeTests(unittest.TestCase):
   def setUp(self):
     recipes_path = os.path.dirname(__file__)
     recipes_path = os.path.dirname(recipes_path)
+    recipes_path = os.path.dirname(recipes_path)
     recipes_path = os.path.join(recipes_path, 'data', 'recipes')
 
     self._recipes_manager = recipes_manager.RecipesManager()
     self._recipes_manager.ReadRecipesFromDirectory(recipes_path)
+
+  def tearDown(self):
+    for recipe in self._recipes_manager.GetRecipes():
+      self._recipes_manager.DeregisterRecipe(recipe)
 
   def testRecipeHasFields(self):
     """Tests that all recipes have the correct fields."""
