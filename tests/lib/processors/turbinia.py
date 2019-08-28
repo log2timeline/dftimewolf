@@ -39,10 +39,14 @@ class TurbiniaProcessorTest(unittest.TestCase):
     turbinia_processor.SetUp(
         disk_name='disk-1',
         project='turbinia-project',
-        turbinia_zone='europe-west1')
+        turbinia_zone='europe-west1',
+        sketch_id=123,
+        run_all_jobs=False)
     self.assertEqual(turbinia_processor.disk_name, 'disk-1')
     self.assertEqual(turbinia_processor.project, 'turbinia-project')
     self.assertEqual(turbinia_processor.turbinia_zone, 'europe-west1')
+    self.assertEqual(turbinia_processor.sketch_id, 123)
+    self.assertEqual(turbinia_processor.run_all_jobs, False)
     self.assertEqual(test_state.errors, [])
 
     # TURBINIA_REGION is dynamically generated
@@ -62,7 +66,9 @@ class TurbiniaProcessorTest(unittest.TestCase):
     turbinia_processor.SetUp(
         disk_name='disk-1',
         project='turbinia-wrong-project',
-        turbinia_zone='europe-west1')
+        turbinia_zone='europe-west1',
+        sketch_id=None,
+        run_all_jobs=False)
 
     self.assertEqual(len(test_state.errors), 1)
     error_msg, is_critical = test_state.errors[0]
@@ -80,12 +86,16 @@ class TurbiniaProcessorTest(unittest.TestCase):
         {
             'disk_name': 'disk-1',
             'project': None,
-            'turbinia_zone': 'europe-west1'
+            'turbinia_zone': 'europe-west1',
+            'sketch_id': None,
+            'run_all_jobs': False,
         },
         {
             'disk_name': 'disk-1',
             'project': 'turbinia-project',
-            'turbinia_zone': None
+            'turbinia_zone': None,
+            'sketch_id': None,
+            'run_all_jobs': False
         }
     ]
     expected_error = ('project or turbinia_zone are not all '
@@ -117,7 +127,9 @@ class TurbiniaProcessorTest(unittest.TestCase):
     turbinia_processor.SetUp(
         disk_name='disk-1',
         project='turbinia-project',
-        turbinia_zone='europe-west1')
+        turbinia_zone='europe-west1',
+        sketch_id=4567,
+        run_all_jobs=False)
 
     turbinia_processor.client.get_task_data.return_value = [{
         'saved_paths': [
@@ -145,6 +157,9 @@ class TurbiniaProcessorTest(unittest.TestCase):
     # These are mock classes, so there is a member
     # pylint: disable=no-member
     turbinia_processor.client.send_request.assert_called()
+    request = turbinia_processor.client.send_request.call_args[0][0]
+    self.assertEqual(request.recipe['sketch_id'], 4567)
+    self.assertListEqual(request.recipe['jobs_blacklist'], ['StringsJob'])
     turbinia_processor.client.get_task_data.assert_called()
     # pylint: disable=protected-access
     mock_GCSOutputWriter.assert_called_with(

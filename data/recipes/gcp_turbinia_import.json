@@ -29,7 +29,9 @@
             "comment": "Taken from GoogleCloudCollector's output",
             "disk_name": null,
             "project": "@analysis_project_name",
-            "turbinia_zone": "@turbinia_zone"
+            "turbinia_zone": "@turbinia_zone",
+            "run_all_jobs": "@run_all_jobs",
+            "sketch_id": "@sketch_id"
         }
     }, {
         "wants": ["TurbiniaProcessor"],
@@ -47,6 +49,7 @@
         ["analysis_project_name", "Name of the project where the analysis VM will be created", null],
         ["--turbinia_zone", "The GCP zone the disk to process (and Turbinia workers) are in", null],
         ["--incident_id", "Incident ID (used for Timesketch description)", null],
+        ["--run_all_jobs", "Run all Turbinia processing jobs instead of a faster subset", false],
         ["--sketch_id", "Sketch to which the timeline should be added", null],
         ["--timesketch_endpoint", "Endpoint of the Timesketch server to use", "https://localhost:5000"],
         ["--instance", "Name of the instance to analyze.", null],
