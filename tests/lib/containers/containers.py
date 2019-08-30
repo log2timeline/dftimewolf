@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Tests for the Report attribute containers."""
+"""Tests for the attribute containers."""
 
 from __future__ import unicode_literals
 

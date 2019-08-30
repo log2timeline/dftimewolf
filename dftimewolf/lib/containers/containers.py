@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Report related attribute container definitions."""
+"""Attribute container definitions."""
 
 from dftimewolf.lib.containers import interface
 
