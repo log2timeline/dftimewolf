@@ -23,7 +23,7 @@ class TimesketchApiClient(object):
       host_url (str): URL of Timesketch instance
       username (str): Timesketch username
       password (str): Timesketch password
-      auth_mode: The authentication mode to use. Defaults to 'timesketch'
+      auth_mode (str): The authentication mode to use. Defaults to 'timesketch'
                 Supported values are 'timesketch' (Timesketch login form) and
                 'http-basic' (HTTP Basic authentication).
     """
@@ -38,7 +38,7 @@ class TimesketchApiClient(object):
     Args:
       username (str): Timesketch username
       password (str): Timesketch password
-      auth_mode: The authentication mode to use. Supported values are
+      auth_mode (str): The authentication mode to use. Supported values are
                 'timesketch' (Timesketch login form) and 'http-basic'
                 (HTTP Basic authentication).
 
@@ -49,14 +49,13 @@ class TimesketchApiClient(object):
     session.verify = False  # Depending on SSL cert is verifiable
      # If using HTTP Basic auth, add the user/pass to the session
     if auth_mode == 'http-basic':
-            session.auth = (username, password)
+      session.auth = (username, password)
     try:
       response = session.get(self.host_url)
     except requests.exceptions.ConnectionError:
       return False
 
     # Get the CSRF token from the response
-    print(response.text)
     soup = BeautifulSoup(response.text, 'html.parser')
     csrf_token = soup.find('input', dict(name='csrf_token'))['value']
     session.headers.update({
@@ -64,8 +63,8 @@ class TimesketchApiClient(object):
         'referer': self.host_url
     })
     if auth_mode == 'timesketch':
-        login_data = dict(username=username, password=password)
-        _ = session.post('{0:s}/login/'.format(self.host_url), data=login_data)
+      login_data = dict(username=username, password=password)
+      _ = session.post('{0:s}/login/'.format(self.host_url), data=login_data)
 
     return session
 
