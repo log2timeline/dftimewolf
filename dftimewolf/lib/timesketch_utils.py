@@ -16,44 +16,57 @@ class TimesketchApiClient(object):
     session (requests.Session): HTTP session for calls to Timesketch
   """
 
-  def __init__(self, host_url, username, password):
+  def __init__(self, host_url, username, password, auth_mode=u'timesketch'):
     """Initialize the Timesketch API client object.
 
     Args:
       host_url (str): URL of Timesketch instance
       username (str): Timesketch username
       password (str): Timesketch password
+      auth_mode: The authentication mode to use. Defaults to 'timesketch'
+                Supported values are 'timesketch' (Timesketch login form) and
+                'http-basic' (HTTP Basic authentication).
     """
     self.host_url = host_url
     self.api_base_url = '{0:s}/api/v1'.format(self.host_url)
     self.username = username
-    self.session = self._CreateSession(username, password)
+    self.session = self._CreateSession(username, password, auth_mode=auth_mode)
 
-  def _CreateSession(self, username, password):
+  def _CreateSession(self, username, password, auth_mode):
     """Create a session with a Timesketch server.
 
     Args:
       username (str): Timesketch username
       password (str): Timesketch password
+      auth_mode: The authentication mode to use. Supported values are
+                'timesketch' (Timesketch login form) and 'http-basic'
+                (HTTP Basic authentication).
 
     Returns:
       requests.Session: Session object.
     """
     session = requests.Session()
     session.verify = False  # Depending on SSL cert is verifiable
+     # If using HTTP Basic auth, add the user/pass to the session
+    if auth_mode == 'http-basic':
+            session.auth = (username, password)
     try:
       response = session.get(self.host_url)
     except requests.exceptions.ConnectionError:
       return False
+
     # Get the CSRF token from the response
+    print(response.text)
     soup = BeautifulSoup(response.text, 'html.parser')
     csrf_token = soup.find('input', dict(name='csrf_token'))['value']
-    login_data = dict(username=username, password=password)
     session.headers.update({
         'x-csrftoken': csrf_token,
         'referer': self.host_url
     })
-    _ = session.post('{0:s}/login/'.format(self.host_url), data=login_data)
+    if auth_mode == 'timesketch':
+        login_data = dict(username=username, password=password)
+        _ = session.post('{0:s}/login/'.format(self.host_url), data=login_data)
+
     return session
 
   def CreateSketch(self, name, description):

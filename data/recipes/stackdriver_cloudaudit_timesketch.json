@@ -23,7 +23,8 @@
             "username": "@ts_username",
             "password": "@ts_password",
             "incident_id": "@reason",
-            "sketch_id": "@sketch_id"
+            "sketch_id": "@sketch_id",
+            "auth_mode": "@ts_auth_mode"
         }
     }],
     "args": [
