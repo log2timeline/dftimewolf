@@ -16,7 +16,7 @@ class TimesketchApiClient(object):
     session (requests.Session): HTTP session for calls to Timesketch
   """
 
-  def __init__(self, host_url, username, password, auth_mode=u'timesketch'):
+  def __init__(self, host_url, username, password, auth_mode='timesketch'):
     """Initialize the Timesketch API client object.
 
     Args:
