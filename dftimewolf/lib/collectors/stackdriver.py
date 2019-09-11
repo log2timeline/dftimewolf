@@ -14,7 +14,7 @@ from oauth2client.client import AccessTokenRefreshError
 from oauth2client.client import ApplicationDefaultCredentialsError
 
 from dftimewolf.lib import module
-from dftimewolf.lib.containers import StackdriverLogs
+from dftimewolf.lib.containers import containers
 # Need to register with in the protobuf registry.
 # pylint: disable=unused-import
 from dftimewolf.lib.collectors import audit_log_pb2 as _
@@ -118,7 +118,7 @@ class StackdriverLogsCollector(module.BaseModule):
     print('[stackdriver] Downloaded logs to {0:s}'.format(output_path))
     output_file.close()
 
-    logs_report = StackdriverLogs(
+    logs_report = containers.StackdriverLogs(
         path=output_path, filter_expression=self._filter_expression,
         project_name=self._project_name)
     self.state.StoreContainer(logs_report)

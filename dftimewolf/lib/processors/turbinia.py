@@ -16,8 +16,8 @@ from turbinia import output_manager
 from turbinia import TurbiniaException
 from turbinia.message import TurbiniaRequest
 
-from dftimewolf.lib import containers
 from dftimewolf.lib import module
+from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 
 # pylint: disable=no-member
