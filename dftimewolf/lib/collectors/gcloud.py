@@ -39,9 +39,17 @@ class GoogleCloudCollector(module.BaseModule):
     self.analysis_vm = None
     self.incident_id = None
     self.disks_to_copy = []
+    self.remote_project = None
+    self.remote_instance_name = None
+    self.disk_names = []
+    self.incident_id = None
+    self.all_disks = False
 
   def Process(self):
     """Copies a disk to the analysis project."""
+
+    self.FindDisksToCopy()
+
     for disk in self.disks_to_copy:
       print('Disk copy of {0:s} started...'.format(disk.name))
       snapshot = disk.snapshot()
@@ -106,27 +114,27 @@ class GoogleCloudCollector(module.BaseModule):
 
     self.analysis_project = libcloudforensics.GoogleCloudProject(
         analysis_project_name, default_zone=zone)
-    remote_project = libcloudforensics.GoogleCloudProject(
+    self.remote_project = libcloudforensics.GoogleCloudProject(
         remote_project_name)
 
-    if not (remote_instance_name or disk_names):
-      self.state.AddError(
-          'You need to specify at least an instance name or disks to copy',
-          critical=True)
-      return
-
+    self.remote_instance_name = remote_instance_name
+    self.disk_names = disk_names
     self.incident_id = incident_id
-    analysis_vm_name = 'gcp-forensics-vm-{0:s}'.format(incident_id)
+    self.all_disks = all_disks
+
+    analysis_vm_name = 'gcp-forensics-vm-{0:s}'.format(self.incident_id)
+
     print('Your analysis VM will be: {0:s}'.format(analysis_vm_name))
     print('Complimentary gcloud command:')
     print('gcloud compute ssh --project {0:s} {1:s} --zone {2:s}'.format(
-        analysis_project_name,
+        self.analysis_project.project_id,
         analysis_vm_name,
         zone))
 
     try:
       # TODO: Make creating an analysis VM optional
       # pylint: disable=too-many-function-args
+
       self.analysis_vm, _ = libcloudforensics.start_analysis_vm(
           self.analysis_project.project_id,
           analysis_vm_name,
@@ -137,33 +145,6 @@ class GoogleCloudCollector(module.BaseModule):
           image_project=image_project,
           image_family=image_family)
 
-      if disk_names:
-        for name in disk_names:
-          try:
-            self.disks_to_copy.append(remote_project.get_disk(name))
-          except RuntimeError:
-            self.state.AddError(
-                'Disk "{0:s}" was not found in project {1:s}'.format(
-                    name, remote_project_name),
-                critical=True)
-            break
-
-      elif remote_instance_name:
-        remote_instance = remote_project.get_instance(
-            remote_instance_name)
-
-        if all_disks:
-          self.disks_to_copy = [
-              remote_project.get_disk(disk_name)
-              for disk_name in remote_instance.list_disks()
-          ]
-        else:
-          self.disks_to_copy = [remote_instance.get_boot_disk()]
-
-        if not self.disks_to_copy:
-          self.state.AddError(
-              'Could not find any disks to copy', critical=True)
-
     except AccessTokenRefreshError as err:
       self.state.AddError('Something is wrong with your gcloud access token.')
       self.state.AddError(err, critical=True)
@@ -173,6 +154,41 @@ class GoogleCloudCollector(module.BaseModule):
           'Something is wrong with your Application Default Credentials. '
           'Try running:\n  $ gcloud auth application-default login')
       self.state.AddError(err, critical=True)
+
+  def FindDisksToCopy(self):
+    if not (self.remote_instance_name or self.disk_names):
+      self.state.AddError(
+          'You need to specify at least an instance name or disks to copy',
+          critical=True)
+      return
+
+    try:
+      if self.disk_names:
+        for name in self.disk_names:
+          try:
+            self.disks_to_copy.append(self.remote_project.get_disk(name))
+          except RuntimeError:
+            self.state.AddError(
+                'Disk "{0:s}" was not found in project {1:s}'.format(
+                    name, self.remote_project.project_id),
+                critical=True)
+            break
+
+      elif self.remote_project.project_id:
+        remote_instance = self.remote_project.get_instance(
+            self.remote_project.project_id)
+
+        if self.all_disks:
+          self.disks_to_copy = [
+              self.remote_project.get_disk(disk_name)
+              for disk_name in remote_instance.list_disks()
+          ]
+        else:
+          self.disks_to_copy = [remote_instance.get_boot_disk()]
+
+        if not self.disks_to_copy:
+          self.state.AddError(
+              'Could not find any disks to copy', critical=True)
 
     except HttpError as err:
       if err.resp.status == 403:
