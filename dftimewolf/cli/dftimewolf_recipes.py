@@ -44,7 +44,8 @@ from dftimewolf.lib.state import DFTimewolfState
 class DFTimewolfTool(object):
   """DFTimewolf tool."""
 
-  _DEFAULT_DATA_FILES_PATH = os.path.join('/', 'usr', 'share', 'dftimewolf')
+  _DEFAULT_DATA_FILES_PATH = os.path.join(
+      '/', 'usr', 'local', 'share', 'dftimewolf')
 
   def __init__(self):
     """Initializes a DFTimewolf tool."""
@@ -81,15 +82,23 @@ class DFTimewolfTool(object):
 
   def _DetermineDataFilesPath(self):
     """Determines the data files path."""
+
+    # Figure out if the script is running out of a cloned repository
     data_files_path = os.path.realpath(__file__)
     data_files_path = os.path.dirname(data_files_path)
     data_files_path = os.path.dirname(data_files_path)
     data_files_path = os.path.dirname(data_files_path)
     data_files_path = os.path.join(data_files_path, 'data')
 
+    # Use sys.prefix for user installs (e.g. pip install ...)
+    if not os.path.isdir(data_files_path):
+      data_files_path = os.path.join(sys.prefix, 'share', 'dftimewolf')
+
+    # If all else fails, fall back to hardcoded default
     if not os.path.isdir(data_files_path):
       data_files_path = self._DEFAULT_DATA_FILES_PATH
 
+    print('Data files read from', data_files_path)
     self._data_files_path = data_files_path
 
   def _GenerateHelpText(self):
@@ -117,9 +126,9 @@ class DFTimewolfTool(object):
       configuration_file_path (str): path of the configuration file.
     """
     try:
-      config.Config.LoadExtra(configuration_file_path)
-      sys.stderr.write('Configuration loaded from: {0:s}\n'.format(
-          configuration_file_path))
+      if config.Config.LoadExtra(configuration_file_path):
+        sys.stderr.write('Configuration loaded from: {0:s}\n'.format(
+            configuration_file_path))
 
     except errors.BadConfigurationError as exception:
       sys.stderr.write('{0!s}'.format(exception))
