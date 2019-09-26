@@ -38,7 +38,7 @@ class Config(object):
       filename (str): name of the JSON configuration file.
 
     Returns:
-      True if config was sucesfully loaded, False otherwise.
+      True if config was successfully loaded, False otherwise.
     """
     try:
       with open(filename, 'rb') as configuration_file:
