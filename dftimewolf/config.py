@@ -46,7 +46,8 @@ class Config(object):
         cls.LoadExtraData(json_string)
         return True
     except (IOError, OSError):
-      return False
+      pass
+    return False
 
   @classmethod
   def LoadExtraData(cls, json_string):
