@@ -117,9 +117,9 @@ class DFTimewolfTool(object):
       configuration_file_path (str): path of the configuration file.
     """
     try:
-      config.Config.LoadExtra(configuration_file_path)
-      sys.stderr.write('Configuration loaded from: {0:s}\n'.format(
-          configuration_file_path))
+      if config.Config.LoadExtra(configuration_file_path):
+        sys.stderr.write('Configuration loaded from: {0:s}\n'.format(
+            configuration_file_path))
 
     except errors.BadConfigurationError as exception:
       sys.stderr.write('{0!s}'.format(exception))
