@@ -44,7 +44,8 @@ from dftimewolf.lib.state import DFTimewolfState
 class DFTimewolfTool(object):
   """DFTimewolf tool."""
 
-  _DEFAULT_DATA_FILES_PATH = os.path.join('/', 'usr', 'local', 'share', 'dftimewolf')
+  _DEFAULT_DATA_FILES_PATH = os.path.join(
+      '/', 'usr', 'local', 'share', 'dftimewolf')
 
   def __init__(self):
     """Initializes a DFTimewolf tool."""
