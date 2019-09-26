@@ -159,7 +159,7 @@ setup(
         'Programming Language :: Python',
     ],
     entry_points={
-        'console_scripts': ['dftimewolf=dftimewolf.cli.dftimewolf_recipes:main']
+        'console_scripts': ['dftimewolf=dftimewolf.cli.dftimewolf_recipes:Main']
     },
     data_files=[
         ('share/dftimewolf', glob.glob(
