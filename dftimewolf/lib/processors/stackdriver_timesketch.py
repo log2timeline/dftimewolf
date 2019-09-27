@@ -208,7 +208,7 @@ class StackdriverTimesketch(BaseModule):
       return
 
     output_file = tempfile.NamedTemporaryFile(
-        mode='w', encoding='utf-8', delete=False)
+        mode='w', encoding='utf-8', delete=False, suffix='.jsonl')
     output_path = output_file.name
 
     with open(logs_container.path, 'r') as input_file:
