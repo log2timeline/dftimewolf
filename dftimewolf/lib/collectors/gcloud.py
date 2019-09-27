@@ -156,6 +156,7 @@ class GoogleCloudCollector(module.BaseModule):
       self.state.AddError(err, critical=True)
 
   def FindDisksToCopy(self):
+    """Determines which disks to copy depending on object attributes."""
     if not (self.remote_instance_name or self.disk_names):
       self.state.AddError(
           'You need to specify at least an instance name or disks to copy',
@@ -186,10 +187,6 @@ class GoogleCloudCollector(module.BaseModule):
         else:
           self.disks_to_copy = [remote_instance.get_boot_disk()]
 
-        if not self.disks_to_copy:
-          self.state.AddError(
-              'Could not find any disks to copy', critical=True)
-
     except HttpError as err:
       if err.resp.status == 403:
         self.state.AddError(
@@ -200,5 +197,8 @@ class GoogleCloudCollector(module.BaseModule):
             'disk name?')
       self.state.AddError(err, critical=True)
 
+    if not self.disks_to_copy:
+      self.state.AddError(
+          'Could not find any disks to copy', critical=True)
 
 modules_manager.ModulesManager.RegisterModule(GoogleCloudCollector)
