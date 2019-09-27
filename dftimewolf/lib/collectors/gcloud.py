@@ -22,8 +22,6 @@ class GoogleCloudCollector(module.BaseModule):
     analysis_vm (libcloudforensics.GoogleComputeInstance): analysis VM on
          which the disk copy will be attached.
     incident_id (str): incident identifier used to name the analysis VM.
-    disks_to_copy (list[libcloudforensics.GoogleComputeDisk]): the disks
-        to copy to the analysis project.
     remote_project (libcloudforensics.GoogleCloudProject): source project
         containing the VM to copy.
     remote_instance_name (libcloudforensics.GoogleComputeInstance): instance
@@ -47,7 +45,6 @@ class GoogleCloudCollector(module.BaseModule):
     self.analysis_project = None
     self.analysis_vm = None
     self.incident_id = None
-    self.disks_to_copy = []
     self.remote_project = None
     self.remote_instance_name = None
     self.disk_names = []
@@ -57,9 +54,7 @@ class GoogleCloudCollector(module.BaseModule):
   def Process(self):
     """Copies a disk to the analysis project."""
 
-    self.FindDisksToCopy()
-
-    for disk in self.disks_to_copy:
+    for disk in self._FindDisksToCopy():
       print('Disk copy of {0:s} started...'.format(disk.name))
       snapshot = disk.snapshot()
       new_disk = self.analysis_project.create_disk_from_snapshot(
@@ -154,29 +149,36 @@ class GoogleCloudCollector(module.BaseModule):
           image_project=image_project,
           image_family=image_family)
 
-    except AccessTokenRefreshError as err:
+    except AccessTokenRefreshError as exception:
       self.state.AddError('Something is wrong with your gcloud access token.')
-      self.state.AddError(err, critical=True)
+      self.state.AddError(exception, critical=True)
 
-    except ApplicationDefaultCredentialsError as err:
+    except ApplicationDefaultCredentialsError as exception:
       self.state.AddError(
           'Something is wrong with your Application Default Credentials. '
           'Try running:\n  $ gcloud auth application-default login')
-      self.state.AddError(err, critical=True)
+      self.state.AddError(exception, critical=True)
 
-  def FindDisksToCopy(self):
-    """Determines which disks to copy depending on object attributes."""
+  def _FindDisksToCopy(self):
+    """Determines which disks to copy depending on object attributes.
+
+    Returns:
+      list[libcloudforensics.GoogleComputeDisk]: the disks to copy to the
+          analysis project.
+    """
     if not (self.remote_instance_name or self.disk_names):
       self.state.AddError(
           'You need to specify at least an instance name or disks to copy',
           critical=True)
       return
 
+    disks_to_copy = []
+
     try:
       if self.disk_names:
         for name in self.disk_names:
           try:
-            self.disks_to_copy.append(self.remote_project.get_disk(name))
+            disks_to_copy.append(self.remote_project.get_disk(name))
           except RuntimeError:
             self.state.AddError(
                 'Disk "{0:s}" was not found in project {1:s}'.format(
@@ -189,12 +191,12 @@ class GoogleCloudCollector(module.BaseModule):
             self.remote_project.project_id)
 
         if self.all_disks:
-          self.disks_to_copy = [
+          disks_to_copy = [
               self.remote_project.get_disk(disk_name)
               for disk_name in remote_instance.list_disks()
           ]
         else:
-          self.disks_to_copy = [remote_instance.get_boot_disk()]
+          disks_to_copy = [remote_instance.get_boot_disk()]
 
     except HttpError as err:
       if err.resp.status == 403:
@@ -206,8 +208,10 @@ class GoogleCloudCollector(module.BaseModule):
             'disk name?')
       self.state.AddError(err, critical=True)
 
-    if not self.disks_to_copy:
+    if not disks_to_copy:
       self.state.AddError(
           'Could not find any disks to copy', critical=True)
+
+    return disks_to_copy
 
 modules_manager.ModulesManager.RegisterModule(GoogleCloudCollector)
