@@ -22,13 +22,14 @@
             "endpoint": "@ts_endpoint",
             "username": "@ts_username",
             "password": "@ts_password",
-            "incident_id": "@reason",
+            "incident_id": "@incident_id",
             "sketch_id": "@sketch_id"
         }
     }],
     "args": [
         ["project_name", "Name of GCP project to collect logs from", null],
         ["start_date", "Start date (yyyy-mm-ddTHH:MM:SSZ)", null],
-        ["end_date", "End date (yyyy-mm-ddTHH:MM:SSZ)", null]
-    ]
+        ["end_date", "End date (yyyy-mm-ddTHH:MM:SSZ)", null],
+        ["--incident_id", "Incident ID (used for Timesketch description)", null],
+        ["--sketch_id", "Sketch to which the timeline should be added", null]]
 }
