@@ -214,7 +214,7 @@ class GoogleCloudCollector(module.BaseModule):
       self.state.AddError(
           'You need to specify at least an instance name or disks to copy',
           critical=True)
-      return
+      return []
 
     disks_to_copy = []
 
