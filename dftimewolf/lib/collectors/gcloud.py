@@ -24,6 +24,15 @@ class GoogleCloudCollector(module.BaseModule):
     incident_id (str): incident identifier used to name the analysis VM.
     disks_to_copy (list[libcloudforensics.GoogleComputeDisk]): the disks
         to copy to the analysis project.
+    remote_project (libcloudforensics.GoogleCloudProject): source project
+        containing the VM to copy.
+    remote_instance_name (libcloudforensics.GoogleComputeInstance): instance
+        that needs forensicating.
+    disk_names (list[str]): Comma-separated list of disk names to copy.
+    incident_id (str): incident identifier on which the name of the analysis
+        VM will be based.
+    all_disks (bool): True if all disks attached to the source
+        instance should be copied.
   """
 
   def __init__(self, state, critical=False):
