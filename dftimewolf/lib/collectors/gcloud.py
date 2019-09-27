@@ -159,6 +159,50 @@ class GoogleCloudCollector(module.BaseModule):
           'Try running:\n  $ gcloud auth application-default login')
       self.state.AddError(exception, critical=True)
 
+  def _GetDisksFromNames(self, disk_names):
+    """Gets disks from a project by disk name.
+
+    Args:
+      disk_names (list[str]): List of disk names to get from the project.
+
+    Returns:
+      list[GoogleComputeDisk]: List of GoogleComputeDisk objects to copy.
+    """
+    disks = []
+    for name in disk_names:
+      try:
+        disks.append(self.remote_project.get_disk(name))
+      except RuntimeError:
+        self.state.AddError(
+            'Disk "{0:s}" was not found in project {1:s}'.format(
+                name, self.remote_project.project_id),
+            critical=True)
+    return disks
+
+  def _GetDisksFromInstance(self, instance_name, all_disks):
+    """Gets disks to copy based on an instance name.
+
+    Args:
+      instance_name (str): Name of the instance to get the disks from.
+      all_disks (bool): If set, get all disks attached to the instance. If
+          False, get only the instance's boot disk.
+
+    Returns:
+      list[GoogleComputeDisk]: List of GoogleComputeDisk objects to copy.
+    """
+    try:
+      remote_instance = self.remote_project.get_instance(instance_name)
+    except RuntimeError as exception:
+      self.state.AddError(str(exception), critical=True)
+      return []
+
+    if all_disks:
+      return [
+          self.remote_project.get_disk(disk_name)
+          for disk_name in remote_instance.list_disks()
+      ]
+    return [remote_instance.get_boot_disk()]
+
   def _FindDisksToCopy(self):
     """Determines which disks to copy depending on object attributes.
 
@@ -175,38 +219,23 @@ class GoogleCloudCollector(module.BaseModule):
     disks_to_copy = []
 
     try:
+
       if self.disk_names:
-        for name in self.disk_names:
-          try:
-            disks_to_copy.append(self.remote_project.get_disk(name))
-          except RuntimeError:
-            self.state.AddError(
-                'Disk "{0:s}" was not found in project {1:s}'.format(
-                    name, self.remote_project.project_id),
-                critical=True)
-            break
+        disks_to_copy = self._GetDisksFromNames(self.disk_names)
 
-      elif self.remote_project.project_id:
-        remote_instance = self.remote_project.get_instance(
-            self.remote_project.project_id)
+      elif self.remote_instance_name:
+        disks_to_copy = self._GetDisksFromInstance(self.remote_instance_name,
+                                                   self.all_disks)
 
-        if self.all_disks:
-          disks_to_copy = [
-              self.remote_project.get_disk(disk_name)
-              for disk_name in remote_instance.list_disks()
-          ]
-        else:
-          disks_to_copy = [remote_instance.get_boot_disk()]
-
-    except HttpError as err:
-      if err.resp.status == 403:
+    except HttpError as exception:
+      if exception.resp.status == 403:
         self.state.AddError(
             'Make sure you have the appropriate permissions on the project')
-      if err.resp.status == 404:
+      if exception.resp.status == 404:
         self.state.AddError(
             'GCP resource not found. Maybe a typo in the project / instance / '
             'disk name?')
-      self.state.AddError(err, critical=True)
+      self.state.AddError(str(exception), critical=True)
 
     if not disks_to_copy:
       self.state.AddError(
