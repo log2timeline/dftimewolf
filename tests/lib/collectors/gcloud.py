@@ -40,7 +40,7 @@ FAKE_DISK_COPY = libcloudforensics.GoogleComputeDisk(
     'fake_zone',
     'disk1-copy')
 
-def returnFakeDisk(disk_name):
+def ReturnFakeDisk(disk_name):
   """Generate fake GoogleCloudComputeDisk objects depending on provided name."""
   return libcloudforensics.GoogleComputeDisk(
     FAKE_PROJECT, 'fakezone', disk_name)
@@ -105,7 +105,7 @@ class GoogleCloudCollectorTest(unittest.TestCase):
                   mock_find_disks,
                   mock_create_disk_from_snapshot,
                   mock_start_analysis_vm):
-
+    """Tests the collector's Process() function."""
     mock_start_analysis_vm.return_value = (FAKE_ANALYSIS_VM, None)
     mock_find_disks.return_value = [
         libcloudforensics.GoogleComputeDisk(
@@ -150,11 +150,12 @@ class GoogleCloudCollectorTest(unittest.TestCase):
                           mock_list_disks,
                           mock_get_disk,
                           mock_get_boot_disk):
+    """Tests the FindDisksToCopy function with different SetUp() calls."""
     test_state = state.DFTimewolfState(config.Config)
     gcloud_collector = gcloud.GoogleCloudCollector(test_state)
     mock_start_analysis_vm.return_value = (None, None)
     mock_list_disks.return_value = ['bootdisk', 'disk1']
-    mock_get_disk.side_effect = returnFakeDisk
+    mock_get_disk.side_effect = ReturnFakeDisk
     mock_get_instance.return_value = FAKE_INSTANCE
     mock_get_boot_disk.return_value = FAKE_BOOT_DISK
 
