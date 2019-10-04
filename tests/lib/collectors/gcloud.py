@@ -43,7 +43,7 @@ FAKE_DISK_COPY = libcloudforensics.GoogleComputeDisk(
 def ReturnFakeDisk(disk_name):
   """Generate fake GoogleCloudComputeDisk objects depending on provided name."""
   return libcloudforensics.GoogleComputeDisk(
-    FAKE_PROJECT, 'fakezone', disk_name)
+      FAKE_PROJECT, 'fakezone', disk_name)
 
 
 class GoogleCloudCollectorTest(unittest.TestCase):
