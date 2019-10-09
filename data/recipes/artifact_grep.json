@@ -1,12 +1,7 @@
 {
     "name": "artifact_grep",
-    "description": [
-        "Collect artifacts from hosts using GRR.",
-        "",
-        "- Collect a predefined list of artifacts from hosts using GRR",
-        "- Process them locally with grep to extract keywords"
-    ],
-    "short_description": "Fetches requested artifacts from a list of GRR hosts and runs grep with a list of provided keywords on them.",
+    "description": "Collect artifacts from hosts using GRR.\n\n- Collect a predefined list of artifacts from hosts using GRR\n- Process them locally with grep to extract keywords",
+    "short_description": "Fetches ForensicArtifacts from GRR hosts and runs grep with a list of keywords on them.",
     "modules": [{
         "wants": [],
         "name": "GRRArtifactCollector",

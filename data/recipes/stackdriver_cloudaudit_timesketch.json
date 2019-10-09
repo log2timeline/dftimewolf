@@ -1,9 +1,7 @@
 {
     "name": "stackdriver_cloudaudit_timesketch",
-    "description": [
-        "Collects stackdriver logs from a project."
-    ],
-    "short_description": "Collects stackdriver logs from a project.",
+    "description": "Collects stackdriver logs from a project and exports them to Timesketch.",
+    "short_description": "Collects stackdriver logs from a project and exports them to Timesketch.",
     "modules": [{
         "wants": [],
         "name": "StackdriverLogsCollector",

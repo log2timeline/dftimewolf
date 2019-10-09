@@ -1,11 +1,7 @@
 {
     "name": "grr_flow_download",
-    "description": [
-        "Download GRR flows.",
-        "",
-        "Consists of a single collector that downloads data collected by a GRR flow and saves it to the local filesystem."
-    ],
-    "short_description": "Downloads the contents of a specific GRR flow to the filesystem.",
+    "description": "Download GRR flows.\n\nDownload a GRR flow's results to the local filesystem.",
+    "short_description": "Download GRR flows.\n\nDownload a GRR flow's results to the local filesystem.",
     "modules": [{
         "wants": [],
         "name": "GRRFlowCollector",

@@ -1,7 +1,7 @@
 {
   "name": "scp_export",
-  "short_description": "Copy files to a specified destination using SCP.",
   "description": "Takes a list of file paths and copies them over SSH to a specified destination.",
+  "short_description": "Copy files to a specified destination using SCP.",
   "modules": [
     {
       "wants": [],

@@ -1,11 +1,7 @@
 {
     "name": "gcp_turbinia",
-    "description": [
-        "Process a GCP persistent disk with Turbinia and send output to Timesketch.",
-        "",
-        "This processes a disk that is already in the project where Turbinia exists. If you want to copy the disk from another project, use the gcp_turbinia_import recipe."
-    ],
-    "short_description": "Processes a GCP persistent disk already in our forensics analysis project with Turbinia and sends the results to Timesketch.",
+    "description": "Process a GCP persistent disk with Turbinia and send output to Timesketch.\n\nThis processes a disk that is already in the project where Turbinia exists. If you want to copy the disk from another project, use the gcp_turbinia_import recipe.",
+    "short_description": "Processes an existing GCP persistent disk in the Turbinia project and sends results to Timesketch.",
     "modules": [{
         "wants": [],
         "name": "TurbiniaProcessor",
