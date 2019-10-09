@@ -44,6 +44,10 @@ class DummyPreflightModule(module.PreflightModule):
     super(DummyPreflightModule, self).__init__(state)
     self.name = 'DummyPreflight'
 
-  def Run(self, args):  # pylint: disable=arguments-differ
+  def SetUp(self, args):  # pylint: disable=arguments-differ
+    """Dummy Process function."""
+    print(self.name + ' Process!')
+
+  def Process(self):
     """Dummy Process function."""
     print(self.name + ' Process!')
