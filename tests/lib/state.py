@@ -77,6 +77,7 @@ class StateTest(unittest.TestCase):
   def testProcessPreflightModules(self, mock_setup, mock_process):
     """Tests that preflight's process function is called correctly."""
     test_state = state.DFTimewolfState(config.Config)
+    test_state.command_line_options = DummyArgs()
     test_state.LoadRecipe(test_recipe.contents)
     test_state.RunPreflights()
     mock_setup.assert_called_with({})
@@ -87,8 +88,8 @@ class StateTest(unittest.TestCase):
   def testSetupModules(self, mock_setup1, mock_setup2):
     """Tests that module's setup functions are correctly called."""
     test_state = state.DFTimewolfState(config.Config)
+    test_state.command_line_options = DummyArgs()
     test_state.LoadRecipe(test_recipe.contents)
-    test_state.SetupModules(DummyArgs())
     mock_setup1.assert_called_with()
     mock_setup2.assert_called_with()
 
@@ -97,8 +98,9 @@ class StateTest(unittest.TestCase):
   def testProcessModules(self, mock_process1, mock_process2):
     """Tests that modules' process functions are correctly called."""
     test_state = state.DFTimewolfState(config.Config)
+    test_state.command_line_options = DummyArgs()
     test_state.LoadRecipe(test_recipe.contents)
-    test_state.SetupModules(DummyArgs())
+    test_state.SetupModules()
     test_state.RunModules()
     mock_process1.assert_called_with()
     mock_process2.assert_called_with()
@@ -109,8 +111,8 @@ class StateTest(unittest.TestCase):
   def testProcessErrors(self, mock_exit, mock_process1, mock_process2):
     """Tests that module's errors are correctly caught."""
     test_state = state.DFTimewolfState(config.Config)
+    test_state.command_line_options = DummyArgs()
     test_state.LoadRecipe(test_recipe.contents)
-    test_state.SetupModules(DummyArgs())
     mock_process1.side_effect = Exception('asd')
     mock_process2.side_effect = DFTimewolfError('dfTimewolf Error')
     test_state.RunModules()
