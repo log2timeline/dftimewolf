@@ -1,8 +1,6 @@
 {
     "name": "grr_fetch_files",
-    "description": [
-        "Fetches specific files from one or more GRR hosts."
-    ],
+    "description": "Fetches specific files from one or more GRR hosts.",
     "short_description": "Fetches specific files from one or more GRR hosts.",
     "modules": [{
         "wants": [],

@@ -1,10 +1,6 @@
 {
     "name": "gcp_turbinia_import",
-    "description": [
-        "Imports a remote GCP persistent disk and sends to Turbinia and Timesketch.",
-        "",
-        "This copies a disk from a remote GCP project and sends to Turbinia for processing and then sends those results to Timesketch. It will also start an analysis VM with the attached disk. If you want to process a disk already in the same project as Turbinia you can use the gcp_turbinia recipe."
-    ],
+    "description": "Imports a remote GCP persistent disk and sends to Turbinia and Timesketch.\n\n- Copies a disk from a remote GCP project\n- Creates a Turbinia processing requests\n- Downloads and sends results to Timesketch.\n\nIt will also start an analysis VM with the attached disk. If the target disk is already in the same project as Turbinia you can use the `gcp_turbinia` recipe.",
     "short_description": "Imports a remote GCP persistent disk, processes it with Turbinia and sends results to Timesketch.",
     "modules": [{
         "wants": [],
