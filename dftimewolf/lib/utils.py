@@ -42,6 +42,7 @@ def ImportArgsFromDict(value, args, config):
     object: the first caller of the function will receive a dictionary in
         which strings starting with "@" are replaced by the parameters in args.
   """
+  print(args)
   if isinstance(value, six.string_types):
     for match in TOKEN_REGEX.finditer(str(value)):
       token = match.group(1)
