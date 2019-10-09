@@ -1,12 +1,6 @@
 {
     "name": "local_plaso",
-    "description": [
-        "Analyze local file paths with plaso and send results to Timesketch.",
-        "",
-        "- Collectors collect from a path in the FS",
-        "- Processes them with a local install of plaso",
-        "- Exports them to a new Timesketch sketch"
-    ],
+    "description": "Processes a list of file paths using plaso and sends results to Timesketch.\n\n- Collectors collect from a path in the FS\n- Processes them with a local install of plaso\n- Exports them to a new Timesketch sketch",
     "short_description": "Processes a list of file paths using plaso and sends results to Timesketch.",
     "modules": [{
         "wants": [],

@@ -1,9 +1,7 @@
 {
     "name": "stackdriver_collect",
-    "description": [
-        "Collects stackdriver logs from a project."
-    ],
-    "short_description": "Collects stackdriver logs from a project.",
+    "description": "Collects stackdriver logs from a project and dumps on the filesystem.",
+    "short_description": "Collects stackdriver logs from a project and dumps on the filesystem.",
     "modules": [{
         "wants": [],
         "name": "StackdriverLogsCollector",

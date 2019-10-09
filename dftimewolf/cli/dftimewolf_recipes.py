@@ -67,7 +67,7 @@ class DFTimewolfTool(object):
     subparsers = argument_parser.add_subparsers()
 
     for recipe in self._recipes_manager.GetRecipes():
-      description = '\n'.join(recipe.description)
+      description = recipe.description
       subparser = subparsers.add_parser(
           recipe.name, formatter_class=utils.DFTimewolfFormatterClass,
           description=description)
