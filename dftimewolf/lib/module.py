@@ -42,3 +42,23 @@ class BaseModule(object):
   @abc.abstractmethod
   def SetUp(self, *args, **kwargs):
     """Sets up necessary module configuration options."""
+
+class PreflightModule(BaseModule):
+  """Base class for preflight modules.
+
+  Preflight modules are special modules that are executed synchronously before
+  other modules. They are intended for modules that primarily retrieve
+  attributes for other modules in a recipe, for example from a ticketing system.
+  """
+
+  @abc.abstractmethod
+  def Process(self):
+    """Processes input and builds the module's output attribute.
+
+    Modules take input information and process it into output information,
+    which can in turn be ingested as input information by other modules.
+    """
+
+  @abc.abstractmethod
+  def SetUp(self, *args, **kwargs):
+    """Sets up necessary module configuration options."""

@@ -26,7 +26,8 @@ class StateTest(unittest.TestCase):
   def setUp(self):
     """Registers the dummy modules and recipe to be used in tests."""
     modules_manager.ModulesManager.RegisterModules([
-        modules.DummyModule1, modules.DummyModule2])
+        modules.DummyModule1, modules.DummyModule2,
+        modules.DummyPreflightModule])
 
     self._recipe = resources.Recipe(
         test_recipe.__doc__, test_recipe.contents, test_recipe.args)
@@ -39,6 +40,8 @@ class StateTest(unittest.TestCase):
 
     modules_manager.ModulesManager.DeregisterModule(modules.DummyModule1)
     modules_manager.ModulesManager.DeregisterModule(modules.DummyModule2)
+    modules_manager.ModulesManager.DeregisterModule(
+        modules.DummyPreflightModule)
 
   def testLoadRecipe(self):
     """Tests that a recipe can be loaded correctly."""
@@ -47,7 +50,8 @@ class StateTest(unittest.TestCase):
     # pylint: disable=protected-access
     self.assertIn('DummyModule1', test_state._module_pool)
     self.assertIn('DummyModule2', test_state._module_pool)
-    self.assertEqual(len(test_state._module_pool), 2)
+    self.assertIn('DummyPreflightModule', test_state._module_pool)
+    self.assertEqual(len(test_state._module_pool), 3)
 
   def testStoreContainer(self):
     """Tests that containers are stored correctly."""
@@ -67,6 +71,16 @@ class StateTest(unittest.TestCase):
     reports = test_state.GetContainers(containers.Report)
     self.assertEqual(len(reports), 1)
     self.assertIsInstance(reports[0], containers.Report)
+
+  @mock.patch('tests.test_modules.modules.DummyPreflightModule.Process')
+  @mock.patch('tests.test_modules.modules.DummyPreflightModule.SetUp')
+  def testProcessPreflightModules(self, mock_setup, mock_process):
+    """Tests that preflight's process function is called correctly."""
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.LoadRecipe(test_recipe.contents)
+    test_state.RunPreflights()
+    mock_setup.assert_called_with({})
+    mock_process.assert_called_with()
 
   @mock.patch('tests.test_modules.modules.DummyModule2.SetUp')
   @mock.patch('tests.test_modules.modules.DummyModule1.SetUp')
@@ -93,7 +107,7 @@ class StateTest(unittest.TestCase):
   @mock.patch('tests.test_modules.modules.DummyModule1.Process')
   @mock.patch('sys.exit')
   def testProcessErrors(self, mock_exit, mock_process1, mock_process2):
-    """Tests that module's errors arre correctly caught."""
+    """Tests that module's errors are correctly caught."""
     test_state = state.DFTimewolfState(config.Config)
     test_state.LoadRecipe(test_recipe.contents)
     test_state.SetupModules(DummyArgs())
