@@ -72,13 +72,15 @@ class StateTest(unittest.TestCase):
     self.assertEqual(len(reports), 1)
     self.assertIsInstance(reports[0], containers.Report)
 
-  @mock.patch('tests.test_modules.modules.DummyPreflightModule.Run')
-  def testProcessPreflightModules(self, mock_run):
+  @mock.patch('tests.test_modules.modules.DummyPreflightModule.Process')
+  @mock.patch('tests.test_modules.modules.DummyPreflightModule.SetUp')
+  def testProcessPreflightModules(self, mock_setup, mock_process):
     """Tests that preflight's process function is called correctly."""
     test_state = state.DFTimewolfState(config.Config)
     test_state.LoadRecipe(test_recipe.contents)
     test_state.RunPreflights()
-    mock_run.assert_called_with({})
+    mock_setup.assert_called_with({})
+    mock_process.assert_called_with()
 
   @mock.patch('tests.test_modules.modules.DummyModule2.SetUp')
   @mock.patch('tests.test_modules.modules.DummyModule1.SetUp')

@@ -51,12 +51,14 @@ class PreflightModule(BaseModule):
   attributes for other modules in a recipe, for example from a ticketing system.
   """
 
-  def SetUp(self, *args, **kwargs):
-    """Preflight modules only have one public method."""
-
+  @abc.abstractmethod
   def Process(self):
-    """Processes input and builds the module's output attribute."""
+    """Processes input and builds the module's output attribute.
+
+    Modules take input information and process it into output information,
+    which can in turn be ingested as input information by other modules.
+    """
 
   @abc.abstractmethod
-  def Run(self, *args, **kwargs):
-    """Runs the preflight module."""
+  def SetUp(self, *args, **kwargs):
+    """Sets up necessary module configuration options."""

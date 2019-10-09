@@ -187,7 +187,8 @@ class DFTimewolfState(object):
       new_args = utils.ImportArgsFromDict(
           args, self._command_line_options, self.config)
       preflight = self._module_pool[preflight_name]
-      preflight.Run(new_args)
+      preflight.SetUp(new_args)
+      preflight.Process()
 
     self.CheckErrors(is_global=True)
 
