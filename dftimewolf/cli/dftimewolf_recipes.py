@@ -183,7 +183,7 @@ class DFTimewolfTool(object):
     print('Loaded recipe {0:s} with {1:d} modules'.format(
         self._recipe['name'], number_of_modules))
 
-    self._state._command_line_options = vars(self._command_line_options)
+    self._state.command_line_options = vars(self._command_line_options)
 
   def RunPreflights(self):
     """Runs preflight modules."""
