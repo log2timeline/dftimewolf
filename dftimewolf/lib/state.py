@@ -188,10 +188,11 @@ class DFTimewolfState(object):
       new_args = utils.ImportArgsFromDict(
           args, self._command_line_options, self.config)
       preflight = self._module_pool[preflight_name]
-      preflight.SetUp(new_args)
-      preflight.Process()
-
-    self.CheckErrors(is_global=True)
+      try:
+        preflight.SetUp(new_args)
+        preflight.Process()
+      finally:
+        self.CheckErrors(is_global=True)
 
   def RunModules(self):
     """Performs the actual processing for each module in the module pool."""
