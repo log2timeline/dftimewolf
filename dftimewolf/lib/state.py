@@ -74,8 +74,9 @@ class DFTimewolfState(object):
       RecipeParseError: if a module in the recipe does not exist.
     """
     self.recipe = recipe
-    module_definitions = recipe['modules'] + recipe['preflights']
-    for module_definition in module_definitions:
+    module_definitions = recipe.get('modules', [])
+    preflight_definitions = recipe.get('preflights', [])
+    for module_definition in module_definitions + preflight_definitions:
       # Combine CLI args with args from the recipe description
       module_name = module_definition['name']
       module_class = modules_manager.ModulesManager.GetModuleByName(module_name)
