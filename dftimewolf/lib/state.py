@@ -36,7 +36,7 @@ class DFTimewolfState(object):
   def __init__(self, config):
     """Initializes a state."""
     super(DFTimewolfState, self).__init__()
-    self.command_line_options = None
+    self.command_line_options = {}
     self._module_pool = {}
     self._store_lock = threading.Lock()
     self._threading_event_per_module = {}

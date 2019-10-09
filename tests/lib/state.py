@@ -80,7 +80,7 @@ class StateTest(unittest.TestCase):
     test_state.command_line_options = {}
     test_state.LoadRecipe(test_recipe.contents)
     test_state.RunPreflights()
-    mock_setup.assert_called_with({})
+    mock_setup.assert_called_with()
     mock_process.assert_called_with()
 
   @mock.patch('tests.test_modules.modules.DummyModule2.SetUp')
@@ -90,6 +90,7 @@ class StateTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     test_state.command_line_options = {}
     test_state.LoadRecipe(test_recipe.contents)
+    test_state.SetupModules()
     mock_setup1.assert_called_with()
     mock_setup2.assert_called_with()
 
@@ -115,6 +116,7 @@ class StateTest(unittest.TestCase):
     test_state.LoadRecipe(test_recipe.contents)
     mock_process1.side_effect = Exception('asd')
     mock_process2.side_effect = DFTimewolfError('dfTimewolf Error')
+    test_state.SetupModules()
     test_state.RunModules()
     mock_process1.assert_called_with()
     mock_process2.assert_called_with()
