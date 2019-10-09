@@ -1,8 +1,6 @@
 {
     "name": "stackdriver_gce_timesketch",
-    "description": [
-        "Loads GCP Cloud Audit Logs for GCE into Timesketch."
-    ],
+    "description": "Loads GCP Cloud Audit Logs for GCE into Timesketch.",
     "short_description": "Loads GCP Cloud Audit Logs for GCE into Timesketch",
     "modules": [{
         "wants": [],
