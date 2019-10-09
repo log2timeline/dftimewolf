@@ -53,7 +53,6 @@ class GoogleCloudCollector(module.BaseModule):
 
   def Process(self):
     """Copies a disk to the analysis project."""
-
     for disk in self._FindDisksToCopy():
       print('Disk copy of {0:s} started...'.format(disk.name))
       snapshot = disk.snapshot()
