@@ -7,6 +7,9 @@ contents = {
     'name':
         'dummy_recipe',
     'short_description': 'Nothing to see here.',
+    'preflights': [{
+        'name': 'DummyPreflightModule'
+    }],
     'modules': [{
         'wants': [],
         'name': 'DummyModule1',

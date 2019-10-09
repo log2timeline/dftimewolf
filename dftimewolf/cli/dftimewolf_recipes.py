@@ -183,6 +183,11 @@ class DFTimewolfTool(object):
     print('Loaded recipe {0:s} with {1:d} modules'.format(
         self._recipe['name'], number_of_modules))
 
+  def RunPreflights(self):
+    """Runs preflight modules."""
+    print('Running preflights...')
+    self._state.RunPreflights()
+
   def ReadRecipes(self):
     """Reads the recipe files."""
     if os.path.isdir(self._data_files_path):
@@ -239,6 +244,8 @@ def Main():
   except (errors.CommandLineParseError, errors.RecipeParseError) as exception:
     sys.stderr.write('{0!s}'.format(exception))
     return False
+
+  tool.RunPreflights()
 
   # TODO: print errors if this fails.
   tool.SetupModules()

@@ -74,7 +74,8 @@ class DFTimewolfState(object):
       RecipeParseError: if a module in the recipe does not exist.
     """
     self.recipe = recipe
-    for module_definition in recipe['modules']:
+    module_definitions = recipe['modules'] + recipe['preflights']
+    for module_definition in module_definitions:
       # Combine CLI args with args from the recipe description
       module_name = module_definition['name']
       module_class = modules_manager.ModulesManager.GetModuleByName(module_name)
@@ -176,6 +177,19 @@ class DFTimewolfState(object):
     print('Module {0:s} completed'.format(module_name))
     self._threading_event_per_module[module_name].set()
     self.CleanUp()
+
+  def RunPreflights(self):
+    """Runs preflight modules."""
+    for preflight_definition in self.recipe['preflights']:
+      preflight_name = preflight_definition['name']
+      args = preflight_definition.get('args', {})
+
+      new_args = utils.ImportArgsFromDict(
+          args, self._command_line_options, self.config)
+      preflight = self._module_pool[preflight_name]
+      preflight.Run(new_args)
+
+    self.CheckErrors(is_global=True)
 
   def RunModules(self):
     """Performs the actual processing for each module in the module pool."""
