@@ -133,18 +133,13 @@ class DFTimewolfState(object):
     self._threading_event_per_module[module_name] = threading.Event()
     self.CleanUp()
 
-  def SetupModules(self, command_line_options):
+  def SetupModules(self):
     """Performs setup tasks for each module in the module pool.
 
     Threads declared modules' SetUp() functions. Takes CLI arguments into
     account when replacing recipe parameters for each module.
-
-    Args:
-      command_line_options (argparse.Namespace): Command line options that
-          will be used to replace the parameters declared in the recipe.
     """
     # Note that vars() copies the values of argparse.Namespace to a dict.
-    self._command_line_options = vars(command_line_options)
     self._InvokeModulesInThreads(self._SetupModuleThread)
 
   def _RunModuleThread(self, module_definition):
