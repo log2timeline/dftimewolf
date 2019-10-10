@@ -1,13 +1,13 @@
 {
-    "name": "stackdriver_gce_timesketch",
-    "description": "Loads GCP Cloud Audit Logs for GCE into Timesketch.",
-    "short_description": "Loads GCP Cloud Audit Logs for GCE into Timesketch",
+    "name": "stackdriver_cloudaudit_ts",
+    "description": "Collects stackdriver logs from a project and exports them to Timesketch.",
+    "short_description": "Collects stackdriver logs from a project and exports them to Timesketch.",
     "modules": [{
         "wants": [],
         "name": "StackdriverLogsCollector",
         "args": {
             "project_name": "@project_name",
-            "filter_expression": "logName=projects/@project_name/logs/cloudaudit.googleapis.com%2Factivity resource.type:\"gce\" timestamp>\"@start_date\" timestamp<\"@end_date\""
+            "filter_expression": "logName=projects/@project_name/logs/cloudaudit.googleapis.com%2Factivity timestamp>\"@start_date\" timestamp<\"@end_date\""
         }
     }, {
         "wants": ["StackdriverLogsCollector"],
