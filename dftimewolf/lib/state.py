@@ -178,7 +178,7 @@ class DFTimewolfState(object):
 
   def RunPreflights(self):
     """Runs preflight modules."""
-    for preflight_definition in self.recipe['preflights']:
+    for preflight_definition in self.recipe.get('preflights', []):
       preflight_name = preflight_definition['name']
       args = preflight_definition.get('args', {})
 
