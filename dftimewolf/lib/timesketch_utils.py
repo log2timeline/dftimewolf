@@ -16,18 +16,21 @@ class TimesketchApiClient(object):
     session (requests.Session): HTTP session for calls to Timesketch
   """
 
-  def __init__(self, host_url, username, password):
+  def __init__(self, host_url, username, password, verify_tls=True):
     """Initialize the Timesketch API client object.
 
     Args:
       host_url (str): URL of Timesketch instance
       username (str): Timesketch username
       password (str): Timesketch password
+      verify_tls (bool): Whether to verify x509 certificates during TLS
+          connections.
     """
     self.host_url = host_url
     self.api_base_url = '{0:s}/api/v1'.format(self.host_url)
     self.username = username
     self.session = self._CreateSession(username, password)
+    self._verify_tls = verify_tls
 
   def _CreateSession(self, username, password):
     """Create a session with a Timesketch server.
@@ -40,6 +43,7 @@ class TimesketchApiClient(object):
       requests.Session: Session object.
     """
     session = requests.Session()
+    session.verify = self._verify_tls
     try:
       response = session.get(self.host_url)
     except requests.exceptions.ConnectionError:

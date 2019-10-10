@@ -28,12 +28,14 @@
             "username": "@ts_username",
             "password": "@ts_password",
             "incident_id": "@reason",
-            "sketch_id": "@sketch_id"
+            "sketch_id": "@sketch_id",
+            "verify_tls": "@verify_tls"
         }
     }],
     "args": [
         ["hunt_id", "ID of GRR Hunt results to fetch", null],
         ["reason", "Reason for exporting hunt (used for Timesketch description)", null],
+        ["--verify_tls", "Whether to verify the certificate provided by the Timesketch endpoint.", true],
         ["--sketch_id", "Sketch to which the timeline should be added", null],
         ["--approvers", "Emails for GRR approval request", null],
         ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
