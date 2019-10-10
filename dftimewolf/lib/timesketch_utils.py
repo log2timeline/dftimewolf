@@ -23,14 +23,14 @@ class TimesketchApiClient(object):
       host_url (str): URL of Timesketch instance
       username (str): Timesketch username
       password (str): Timesketch password
-      verify_tls (Optional[bool]): Whether to verify x509 certificates during TLS
-          connections.
+      verify_tls (Optional[bool]): Whether to verify x509 certificates during
+          TLS connections.
     """
     self.host_url = host_url
+    self._verify_tls = verify_tls
     self.api_base_url = '{0:s}/api/v1'.format(self.host_url)
     self.username = username
     self.session = self._CreateSession(username, password)
-    self._verify_tls = verify_tls
 
   def _CreateSession(self, username, password):
     """Create a session with a Timesketch server.
