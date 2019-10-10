@@ -74,7 +74,11 @@ class DFTimewolfTool(object):
       subparser.set_defaults(recipe=recipe.contents)
 
       for switch, help_text, default in recipe.args:
-        subparser.add_argument(switch, help=help_text, default=default)
+        if isinstance(default, bool):
+          subparser.add_argument(switch, help=help_text, default=default,
+                                 action='store_true')
+        else:
+          subparser.add_argument(switch, help=help_text, default=default)
 
       # Override recipe defaults with those specified in Config
       # so that they can in turn be overridden in the commandline
