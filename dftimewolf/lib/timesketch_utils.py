@@ -40,7 +40,6 @@ class TimesketchApiClient(object):
       requests.Session: Session object.
     """
     session = requests.Session()
-    session.verify = False  # Depending on SSL cert is verifiable
     try:
       response = session.get(self.host_url)
     except requests.exceptions.ConnectionError:
