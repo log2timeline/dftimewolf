@@ -1,5 +1,5 @@
 {
-    "name": "grr_artifact_hosts",
+    "name": "grr_artifact_ts",
     "description": "Collect artifacts from hosts using GRR.\n\n- Collect a predefined list of artifacts from hosts using GRR\n- Process them with a local install of plaso\n- Export them to a Timesketch sketch",
     "short_description": "Fetches default artifacts from a list of GRR hosts, processes them with plaso, and sends the results to Timesketch.",
     "modules": [{
