@@ -1,0 +1,68 @@
+{
+    "name": "grr_artifact_turbinia",
+    "description": [
+        "Collect artifacts from hosts using GRR and processes them with Turbinia.",
+        "",
+        "- Collect a predefined list of artifacts from hosts using GRR",
+        "- Create a tarball of the output and scp it to a remote system",
+        "- Process them with a remote instance of Turbinia"
+    ],
+    "short_description": "Fetches default artifacts from a list of GRR hosts and scp's them to remote system and tells Turbinia to process them.",
+    "modules": [{
+        "wants": [],
+        "name": "GRRArtifactCollector",
+        "args": {
+            "hosts": "@hosts",
+            "reason": "@reason",
+            "grr_server_url": "@grr_server_url",
+            "grr_username": "@grr_username",
+            "grr_password": "@grr_password",
+            "artifacts": "@artifacts",
+            "extra_artifacts": "@extra_artifacts",
+            "use_tsk": "@use_tsk",
+            "approvers": "@approvers",
+            "verify": "@verify"
+        }
+    }, {
+        "wants": ["GRRArtifactCollector"],
+        "name": "ScpExporter",
+        "args": {
+          "paths": null,
+          "destination": "@destination",
+          "hostname": "@hostname",
+          "user": "@user",
+          "id_file": "@id_file",
+          "check_ssh": true
+        }
+    }, {
+        "wants": ["ScpExporter"],
+        "name": "TurbiniaDirectoryProcessor",
+        "args": {
+            "directory_path": null,
+            "project": "@analysis_project_name",
+            "turbinia_zone": "@turbinia_zone"
+        }
+    }],
+    "args": [
+        ["hosts", "Comma-separated list of hosts to process", null],
+        ["reason", "Reason for collection", null],
+
+        ["--artifacts", "Comma-separated list of artifacts to fetch (override default artifacts)", null],
+        ["--extra_artifacts", "Comma-separated list of artifacts to append to the default artifact list", null],
+        ["--use_tsk", "Use TSK to fetch artifacts", false],
+        ["--approvers", "Emails for GRR approval request", null],
+        ["--incident_id", "Incident ID (used for Timesketch description)", null],
+        ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
+        ["--verify", "Whether to verify the GRR TLS certificate", true],
+        ["--grr_username", "GRR username", "admin"],
+        ["--grr_password", "GRR password", "admin"],
+
+        [ "--destination", "Destination to write the files to", null],
+        [ "--hostname", "Remote host.", null],
+        [ "--user", "Username", ""],
+        [ "--id_file", "Identity file to use", null],
+
+        ["--analysis_project_name", "Name of the GCP Turbinia where Turbinia is installed", null],
+        ["--turbinia_zone", "The GCP zone the disk to process (and Turbinia workers) are in", null]
+    ]
+}

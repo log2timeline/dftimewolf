@@ -27,7 +27,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
   def testInitialization(self):
     """Tests that the processor can be initialized."""
     test_state = state.DFTimewolfState(config.Config)
-    turbinia_processor = turbinia.TurbiniaProcessor(test_state)
+    turbinia_processor = turbinia.TurbiniaGCPProcessor(test_state)
     self.assertIsNotNone(turbinia_processor)
 
   @mock.patch('turbinia.client.TurbiniaClient')
@@ -35,7 +35,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
   def testSetup(self, _mock_TurbiniaClient):
     """Tests that the processor is set up correctly."""
     test_state = state.DFTimewolfState(config.Config)
-    turbinia_processor = turbinia.TurbiniaProcessor(test_state)
+    turbinia_processor = turbinia.TurbiniaGCPProcessor(test_state)
     turbinia_processor.SetUp(
         disk_name='disk-1',
         project='turbinia-project',
@@ -62,7 +62,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
   def testWrongProject(self, _mock_TurbiniaClient):
     """Tests that specifying the wrong Turbinia project generates an error."""
     test_state = state.DFTimewolfState(config.Config)
-    turbinia_processor = turbinia.TurbiniaProcessor(test_state)
+    turbinia_processor = turbinia.TurbiniaGCPProcessor(test_state)
     turbinia_processor.SetUp(
         disk_name='disk-1',
         project='turbinia-wrong-project',
@@ -103,7 +103,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
 
     for combination in params:
       test_state = state.DFTimewolfState(config.Config)
-      turbinia_processor = turbinia.TurbiniaProcessor(test_state)
+      turbinia_processor = turbinia.TurbiniaGCPProcessor(test_state)
       turbinia_processor.SetUp(**combination)
       self.assertEqual(len(test_state.errors), 1)
       error_msg, is_critical = test_state.errors[0]
@@ -123,7 +123,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
     """Tests that the processor processes data correctly."""
 
     test_state = state.DFTimewolfState(config.Config)
-    turbinia_processor = turbinia.TurbiniaProcessor(test_state)
+    turbinia_processor = turbinia.TurbiniaGCPProcessor(test_state)
     turbinia_processor.SetUp(
         disk_name='disk-1',
         project='turbinia-project',
