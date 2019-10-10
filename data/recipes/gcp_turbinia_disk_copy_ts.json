@@ -22,7 +22,6 @@
         "wants": ["GoogleCloudCollector"],
         "name": "TurbiniaProcessor",
         "args": {
-            "comment": "Taken from GoogleCloudCollector's output",
             "disk_name": null,
             "project": "@analysis_project_name",
             "turbinia_zone": "@turbinia_zone",
