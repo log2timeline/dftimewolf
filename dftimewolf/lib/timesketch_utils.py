@@ -23,7 +23,7 @@ class TimesketchApiClient(object):
       host_url (str): URL of Timesketch instance
       username (str): Timesketch username
       password (str): Timesketch password
-      verify_tls (bool): Whether to verify x509 certificates during TLS
+      verify_tls (Optional[bool]): Whether to verify x509 certificates during TLS
           connections.
     """
     self.host_url = host_url
