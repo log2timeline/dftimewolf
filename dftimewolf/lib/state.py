@@ -191,6 +191,19 @@ class DFTimewolfState(object):
       finally:
         self.CheckErrors(is_global=True)
 
+  def InstantiateModule(self, module_name):
+    """Instantiates an arbitrary dfTimewolf module.
+
+    Args:
+      module_name (str): The name of the module to instantiate.
+
+    Returns:
+      BaseModule: An instance of a dftimewolf Module, which is a subclass of
+          BaseModule.
+    """
+    module_class = modules_manager.ModulesManager.GetModuleByName(module_name)
+    return module_class(self)
+
   def RunModules(self):
     """Performs the actual processing for each module in the module pool."""
     self._InvokeModulesInThreads(self._RunModuleThread)
