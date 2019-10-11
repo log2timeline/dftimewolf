@@ -60,7 +60,7 @@
         [ "--destination", "Destination to write the files to", null],
         [ "--hostname", "Remote host.", null],
         [ "--user", "Username", ""],
-        [ "--id_file", "Identity file to use", null]
+        [ "--id_file", "Identity file to use", null],
 
         ["--analysis_project_name", "Name of the GCP Turbinia where Turbinia is installed", null],
         ["--turbinia_zone", "The GCP zone the disk to process (and Turbinia workers) are in", null]
