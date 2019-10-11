@@ -29,6 +29,7 @@
             "password": "@ts_password",
             "incident_id": "@reason",
             "sketch_id": "@sketch_id",
+            "auth_mode": "@ts_auth_mode",
             "verify_tls": "@verify_tls"
         }
     }],
@@ -39,6 +40,7 @@
         ["--sketch_id", "Sketch to which the timeline should be added", null],
         ["--approvers", "Emails for GRR approval request", null],
         ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
+        ["--ts_auth_mode", "Authentication mode to use on Timesketch {timesketch,http-basic}", "timesketch"],
         ["--verify", "Whether to verify the GRR TLS certificate", true],
         ["--grr_username", "GRR username", "admin"],
         ["--grr_password", "GRR password", "admin"]
