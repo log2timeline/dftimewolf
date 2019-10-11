@@ -8,8 +8,10 @@ import os
 import shutil
 import tempfile
 
+from dftimewolf.lib.containers import containers
 from dftimewolf.lib import module
 from dftimewolf.lib.modules import manager as modules_manager
+from dftimewolf.lib import util
 
 
 class LocalFilesystemCopy(module.BaseModule):
@@ -23,15 +25,19 @@ class LocalFilesystemCopy(module.BaseModule):
     """Initializes a local file system exporter module."""
     super(LocalFilesystemCopy, self).__init__(state)
     self._target_directory = None
+    self.compress = None
 
-  def SetUp(self, target_directory=None):  # pylint: disable=arguments-differ
+  # pylint: disable=arguments-differ
+  def SetUp(self, target_directory=None, compress=False):
     """Sets up the _target_directory attribute.
 
     Args:
       target_directory (Optional[str]): path of the directory in which
           collected files will be copied.
+      compress (bool): Whether to compress the resulting directory or not
     """
     self._target_directory = target_directory
+    self.compress = compress
     if not target_directory:
       self._target_directory = tempfile.mkdtemp()
     elif not os.path.exists(target_directory):
@@ -44,8 +50,18 @@ class LocalFilesystemCopy(module.BaseModule):
   def Process(self):
     """Checks whether the paths exists and updates the state accordingly."""
     for _, path in self.state.input:
-      self._CopyFileOrDirectory(path, self._target_directory)
-      print('{0:s} -> {1:s}'.format(path, self._target_directory))
+      if not self.compress:
+        full_paths = self._CopyFileOrDirectory(path, self._target_directory)
+        print('{0:s} -> {1:s}'.format(path, self._target_directory))
+        for path_ in full_paths:
+          self.state.StoreContainer(containers.FSPath(path=path_))
+      else:
+        try:
+          tar_file = util.Compress(path, self._target_directory)
+          self.state.StoreContainer(containers.FSPath(path=tar_file))
+        except RuntimeError as exception:
+          self.state.AddError(exception, critical=True)
+          return
 
   def _CopyFileOrDirectory(self, source, destination_directory):
     """Recursively copies files from source to destination_directory.
@@ -55,14 +71,22 @@ class LocalFilesystemCopy(module.BaseModule):
           directory.
       destination_directory (str): destination directory in which to copy
           source.
+
+    Returns:
+      list[str]: The full copied output paths.
     """
+    full_paths = []
     if os.path.isdir(source):
       for item in os.listdir(source):
         full_source = os.path.join(source, item)
         full_destination = os.path.join(destination_directory, item)
         shutil.copytree(full_source, full_destination)
+        full_paths.append(full_destination)
     else:
       shutil.copy2(source, destination_directory)
+      full_paths.append(os.path.join(destination_directory, source))
+
+    return full_paths
 
 
 modules_manager.ModulesManager.RegisterModule(LocalFilesystemCopy)

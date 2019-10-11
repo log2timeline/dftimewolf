@@ -10,9 +10,9 @@ import os
 from turbinia import evidence
 from turbinia import TurbiniaException
 
+from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.processors.turbinia_gcp import TurbiniaProcessorBase
-from dftimewolf.lib import utils
 
 # pylint: disable=no-member
 
@@ -59,24 +59,15 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase):
     log_file_path = os.path.join(self._output_path, 'turbinia.log')
     print('Turbinia log file: {0:s}'.format(log_file_path))
 
-    if self.state.input and not self.directory_path:
-      _, directory_path = self.state.input[0]
-      self.directory_path = directory_path
+    fspaths = self.state.GetContainers(containers.RemoteFSPath)
+
+    for fspath in fspaths:
       print(
-          'Using directory_path {0:s} from previous collector'.format(
-              self.directory_path))
-
-    if os.path.isdir(self.directory_path):
-      try:
-        self.directory_path = utils.Compress(self.directory_path)
-      except RuntimeError as exception:
-        self.state.AddError(exception, critical=True)
-        return
-
-    evidence_ = evidence.CompressedDirectory(
-        compressed_directory=self.directory_path)
-
-    self.TurbiniaProcess(evidence_)
+          'Processing remote FS path {0:s} from previous collector'.format(
+              fspath.path))
+      evidence_ = evidence.CompressedDirectory(
+          compressed_directory=fspath.path)
+      self.TurbiniaProcess(evidence_)
 
 
 modules_manager.ModulesManager.RegisterModule(TurbiniaArtifactProcessor)

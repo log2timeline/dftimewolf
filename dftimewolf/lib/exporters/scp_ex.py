@@ -3,8 +3,10 @@
 
 from __future__ import unicode_literals
 
+import os
 import subprocess
 
+from dftimewolf.lib.containers import containers
 from dftimewolf.lib import module
 from dftimewolf.lib.modules import manager as modules_manager
 
@@ -47,8 +49,16 @@ class SCPExporter(module.BaseModule):
     self._destination = destination
     self._hostname = hostname
     self._id_file = id_file
-    self._paths = paths.split(",")
+    if paths:
+      self._paths = paths.split(",")
+    else:
+      fspaths = self.state.GetContainers(containers.FSPath)
+      self._paths = [fspath.path for fspath in fspaths]
     self._user = user
+
+    if not self._paths:
+      self.state.AddError("No paths specified to SCP module.", critical=True)
+      return
 
     if check_ssh and not self._SSHAvailable():
       self.state.AddError("Unable to connect to host.", critical=True)
@@ -69,6 +79,12 @@ class SCPExporter(module.BaseModule):
     if ret != 0:
       self.state.AddError("Failed copying {0!s}".format(self._paths),
                           critical=True)
+    else:
+      for path_ in self._paths:
+        full_path = os.path.join(self._destination, path_)
+        fspath = containers.RemoteFSPath(
+            path=full_path, hostname=self._hostname)
+        self.state.StoreContainer(fspath)
 
   def _SSHAvailable(self):
     """Checks that the SSH authentication succeeds on a given host.

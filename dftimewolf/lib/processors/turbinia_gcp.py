@@ -22,12 +22,16 @@ from dftimewolf.lib.modules import manager as modules_manager
 
 # pylint: disable=no-member
 
+# pylint: disable=abstract-method
 class TurbiniaProcessorBase(module.BaseModule):
   """Base class for processing with Turbinia.
 
   Attributes:
     client (TurbiniaClient): Turbinia client.
+    instance (str): name of the Turbinia instance
     project (str): name of the GPC project containing the disk to process.
+    run_all_jobs (bool): Whether to run all jobs instead of a faster subset.
+    sketch_id (int): The Timesketch sketch id
     turbinia_region (str): GCP region in which the Turbinia server is running.
     turbinia_zone (str): GCP zone in which the Turbinia server is running.
     sketch_id (int): The Timesketch sketch id
@@ -46,7 +50,10 @@ class TurbiniaProcessorBase(module.BaseModule):
     super(TurbiniaProcessorBase, self).__init__(state, critical=critical)
     self._output_path = None
     self.client = None
+    self.instance = None
     self.project = None
+    self.run_all_jobs = None
+    self.sketch_id = None
     self.turbinia_region = None
     self.turbinia_zone = None
     self.sketch_id = None
@@ -100,7 +107,7 @@ class TurbiniaProcessorBase(module.BaseModule):
       evidence_.validate()
     except TurbiniaException as exception:
       self.state.AddError(exception, critical=True)
-      return
+      return []
 
     request = TurbiniaRequest(requester=getpass.getuser())
     request.evidence.append(evidence_)
@@ -139,7 +146,7 @@ class TurbiniaProcessorBase(module.BaseModule):
       # TODO: determine if exception should be converted into a string as
       # elsewhere in the codebase.
       self.state.AddError(exception, critical=True)
-      return
+      return []
 
     message = self.client.format_task_status(full_report=True, **request_dict)
     short_message = self.client.format_task_status(**request_dict)
@@ -213,7 +220,6 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase):
 
   Attributes:
     disk_name (str): name of the disk to process.
-    instance (str): name of the Turbinia instance
   """
 
   def __init__(self, state, critical=False):
@@ -226,7 +232,6 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase):
     """
     super(TurbiniaGCPProcessor, self).__init__(state, critical=critical)
     self.disk_name = None
-    self.instance = None
 
   # pylint: disable=arguments-differ
   def SetUp(self, disk_name, project, turbinia_zone, sketch_id, run_all_jobs):
