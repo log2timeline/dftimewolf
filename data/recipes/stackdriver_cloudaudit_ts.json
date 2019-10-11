@@ -30,6 +30,7 @@
         ["project_name", "Name of GCP project to collect logs from", null],
         ["start_date", "Start date (yyyy-mm-ddTHH:MM:SSZ)", null],
         ["end_date", "End date (yyyy-mm-ddTHH:MM:SSZ)", null],
+        ["--ts_auth_mode", "Authentication mode to use on Timesketch {timesketch,http-basic}", "timesketch"],
         ["--verify_tls", "Whether to verify the certificate provided by the Timesketch endpoint.", true],
         ["--incident_id", "Incident ID (used for Timesketch description)", null],
         ["--sketch_id", "Sketch to which the timeline should be added", null]]

@@ -43,6 +43,7 @@
         ["--extra_artifacts", "Comma-separated list of artifacts to append to the default artifact list", null],
         ["--use_tsk", "Use TSK to fetch artifacts", false],
         ["--approvers", "Emails for GRR approval request", null],
+        ["--ts_auth_mode", "Authentication mode to use on Timesketch {timesketch,http-basic}", "timesketch"],
         ["--verify_tls", "Whether to verify the certificate provided by the Timesketch endpoint.", true],
         ["--sketch_id", "Sketch to which the timeline should be added", null],
         ["--incident_id", "Incident ID (used for Timesketch description)", null],

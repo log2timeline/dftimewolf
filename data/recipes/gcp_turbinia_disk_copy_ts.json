@@ -48,6 +48,7 @@
         ["--incident_id", "Incident ID (used for Timesketch description)", null],
         ["--run_all_jobs", "Run all Turbinia processing jobs instead of a faster subset", false],
         ["--sketch_id", "Sketch to which the timeline should be added", null],
+        ["--ts_auth_mode", "Authentication mode to use on Timesketch {timesketch,http-basic}", "timesketch"],
         ["--verify_tls", "Whether to verify the certificate provided by the Timesketch endpoint.", true],
         ["--timesketch_endpoint", "Endpoint of the Timesketch server to use", "https://localhost:5000"],
         ["--instance", "Name of the instance to analyze.", null],
