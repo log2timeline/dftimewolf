@@ -43,7 +43,7 @@
         }
     }, {
         "wants": ["SCPExporter"],
-        "name": "TurbiniaDirectoryProcessor",
+        "name": "TurbiniaArtifacatProcessor",
         "args": {
             "directory_path": null,
             "project": "@analysis_project_name",
