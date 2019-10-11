@@ -58,7 +58,7 @@ class StackdriverLogsCollector(module.BaseModule):
     descending = logging.DESCENDING
 
     output_file = tempfile.NamedTemporaryFile(
-        mode='w', delete=False, encoding='utf-8')
+        mode='w', delete=False, encoding='utf-8', suffix='.jsonl')
     output_path = output_file.name
 
     try:
