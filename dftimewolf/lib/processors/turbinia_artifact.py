@@ -12,6 +12,7 @@ from turbinia import TurbiniaException
 
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.processors.turbinia_gcp import TurbiniaProcessorBase
+from dftimewolf.lib import utils
 
 # pylint: disable=no-member
 
@@ -64,6 +65,13 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase):
       print(
           'Using directory_path {0:s} from previous collector'.format(
               self.directory_path))
+
+    if os.path.isdir(self.directory_path):
+      try:
+        self.directory_path = utils.Compress(self.directory_path)
+      except RuntimeError as exception:
+        self.state.AddError(exception, critical=True)
+        return
 
     evidence_ = evidence.CompressedDirectory(
         compressed_directory=self.directory_path)

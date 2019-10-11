@@ -4,12 +4,55 @@
 from __future__ import unicode_literals
 
 import argparse
+import os
 import re
+import tarfile
+import tempfile
+from time import time
 
 import six
 
 
 TOKEN_REGEX = re.compile(r'\@([\w_]+)')
+
+
+def Compress(source_path, output_file=None):
+  """Compresses files.
+
+  Args:
+    source_path (str): The data to be compressed.
+    output_file (str): The path to the output tarball.
+
+  Returns:
+    str: The path to the compressed output.
+
+  Raises:
+    RuntimeError: If there are problems compressing the file.
+  """
+  if not output_file:
+    tmp_dir = tempfile.mkdtemp()
+    output_file = os.path.basename(source_path)
+    arcname = '{0:s}-{1:d}'.format(output_file, int(time()))
+    output_file = '{0:s}.tgz'.format(arcname)
+    output_file = os.path.join(tmp_dir, output_file)
+
+  if os.path.exists(output_file):
+    raise RuntimeError(
+        'Output file {0:s} already exists.'.format(output_file))
+
+  try:
+    with tarfile.TarFile.open(output_file, 'w:gz') as tar:
+      tar.add(source_path, arcname=arcname)
+      tar.close()
+      print(
+          'The tar file has been created and can be found at: {0:s}'.format(
+              output_file))
+  except (IOError, tarfile.TarError) as exception:
+    raise RuntimeError(
+        'An error has while compressing directory {0:s}: {1!s}'.format(
+            source_path, exception), critial=True)
+
+  return output_file
 
 
 # preserve python2 compatibility
