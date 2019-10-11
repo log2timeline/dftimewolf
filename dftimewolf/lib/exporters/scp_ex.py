@@ -52,19 +52,22 @@ class SCPExporter(module.BaseModule):
     if paths:
       self._paths = paths.split(",")
     else:
-      fspaths = self.state.GetContainers(containers.FSPath)
-      self._paths = [fspath.path for fspath in fspaths]
+      self._paths = None
     self._user = user
-
-    if not self._paths:
-      self.state.AddError("No paths specified to SCP module.", critical=True)
-      return
 
     if check_ssh and not self._SSHAvailable():
       self.state.AddError("Unable to connect to host.", critical=True)
 
   def Process(self):
     """Copies the list of paths to the destination on user@hostname"""
+    if not self._paths:
+      fspaths = self.state.GetContainers(containers.FSPath)
+      self._paths = [fspath.path for fspath in fspaths]
+
+    if not self._paths:
+      self.state.AddError("No paths specified to SCP module.", critical=True)
+      return
+
     dest = self._destination
     user = ""
     if self._user:
