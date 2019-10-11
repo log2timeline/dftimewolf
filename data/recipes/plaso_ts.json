@@ -22,12 +22,14 @@
             "username": "@ts_username",
             "password": "@ts_password",
             "incident_id": "@incident_id",
-            "sketch_id": "@sketch_id"
+            "sketch_id": "@sketch_id",
+            "verify_tls": "@verify_tls"
         }
     }],
     "args": [
         ["paths", "Paths to process", null],
         ["--incident_id", "Incident ID (used for Timesketch description)", null],
+        ["--verify_tls", "Whether to verify the certificate provided by the Timesketch endpoint.", true],
         ["--sketch_id", "Sketch to which the timeline should be added", null]
     ]
 }

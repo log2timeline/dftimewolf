@@ -37,7 +37,8 @@
             "username": "@ts_username",
             "password": "@ts_password",
             "incident_id": "@incident_id",
-            "sketch_id": "@sketch_id"
+            "sketch_id": "@sketch_id",
+            "verify_tls": "@verify_tls"
         }
     }],
     "args": [
@@ -47,6 +48,7 @@
         ["--incident_id", "Incident ID (used for Timesketch description)", null],
         ["--run_all_jobs", "Run all Turbinia processing jobs instead of a faster subset", false],
         ["--sketch_id", "Sketch to which the timeline should be added", null],
+        ["--verify_tls", "Whether to verify the certificate provided by the Timesketch endpoint.", true],
         ["--timesketch_endpoint", "Endpoint of the Timesketch server to use", "https://localhost:5000"],
         ["--instance", "Name of the instance to analyze.", null],
         ["--disks", "Comma-separated list of disks to copy.", null],
