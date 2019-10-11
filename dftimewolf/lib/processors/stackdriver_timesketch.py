@@ -223,7 +223,7 @@ class StackdriverTimesketch(BaseModule):
     timeline_name = 'Stackdriver logs {0:s} "{1:s}"'.format(
         logs_container.project_name, logs_container.filter_expression)
 
-    self.state.input.append([timeline_name, output_path])
+    self.state.output.append([timeline_name, output_path])
 
   def Process(self):
     """Processes Stackdriver logs containers for insertion into Timesketch."""
