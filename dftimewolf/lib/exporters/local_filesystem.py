@@ -11,7 +11,7 @@ import tempfile
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib import module
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib import util
+from dftimewolf.lib import utils
 
 
 class LocalFilesystemCopy(module.BaseModule):
@@ -57,7 +57,7 @@ class LocalFilesystemCopy(module.BaseModule):
           self.state.StoreContainer(containers.FSPath(path=path_))
       else:
         try:
-          tar_file = util.Compress(path, self._target_directory)
+          tar_file = utils.Compress(path, self._target_directory)
           self.state.StoreContainer(containers.FSPath(path=tar_file))
         except RuntimeError as exception:
           self.state.AddError(exception, critical=True)
