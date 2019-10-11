@@ -32,7 +32,7 @@
       }
     }, {
         "wants": ["GRRArtifactCollector"],
-        "name": "ScpExporter",
+        "name": "SCPExporter",
         "args": {
           "paths": null,
           "destination": "@destination",
@@ -42,7 +42,7 @@
           "check_ssh": true
         }
     }, {
-        "wants": ["ScpExporter"],
+        "wants": ["SCPExporter"],
         "name": "TurbiniaDirectoryProcessor",
         "args": {
             "directory_path": null,
