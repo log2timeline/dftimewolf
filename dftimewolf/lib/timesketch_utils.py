@@ -119,7 +119,7 @@ class TimesketchApiClient(object):
       raise RuntimeError(
           'Could not decode JSON response from Timesketch'
           ' (Status {0:d}):\n{1:s}'.format(
-              response.status_code, response.content))
+              response.status_code, response.content.decode('utf-8')))
 
     return response_dict['objects'][0]['id']
 
