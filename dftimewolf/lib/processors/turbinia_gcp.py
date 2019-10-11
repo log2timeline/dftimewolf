@@ -76,12 +76,12 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.run_all_jobs = run_all_jobs
 
     turbinia_config.LoadConfig()
-    if not project:
-      project = turbinia_config.PROJECT
-    if not turbinia_zone:
-      turbinia_zone = turbinia_config.TURBINIA_ZONE
+    if not self.project:
+      self.project = turbinia_config.TURBINIA_PROJECT
+    if not self.turbinia_zone:
+      self.turbinia_zone = turbinia_config.TURBINIA_ZONE
 
-    if project is None or turbinia_zone is None:
+    if self.project is None or self.turbinia_zone is None:
       self.state.AddError(
           'project or turbinia_zone are not all specified, bailing out',
           critical=True)
