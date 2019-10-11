@@ -227,7 +227,7 @@ class StackdriverTimesketch(BaseModule):
 
   def Process(self):
     """Processes Stackdriver logs containers for insertion into Timesketch."""
-    logs_containers = self.state.get_containers(containers.StackdriverLogs)
+    logs_containers = self.state.GetContainers(containers.StackdriverLogs)
     for logs_container in logs_containers:
       self._ProcessLogContainer(logs_container)
 
