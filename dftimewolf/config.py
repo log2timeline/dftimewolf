@@ -36,13 +36,18 @@ class Config(object):
 
     Args:
       filename (str): name of the JSON configuration file.
+
+    Returns:
+      bool: True if config was successfully loaded, False otherwise.
     """
     try:
       with open(filename, 'rb') as configuration_file:
         json_string = configuration_file.read()
         cls.LoadExtraData(json_string)
+        return True
     except (IOError, OSError):
       pass
+    return False
 
   @classmethod
   def LoadExtraData(cls, json_string):

@@ -44,7 +44,8 @@ from dftimewolf.lib.state import DFTimewolfState
 class DFTimewolfTool(object):
   """DFTimewolf tool."""
 
-  _DEFAULT_DATA_FILES_PATH = os.path.join('/', 'usr', 'share', 'dftimewolf')
+  _DEFAULT_DATA_FILES_PATH = os.path.join(
+      '/', 'usr', 'local', 'share', 'dftimewolf')
 
   def __init__(self):
     """Initializes a DFTimewolf tool."""
@@ -66,14 +67,18 @@ class DFTimewolfTool(object):
     subparsers = argument_parser.add_subparsers()
 
     for recipe in self._recipes_manager.GetRecipes():
-      description = '\n'.join(recipe.description)
+      description = recipe.description
       subparser = subparsers.add_parser(
           recipe.name, formatter_class=utils.DFTimewolfFormatterClass,
           description=description)
       subparser.set_defaults(recipe=recipe.contents)
 
       for switch, help_text, default in recipe.args:
-        subparser.add_argument(switch, help=help_text, default=default)
+        if isinstance(default, bool):
+          subparser.add_argument(switch, help=help_text, default=default,
+                                 action='store_true')
+        else:
+          subparser.add_argument(switch, help=help_text, default=default)
 
       # Override recipe defaults with those specified in Config
       # so that they can in turn be overridden in the commandline
@@ -81,15 +86,23 @@ class DFTimewolfTool(object):
 
   def _DetermineDataFilesPath(self):
     """Determines the data files path."""
+
+    # Figure out if the script is running out of a cloned repository
     data_files_path = os.path.realpath(__file__)
     data_files_path = os.path.dirname(data_files_path)
     data_files_path = os.path.dirname(data_files_path)
     data_files_path = os.path.dirname(data_files_path)
     data_files_path = os.path.join(data_files_path, 'data')
 
+    # Use sys.prefix for user installs (e.g. pip install ...)
+    if not os.path.isdir(data_files_path):
+      data_files_path = os.path.join(sys.prefix, 'share', 'dftimewolf')
+
+    # If all else fails, fall back to hardcoded default
     if not os.path.isdir(data_files_path):
       data_files_path = self._DEFAULT_DATA_FILES_PATH
 
+    print('Data files read from', data_files_path)
     self._data_files_path = data_files_path
 
   def _GenerateHelpText(self):
@@ -117,9 +130,9 @@ class DFTimewolfTool(object):
       configuration_file_path (str): path of the configuration file.
     """
     try:
-      config.Config.LoadExtra(configuration_file_path)
-      sys.stderr.write('Configuration loaded from: {0:s}\n'.format(
-          configuration_file_path))
+      if config.Config.LoadExtra(configuration_file_path):
+        sys.stderr.write('Configuration loaded from: {0:s}\n'.format(
+            configuration_file_path))
 
     except errors.BadConfigurationError as exception:
       sys.stderr.write('{0!s}'.format(exception))
@@ -174,6 +187,13 @@ class DFTimewolfTool(object):
     print('Loaded recipe {0:s} with {1:d} modules'.format(
         self._recipe['name'], number_of_modules))
 
+    self._state.command_line_options = vars(self._command_line_options)
+
+  def RunPreflights(self):
+    """Runs preflight modules."""
+    print('Running preflights...')
+    self._state.RunPreflights()
+
   def ReadRecipes(self):
     """Reads the recipe files."""
     if os.path.isdir(self._data_files_path):
@@ -192,7 +212,7 @@ class DFTimewolfTool(object):
     # TODO: refactor to only load modules that are used by the recipe.
 
     print('Setting up modules...')
-    self._state.SetupModules(self._command_line_options)
+    self._state.SetupModules()
     print('Modules successfully set up!')
 
 
@@ -230,6 +250,8 @@ def Main():
   except (errors.CommandLineParseError, errors.RecipeParseError) as exception:
     sys.stderr.write('{0!s}'.format(exception))
     return False
+
+  tool.RunPreflights()
 
   # TODO: print errors if this fails.
   tool.SetupModules()

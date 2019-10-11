@@ -34,6 +34,7 @@ class TimesketchExporter(module.BaseModule):
             password=None,
             incident_id=None,
             sketch_id=None,
+            verify_tls=True,
             auth_mode='timesketch'):
     """Setup a connection to a Timesketch server and create a sketch if needed.
 
@@ -48,12 +49,14 @@ class TimesketchExporter(module.BaseModule):
           description.
       sketch_id (Optional[int]): Sketch ID to add the resulting timeline to.
           If not provided, a new sketch is created.
+      verify_tls (Optional[bool]): Whether to verify the certificate provided
+          by the Timesketch endpoint.
       auth_mode (Optional[str]): The authentication mode to use. Defaults to
           'timesketch. 'Supported values are 'timesketch' (Timesketch login
           form) and 'http-basic' (HTTP Basic authentication).
     """
     self.timesketch_api = timesketch_utils.TimesketchApiClient(
-        endpoint, username, password, auth_mode)
+        endpoint, username, password, verify_tls, auth_mode)
     self.incident_id = None
     self.sketch_id = int(sketch_id) if sketch_id else None
 

@@ -1,13 +1,7 @@
 {
-    "name": "grr_artifact_hosts",
-    "description": [
-        "Collect artifacts from hosts using GRR.",
-        "",
-        "- Collect a predefined list of artifacts from hosts using GRR",
-        "- Process them with a local install of plaso",
-        "- Export them to a Timesketch sketch"
-    ],
-    "short_description": "Fetches default artifacts from a list of GRR hosts, processes them with plaso, and sends the results to Timesketch.",
+    "name": "grr_artifact_grep",
+    "description": "Collect artifacts from hosts using GRR.\n\n- Collect a predefined list of artifacts from hosts using GRR\n- Process them locally with grep to extract keywords",
+    "short_description": "Fetches ForensicArtifacts from GRR hosts and runs grep with a list of keywords on them.",
     "modules": [{
         "wants": [],
         "name": "GRRArtifactCollector",
@@ -25,20 +19,9 @@
         }
     }, {
         "wants": ["GRRArtifactCollector"],
-        "name": "LocalPlasoProcessor",
+        "name": "GrepperSearch",
         "args": {
-            "timezone": null
-        }
-    }, {
-        "wants": ["LocalPlasoProcessor"],
-        "name": "TimesketchExporter",
-        "args": {
-            "endpoint": "@ts_endpoint",
-            "username": "@ts_username",
-            "password": "@ts_password",
-            "incident_id": "@reason",
-            "sketch_id": "@sketch_id",
-            "auth_mode": "@ts_auth_mode"
+            "keywords": "@keywords"
         }
     }],
     "args": [
@@ -48,11 +31,10 @@
         ["--extra_artifacts", "Comma-separated list of artifacts to append to the default artifact list", null],
         ["--use_tsk", "Use TSK to fetch artifacts", false],
         ["--approvers", "Emails for GRR approval request", null],
-        ["--sketch_id", "Sketch to which the timeline should be added", null],
-        ["--incident_id", "Incident ID (used for Timesketch description)", null],
         ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
         ["--verify", "Whether to verify the GRR TLS certificate", true],
         ["--grr_username", "GRR username", "admin"],
-        ["--grr_password", "GRR password", "admin"]
+        ["--grr_password", "GRR password", "admin"],
+        ["--keywords", "Pipe-separated list of keywords to search for (e.g. key1|key2|key3", null]
     ]
 }

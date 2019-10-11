@@ -1,10 +1,6 @@
 {
     "name": "grr_hunt_file",
-    "description": [
-        "Start a GRR file hunt.",
-        "",
-        "Consists of a single collector that starts the hunt and provides a Hunt ID to the user. Feed the Hunt ID to grr_huntresults_plaso_timesketch to process them through plaso and send them to Timesketch."
-    ],
+    "description": "Starts a GRR hunt for a list of files and provides a Hunt ID to the user.\nFeed the Hunt ID to grr_huntresults_plaso_timesketch to process results through plaso and send them to Timesketch.",
     "short_description": "Starts a GRR hunt for a list of files.",
     "modules": [{
         "wants": [],

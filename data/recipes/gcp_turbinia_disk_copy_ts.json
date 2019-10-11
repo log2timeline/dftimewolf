@@ -1,10 +1,6 @@
 {
-    "name": "gcp_turbinia_import",
-    "description": [
-        "Imports a remote GCP persistent disk and sends to Turbinia and Timesketch.",
-        "",
-        "This copies a disk from a remote GCP project and sends to Turbinia for processing and then sends those results to Timesketch. It will also start an analysis VM with the attached disk. If you want to process a disk already in the same project as Turbinia you can use the gcp_turbinia recipe."
-    ],
+    "name": "gcp_turbinia_disk_copy_ts",
+    "description": "Imports a remote GCP persistent disk and sends to Turbinia and Timesketch.\n\n- Copies a disk from a remote GCP project\n- Creates a Turbinia processing requests\n- Downloads and sends results to Timesketch.\n\nIt will also start an analysis VM with the attached disk. If the target disk is already in the same project as Turbinia you can use the `gcp_turbinia` recipe.",
     "short_description": "Imports a remote GCP persistent disk, processes it with Turbinia and sends results to Timesketch.",
     "modules": [{
         "wants": [],
@@ -26,7 +22,6 @@
         "wants": ["GoogleCloudCollector"],
         "name": "TurbiniaProcessor",
         "args": {
-            "comment": "Taken from GoogleCloudCollector's output",
             "disk_name": null,
             "project": "@analysis_project_name",
             "turbinia_zone": "@turbinia_zone",
@@ -42,7 +37,8 @@
             "password": "@ts_password",
             "incident_id": "@incident_id",
             "sketch_id": "@sketch_id",
-            "auth_mode": "@ts_auth_mode"
+            "auth_mode": "@ts_auth_mode",
+            "verify_tls": "@verify_tls"
         }
     }],
     "args": [
@@ -52,6 +48,7 @@
         ["--incident_id", "Incident ID (used for Timesketch description)", null],
         ["--run_all_jobs", "Run all Turbinia processing jobs instead of a faster subset", false],
         ["--sketch_id", "Sketch to which the timeline should be added", null],
+        ["--verify_tls", "Whether to verify the certificate provided by the Timesketch endpoint.", true],
         ["--timesketch_endpoint", "Endpoint of the Timesketch server to use", "https://localhost:5000"],
         ["--instance", "Name of the instance to analyze.", null],
         ["--disks", "Comma-separated list of disks to copy.", null],

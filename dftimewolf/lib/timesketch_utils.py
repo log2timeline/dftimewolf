@@ -16,7 +16,12 @@ class TimesketchApiClient(object):
     session (requests.Session): HTTP session for calls to Timesketch
   """
 
-  def __init__(self, host_url, username, password, auth_mode='timesketch'):
+  def __init__(self,
+               host_url,
+               username,
+               password,
+               verify_tls=True,
+               auth_mode='timesketch'):
     """Initialize the Timesketch API client object.
 
     Args:
@@ -26,8 +31,11 @@ class TimesketchApiClient(object):
       auth_mode (str): The authentication mode to use. Defaults to 'timesketch'
                 Supported values are 'timesketch' (Timesketch login form) and
                 'http-basic' (HTTP Basic authentication).
+      verify_tls (Optional[bool]): Whether to verify x509 certificates during
+          TLS connections.
     """
     self.host_url = host_url
+    self._verify_tls = verify_tls
     self.api_base_url = '{0:s}/api/v1'.format(self.host_url)
     self.username = username
     self.session = self._CreateSession(username, password, auth_mode=auth_mode)
@@ -50,6 +58,7 @@ class TimesketchApiClient(object):
      # If using HTTP Basic auth, add the user/pass to the session
     if auth_mode == 'http-basic':
       session.auth = (username, password)
+    session.verify = self._verify_tls
     try:
       response = session.get(self.host_url)
     except requests.exceptions.ConnectionError:

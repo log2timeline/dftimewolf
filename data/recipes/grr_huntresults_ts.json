@@ -1,12 +1,6 @@
 {
-    "name": "grr_huntresults_plaso_timesketch",
-    "description": [
-        "Download the results of a GRR hunt and process them.",
-        "",
-        "- Collect results of a hunt given its Hunt ID",
-        "- Processes results with a local install of plaso",
-        "- Exports processed items to a new Timesketch sketch"
-    ],
+    "name": "grr_huntresults_ts",
+    "description": "Download the results of a GRR hunt and process them.\n\n- Collect results of a hunt given its Hunt ID\n- Processes results with a local install of plaso\n- Exports processed items to a new Timesketch sketch",
     "short_description": "Fetches the findings of a GRR hunt, processes them with plaso, and sends the results to Timesketch.",
     "modules": [{
         "wants": [],
@@ -35,12 +29,14 @@
             "password": "@ts_password",
             "incident_id": "@reason",
             "sketch_id": "@sketch_id",
-            "auth_mode": "@ts_auth_mode"
+            "auth_mode": "@ts_auth_mode",
+            "verify_tls": "@verify_tls"
         }
     }],
     "args": [
         ["hunt_id", "ID of GRR Hunt results to fetch", null],
         ["reason", "Reason for exporting hunt (used for Timesketch description)", null],
+        ["--verify_tls", "Whether to verify the certificate provided by the Timesketch endpoint.", true],
         ["--sketch_id", "Sketch to which the timeline should be added", null],
         ["--approvers", "Emails for GRR approval request", null],
         ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],

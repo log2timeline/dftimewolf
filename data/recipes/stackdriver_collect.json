@@ -1,9 +1,7 @@
 {
     "name": "stackdriver_collect",
-    "description": [
-        "Collects stackdriver logs from a project."
-    ],
-    "short_description": "Collects stackdriver logs from a project.",
+    "description": "Collects stackdriver logs from a project and dumps on the filesystem.",
+    "short_description": "Collects stackdriver logs from a project and dumps on the filesystem.",
     "modules": [{
         "wants": [],
         "name": "StackdriverLogsCollector",
@@ -14,6 +12,6 @@
     }],
     "args": [
         ["project_name", "Name of GCP project to collect logs from", null],
-        ["filter_expression", "Filter expression to use to query Stackdriver logs", "resource.type = 'gce_instance'"]
+        ["filter_expression", "Filter expression to use to query Stackdriver logs. See https://cloud.google.com/logging/docs/view/query-library for examples.", "resource.type = 'gce_instance'"]
     ]
 }

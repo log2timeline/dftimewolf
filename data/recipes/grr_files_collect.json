@@ -1,39 +1,37 @@
 {
-    "name": "grr_flow_download",
-    "description": [
-        "Download GRR flows.",
-        "",
-        "Consists of a single collector that downloads data collected by a GRR flow and saves it to the local filesystem."
-    ],
-    "short_description": "Downloads the contents of a specific GRR flow to the filesystem.",
+    "name": "grr_files_collect",
+    "description": "Fetches specific files from one or more GRR hosts.",
+    "short_description": "Fetches specific files from one or more GRR hosts.",
     "modules": [{
         "wants": [],
-        "name": "GRRFlowCollector",
+        "name": "GRRFileCollector",
         "args": {
-            "host": "@host",
-            "flow_id": "@flow_id",
+            "hosts": "@hosts",
             "reason": "@reason",
             "grr_server_url": "@grr_server_url",
             "grr_username": "@grr_username",
             "grr_password": "@grr_password",
+            "files": "@files",
+            "use_tsk": "@use_tsk",
             "approvers": "@approvers",
             "verify": "@verify"
         }
     }, {
-        "wants": ["GRRFlowCollector"],
+        "wants": ["GRRFileCollector"],
         "name": "LocalFilesystemCopy",
         "args": {
             "target_directory": "@directory"
         }
     }],
     "args": [
-        ["host", "Hostname to collect the flow from", null],
-        ["flow_id", "Flow ID to download", null],
+        ["hosts", "Comma-separated list of hosts to process", null],
         ["reason", "Reason for collection", null],
+        ["files", "Comma-separated list of files to fetch (supports GRR variable interpolation)", null],
         ["directory", "Directory in which to export files.", null],
+        ["--use_tsk", "Use TSK to fetch artifacts", false],
         ["--approvers", "Emails for GRR approval request", null],
-        ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
         ["--verify", "Whether to verify the GRR TLS certificate", true],
+        ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
         ["--grr_username", "GRR username", "admin"],
         ["--grr_password", "GRR password", "admin"]
     ]
