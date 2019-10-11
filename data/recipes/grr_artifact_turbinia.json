@@ -47,7 +47,9 @@
         "args": {
             "directory_path": null,
             "project": "@analysis_project_name",
-            "turbinia_zone": "@turbinia_zone"
+            "turbinia_zone": "@turbinia_zone",
+            "sketch_id": null,
+            "run_all_jobs": false
         }
     }],
     "args": [
