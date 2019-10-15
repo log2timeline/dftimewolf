@@ -194,8 +194,14 @@ class StackdriverTimesketch(BaseModule):
       if attribute in timesketch_record:
         resource = timesketch_record[attribute]
 
-    message = 'User {0:s} performed {1:s} on {2:s}'.format(
-        user, action, resource)
+    # Textpayload records can be anything, so we don't want to try to format
+    # them.
+    if timesketch_record.get('textPayload', False):
+      message = timesketch_record['textPayload']
+    else:
+      message = 'User {0:s} performed {1:s} on {2:s}'.format(
+          user, action, resource)
+
     timesketch_record['message'] = message
 
   def _ProcessLogContainer(self, logs_container):
