@@ -173,10 +173,13 @@ class TurbiniaProcessor(module.BaseModule):
     for task in task_data:
       # saved_paths may be set to None
       for path in task.get('saved_paths') or []:
-        if path.startswith('/') and path.endswith('.plaso'):
-          local_paths.append(path)
-        if path.startswith('gs://') and path.endswith('.plaso'):
-          gs_paths.append(path)
+        if path.endswith('.plaso') or \
+           path.endswith('BinaryExtractorTask.tar.gz') or \
+           path.endswith('hashes.json'):
+          if path.startswith('gs://'):
+            gs_paths.append(path)
+          if path.startswith('/'):
+            local_paths.append(path)
 
     if not local_paths and not gs_paths:
       self.state.AddError(
