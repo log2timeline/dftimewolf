@@ -31,7 +31,7 @@
         "compress": true
       }
     }, {
-        "wants": ["GRRArtifactCollector"],
+        "wants": ["LocalFilesystemCopy"],
         "name": "SCPExporter",
         "args": {
           "paths": null,
