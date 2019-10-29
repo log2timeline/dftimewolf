@@ -84,7 +84,8 @@ class SCPExporter(module.BaseModule):
                           critical=True)
     else:
       for path_ in self._paths:
-        full_path = os.path.join(self._destination, path_)
+        file_name = os.path.bsaename(path_)
+        full_path = os.path.join(self._destination, file_name)
         print('Saving remote FS path {0:s}'.format(full_path))
         fspath = containers.RemoteFSPath(
             path=full_path, hostname=self._hostname)
