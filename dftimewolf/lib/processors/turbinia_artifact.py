@@ -66,7 +66,7 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase):
           'Processing remote FS path {0:s} from previous collector'.format(
               fspath.path))
       evidence_ = evidence.CompressedDirectory(
-          compressed_directory=fspath.path)
+          compressed_directory=fspath.path, local_path=fspath.path)
       self.TurbiniaProcess(evidence_)
 
 
