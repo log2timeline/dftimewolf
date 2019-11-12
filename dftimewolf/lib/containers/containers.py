@@ -95,7 +95,7 @@ class TicketAttribute(interface.AttributeContainer):
     name (str): Name of the attribute.
     value (str): Value of the attribute.
   """
-  CONTAINER_TYPE = 'incidentattribute'
+  CONTAINER_TYPE = 'ticketattribute'
 
   def __init__(self, type_, name, value):
     """Initializes the attribute.
