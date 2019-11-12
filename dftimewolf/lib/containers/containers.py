@@ -88,7 +88,7 @@ class ThreatIntelligence(interface.AttributeContainer):
 
 
 class TicketAttribute(interface.AttributeContainer):
-  """Attribute container definition for genereic ticketing system attributes.
+  """Attribute container definition for generic ticketing system attributes.
 
   Attributes:
     type (str): Type of the attribute.
