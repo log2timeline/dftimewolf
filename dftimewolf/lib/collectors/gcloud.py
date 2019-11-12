@@ -32,14 +32,14 @@ class GoogleCloudCollector(module.BaseModule):
         VM will be based.
     all_disks (bool): True if all disks attached to the source
         instance should be copied.
-    ANALYSIS_VM_CONTAINER_NAME (str): The name of the TicketAttribute container
-        that this module will generate.
-    ANALYSIS_VM_CONTAINER_NAME (str): The type of the TicketAttribute container
-        that this module will generate.
+    ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME (str): The name of the TicketAttribute
+        container that this module will generate.
+    ANALYSIS_VM_CONTAINER_ATTRIBUTE_TYPE (str): The type of the TicketAttribute
+        container that this module will generate.
   """
 
-  ANALYSIS_VM_CONTAINER_NAME = 'Analysis VM'
-  ANALYSIS_VM_CONTAINER_TYPE = 'text'
+  ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME = 'Analysis VM'
+  ANALYSIS_VM_CONTAINER_ATTRIBUTE_TYPE = 'text'
 
   def __init__(self, state, critical=False):
     """Initializes a Google Cloud (GCP) collector.
@@ -144,8 +144,8 @@ class GoogleCloudCollector(module.BaseModule):
 
     self.state.StoreContainer(
         containers.TicketAttribute(
-            name=self.ANALYSIS_VM_CONTAINER_NAME,
-            type_=self.ANALYSIS_VM_CONTAINER_TYPE,
+            name=self.ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME,
+            type_=self.ANALYSIS_VM_CONTAINER_ATTRIBUTE_TYPE,
             value=analysis_vm_name))
 
     try:
