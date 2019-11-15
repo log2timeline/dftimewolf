@@ -10,6 +10,7 @@ from oauth2client.client import ApplicationDefaultCredentialsError
 from turbinia.lib import libcloudforensics
 
 from dftimewolf.lib import module
+from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 
 
@@ -32,6 +33,9 @@ class GoogleCloudCollector(module.BaseModule):
     all_disks (bool): True if all disks attached to the source
         instance should be copied.
   """
+
+  _ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME = 'Analysis VM'
+  _ANALYSIS_VM_CONTAINER_ATTRIBUTE_TYPE = 'text'
 
   def __init__(self, state, critical=False):
     """Initializes a Google Cloud (GCP) collector.
@@ -133,6 +137,12 @@ class GoogleCloudCollector(module.BaseModule):
         self.analysis_project.project_id,
         analysis_vm_name,
         zone))
+
+    self.state.StoreContainer(
+        containers.TicketAttribute(
+            name=self._ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME,
+            type_=self._ANALYSIS_VM_CONTAINER_ATTRIBUTE_TYPE,
+            value=analysis_vm_name))
 
     try:
       # TODO: Make creating an analysis VM optional
