@@ -85,3 +85,27 @@ class ThreatIntelligence(interface.AttributeContainer):
     super(ThreatIntelligence, self).__init__()
     self.name = name
     self.indicator = indicator
+
+
+class TicketAttribute(interface.AttributeContainer):
+  """Attribute container definition for generic ticketing system attributes.
+
+  Attributes:
+    type (str): Type of the attribute.
+    name (str): Name of the attribute.
+    value (str): Value of the attribute.
+  """
+  CONTAINER_TYPE = 'ticketattribute'
+
+  def __init__(self, type_, name, value):
+    """Initializes the attribute.
+
+    Args:
+      type_ (str): Type of the attribute.
+      name (str): Name of the attribute.
+      value (str): Value of the attribute.
+    """
+    super(TicketAttribute, self).__init__()
+    self.type = type_
+    self.name = name
+    self.value = value
