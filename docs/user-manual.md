@@ -110,9 +110,9 @@ of GRR approvers), you can use a `.dftimewolfrc` file. Just create a
     $ cat ~/.dftimewolfrc
     {
       "approvers": "approver@greendale.xyz",
-      "timesketch_endpoint": "http://timesketch.greendale.xyz/"
+      "ts_endpoint": "http://timesketch.greendale.xyz/"
     }
 
-This will set your `timesketch_endpoint` and `approvers` parameters for all
+This will set your `ts_endpoint` and `approvers` parameters for all
 subsequent dftimewolf runs. You can still override these settings for one-shot
 usages by manually specifying the argument in the command-line.

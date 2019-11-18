@@ -50,7 +50,7 @@
         ["--sketch_id", "Sketch to which the timeline should be added", null],
         ["--ts_auth_mode", "Authentication mode to use on Timesketch {timesketch,http-basic}", "timesketch"],
         ["--verify_tls", "Whether to verify the certificate provided by the Timesketch endpoint.", true],
-        ["--timesketch_endpoint", "Endpoint of the Timesketch server to use", "https://localhost:5000"],
+        ["--ts_endpoint", "Endpoint of the Timesketch server to use", "https://localhost:5000"],
         ["--instance", "Name of the instance to analyze.", null],
         ["--disks", "Comma-separated list of disks to copy.", null],
         ["--all_disks", "Copy all disks in the designated instance. Overrides disk_names if specified", false],
