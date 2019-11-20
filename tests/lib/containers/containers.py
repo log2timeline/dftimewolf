@@ -23,7 +23,7 @@ class ReportDataTest(unittest.TestCase):
 
 
 class ThreatIntelligenceDataTest(unittest.TestCase):
-  """Tests for the Report data attribute container."""
+  """Tests for the threat intelligence data attribute container."""
 
   def testGetAttributeNames(self):
     """Tests the GetAttributeNames function."""
@@ -36,6 +36,35 @@ class ThreatIntelligenceDataTest(unittest.TestCase):
     attribute_names = sorted(attribute_container.GetAttributeNames())
 
     self.assertEqual(attribute_names, expected_attribute_names)
+
+
+class FSPathDataTest(unittest.TestCase):
+  """Tests for the FSPath data attribute container."""
+
+  def testGetAttributeNames(self):
+    """Tests the GetAttributeNames function."""
+    attribute_container = containers.FSPath(path='name')
+
+    expected_attribute_names = ['path']
+
+    attribute_names = sorted(attribute_container.GetAttributeNames())
+
+    self.assertEqual(attribute_names, expected_attribute_names)
+
+
+class RemoteFSPathDataTest(unittest.TestCase):
+  """Tests for the RemoteFSPath data attribute container."""
+
+  def testGetAttributeNames(self):
+    """Tests the GetAttributeNames function."""
+    attribute_container = containers.RemoteFSPath(path='name', hostname='host')
+
+    expected_attribute_names = ['hostname', 'path']
+
+    attribute_names = sorted(attribute_container.GetAttributeNames())
+
+    self.assertEqual(attribute_names, expected_attribute_names)
+
 
 
 if __name__ == '__main__':

@@ -33,7 +33,7 @@ def Compress(source_path, output_directory=None):
     output_directory = tempfile.mkdtemp()
 
   output_file = os.path.basename(source_path)
-  arcname = '{0:s}-{1:d}'.format(output_file, int(time()))
+  arcname = '{0:d}-{1:s}'.format(int(time()), output_file)
   output_file = '{0:s}.tgz'.format(arcname)
   output_file = os.path.join(output_directory, output_file)
 

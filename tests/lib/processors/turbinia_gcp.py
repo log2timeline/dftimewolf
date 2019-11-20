@@ -79,8 +79,10 @@ class TurbiniaProcessorTest(unittest.TestCase):
         'project.')
     self.assertEqual(is_critical, True)
 
+  @mock.patch('dftimewolf.lib.processors.turbinia_gcp.turbinia_config')
   @mock.patch('turbinia.client.TurbiniaClient')
-  def testWrongSetup(self, _mock_TurbiniaClient): # pylint: disable=invalid-name
+  # pylint: disable=invalid-name
+  def testWrongSetup(self, _mock_TurbiniaClient, mock_turbinia_config):
     """Tests that invalid setup options generate errors."""
     params = [
         {
@@ -102,6 +104,8 @@ class TurbiniaProcessorTest(unittest.TestCase):
                       'specified, bailing out')
 
     for combination in params:
+      mock_turbinia_config.TURBINIA_PROJECT = combination['project']
+      mock_turbinia_config.TURBINIA_ZONE = combination['turbinia_zone']
       test_state = state.DFTimewolfState(config.Config)
       turbinia_processor = turbinia_gcp.TurbiniaGCPProcessor(test_state)
       turbinia_processor.SetUp(**combination)

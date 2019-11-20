@@ -92,8 +92,8 @@ class TurbiniaProcessorBase(module.BaseModule):
     if turbinia_config.TURBINIA_PROJECT != self.project:
       self.state.AddError(
           'Specified project {0!s} does not match Turbinia configured '
-          'project {1!s}. Use gcp_turbinia_import recipe to copy the disk '
-          'into the same project.'.format(
+          'project {1!s}. Use gcp_turbinia_disk_copy_ts recipe to copy the '
+          'disk into the same project.'.format(
               self.project, turbinia_config.TURBINIA_PROJECT), critical=True)
       return
     self._output_path = tempfile.mkdtemp()

@@ -25,7 +25,7 @@ class LocalFilesystemCopy(module.BaseModule):
     """Initializes a local file system exporter module."""
     super(LocalFilesystemCopy, self).__init__(state)
     self._target_directory = None
-    self.compress = None
+    self._compress = None
 
   # pylint: disable=arguments-differ
   def SetUp(self, target_directory=None, compress=False):
@@ -37,7 +37,7 @@ class LocalFilesystemCopy(module.BaseModule):
       compress (bool): Whether to compress the resulting directory or not
     """
     self._target_directory = target_directory
-    self.compress = compress
+    self._compress = compress
     if not target_directory:
       self._target_directory = tempfile.mkdtemp()
     elif not os.path.exists(target_directory):
@@ -50,7 +50,7 @@ class LocalFilesystemCopy(module.BaseModule):
   def Process(self):
     """Checks whether the paths exists and updates the state accordingly."""
     for _, path in self.state.input:
-      if not self.compress:
+      if not self._compress:
         full_paths = self._CopyFileOrDirectory(path, self._target_directory)
         print('{0:s} -> {1:s}'.format(path, self._target_directory))
         for path_ in full_paths:
