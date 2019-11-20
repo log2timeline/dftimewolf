@@ -62,6 +62,7 @@ class GoogleCloudCollector(module.BaseModule):
       snapshot = disk.snapshot()
       new_disk = self.analysis_project.create_disk_from_snapshot(
           snapshot, disk_name_prefix='incident' + self.incident_id)
+      new_disk.add_labels({'incident_id':self.incident_id})
       self.analysis_vm.attach_disk(new_disk)
       snapshot.delete()
       print('Disk {0:s} successfully copied to {1:s}'.format(
@@ -157,6 +158,9 @@ class GoogleCloudCollector(module.BaseModule):
           attach_disk=None,
           image_project=image_project,
           image_family=image_family)
+      self.analysis_vm.add_labels({'incident_id':self.incident_id})
+      self.analysis_vm.get_boot_disk().add_labels(
+          {'incident_id':self.incident_id})
 
     except AccessTokenRefreshError as exception:
       self.state.AddError('Something is wrong with your gcloud access token.')
