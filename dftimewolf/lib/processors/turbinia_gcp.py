@@ -34,9 +34,6 @@ class TurbiniaProcessorBase(module.BaseModule):
     sketch_id (int): The Timesketch sketch id
     turbinia_region (str): GCP region in which the Turbinia server is running.
     turbinia_zone (str): GCP zone in which the Turbinia server is running.
-    sketch_id (int): The Timesketch sketch id
-    run_all_jobs (bool): Whether to run all jobs instead of a faster subset.
-    instance (str): The Turbinia deployment unique instance ID.
   """
 
   def __init__(self, state, critical=False):
@@ -56,9 +53,6 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.sketch_id = None
     self.turbinia_region = None
     self.turbinia_zone = None
-    self.sketch_id = None
-    self.run_all_jobs = None
-    self.instance = None
 
   # pylint: disable=arguments-differ
   def TurbiniaSetUp(self, project, turbinia_zone, sketch_id, run_all_jobs):

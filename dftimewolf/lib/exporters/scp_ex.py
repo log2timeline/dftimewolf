@@ -50,13 +50,13 @@ class SCPExporter(module.BaseModule):
     self._hostname = hostname
     self._id_file = id_file
     if paths:
-      self._paths = paths.split(",")
+      self._paths = paths.split(',')
     else:
       self._paths = None
     self._user = user
 
     if check_ssh and not self._SSHAvailable():
-      self.state.AddError("Unable to connect to host.", critical=True)
+      self.state.AddError('Unable to connect to host.', critical=True)
 
   def Process(self):
     """Copies the list of paths to the destination on user@hostname"""
@@ -65,22 +65,22 @@ class SCPExporter(module.BaseModule):
       self._paths = [fspath.path for fspath in fspaths]
 
     if not self._paths:
-      self.state.AddError("No paths specified to SCP module.", critical=True)
+      self.state.AddError('No paths specified to SCP module.', critical=True)
       return
 
     dest = self._destination
-    user = ""
+    user = ''
     if self._user:
-      user = "{0:s}@".format(self._user)
+      user = '{0:s}@'.format(self._user)
     if self._hostname:
-      dest = "{0:s}{1:s}:{2:s}".format(user, self._hostname, self._destination)
-    cmd = ["scp"]
+      dest = '{0:s}{1:s}:{2:s}'.format(user, self._hostname, self._destination)
+    cmd = ['scp']
     cmd.extend(self._paths)
     cmd.append(dest)
     print('Executing SCP command: {0:s}'.format(' '.join(cmd)))
     ret = subprocess.call(cmd)
     if ret != 0:
-      self.state.AddError("Failed copying {0!s}".format(self._paths),
+      self.state.AddError('Failed copying {0!s}'.format(self._paths),
                           critical=True)
     else:
       for path_ in self._paths:
@@ -99,12 +99,12 @@ class SCPExporter(module.BaseModule):
     """
     if not self._hostname:
       return True
-    command = ["ssh", "-q"]
+    command = ['ssh', '-q']
     if self._user:
-      command.extend(["-l", self._user])
-    command.extend([self._hostname, "true"])
+      command.extend(['-l', self._user])
+    command.extend([self._hostname, 'true'])
     if self._id_file:
-      command.extend(["-i", self._id_file])
+      command.extend(['-i', self._id_file])
     print('Checking SSH connectivity with: {0:s}'.format(' '.join(command)))
     ret = subprocess.call(command)
     return ret == 0
