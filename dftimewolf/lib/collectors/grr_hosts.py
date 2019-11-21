@@ -123,14 +123,14 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
           flow proto (FlowArgs).
 
     Returns:
-      str: GRR identifier for launched flow, or None if flow could not be
-          launched.
+      str: GRR identifier for launched flow, or an empty string if flow could
+          not be launched.
     """
     # Start the flow and get the flow ID
     flow = self._WrapGRRRequestWithApproval(
         client, client.CreateFlow, name=name, args=args)
     if not flow:
-      return None
+      return ''
 
     flow_id = flow.flow_id
     print('{0:s}: Scheduled'.format(flow_id))
