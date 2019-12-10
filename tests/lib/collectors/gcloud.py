@@ -55,6 +55,7 @@ class GoogleCloudCollectorTest(unittest.TestCase):
     gcloud_collector = gcloud.GoogleCloudCollector(test_state)
     self.assertIsNotNone(gcloud_collector)
 
+  # pylint: disable=invalid-name
   @mock.patch(
       'turbinia.lib.libcloudforensics.GoogleComputeBaseResource.add_labels')
   @mock.patch('turbinia.lib.libcloudforensics.GoogleComputeBaseResource')
@@ -153,7 +154,7 @@ class GoogleCloudCollectorTest(unittest.TestCase):
     self.assertEqual(test_state.output[0][1].name, 'disk1-copy')
     mock_add_labels.assert_has_calls([mock.call({'incident_id': 'fake_incident_id'})])
 
-  # pylint: disable=line-too-long
+  # pylint: disable=line-too-long,invalid-name
   @mock.patch('turbinia.lib.libcloudforensics.GoogleComputeBaseResource')
   @mock.patch('turbinia.lib.libcloudforensics.GoogleComputeInstance.get_boot_disk')
   @mock.patch('turbinia.lib.libcloudforensics.GoogleCloudProject.get_disk')
