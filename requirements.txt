@@ -1,24 +1,23 @@
 -i https://pypi.org/simple
 appnope==0.1.0 ; sys_platform == 'darwin'
-asn1crypto==1.2.0
 backcall==0.1.0
 beautifulsoup4==4.8.1
 cachetools==3.1.1
-certifi==2019.9.11
+certifi==2019.11.28
 cffi==1.13.2
 chardet==3.0.4
-cryptography==2.7
+cryptography==2.8
 decorator==4.4.1
 future==0.17.1
-git+https://github.com/tomchop/turbinia.git@4da9b772e883c84c41f5714faea50f67a6c878d7#egg=turbinia
+git+https://github.com/tomchop/turbinia.git@a6901cbad08826e584ff2884b24686fc56851002#egg=turbinia
 google-api-core[grpc]==1.14.3
-google-auth==1.7.1
-google-cloud-core==1.0.3
+google-auth==1.8.1
+google-cloud-core==1.1.0
 google-cloud-logging==1.14.0
 googleapis-common-protos==1.6.0
 grpcio==1.25.0
-grr-api-client==3.3.0.post8
-grr-response-proto==3.3.0.post8
+grr-api-client==3.4.0.post0
+grr-response-proto==3.4.0.post0
 idna==2.8
 ipython-genutils==0.2.0
 ipython==7.2.0
@@ -32,10 +31,10 @@ ptyprocess==0.6.0
 pyasn1-modules==0.2.7
 pyasn1==0.4.8
 pycparser==2.19
-pygments==2.4.2
+pygments==2.5.2
 pypdf2==1.26.0
 pytz==2019.3
-pyyaml==5.1.2
+pyyaml==5.2
 requests==2.22.0
 rsa==4.0
 six==1.13.0
