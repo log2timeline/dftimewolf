@@ -13,7 +13,7 @@ six = "*"
 requests = "*"
 "pypdf2" = "*"
 grr-api-client = "*"
-turbinia = {git = "https://github.com/tomchop/turbinia.git",ref = "master"}
+turbinia = "*"
 pyyaml = "*"
 google-cloud-logging = "*"
 
