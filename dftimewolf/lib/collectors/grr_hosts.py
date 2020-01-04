@@ -334,7 +334,7 @@ class GRRArtifactCollector(GRRFlow):
     flow_id = self._LaunchFlow(client, 'ArtifactCollectorFlow', flow_args)
     if not flow_id:
       msg = 'Flow could not be launched on {0:s}.'.format(client.client_id)
-      msg += '\nArtifactCollectorFlow args: {0:s}'.format(flow_args)
+      msg += '\nArtifactCollectorFlow args: {0!s}'.format(flow_args)
       self.state.AddError(msg, critical=True)
       return
     self._AwaitFlow(client, flow_id)
