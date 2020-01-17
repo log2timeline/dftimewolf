@@ -235,14 +235,15 @@ class TurbiniaProcessor(module.BaseModule):
 
     timeline_label = '{0:s}-{1:s}'.format(self.project, self.disk_name)
     # Any local .plaso files that exist we can add immediately to the output
-    self.state.output = [
+    all_local_paths = [
         (timeline_label, p) for p in local_paths if os.path.exists(p)]
 
     downloaded_gs_paths = self._DownloadFilesFromGS(timeline_label, gs_paths)
-    self.state.output.extend(downloaded_gs_paths)
+    all_local_paths.extend(downloaded_gs_paths)
 
-    if not self.state.output:
-      self.state.AddError('No .plaso files could be found.', critical=True)
+    if not all_local_paths:
+      self.state.AddError('No interesting files could be found.', critical=True)
+    self.state.output = all_local_paths
 
 
 modules_manager.ModulesManager.RegisterModule(TurbiniaProcessor)
