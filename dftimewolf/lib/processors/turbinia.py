@@ -113,7 +113,6 @@ class TurbiniaProcessor(module.BaseModule):
     Returns:
       tuple[list, list]: A tuple of two lists. The first element contains the
           local paths, the second element contains the remote (GS) paths.
-
     """
     local_paths = []
     gs_paths = []
