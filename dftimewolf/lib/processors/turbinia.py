@@ -118,7 +118,8 @@ class TurbiniaProcessor(module.BaseModule):
     gs_paths = []
     for task in task_data:
       # saved_paths may be set to None
-      for path in task.get('saved_paths') or []:
+      saved_paths = task.get('saved_paths') or []
+      for path in saved_paths:
 
         if path.endswith('.plaso') or \
             path.endswith('BinaryExtractorTask.tar.gz') or \
@@ -126,12 +127,12 @@ class TurbiniaProcessor(module.BaseModule):
 
           if path.startswith('gs://'):
             gs_paths.append(path)
-          if path.startswith('/'):
+          else:
             local_paths.append(path)
 
     return local_paths, gs_paths
 
-  def _DownloadFilesFromGS(self, timeline_label, gs_paths):
+  def _DownloadFilesFromGCS(self, timeline_label, gs_paths):
     """Downloads files stored in Google Cloud Storage to the local filesystem.
 
     Args:
@@ -233,11 +234,11 @@ class TurbiniaProcessor(module.BaseModule):
       return
 
     timeline_label = '{0:s}-{1:s}'.format(self.project, self.disk_name)
-    # Any local .plaso files that exist we can add immediately to the output
+    # Any local files that exist we can add immediately to the output
     all_local_paths = [
         (timeline_label, p) for p in local_paths if os.path.exists(p)]
 
-    downloaded_gs_paths = self._DownloadFilesFromGS(timeline_label, gs_paths)
+    downloaded_gs_paths = self._DownloadFilesFromGCS(timeline_label, gs_paths)
     all_local_paths.extend(downloaded_gs_paths)
 
     if not all_local_paths:
