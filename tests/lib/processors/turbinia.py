@@ -175,8 +175,8 @@ class TurbiniaProcessorTest(unittest.TestCase):
 
   @mock.patch('turbinia.output_manager.GCSOutputWriter')
   # pylint: disable=invalid-name
-  def testDownloadFilesFromGS(self, mock_GCSOutputWriter):
-    """Tests _DownloadFilesFromGS"""
+  def testDownloadFilesFromGCS(self, mock_GCSOutputWriter):
+    """Tests _DownloadFilesFromGCS"""
     test_state = state.DFTimewolfState(config.Config)
     turbinia_processor = turbinia.TurbiniaProcessor(test_state)
     local_mock = mock.MagicMock()
@@ -184,7 +184,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
     mock_GCSOutputWriter.return_value = local_mock
     fake_paths = ['gs://hashes.json']
     # pylint: disable=protected-access
-    local_paths = turbinia_processor._DownloadFilesFromGS('fake', fake_paths)
+    local_paths = turbinia_processor._DownloadFilesFromGCS('fake', fake_paths)
     self.assertEqual(local_paths, [('fake', '/fake/local/hashes.json')])
 
   def testDeterminePaths(self):
