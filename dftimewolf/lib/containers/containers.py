@@ -72,22 +72,20 @@ class ThreatIntelligence(interface.AttributeContainer):
   Attributes:
     name (string): name of the threat
     indicator (string): regular expression relevant to a threat
-    path (string): path to the indicator data (e.g. file)
   """
   CONTAINER_TYPE = 'threat_intelligence'
 
-  def __init__(self, name, indicator, path):
+  def __init__(self, name, indicator):
     """Initializes the Threat Intelligence container.
 
     Args:
       name (string): name of the threat
       indicator (string): regular expression relevant to a threat
-      path (string): path to the indicator data (e.g. file)
     """
     super(ThreatIntelligence, self).__init__()
     self.name = name
     self.indicator = indicator
-    self.path = path
+
 
 class TicketAttribute(interface.AttributeContainer):
   """Attribute container definition for generic ticketing system attributes.
