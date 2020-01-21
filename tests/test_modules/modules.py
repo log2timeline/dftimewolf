@@ -21,7 +21,6 @@ class DummyModule1(module.BaseModule):
 
   def Callback(self, container):
     """Dummy callback that we just want to have called"""
-    pass
 
   def Process(self):
     """Dummy Process function."""

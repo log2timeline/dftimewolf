@@ -149,7 +149,8 @@ class StateTest(unittest.TestCase):
     test_state.SetupModules()
     # DummyModule1's registered StreamingConsumer only consumes Reports, not
     # TicketAtttributes
-    attributes = containers.TicketAttribute(type_='asd', name='asd', value='asd')
+    attributes = containers.TicketAttribute(
+        type_='asd', name='asd', value='asd')
     test_state.StreamContainer(attributes)
     mock_callback.assert_not_called()
 
