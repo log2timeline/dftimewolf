@@ -47,6 +47,7 @@ class DFTimewolfState(object):
     self.output = []
     self.recipe = None
     self.store = {}
+    self.streaming_callbacks = {}
 
   def _InvokeModulesInThreads(self, callback):
     """Invokes the callback function on all the modules in separate threads.
@@ -207,6 +208,31 @@ class DFTimewolfState(object):
   def RunModules(self):
     """Performs the actual processing for each module in the module pool."""
     self._InvokeModulesInThreads(self._RunModuleThread)
+
+  def RegisterStreamingCallback(self, target, container):
+    """Registers a callback for a type of container.
+
+    Args:
+      target (function): function to be called.
+      container (interface.AttributeContainer): container type on which
+          the callback will be called.
+    """
+    if container.CONTAINER_TYPE not in self.streaming_callbacks:
+      self.streaming_callbacks[container.CONTAINER_TYPE] = []
+    self.streaming_callbacks[container.CONTAINER_TYPE].append(target)
+
+  def StoreStreamingContainer(self, container):
+    """Streams a container to the callbacks that are registered to handle it.
+
+    Args:
+      container (interface.AttributeContainer): container that will be streamed
+          to any registered callbacks.
+
+    """
+    for container_type, callbacks in self.streaming_callbacks.items():
+      if container_type == container.CONTAINER_TYPE:
+        for callback in callbacks:
+          callback(container)
 
   def AddError(self, error, critical=False):
     """Adds an error to the state.

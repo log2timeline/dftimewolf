@@ -129,5 +129,29 @@ class StateTest(unittest.TestCase):
     self.assertIn('dfTimewolf Error', msg)
     self.assertTrue(critical)
 
+  @mock.patch('tests.test_modules.modules.DummyModule1.Callback')
+  def testStreamingCallback(self, mock_callback):
+    """Tests that registered callbacks are appropriately called."""
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.LoadRecipe(test_recipe.contents)
+    test_state.SetupModules()
+    # DummyModule1 has registered a StreamingConsumer
+    report = containers.Report(module_name='testing', text='asd')
+    test_state.StoreStreamingContainer(report)
+    mock_callback.assert_called_with(report)
+
+  @mock.patch('tests.test_modules.modules.DummyModule1.Callback')
+  def testStreamingCallbackNotCalled(self, mock_callback):
+    """Tests that registered callbacks are called only on types for which
+    they are registered."""
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.LoadRecipe(test_recipe.contents)
+    test_state.SetupModules()
+    # DummyModule1's registered StreamingConsumer only consumes Reports, not
+    # TicketAtttributes
+    attributes = containers.TicketAttribute(type_='asd', name='asd', value='asd')
+    test_state.StoreStreamingContainer(attributes)
+    mock_callback.assert_not_called()
+
 if __name__ == '__main__':
   unittest.main()
