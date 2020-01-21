@@ -221,7 +221,7 @@ class DFTimewolfState(object):
       self.streaming_callbacks[container.CONTAINER_TYPE] = []
     self.streaming_callbacks[container.CONTAINER_TYPE].append(target)
 
-  def StoreStreamingContainer(self, container):
+  def StreamContainer(self, container):
     """Streams a container to the callbacks that are registered to handle it.
 
     Args:
