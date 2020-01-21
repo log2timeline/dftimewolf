@@ -227,7 +227,6 @@ class DFTimewolfState(object):
     Args:
       container (interface.AttributeContainer): container that will be streamed
           to any registered callbacks.
-
     """
     for container_type, callbacks in self.streaming_callbacks.items():
       if container_type == container.CONTAINER_TYPE:
