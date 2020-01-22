@@ -245,5 +245,15 @@ class TurbiniaProcessor(module.BaseModule):
       self.state.AddError('No interesting files could be found.', critical=True)
     self.state.output = all_local_paths
 
+    for path in all_local_paths:
+      if path.endswith('BinaryExtractorTask.tar.gz'):
+        self.state.StoreContainer(
+            containers.ThreatIntelligence(
+                name='BinaryExtractorResults', indicator=None, path=path))
+      if path.endswith('hashes.json'):
+        self.state.StoreContainer(
+            containers.ThreatIntelligence(
+                name='ImageExportHashes', indicator=None, path=path))
+
 
 modules_manager.ModulesManager.RegisterModule(TurbiniaProcessor)
