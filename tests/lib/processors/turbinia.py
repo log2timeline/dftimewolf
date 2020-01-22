@@ -10,7 +10,6 @@ import mock
 import six
 
 from dftimewolf.lib import state
-from dftimewolf.lib.containers import containers
 
 # The easiest way to load our test Turbinia config is to add an environment
 # variable
