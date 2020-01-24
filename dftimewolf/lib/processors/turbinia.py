@@ -156,10 +156,10 @@ class TurbiniaProcessor(module.BaseModule):
         # instead of returning manually each
         self.state.AddError(exception, critical=False)
 
-      if local_path:
-        local_paths.append((timeline_label, local_path))
+    if local_path:
+      local_paths.append((timeline_label, local_path))
 
-      return local_paths
+    return local_paths
 
   def Process(self):
     """Process files with Turbinia."""
@@ -244,6 +244,16 @@ class TurbiniaProcessor(module.BaseModule):
     if not all_local_paths:
       self.state.AddError('No interesting files could be found.', critical=True)
     self.state.output = all_local_paths
+
+    for _, path in all_local_paths:
+      if path.endswith('BinaryExtractorTask.tar.gz'):
+        self.state.StoreContainer(
+            containers.ThreatIntelligence(
+                name='BinaryExtractorResults', indicator=None, path=path))
+      if path.endswith('hashes.json'):
+        self.state.StoreContainer(
+            containers.ThreatIntelligence(
+                name='ImageExportHashes', indicator=None, path=path))
 
 
 modules_manager.ModulesManager.RegisterModule(TurbiniaProcessor)
