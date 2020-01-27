@@ -110,6 +110,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
       self.assertEqual(error_msg, expected_error)
       self.assertEqual(is_critical, True)
 
+  @mock.patch('dftimewolf.lib.state.DFTimewolfState.StoreContainer')
   @mock.patch('os.path.exists')
   @mock.patch('turbinia.output_manager.GCSOutputWriter')
   @mock.patch('turbinia.evidence.GoogleCloudDisk')
@@ -119,7 +120,8 @@ class TurbiniaProcessorTest(unittest.TestCase):
                   _mock_TurbiniaClient,
                   mock_GoogleCloudDisk,
                   mock_GCSOutputWriter,
-                  mock_exists):
+                  mock_exists,
+                  mock_StoreContainer):
     """Tests that the processor processes data correctly."""
 
     test_state = state.DFTimewolfState(config.Config)
@@ -135,7 +137,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
         'saved_paths': [
             '/fake/data.plaso',
             '/fake/data2.plaso',
-            'gs://bucket/data3.plaso'
+            'gs://BinaryExtractorTask.tar.gz',
         ]
     }]
 
@@ -144,7 +146,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
 
     # Our GS path will be downloaded to this fake local path
     local_mock = mock.MagicMock()
-    local_mock.copy_from.return_value = '/fake/local/path'
+    local_mock.copy_from.return_value = '/local/BinaryExtractorTask.tar.gz'
     mock_GCSOutputWriter.return_value = local_mock
 
     turbinia_processor.Process()
@@ -162,16 +164,54 @@ class TurbiniaProcessorTest(unittest.TestCase):
     self.assertListEqual(request.recipe['jobs_blacklist'], ['StringsJob'])
     turbinia_processor.client.get_task_data.assert_called()
     # pylint: disable=protected-access
-    mock_GCSOutputWriter.assert_called_with(
-        'gs://bucket/data3.plaso',
+    mock_GCSOutputWriter.assert_any_call(
+        'gs://BinaryExtractorTask.tar.gz',
         local_output_dir=turbinia_processor._output_path
     )
     self.assertEqual(test_state.errors, [])
     self.assertEqual(test_state.output, [
         ('turbinia-project-disk-1', '/fake/data.plaso'),
         ('turbinia-project-disk-1', '/fake/data2.plaso'),
-        ('turbinia-project-disk-1', '/fake/local/path')
+        ('turbinia-project-disk-1', '/local/BinaryExtractorTask.tar.gz'),
     ])
+    self.assertEqual(
+        mock_StoreContainer.call_args[0][0].CONTAINER_TYPE,
+        'threat_intelligence')
+    self.assertEqual(
+        mock_StoreContainer.call_args[0][0].name,
+        'BinaryExtractorResults')
+    self.assertEqual(
+        mock_StoreContainer.call_args[0][0].path,
+        '/local/BinaryExtractorTask.tar.gz')
+
+  @mock.patch('turbinia.output_manager.GCSOutputWriter')
+  # pylint: disable=invalid-name
+  def testDownloadFilesFromGCS(self, mock_GCSOutputWriter):
+    """Tests _DownloadFilesFromGCS"""
+    test_state = state.DFTimewolfState(config.Config)
+    turbinia_processor = turbinia.TurbiniaProcessor(test_state)
+    local_mock = mock.MagicMock()
+    local_mock.copy_from.return_value = '/fake/local/hashes.json'
+    mock_GCSOutputWriter.return_value = local_mock
+    fake_paths = ['gs://hashes.json']
+    # pylint: disable=protected-access
+    local_paths = turbinia_processor._DownloadFilesFromGCS('fake', fake_paths)
+    self.assertEqual(local_paths, [('fake', '/fake/local/hashes.json')])
+
+  def testDeterminePaths(self):
+    """Tests _DeterminePaths"""
+    test_state = state.DFTimewolfState(config.Config)
+    turbinia_processor = turbinia.TurbiniaProcessor(test_state)
+    fake_task_data = [{
+        'saved_paths': ['/local/path.plaso', '/ignoreme/'],
+    }, {
+        'saved_paths': ['gs://hashes.json', '/tmp/BinaryExtractorTask.tar.gz'],
+    }]
+    # pylint: disable=protected-access
+    local_paths, gs_paths = turbinia_processor._DeterminePaths(fake_task_data)
+    self.assertEqual(
+        local_paths, ['/local/path.plaso', '/tmp/BinaryExtractorTask.tar.gz'])
+    self.assertEqual(gs_paths, ['gs://hashes.json'])
 
 
 if __name__ == '__main__':

@@ -123,11 +123,15 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
           flow proto (FlowArgs).
 
     Returns:
-      str: GRR identifier of launched flow.
+      str: GRR identifier for launched flow, or an empty string if flow could
+          not be launched.
     """
     # Start the flow and get the flow ID
     flow = self._WrapGRRRequestWithApproval(
         client, client.CreateFlow, name=name, args=args)
+    if not flow:
+      return ''
+
     flow_id = flow.flow_id
     print('{0:s}: Scheduled'.format(flow_id))
 
@@ -328,6 +332,11 @@ class GRRArtifactCollector(GRRFlow):
         ignore_interpolation_errors=True,
         apply_parsers=False)
     flow_id = self._LaunchFlow(client, 'ArtifactCollectorFlow', flow_args)
+    if not flow_id:
+      msg = 'Flow could not be launched on {0:s}.'.format(client.client_id)
+      msg += '\nArtifactCollectorFlow args: {0!s}'.format(flow_args)
+      self.state.AddError(msg, critical=True)
+      return
     self._AwaitFlow(client, flow_id)
     collected_flow_data = self._DownloadFiles(client, flow_id)
     if collected_flow_data:
