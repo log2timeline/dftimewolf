@@ -29,9 +29,10 @@ class ThreatIntelligenceDataTest(unittest.TestCase):
     """Tests the GetAttributeNames function."""
     attribute_container = containers.ThreatIntelligence(
         name='name',
-        indicator='.*')
+        indicator='.*',
+        path='/')
 
-    expected_attribute_names = ['indicator', 'name']
+    expected_attribute_names = ['indicator', 'name', 'path']
 
     attribute_names = sorted(attribute_container.GetAttributeNames())
 
