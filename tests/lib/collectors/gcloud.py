@@ -55,11 +55,19 @@ class GoogleCloudCollectorTest(unittest.TestCase):
     gcloud_collector = gcloud.GoogleCloudCollector(test_state)
     self.assertIsNotNone(gcloud_collector)
 
+  # pylint: disable=invalid-name
+  @mock.patch(
+      'turbinia.lib.libcloudforensics.GoogleComputeBaseResource.add_labels')
+  @mock.patch('turbinia.lib.libcloudforensics.GoogleComputeBaseResource')
   @mock.patch('turbinia.lib.libcloudforensics.start_analysis_vm')
-  def testSetUp(self, mock_start_analysis_vm):
+  def testSetUp(self,
+                mock_start_analysis_vm,
+                mock_GoogleComputeBaseResource,
+                mock_add_labels):
     """Tests that the collector can be initialized."""
     test_state = state.DFTimewolfState(config.Config)
-    mock_start_analysis_vm.return_value = (None, None)
+    mock_start_analysis_vm.return_value = (mock_GoogleComputeBaseResource, None)
+
     gcloud_collector = gcloud.GoogleCloudCollector(test_state)
     gcloud_collector.SetUp(
         'test-analysis-project-name',
@@ -90,8 +98,12 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         image_family='ubuntu-1804-lts',
         image_project='ubuntu-os-cloud'
     )
+    mock_add_labels.assert_has_calls(
+        [mock.call({'incident_id': 'fake_incident_id'})])
 
   # pylint: disable=line-too-long
+  @mock.patch('turbinia.lib.libcloudforensics.GoogleComputeInstance.get_boot_disk')
+  @mock.patch('turbinia.lib.libcloudforensics.GoogleComputeBaseResource.add_labels')
   @mock.patch('turbinia.lib.libcloudforensics.start_analysis_vm')
   @mock.patch('turbinia.lib.libcloudforensics.GoogleCloudProject.create_disk_from_snapshot')
   @mock.patch('dftimewolf.lib.collectors.gcloud.GoogleCloudCollector._FindDisksToCopy')
@@ -104,7 +116,9 @@ class GoogleCloudCollectorTest(unittest.TestCase):
                   mock_snapshot,
                   mock_find_disks,
                   mock_create_disk_from_snapshot,
-                  mock_start_analysis_vm):
+                  mock_start_analysis_vm,
+                  mock_add_labels,
+                  mock_get_boot_disk):
     """Tests the collector's Process() function."""
     mock_start_analysis_vm.return_value = (FAKE_ANALYSIS_VM, None)
     mock_find_disks.return_value = [
@@ -115,6 +129,9 @@ class GoogleCloudCollectorTest(unittest.TestCase):
     ]
     mock_create_disk_from_snapshot.return_value = FAKE_DISK_COPY
     mock_snapshot.return_value = FAKE_SNAPSHOT
+    FAKE_ANALYSIS_VM.add_labels = mock_add_labels
+    FAKE_ANALYSIS_VM.get_boot_disk = mock_get_boot_disk
+    FAKE_DISK_COPY.add_labels = mock_add_labels
 
     test_state = state.DFTimewolfState(config.Config)
     gcloud_collector = gcloud.GoogleCloudCollector(test_state)
@@ -135,8 +152,10 @@ class GoogleCloudCollectorTest(unittest.TestCase):
     mock_delete.assert_called_once()
     self.assertEqual(test_state.output[0][0], 'fake-analysis-vm')
     self.assertEqual(test_state.output[0][1].name, 'disk1-copy')
+    mock_add_labels.assert_has_calls([mock.call({'incident_id': 'fake_incident_id'})])
 
-  # pylint: disable=line-too-long
+  # pylint: disable=line-too-long,invalid-name
+  @mock.patch('turbinia.lib.libcloudforensics.GoogleComputeBaseResource')
   @mock.patch('turbinia.lib.libcloudforensics.GoogleComputeInstance.get_boot_disk')
   @mock.patch('turbinia.lib.libcloudforensics.GoogleCloudProject.get_disk')
   @mock.patch('turbinia.lib.libcloudforensics.GoogleComputeInstance.list_disks')
@@ -149,11 +168,12 @@ class GoogleCloudCollectorTest(unittest.TestCase):
                           mock_get_instance,
                           mock_list_disks,
                           mock_get_disk,
-                          mock_get_boot_disk):
+                          mock_get_boot_disk,
+                          mock_GoogleComputeBaseResource):
     """Tests the FindDisksToCopy function with different SetUp() calls."""
     test_state = state.DFTimewolfState(config.Config)
     gcloud_collector = gcloud.GoogleCloudCollector(test_state)
-    mock_start_analysis_vm.return_value = (None, None)
+    mock_start_analysis_vm.return_value = (mock_GoogleComputeBaseResource, None)
     mock_list_disks.return_value = ['bootdisk', 'disk1']
     mock_get_disk.side_effect = ReturnFakeDisk
     mock_get_instance.return_value = FAKE_INSTANCE
