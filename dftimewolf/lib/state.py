@@ -209,7 +209,7 @@ class DFTimewolfState(object):
     """Performs the actual processing for each module in the module pool."""
     self._InvokeModulesInThreads(self._RunModuleThread)
 
-  def RegisterStreamingCallback(self, target, container):
+  def RegisterStreamingCallback(self, target, container_type):
     """Registers a callback for a type of container.
 
     The function to be registered should a single parameter of type
@@ -217,21 +217,21 @@ class DFTimewolfState(object):
 
     Args:
       target (function): function to be called.
-      container (interface.AttributeContainer): container type on which
-          the callback will be called.
+      container_type (type[interface.AttributeContainer]): container type on
+          which the callback will be called.
     """
-    if container.CONTAINER_TYPE not in self.streaming_callbacks:
-      self.streaming_callbacks[container.CONTAINER_TYPE] = []
-    self.streaming_callbacks[container.CONTAINER_TYPE].append(target)
+    if container_type not in self.streaming_callbacks:
+      self.streaming_callbacks[container_type] = []
+    self.streaming_callbacks[container_type].append(target)
 
   def StreamContainer(self, container):
     """Streams a container to the callbacks that are registered to handle it.
 
     Args:
-      container (interface.AttributeContainer): container that will be streamed
-          to any registered callbacks.
+      container (interface.AttributeContainer): container instance that will be
+          streamed to any registered callbacks.
     """
-    for callback in self.streaming_callbacks.get(container.CONTAINER_TYPE, []):
+    for callback in self.streaming_callbacks.get(type(container), []):
       callback(container)
 
   def AddError(self, error, critical=False):
