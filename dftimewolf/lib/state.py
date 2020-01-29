@@ -212,6 +212,9 @@ class DFTimewolfState(object):
   def RegisterStreamingCallback(self, target, container):
     """Registers a callback for a type of container.
 
+    The function to be registered should a single parameter of type
+    interface.AttributeContainer.
+
     Args:
       target (function): function to be called.
       container (interface.AttributeContainer): container type on which
