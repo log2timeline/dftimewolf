@@ -520,10 +520,10 @@
         },
         "turbinia": {
             "hashes": [
-                "sha256:eb4cdf92f031d9f592f38cd2227b6bfcd8d10edbf8efba44a0a35670c457fba7"
+                "sha256:299733194f07820ff6636eeaa012edfa655bdf5cc62c212c5c77a552331b10f5"
             ],
             "index": "pypi",
-            "version": "==20190819.3"
+            "version": "==20190819.4"
         },
         "uritemplate": {
             "hashes": [
