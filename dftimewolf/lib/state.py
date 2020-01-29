@@ -231,10 +231,8 @@ class DFTimewolfState(object):
       container (interface.AttributeContainer): container that will be streamed
           to any registered callbacks.
     """
-    for container_type, callbacks in self.streaming_callbacks.items():
-      if container_type == container.CONTAINER_TYPE:
-        for callback in callbacks:
-          callback(container)
+    for callback in self.streaming_callbacks.get(container.CONTAINER_TYPE, []):
+      callback(container)
 
   def AddError(self, error, critical=False):
     """Adds an error to the state.
