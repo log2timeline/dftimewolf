@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 from googleapiclient.errors import HttpError
 from oauth2client.client import AccessTokenRefreshError
 from oauth2client.client import ApplicationDefaultCredentialsError
-from turbinia.lib import libcloudforensics
+from libcloudforensics import gcp as libcloudforensics
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers

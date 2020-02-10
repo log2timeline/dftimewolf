@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 import unittest
 
 import mock
-from turbinia.lib import libcloudforensics
+from libcloudforensics import gcp as libcloudforensics
 
 from dftimewolf import config
 from dftimewolf.lib import state
@@ -57,9 +57,9 @@ class GoogleCloudCollectorTest(unittest.TestCase):
 
   # pylint: disable=invalid-name
   @mock.patch(
-      'turbinia.lib.libcloudforensics.GoogleComputeBaseResource.add_labels')
-  @mock.patch('turbinia.lib.libcloudforensics.GoogleComputeBaseResource')
-  @mock.patch('turbinia.lib.libcloudforensics.start_analysis_vm')
+      'libcloudforensics.gcp.GoogleComputeBaseResource.add_labels')
+  @mock.patch('libcloudforensics.gcp.GoogleComputeBaseResource')
+  @mock.patch('libcloudforensics.gcp.start_analysis_vm')
   def testSetUp(self,
                 mock_start_analysis_vm,
                 mock_GoogleComputeBaseResource,
@@ -102,14 +102,14 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         [mock.call({'incident_id': 'fake_incident_id'})])
 
   # pylint: disable=line-too-long
-  @mock.patch('turbinia.lib.libcloudforensics.GoogleComputeInstance.get_boot_disk')
-  @mock.patch('turbinia.lib.libcloudforensics.GoogleComputeBaseResource.add_labels')
-  @mock.patch('turbinia.lib.libcloudforensics.start_analysis_vm')
-  @mock.patch('turbinia.lib.libcloudforensics.GoogleCloudProject.create_disk_from_snapshot')
+  @mock.patch('libcloudforensics.gcp.GoogleComputeInstance.get_boot_disk')
+  @mock.patch('libcloudforensics.gcp.GoogleComputeBaseResource.add_labels')
+  @mock.patch('libcloudforensics.gcp.start_analysis_vm')
+  @mock.patch('libcloudforensics.gcp.GoogleCloudProject.create_disk_from_snapshot')
   @mock.patch('dftimewolf.lib.collectors.gcloud.GoogleCloudCollector._FindDisksToCopy')
-  @mock.patch('turbinia.lib.libcloudforensics.GoogleComputeDisk.snapshot')
-  @mock.patch('turbinia.lib.libcloudforensics.GoogleComputeSnapshot.delete')
-  @mock.patch('turbinia.lib.libcloudforensics.GoogleComputeInstance.attach_disk')
+  @mock.patch('libcloudforensics.gcp.GoogleComputeDisk.snapshot')
+  @mock.patch('libcloudforensics.gcp.GoogleComputeSnapshot.delete')
+  @mock.patch('libcloudforensics.gcp.GoogleComputeInstance.attach_disk')
   def testProcess(self,
                   unused_mock_attach_disk,
                   mock_delete,
@@ -155,12 +155,12 @@ class GoogleCloudCollectorTest(unittest.TestCase):
     mock_add_labels.assert_has_calls([mock.call({'incident_id': 'fake_incident_id'})])
 
   # pylint: disable=line-too-long,invalid-name
-  @mock.patch('turbinia.lib.libcloudforensics.GoogleComputeBaseResource')
-  @mock.patch('turbinia.lib.libcloudforensics.GoogleComputeInstance.get_boot_disk')
-  @mock.patch('turbinia.lib.libcloudforensics.GoogleCloudProject.get_disk')
-  @mock.patch('turbinia.lib.libcloudforensics.GoogleComputeInstance.list_disks')
-  @mock.patch('turbinia.lib.libcloudforensics.GoogleCloudProject.get_instance')
-  @mock.patch('turbinia.lib.libcloudforensics.start_analysis_vm')
+  @mock.patch('libcloudforensics.gcp.GoogleComputeBaseResource')
+  @mock.patch('libcloudforensics.gcp.GoogleComputeInstance.get_boot_disk')
+  @mock.patch('libcloudforensics.gcp.GoogleCloudProject.get_disk')
+  @mock.patch('libcloudforensics.gcp.GoogleComputeInstance.list_disks')
+  @mock.patch('libcloudforensics.gcp.GoogleCloudProject.get_instance')
+  @mock.patch('libcloudforensics.gcp.start_analysis_vm')
   # We're manually calling protected functions
   # pylint: disable=protected-access
   def testFindDisksToCopy(self,
