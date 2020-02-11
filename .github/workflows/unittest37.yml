@@ -2,8 +2,7 @@ name: Run tests
 
 on:
   pull_request:
-    types: [assigned, opened, synchronize, reopened, merged]
-  push:
+    types: [opened, synchronize, reopened, merged]
   pull_request_review:
 
 jobs:
