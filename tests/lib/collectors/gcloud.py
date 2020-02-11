@@ -7,42 +7,42 @@ from __future__ import unicode_literals
 import unittest
 
 import mock
-from libcloudforensics import gcp as libcloudforensics
+from libcloudforensics import gcp
 
 from dftimewolf import config
 from dftimewolf.lib import state
 from dftimewolf.lib.collectors import gcloud
 
-FAKE_PROJECT = libcloudforensics.GoogleCloudProject(
+FAKE_PROJECT = gcp.GoogleCloudProject(
     'test-target-project-name',
     'fake_zone')
-FAKE_ANALYSIS_VM = libcloudforensics.GoogleComputeInstance(
+FAKE_ANALYSIS_VM = gcp.GoogleComputeInstance(
     FAKE_PROJECT,
     'fake_zone',
     'fake-analysis-vm')
-FAKE_INSTANCE = libcloudforensics.GoogleComputeInstance(
+FAKE_INSTANCE = gcp.GoogleComputeInstance(
     FAKE_PROJECT,
     'fake_zone',
     'fake-instance')
-FAKE_DISK = libcloudforensics.GoogleComputeDisk(
+FAKE_DISK = gcp.GoogleComputeDisk(
     FAKE_PROJECT,
     'fake_zone',
     'disk1')
-FAKE_BOOT_DISK = libcloudforensics.GoogleComputeDisk(
+FAKE_BOOT_DISK = gcp.GoogleComputeDisk(
     FAKE_PROJECT,
     'fake_zone',
     'bootdisk')
-FAKE_SNAPSHOT = libcloudforensics.GoogleComputeSnapshot(
+FAKE_SNAPSHOT = gcp.GoogleComputeSnapshot(
     FAKE_DISK,
     FAKE_PROJECT)
-FAKE_DISK_COPY = libcloudforensics.GoogleComputeDisk(
+FAKE_DISK_COPY = gcp.GoogleComputeDisk(
     FAKE_PROJECT,
     'fake_zone',
     'disk1-copy')
 
 def ReturnFakeDisk(disk_name):
   """Generate fake GoogleCloudComputeDisk objects depending on provided name."""
-  return libcloudforensics.GoogleComputeDisk(
+  return gcp.GoogleComputeDisk(
       FAKE_PROJECT, 'fakezone', disk_name)
 
 
@@ -122,7 +122,7 @@ class GoogleCloudCollectorTest(unittest.TestCase):
     """Tests the collector's Process() function."""
     mock_start_analysis_vm.return_value = (FAKE_ANALYSIS_VM, None)
     mock_find_disks.return_value = [
-        libcloudforensics.GoogleComputeDisk(
+        gcp.GoogleComputeDisk(
             FAKE_PROJECT,
             'fake_zone',
             'disk1')
