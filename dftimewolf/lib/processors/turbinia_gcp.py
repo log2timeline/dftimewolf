@@ -54,6 +54,71 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.turbinia_region = None
     self.turbinia_zone = None
 
+  def _DeterminePaths(self, task_data):
+    """Builds lists of local and remote paths from data retured by Turbinia.
+
+    This finds all .plaso, hashes.json, and BinaryExtractorTask files in the
+    Turbinia output, and determines if they are local or remote (it's possible
+    this will be running against a local instance of Turbinia).
+
+    Args:
+      task_data (list[dict]): List of dictionaries representing Turbinia task
+          data.
+
+    Returns:
+      tuple[list, list]: A tuple of two lists. The first element contains the
+          local paths, the second element contains the remote (GS) paths.
+    """
+    local_paths = []
+    gs_paths = []
+    for task in task_data:
+      # saved_paths may be set to None
+      saved_paths = task.get('saved_paths') or []
+      for path in saved_paths:
+
+        if path.endswith('.plaso') or \
+            path.endswith('BinaryExtractorTask.tar.gz') or \
+            path.endswith('hashes.json'):
+
+          if path.startswith('gs://'):
+            gs_paths.append(path)
+          else:
+            local_paths.append(path)
+
+    return local_paths, gs_paths
+
+  def _DownloadFilesFromGCS(self, timeline_label, gs_paths):
+    """Downloads files stored in Google Cloud Storage to the local filesystem.
+
+    Args:
+      timeline_label (str): Label to use to construct the path list.
+      gs_paths (str):  gs:// URI to files that need to be downloaded from GS.
+
+    Returns:
+      list:
+        tuple: containing:
+          str: The timeline label for this path.
+          str: A local path where GS files have been copied to.
+    """
+    # TODO: Externalize fetching files from GCS buckets to a different module.
+
+    local_paths = []
+    for path in gs_paths:
+      local_path = None
+      try:
+        output_writer = output_manager.GCSOutputWriter(
+            path, local_output_dir=self._output_path)
+        local_path = output_writer.copy_from(path)
+      except TurbiniaException as exception:
+        # Don't add a critical error for now, until we start raising errors
+        # instead of returning manually each
+        self.state.AddError(exception, critical=False)
+
+    if local_path:
+      local_paths.append((timeline_label, local_path))
+
+    return local_paths
+
   # pylint: disable=arguments-differ
   def TurbiniaSetUp(self, project, turbinia_zone, sketch_id, run_all_jobs):
     """Sets up the object attributes.
@@ -158,61 +223,6 @@ class TurbiniaProcessorBase(module.BaseModule):
 
     return task_data
 
-  def GetGCSPlasoFile(self, task_data):
-    """Gathers .plaso files from GCS paths.
-
-    This finds all .plaso files in the Turbinia output, and determines if they
-    are local or remote.
-
-    Args:
-      task_data(list[dict]): Task objects.
-
-    Returns:
-      str: Local path to .plaso file if it exists, else None
-    """
-    local_paths = []
-    gs_paths = []
-    timeline_label = '{0:s}-{1:s}'.format(self.project, self.disk_name)
-    for task in task_data:
-      # saved_paths may be set to None
-      for path in task.get('saved_paths') or []:
-        if path.startswith('/') and path.endswith('.plaso'):
-          local_paths.append(path)
-        if path.startswith('gs://') and path.endswith('.plaso'):
-          gs_paths.append(path)
-
-    if not local_paths and not gs_paths:
-      self.state.AddError(
-          'No .plaso files found in Turbinia output.', critical=True)
-      return None
-
-    # Any local .plaso files that exist we can add immediately to the output
-    self.state.output = [
-        (timeline_label, p) for p in local_paths if os.path.exists(p)]
-
-    # For files remote in GCS we copy each plaso file back from GCS and then add
-    # to output paths
-    # TODO: Externalize fetching files from GCS buckets to a different module.
-    local_path = None
-    for path in gs_paths:
-      try:
-        output_writer = output_manager.GCSOutputWriter(
-            path, local_output_dir=self._output_path)
-        local_path = output_writer.copy_from(path)
-      except TurbiniaException as exception:
-        # TODO: determine if exception should be converted into a string as
-        # elsewhere in the codebase.
-        self.state.AddError(exception, critical=True)
-        return None
-
-      if local_path:
-        self.state.output.append((timeline_label, local_path))
-
-    if not self.state.output:
-      self.state.AddError('No .plaso files could be found.', critical=True)
-
-    return local_path
-
 
 class TurbiniaGCPProcessor(TurbiniaProcessorBase):
   """Processes Google Cloud (GCP) disks with Turbinia.
@@ -268,7 +278,35 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase):
         disk_name=self.disk_name, project=self.project, zone=self.turbinia_zone)
 
     task_data = self.TurbiniaProcess(evidence_)
-    self.GetGCSPlasoFile(task_data)
+
+    local_paths, gs_paths = self._DeterminePaths(task_data)
+
+    if not local_paths and not gs_paths:
+      self.state.AddError(
+          'No interesting files found in Turbinia output.', critical=True)
+      return
+
+    timeline_label = '{0:s}-{1:s}'.format(self.project, self.disk_name)
+    # Any local files that exist we can add immediately to the output
+    all_local_paths = [
+        (timeline_label, p) for p in local_paths if os.path.exists(p)]
+
+    downloaded_gs_paths = self._DownloadFilesFromGCS(timeline_label, gs_paths)
+    all_local_paths.extend(downloaded_gs_paths)
+
+    if not all_local_paths:
+      self.state.AddError('No interesting files could be found.', critical=True)
+    self.state.output = all_local_paths
+
+    for _, path in all_local_paths:
+      if path.endswith('BinaryExtractorTask.tar.gz'):
+        self.state.StoreContainer(
+            containers.ThreatIntelligence(
+                name='BinaryExtractorResults', indicator=None, path=path))
+      if path.endswith('hashes.json'):
+        self.state.StoreContainer(
+            containers.ThreatIntelligence(
+                name='ImageExportHashes', indicator=None, path=path))
 
 
 modules_manager.ModulesManager.RegisterModule(TurbiniaGCPProcessor)
