@@ -82,14 +82,15 @@ class SCPExporter(module.BaseModule):
     if ret != 0:
       self.state.AddError('Failed copying {0!s}'.format(self._paths),
                           critical=True)
-    else:
-      for path_ in self._paths:
-        file_name = os.path.basename(path_)
-        full_path = os.path.join(self._destination, file_name)
-        print('Saving remote FS path {0:s}'.format(full_path))
-        fspath = containers.RemoteFSPath(
-            path=full_path, hostname=self._hostname)
-        self.state.StoreContainer(fspath)
+      return
+
+    for path_ in self._paths:
+      file_name = os.path.basename(path_)
+      full_path = os.path.join(self._destination, file_name)
+      print('Saving remote FS path {0:s}'.format(full_path))
+      fspath = containers.RemoteFSPath(
+          path=full_path, hostname=self._hostname)
+      self.state.StoreContainer(fspath)
 
   def _SSHAvailable(self):
     """Checks that the SSH authentication succeeds on a given host.

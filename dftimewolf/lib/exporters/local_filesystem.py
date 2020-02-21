@@ -55,6 +55,8 @@ class LocalFilesystemCopy(module.BaseModule):
         try:
           tar_file = utils.Compress(path, self._target_directory)
           self.state.StoreContainer(containers.FSPath(path=tar_file))
+          print('{0:s} was compressed into {1:s}'.format(
+              path, tar_file))
         except RuntimeError as exception:
           self.state.AddError(exception, critical=True)
           return

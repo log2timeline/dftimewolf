@@ -17,7 +17,7 @@ from dftimewolf.lib.processors.turbinia_gcp import TurbiniaProcessorBase
 # pylint: disable=no-member
 
 class TurbiniaArtifactProcessor(TurbiniaProcessorBase):
-  """Processes Google Cloud (GCP) disks with Turbinia.
+  """Processes Exported GRR Artifacts with Turbinia.
 
   Attributes:
     directory_path (str): Name of the directory to process.
@@ -36,20 +36,18 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase):
 
   # pylint: disable=arguments-differ
   def SetUp(
-      self, directory_path, project, turbinia_zone, sketch_id, run_all_jobs):
+      self, directory_path, sketch_id, run_all_jobs):
     """Sets up the object attributes.
 
     Args:
       directory_path (str): Name of the directory to process.
-      project (str): Name of the GCP project containing the disk to process.
-      turbinia_zone (str): GCP zone in which the Turbinia server is running.
       sketch_id (int): The Timesketch sketch id
       run_all_jobs (bool): Whether to run all jobs instead of a faster subset.
     """
     self.directory_path = directory_path
 
     try:
-      self.TurbiniaSetUp(project, turbinia_zone, sketch_id, run_all_jobs)
+      self.TurbiniaSetUp(None, None, sketch_id, run_all_jobs)
     except TurbiniaException as exception:
       self.state.AddError(exception, critical=True)
       return

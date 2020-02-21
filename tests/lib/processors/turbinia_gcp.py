@@ -193,7 +193,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
   def testDownloadFilesFromGCS(self, mock_GCSOutputWriter):
     """Tests _DownloadFilesFromGCS"""
     test_state = state.DFTimewolfState(config.Config)
-    turbinia_processor = turbinia.TurbiniaProcessor(test_state)
+    turbinia_processor = turbinia_gcp.TurbiniaGCPProcessor(test_state)
     local_mock = mock.MagicMock()
     local_mock.copy_from.return_value = '/fake/local/hashes.json'
     mock_GCSOutputWriter.return_value = local_mock
@@ -205,7 +205,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
   def testDeterminePaths(self):
     """Tests _DeterminePaths"""
     test_state = state.DFTimewolfState(config.Config)
-    turbinia_processor = turbinia.TurbiniaProcessor(test_state)
+    turbinia_processor = turbinia_gcp.TurbiniaGCPProcessor(test_state)
     fake_task_data = [{
         'saved_paths': ['/local/path.plaso', '/ignoreme/'],
     }, {
