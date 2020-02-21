@@ -54,6 +54,7 @@ class GoogleCloudCollector(module.BaseModule):
     self.disk_names = []
     self.incident_id = None
     self.all_disks = False
+    self._gcp_label = {}
 
   def Process(self):
     """Copies a disk to the analysis project."""
@@ -62,6 +63,7 @@ class GoogleCloudCollector(module.BaseModule):
       snapshot = disk.snapshot()
       new_disk = self.analysis_project.create_disk_from_snapshot(
           snapshot, disk_name_prefix='incident' + self.incident_id)
+      new_disk.add_labels(self._gcp_label)
       self.analysis_vm.attach_disk(new_disk)
       snapshot.delete()
       print('Disk {0:s} successfully copied to {1:s}'.format(
@@ -128,6 +130,7 @@ class GoogleCloudCollector(module.BaseModule):
     self.disk_names = disk_names
     self.incident_id = incident_id
     self.all_disks = all_disks
+    self._gcp_label = {'incident_id': self.incident_id}
 
     analysis_vm_name = 'gcp-forensics-vm-{0:s}'.format(self.incident_id)
 
@@ -157,6 +160,8 @@ class GoogleCloudCollector(module.BaseModule):
           attach_disk=None,
           image_project=image_project,
           image_family=image_family)
+      self.analysis_vm.add_labels(self._gcp_label)
+      self.analysis_vm.get_boot_disk().add_labels(self._gcp_label)
 
     except AccessTokenRefreshError as exception:
       self.state.AddError('Something is wrong with your gcloud access token.')

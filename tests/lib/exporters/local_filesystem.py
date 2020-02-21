@@ -100,8 +100,9 @@ class LocalFileSystemTest(unittest.TestCase):
     mock_makedirs.side_effect = OSError('FAKEERROR')
     test_state = state.DFTimewolfState(config.Config)
     local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
-    local_filesystem_copy.SetUp(target_directory="/nonexistent")
-    self.assertEqual(test_state.errors[0][1], True)
+    with self.assertRaises(OSError) as exception:
+      local_filesystem_copy.SetUp(target_directory="/nonexistent")
+      self.assertEqual(str(exception), 'FAKEERROR')
 
   @mock.patch('os.makedirs')
   def testSetupManualDir(self, mock_makedirs):

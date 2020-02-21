@@ -4,6 +4,7 @@
 from __future__ import print_function, unicode_literals
 
 from dftimewolf.lib import module
+from dftimewolf.lib.containers import containers
 
 
 class DummyModule1(module.BaseModule):
@@ -16,6 +17,10 @@ class DummyModule1(module.BaseModule):
   def SetUp(self):  # pylint: disable=arguments-differ
     """Dummy setup function."""
     print(self.name + ' Setup!')
+    self.state.RegisterStreamingCallback(self.Callback, containers.Report)
+
+  def Callback(self, container):
+    """Dummy callback that we just want to have called"""
 
   def Process(self):
     """Dummy Process function."""

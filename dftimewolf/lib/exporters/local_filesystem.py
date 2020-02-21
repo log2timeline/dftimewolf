@@ -41,11 +41,7 @@ class LocalFilesystemCopy(module.BaseModule):
     if not target_directory:
       self._target_directory = tempfile.mkdtemp()
     elif not os.path.exists(target_directory):
-      try:
-        os.makedirs(target_directory)
-      except OSError as exception:
-        message = 'An unknown error occurred: {0!s}'.format(exception)
-        self.state.AddError(message, critical=True)
+      os.makedirs(target_directory)
 
   def Process(self):
     """Checks whether the paths exists and updates the state accordingly."""
