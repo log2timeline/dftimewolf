@@ -273,4 +273,4 @@ class DFTimewolfState(object):
         print('{0:s}  {1!s}'.format('CRITICAL: ' if critical else '', error))
         if critical:
           print('Critical error found. Aborting.')
-          sys.exit(-1)
+          sys.exit(1)
