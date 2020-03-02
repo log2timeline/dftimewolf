@@ -163,11 +163,8 @@ class GoogleCloudCollector(module.BaseModule):
       self.analysis_vm.add_labels(self._gcp_label)
       self.analysis_vm.get_boot_disk().add_labels(self._gcp_label)
 
-    except AccessTokenRefreshError as exception:
-      self.state.AddError('Something is wrong with your gcloud access token.')
-      self.state.AddError(exception, critical=True)
-
-    except ApplicationDefaultCredentialsError as exception:
+    except (AccessTokenRefreshError,
+            ApplicationDefaultCredentialsError) as exception:
       self.state.AddError(
           'Something is wrong with your Application Default Credentials. '
           'Try running:\n  $ gcloud auth application-default login')
