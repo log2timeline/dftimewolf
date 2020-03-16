@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 from googleapiclient.errors import HttpError
 from oauth2client.client import AccessTokenRefreshError
 from oauth2client.client import ApplicationDefaultCredentialsError
-from turbinia.lib import libcloudforensics
+from libcloudforensics import gcp
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
@@ -18,14 +18,14 @@ class GoogleCloudCollector(module.BaseModule):
   """Google Cloud (GCP) Collector.
 
   Attributes:
-    analysis_project (libcloudforensics.GoogleCloudProject): project that
+    analysis_project (gcp.GoogleCloudProject): project that
         contains the analysis VM.
-    analysis_vm (libcloudforensics.GoogleComputeInstance): analysis VM on
+    analysis_vm (gcp.GoogleComputeInstance): analysis VM on
          which the disk copy will be attached.
     incident_id (str): incident identifier used to name the analysis VM.
-    remote_project (libcloudforensics.GoogleCloudProject): source project
+    remote_project (gcp.GoogleCloudProject): source project
         containing the VM to copy.
-    remote_instance_name (libcloudforensics.GoogleComputeInstance): instance
+    remote_instance_name (gcp.GoogleComputeInstance): instance
         that needs forensicating.
     disk_names (list[str]): Comma-separated list of disk names to copy.
     incident_id (str): incident identifier on which the name of the analysis
@@ -121,9 +121,9 @@ class GoogleCloudCollector(module.BaseModule):
     """
     disk_names = disk_names.split(',') if disk_names else []
 
-    self.analysis_project = libcloudforensics.GoogleCloudProject(
+    self.analysis_project = gcp.GoogleCloudProject(
         analysis_project_name, default_zone=zone)
-    self.remote_project = libcloudforensics.GoogleCloudProject(
+    self.remote_project = gcp.GoogleCloudProject(
         remote_project_name)
 
     self.remote_instance_name = remote_instance_name
@@ -151,7 +151,7 @@ class GoogleCloudCollector(module.BaseModule):
       # TODO: Make creating an analysis VM optional
       # pylint: disable=too-many-function-args
 
-      self.analysis_vm, _ = libcloudforensics.start_analysis_vm(
+      self.analysis_vm, _ = gcp.start_analysis_vm(
           self.analysis_project.project_id,
           analysis_vm_name,
           zone,
@@ -218,7 +218,7 @@ class GoogleCloudCollector(module.BaseModule):
     """Determines which disks to copy depending on object attributes.
 
     Returns:
-      list[libcloudforensics.GoogleComputeDisk]: the disks to copy to the
+      list[gcp.GoogleComputeDisk]: the disks to copy to the
           analysis project.
     """
     if not (self.remote_instance_name or self.disk_names):
