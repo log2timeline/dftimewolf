@@ -21,10 +21,10 @@ import logging
 
 from googleapiclient.errors import HttpError
 
+from libcloudforensics import gcp
 from dftimewolf import config
 from dftimewolf.lib import state
 from dftimewolf.lib.collectors import gcloud
-from libcloudforensics import gcp
 
 log = logging.getLogger()
 
@@ -68,12 +68,12 @@ class EndToEndTest(unittest.TestCase):
                               '"PROJECT_INFO" environment variable pointing '
                               'to your project settings.')
     try:
-      file = open(project_info)
-      project_info = json.load(file)
-      file.close()
+      json_file = open(project_info)
+      project_info = json.load(json_file)
+      json_file.close()
     except ValueError as exception:
       raise unittest.SkipTest('Error: cannot parse JSON file. {0:s}'.format(
-        str(exception)))
+          str(exception)))
 
     if not all(key in project_info for key in ['project_id', 'instance',
                                                'zone']):
@@ -110,13 +110,13 @@ class EndToEndTest(unittest.TestCase):
 
     # This should make a copy of the boot disk only
     gcloud_collector.SetUp(
-      self.project_id,
-      self.project_id,
-      self.incident_id,
-      self.zone,
-      42.0,
-      16,
-      remote_instance_name=self.instance_to_analyse,
+        self.project_id,
+        self.project_id,
+        self.incident_id,
+        self.zone,
+        42.0,
+        16,
+        remote_instance_name=self.instance_to_analyse,
     )
 
     self.analysis_vm = gcloud_collector.analysis_vm
@@ -136,18 +136,19 @@ class EndToEndTest(unittest.TestCase):
     gcloud_collector.Process()
 
     self.assertEqual(
-      self.test_state.output[0][0], 'gcp-forensics-vm-fake-incident-id')
+        self.test_state.output[0][0], 'gcp-forensics-vm-fake-incident-id')
     self.assertIsInstance(self.test_state.output[0][1], gcp.GoogleComputeDisk)
     self.assertTrue(self.test_state.output[0][1].name.startswith(
-      'incidentfake-incident-id'))
+        'incidentfake-incident-id'))
     self.assertTrue(self.test_state.output[0][1].name.endswith('-copy'))
     self.assertIsInstance(self.analysis_vm, gcp.GoogleComputeInstance)
     self.assertEqual(self.analysis_vm.name, 'gcp-forensics-vm-fake-incident-id')
 
     disks = self.analysis_vm.list_disks()
     self.assertEqual(
-      disks,
-      ['gcp-forensics-vm-fake-incident-id', self.test_state.output[0][1].name])
+        disks,
+        ['gcp-forensics-vm-fake-incident-id',
+         self.test_state.output[0][1].name])
 
     if self.disk_to_forensic is None:
       self.__clean()
@@ -155,14 +156,14 @@ class EndToEndTest(unittest.TestCase):
 
     # This should make a copy of the disk specified in 'disk-names'
     gcloud_collector.SetUp(
-      self.project_id,
-      self.project_id,
-      self.incident_id,
-      self.zone,
-      42.0,
-      16,
-      remote_instance_name=self.instance_to_analyse,
-      disk_names=self.disk_to_forensic
+        self.project_id,
+        self.project_id,
+        self.incident_id,
+        self.zone,
+        42.0,
+        16,
+        remote_instance_name=self.instance_to_analyse,
+        disk_names=self.disk_to_forensic
     )
 
     self.analysis_vm = gcloud_collector.analysis_vm
@@ -171,10 +172,10 @@ class EndToEndTest(unittest.TestCase):
     gcloud_collector.Process()
 
     self.assertEqual(
-      self.test_state.output[1][0], 'gcp-forensics-vm-fake-incident-id')
+        self.test_state.output[1][0], 'gcp-forensics-vm-fake-incident-id')
     self.assertIsInstance(self.test_state.output[1][1], gcp.GoogleComputeDisk)
     self.assertTrue(self.test_state.output[1][1].name.startswith(
-      'incidentfake-incident-id'))
+        'incidentfake-incident-id'))
     self.assertTrue(self.test_state.output[1][1].name.endswith('-copy'))
 
     disks = self.analysis_vm.list_disks()
@@ -193,11 +194,11 @@ class EndToEndTest(unittest.TestCase):
 
     # delete the created forensics VMs
     log.info('Deleting analysis instance: {0:s}.'.format(
-      self.analysis_vm.name))
+        self.analysis_vm.name))
     operation = project.gce_api().instances().delete(
-      project=project.project_id,
-      zone=self.zone,
-      instance=self.analysis_vm.name
+        project=project.project_id,
+        zone=self.zone,
+        instance=self.analysis_vm.name
     ).execute()
     try:
       project.gce_operation(operation, block=True)
@@ -208,7 +209,7 @@ class EndToEndTest(unittest.TestCase):
       # anymore, throwing an HttpError. We can ignore this.
       pass
     log.info('Instance {0:s} successfully deleted.'.format(
-      self.analysis_vm.name))
+        self.analysis_vm.name))
 
     # delete the copied disks
     # we ignore the disk that was created for the analysis VM (disks[0]) as
@@ -218,9 +219,9 @@ class EndToEndTest(unittest.TestCase):
       while True:
         try:
           operation = project.gce_api().disks().delete(
-            project=project.project_id,
-            zone=self.zone,
-            disk=disk
+              project=project.project_id,
+              zone=self.zone,
+              disk=disk
           ).execute()
           project.gce_operation(operation, block=True)
           break
@@ -230,15 +231,15 @@ class EndToEndTest(unittest.TestCase):
           # throw a 404 not found if it looped one more time after deletion.
           if exception.resp.status == 404:
             break
-          elif exception.resp.status != 400:
+          if exception.resp.status != 400:
             log.warning('Could not delete the disk {0:s}: {1:s}'.format(
-              disk, str(exception)
+                disk, str(exception)
             ))
           # Throttle the requests to one every 10 seconds
           time.sleep(10)
 
       log.info('Disk {0:s} successfully deleted.'.format(
-        disk))
+          disk))
 
 
 if __name__ == '__main__':
