@@ -55,32 +55,31 @@ class EndToEndTest(unittest.TestCase):
 
   """
 
-  def setUp(self):
-    super(EndToEndTest, self).setUp()
-    self.analysis_vm = None
-    self.incident_id = 'fake-incident-id'
-    self.test_state = None
-
+  def __init__(self, *args, **kwargs):
+    super(EndToEndTest, self).__init__(*args, **kwargs)
     project_info = os.environ.get('PROJECT_INFO')
 
     if project_info is None:
-      raise unittest.SkipTest('Error: please make sure that you defined the '
-                              '"PROJECT_INFO" environment variable pointing '
-                              'to your project settings.')
+      self.error_msg = 'Error: please make sure that you defined the ' \
+                       '"PROJECT_INFO" environment variable pointing ' \
+                       'to your project settings.'
+      return
     try:
       json_file = open(project_info)
       project_info = json.load(json_file)
       json_file.close()
     except ValueError as exception:
-      raise unittest.SkipTest('Error: cannot parse JSON file. {0:s}'.format(
-          str(exception)))
+      self.error_msg = 'Error: cannot parse JSON file. {0:s}'.format(
+          str(exception))
+      return
 
     if not all(key in project_info for key in ['project_id', 'instance',
                                                'zone']):
-      raise unittest.SkipTest('Error: please make sure that your JSON file '
-                              'has the required entries. The file should '
-                              'contain at least the following: ["project_id", '
-                              '"instance", "zone"].')
+      self.error_msg = 'Error: please make sure that your JSON file ' \
+                       'has the required entries. The file should ' \
+                       'contain at least the following: ["project_id", ' \
+                       '"instance", "zone"].'
+      return
 
     self.project_id = project_info['project_id']
     self.instance_to_analyse = project_info['instance']
@@ -91,17 +90,23 @@ class EndToEndTest(unittest.TestCase):
       self.disk_to_forensic = None
     self.zone = project_info['zone']
 
-  def test_end_to_end(self):
+  def setUp(self):
+    if hasattr(self, 'error_msg'):
+      raise unittest.SkipTest(self.error_msg)
+    self.analysis_vm = None
+    self.test_state = None
+    self.incident_id = 'fake-incident-id'
+
+  def test_end_to_end_boot_disk(self):
     """End to end test on GCP for the gcloud.py collector.
 
     This end-to-end test runs directly on GCP and tests that:
       1. The gcloud.py collector connects to the target instance and makes a
-      snapshot of the boot disk (by default) or of the disk passed in
-      parameter to the collector's SetUp method (disk_names).
+      snapshot of the boot disk.
       2. A new disk is created from the taken snapshot.
       3. If an analysis VM already exists, the module will attach the disk
       copy to the VM. Otherwise, it will create a new GCP instance for
-      analysis purpose and attach the disk copy to it.
+      analysis purpose and attach the boot disk copy to it.
     """
 
     self.test_state = state.DFTimewolfState(config.Config)
@@ -120,39 +125,29 @@ class EndToEndTest(unittest.TestCase):
     )
 
     self.analysis_vm = gcloud_collector.analysis_vm
-
-    # Check that the collector is correctly initialized
-    self.assertEqual(self.test_state.errors, [])
     self.assertEqual(gcloud_collector.disk_names, [])
-    self.assertEqual(gcloud_collector.analysis_project.project_id,
-                     self.project_id)
-    self.assertEqual(gcloud_collector.remote_project.project_id,
-                     self.project_id)
-    self.assertEqual(gcloud_collector.remote_instance_name,
-                     self.instance_to_analyse)
-    self.assertEqual(gcloud_collector.all_disks, False)
+    self.__assertCollectorIsInitialized(gcloud_collector)
 
-    # Attach the disk copy to the analysis VM
+    # Attach the boot disk copy to the analysis VM
     gcloud_collector.Process()
+    self.__assertInstanceAndDisk()
 
-    self.assertEqual(
-        self.test_state.output[0][0], 'gcp-forensics-vm-fake-incident-id')
-    self.assertIsInstance(self.test_state.output[0][1], gcp.GoogleComputeDisk)
-    self.assertTrue(self.test_state.output[0][1].name.startswith(
-        'incidentfake-incident-id'))
-    self.assertTrue(self.test_state.output[0][1].name.endswith('-copy'))
-    self.assertIsInstance(self.analysis_vm, gcp.GoogleComputeInstance)
-    self.assertEqual(self.analysis_vm.name, 'gcp-forensics-vm-fake-incident-id')
+  def test_end_to_end_other_disk(self):
+    """End to end test on GCP for the gcloud.py collector.
 
-    disks = self.analysis_vm.list_disks()
-    self.assertEqual(
-        disks,
-        ['gcp-forensics-vm-fake-incident-id',
-         self.test_state.output[0][1].name])
+    This end-to-end test runs directly on GCP and tests that:
+      1. The gcloud.py collector connects to the target instance and makes a
+      snapshot of the disk passed to the 'disk_names' parameter in the
+      SetUp() method.
+      2. A new disk is created from the taken snapshot.
+      3. If an analysis VM already exists, the module will attach the disk
+      copy to the VM. Otherwise, it will create a new GCP instance for
+      analysis purpose and attach the boot disk copy to it.
+    """
 
-    if self.disk_to_forensic is None:
-      self.__clean()
-      return
+    self.test_state = state.DFTimewolfState(config.Config)
+    gcloud_collector = gcloud.GoogleCloudCollector(self.test_state)
+    self.assertIsNotNone(gcloud_collector)
 
     # This should make a copy of the disk specified in 'disk-names'
     gcloud_collector.SetUp(
@@ -167,26 +162,38 @@ class EndToEndTest(unittest.TestCase):
     )
 
     self.analysis_vm = gcloud_collector.analysis_vm
+    self.assertEqual(gcloud_collector.disk_names, [self.disk_to_forensic])
+    self.__assertCollectorIsInitialized(gcloud_collector)
 
     # Attach the disk copy to the analysis VM
     gcloud_collector.Process()
+    self.__assertInstanceAndDisk()
 
+  def __assertCollectorIsInitialized(self, gcloud_collector):
+    self.assertEqual(self.test_state.errors, [])
+    self.assertEqual(gcloud_collector.analysis_project.project_id,
+                     self.project_id)
+    self.assertEqual(gcloud_collector.remote_project.project_id,
+                     self.project_id)
+    self.assertEqual(gcloud_collector.remote_instance_name,
+                     self.instance_to_analyse)
+    self.assertEqual(gcloud_collector.all_disks, False)
+
+  def __assertInstanceAndDisk(self):
     self.assertEqual(
-        self.test_state.output[1][0], 'gcp-forensics-vm-fake-incident-id')
-    self.assertIsInstance(self.test_state.output[1][1], gcp.GoogleComputeDisk)
-    self.assertTrue(self.test_state.output[1][1].name.startswith(
+        self.test_state.output[0][0], 'gcp-forensics-vm-fake-incident-id')
+    self.assertIsInstance(self.test_state.output[0][1], gcp.GoogleComputeDisk)
+    self.assertTrue(self.test_state.output[0][1].name.startswith(
         'incidentfake-incident-id'))
-    self.assertTrue(self.test_state.output[1][1].name.endswith('-copy'))
+    self.assertTrue(self.test_state.output[0][1].name.endswith('-copy'))
+    self.assertIsInstance(self.analysis_vm, gcp.GoogleComputeInstance)
+    self.assertEqual(self.analysis_vm.name, 'gcp-forensics-vm-fake-incident-id')
+    self.assertEqual(
+        self.analysis_vm.list_disks(),
+        ['gcp-forensics-vm-fake-incident-id',
+         self.test_state.output[0][1].name])
 
-    disks = self.analysis_vm.list_disks()
-    self.assertEqual(disks,
-                     ['gcp-forensics-vm-fake-incident-id',
-                      self.test_state.output[0][1].name,
-                      self.test_state.output[1][1].name])
-
-    self.__clean()
-
-  def __clean(self):
+  def tearDown(self):
     project = gcp.GoogleCloudProject(project_id=self.project_id,
                                      default_zone=self.zone)
 
