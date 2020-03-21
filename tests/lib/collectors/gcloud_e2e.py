@@ -20,8 +20,8 @@ import unittest
 import logging
 
 from googleapiclient.errors import HttpError
-
 from libcloudforensics import gcp
+
 from dftimewolf import config
 from dftimewolf.lib import state
 from dftimewolf.lib.collectors import gcloud
@@ -57,45 +57,24 @@ class EndToEndTest(unittest.TestCase):
 
   def __init__(self, *args, **kwargs):
     super(EndToEndTest, self).__init__(*args, **kwargs)
-    project_info = os.environ.get('PROJECT_INFO')
-
-    if project_info is None:
-      self.error_msg = 'Error: please make sure that you defined the ' \
-                       '"PROJECT_INFO" environment variable pointing ' \
-                       'to your project settings.'
-      return
     try:
-      json_file = open(project_info)
-      project_info = json.load(json_file)
-      json_file.close()
-    except ValueError as exception:
-      self.error_msg = 'Error: cannot parse JSON file. {0:s}'.format(
-          str(exception))
+      project_info = ReadProjectInfo()
+    except (OSError, RuntimeError, ValueError) as exception:
+      self.error_msg = str(exception)
       return
-
-    if not all(key in project_info for key in ['project_id', 'instance',
-                                               'zone']):
-      self.error_msg = 'Error: please make sure that your JSON file ' \
-                       'has the required entries. The file should ' \
-                       'contain at least the following: ["project_id", ' \
-                       '"instance", "zone"].'
-      return
-
     self.project_id = project_info['project_id']
     self.instance_to_analyse = project_info['instance']
     # Optional: test a disk other than the boot disk
-    if 'disk' in project_info:
-      self.disk_to_forensic = project_info['disk']
-    else:
-      self.disk_to_forensic = None
+    self.disk_to_forensic = project_info.get('disk', None)
     self.zone = project_info['zone']
+    self.gcp = gcp.GoogleCloudProject(self.project_id, self.zone)
 
   def setUp(self):
     if hasattr(self, 'error_msg'):
       raise unittest.SkipTest(self.error_msg)
-    self.analysis_vm = None
-    self.test_state = None
     self.incident_id = 'fake-incident-id'
+    self.test_state = state.DFTimewolfState(config.Config)
+    self.gcloud_collector = gcloud.GoogleCloudCollector(self.test_state)
 
   def test_end_to_end_boot_disk(self):
     """End to end test on GCP for the gcloud.py collector.
@@ -109,12 +88,8 @@ class EndToEndTest(unittest.TestCase):
       analysis purpose and attach the boot disk copy to it.
     """
 
-    self.test_state = state.DFTimewolfState(config.Config)
-    gcloud_collector = gcloud.GoogleCloudCollector(self.test_state)
-    self.assertIsNotNone(gcloud_collector)
-
-    # This should make a copy of the boot disk only
-    gcloud_collector.SetUp(
+    # Setting up the collector to make a copy of the boot disk only
+    self.gcloud_collector.SetUp(
         self.project_id,
         self.project_id,
         self.incident_id,
@@ -122,15 +97,30 @@ class EndToEndTest(unittest.TestCase):
         42.0,
         16,
         remote_instance_name=self.instance_to_analyse,
+        # disk_names=None by default, boot disk will be copied
     )
 
-    self.analysis_vm = gcloud_collector.analysis_vm
-    self.assertEqual(gcloud_collector.disk_names, [])
-    self.__assertCollectorIsInitialized(gcloud_collector)
-
     # Attach the boot disk copy to the analysis VM
-    gcloud_collector.Process()
-    self.__assertInstanceAndDisk()
+    self.gcloud_collector.Process()
+
+    # The forensic instance should be live in the analysis GCP project and
+    # the disk should be attached
+    analysis_vm_name = self.test_state.output[0][0]
+    expected_disk_name = self.test_state.output[0][1].name
+
+    operation = self.gcp.gce_api().instances().get(
+        project=self.project_id,
+        zone=self.zone,
+        instance=analysis_vm_name).execute()
+    result = self.gcp.gce_operation(operation, zone=self.zone)
+
+    self.assertEqual(result['name'], analysis_vm_name)
+    for disk in result['disks']:
+      if disk['source'].split("/")[-1] == expected_disk_name:
+        return
+    self.fail('Error: could not find the disk {0:s} in instance {1:s}'.format(
+        expected_disk_name, analysis_vm_name
+    ))
 
   def test_end_to_end_other_disk(self):
     """End to end test on GCP for the gcloud.py collector.
@@ -145,12 +135,8 @@ class EndToEndTest(unittest.TestCase):
       analysis purpose and attach the boot disk copy to it.
     """
 
-    self.test_state = state.DFTimewolfState(config.Config)
-    gcloud_collector = gcloud.GoogleCloudCollector(self.test_state)
-    self.assertIsNotNone(gcloud_collector)
-
     # This should make a copy of the disk specified in 'disk-names'
-    gcloud_collector.SetUp(
+    self.gcloud_collector.SetUp(
         self.project_id,
         self.project_id,
         self.incident_id,
@@ -161,54 +147,41 @@ class EndToEndTest(unittest.TestCase):
         disk_names=self.disk_to_forensic
     )
 
-    self.analysis_vm = gcloud_collector.analysis_vm
-    self.assertEqual(gcloud_collector.disk_names, [self.disk_to_forensic])
-    self.__assertCollectorIsInitialized(gcloud_collector)
+    # Attach the disk_to_forensic copy to the analysis VM
+    self.gcloud_collector.Process()
 
-    # Attach the disk copy to the analysis VM
-    gcloud_collector.Process()
-    self.__assertInstanceAndDisk()
+    # The forensic instance should be live in the analysis GCP project and
+    # the disk should be attached
+    analysis_vm_name = self.test_state.output[0][0]
+    expected_disk_name = self.test_state.output[0][1].name
 
-  def __assertCollectorIsInitialized(self, gcloud_collector):
-    self.assertEqual(self.test_state.errors, [])
-    self.assertEqual(gcloud_collector.analysis_project.project_id,
-                     self.project_id)
-    self.assertEqual(gcloud_collector.remote_project.project_id,
-                     self.project_id)
-    self.assertEqual(gcloud_collector.remote_instance_name,
-                     self.instance_to_analyse)
-    self.assertEqual(gcloud_collector.all_disks, False)
+    operation = self.gcp.gce_api().instances().get(
+        project=self.project_id,
+        zone=self.zone,
+        instance=analysis_vm_name).execute()
+    result = self.gcp.gce_operation(operation, zone=self.zone)
 
-  def __assertInstanceAndDisk(self):
-    self.assertEqual(
-        self.test_state.output[0][0], 'gcp-forensics-vm-fake-incident-id')
-    self.assertIsInstance(self.test_state.output[0][1], gcp.GoogleComputeDisk)
-    self.assertTrue(self.test_state.output[0][1].name.startswith(
-        'incidentfake-incident-id'))
-    self.assertTrue(self.test_state.output[0][1].name.endswith('-copy'))
-    self.assertIsInstance(self.analysis_vm, gcp.GoogleComputeInstance)
-    self.assertEqual(self.analysis_vm.name, 'gcp-forensics-vm-fake-incident-id')
-    self.assertEqual(
-        self.analysis_vm.list_disks(),
-        ['gcp-forensics-vm-fake-incident-id',
-         self.test_state.output[0][1].name])
+    self.assertEqual(result['name'], analysis_vm_name)
+    for disk in result['disks']:
+      if disk['source'].split("/")[-1] == expected_disk_name:
+        return
+    self.fail('Error: could not find the disk {0:s} in instance {1:s}'.format(
+        expected_disk_name, analysis_vm_name
+    ))
 
   def tearDown(self):
-    project = gcp.GoogleCloudProject(project_id=self.project_id,
-                                     default_zone=self.zone)
-
-    disks = self.analysis_vm.list_disks()
+    disks = self.gcloud_collector.analysis_vm.list_disks()
 
     # delete the created forensics VMs
     log.info('Deleting analysis instance: {0:s}.'.format(
-        self.analysis_vm.name))
-    operation = project.gce_api().instances().delete(
-        project=project.project_id,
+        self.gcloud_collector.analysis_vm.name))
+    operation = self.gcp.gce_api().instances().delete(
+        project=self.project_id,
         zone=self.zone,
-        instance=self.analysis_vm.name
+        instance=self.gcloud_collector.analysis_vm.name
     ).execute()
     try:
-      project.gce_operation(operation, block=True)
+      self.gcp.gce_operation(operation, block=True)
     except HttpError:
       # gce_operation triggers a while(True) loop that checks on the
       # operation ID. Sometimes it loops one more time right when the
@@ -216,7 +189,7 @@ class EndToEndTest(unittest.TestCase):
       # anymore, throwing an HttpError. We can ignore this.
       pass
     log.info('Instance {0:s} successfully deleted.'.format(
-        self.analysis_vm.name))
+        self.gcloud_collector.analysis_vm.name))
 
     # delete the copied disks
     # we ignore the disk that was created for the analysis VM (disks[0]) as
@@ -225,12 +198,12 @@ class EndToEndTest(unittest.TestCase):
       log.info('Deleting disk: {0:s}.'.format(disk))
       while True:
         try:
-          operation = project.gce_api().disks().delete(
-              project=project.project_id,
+          operation = self.gcp.gce_api().disks().delete(
+              project=self.project_id,
               zone=self.zone,
               disk=disk
           ).execute()
-          project.gce_operation(operation, block=True)
+          self.gcp.gce_operation(operation, block=True)
           break
         except HttpError as exception:
           # The gce api will throw a 400 until the analysis vm's deletion is
@@ -247,6 +220,44 @@ class EndToEndTest(unittest.TestCase):
 
       log.info('Disk {0:s} successfully deleted.'.format(
           disk))
+
+
+def ReadProjectInfo():
+  """ Read project information to run e2e test.
+  Returns:
+    dict: A dict with the project information.
+
+  Raises:
+    OSError: if the file cannot be found, opened or closed.
+    RuntimeError: if the json file cannot be parsed.
+    ValueError: if the json file does not have the required properties.
+  """
+  project_info = os.environ.get('PROJECT_INFO')
+  if project_info is None:
+    raise OSError('Error: please make sure that you defined the '
+                  '"PROJECT_INFO" environment variable pointing '
+                  'to your project settings.')
+  try:
+    json_file = open(project_info)
+    try:
+      project_info = json.load(json_file)
+    except ValueError as exception:
+      raise RuntimeError('Error: cannot parse JSON file. {0:s}'.format(
+          str(exception)))
+    json_file.close()
+  except OSError as exception:
+    raise OSError('Error: could not open/close file {0:s}: {1:s}'.format(
+        project_info, str(exception)
+    ))
+
+  if not all(key in project_info for key in ['project_id', 'instance',
+                                             'zone']):
+    raise ValueError('Error: please make sure that your JSON file '
+                     'has the required entries. The file should '
+                     'contain at least the following: ["project_id", '
+                     '"instance", "zone"].')
+
+  return project_info
 
 
 if __name__ == '__main__':
