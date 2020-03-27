@@ -60,12 +60,12 @@ class GoogleCloudCollector(module.BaseModule):
     """Copies a disk to the analysis project."""
     for disk in self._FindDisksToCopy():
       print('Disk copy of {0:s} started...'.format(disk.name))
-      snapshot = disk.snapshot()
-      new_disk = self.analysis_project.create_disk_from_snapshot(
+      snapshot = disk.Snapshot()
+      new_disk = self.analysis_project.CreateDiskFromSnapshot(
           snapshot, disk_name_prefix='incident' + self.incident_id)
-      new_disk.add_labels(self._gcp_label)
-      self.analysis_vm.attach_disk(new_disk)
-      snapshot.delete()
+      new_disk.AddLabels(self._gcp_label)
+      self.analysis_vm.AttachDisk(new_disk)
+      snapshot.Delete()
       print('Disk {0:s} successfully copied to {1:s}'.format(
           disk.name, new_disk.name))
       self.state.output.append((self.analysis_vm.name, new_disk))
@@ -151,7 +151,7 @@ class GoogleCloudCollector(module.BaseModule):
       # TODO: Make creating an analysis VM optional
       # pylint: disable=too-many-function-args
 
-      self.analysis_vm, _ = gcp.start_analysis_vm(
+      self.analysis_vm, _ = gcp.StartAnalysisVm(
           self.analysis_project.project_id,
           analysis_vm_name,
           zone,
@@ -160,8 +160,8 @@ class GoogleCloudCollector(module.BaseModule):
           attach_disk=None,
           image_project=image_project,
           image_family=image_family)
-      self.analysis_vm.add_labels(self._gcp_label)
-      self.analysis_vm.get_boot_disk().add_labels(self._gcp_label)
+      self.analysis_vm.AddLabels(self._gcp_label)
+      self.analysis_vm.GetBootDisk().AddLabels(self._gcp_label)
 
     except (AccessTokenRefreshError,
             ApplicationDefaultCredentialsError) as exception:
@@ -182,7 +182,7 @@ class GoogleCloudCollector(module.BaseModule):
     disks = []
     for name in disk_names:
       try:
-        disks.append(self.remote_project.get_disk(name))
+        disks.append(self.remote_project.GetDisk(name))
       except RuntimeError:
         self.state.AddError(
             'Disk "{0:s}" was not found in project {1:s}'.format(
@@ -202,17 +202,17 @@ class GoogleCloudCollector(module.BaseModule):
       list[GoogleComputeDisk]: List of GoogleComputeDisk objects to copy.
     """
     try:
-      remote_instance = self.remote_project.get_instance(instance_name)
+      remote_instance = self.remote_project.GetInstance(instance_name)
     except RuntimeError as exception:
       self.state.AddError(str(exception), critical=True)
       return []
 
     if all_disks:
       return [
-          self.remote_project.get_disk(disk_name)
-          for disk_name in remote_instance.list_disks()
+          self.remote_project.GetDisk(disk_name)
+          for disk_name in remote_instance.ListDisks()
       ]
-    return [remote_instance.get_boot_disk()]
+    return [remote_instance.GetBootDisk()]
 
   def _FindDisksToCopy(self):
     """Determines which disks to copy depending on object attributes.

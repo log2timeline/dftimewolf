@@ -26,7 +26,7 @@ from dftimewolf import config
 from dftimewolf.lib import state
 from dftimewolf.lib.collectors import gcloud
 
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 
 class EndToEndTest(unittest.TestCase):
@@ -108,11 +108,11 @@ class EndToEndTest(unittest.TestCase):
     analysis_vm_name = self.test_state.output[0][0]
     expected_disk_name = self.test_state.output[0][1].name
 
-    operation = self.gcp.gce_api().instances().get(
+    operation = self.gcp.GceApi().instances().get(
         project=self.project_id,
         zone=self.zone,
         instance=analysis_vm_name).execute()
-    result = self.gcp.gce_operation(operation, zone=self.zone)
+    result = self.gcp.GceOperation(operation, zone=self.zone)
 
     self.assertEqual(result['name'], analysis_vm_name)
     for disk in result['disks']:
@@ -155,11 +155,11 @@ class EndToEndTest(unittest.TestCase):
     analysis_vm_name = self.test_state.output[0][0]
     expected_disk_name = self.test_state.output[0][1].name
 
-    operation = self.gcp.gce_api().instances().get(
+    operation = self.gcp.GceApi().instances().get(
         project=self.project_id,
         zone=self.zone,
         instance=analysis_vm_name).execute()
-    result = self.gcp.gce_operation(operation, zone=self.zone)
+    result = self.gcp.GceOperation(operation, zone=self.zone)
 
     self.assertEqual(result['name'], analysis_vm_name)
     for disk in result['disks']:
@@ -170,20 +170,20 @@ class EndToEndTest(unittest.TestCase):
     ))
 
   def tearDown(self):
-    disks = self.gcloud_collector.analysis_vm.list_disks()
+    disks = self.gcloud_collector.analysis_vm.ListDisks()
 
     # delete the created forensics VMs
     log.info('Deleting analysis instance: {0:s}.'.format(
         self.gcloud_collector.analysis_vm.name))
-    operation = self.gcp.gce_api().instances().delete(
+    operation = self.gcp.GceApi().instances().delete(
         project=self.project_id,
         zone=self.zone,
         instance=self.gcloud_collector.analysis_vm.name
     ).execute()
     try:
-      self.gcp.gce_operation(operation, block=True)
+      self.gcp.GceOperation(operation, block=True)
     except HttpError:
-      # gce_operation triggers a while(True) loop that checks on the
+      # GceOperation triggers a while(True) loop that checks on the
       # operation ID. Sometimes it loops one more time right when the
       # operation has finished and thus the associated ID doesn't exists
       # anymore, throwing an HttpError. We can ignore this.
@@ -198,17 +198,17 @@ class EndToEndTest(unittest.TestCase):
       log.info('Deleting disk: {0:s}.'.format(disk))
       while True:
         try:
-          operation = self.gcp.gce_api().disks().delete(
+          operation = self.gcp.GceApi().disks().delete(
               project=self.project_id,
               zone=self.zone,
               disk=disk
           ).execute()
-          self.gcp.gce_operation(operation, block=True)
+          self.gcp.GceOperation(operation, block=True)
           break
         except HttpError as exception:
-          # The gce api will throw a 400 until the analysis vm's deletion is
+          # GceApi() will throw a 400 error until the analysis VM deletion is
           # correctly propagated. When the disk is finally deleted, it will
-          # throw a 404 not found if it looped one more time after deletion.
+          # throw a 404 not found if it looped again after deletion.
           if exception.resp.status == 404:
             break
           if exception.resp.status != 400:
