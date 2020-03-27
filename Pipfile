@@ -16,6 +16,7 @@ grr-api-client = "*"
 turbinia = "*"
 pyyaml = "*"
 google-cloud-logging = "*"
+libcloudforensics = "*"
 
 [requires]
 python_version = "3.6"
