@@ -15,8 +15,8 @@
           "all_disks": "@all_disks",
           "boot_disk_size": "@boot_disk_size",
           "cpu_cores": 16,
-          "image_project": "ubuntu-1804-lts",
-          "image_family": "ubuntu-os-cloud"
+          "image_project": "ubuntu-os-cloud",
+          "image_family": "ubuntu-1804-lts"
       }
   }],
   "args": [
