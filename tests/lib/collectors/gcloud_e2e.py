@@ -170,60 +170,11 @@ class EndToEndTest(unittest.TestCase):
     ))
 
   def tearDown(self):
-    disks = self.gcloud_collector.analysis_vm.ListDisks()
-
-    # delete the created forensics VMs
-    log.info('Deleting analysis instance: {0:s}.'.format(
-        self.gcloud_collector.analysis_vm.name))
-    operation = self.gcp.GceApi().instances().delete(
-        project=self.project_id,
-        zone=self.zone,
-        instance=self.gcloud_collector.analysis_vm.name
-    ).execute()
-    try:
-      self.gcp.GceOperation(operation, block=True)
-    except HttpError:
-      # GceOperation triggers a while(True) loop that checks on the
-      # operation ID. Sometimes it loops one more time right when the
-      # operation has finished and thus the associated ID doesn't exists
-      # anymore, throwing an HttpError. We can ignore this.
-      pass
-    log.info('Instance {0:s} successfully deleted.'.format(
-        self.gcloud_collector.analysis_vm.name))
-
-    # delete the copied disks
-    # we ignore the disk that was created for the analysis VM (disks[0]) as
-    # it is deleted in the previous operation
-    for disk in disks[1:]:
-      log.info('Deleting disk: {0:s}.'.format(disk))
-      while True:
-        try:
-          operation = self.gcp.GceApi().disks().delete(
-              project=self.project_id,
-              zone=self.zone,
-              disk=disk
-          ).execute()
-          self.gcp.GceOperation(operation, block=True)
-          break
-        except HttpError as exception:
-          # GceApi() will throw a 400 error until the analysis VM deletion is
-          # correctly propagated. When the disk is finally deleted, it will
-          # throw a 404 not found if it looped again after deletion.
-          if exception.resp.status == 404:
-            break
-          if exception.resp.status != 400:
-            log.warning('Could not delete the disk {0:s}: {1:s}'.format(
-                disk, str(exception)
-            ))
-          # Throttle the requests to one every 10 seconds
-          time.sleep(10)
-
-      log.info('Disk {0:s} successfully deleted.'.format(
-          disk))
+    CleanUp(self.project_id, self.zone, self.gcloud_collector.analysis_vm.name)
 
 
 def ReadProjectInfo():
-  """ Read project information to run e2e test.
+  """Read project information to run e2e test.
   Returns:
     dict: A dict with the project information.
 
@@ -258,6 +209,70 @@ def ReadProjectInfo():
                      '"instance", "zone"].')
 
   return project_info
+
+
+def CleanUp(project_id, zone, instance_name):
+  """Clean up GCP project.
+
+  Remove the instance [instance_name] in the GCP project [project_id] and its
+  disks that were created as part of the end to end test.
+
+  Attributes:
+    project_id (str): the project id of the GCP project.
+    zone (str): the zone for the project.
+    instance_name (str): the name of the analysis VM to remove.
+  """
+
+  gcp_project = gcp.GoogleCloudProject(project_id, zone)
+  disks = gcp.GoogleComputeInstance(
+      gcp_project, zone, instance_name).ListDisks()
+
+  # delete the created forensics VMs
+  log.info('Deleting analysis instance: {0:s}.'.format(instance_name))
+  operation = gcp_project.GceApi().instances().delete(
+      project=gcp_project.project_id,
+      zone=gcp_project.default_zone,
+      instance=instance_name
+  ).execute()
+  try:
+    gcp_project.GceOperation(operation, block=True)
+  except HttpError:
+    # GceOperation triggers a while(True) loop that checks on the
+    # operation ID. Sometimes it loops one more time right when the
+    # operation has finished and thus the associated ID doesn't exists
+    # anymore, throwing an HttpError. We can ignore this.
+    pass
+  log.info('Instance {0:s} successfully deleted.'.format(instance_name))
+
+  # delete the copied disks
+  # we ignore the disk that was created for the analysis VM (disks[0]) as
+  # it is deleted in the previous operation
+  for disk in disks[1:]:
+    log.info('Deleting disk: {0:s}.'.format(disk))
+    while True:
+      try:
+        operation = gcp_project.GceApi().disks().delete(
+            project=gcp_project.project_id,
+            zone=gcp_project.default_zone,
+            disk=disk
+        ).execute()
+        gcp_project.GceOperation(operation, block=True)
+        break
+      except HttpError as exception:
+        # GceApi() will throw a 400 error until the analysis VM deletion is
+        # correctly propagated. When the disk is finally deleted, it will
+        # throw a 404 not found if it looped again after deletion.
+        if exception.resp.status == 404:
+          break
+        if exception.resp.status != 400:
+          log.warning('Could not delete the disk {0:s}: {1:s}'.format(
+              disk, str(exception)
+          ))
+        # Throttle the requests to one every 10 seconds
+        time.sleep(10)
+
+    log.info('Disk {0:s} successfully deleted.'.format(
+        disk))
 
 
 if __name__ == '__main__':
