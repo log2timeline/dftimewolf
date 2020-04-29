@@ -108,14 +108,15 @@ class EndToEndTest(unittest.TestCase):
     analysis_vm_name = self.test_state.output[0][0]
     expected_disk_name = self.test_state.output[0][1].name
 
-    operation = self.gcp.GceApi().instances().get(
+    gce_instances_client = self.gcp.GceApi().instances()
+    request = gce_instances_client.get(
         project=self.project_id,
         zone=self.zone,
-        instance=analysis_vm_name).execute()
-    result = self.gcp.GceOperation(operation, zone=self.zone)
+        instance=analysis_vm_name)
+    response = request.execute()
 
-    self.assertEqual(result['name'], analysis_vm_name)
-    for disk in result['disks']:
+    self.assertEqual(response['name'], analysis_vm_name)
+    for disk in response['disks']:
       if disk['source'].split("/")[-1] == expected_disk_name:
         return
     self.fail('Error: could not find the disk {0:s} in instance {1:s}'.format(
@@ -155,14 +156,15 @@ class EndToEndTest(unittest.TestCase):
     analysis_vm_name = self.test_state.output[0][0]
     expected_disk_name = self.test_state.output[0][1].name
 
-    operation = self.gcp.GceApi().instances().get(
+    gce_instances_client = self.gcp.GceApi().instances()
+    request = gce_instances_client.get(
         project=self.project_id,
         zone=self.zone,
-        instance=analysis_vm_name).execute()
-    result = self.gcp.GceOperation(operation, zone=self.zone)
+        instance=analysis_vm_name)
+    response = request.execute()
 
-    self.assertEqual(result['name'], analysis_vm_name)
-    for disk in result['disks']:
+    self.assertEqual(response['name'], analysis_vm_name)
+    for disk in response['disks']:
       if disk['source'].split("/")[-1] == expected_disk_name:
         return
     self.fail('Error: could not find the disk {0:s} in instance {1:s}'.format(
@@ -229,13 +231,14 @@ def CleanUp(project_id, zone, instance_name):
 
   # delete the created forensics VMs
   log.info('Deleting analysis instance: {0:s}.'.format(instance_name))
-  operation = gcp_project.GceApi().instances().delete(
+  gce_instances_client = gcp_project.GceApi().instances()
+  request = gce_instances_client.delete(
       project=gcp_project.project_id,
       zone=gcp_project.default_zone,
       instance=instance_name
-  ).execute()
+  )
   try:
-    gcp_project.GceOperation(operation, block=True)
+    request.execute()
   except HttpError:
     # GceOperation triggers a while(True) loop that checks on the
     # operation ID. Sometimes it loops one more time right when the
@@ -247,16 +250,17 @@ def CleanUp(project_id, zone, instance_name):
   # delete the copied disks
   # we ignore the disk that was created for the analysis VM (disks[0]) as
   # it is deleted in the previous operation
+  gce_disks_client = gcp_project.GceApi().disks()
   for disk in disks[1:]:
     log.info('Deleting disk: {0:s}.'.format(disk))
     while True:
       try:
-        operation = gcp_project.GceApi().disks().delete(
+        request = gce_disks_client.delete(
             project=gcp_project.project_id,
             zone=gcp_project.default_zone,
             disk=disk
-        ).execute()
-        gcp_project.GceOperation(operation, block=True)
+        )
+        request.execute()
         break
       except HttpError as exception:
         # GceApi() will throw a 400 error until the analysis VM deletion is
