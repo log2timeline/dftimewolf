@@ -4,9 +4,8 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from google.auth.exceptions import DefaultCredentialsError, RefreshError
 from googleapiclient.errors import HttpError
-from oauth2client.client import AccessTokenRefreshError
-from oauth2client.client import ApplicationDefaultCredentialsError
 from libcloudforensics import gcp
 
 from dftimewolf.lib import module
@@ -163,8 +162,8 @@ class GoogleCloudCollector(module.BaseModule):
       self.analysis_vm.AddLabels(self._gcp_label)
       self.analysis_vm.GetBootDisk().AddLabels(self._gcp_label)
 
-    except (AccessTokenRefreshError,
-            ApplicationDefaultCredentialsError) as exception:
+    except (RefreshError,
+            DefaultCredentialsError) as exception:
       self.state.AddError(
           'Something is wrong with your Application Default Credentials. '
           'Try running:\n  $ gcloud auth application-default login')
