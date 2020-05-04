@@ -368,7 +368,12 @@ class GRRFileCollector(GRRFlow):
     files (list[str]): file paths.
     hostnames (list[str]): FDQNs of the GRR client hosts.
     use_tsk (bool): True if GRR should use Sleuthkit (TSK) to collect files.
+    action (FileFinderAction): Enum denoting action to take.
   """
+  _ACTIONS = {'download': flows_pb2.FileFinderAction.DOWNLOAD,
+              'hash': flows_pb2.FileFinderAction.HASH,
+              'stat': flows_pb2.FileFinderAction.STAT,
+             }
 
   def __init__(self, state):
     super(GRRFileCollector, self).__init__(state)
@@ -376,12 +381,13 @@ class GRRFileCollector(GRRFlow):
     self.files = []
     self.hostnames = None
     self.use_tsk = False
+    self.action = None
 
   # pylint: disable=arguments-differ
   def SetUp(self,
             hosts, files, use_tsk,
             reason, grr_server_url, grr_username, grr_password, approvers=None,
-            verify=True):
+            verify=True, action='download'):
     """Initializes a GRR file collector.
 
     Args:
@@ -395,6 +401,7 @@ class GRRFileCollector(GRRFlow):
       approvers (Optional[str]): list of GRR approval recipients.
       verify (Optional[bool]): True to indicate GRR server's x509 certificate
           should be verified.
+      action (Optional[str]): Action to take (download/hash/stat).
     """
     super(GRRFileCollector, self).SetUp(
         reason, grr_server_url, grr_username, grr_password,
@@ -406,6 +413,9 @@ class GRRFileCollector(GRRFlow):
     self.hostnames = [item.strip() for item in hosts.strip().split(',')]
     self.use_tsk = use_tsk
 
+    if action.lower() in self._ACTIONS:
+      self.action = self._ACTIONS[action.lower()]
+
   # TODO: change object to more specific GRR type information.
   def _ProcessThread(self, client):
     """Processes a single client.
@@ -416,12 +426,12 @@ class GRRFileCollector(GRRFlow):
       client (object): GRR client object to act on.
     """
     file_list = self.files
-    if not file_list:
+    if not file_list or self.action is None:
       return
     print('Filefinder to collect {0:d} items'.format(len(file_list)))
 
     flow_action = flows_pb2.FileFinderAction(
-        action_type=flows_pb2.FileFinderAction.DOWNLOAD)
+        action_type=self.action)
     flow_args = flows_pb2.FileFinderArgs(
         paths=file_list,
         action=flow_action,)
