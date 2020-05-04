@@ -251,7 +251,8 @@ class GRRFileCollectorTest(unittest.TestCase):
         grr_server_url='http://fake/endpoint',
         grr_username='admin',
         grr_password='admin',
-        approvers='approver1,approver2'
+        approvers='approver1,approver2',
+        action='stat'
     )
 
   def testInitialization(self):
@@ -280,7 +281,7 @@ class GRRFileCollectorTest(unittest.TestCase):
         flows_pb2.FileFinderArgs(
             paths=['/etc/passwd'],
             action=flows_pb2.FileFinderAction(
-                action_type=flows_pb2.FileFinderAction.DOWNLOAD)
+                action_type=flows_pb2.FileFinderAction.STAT)
         )
     )
     self.assertEqual(self.test_state.output[0], ('tomchop', '/tmp/something'))
