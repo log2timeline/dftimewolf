@@ -401,7 +401,7 @@ class GRRFileCollector(GRRFlow):
       approvers (Optional[str]): list of GRR approval recipients.
       verify (Optional[bool]): True to indicate GRR server's x509 certificate
           should be verified.
-      action (Optional[str]): Action to take (download/hash/stat) (default: download).
+      action (Optional[str]): Action (download/hash/stat) (default: download).
     """
     super(GRRFileCollector, self).SetUp(
         reason, grr_server_url, grr_username, grr_password,
