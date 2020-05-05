@@ -401,7 +401,7 @@ class GRRFileCollector(GRRFlow):
       approvers (Optional[str]): list of GRR approval recipients.
       verify (Optional[bool]): True to indicate GRR server's x509 certificate
           should be verified.
-      action (Optional[str]): Action to take (download/hash/stat).
+      action (Optional[str]): Action to take (download/hash/stat) (default: download).
     """
     super(GRRFileCollector, self).SetUp(
         reason, grr_server_url, grr_username, grr_password,
@@ -415,6 +415,9 @@ class GRRFileCollector(GRRFlow):
 
     if action.lower() in self._ACTIONS:
       self.action = self._ACTIONS[action.lower()]
+    if self.action is None:
+      self.state.AddError("Invalid action {0!s}".format(action),
+                          critical=True)
 
   # TODO: change object to more specific GRR type information.
   def _ProcessThread(self, client):
@@ -426,7 +429,7 @@ class GRRFileCollector(GRRFlow):
       client (object): GRR client object to act on.
     """
     file_list = self.files
-    if not file_list or self.action is None:
+    if not file_list:
       return
     print('Filefinder to collect {0:d} items'.format(len(file_list)))
 
