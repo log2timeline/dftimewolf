@@ -1,20 +1,20 @@
 {
-    "name": "stackdriver_cloudaudit_ts",
-    "description": "Collects stackdriver logs from a project and exports them to Timesketch.",
-    "short_description": "Collects stackdriver logs from a project and exports them to Timesketch.",
+    "name": "gcp_logging_cloudaudit_ts",
+    "description": "Collects GCP logs from a project and exports them to Timesketch.",
+    "short_description": "Collects GCP logs from a project and exports them to Timesketch.",
     "modules": [{
         "wants": [],
-        "name": "StackdriverLogsCollector",
+        "name": "GCPLogsCollector",
         "args": {
             "project_name": "@project_name",
             "filter_expression": "logName=projects/@project_name/logs/cloudaudit.googleapis.com%2Factivity timestamp>\"@start_date\" timestamp<\"@end_date\""
         }
     }, {
-        "wants": ["StackdriverLogsCollector"],
-        "name": "StackdriverTimesketch",
+        "wants": ["GCPLogsCollector"],
+        "name": "GCPLoggingTimesketch",
         "args": {}
     }, {
-        "wants": ["StackdriverTimesketch"],
+        "wants": ["GCPLoggingTimesketch"],
         "name": "TimesketchExporter",
         "args": {
             "endpoint": "@ts_endpoint",
