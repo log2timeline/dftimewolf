@@ -83,18 +83,12 @@ class GCPLogsCollector(module.BaseModule):
               self._filter_expression, exception), critical=True)
       return
 
-    except google_auth_exceptions.RefreshError as exception:
+    except (google_auth_exceptions.DefaultCredentialsError,
+            google_auth_exceptions.RefreshError) as exception:
       self.state.AddError(
-          'Something is wrong with your gcloud access token.')
-      # TODO: determine if exception should be converted into a string as
-      # elsewhere in the codebase.
-      self.state.AddError(exception, critical=True)
-      return
-
-    except google_auth_exceptions.DefaultCredentialsError as exception:
-      self.state.AddError(
-          'Something is wrong with your Application Default Credentials. '
-          'Try running:\n $ gcloud auth application-default login')
+          'Something is wrong with your gcloud access token or '
+          'Application Default Credentials. Try running:\n '
+          '$ gcloud auth application-default login')
       # TODO: determine if exception should be converted into a string as
       # elsewhere in the codebase.
       self.state.AddError(exception, critical=True)
