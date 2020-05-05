@@ -27,15 +27,15 @@ if not _ASKING_FOR_HELP:
   from dftimewolf.lib import collectors
   from dftimewolf.lib.collectors import filesystem
   from dftimewolf.lib.collectors import gcloud
+  from dftimewolf.lib.collectors import gcp_logging
   from dftimewolf.lib.collectors import grr_hosts
   from dftimewolf.lib.collectors import grr_hunt
-  from dftimewolf.lib.collectors import stackdriver
   from dftimewolf.lib.exporters import local_filesystem
   from dftimewolf.lib.exporters import scp_ex
   from dftimewolf.lib.exporters import timesketch
+  from dftimewolf.lib.processors import gcp_logging_timesketch
   from dftimewolf.lib.processors import grepper
   from dftimewolf.lib.processors import localplaso
-  from dftimewolf.lib.processors import stackdriver_timesketch
   from dftimewolf.lib.processors import turbinia
 
 from dftimewolf.lib.recipes import manager as recipes_manager

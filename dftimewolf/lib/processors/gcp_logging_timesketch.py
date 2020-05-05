@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Processes Stackdriver logs for loading into Timesketch."""
+"""Processes Google Cloud Platform (GCP) logs for loading into Timesketch."""
 from __future__ import print_function
 from __future__ import unicode_literals
 
@@ -12,22 +12,22 @@ from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 
 
-class StackdriverTimesketch(BaseModule):
-  """Transforms Stackdriver logs for Timesketch."""
+class GCPLoggingTimesketch(BaseModule):
+  """Transforms Google Cloud Platform logs for Timesketch."""
 
   def SetUp(self, *args, **kwargs):
     """Sets up necessary module configuration options."""
     # No configuration required.
 
   def __init__(self, state):
-    super(StackdriverTimesketch, self).__init__(state)
+    super(GCPLoggingTimesketch, self).__init__(state)
 
   def _ProcessLogLine(self, log_line, query, project_name):
-    """Processes a single JSON formatted Stackdriver log line.
+    """Processes a single JSON formatted Google Clod Platform log line.
 
     Args:
-      log_line (str): a JSON formatted Stackdriver log entry.
-      query (str): the Stackdriver query used to retrieve the log.
+      log_line (str): a JSON formatted GCP log entry.
+      query (str): the GCP query used to retrieve the log.
       project_name (str): name of the GCP project associated with the query.
 
     Returns:
@@ -72,12 +72,12 @@ class StackdriverTimesketch(BaseModule):
     return json.dumps(timesketch_record)
 
   def _parse_proto_payload(self, proto_payload, timesketch_record):
-    """Extracts information from a protoPayload field in a Stackdriver log.
+    """Extracts information from a protoPayload field in a GCP log.
 
     protoPayload is set for all cloud audit events.
 
     Args:
-      proto_payload (dict): the contents of a Stackdriver protoPayload field.
+      proto_payload (dict): the contents of a GCP protoPayload field.
       timesketch_record (dict): a dictionary that will be serialized to JSON
         and uploaded to Timesketch.
     """
@@ -107,7 +107,7 @@ class StackdriverTimesketch(BaseModule):
     """Extracts information from the request field of a protoPayload field.
 
     Args:
-      request (dict): the contents of a Stackdriver request field from a
+      request (dict): the contents of a GCP request field from a
           protoPayload field.
       timesketch_record (dict): a dictionary that will be serialized to JSON
         and uploaded to Timesketch.
@@ -151,7 +151,7 @@ class StackdriverTimesketch(BaseModule):
     """Extracts information from a json_payload.
 
     Args:
-      json_payload (dict): the contents of a Stackdriver jsonPayload field.
+      json_payload (dict): the contents of a GCP jsonPayload field.
       timesketch_record (dict): a dictionary that will be serialized to JSON
         and uploaded to Timesketch.
     """
@@ -205,10 +205,10 @@ class StackdriverTimesketch(BaseModule):
     timesketch_record['message'] = message
 
   def _ProcessLogContainer(self, logs_container):
-    """Processes a Stackdriver logs container.
+    """Processes a GCP logs container.
 
     Args:
-      logs_container (StackdriverLogs): logs container.
+      logs_container (GCPLogs): logs container.
     """
     if not logs_container.path:
       return
@@ -226,15 +226,15 @@ class StackdriverTimesketch(BaseModule):
           output_file.write('\n')
     output_file.close()
 
-    timeline_name = 'Stackdriver logs {0:s} "{1:s}"'.format(
+    timeline_name = 'GCP logs {0:s} "{1:s}"'.format(
         logs_container.project_name, logs_container.filter_expression)
 
     self.state.output.append([timeline_name, output_path])
 
   def Process(self):
-    """Processes Stackdriver logs containers for insertion into Timesketch."""
-    logs_containers = self.state.GetContainers(containers.StackdriverLogs)
+    """Processes GCP logs containers for insertion into Timesketch."""
+    logs_containers = self.state.GetContainers(containers.GCPLogs)
     for logs_container in logs_containers:
       self._ProcessLogContainer(logs_container)
 
-modules_manager.ModulesManager.RegisterModule(StackdriverTimesketch)
+modules_manager.ModulesManager.RegisterModule(GCPLoggingTimesketch)
