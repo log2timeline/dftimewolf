@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''Tests the stackdriver timesketch processor.'''
+"""Tests the GCP logging timesketch processor."""
 
 from __future__ import unicode_literals
 
@@ -8,24 +8,24 @@ import json
 import unittest
 
 from dftimewolf.lib import state
-from dftimewolf.lib.processors import stackdriver_timesketch
+from dftimewolf.lib.processors import gcp_logging_timesketch
 
 from dftimewolf import config
 
 
-class StackdriverTimesketchTest(unittest.TestCase):
-  """Tests for the Stackdriver Timesketch processor."""
+class GCPLoggingTimesketchTest(unittest.TestCase):
+  """Tests for the GCP logging Timesketch processor."""
 
   def testInitialization(self):
     """Tests that the processor can be initialized."""
     test_state = state.DFTimewolfState(config.Config)
-    processor = stackdriver_timesketch.StackdriverTimesketch(test_state)
+    processor = gcp_logging_timesketch.GCPLoggingTimesketch(test_state)
     self.assertIsNotNone(processor)
 
   def testGCEFirewallLog(self):
     """Tests that a firewall log is transformed correctly."""
     test_state = state.DFTimewolfState(config.Config)
-    processor = stackdriver_timesketch.StackdriverTimesketch(test_state)
+    processor = gcp_logging_timesketch.GCPLoggingTimesketch(test_state)
 
     firewall_addition = {
         'logName':
@@ -256,7 +256,7 @@ class StackdriverTimesketchTest(unittest.TestCase):
   def testGCECreateLog(self):
     """Tests that a GCE instance creation log is transformed correctly."""
     test_state = state.DFTimewolfState(config.Config)
-    processor = stackdriver_timesketch.StackdriverTimesketch(test_state)
+    processor = gcp_logging_timesketch.GCPLoggingTimesketch(test_state)
 
     gce_creation = {
         'logName':

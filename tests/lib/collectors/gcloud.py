@@ -47,7 +47,7 @@ def ReturnFakeDisk(disk_name):
 
 
 class GoogleCloudCollectorTest(unittest.TestCase):
-  """Tests for the Stackdriver collector."""
+  """Tests for the GCloud collector."""
 
   def testInitialization(self):
     """Tests that the collector can be initialized."""
