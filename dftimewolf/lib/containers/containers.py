@@ -40,27 +40,27 @@ class Report(interface.AttributeContainer):
       self.attributes = attributes
 
 
-class StackdriverLogs(interface.AttributeContainer):
-  """Analysis report attribute container.
+class GCPLogs(interface.AttributeContainer):
+  """Google Cloud Platform logs container.
 
   Attributes:
-    filter_expression (str): Stackdriver advanced logs filter expression
+    filter_expression (str): GCP logging advanced logs filter expression
         used to generate the results.
-    path (str): path to a stackdriver log file.
+    path (str): path to a GCP log file.
     project_name (str): name of the project that was queried.
   """
-  CONTAINER_TYPE = 'stackdriver_logs'
+  CONTAINER_TYPE = 'gcp_logs'
 
   def __init__(self, path, filter_expression, project_name):
     """Initializes the analysis report.
 
     Args:
-      filter_expression (str): Stackdriver advanced logs filter expression
+      filter_expression (str): GCP advanced logs filter expression
           used to generate the results.
-      path (str): path to a stackdriver log file.
+      path (str): path to a GCP log file.
       project_name (str): name of the project that was queried.
     """
-    super(StackdriverLogs, self).__init__()
+    super(GCPLogs, self).__init__()
     self.filter_expression = filter_expression
     self.path = path
     self.project_name = project_name
