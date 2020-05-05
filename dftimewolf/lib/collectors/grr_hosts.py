@@ -383,7 +383,7 @@ class GRRFileCollector(GRRFlow):
     self.use_tsk = False
     self.action = None
 
-  # pylint: disable=arguments-differ
+  # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
             hosts, files, use_tsk,
             reason, grr_server_url, grr_username, grr_password, approvers=None,
