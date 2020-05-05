@@ -5,8 +5,8 @@
 from __future__ import unicode_literals
 
 import unittest
-import mock
 import six
+import mock
 
 from grr_response_proto import flows_pb2
 from grr_api_client import errors as grr_errors
