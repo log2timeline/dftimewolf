@@ -14,7 +14,8 @@
             "files": "@files",
             "use_tsk": "@use_tsk",
             "approvers": "@approvers",
-            "verify": "@verify"
+            "verify": "@verify",
+            "action": "@action"
         }
     }, {
         "wants": ["GRRFileCollector"],
@@ -31,6 +32,7 @@
         ["--use_tsk", "Use TSK to fetch artifacts", false],
         ["--approvers", "Emails for GRR approval request", null],
         ["--verify", "Whether to verify the GRR TLS certificate", true],
+        ["--action", "String denoting action (download/hash/stat) to take", "download"],
         ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
         ["--grr_username", "GRR username", "admin"],
         ["--grr_password", "GRR password", "admin"]
