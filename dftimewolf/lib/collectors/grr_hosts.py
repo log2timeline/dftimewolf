@@ -576,7 +576,7 @@ class GRRTimelineCollector(GRRFlow):
     root_path = self.root_path
     if not root_path:
       return
-    print('Timeline to start from \'{0:s}\' items'.format(root_path))
+    print('Timeline to start from \'{0:s}\' items'.format(root_path.decode()))
 
     timeline_args = timeline_pb2.TimelineArgs(root=root_path,)
     flow_id = self._LaunchFlow(client, 'TimelineFlow', timeline_args)
