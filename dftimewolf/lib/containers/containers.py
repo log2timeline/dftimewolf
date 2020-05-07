@@ -111,3 +111,24 @@ class TicketAttribute(interface.AttributeContainer):
     self.type = type_
     self.name = name
     self.value = value
+
+
+class File(interface.AttributeContainer):
+  """Attribute container definition for generic files.
+
+  Attributes:
+    name (str): Name of the attribute.
+    path (str): Value of the attribute.
+  """
+  CONTAINER_TYPE = 'file'
+
+  def __init__(self, name, path):
+    """Initializes the attribute.
+
+    Args:
+      name (str): Name of the attribute.
+      path (str): Value of the attribute.
+    """
+    super(File, self).__init__()
+    self.name = name
+    self.path = path
