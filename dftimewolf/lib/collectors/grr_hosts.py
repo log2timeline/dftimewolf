@@ -518,10 +518,6 @@ class GRRFlowCollector(GRRFlow):
       self.state.output.append((fqdn, collected_flow_data))
 
 
-modules_manager.ModulesManager.RegisterModules([
-    GRRArtifactCollector, GRRFileCollector, GRRFlowCollector])
-
-
 class GRRTimelineCollector(GRRFlow):
   """Timeline collector for GRR flows.
 
@@ -629,3 +625,10 @@ class GRRTimelineCollector(GRRFlow):
     timeline.WriteToFile(output_file_path)
 
     return output_file_path
+
+
+modules_manager.ModulesManager.RegisterModules([
+    GRRArtifactCollector,
+    GRRFileCollector,
+    GRRFlowCollector,
+    GRRTimelineCollector])
