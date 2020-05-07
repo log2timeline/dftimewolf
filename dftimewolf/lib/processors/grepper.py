@@ -12,7 +12,7 @@ import PyPDF2
 
 from dftimewolf.lib import module
 from dftimewolf.lib.modules import manager as modules_manager
-
+from dftimewolf.lib.containers import containers
 
 class GrepperSearch(module.BaseModule):
   """Processes a list of file paths with to search for
@@ -39,7 +39,9 @@ class GrepperSearch(module.BaseModule):
 
   def Process(self):
     """Executes grep on the module input."""
-    for _, path in self.state.input:
+
+    for file_container in self.state.GetContainers(containers.File):
+      path = file_container.path
       log_file_path = os.path.join(self._output_path, 'grepper.log')
       print('Log file: {0:s}'.format(log_file_path))
 
