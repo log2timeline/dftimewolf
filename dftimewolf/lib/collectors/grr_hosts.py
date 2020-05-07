@@ -529,7 +529,7 @@ class GRRTimelineCollector(GRRFlow):
   def __init__(self, state):
     super(GRRTimelineCollector, self).__init__(state)
     self._clients = []
-    self.root_path = '/'
+    self.root_path = None
     self.hostnames = None
     self._timeline_format = None
 
@@ -560,6 +560,7 @@ class GRRTimelineCollector(GRRFlow):
 
     self.hostnames = [item.strip() for item in hosts.strip().split(',')]
     self._timeline_format = int(timeline_format)
+    self.root_path = root_path.encode()
     if self._timeline_format not in [1, 2]:
       self.state.AddError('Timeline format must be 1 (BODY) or 2 (RAW).', True)
 
