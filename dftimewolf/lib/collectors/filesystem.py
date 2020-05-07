@@ -7,7 +7,7 @@ import os
 
 from dftimewolf.lib import module
 from dftimewolf.lib.modules import manager as modules_manager
-
+from dftimewolf.lib.containers import containers
 
 class FilesystemCollector(module.BaseModule):
   """Local file system collector.
@@ -43,7 +43,11 @@ class FilesystemCollector(module.BaseModule):
     """Collects paths from the local file system."""
     for path in self._paths:
       if os.path.exists(path):
-        self.state.output.append((os.path.basename(path), path))
+        self.state.StoreContainer(containers.File(
+          os.path.basename(path),
+          path
+        ))
+        # self.state.output.append((os.path.basename(path), path))
       else:
         self.state.AddError(
             'Path {0:s} does not exist'.format(str(path)), critical=False)
