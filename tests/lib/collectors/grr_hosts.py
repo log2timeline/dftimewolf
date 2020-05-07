@@ -327,7 +327,8 @@ class GRRTimelineCollector(unittest.TestCase):
 
   def setUp(self):
     self.test_state = state.DFTimewolfState(config.Config)
-    self.grr_timeline_collector = grr_hosts.GRRTimelineCollector(self.test_state)
+    self.grr_timeline_collector = grr_hosts.GRRTimelineCollector(
+        self.test_state)
     self.grr_timeline_collector.SetUp(
         hosts='tomchop',
         root_path='/',
@@ -339,19 +340,31 @@ class GRRTimelineCollector(unittest.TestCase):
         approvers='approver1,approver2'
     )
 
-  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRTimelineCollector._DownloadTimeline')
-  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow')
+  def testInitialization(self):
+    """Tests that the collector can be initialized."""
+    self.assertIsNotNone(self.grr_timeline_collector)
+    self.assertEqual(self.grr_timeline_collector.hostnames,
+                     ['tomchop'])
+    self.assertEqual(self.grr_timeline_collector.root_path, b'/')
+    self.assertEqual(self.grr_timeline_collector._timeline_format, 1)
+
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.'
+              'GRRTimelineCollector._DownloadTimeline')
+  # mock grr_api_client.flow.FlowBase.GetCollectedTimeline instead once when it
+  # becomes available in pypi
+  @mock.patch('grr_api_client.flow.FlowBase.Get')
   @mock.patch('grr_api_client.api.GrrApi.SearchClients')
   @mock.patch('grr_api_client.client.ClientBase.CreateFlow')
   def testProcess(self,
                   mock_CreateFlow,
                   mock_SearchClients,
-                  _,
+                  mock_Get,
                   mock_DownloadTimeline):
     """Tests that the collector can be initialized."""
     mock_CreateFlow.return_value = mock_grr_hosts.MOCK_FLOW
     mock_SearchClients.return_value = mock_grr_hosts.MOCK_CLIENT_LIST
     mock_DownloadTimeline.return_value = '/tmp/something'
+    mock_Get.return_value = mock_grr_hosts.MOCK_FLOW
     self.grr_timeline_collector.Process()
     mock_DownloadTimeline.assert_called_once_with(
         mock_grr_hosts.MOCK_CLIENT_RECENT, 'F:12345')
