@@ -532,6 +532,9 @@ class GRRTimelineCollector(GRRFlow):
     self.hostnames = None
     self._timeline_format = None
 
+  # We're overriding the behavior of GRRFlow's SetUp function to include new
+  # parameters.
+  # pylint: disable=arguments-differ
   def SetUp(self,
             hosts, root_path,
             reason, timeline_format, grr_server_url, grr_username, grr_password,
