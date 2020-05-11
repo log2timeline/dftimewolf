@@ -76,6 +76,7 @@ class GoogleCloudCollector(module.BaseModule):
             incident_id,
             zone,
             boot_disk_size,
+            boot_disk_type,
             cpu_cores,
             remote_instance_name=None,
             disk_names=None,
@@ -107,6 +108,7 @@ class GoogleCloudCollector(module.BaseModule):
           VM will be based.
       zone (str): GCP zone in which new resources should be created.
       boot_disk_size (float): size of the analysis VM boot disk (in GB).
+      boot_disk_type (str): Disk type to use [pd-standard, pd-ssd]
       cpu_cores (int): number of CPU cores to create the VM with.
       remote_instance_name (Optional[str]): name of the instance in
           the remote project containing the disks to be copied.
@@ -155,6 +157,7 @@ class GoogleCloudCollector(module.BaseModule):
           analysis_vm_name,
           zone,
           boot_disk_size,
+          boot_disk_type,
           int(cpu_cores),
           attach_disk=None,
           image_project=image_project,

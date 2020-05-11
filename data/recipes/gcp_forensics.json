@@ -14,6 +14,7 @@
           "disk_names": "@disks",
           "all_disks": "@all_disks",
           "boot_disk_size": "@boot_disk_size",
+          "boot_disk_type": "@boot_disk_type",
           "cpu_cores": 16,
           "image_project": "ubuntu-os-cloud",
           "image_family": "ubuntu-1804-lts"
@@ -27,6 +28,7 @@
       ["--all_disks", "Copy all disks in the designated instance. Overrides disk_names if specified", false],
       ["--analysis_project_name", "Name of the project where the analysis VM will be created", null],
       ["--boot_disk_size", "The size of the analysis VM boot disk (in GB)", 50.0],
+      ["--boot_disk_type", "Disk type to use [pd-standard, pd-ssd]", "pd-standard"],
       ["--zone", "The GCP zone where the Analysis VM and copied disks will be created", "us-central1-f"]
   ]
 }
