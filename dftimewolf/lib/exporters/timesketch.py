@@ -8,37 +8,7 @@ from dftimewolf.lib import module
 from dftimewolf.lib.modules import manager as modules_manager
 
 from timesketch_import_client import importer
-"""
-containers -> TicketAttribute
 
-self.type = type_
-self.name = name
-self.value = value
-
-Plan of action:
-  import importer
-  import api client
-  in SetUp set upt he API client (this will be overwritten)
-    -> read a config for OAUTH, don't have it all as parameters
-  Make sure we have a function to call to get sketch ID
-    -> will be overwritten in other SIEM Solutions
-  Do all actions in other functions that can be used "straight"
-      up in the internal version, so that no modifications
-      are needed, except in the "get sketch" and "setup"
-      functions.
-
-Later changes.
-  Use cryptography to dump the creds for OAUTH client in the FOSS
-
-
-  \ADD A CONFIG LIBRARY
-  READ CONFIG
-    KNOWS WHAT HAS BEEN SET AND CAN BE ASKED IF SOMETHING HAS
-    BEEN SET OR NOT (USED BY A FRONTEND THAT ASKS QUESTIONS)
-  CONFIGURES THE API CLIENT
-
-  CHANGE THE API CLIENT , ADD SET FUNCTIONS
-"""
 
 class TimesketchExporter(module.BaseModule):
   """Exports a given set of plaso or CSV files to Timesketch.
