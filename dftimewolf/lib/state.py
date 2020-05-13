@@ -37,8 +37,9 @@ class DFTimewolfState(object):
     """Initializes a state."""
     super(DFTimewolfState, self).__init__()
     self.command_line_options = {}
+    self._cache = {}
     self._module_pool = {}
-    self._store_lock = threading.Lock()
+    self._state_lock = threading.Lock()
     self._threading_event_per_module = {}
     self.config = config
     self.errors = []
@@ -89,13 +90,43 @@ class DFTimewolfState(object):
 
       self._module_pool[module_name] = module_class(self)
 
+  def AddToCache(self, name, value):
+    """Thread-safe method to add data to the state's cache.
+
+    If the cached item is already in the cache it will be
+    overwritten with the new value.
+
+    Args:
+      name (str): string with the name of the cache variable.
+      value (object): the value that will be stored in the cache.
+    """
+    with self._state_lock:
+      self._cache[name] = value
+
+  def GetFromCache(self, name, default_value=None):
+    """Thread-safe method to get data from the state's cache.
+
+    Args:
+      name (str): string with the name of the cache variable.
+      default_value (object): the value that will be returned if
+          the item does not exist in the cache. Optional argument
+          and defaults to None.
+
+    Returns:
+      The object from the cache that corresponds to the name, or
+      the value of "default_value" if the cach does not contain
+      the variable.
+    """
+    with self._state_lock:
+      return self._cache.get(name, default_value)
+
   def StoreContainer(self, container):
     """Thread-safe method to store data in the state's store.
 
     Args:
       container (AttributeContainer): data to store.
     """
-    with self._store_lock:
+    with self._state_lock:
       self.store.setdefault(container.CONTAINER_TYPE, []).append(container)
 
   def GetContainers(self, container_class):
@@ -108,7 +139,7 @@ class DFTimewolfState(object):
       list[AttributeContainer]: attribute container objects provided in
           the store that correspond to the container type.
     """
-    with self._store_lock:
+    with self._state_lock:
       return self.store.get(container_class.CONTAINER_TYPE, [])
 
   def _SetupModuleThread(self, module_definition):
