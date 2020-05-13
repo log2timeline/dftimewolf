@@ -5,6 +5,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from dftimewolf.lib import module
+from dftimewolf.lib import timesketch_utils
 from dftimewolf.lib.modules import manager as modules_manager
 
 from timesketch_import_client import importer
@@ -31,9 +32,7 @@ class TimesketchExporter(module.BaseModule):
 
   def SetUp(self,  # pylint: disable=arguments-differ
             incident_id=None,
-            sketch_id=None,
-            verify_tls=True,
-            auth_mode='timesketch'):
+            sketch_id=None):
     """Setup a connection to a Timesketch server and create a sketch if needed.
 
     Args:
@@ -41,11 +40,6 @@ class TimesketchExporter(module.BaseModule):
           description.
       sketch_id (Optional[int]): Sketch ID to add the resulting timeline to.
           If not provided, a new sketch is created.
-      verify_tls (Optional[bool]): Whether to verify the certificate provided
-          by the Timesketch endpoint.
-      auth_mode (Optional[str]): The authentication mode to use. Defaults to
-          'timesketch. 'Supported values are 'timesketch' (Timesketch login
-          form) and 'http-basic' (HTTP Basic authentication).
     """
     self.timesketch_api = timesketch_utils.GetApiClient(self.state)
     self.incident_id = None
@@ -53,7 +47,7 @@ class TimesketchExporter(module.BaseModule):
 
     # Check that we have a timesketch session.
     if not (self.timesketch_api or self.timesketch_api.session):
-      message = 'Could not connect to Timesketch server at ' + endpoint
+      message = 'Could not connect to Timesketch server'
       self.state.AddError(message, critical=True)
       return
 
@@ -87,7 +81,9 @@ class TimesketchExporter(module.BaseModule):
         streamer.set_timeline_name(description)
         streamer.add_file(path)
 
-    sketch_url = '{0:s}sketches/{1:d}/'.format(sketch.api.api_root, sketch.id)
+    api_root = sketch.api.api_root
+    host_url, _, _ = api_root.partition('api/v1')
+    sketch_url = '{0:s}sketches/{1:d}/'.format(host_url, sketch.id)
     print('Your Timesketch URL is: {0:s}'.format(sketch_url))
     self.state.output = sketch_url
 

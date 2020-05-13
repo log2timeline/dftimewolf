@@ -113,7 +113,7 @@ class DFTimewolfState(object):
           and defaults to None.
 
     Returns:
-      The object from the cache that corresponds to the name, or
+      [object]: object from the cache that corresponds to the name, or
       the value of "default_value" if the cach does not contain
       the variable.
     """

@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 import threading
 
 from timesketch_api_client import config
+from timesketch_api_client import crypto
 from timesketch_import_client import cli
 
 
@@ -22,6 +23,9 @@ def GetApiClient(state):
 
   Args:
     state (DFTimewolfState): recipe state.
+
+  Returns:
+    [object]: A timesketch API object (instance of TimesketchApi).
   """
   with LOCK:
     ts_client = state.GetFromCache('timesketch_client', default_value=None)
@@ -33,15 +37,21 @@ def GetApiClient(state):
 
     # Gather all questions that are missing.
     while True:
-        for field in assistant.missing:
-            value = cli.ask_question(
-                'What is the value for [{0:s}]'.format(field), input_type=str)
-            if value:
-                assistant.set_config(field, value)
-        if not assistant.missing:
-            break
+      for field in assistant.missing:
+        value = cli.ask_question(
+            'What is the value for [{0:s}]'.format(field), input_type=str)
+        if value:
+          assistant.set_config(field, value)
+      if not assistant.missing:
+        break
 
+    # TODO: support user supplied passwords to decrypt token file.
     ts_client = assistant.get_client()
     assistant.save_config()
+
+    cred_storage = crypto.CredentialStorage()
+    cred_storage.save_credentials(
+        ts_client.credentials, config_assistant=assistant)
+
     state.AddToCache('timesketch_client', ts_client)
     return ts_client
