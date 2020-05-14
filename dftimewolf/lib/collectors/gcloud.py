@@ -151,7 +151,7 @@ class GoogleCloudCollector(module.BaseModule):
     try:
       # TODO: Make creating an analysis VM optional
       # pylint: disable=too-many-function-args
-
+      # pylint: disable=redundant-keyword-arg
       self.analysis_vm, _ = gcp.StartAnalysisVm(
           self.analysis_project.project_id,
           analysis_vm_name,

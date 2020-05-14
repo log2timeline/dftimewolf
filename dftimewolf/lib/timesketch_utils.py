@@ -6,7 +6,6 @@ import threading
 
 from timesketch_api_client import config
 from timesketch_api_client import crypto
-from timesketch_import_client import cli
 
 
 LOCK = threading.Lock()
@@ -35,19 +34,8 @@ def GetApiClient(state):
     assistant = config.ConfigAssistant()
     assistant.load_config_file()
 
-    # Gather all questions that are missing.
-    # TODO: Replace this with the built-in mechanism from the API client
-    # once that is checked in upstream.
-    while True:
-      for field in assistant.missing:
-        value = cli.ask_question(
-            'What is the value for [{0:s}]'.format(field), input_type=str)
-        if value:
-          assistant.set_config(field, value)
-      if not assistant.missing:
-        break
-
     # TODO: support user supplied passwords to decrypt token file.
+    config.configure_missing_parameters(config_assistant=assistant)
     ts_client = assistant.get_client()
     assistant.save_config()
 
