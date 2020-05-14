@@ -25,7 +25,7 @@ def GetApiClient(state):
     state (DFTimewolfState): recipe state.
 
   Returns:
-    [object]: A timesketch API object (instance of TimesketchApi).
+    object: A timesketch API object (instance of TimesketchApi).
   """
   with LOCK:
     ts_client = state.GetFromCache('timesketch_client', default_value=None)

@@ -4,11 +4,11 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from timesketch_import_client import importer
+
 from dftimewolf.lib import module
 from dftimewolf.lib import timesketch_utils
 from dftimewolf.lib.modules import manager as modules_manager
-
-from timesketch_import_client import importer
 
 
 class TimesketchExporter(module.BaseModule):

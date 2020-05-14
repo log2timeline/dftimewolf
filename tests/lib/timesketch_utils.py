@@ -6,19 +6,24 @@ from __future__ import unicode_literals
 
 import unittest
 
+from dftimewolf import config
+from dftimewolf.lib import state
 from dftimewolf.lib import timesketch_utils
 
+class FakeTimesketchApiClient(object):
+  TYPE = 'client'
 
-class TimesketchAPIClient(unittest.TestCase):
-  """Tests for the Timesketch API client."""
+
+class TimesketchUtilsTest(unittest.TestCase):
+  """Tests for the Timesketch utils."""
 
   def testInitialization(self):
     """Tests that the processor can be initialized."""
-    timesketch_url = 'http://localhost'
-    username = 'test'
-    password = 'test'
-    timesketch_client = timesketch_utils.TimesketchApiClient(
-        host_url=timesketch_url, username=username, password=password)
+    wolf_config = config.Config()
+    wolf_state = state.DFTimewolfState(wolf_config)
+    wolf_state.AddToCache('timesketch_client', FakeTimesketchApiClient())
+
+    timesketch_client = timesketch_utils.GetApiClient(wolf_state)
     self.assertIsNotNone(timesketch_client)
 
 
