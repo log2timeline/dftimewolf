@@ -36,6 +36,8 @@ def GetApiClient(state):
     assistant.load_config_file()
 
     # Gather all questions that are missing.
+    # TODO: Replace this with the built-in mechanism from the API client
+    # once that is checked in upstream.
     while True:
       for field in assistant.missing:
         value = cli.ask_question(

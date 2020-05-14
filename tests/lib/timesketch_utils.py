@@ -11,6 +11,7 @@ from dftimewolf.lib import state
 from dftimewolf.lib import timesketch_utils
 
 class FakeTimesketchApiClient(object):
+  """Fake API Client Class."""
   TYPE = 'client'
 
 
