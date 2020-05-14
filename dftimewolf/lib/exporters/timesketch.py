@@ -114,9 +114,8 @@ class TimesketchExporter(module.BaseModule):
     for description, _ in self.state.input:
       if not description:
         continue
-      name, _, _ = description.rpartition('.')
-      name = name.replace(' ', '_')
-      name = name.replace('-', '_')
+      name = description.rpartition('.')[0]
+      name = name.replace(' ', '_').replace('-', '_')
       input_names.append(name)
 
     if input_names:
@@ -133,7 +132,7 @@ class TimesketchExporter(module.BaseModule):
         streamer.add_file(path)
 
     api_root = sketch.api.api_root
-    host_url, _, _ = api_root.partition('api/v1')
+    host_url = api_root.partition('api/v1')[0]
     sketch_url = '{0:s}sketches/{1:d}/'.format(host_url, sketch.id)
     print('Your Timesketch URL is: {0:s}'.format(sketch_url))
     self.state.output = sketch_url
