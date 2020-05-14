@@ -92,7 +92,9 @@ class DFTimewolfTool(object):
     data_files_path = os.path.dirname(data_files_path)
     data_files_path = os.path.dirname(data_files_path)
     data_files_path = os.path.dirname(data_files_path)
-    data_files_path = os.path.join(data_files_path, 'data')
+
+    data_files_path = os.path.join(
+        data_files_path, 'share', 'dftimewolf')
 
     # Use sys.prefix for user installs (e.g. pip install ...)
     if not os.path.isdir(data_files_path):
@@ -102,7 +104,6 @@ class DFTimewolfTool(object):
     if not os.path.isdir(data_files_path):
       data_files_path = self._DEFAULT_DATA_FILES_PATH
 
-    print('Data files read from', data_files_path)
     self._data_files_path = data_files_path
 
   def _GenerateHelpText(self):
