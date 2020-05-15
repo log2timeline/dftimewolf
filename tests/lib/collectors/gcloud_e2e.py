@@ -95,6 +95,7 @@ class EndToEndTest(unittest.TestCase):
         self.incident_id,
         self.zone,
         42.0,
+        'pd-standard',
         16,
         remote_instance_name=self.instance_to_analyse,
         # disk_names=None by default, boot disk will be copied
@@ -143,6 +144,7 @@ class EndToEndTest(unittest.TestCase):
         self.incident_id,
         self.zone,
         42.0,
+        'pd-standard',
         16,
         remote_instance_name=self.instance_to_analyse,
         disk_names=self.disk_to_forensic
