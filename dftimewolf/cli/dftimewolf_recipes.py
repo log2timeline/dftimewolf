@@ -92,13 +92,12 @@ class DFTimewolfTool(object):
     data_files_path = os.path.dirname(data_files_path)
     data_files_path = os.path.dirname(data_files_path)
     data_files_path = os.path.dirname(data_files_path)
-
-    data_files_path = os.path.join(
-        data_files_path, 'share', 'dftimewolf')
+    data_files_path = os.path.join(data_files_path, 'data')
 
     # Use sys.prefix for user installs (e.g. pip install ...)
     if not os.path.isdir(data_files_path):
-      data_files_path = os.path.join(sys.prefix, 'share', 'dftimewolf')
+      data_files_path = os.path.dirname(data_files_path)
+      data_files_path = os.path.join(data_files_path, 'share', 'dftimewolf')
 
     # If all else fails, fall back to hardcoded default
     if not os.path.isdir(data_files_path):
