@@ -27,17 +27,18 @@ if not _ASKING_FOR_HELP:
   from dftimewolf.lib import collectors
   from dftimewolf.lib.collectors import filesystem
   from dftimewolf.lib.collectors import gcloud
+  from dftimewolf.lib.collectors import gcp_logging
   from dftimewolf.lib.collectors import grr_hosts
   from dftimewolf.lib.collectors import grr_hunt
-  from dftimewolf.lib.collectors import stackdriver
   from dftimewolf.lib.exporters import local_filesystem
   from dftimewolf.lib.exporters import scp_ex
   from dftimewolf.lib.exporters import timesketch
+  from dftimewolf.lib.processors import gcp_logging_timesketch
   from dftimewolf.lib.processors import grepper
   from dftimewolf.lib.processors import localplaso
-  from dftimewolf.lib.processors import stackdriver_timesketch
   from dftimewolf.lib.processors import turbinia_artifact
   from dftimewolf.lib.processors import turbinia_gcp
+
 
 from dftimewolf.lib.recipes import manager as recipes_manager
 from dftimewolf.lib.state import DFTimewolfState
@@ -97,13 +98,13 @@ class DFTimewolfTool(object):
 
     # Use sys.prefix for user installs (e.g. pip install ...)
     if not os.path.isdir(data_files_path):
-      data_files_path = os.path.join(sys.prefix, 'share', 'dftimewolf')
+      data_files_path = os.path.dirname(data_files_path)
+      data_files_path = os.path.join(data_files_path, 'share', 'dftimewolf')
 
     # If all else fails, fall back to hardcoded default
     if not os.path.isdir(data_files_path):
       data_files_path = self._DEFAULT_DATA_FILES_PATH
 
-    print('Data files read from', data_files_path)
     self._data_files_path = data_files_path
 
   def _GenerateHelpText(self):

@@ -120,7 +120,7 @@ class StateTest(unittest.TestCase):
     test_state.RunModules()
     mock_process1.assert_called_with()
     mock_process2.assert_called_with()
-    mock_exit.assert_called_with(-1)
+    mock_exit.assert_called_with(1)
     self.assertEqual(len(test_state.global_errors), 2)
     msg, critical = sorted(test_state.global_errors, key=lambda x: x[0])[0]
     self.assertIn('An unknown error occurred: asd', msg)

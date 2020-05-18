@@ -10,8 +10,6 @@ from google.api_core import exceptions as google_api_exceptions
 from google.auth import exceptions as google_auth_exceptions
 from google.cloud import logging
 from googleapiclient.errors import HttpError
-from oauth2client.client import AccessTokenRefreshError
-from oauth2client.client import ApplicationDefaultCredentialsError
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
@@ -33,22 +31,22 @@ def _CustomToAPIRepr(self):
 logging.entries.ProtobufEntry.to_api_repr = _CustomToAPIRepr
 
 
-class StackdriverLogsCollector(module.BaseModule):
-  """Collector for Stackdriver logs."""
+class GCPLogsCollector(module.BaseModule):
+  """Collector for Google Cloud Platform logs."""
 
   def __init__(self, state):
-    """Initializes a Stackdriver logs collector."""
-    super(StackdriverLogsCollector, self).__init__(state)
+    """Initializes a GCP logs collector."""
+    super(GCPLogsCollector, self).__init__(state)
     self._filter_expression = None
     self._project_name = None
 
   # pylint: disable=arguments-differ
   def SetUp(self, project_name, filter_expression):
-    """Sets up a a Stackdriver logs collector.
+    """Sets up a a GCP logs collector.
 
     Args:
       project_name (str): name of the project to fetch logs from.
-      filter_expression (str): Stackdriver advanced logs filter expression.
+      filter_expression (str): GCP advanced logs filter expression.
     """
     self._project_name = project_name
     self._filter_expression = filter_expression
@@ -85,19 +83,12 @@ class StackdriverLogsCollector(module.BaseModule):
               self._filter_expression, exception), critical=True)
       return
 
-    except AccessTokenRefreshError as exception:
+    except (google_auth_exceptions.DefaultCredentialsError,
+            google_auth_exceptions.RefreshError) as exception:
       self.state.AddError(
-          'Something is wrong with your gcloud access token.')
-      # TODO: determine if exception should be converted into a string as
-      # elsewhere in the codebase.
-      self.state.AddError(exception, critical=True)
-      return
-
-    except (ApplicationDefaultCredentialsError,
-            google_auth_exceptions.DefaultCredentialsError) as exception:
-      self.state.AddError(
-          'Something is wrong with your Application Default Credentials. '
-          'Try running:\n $ gcloud auth application-default login')
+          'Something is wrong with your gcloud access token or '
+          'Application Default Credentials. Try running:\n '
+          '$ gcloud auth application-default login')
       # TODO: determine if exception should be converted into a string as
       # elsewhere in the codebase.
       self.state.AddError(exception, critical=True)
@@ -115,13 +106,13 @@ class StackdriverLogsCollector(module.BaseModule):
       self.state.AddError(exception, critical=True)
       return
 
-    print('[stackdriver] Downloaded logs to {0:s}'.format(output_path))
+    print('[gcp_logging] Downloaded logs to {0:s}'.format(output_path))
     output_file.close()
 
-    logs_report = containers.StackdriverLogs(
+    logs_report = containers.GCPLogs(
         path=output_path, filter_expression=self._filter_expression,
         project_name=self._project_name)
     self.state.StoreContainer(logs_report)
 
 
-modules_manager.ModulesManager.RegisterModule(StackdriverLogsCollector)
+modules_manager.ModulesManager.RegisterModule(GCPLogsCollector)

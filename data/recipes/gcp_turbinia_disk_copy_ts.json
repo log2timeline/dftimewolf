@@ -14,6 +14,7 @@
             "disk_names": "@disks",
             "all_disks": "@all_disks",
             "boot_disk_size": "@boot_disk_size",
+            "boot_disk_type": "@boot_disk_type",
             "cpu_cores": 4,
             "image_project": "@image_project",
             "image_family": "@image_family"
@@ -32,13 +33,8 @@
         "wants": ["TurbiniaProcessor"],
         "name": "TimesketchExporter",
         "args": {
-            "endpoint": "@ts_endpoint",
-            "username": "@ts_username",
-            "password": "@ts_password",
             "incident_id": "@incident_id",
-            "sketch_id": "@sketch_id",
-            "auth_mode": "@ts_auth_mode",
-            "verify_tls": "@verify_tls"
+            "sketch_id": "@sketch_id"
         }
     }],
     "args": [
@@ -48,14 +44,12 @@
         ["--incident_id", "Incident ID (used for Timesketch description)", null],
         ["--run_all_jobs", "Run all Turbinia processing jobs instead of a faster subset", false],
         ["--sketch_id", "Sketch to which the timeline should be added", null],
-        ["--ts_auth_mode", "Authentication mode to use on Timesketch {timesketch,http-basic}", "timesketch"],
-        ["--verify_tls", "Whether to verify the certificate provided by the Timesketch endpoint.", true],
-        ["--ts_endpoint", "Endpoint of the Timesketch server to use", "https://localhost:5000"],
         ["--instance", "Name of the instance to analyze.", null],
         ["--disks", "Comma-separated list of disks to copy.", null],
         ["--all_disks", "Copy all disks in the designated instance. Overrides disk_names if specified", false],
         ["--analysis_project_name", "Name of the project where the analysis VM will be created", null],
         ["--boot_disk_size", "The size of the analysis VM boot disk (in GB)", 50.0],
+        ["--boot_disk_type", "Disk type to use [pd-standard, pd-ssd]", "pd-standard"],
         ["--image_project", "Name of the project where the analysis VM image is hosted.", "ubuntu-os-cloud"],
         ["--image_family", "Name of the image to use to create the analysis VM.", "ubuntu-1804-lts"]
     ]

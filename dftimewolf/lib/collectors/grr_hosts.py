@@ -13,6 +13,7 @@ import zipfile
 
 from grr_api_client import errors as grr_errors
 from grr_response_proto import flows_pb2
+from grr_response_proto import timeline_pb2
 
 from dftimewolf.lib.collectors.grr_base import GRRBaseModule
 from dftimewolf.lib.errors import DFTimewolfError
@@ -368,7 +369,12 @@ class GRRFileCollector(GRRFlow):
     files (list[str]): file paths.
     hostnames (list[str]): FDQNs of the GRR client hosts.
     use_tsk (bool): True if GRR should use Sleuthkit (TSK) to collect files.
+    action (FileFinderAction): Enum denoting action to take.
   """
+  _ACTIONS = {'download': flows_pb2.FileFinderAction.DOWNLOAD,
+              'hash': flows_pb2.FileFinderAction.HASH,
+              'stat': flows_pb2.FileFinderAction.STAT,
+             }
 
   def __init__(self, state):
     super(GRRFileCollector, self).__init__(state)
@@ -376,12 +382,13 @@ class GRRFileCollector(GRRFlow):
     self.files = []
     self.hostnames = None
     self.use_tsk = False
+    self.action = None
 
-  # pylint: disable=arguments-differ
+  # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
             hosts, files, use_tsk,
             reason, grr_server_url, grr_username, grr_password, approvers=None,
-            verify=True):
+            verify=True, action='download'):
     """Initializes a GRR file collector.
 
     Args:
@@ -395,6 +402,7 @@ class GRRFileCollector(GRRFlow):
       approvers (Optional[str]): list of GRR approval recipients.
       verify (Optional[bool]): True to indicate GRR server's x509 certificate
           should be verified.
+      action (Optional[str]): Action (download/hash/stat) (default: download).
     """
     super(GRRFileCollector, self).SetUp(
         reason, grr_server_url, grr_username, grr_password,
@@ -405,6 +413,12 @@ class GRRFileCollector(GRRFlow):
 
     self.hostnames = [item.strip() for item in hosts.strip().split(',')]
     self.use_tsk = use_tsk
+
+    if action.lower() in self._ACTIONS:
+      self.action = self._ACTIONS[action.lower()]
+    if self.action is None:
+      self.state.AddError("Invalid action {0!s}".format(action),
+                          critical=True)
 
   # TODO: change object to more specific GRR type information.
   def _ProcessThread(self, client):
@@ -421,7 +435,7 @@ class GRRFileCollector(GRRFlow):
     print('Filefinder to collect {0:d} items'.format(len(file_list)))
 
     flow_action = flows_pb2.FileFinderAction(
-        action_type=flows_pb2.FileFinderAction.DOWNLOAD)
+        action_type=self.action)
     flow_args = flows_pb2.FileFinderArgs(
         paths=file_list,
         action=flow_action,)
@@ -504,5 +518,114 @@ class GRRFlowCollector(GRRFlow):
       self.state.output.append((fqdn, collected_flow_data))
 
 
+class GRRTimelineCollector(GRRFlow):
+  """Timeline collector for GRR flows.
+  Attributes:
+    root_path (str): root path.
+    hostnames (list[str]): FDQNs of the GRR client hosts.
+  """
+
+  def __init__(self, state):
+    super(GRRTimelineCollector, self).__init__(state)
+    self._clients = []
+    self.root_path = None
+    self.hostnames = None
+    self._timeline_format = None
+
+  # We're overriding the behavior of GRRFlow's SetUp function to include new
+  # parameters.
+  # pylint: disable=arguments-differ
+  def SetUp(self,
+            hosts, root_path,
+            reason, timeline_format, grr_server_url, grr_username, grr_password,
+            approvers=None, verify=True):
+    """Initializes a GRR timeline collector.
+    Args:
+      hosts (str): comma-separated hostnames to launch the flow on.
+      root_path (str): path to start the recursive timeline.
+      reason (str): justification for GRR access.
+      timeline_format (str): Timeline format (1 is BODY, 2 is RAW).
+      grr_server_url (str): GRR server URL.
+      grr_username (str): GRR username.
+      grr_password (str): GRR password.
+      approvers (Optional[str]): list of GRR approval recipients.
+      verify (Optional[bool]): True to indicate GRR server's x509 certificate
+          should be verified.
+    """
+    super(GRRTimelineCollector, self).SetUp(
+        reason, grr_server_url, grr_username, grr_password,
+        approvers=approvers, verify=verify)
+
+    if root_path is not None:
+      self.root_path = root_path.strip()
+
+    self.hostnames = [item.strip() for item in hosts.strip().split(',')]
+    self._timeline_format = int(timeline_format)
+    self.root_path = root_path.encode()
+    if self._timeline_format not in [1, 2]:
+      self.state.AddError('Timeline format must be 1 (BODY) or 2 (RAW).', True)
+
+  # TODO: change object to more specific GRR type information.
+  def _ProcessThread(self, client):
+    """Processes a single client.
+    This function is used as a callback for the processing thread.
+    Args:
+      client (object): GRR client object to act on.
+    """
+    root_path = self.root_path
+    if not root_path:
+      return
+    print('Timeline to start from \'{0:s}\' items'.format(root_path.decode()))
+
+    timeline_args = timeline_pb2.TimelineArgs(root=root_path,)
+    flow_id = self._LaunchFlow(client, 'TimelineFlow', timeline_args)
+    self._AwaitFlow(client, flow_id)
+    collected_flow_data = self._DownloadTimeline(client, flow_id)
+    if collected_flow_data:
+      print('{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
+      fqdn = client.data.os_info.fqdn.lower()
+      self.state.output.append((fqdn, collected_flow_data))
+
+  def Process(self):
+    """Collects a timeline from a host with GRR.
+    Raises:
+      DFTimewolfError: if no files specified.
+    """
+    threads = []
+    for client in self._FindClients(self.hostnames):
+      thread = threading.Thread(target=self._ProcessThread, args=(client, ))
+      threads.append(thread)
+      thread.start()
+
+    for thread in threads:
+      thread.join()
+
+
+  def _DownloadTimeline(self, client, flow_id):
+    """Download a timeline in BODY format from the specified flow.
+    Args:
+      client (object): GRR Client object to which to download flow data from.
+      flow_id (str): GRR identifier of the flow.
+    Returns:
+      str: path of downloaded files.
+    """
+    extension = 'body' if self._timeline_format == 1 else 'raw'
+    output_file_path = os.path.join(
+        self.output_path, '.'.join((flow_id, extension)))
+
+    if os.path.exists(output_file_path):
+      print('{0:s} already exists: Skipping'.format(output_file_path))
+      return None
+
+    flow = client.Flow(flow_id)
+    timeline = flow.GetCollectedTimeline(self._timeline_format)
+    timeline.WriteToFile(output_file_path)
+
+    return output_file_path
+
+
 modules_manager.ModulesManager.RegisterModules([
-    GRRArtifactCollector, GRRFileCollector, GRRFlowCollector])
+    GRRArtifactCollector,
+    GRRFileCollector,
+    GRRFlowCollector,
+    GRRTimelineCollector])

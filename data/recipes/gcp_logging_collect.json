@@ -1,10 +1,10 @@
 {
-    "name": "stackdriver_collect",
-    "description": "Collects stackdriver logs from a project and dumps on the filesystem.",
-    "short_description": "Collects stackdriver logs from a project and dumps on the filesystem.",
+    "name": "gcp_logging_collect",
+    "description": "Collects logs from a GCP project and dumps on the filesystem.",
+    "short_description": "Collects logs from a GCP project and dumps on the filesystem.",
     "modules": [{
         "wants": [],
-        "name": "StackdriverLogsCollector",
+        "name": "GCPLogsCollector",
         "args": {
             "project_name": "@project_name",
             "filter_expression": "@filter_expression"

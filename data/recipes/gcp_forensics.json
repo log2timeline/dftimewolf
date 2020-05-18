@@ -1,0 +1,34 @@
+{
+  "name": "gcp_forensics",
+  "short_description": "Copies disk from a GCP project to an analysis VM.",
+  "description": "Copies a disk from a project to another, creates an analysis VM, and attaches the copied disk to it.",
+  "modules": [{
+      "wants": [],
+      "name": "GoogleCloudCollector",
+      "args": {
+          "analysis_project_name": "@analysis_project_name",
+          "remote_project_name": "@remote_project_name",
+          "remote_instance_name": "@instance",
+          "incident_id": "@incident_id",
+          "zone": "@zone",
+          "disk_names": "@disks",
+          "all_disks": "@all_disks",
+          "boot_disk_size": "@boot_disk_size",
+          "boot_disk_type": "@boot_disk_type",
+          "cpu_cores": 16,
+          "image_project": "ubuntu-os-cloud",
+          "image_family": "ubuntu-1804-lts"
+      }
+  }],
+  "args": [
+      ["remote_project_name", "Name of the project containing the instance / disks to copy ", null],
+      ["incident_id", "Incident ID to label the VM with.", null],
+      ["--instance", "Name of the instance to analyze.", null],
+      ["--disks", "Comma-separated list of disks to copy.", null],
+      ["--all_disks", "Copy all disks in the designated instance. Overrides disk_names if specified", false],
+      ["--analysis_project_name", "Name of the project where the analysis VM will be created", null],
+      ["--boot_disk_size", "The size of the analysis VM boot disk (in GB)", 50.0],
+      ["--boot_disk_type", "Disk type to use [pd-standard, pd-ssd]", "pd-standard"],
+      ["--zone", "The GCP zone where the Analysis VM and copied disks will be created", "us-central1-f"]
+  ]
+}
