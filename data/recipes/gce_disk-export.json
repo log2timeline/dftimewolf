@@ -1,0 +1,24 @@
+{
+    "name": "gce_disk_export",
+    "short_description": "Export disk image from a GCP project to Google Cloud Storage.",
+    "description": "Creates a disk image from a Google compute persistence disk, compress the image and export it to Google Cloud Storage.\n\nThe exported image name is appended by .tar.gz.\n\nThe service account [PROJECT-NR]@cloudbuild.gserviceaccount.com in the source project must have the IAM role [Srorage Admin] on the destination storage bucket/folder.",
+    "modules": [{
+        "wants": [],
+        "name": "GoogleCloudDiskExport",
+        "args": {
+            "analysis_project_name": "@analysis_project_name",
+            "source_project_name": "@source_project_name",
+            "source_disk_name": "@source_disk_name",
+            "gcs_output_location": "@gcs_output_location",
+            "exported_disk_name": "@exported_disk_name"
+        }
+    }],
+    "args": [
+        ["--analysis_project_name", "Project where the disk image is created then exported. If not exist, source_project_name will be used.", null],
+        ["source_project_name", "Source project containing the disk to export.", null],
+        ["source_disk_name", "Name of the instance to analyze.", null],
+        ["gcs_output_location", "Google Cloud Storage parent bucket/folder of the exported image. Service Account [PROJECT-NUMBER]@cloudbuild.gserviceaccount.com must have sufficient rights on the output bucket, these rights are default if the bucket belongs to the analysis project.", null],
+        ["--exported_disk_name", "Name of the output file, must comply with ^[A-Za-z0-9-]*$' and '.tar.gz' will be appended to the name. If not exist, random name will be generated and printed to screen.", null]
+    ]
+  }
+  
