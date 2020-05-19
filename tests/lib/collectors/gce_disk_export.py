@@ -48,10 +48,10 @@ class GoogleCloudDiskExportTest(unittest.TestCase):
     FAKE_SOURCE_PROJECT.GetDisk = mock_get_disk
     mock_get_disk.return_value = FAKE_DISK
     disk_export_collector.SetUp(
-        None,
         'fake-source-project',
         'fake-source-disk',
         'gs://fake-bucket',
+        None,
         None
     )
     self.assertEqual(test_state.errors, [])
@@ -87,10 +87,10 @@ class GoogleCloudDiskExportTest(unittest.TestCase):
     FAKE_SOURCE_PROJECT.GetDisk = mock_get_disk
     mock_get_disk.return_value = FAKE_DISK
     disk_export_collector.SetUp(
-        None,
         'fake-source-project',
         'fake-source-disk',
         'gs://fake-bucket',
+        None,
         None
     )
     FAKE_SOURCE_PROJECT.CreateImageFromDisk = mock_create_image_from_disk

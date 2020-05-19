@@ -6,18 +6,18 @@
         "wants": [],
         "name": "GoogleCloudDiskExport",
         "args": {
-            "analysis_project_name": "@analysis_project_name",
             "source_project_name": "@source_project_name",
             "source_disk_name": "@source_disk_name",
             "gcs_output_location": "@gcs_output_location",
+            "analysis_project_name": "@analysis_project_name",
             "exported_disk_name": "@exported_disk_name"
         }
     }],
     "args": [
-        ["--analysis_project_name", "Project where the disk image is created then exported. If not exist, source_project_name will be used.", null],
         ["source_project_name", "Source project containing the disk to export.", null],
         ["source_disk_name", "Name of the instance to analyze.", null],
         ["gcs_output_location", "Google Cloud Storage parent bucket/folder of the exported image. Service Account [PROJECT-NUMBER]@cloudbuild.gserviceaccount.com must have sufficient rights on the output bucket, these rights are default if the bucket belongs to the analysis project.", null],
+        ["--analysis_project_name", "Project where the disk image is created then exported. If not exist, source_project_name will be used.", null],
         ["--exported_disk_name", "Name of the output file, must comply with ^[A-Za-z0-9-]*$' and '.tar.gz' will be appended to the name. If not exist, random name will be generated and printed to screen.", null]
     ]
   }

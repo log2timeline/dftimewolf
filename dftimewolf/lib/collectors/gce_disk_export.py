@@ -56,15 +56,15 @@ class GoogleCloudDiskExport(module.BaseModule):
         self.gcs_output_location, '{0:s}.tar.gz'.format(
             self.exported_disk_name))
     print('Disk was exported to: {0:s}'.format(output_uri))
-    self.state.output.append((output_uri))
+    self.state.output.append(output_uri)
 
   # pylint: disable=arguments-differ
   def SetUp(self,
-            analysis_project_name,
             source_project_name,
             source_disk_name,
             gcs_output_location,
-            exported_disk_name):
+            analysis_project_name=None,
+            exported_disk_name=None):
     """Sets up a Google Cloud Platform (GCP) Disk Export.
 
     This method creates the required objects to initialize
@@ -74,14 +74,14 @@ class GoogleCloudDiskExport(module.BaseModule):
     source_project_name instead.
 
     Args:
-      analysis_project_name (Optional[str]): Project ID where the
-          disk image is created then exported. If not exit,
-          source_project_name will be used.
       source_project_name (str): Source project ID containing
           the disk to export.
       source_disk_name (str): Disk that needs to be exported.
       gcs_output_location (str): Google Cloud Storage parent bucket/folder
           path of the exported image.
+      analysis_project_name (Optional[str]): Project ID where the
+          disk image is created then exported. If not exit,
+          source_project_name will be used.
       exported_disk_name (Optional[str]): Name of the output file, must comply
           with ^[A-Za-z0-9-]*$' and '.tar.gz' will be appended to the name.
           If not exist, random name will be generated.
