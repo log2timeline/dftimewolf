@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 """Processes Google Cloud Platform (GCP) logs for loading into Timesketch."""
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import tempfile
 import json

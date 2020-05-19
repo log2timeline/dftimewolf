@@ -2,9 +2,6 @@
 # -*- coding: utf-8 -*-
 """dftimewolf main entrypoint."""
 
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import argparse
 import os
 import signal

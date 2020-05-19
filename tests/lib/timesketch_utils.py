@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 """Tests timesketch utilities."""
 
-from __future__ import unicode_literals
-
 import unittest
 
 from dftimewolf import config

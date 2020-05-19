@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """Send files using SCP."""
 
-from __future__ import unicode_literals
-
 import subprocess
 
 from dftimewolf.lib import module
