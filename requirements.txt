@@ -1,9 +1,9 @@
 -i https://pypi.org/simple
 appnope==0.1.0 ; sys_platform == 'darwin'
 backcall==0.1.0
-beautifulsoup4==4.9.0
-boto3==1.13.6
-botocore==1.16.6
+beautifulsoup4==4.9.1
+boto3==1.13.13
+botocore==1.16.13
 cachetools==4.1.0
 certifi==2020.4.5.1
 cffi==1.14.0
@@ -16,26 +16,26 @@ docutils==0.15.2
 filelock==3.0.12
 future==0.17.1
 google-api-core[grpc]==1.16.0
-google-api-python-client==1.8.2
+google-api-python-client==1.8.3
 google-auth-httplib2==0.0.3
-google-auth==1.14.2
+google-auth==1.15.0
 google-cloud-core==1.3.0
 google-cloud-datastore==1.12.0
 google-cloud-logging==1.15.0
-google-cloud-pubsub==1.4.3
+google-cloud-pubsub==1.5.0
 google-cloud-storage==1.28.1
 google-resumable-media==0.5.0
 googleapis-common-protos[grpc]==1.51.0
 grpc-google-iam-v1==0.12.3
-grpcio==1.28.1
+grpcio==1.29.0
 grr-api-client==3.4.0.post1
 grr-response-proto==3.4.0.post1
-httplib2==0.17.3
+httplib2==0.17.4
 idna==2.8
 ipython-genutils==0.2.0
 ipython==7.2.0
 jedi==0.17.0
-jmespath==0.9.5
+jmespath==0.10.0
 libcloudforensics==20200520
 oauth2client==4.1.3
 parso==0.7.0
@@ -58,9 +58,7 @@ requests==2.22.0
 rsa==4.0
 s3transfer==0.3.3
 six==1.14.0
-soupsieve==2.0
-timesketch-api-client>=20200514
-timesketch-import-client>=20200514
+soupsieve==2.0.1
 traitlets==4.3.3
 turbinia==20190819.6
 uritemplate==3.0.1
