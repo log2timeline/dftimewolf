@@ -14,20 +14,19 @@ from dftimewolf.lib.modules import manager as modules_manager
 
 
 class GoogleCloudCollector(module.BaseModule):
-  """Google Cloud (GCP) Collector.
+  """Google Cloud Platform (GCP) Collector.
 
   Attributes:
-    analysis_project (gcp.GoogleCloudProject): project that
+    analysis_project (gcp.GoogleCloudProject): Project that
         contains the analysis VM.
-    analysis_vm (gcp.GoogleComputeInstance): analysis VM on
+    analysis_vm (gcp.GoogleComputeInstance): Analysis VM on
          which the disk copy will be attached.
-    incident_id (str): incident identifier used to name the analysis VM.
-    remote_project (gcp.GoogleCloudProject): source project
+    incident_id (str): Incident identifier used to name the analysis VM.
+    remote_project (gcp.GoogleCloudProject): Source project
         containing the VM to copy.
-    remote_instance_name (gcp.GoogleComputeInstance): instance
-        that needs forensicating.
+    remote_instance_name (str): Instance that needs forensicating.
     disk_names (list[str]): Comma-separated list of disk names to copy.
-    incident_id (str): incident identifier on which the name of the analysis
+    incident_id (str): Incident identifier on which the name of the analysis
         VM will be based.
     all_disks (bool): True if all disks attached to the source
         instance should be copied.
@@ -37,7 +36,7 @@ class GoogleCloudCollector(module.BaseModule):
   _ANALYSIS_VM_CONTAINER_ATTRIBUTE_TYPE = 'text'
 
   def __init__(self, state, critical=False):
-    """Initializes a Google Cloud (GCP) collector.
+    """Initializes a Google Cloud Platform (GCP) collector.
 
     Args:
       state (DFTimewolfState): recipe state.
@@ -83,7 +82,7 @@ class GoogleCloudCollector(module.BaseModule):
             all_disks=False,
             image_project='ubuntu-os-cloud',
             image_family='ubuntu-1804-lts'):
-    """Sets up a Google Cloud (GCP) collector.
+    """Sets up a Google Cloud Platform(GCP) collector.
 
     This method creates and starts an analysis VM in the analysis project and
     selects disks to copy from the remote project.

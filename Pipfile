@@ -17,6 +17,8 @@ turbinia = "*"
 pyyaml = "*"
 google-cloud-logging = "*"
 libcloudforensics = "*"
+timesketch-api-client = ">=20200514"
+timesketch-import-client = ">=20200514"
 
 [requires]
 python_version = "3.6"
