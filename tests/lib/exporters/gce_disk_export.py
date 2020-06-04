@@ -2,17 +2,16 @@
 # -*- coding: utf-8 -*-
 """Tests the GoogleCloudDiskExport."""
 
-from __future__ import unicode_literals
-
-import unittest
 import os
+import unittest
+
 import mock
 from libcloudforensics import gcp
 
 from dftimewolf import config
 from dftimewolf.lib import state
+from dftimewolf.lib.containers import containers
 from dftimewolf.lib.exporters import gce_disk_export
-
 
 FAKE_SOURCE_PROJECT = gcp.GoogleCloudProject(
     'fake-source-project', 'fake-zone')
@@ -108,7 +107,8 @@ class GoogleCloudDiskExportTest(unittest.TestCase):
     output_uri = os.path.join(
         'gs://fake-bucket', '{0:s}-image-df-export-temp.tar.gz'.format(
             'fake-source-disk'))
-    self.assertEqual(test_state.output[0], output_uri)
+    urls = test_state.GetContainers(containers.URL)
+    self.assertEqual(urls[0].path, output_uri)
 
 
 if __name__ == '__main__':

@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """Export disk image from a GCP project to Google Cloud Storage."""
 
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import os
+
 from libcloudforensics import gcp
 
 from dftimewolf.lib import module
+from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 
 
@@ -56,7 +56,7 @@ class GoogleCloudDiskExport(module.BaseModule):
         self.gcs_output_location, '{0:s}.tar.gz'.format(
             self.exported_disk_name))
     print('Disk was exported to: {0:s}'.format(output_uri))
-    self.state.output.append(output_uri)
+    self.state.StoreContainer(containers.URL(path=output_uri))
 
   # pylint: disable=arguments-differ
   def SetUp(self,
