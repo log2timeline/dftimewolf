@@ -8,7 +8,7 @@ page if you haven't read it already.
 As for other Log2Timeline projects, all contributions to dfTimewolf undergo code review. The process is documented [here](https://github.com/log2timeline/l2tdocs/blob/master/process/Code%20review%20process.md). 
 
 ## Code style
-dfTimewolf follows the [Log2Timeline style guide](https://github.com/log2timeline/l2tdocs/blob/master/process/Style-guide.md), using snake_case for method names, and not CamelCase.
+dfTimewolf follows the [Log2Timeline style guide](https://github.com/log2timeline/l2tdocs/blob/master/process/Style-guide.md).
 
 ## Creating a recipe
 
