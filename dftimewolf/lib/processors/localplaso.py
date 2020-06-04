@@ -36,7 +36,7 @@ class LocalPlasoProcessor(module.BaseModule):
 
   def Process(self):
     """Executes log2timeline.py on the module input."""
-    for file_container in self.state.GetContainers(containers.File):
+    for file_container in self.state.GetContainers(containers.File, pop=True):
       description = file_container.name
       path = file_container.path
       log_file_path = os.path.join(self._output_path, 'plaso.log')
@@ -79,11 +79,11 @@ class LocalPlasoProcessor(module.BaseModule):
         return
 
       if l2t_status:
-        # self.console_out.StdErr(errors)
         message = ('The log2timeline command {0:s} failed: {1!s}.'
                     ' Check log file for details.').format(full_cmd, error)
         self.state.AddError(message, critical=True)
         return
+
       self.state.StoreContainer(containers.File(
         description, plaso_storage_file_path))
 

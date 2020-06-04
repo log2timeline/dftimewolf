@@ -36,12 +36,11 @@ class LocalPlasoTest(unittest.TestCase):
     local_plaso_processor.SetUp()
     local_plaso_processor.Process()
     mock_Popen.assert_called_once()
-    # mock_Popen.assert_called_with(None)
-    args = mock_Popen.call_args[0][0]
+    args = mock_Popen.call_args[0][0] # Get positional arguments of first call
     self.assertEqual(args[9], '/notexist/test')
-    plaso_path = args[8]
+    plaso_path = args[8] # Dynamically generated path to the plaso file
     self.assertEqual(
-      test_state.GetContainers(containers.File)[1].path,
+      test_state.GetContainers(containers.File)[0].path,
       plaso_path)
 
 if __name__ == '__main__':
