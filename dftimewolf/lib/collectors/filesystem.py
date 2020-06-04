@@ -41,17 +41,18 @@ class FilesystemCollector(module.BaseModule):
 
   def Process(self):
     """Collects paths from the local file system."""
+    file_added = False
     for path in self._paths:
       if os.path.exists(path):
         self.state.StoreContainer(containers.File(
           os.path.basename(path),
           path
         ))
-        # self.state.output.append((os.path.basename(path), path))
+        file_added = True
       else:
         self.state.AddError(
             'Path {0:s} does not exist'.format(str(path)), critical=False)
-    if not self.state.output:
+    if not file_added:
       self.state.AddError('No valid paths collected, bailing', critical=True)
 
 
