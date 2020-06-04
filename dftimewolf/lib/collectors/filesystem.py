@@ -45,8 +45,8 @@ class FilesystemCollector(module.BaseModule):
     for path in self._paths:
       if os.path.exists(path):
         self.state.StoreContainer(containers.File(
-          os.path.basename(path),
-          path
+            os.path.basename(path),
+            path
         ))
         file_added = True
       else:
