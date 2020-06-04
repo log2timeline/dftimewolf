@@ -149,3 +149,16 @@ class ForensicsVM(interface.AttributeContainer):
     self.name = name
     self.evidence_disk = evidence_disk
     self.platform = platform
+
+
+class URL(interface.AttributeContainer):
+  """Attribute container definition for a Uniform Resource Locator.
+
+  Attributes:
+    path (str): The full path to the URI.
+  """
+  CONTAINER_TYPE = 'url'
+
+  def __init__(self, path):
+    super(URL, self).__init__()
+    self.path = path
