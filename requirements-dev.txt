@@ -6,6 +6,6 @@ mccabe==0.6.1
 mock==4.0.2
 pylint==2.5.2
 six==1.14.0
-toml==0.10.0
+toml==0.10.1
 typed-ast==1.4.1 ; implementation_name == 'cpython' and python_version < '3.8'
 wrapt==1.12.1
