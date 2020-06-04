@@ -80,12 +80,12 @@ class LocalPlasoProcessor(module.BaseModule):
 
       if l2t_status:
         message = ('The log2timeline command {0:s} failed: {1!s}.'
-                    ' Check log file for details.').format(full_cmd, error)
+                   ' Check log file for details.').format(full_cmd, error)
         self.state.AddError(message, critical=True)
         return
 
       self.state.StoreContainer(containers.File(
-        description, plaso_storage_file_path))
+          description, plaso_storage_file_path))
 
 
 modules_manager.ModulesManager.RegisterModule(LocalPlasoProcessor)
