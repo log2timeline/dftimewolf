@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: [3.8]
+        python-version: [3.7]
 
     steps:
     - uses: actions/checkout@v2
@@ -22,7 +22,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install pipenv
-        pipenv install --deploy --dev
+        pipenv install -d
     - name: Test with unittest
       run: |
-        python -m unittest discover -s tests -p '*.py'
+        pipenv run python -m unittest discover -s tests -p '*.py'
