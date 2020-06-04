@@ -23,8 +23,8 @@ class GrepperTest(unittest.TestCase):
     # Put here a path to a test directory where you have files to grep on the
     # above keyword. This is to simulate the path received an input from GRR
     test_state.StoreContainer(containers.File(
-      name='Test description',
-      path='tests/lib/collectors/test_data/grepper_test_dir'
+        name='Test description',
+        path='tests/lib/collectors/test_data/grepper_test_dir'
     ))
     base_grepper_search.Process()
     # pylint: disable=protected-access

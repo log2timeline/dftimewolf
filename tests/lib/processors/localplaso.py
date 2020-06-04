@@ -23,6 +23,7 @@ class LocalPlasoTest(unittest.TestCase):
     local_plaso_processor = localplaso.LocalPlasoProcessor(test_state)
     self.assertIsNotNone(local_plaso_processor)
 
+  # pylint: disable=invalid-name
   @mock.patch('subprocess.Popen')
   def testProcessing(self, mock_Popen):
     """Tests that the correct number of containers is added."""
