@@ -5,9 +5,11 @@
 from __future__ import unicode_literals
 
 import unittest
+import mock
 
 from dftimewolf.lib import state
 from dftimewolf.lib.processors import localplaso
+from dftimewolf.lib.containers import containers
 
 from dftimewolf import config
 
@@ -21,6 +23,26 @@ class LocalPlasoTest(unittest.TestCase):
     local_plaso_processor = localplaso.LocalPlasoProcessor(test_state)
     self.assertIsNotNone(local_plaso_processor)
 
+  @mock.patch('subprocess.Popen')
+  def testProcessing(self, mock_Popen):
+    test_state = state.DFTimewolfState(config.Config)
+    mock_popen_object = mock.Mock()
+    mock_popen_object.communicate.return_value = (None, None)
+    mock_popen_object.wait.return_value = False
+    mock_Popen.return_value = mock_popen_object
+
+    local_plaso_processor = localplaso.LocalPlasoProcessor(test_state)
+    test_state.StoreContainer(containers.File(name='test', path='/notexist/test'))
+    local_plaso_processor.SetUp()
+    local_plaso_processor.Process()
+    mock_Popen.assert_called_once()
+    # mock_Popen.assert_called_with(None)
+    args = mock_Popen.call_args[0][0]
+    self.assertEqual(args[9], '/notexist/test')
+    plaso_path = args[8]
+    self.assertEqual(
+      test_state.GetContainers(containers.File)[1].path,
+      plaso_path)
 
 if __name__ == '__main__':
   unittest.main()
