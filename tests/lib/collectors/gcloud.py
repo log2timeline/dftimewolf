@@ -11,6 +11,7 @@ from libcloudforensics import gcp
 
 from dftimewolf import config
 from dftimewolf.lib import state
+from dftimewolf.lib.containers import containers
 from dftimewolf.lib.collectors import gcloud
 
 FAKE_PROJECT = gcp.GoogleCloudProject(
@@ -153,8 +154,9 @@ class GoogleCloudCollectorTest(unittest.TestCase):
     mock_CreateDiskFromSnapshot.assert_called_with(
         FAKE_SNAPSHOT, disk_name_prefix='incidentfake_incident_id')
     mock_Delete.assert_called_once()
-    self.assertEqual(test_state.output[0][0], 'fake-analysis-vm')
-    self.assertEqual(test_state.output[0][1].name, 'disk1-copy')
+    forensics_vms = test_state.GetContainers(containers.ForensicsVM)
+    self.assertEqual(forensics_vms[0].name, 'fake-analysis-vm')
+    self.assertEqual(forensics_vms[0].evidence_disk.name, 'disk1-copy')
     mock_AddLabels.assert_has_calls([mock.call({'incident_id': 'fake_incident_id'})])
 
   # pylint: disable=line-too-long,invalid-name

@@ -66,7 +66,10 @@ class GoogleCloudCollector(module.BaseModule):
       snapshot.Delete()
       print('Disk {0:s} successfully copied to {1:s}'.format(
           disk.name, new_disk.name))
-      self.state.output.append((self.analysis_vm.name, new_disk))
+      self.state.StoreContainer(containers.ForensicsVM(
+          name=self.analysis_vm.name,
+          evidence_disk=new_disk,
+          platform='gcp'))
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
