@@ -2,21 +2,19 @@
 # -*- coding: utf-8 -*-
 """Tests the GRR host collectors."""
 
-from __future__ import unicode_literals
-
 import unittest
-import six
-import mock
 
-from grr_response_proto import flows_pb2
+import mock
+import six
 from grr_api_client import errors as grr_errors
+from grr_response_proto import flows_pb2
+from tests.lib.collectors.test_data import mock_grr_hosts
 
 from dftimewolf import config
 from dftimewolf.lib import state
 from dftimewolf.lib.collectors import grr_hosts
+from dftimewolf.lib.containers import containers
 from dftimewolf.lib.errors import DFTimewolfError
-
-from tests.lib.collectors.test_data import mock_grr_hosts
 
 
 # Extensive access to protected members for testing, and mocking of classes.
@@ -208,7 +206,6 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     )
     self.grr_artifact_collector.Process()
     kwargs = mock_ArtifactCollectorFlowArgs.call_args[1]
-    # raise ValueError(str(kwargs[1]))
     self.assertFalse(kwargs['apply_parsers'])  # default argument
     self.assertTrue(kwargs['ignore_interpolation_errors'])  # default argument
     self.assertTrue(kwargs['use_tsk'])
@@ -235,9 +232,10 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     mock_DownloadFiles.assert_called_with(
         mock_grr_hosts.MOCK_CLIENT_LIST[1], mock_grr_hosts.MOCK_FLOW.flow_id
     )
-    self.assertEqual(len(self.test_state.output), 1)
-    self.assertEqual(self.test_state.output[0][0], 'tomchop')
-    self.assertEqual(self.test_state.output[0][1], '/tmp/tmpRandom/tomchop')
+    results = self.test_state.GetContainers(containers.File)
+    self.assertEqual(len(results), 1)
+    self.assertEqual(results[0].name, 'tomchop')
+    self.assertEqual(results[0].path, '/tmp/tmpRandom/tomchop')
 
 
 class GRRFileCollectorTest(unittest.TestCase):
@@ -287,7 +285,10 @@ class GRRFileCollectorTest(unittest.TestCase):
                 action_type=flows_pb2.FileFinderAction.STAT)
         )
     )
-    self.assertEqual(self.test_state.output[0], ('tomchop', '/tmp/something'))
+    results = self.test_state.GetContainers(containers.File)
+    self.assertEqual(len(results), 1)
+    self.assertEqual(results[0].name, 'tomchop')
+    self.assertEqual(results[0].path, '/tmp/something')
 
 
 class GRRFlowCollector(unittest.TestCase):
@@ -319,7 +320,10 @@ class GRRFlowCollector(unittest.TestCase):
     self.grr_flow_collector.Process()
     mock_DownloadFiles.assert_called_once_with(
         mock_grr_hosts.MOCK_CLIENT_RECENT, 'F:12345')
-    self.assertEqual(self.test_state.output[0], ('tomchop', '/tmp/something'))
+    results = self.test_state.GetContainers(containers.File)
+    self.assertEqual(len(results), 1)
+    self.assertEqual(results[0].name, 'tomchop')
+    self.assertEqual(results[0].path, '/tmp/something')
 
 
 class GRRTimelineCollector(unittest.TestCase):
@@ -368,7 +372,10 @@ class GRRTimelineCollector(unittest.TestCase):
     self.grr_timeline_collector.Process()
     mock_DownloadTimeline.assert_called_once_with(
         mock_grr_hosts.MOCK_CLIENT_RECENT, 'F:12345')
-    self.assertEqual(self.test_state.output[0], ('tomchop', '/tmp/something'))
+    results = self.test_state.GetContainers(containers.File)
+    self.assertEqual(len(results), 1)
+    self.assertEqual(results[0].name, 'tomchop')
+    self.assertEqual(results[0].path, '/tmp/something')
 
 if __name__ == '__main__':
   unittest.main()

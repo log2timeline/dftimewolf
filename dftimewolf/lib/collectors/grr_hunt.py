@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
 """Definition of modules for collecting data from GRR Hunts."""
 
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import os
 import tempfile
 import zipfile
-import yaml
 
+import yaml
 from grr_response_proto import flows_pb2 as grr_flows
 
 from dftimewolf.lib.collectors import grr_base
+from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 
 
@@ -361,7 +359,9 @@ class GRRHuntDownloader(GRRHunt):
       RuntimeError: if no items specified for collection.
     """
     hunt = self.grr_api.Hunt(self.hunt_id).Get()
-    self.state.output = self._CollectHuntResults(hunt)
+    for description, path in self._CollectHuntResults(hunt):
+      self.state.StoreContainer(
+          containers.File(name=description, path=path))
 
 
 modules_manager.ModulesManager.RegisterModules([
