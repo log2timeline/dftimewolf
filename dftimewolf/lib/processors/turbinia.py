@@ -1,19 +1,14 @@
 # -*- coding: utf-8 -*-
 """Processes GCP cloud disks using Turbinia."""
 
-from __future__ import unicode_literals
-from __future__ import absolute_import
-from __future__ import print_function
-
 import getpass
 import os
 import tempfile
 
+from turbinia import TurbiniaException
 from turbinia import client as turbinia_client
 from turbinia import config as turbinia_config
-from turbinia import evidence
-from turbinia import output_manager
-from turbinia import TurbiniaException
+from turbinia import evidence, output_manager
 from turbinia.message import TurbiniaRequest
 
 from dftimewolf.lib import module
@@ -165,10 +160,10 @@ class TurbiniaProcessor(module.BaseModule):
     """Process files with Turbinia."""
     log_file_path = os.path.join(self._output_path, 'turbinia.log')
     print('Turbinia log file: {0:s}'.format(log_file_path))
-
-    if self.state.input and not self.disk_name:
-      _, disk = self.state.input[0]
-      self.disk_name = disk.name
+    vm_containers = self.state.GetContainers(containers.ForensicsVM)
+    if vm_containers and not self.disk_name:
+      forensics_vm = vm_containers[0]
+      self.disk_name = forensics_vm.evidence_disk.name
       print('Using disk {0:s} from previous collector'.format(self.disk_name))
 
     evidence_ = evidence.GoogleCloudDisk(
@@ -243,9 +238,8 @@ class TurbiniaProcessor(module.BaseModule):
 
     if not all_local_paths:
       self.state.AddError('No interesting files could be found.', critical=True)
-    self.state.output = all_local_paths
 
-    for _, path in all_local_paths:
+    for description, path in all_local_paths:
       if path.endswith('BinaryExtractorTask.tar.gz'):
         self.state.StoreContainer(
             containers.ThreatIntelligence(
@@ -254,6 +248,10 @@ class TurbiniaProcessor(module.BaseModule):
         self.state.StoreContainer(
             containers.ThreatIntelligence(
                 name='ImageExportHashes', indicator=None, path=path))
+      if path.endswith('.plaso'):
+        self.state.StoreContainer(containers.File(
+            name=description,
+            path=path))
 
 
 modules_manager.ModulesManager.RegisterModule(TurbiniaProcessor)
