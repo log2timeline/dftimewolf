@@ -58,7 +58,7 @@ class GrepperSearch(module.BaseModule):
                 for line in fp:
                   found.update(set(x.lower() for x in re.findall(
                       self._keywords, line, re.IGNORECASE)))
-            if [item for item in found if item]:
+            if [item for item in sorted(found) if item]:
               output = '{0:s}/{1:s}:{2:s}'.format(path, filename, ','.join(
                   filter(None, sorted(found))))
               if self._final_output:
