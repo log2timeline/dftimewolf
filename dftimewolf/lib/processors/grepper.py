@@ -48,7 +48,7 @@ class GrepperSearch(module.BaseModule):
       print('Walking through dir (absolute) = ' + os.path.abspath(path))
       try:
         for root, _, files in os.walk(path):
-          for filename in files:
+          for filename in sorted(files):
             found = set()
             fullpath = '{0:s}/{1:s}'.format(os.path.abspath(root), filename)
             if mimetypes.guess_type(filename)[0] == 'application/pdf':
@@ -58,7 +58,7 @@ class GrepperSearch(module.BaseModule):
                 for line in fp:
                   found.update(set(x.lower() for x in re.findall(
                       self._keywords, line, re.IGNORECASE)))
-            if [item for item in sorted(found) if item]:
+            if [item for item in found if item]:
               output = '{0:s}/{1:s}:{2:s}'.format(path, filename, ','.join(
                   filter(None, sorted(found))))
               if self._final_output:

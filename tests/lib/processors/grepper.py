@@ -34,6 +34,6 @@ class GrepperTest(unittest.TestCase):
     # pylint: disable=line-too-long
     self.assertEqual(
         base_grepper_search._final_output,
-        'tests/lib/collectors/test_data/grepper_test_dir/grepper_test.txt:bar,foo,lorem,triage\n'
         'tests/lib/collectors/test_data/grepper_test_dir/1test.pdf:homebrew\n'
+        'tests/lib/collectors/test_data/grepper_test_dir/grepper_test.txt:bar,foo,lorem,triage\n'
         'tests/lib/collectors/test_data/grepper_test_dir/grepper_test2.txt:foo')
