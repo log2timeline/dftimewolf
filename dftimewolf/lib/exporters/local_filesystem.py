@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 """Local file system exporter module."""
 
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import os
 import shutil
 import tempfile
 
 from dftimewolf.lib import module
+from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 
 
@@ -31,20 +29,31 @@ class LocalFilesystemCopy(module.BaseModule):
       target_directory (Optional[str]): path of the directory in which
           collected files will be copied.
     """
-    self._target_directory = target_directory
     if not target_directory:
-      self._target_directory = tempfile.mkdtemp()
-    elif not os.path.exists(target_directory):
-      os.makedirs(target_directory)
+      target_directory = tempfile.mkdtemp()
+    elif os.path.exists(target_directory):
+      target_directory = os.path.join(target_directory, 'dftimewolf')
+    self._target_directory = target_directory
 
   def Process(self):
     """Checks whether the paths exists and updates the state accordingly."""
-    for _, path in self.state.input:
-      self._CopyFileOrDirectory(path, self._target_directory)
-      print('{0:s} -> {1:s}'.format(path, self._target_directory))
+    for file_container in self.state.GetContainers(containers.File):
+      try:
+        self._CopyFileOrDirectory(file_container.path, self._target_directory)
+      except OSError as exception:
+        self.state.AddError(
+            'Could not copy files to {0:s}: {1!s}'.format(
+                self._target_directory, exception),
+            critical=True)
+        return
+      print('{0:s} -> {1:s}'.format(file_container.path,
+                                    self._target_directory))
 
   def _CopyFileOrDirectory(self, source, destination_directory):
     """Recursively copies files from source to destination_directory.
+
+    Files will be copied to `destination_directory`'s root. Directories
+    will be copied to subdirectories in `destination_directory`.
 
     Args:
       source (str): source file or directory to copy into the destination
@@ -52,11 +61,14 @@ class LocalFilesystemCopy(module.BaseModule):
       destination_directory (str): destination directory in which to copy
           source.
     """
+    counter = 0
     if os.path.isdir(source):
-      for item in os.listdir(source):
-        full_source = os.path.join(source, item)
-        full_destination = os.path.join(destination_directory, item)
-        shutil.copytree(full_source, full_destination)
+      try:
+        shutil.copytree(source, destination_directory)
+      except FileExistsError:
+        newdir = os.path.join(destination_directory, str(counter))
+        shutil.copytree(source, newdir)
+        counter += 1
     else:
       shutil.copy2(source, destination_directory)
 
