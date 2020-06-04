@@ -1,4 +1,4 @@
-name: Run tests
+name: pipenv unittests
 
 on:
   pull_request:
@@ -10,8 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        python-version: [3.7]
+        os: [ubuntu-latest, macos-latest]
+        python-version: [3.7, 3.8]
 
     steps:
     - uses: actions/checkout@v2
