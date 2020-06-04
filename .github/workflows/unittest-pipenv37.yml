@@ -22,7 +22,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install pipenv
-        pip install --deploy --dev
+        pipenv install --deploy --dev
     - name: Test with unittest
       run: |
         python -m unittest discover -s tests -p '*.py'
