@@ -229,7 +229,8 @@ class GCPLoggingTimesketch(BaseModule):
     timeline_name = 'GCP logs {0:s} "{1:s}"'.format(
         logs_container.project_name, logs_container.filter_expression)
 
-    self.state.output.append([timeline_name, output_path])
+    self.state.StoreContainer(
+        containers.File(name=timeline_name, path=output_path))
 
   def Process(self):
     """Processes GCP logs containers for insertion into Timesketch."""
