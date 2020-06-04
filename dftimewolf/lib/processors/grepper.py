@@ -60,7 +60,7 @@ class GrepperSearch(module.BaseModule):
                       self._keywords, line, re.IGNORECASE)))
             if [item for item in found if item]:
               output = '{0:s}/{1:s}:{2:s}'.format(path, filename, ','.join(
-                  filter(None, found)))
+                  filter(None, sorted(found))))
               if self._final_output:
                 self._final_output += '\n' + output
               else:
