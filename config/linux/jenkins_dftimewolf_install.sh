@@ -81,6 +81,7 @@ if [[ "$*" =~ "include-timesketch" ]]; then
      git clone https://github.com/google/timesketch.git
      cd timesketch
      cd docker
+     cd e2e
      sudo -E docker-compose up -d
      # Wait for Timesketch to initialize
      /bin/sleep 300
