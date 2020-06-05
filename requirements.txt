@@ -4,8 +4,8 @@ appnope==0.1.0 ; sys_platform == 'darwin'
 attrs==19.3.0
 backcall==0.1.0
 beautifulsoup4==4.9.1
-boto3==1.13.22
-botocore==1.16.22
+boto3==1.13.23
+botocore==1.16.23
 cachetools==4.1.0
 certifi==2020.4.5.1
 cffi==1.14.0
@@ -18,7 +18,7 @@ docutils==0.15.2
 entrypoints==0.3
 filelock==3.0.12
 future==0.17.1
-google-api-core[grpc]==1.17.0
+google-api-core[grpc]==1.19.0
 google-api-python-client==1.9.1
 google-auth-httplib2==0.0.3
 google-auth-oauthlib==0.4.1
@@ -76,7 +76,7 @@ timesketch-api-client==20200602
 timesketch-import-client==20200527
 toolz==0.10.0
 traitlets==4.3.3
-turbinia==20190819.8
+turbinia==20190819.9
 uritemplate==3.0.1
 urllib3[secure]==1.25.9 ; python_version != '3.4'
 wcwidth==0.2.3
