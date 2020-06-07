@@ -51,7 +51,7 @@ class GoogleCloudCollectorTest(unittest.TestCase):
     gcloud_collector = gcloud.GoogleCloudCollector(test_state)
     self.assertIsNotNone(gcloud_collector)
 
-  # pylint: disable=invalid-name
+  # pylint: disable=invalid-name,line-too-long
   @mock.patch('libcloudforensics.providers.gcp.internal.compute_resources.GoogleComputeBaseResource.AddLabels')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute_resources.GoogleComputeBaseResource')
   @mock.patch('libcloudforensics.providers.gcp.forensics.StartAnalysisVm')

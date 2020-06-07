@@ -37,6 +37,7 @@ class GoogleCloudDiskExportTest(unittest.TestCase):
         test_state)
     self.assertIsNotNone(google_disk_export)
 
+  # pylint: disable=line-too-long
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetDisk')
   @mock.patch('libcloudforensics.providers.gcp.internal.project.GoogleCloudProject')
   def testSetUp(self, mock_gcp_project, mock_get_disk):
@@ -68,6 +69,7 @@ class GoogleCloudDiskExportTest(unittest.TestCase):
                      '{0:s}-image-df-export-temp'.format(
                          'fake-source-disk'))
 
+  # pylint: disable=line-too-long
   @mock.patch('libcloudforensics.providers.gcp.internal.compute_resources.GoogleComputeImage.Delete')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute_resources.GoogleComputeImage.ExportImage')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.CreateImageFromDisk')
