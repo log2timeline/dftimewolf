@@ -7,22 +7,23 @@ from __future__ import unicode_literals
 import unittest
 import os
 import mock
-from libcloudforensics import gcp
+from libcloudforensics.providers.gcp.internal import project as gcp_project
+from libcloudforensics.providers.gcp.internal import compute_resources
 
 from dftimewolf import config
 from dftimewolf.lib import state
 from dftimewolf.lib.exporters import gce_disk_export
 
 
-FAKE_SOURCE_PROJECT = gcp.GoogleCloudProject(
+FAKE_SOURCE_PROJECT = gcp_project.GoogleCloudProject(
     'fake-source-project', 'fake-zone')
-FAKE_DISK = gcp.GoogleComputeDisk(
-    FAKE_SOURCE_PROJECT,
+FAKE_DISK = compute_resources.GoogleComputeDisk(
+    FAKE_SOURCE_PROJECT.project_id,
     'fake_zone',
     'fake-source-disk')
-FAKE_IMAGE = gcp.GoogleComputeImage(
-    FAKE_SOURCE_PROJECT,
-    None,
+FAKE_IMAGE = compute_resources.GoogleComputeImage(
+    FAKE_SOURCE_PROJECT.project_id,
+    'fake-zone',
     'fake-source-disk-image-df-export-temp')
 
 
@@ -36,8 +37,8 @@ class GoogleCloudDiskExportTest(unittest.TestCase):
         test_state)
     self.assertIsNotNone(google_disk_export)
 
-  @mock.patch('libcloudforensics.gcp.GoogleCloudProject.GetDisk')
-  @mock.patch('libcloudforensics.gcp.GoogleCloudProject')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetDisk')
+  @mock.patch('libcloudforensics.providers.gcp.internal.project.GoogleCloudProject')
   def testSetUp(self, mock_gcp_project, mock_get_disk):
     """Tests that the exporter can be initialized."""
 
@@ -67,11 +68,11 @@ class GoogleCloudDiskExportTest(unittest.TestCase):
                      '{0:s}-image-df-export-temp'.format(
                          'fake-source-disk'))
 
-  @mock.patch('libcloudforensics.gcp.GoogleComputeImage.Delete')
-  @mock.patch('libcloudforensics.gcp.GoogleComputeImage.ExportImage')
-  @mock.patch('libcloudforensics.gcp.GoogleCloudProject.CreateImageFromDisk')
-  @mock.patch('libcloudforensics.gcp.GoogleCloudProject.GetDisk')
-  @mock.patch('libcloudforensics.gcp.GoogleCloudProject')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute_resources.GoogleComputeImage.Delete')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute_resources.GoogleComputeImage.ExportImage')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.CreateImageFromDisk')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetDisk')
+  @mock.patch('libcloudforensics.providers.gcp.internal.project.GoogleCloudProject')
   def testProcess(self,
                   mock_gcp_project,
                   mock_get_disk,
