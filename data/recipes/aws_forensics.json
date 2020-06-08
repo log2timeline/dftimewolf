@@ -1,0 +1,33 @@
+{
+  "name": "aws_forensics",
+  "short_description": "Copies volume from an AWS account to an analysis VM.",
+  "description": "Copies a volume from an AWS account, creates an analysis VM, and attaches the copied volume to it.",
+  "modules": [{
+      "wants": [],
+      "name": "AWSCollector",
+      "args": {
+          "remote_profile_name": "@remote_profile_name",
+          "remote_zone": "@remote_zone",
+          "incident_id": "@incident_id",
+          "remote_instance_id": "@instance_id",
+          "analysis_zone":  "@analysis_zone",
+          "analysis_profile_name": "@analysis_profile_name",
+          "volume_ids": "@volume_ids",
+          "all_volumes": "@all_volumes",
+          "boot_volume_size": "@boot_volume_size",
+          "cpu_cores": 16,
+          "ami": "ami-0013b3aa57f8a4331"
+      }
+  }],
+  "args": [
+      ["remote_profile_name", "Name of the AWS profile pointing to the AWS account where the volume(s) exist(s).", null],
+      ["remote_zone", "The AWS zone in which the source volume(s) exist(s).", null],
+      ["incident_id", "Incident ID to label the VM with.", null],
+      ["--instance_id", "Instance ID of the instance to analyze.", null],
+      ["--volume_ids", "Comma-separated list of volume IDs to copy.", null],
+      ["--all_volumes", "Copy all volumes in the designated instance. Overrides volume_ids if specified.", false],
+      ["--boot_volume_size", "The size of the analysis VM boot volume (in GB).", 50],
+      ["--analysis_zone", "The AWS zone in which to create the VM.", null],
+      ["--analysis_profile_name", "Name of the AWS profile to use when creating the analysis VM.", null]
+  ]
+}
