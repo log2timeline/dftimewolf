@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """Collects artifacts from the local file system."""
 
-from __future__ import unicode_literals
-
 import os
 
 from dftimewolf.lib import module

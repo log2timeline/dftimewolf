@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 """Processes artifacts using local grep ."""
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import mimetypes
 import os

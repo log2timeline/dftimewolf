@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """Dummy recipe"""
 
-from __future__ import unicode_literals
-
 contents = {
     'name':
         'dummy_recipe',

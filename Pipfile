@@ -6,13 +6,14 @@ name = "pypi"
 [dev-packages]
 mock = "*"
 pylint = "*"
+coverage = "*"
 
 [packages]
-"beautifulsoup4" = "*"
-"pypdf2" = "*"
+beautifulsoup4 = "*"
 google-cloud-logging = "*"
-grr-api-client = "*"
+grr_api_client = "*"
 libcloudforensics = "*"
+pypdf2 = "*"
 pyyaml = "*"
 requests = "*"
 six = "*"
