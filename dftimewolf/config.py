@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """Small module to load user configuration parameters."""
 
-from __future__ import unicode_literals
-
 import json
 
 from dftimewolf.lib import errors

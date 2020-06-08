@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 """Export processing results to Timesketch."""
 
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import re
 
 from timesketch_import_client import importer

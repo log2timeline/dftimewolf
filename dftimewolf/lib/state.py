@@ -4,9 +4,6 @@
 Use it to track errors, abort on global failures, clean up after modules, etc.
 """
 
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import sys
 import threading
 import traceback
