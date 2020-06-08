@@ -43,7 +43,7 @@ jedi==0.17.0
 jinja2==2.11.2
 jmespath==0.10.0
 jsonschema==3.2.0
-libcloudforensics==20200520
+libcloudforensics==20200608
 markupsafe==1.1.1
 numpy==1.18.4
 oauth2client==4.1.3
