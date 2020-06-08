@@ -6,19 +6,20 @@ name = "pypi"
 [dev-packages]
 mock = "*"
 pylint = "*"
+coverage = "*"
 
 [packages]
-six = "*"
-"beautifulsoup4" = "*"
-requests = "*"
-"pypdf2" = "*"
-grr-api-client = "*"
-turbinia = "*"
-pyyaml = "*"
+beautifulsoup4 = "*"
 google-cloud-logging = "*"
+grr_api_client = "*"
 libcloudforensics = "*"
+pypdf2 = "*"
+pyyaml = "*"
+requests = "*"
+six = "*"
 timesketch-api-client = ">=20200514"
 timesketch-import-client = ">=20200514"
+turbinia = "*"
 
 [requires]
-python_version = "3.6"
+python_version = "3.7"

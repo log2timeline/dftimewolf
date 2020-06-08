@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 """Tests the GRR host collectors."""
 
-from __future__ import unicode_literals
-
 import unittest
 import six
 import mock
