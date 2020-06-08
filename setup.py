@@ -6,6 +6,11 @@ import glob
 import os
 import sys
 
+def parse_requirements(filename):
+  with open(filename) as requirements:
+    # Skipping -i https://pypi.org/simple
+    return requirements.readlines()[1:]
+
 try:
   from setuptools import find_packages, setup
 except ImportError:
@@ -169,22 +174,7 @@ setup(
     ],
     include_package_data=True,
     zip_safe=False,
-    install_requires=[
-        'beautifulsoup4',
-        'google-cloud-logging',
-        'grr_api_client',
-        'libcloudforensics',
-        'pypdf2',
-        'pyyaml',
-        'requests',
-        'timesketch-api-client>=20200514',
-        'timesketch-import-client>=20200514',
-        'turbinia',
-    ],
+    install_requires=parse_requirements('requirements.txt'),
     test_suite='nose.collector',
-    test_require=[
-        'nose',
-        'pylint<2',
-        'coverage',
-    ]
+    test_require=parse_requirements('requirements-dev.txt')
 )
