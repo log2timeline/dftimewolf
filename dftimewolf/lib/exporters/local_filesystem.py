@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 """Local file system exporter module."""
 
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import os
 import shutil
 import tempfile

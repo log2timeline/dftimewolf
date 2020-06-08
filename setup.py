@@ -2,11 +2,14 @@
 # -*- coding: utf-8 -*-
 """Installation and deployment script."""
 
-from __future__ import print_function
-
 import glob
 import os
 import sys
+
+def parse_requirements(filename):
+  with open(filename) as requirements:
+    # Skipping -i https://pypi.org/simple
+    return requirements.readlines()[1:]
 
 try:
   from setuptools import find_packages, setup
@@ -171,20 +174,7 @@ setup(
     ],
     include_package_data=True,
     zip_safe=False,
-    install_requires=[
-        'pytz',
-        'beautifulsoup4',
-        'requests',
-        'grr_api_client',
-        'pyyaml',
-        'future',
-        'turbinia',
-        'pypdf2',
-    ],
+    install_requires=parse_requirements('requirements.txt'),
     test_suite='nose.collector',
-    test_require=[
-        'nose',
-        'pylint<2',
-        'coverage',
-    ]
+    test_require=parse_requirements('requirements-dev.txt')
 )

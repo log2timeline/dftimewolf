@@ -16,7 +16,6 @@
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
-from __future__ import unicode_literals
 import re
 
 from recommonmark.parser import CommonMarkParser
@@ -25,7 +24,7 @@ from docutils import nodes, transforms
 
 # -- Project information -----------------------------------------------------
 project = u'dfTimewolf'
-copyright = u'2018, log2timeline maintainers'  # pylint: disable=redefined-builtin
+copyright = u'2020, log2timeline maintainers'  # pylint: disable=redefined-builtin
 author = u'log2timeline maintainers'
 
 # The short X.Y version

@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """Contains dummy modules used in tests."""
 
-from __future__ import print_function, unicode_literals
-
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 

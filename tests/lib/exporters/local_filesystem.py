@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 """Tests the local filesystem exporter."""
 
-from __future__ import unicode_literals
-
 import unittest
 import mock
 

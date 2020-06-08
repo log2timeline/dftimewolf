@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 """Utility functions to get a Timesketch API client and an importer client."""
-from __future__ import unicode_literals
-
 import threading
 
 from timesketch_api_client import config

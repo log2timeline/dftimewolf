@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 """Processes GCP cloud disks using Turbinia."""
 
-from __future__ import unicode_literals
-from __future__ import absolute_import
-from __future__ import print_function
-
 import getpass
 import os
 import tempfile
