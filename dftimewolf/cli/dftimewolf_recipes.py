@@ -2,9 +2,6 @@
 # -*- coding: utf-8 -*-
 """dftimewolf main entrypoint."""
 
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import argparse
 import os
 import signal
@@ -94,15 +91,21 @@ class DFTimewolfTool(object):
     data_files_path = os.path.dirname(data_files_path)
     data_files_path = os.path.join(data_files_path, 'data')
 
-    # Use sys.prefix for user installs (e.g. pip install ...)
+    # Use local package data files (python setup.py install)
     if not os.path.isdir(data_files_path):
       data_files_path = os.path.dirname(data_files_path)
       data_files_path = os.path.join(data_files_path, 'share', 'dftimewolf')
 
+    # Use sys.prefix for user installs (e.g. pip install ...)
+    if not os.path.isdir(data_files_path):
+      data_files_path = os.path.join(sys.prefix, 'share', 'dftimewolf')
+
     # If all else fails, fall back to hardcoded default
     if not os.path.isdir(data_files_path):
+      print(data_files_path, 'not found, defaulting to /usr/local/share')
       data_files_path = self._DEFAULT_DATA_FILES_PATH
 
+    print("Recipe data path: {0:s}".format(data_files_path))
     self._data_files_path = data_files_path
 
   def _GenerateHelpText(self):

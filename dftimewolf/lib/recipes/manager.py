@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """Recipes manager."""
 
-from __future__ import unicode_literals
-
 import io
 import glob
 import json

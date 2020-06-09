@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 """Processes artifacts using a local plaso process."""
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import os
 import subprocess
 import tempfile

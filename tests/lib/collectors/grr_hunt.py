@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 """Tests the GRR hunt collectors."""
 
-from __future__ import unicode_literals
-
 import unittest
 import zipfile
 import mock

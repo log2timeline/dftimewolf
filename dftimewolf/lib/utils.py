@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """Common utilities for DFTimewolf."""
 
-from __future__ import unicode_literals
-
 import argparse
 import re
 
