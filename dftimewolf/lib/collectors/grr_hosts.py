@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 """Definition of modules for collecting data from GRR hosts."""
 
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import datetime
 import os
 import re

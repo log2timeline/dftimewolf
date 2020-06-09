@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 """Creates an analysis VM and copies GCP disks to it for analysis."""
 
-from __future__ import print_function
-from __future__ import unicode_literals
-
 from google.auth.exceptions import DefaultCredentialsError, RefreshError
 from googleapiclient.errors import HttpError
 from libcloudforensics import gcp
