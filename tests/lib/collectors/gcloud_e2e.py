@@ -20,7 +20,8 @@ import unittest
 import logging
 
 from googleapiclient.errors import HttpError
-from libcloudforensics import gcp
+from libcloudforensics.providers.gcp.internal import project as gcp_project
+from libcloudforensics.providers.gcp.internal import compute_resources, common
 
 from dftimewolf import config
 from dftimewolf.lib import state
@@ -67,7 +68,8 @@ class EndToEndTest(unittest.TestCase):
     # Optional: test a disk other than the boot disk
     self.disk_to_forensic = project_info.get('disk', None)
     self.zone = project_info['zone']
-    self.gcp = gcp.GoogleCloudProject(self.project_id, self.zone)
+    self.gcp_client = common.GoogleCloudComputeClient(
+        project_id=self.project_id)
 
   def setUp(self):
     if hasattr(self, 'error_msg'):
@@ -109,7 +111,7 @@ class EndToEndTest(unittest.TestCase):
     analysis_vm_name = self.test_state.output[0][0]
     expected_disk_name = self.test_state.output[0][1].name
 
-    gce_instances_client = self.gcp.GceApi().instances()
+    gce_instances_client = self.gcp_client.GceApi().instances()
     request = gce_instances_client.get(
         project=self.project_id,
         zone=self.zone,
@@ -158,7 +160,7 @@ class EndToEndTest(unittest.TestCase):
     analysis_vm_name = self.test_state.output[0][0]
     expected_disk_name = self.test_state.output[0][1].name
 
-    gce_instances_client = self.gcp.GceApi().instances()
+    gce_instances_client = self.gcp_client.GceApi().instances()
     request = gce_instances_client.get(
         project=self.project_id,
         zone=self.zone,
@@ -227,16 +229,17 @@ def CleanUp(project_id, zone, instance_name):
     instance_name (str): the name of the analysis VM to remove.
   """
 
-  gcp_project = gcp.GoogleCloudProject(project_id, zone)
-  disks = gcp.GoogleComputeInstance(
-      gcp_project, zone, instance_name).ListDisks()
+  gcp_client = common.GoogleCloudComputeClient(project_id=project_id)
+  project = gcp_project.GoogleCloudProject(project_id, zone)
+  disks = compute_resources.GoogleComputeInstance(
+      project.project_id, zone, instance_name).ListDisks()
 
   # delete the created forensics VMs
   log.info('Deleting analysis instance: {0:s}.'.format(instance_name))
-  gce_instances_client = gcp_project.GceApi().instances()
+  gce_instances_client = gcp_client.GceApi().instances()
   request = gce_instances_client.delete(
-      project=gcp_project.project_id,
-      zone=gcp_project.default_zone,
+      project=project.project_id,
+      zone=project.default_zone,
       instance=instance_name
   )
   try:
@@ -252,14 +255,14 @@ def CleanUp(project_id, zone, instance_name):
   # delete the copied disks
   # we ignore the disk that was created for the analysis VM (disks[0]) as
   # it is deleted in the previous operation
-  gce_disks_client = gcp_project.GceApi().disks()
+  gce_disks_client = gcp_client.GceApi().disks()
   for disk in disks[1:]:
     log.info('Deleting disk: {0:s}.'.format(disk))
     while True:
       try:
         request = gce_disks_client.delete(
-            project=gcp_project.project_id,
-            zone=gcp_project.default_zone,
+            project=project.project_id,
+            zone=project.default_zone,
             disk=disk
         )
         request.execute()
