@@ -6,7 +6,7 @@ import unittest
 
 import mock
 from libcloudforensics.providers.gcp.internal import project as gcp_project
-from libcloudforensics.providers.gcp.internal import compute_resources
+from libcloudforensics.providers.gcp.internal import compute
 
 from dftimewolf import config
 from dftimewolf.lib import state
@@ -15,26 +15,26 @@ from dftimewolf.lib.collectors import gcloud
 FAKE_PROJECT = gcp_project.GoogleCloudProject(
     'test-target-project-name',
     'fake_zone')
-FAKE_ANALYSIS_VM = compute_resources.GoogleComputeInstance(
+FAKE_ANALYSIS_VM = compute.GoogleComputeInstance(
     FAKE_PROJECT.project_id,
     'fake_zone',
     'fake-analysis-vm')
-FAKE_INSTANCE = compute_resources.GoogleComputeInstance(
+FAKE_INSTANCE = compute.GoogleComputeInstance(
     FAKE_PROJECT.project_id,
     'fake_zone',
     'fake-instance')
-FAKE_DISK = compute_resources.GoogleComputeDisk(
+FAKE_DISK = compute.GoogleComputeDisk(
     FAKE_PROJECT.project_id,
     'fake_zone',
     'disk1')
-FAKE_BOOT_DISK = compute_resources.GoogleComputeDisk(
+FAKE_BOOT_DISK = compute.GoogleComputeDisk(
     FAKE_PROJECT.project_id,
     'fake_zone',
     'bootdisk')
-FAKE_SNAPSHOT = compute_resources.GoogleComputeSnapshot(
+FAKE_SNAPSHOT = compute.GoogleComputeSnapshot(
     FAKE_DISK,
     'fake_snapshot')
-FAKE_DISK_COPY = compute_resources.GoogleComputeDisk(
+FAKE_DISK_COPY = compute.GoogleComputeDisk(
     FAKE_PROJECT.project_id,
     'fake_zone',
     'disk1-copy')
@@ -50,8 +50,8 @@ class GoogleCloudCollectorTest(unittest.TestCase):
     self.assertIsNotNone(gcloud_collector)
 
   # pylint: disable=invalid-name,line-too-long
-  @mock.patch('libcloudforensics.providers.gcp.internal.compute_resources.GoogleComputeBaseResource.AddLabels')
-  @mock.patch('libcloudforensics.providers.gcp.internal.compute_resources.GoogleComputeBaseResource')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute_base_resource.GoogleComputeBaseResource.AddLabels')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute_base_resource.GoogleComputeBaseResource')
   @mock.patch('libcloudforensics.providers.gcp.forensics.StartAnalysisVm')
   def testSetUp(self,
                 mock_StartAnalysisVm,
@@ -96,12 +96,12 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         [mock.call({'incident_id': 'fake_incident_id'})])
 
   # pylint: disable=line-too-long
-  @mock.patch('libcloudforensics.providers.gcp.internal.compute_resources.GoogleComputeInstance.GetBootDisk')
-  @mock.patch('libcloudforensics.providers.gcp.internal.compute_resources.GoogleComputeBaseResource.AddLabels')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.GetBootDisk')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute_base_resource.GoogleComputeBaseResource.AddLabels')
   @mock.patch('libcloudforensics.providers.gcp.forensics.StartAnalysisVm')
   @mock.patch('libcloudforensics.providers.gcp.forensics.CreateDiskCopy')
   @mock.patch('dftimewolf.lib.collectors.gcloud.GoogleCloudCollector._FindDisksToCopy')
-  @mock.patch('libcloudforensics.providers.gcp.internal.compute_resources.GoogleComputeInstance.AttachDisk')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.AttachDisk')
   def testProcess(self,
                   unused_MockAttachDisk,
                   mock_FindDisks,
@@ -142,10 +142,10 @@ class GoogleCloudCollectorTest(unittest.TestCase):
     mock_AddLabels.assert_has_calls([mock.call({'incident_id': 'fake_incident_id'})])
 
   # pylint: disable=line-too-long,invalid-name
-  @mock.patch('libcloudforensics.providers.gcp.internal.compute_resources.GoogleComputeBaseResource')
-  @mock.patch('libcloudforensics.providers.gcp.internal.compute_resources.GoogleComputeInstance.GetBootDisk')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute_base_resource.GoogleComputeBaseResource')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.GetBootDisk')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetDisk')
-  @mock.patch('libcloudforensics.providers.gcp.internal.compute_resources.GoogleComputeInstance.ListDisks')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.ListDisks')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
   @mock.patch('libcloudforensics.providers.gcp.forensics.StartAnalysisVm')
   # We're manually calling protected functions

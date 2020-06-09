@@ -8,7 +8,7 @@ import unittest
 import os
 import mock
 from libcloudforensics.providers.gcp.internal import project as gcp_project
-from libcloudforensics.providers.gcp.internal import compute_resources
+from libcloudforensics.providers.gcp.internal import compute
 
 from dftimewolf import config
 from dftimewolf.lib import state
@@ -17,11 +17,11 @@ from dftimewolf.lib.exporters import gce_disk_export
 
 FAKE_SOURCE_PROJECT = gcp_project.GoogleCloudProject(
     'fake-source-project', 'fake-zone')
-FAKE_DISK = compute_resources.GoogleComputeDisk(
+FAKE_DISK = compute.GoogleComputeDisk(
     FAKE_SOURCE_PROJECT.project_id,
     'fake_zone',
     'fake-source-disk')
-FAKE_IMAGE = compute_resources.GoogleComputeImage(
+FAKE_IMAGE = compute.GoogleComputeImage(
     FAKE_SOURCE_PROJECT.project_id,
     'fake-zone',
     'fake-source-disk-image-df-export-temp')
@@ -70,8 +70,8 @@ class GoogleCloudDiskExportTest(unittest.TestCase):
                          'fake-source-disk'))
 
   # pylint: disable=line-too-long
-  @mock.patch('libcloudforensics.providers.gcp.internal.compute_resources.GoogleComputeImage.Delete')
-  @mock.patch('libcloudforensics.providers.gcp.internal.compute_resources.GoogleComputeImage.ExportImage')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeImage.Delete')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeImage.ExportImage')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.CreateImageFromDisk')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetDisk')
   @mock.patch('libcloudforensics.providers.gcp.internal.project.GoogleCloudProject')
