@@ -6,7 +6,8 @@ import glob
 import os
 import sys
 
-def parse_requirements(filename):
+def ParseRequirements(filename):
+  """Parses a requirements.txt file."""
   with open(filename) as requirements:
     # Skipping -i https://pypi.org/simple
     return requirements.readlines()[1:]
@@ -174,7 +175,7 @@ setup(
     ],
     include_package_data=True,
     zip_safe=False,
-    install_requires=parse_requirements('requirements.txt'),
+    install_requires=ParseRequirements('requirements.txt'),
     test_suite='nose.collector',
-    test_require=parse_requirements('requirements-dev.txt')
+    test_require=ParseRequirements('requirements-dev.txt')
 )
