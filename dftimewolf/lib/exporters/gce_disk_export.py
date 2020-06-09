@@ -5,8 +5,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import os
-from libcloudforensics import gcp
-
+from libcloudforensics.providers.gcp.internal import project as gcp_project
 from dftimewolf.lib import module
 from dftimewolf.lib.modules import manager as modules_manager
 
@@ -47,7 +46,7 @@ class GoogleCloudDiskExport(module.BaseModule):
 
   def Process(self):
     """Creates and exports disk image to the output bucket."""
-    image_object = self.analysis_project.CreateImageFromDisk(
+    image_object = self.analysis_project.compute.CreateImageFromDisk(
         self.source_disk, name=self._image_name)
     image_object.ExportImage(
         self.gcs_output_location, output_name=self.exported_disk_name)
@@ -86,12 +85,13 @@ class GoogleCloudDiskExport(module.BaseModule):
           with ^[A-Za-z0-9-]*$' and '.tar.gz' will be appended to the name.
           If not exist, random name will be generated.
     """
-    self.source_project = gcp.GoogleCloudProject(source_project_name)
+    self.source_project = gcp_project.GoogleCloudProject(source_project_name)
     if analysis_project_name:
-      self.analysis_project = gcp.GoogleCloudProject(analysis_project_name)
+      self.analysis_project = gcp_project.GoogleCloudProject(
+          analysis_project_name)
     else:
       self.analysis_project = self.source_project
-    self.source_disk = self.source_project.GetDisk(source_disk_name)
+    self.source_disk = self.source_project.compute.GetDisk(source_disk_name)
     self.gcs_output_location = gcs_output_location
     self._image_name = '{0:s}-image-df-export-temp'.format(
         self.source_disk.name)
