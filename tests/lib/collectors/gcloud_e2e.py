@@ -21,7 +21,7 @@ import unittest
 
 from googleapiclient.errors import HttpError
 from libcloudforensics.providers.gcp.internal import project as gcp_project
-from libcloudforensics.providers.gcp.internal import compute_resources, common
+from libcloudforensics.providers.gcp.internal import compute, common
 
 from dftimewolf import config
 from dftimewolf.lib import state
@@ -234,7 +234,7 @@ def CleanUp(project_id, zone, instance_name):
 
   gcp_client = common.GoogleCloudComputeClient(project_id=project_id)
   project = gcp_project.GoogleCloudProject(project_id, zone)
-  disks = compute_resources.GoogleComputeInstance(
+  disks = compute.GoogleComputeInstance(
       project.project_id, zone, instance_name).ListDisks()
 
   # delete the created forensics VMs
