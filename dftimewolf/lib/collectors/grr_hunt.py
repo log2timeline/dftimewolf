@@ -360,8 +360,8 @@ class GRRHuntDownloader(GRRHunt):
     """
     hunt = self.grr_api.Hunt(self.hunt_id).Get()
     for description, path in self._CollectHuntResults(hunt):
-      self.state.StoreContainer(
-          containers.File(name=description, path=path))
+      container = containers.File(name=description, path=path)
+      self.state.StoreContainer(container)
 
 
 modules_manager.ModulesManager.RegisterModules([

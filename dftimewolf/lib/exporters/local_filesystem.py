@@ -30,7 +30,7 @@ class LocalFilesystemCopy(module.BaseModule):
           collected files will be copied.
     """
     if not target_directory:
-      target_directory = tempfile.mkdtemp()
+      target_directory = tempfile.mkdtemp(prefix='dftimewolf_local_fs')
     elif os.path.exists(target_directory):
       target_directory = os.path.join(target_directory, 'dftimewolf')
     self._target_directory = target_directory
@@ -66,8 +66,8 @@ class LocalFilesystemCopy(module.BaseModule):
       try:
         shutil.copytree(source, destination_directory)
       except FileExistsError:
-        newdir = os.path.join(destination_directory, str(counter))
-        shutil.copytree(source, newdir)
+        new_directory = os.path.join(destination_directory, str(counter))
+        shutil.copytree(source, new_directory)
         counter += 1
     else:
       shutil.copy2(source, destination_directory)

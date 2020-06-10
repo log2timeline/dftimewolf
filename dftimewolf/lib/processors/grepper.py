@@ -37,7 +37,6 @@ class GrepperSearch(module.BaseModule):
 
   def Process(self):
     """Executes grep on the module input."""
-
     for file_container in self.state.GetContainers(containers.File):
       path = file_container.path
       log_file_path = os.path.join(self._output_path, 'grepper.log')

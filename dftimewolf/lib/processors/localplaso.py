@@ -81,8 +81,8 @@ class LocalPlasoProcessor(module.BaseModule):
         self.state.AddError(message, critical=True)
         return
 
-      self.state.StoreContainer(containers.File(
-          description, plaso_storage_file_path))
+      container = containers.File(description, plaso_storage_file_path)
+      self.state.StoreContainer(container)
 
 
 modules_manager.ModulesManager.RegisterModule(LocalPlasoProcessor)

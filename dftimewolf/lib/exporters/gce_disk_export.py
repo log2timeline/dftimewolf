@@ -54,7 +54,8 @@ class GoogleCloudDiskExport(module.BaseModule):
         self.gcs_output_location, '{0:s}.tar.gz'.format(
             self.exported_disk_name))
     print('Disk was exported to: {0:s}'.format(output_uri))
-    self.state.StoreContainer(containers.URL(path=output_uri))
+    container = containers.URL(path=output_uri)
+    self.state.StoreContainer(container)
 
   # pylint: disable=arguments-differ
   def SetUp(self,

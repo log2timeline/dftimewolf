@@ -234,8 +234,9 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     )
     results = self.test_state.GetContainers(containers.File)
     self.assertEqual(len(results), 1)
-    self.assertEqual(results[0].name, 'tomchop')
-    self.assertEqual(results[0].path, '/tmp/tmpRandom/tomchop')
+    result = results[0]
+    self.assertEqual(result.name, 'tomchop')
+    self.assertEqual(result.path, '/tmp/tmpRandom/tomchop')
 
 
 class GRRFileCollectorTest(unittest.TestCase):
@@ -287,8 +288,9 @@ class GRRFileCollectorTest(unittest.TestCase):
     )
     results = self.test_state.GetContainers(containers.File)
     self.assertEqual(len(results), 1)
-    self.assertEqual(results[0].name, 'tomchop')
-    self.assertEqual(results[0].path, '/tmp/something')
+    result = results[0]
+    self.assertEqual(result.name, 'tomchop')
+    self.assertEqual(result.path, '/tmp/something')
 
 
 class GRRFlowCollector(unittest.TestCase):
@@ -322,8 +324,9 @@ class GRRFlowCollector(unittest.TestCase):
         mock_grr_hosts.MOCK_CLIENT_RECENT, 'F:12345')
     results = self.test_state.GetContainers(containers.File)
     self.assertEqual(len(results), 1)
-    self.assertEqual(results[0].name, 'tomchop')
-    self.assertEqual(results[0].path, '/tmp/something')
+    result = results[0]
+    self.assertEqual(result.name, 'tomchop')
+    self.assertEqual(result.path, '/tmp/something')
 
 
 class GRRTimelineCollector(unittest.TestCase):
@@ -374,8 +377,9 @@ class GRRTimelineCollector(unittest.TestCase):
         mock_grr_hosts.MOCK_CLIENT_RECENT, 'F:12345')
     results = self.test_state.GetContainers(containers.File)
     self.assertEqual(len(results), 1)
-    self.assertEqual(results[0].name, 'tomchop')
-    self.assertEqual(results[0].path, '/tmp/something')
+    result = results[0]
+    self.assertEqual(result.name, 'tomchop')
+    self.assertEqual(result.path, '/tmp/something')
 
 if __name__ == '__main__':
   unittest.main()

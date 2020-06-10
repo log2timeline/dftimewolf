@@ -139,8 +139,9 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         FAKE_DISK.zone,
         disk_name=FAKE_DISK.name)
     forensics_vms = test_state.GetContainers(containers.ForensicsVM)
-    self.assertEqual(forensics_vms[0].name, 'fake-analysis-vm')
-    self.assertEqual(forensics_vms[0].evidence_disk.name, 'disk1-copy')
+    forensics_vm = forensics_vms[0]
+    self.assertEqual(forensics_vm.name, 'fake-analysis-vm')
+    self.assertEqual(forensics_vm.evidence_disk.name, 'disk1-copy')
     mock_AddLabels.assert_has_calls([mock.call({'incident_id': 'fake_incident_id'})])
 
   # pylint: disable=line-too-long,invalid-name

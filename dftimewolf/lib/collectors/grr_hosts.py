@@ -337,12 +337,14 @@ class GRRArtifactCollector(GRRFlow):
       return
     self._AwaitFlow(client, flow_id)
     collected_flow_data = self._DownloadFiles(client, flow_id)
+
     if collected_flow_data:
       print('{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
-      self.state.StoreContainer(containers.File(
+      container = containers.File(
           name=client.data.os_info.fqdn.lower(),
           path=collected_flow_data
-      ))
+      )
+      self.state.StoreContainer(container)
 
   def Process(self):
     """Collects artifacts from a host with GRR.
@@ -443,10 +445,11 @@ class GRRFileCollector(GRRFlow):
     collected_flow_data = self._DownloadFiles(client, flow_id)
     if collected_flow_data:
       print('{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
-      self.state.StoreContainer(containers.File(
+      container = containers.File(
           name=client.data.os_info.fqdn.lower(),
           path=collected_flow_data
-      ))
+      )
+      self.state.StoreContainer(container)
 
   def Process(self):
     """Collects files from a host with GRR.
@@ -515,10 +518,11 @@ class GRRFlowCollector(GRRFlow):
     if collected_flow_data:
       print('{0:s}: Downloaded: {1:s}'.format(
           self.flow_id, collected_flow_data))
-      self.state.StoreContainer(containers.File(
+      container = containers.File(
           name=client.data.os_info.fqdn.lower(),
           path=collected_flow_data
-      ))
+      )
+      self.state.StoreContainer(container)
 
 
 class GRRTimelineCollector(GRRFlow):
@@ -586,10 +590,11 @@ class GRRTimelineCollector(GRRFlow):
     collected_flow_data = self._DownloadTimeline(client, flow_id)
     if collected_flow_data:
       print('{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
-      self.state.StoreContainer(containers.File(
+      container = containers.File(
           name=client.data.os_info.fqdn.lower(),
           path=collected_flow_data
-      ))
+      )
+      self.state.StoreContainer(container)
 
   def Process(self):
     """Collects a timeline from a host with GRR.
