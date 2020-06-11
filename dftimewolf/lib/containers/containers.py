@@ -155,7 +155,7 @@ class URL(interface.AttributeContainer):
   """Attribute container definition for a Uniform Resource Locator.
 
   Attributes:
-    path (str): The full path to the URI.
+    path (str): The full path to the URL.
   """
   CONTAINER_TYPE = 'url'
 

@@ -108,11 +108,11 @@ class GoogleCloudDiskExportTest(unittest.TestCase):
         'gs://fake-bucket', output_name='{0:s}-image-df-export-temp'.format(
             'fake-source-disk'))
     mock_delete_image.assert_called_once()
-    output_uri = os.path.join(
+    output_url = os.path.join(
         'gs://fake-bucket', '{0:s}-image-df-export-temp.tar.gz'.format(
             'fake-source-disk'))
     urls = test_state.GetContainers(containers.URL)
-    self.assertEqual(urls[0].path, output_uri)
+    self.assertEqual(urls[0].path, output_url)
 
 
 if __name__ == '__main__':
