@@ -5,6 +5,7 @@ import getpass
 import os
 import tempfile
 
+# We import a class to avoid importing the whole turbinia module.
 from turbinia import TurbiniaException
 from turbinia import client as turbinia_client
 from turbinia import config as turbinia_config
@@ -241,17 +242,14 @@ class TurbiniaProcessor(module.BaseModule):
 
     for description, path in all_local_paths:
       if path.endswith('BinaryExtractorTask.tar.gz'):
-        self.state.StoreContainer(
-            containers.ThreatIntelligence(
-                name='BinaryExtractorResults', indicator=None, path=path))
+        container = containers.ThreatIntelligence(
+            name='BinaryExtractorResults', indicator=None, path=path)
       if path.endswith('hashes.json'):
-        self.state.StoreContainer(
-            containers.ThreatIntelligence(
-                name='ImageExportHashes', indicator=None, path=path))
+        container = containers.ThreatIntelligence(
+            name='ImageExportHashes', indicator=None, path=path)
       if path.endswith('.plaso'):
-        self.state.StoreContainer(containers.File(
-            name=description,
-            path=path))
+        container = containers.File(name=description, path=path)
+      self.state.StoreContainer(container)
 
 
 modules_manager.ModulesManager.RegisterModule(TurbiniaProcessor)

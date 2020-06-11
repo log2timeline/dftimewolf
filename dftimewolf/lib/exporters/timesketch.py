@@ -134,9 +134,11 @@ class TimesketchExporter(module.BaseModule):
     host_url = api_root.partition('api/v1')[0]
     sketch_url = '{0:s}sketches/{1:d}/'.format(host_url, sketch.id)
     message = 'Your Timesketch URL is: {0:s}'.format(sketch_url)
-    self.state.StoreContainer(containers.Report(
-        module_name='TimesketchExporter', text=message,
-        text_format='markdown'))
+    container = containers.Report(
+        module_name='TimesketchExporter',
+        text=message,
+        text_format='markdown')
+    self.state.StoreContainer(container)
 
     for analyzer in self._analyzers:
       results = sketch.run_analyzer(

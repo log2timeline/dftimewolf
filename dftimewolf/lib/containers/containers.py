@@ -126,8 +126,8 @@ class File(interface.AttributeContainer):
     """Initializes the attribute.
 
     Args:
-      name (str): Name of the attribute.
-      path (str): Value of the attribute.
+      name (str): Human-friendly name or description of the file.
+      path (str): Full path to the file.
     """
     super(File, self).__init__()
     self.name = name
@@ -138,7 +138,9 @@ class ForensicsVM(interface.AttributeContainer):
 
   Attributes:
     name (str): Identifying name for the virtual machine
-    evidence_disk (Object): The disk containing the forensic evidence.
+    evidence_disk (libcloudforensics.GoogleComputeDisk): The disk containing
+        the forensic evidence. Full definition in
+        libcloudforensics.providers.gcp.internal.GoogleComputeDisk
     platform (str): The cloud platform where the VM is located. One of
         {gcp,aws,azure}.
   """

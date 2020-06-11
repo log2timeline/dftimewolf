@@ -110,8 +110,9 @@ class EndToEndTest(unittest.TestCase):
     # The forensic instance should be live in the analysis GCP project and
     # the disk should be attached
     forensics_vms = self.test_state.GetContainers(containers.ForensicsVM)
-    analysis_vm_name = forensics_vms[0].name
-    expected_disk_name = forensics_vms[0].evidence_disk.name
+    analysis_vm = forensics_vms[0]
+    analysis_vm_name = analysis_vm.name
+    expected_disk_name = analysis_vm.evidence_disk.name
 
     gce_instances_client = self.gcp_client.GceApi().instances()
     request = gce_instances_client.get(
@@ -160,8 +161,9 @@ class EndToEndTest(unittest.TestCase):
     # The forensic instance should be live in the analysis GCP project and
     # the disk should be attached
     forensics_vms = self.test_state.GetContainers(containers.ForensicsVM)
-    analysis_vm_name = forensics_vms[0].name
-    expected_disk_name = forensics_vms[0].evidence_disk.name
+    analysis_vm = forensics_vms[0]
+    analysis_vm_name = analysis_vm.name
+    expected_disk_name = analysis_vm.evidence_disk.name
 
     gce_instances_client = self.gcp_client.GceApi().instances()
     request = gce_instances_client.get(
