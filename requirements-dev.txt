@@ -47,7 +47,7 @@ jinja2==2.11.2; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2
 jmespath==0.10.0; python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'
 jsonschema==3.2.0
 lazy-object-proxy==1.4.3; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-libcloudforensics==20200609
+libcloudforensics==20200610
 markupsafe==1.1.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 mccabe==0.6.1
 mock==4.0.2
