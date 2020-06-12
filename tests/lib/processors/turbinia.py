@@ -14,6 +14,7 @@ from dftimewolf.lib import state
 current_dir = os.path.dirname(os.path.realpath(__file__))
 os.environ['TURBINIA_CONFIG_PATH'] = os.path.join(current_dir, 'test_data')
 # pylint: disable=wrong-import-position
+from dftimewolf.lib.containers import containers
 from dftimewolf.lib.processors import turbinia
 
 from dftimewolf import config
@@ -108,7 +109,6 @@ class TurbiniaProcessorTest(unittest.TestCase):
       self.assertEqual(error_msg, expected_error)
       self.assertEqual(is_critical, True)
 
-  @mock.patch('dftimewolf.lib.state.DFTimewolfState.StoreContainer')
   @mock.patch('os.path.exists')
   @mock.patch('turbinia.output_manager.GCSOutputWriter')
   @mock.patch('turbinia.evidence.GoogleCloudDisk')
@@ -118,8 +118,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
                   _mock_TurbiniaClient,
                   mock_GoogleCloudDisk,
                   mock_GCSOutputWriter,
-                  mock_exists,
-                  mock_StoreContainer):
+                  mock_exists):
     """Tests that the processor processes data correctly."""
 
     test_state = state.DFTimewolfState(config.Config)
@@ -135,6 +134,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
         'saved_paths': [
             '/fake/data.plaso',
             '/fake/data2.plaso',
+            '/another/random/file.txt',
             'gs://BinaryExtractorTask.tar.gz',
         ]
     }]
@@ -167,20 +167,19 @@ class TurbiniaProcessorTest(unittest.TestCase):
         local_output_dir=turbinia_processor._output_path
     )
     self.assertEqual(test_state.errors, [])
-    self.assertEqual(test_state.output, [
-        ('turbinia-project-disk-1', '/fake/data.plaso'),
-        ('turbinia-project-disk-1', '/fake/data2.plaso'),
-        ('turbinia-project-disk-1', '/local/BinaryExtractorTask.tar.gz'),
-    ])
-    self.assertEqual(
-        mock_StoreContainer.call_args[0][0].CONTAINER_TYPE,
-        'threat_intelligence')
-    self.assertEqual(
-        mock_StoreContainer.call_args[0][0].name,
-        'BinaryExtractorResults')
-    self.assertEqual(
-        mock_StoreContainer.call_args[0][0].path,
-        '/local/BinaryExtractorTask.tar.gz')
+    ti_containers = test_state.GetContainers(containers.ThreatIntelligence)
+    file_containers = test_state.GetContainers(containers.File)
+
+    # Make sure that file.txt is ignored
+    self.assertEqual(len(file_containers), 2)
+
+    self.assertEqual(ti_containers[0].name, 'BinaryExtractorResults')
+    self.assertEqual(ti_containers[0].path, '/local/BinaryExtractorTask.tar.gz')
+
+    self.assertEqual(file_containers[0].name, 'turbinia-project-disk-1')
+    self.assertEqual(file_containers[1].name, 'turbinia-project-disk-1')
+    self.assertEqual(file_containers[0].path, '/fake/data.plaso')
+    self.assertEqual(file_containers[1].path, '/fake/data2.plaso')
 
   @mock.patch('turbinia.output_manager.GCSOutputWriter')
   # pylint: disable=invalid-name
