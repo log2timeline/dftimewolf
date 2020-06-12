@@ -66,7 +66,12 @@ class GoogleCloudCollector(module.BaseModule):
           disk.name, new_disk.name))
       new_disk.AddLabels(self._gcp_label)
       self.analysis_vm.AttachDisk(new_disk)
-      self.state.output.append((self.analysis_vm.name, new_disk))
+
+      container = containers.ForensicsVM(
+          name=self.analysis_vm.name,
+          evidence_disk=new_disk,
+          platform='gcp')
+      self.state.StoreContainer(container)
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,

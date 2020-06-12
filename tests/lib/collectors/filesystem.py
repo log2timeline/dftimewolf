@@ -8,6 +8,7 @@ import mock
 
 from dftimewolf.lib import state
 from dftimewolf.lib.collectors import filesystem
+from dftimewolf.lib.containers import containers
 
 from dftimewolf import config
 
@@ -29,11 +30,11 @@ class LocalFileSystemTest(unittest.TestCase):
     filesystem_collector.SetUp(paths=fake_paths)
     mock_exists.return_value = True
     filesystem_collector.Process()
-    expected_output = [
-        ('1', '/fake/path/1'),
-        ('2', '/fake/path/2')
-    ]
-    self.assertEqual(test_state.output, expected_output)
+    files = test_state.GetContainers(containers.File)
+    self.assertEqual(files[0].path, '/fake/path/1')
+    self.assertEqual(files[0].name, '1')
+    self.assertEqual(files[1].path, '/fake/path/2')
+    self.assertEqual(files[1].name, '2')
 
   @mock.patch('dftimewolf.lib.state.DFTimewolfState.AddError')
   def testSetup(self, mock_add_error):

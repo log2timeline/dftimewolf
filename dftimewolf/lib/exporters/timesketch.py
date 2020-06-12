@@ -43,13 +43,13 @@ class TimesketchExporter(module.BaseModule):
     Args:
       incident_id (Optional[str]): Incident ID or reference. Used in sketch
           description.
-      sketch_id (Optional[int]): Sketch ID to add the resulting timeline to.
+      sketch_id (Optional[str]): Sketch ID to add the resulting timeline to.
           If not provided, a new sketch is created.
       analyzers (Optional[List[str]): If provided a list of analyzer names
           to run on the sketch after they've been imported to Timesketch.
     """
     self.timesketch_api = timesketch_utils.GetApiClient(self.state)
-    self.incident_id = None
+    self.incident_id = incident_id
     self.sketch_id = int(sketch_id) if sketch_id else None
     sketch = None
 
@@ -108,7 +108,8 @@ class TimesketchExporter(module.BaseModule):
 
     recipe_name = self.state.recipe.get('name', 'no_recipe')
     input_names = []
-    for description, _ in self.state.input:
+    for file_container in self.state.GetContainers(containers.File):
+      description = file_container.name
       if not description:
         continue
       name = description.rpartition('.')[0]
@@ -125,14 +126,19 @@ class TimesketchExporter(module.BaseModule):
       streamer.set_sketch(sketch)
       streamer.set_timeline_name(timeline_name)
 
-      for _, path in self.state.input:
+      for file_container in self.state.GetContainers(containers.File):
+        path = file_container.path
         streamer.add_file(path)
 
     api_root = sketch.api.api_root
     host_url = api_root.partition('api/v1')[0]
     sketch_url = '{0:s}sketches/{1:d}/'.format(host_url, sketch.id)
-    print('Your Timesketch URL is: {0:s}'.format(sketch_url))
-    self.state.output = sketch_url
+    message = 'Your Timesketch URL is: {0:s}'.format(sketch_url)
+    container = containers.Report(
+        module_name='TimesketchExporter',
+        text=message,
+        text_format='markdown')
+    self.state.StoreContainer(container)
 
     for analyzer in self._analyzers:
       results = sketch.run_analyzer(

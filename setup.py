@@ -6,7 +6,6 @@ import glob
 import os
 import sys
 
-
 def ParseRequirements(filename):
   """Parse python requirements.
 
