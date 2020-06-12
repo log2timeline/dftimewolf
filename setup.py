@@ -7,7 +7,14 @@ import os
 import sys
 
 def ParseRequirements(filename):
-  """Parses a requirements.txt file."""
+  """Parse python requirements.
+
+  Args:
+    filename (str): The requirement file to read.
+
+  Returns:
+    List[str]: a list of requirements.
+  """
   with open(filename) as requirements:
     # Skipping -i https://pypi.org/simple
     return requirements.readlines()[1:]

@@ -261,7 +261,7 @@ def CleanUp(project_id, zone, instance_name):
   # we ignore the disk that was created for the analysis VM (disks[0]) as
   # it is deleted in the previous operation
   gce_disks_client = gcp_client.GceApi().disks()
-  for disk in disks[1:]:
+  for disk in list(disks.keys())[1:]:
     log.info('Deleting disk: {0:s}.'.format(disk))
     while True:
       try:
