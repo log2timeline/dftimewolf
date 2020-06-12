@@ -117,8 +117,8 @@ class File(interface.AttributeContainer):
   """Attribute container definition for generic files.
 
   Attributes:
-    name (str): Name of the attribute.
-    path (str): Value of the attribute.
+    name (str): Human-friendly name or description of the file.
+    path (str): Full path to the file.
   """
   CONTAINER_TYPE = 'file'
 
