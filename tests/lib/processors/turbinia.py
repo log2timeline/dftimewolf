@@ -162,6 +162,9 @@ class TurbiniaProcessorTest(unittest.TestCase):
     self.assertListEqual(
         request.recipe['jobs_blacklist'],
         ['StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob'])
+    self.assertListEqual(
+        request.recipe['jobs_denylist'],
+        ['StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob'])
     turbinia_processor.client.get_task_data.assert_called()
     # pylint: disable=protected-access
     mock_GCSOutputWriter.assert_any_call(
