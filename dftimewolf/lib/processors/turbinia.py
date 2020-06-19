@@ -180,7 +180,8 @@ class TurbiniaProcessor(module.BaseModule):
     if self.sketch_id:
       request.recipe['sketch_id'] = self.sketch_id
     if not self.run_all_jobs:
-      request.recipe['jobs_blacklist'] = ['StringsJob']
+      request.recipe['jobs_blacklist'] = [
+          'StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob']
 
     # Get threat intelligence data from any modules that have stored some.
     # In this case, observables is a list of containers.ThreatIntelligence
