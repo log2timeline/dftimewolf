@@ -111,3 +111,56 @@ class TicketAttribute(interface.AttributeContainer):
     self.type = type_
     self.name = name
     self.value = value
+
+
+class File(interface.AttributeContainer):
+  """Attribute container definition for generic files.
+
+  Attributes:
+    name (str): Human-friendly name or description of the file.
+    path (str): Full path to the file.
+  """
+  CONTAINER_TYPE = 'file'
+
+  def __init__(self, name, path):
+    """Initializes the attribute.
+
+    Args:
+      name (str): Human-friendly name or description of the file.
+      path (str): Full path to the file.
+    """
+    super(File, self).__init__()
+    self.name = name
+    self.path = path
+
+class ForensicsVM(interface.AttributeContainer):
+  """Attribute container definition for a forensics virtual machine.
+
+  Attributes:
+    name (str): Identifying name for the virtual machine
+    evidence_disk (libcloudforensics.GoogleComputeDisk): The disk containing
+        the forensic evidence. Full definition in
+        libcloudforensics.providers.gcp.internal.GoogleComputeDisk
+    platform (str): The cloud platform where the VM is located. One of
+        {gcp,aws,azure}.
+  """
+  CONTAINER_TYPE = 'forensics_vm'
+
+  def __init__(self, name, evidence_disk, platform):
+    super(ForensicsVM, self).__init__()
+    self.name = name
+    self.evidence_disk = evidence_disk
+    self.platform = platform
+
+
+class URL(interface.AttributeContainer):
+  """Attribute container definition for a Uniform Resource Locator.
+
+  Attributes:
+    path (str): The full path to the URL.
+  """
+  CONTAINER_TYPE = 'url'
+
+  def __init__(self, path):
+    super(URL, self).__init__()
+    self.path = path

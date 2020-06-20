@@ -14,10 +14,10 @@
 # limitations under the License.
 """End to end test for the Google Cloud Collector."""
 import json
+import logging
 import os
 import time
 import unittest
-import logging
 
 from googleapiclient.errors import HttpError
 from libcloudforensics.providers.gcp.internal import project as gcp_project
@@ -26,6 +26,7 @@ from libcloudforensics.providers.gcp.internal import compute, common
 from dftimewolf import config
 from dftimewolf.lib import state
 from dftimewolf.lib.collectors import gcloud
+from dftimewolf.lib.containers import containers
 
 log = logging.getLogger(__name__)
 
@@ -108,8 +109,10 @@ class EndToEndTest(unittest.TestCase):
 
     # The forensic instance should be live in the analysis GCP project and
     # the disk should be attached
-    analysis_vm_name = self.test_state.output[0][0]
-    expected_disk_name = self.test_state.output[0][1].name
+    forensics_vms = self.test_state.GetContainers(containers.ForensicsVM)
+    analysis_vm = forensics_vms[0]
+    analysis_vm_name = analysis_vm.name
+    expected_disk_name = analysis_vm.evidence_disk.name
 
     gce_instances_client = self.gcp_client.GceApi().instances()
     request = gce_instances_client.get(
@@ -157,8 +160,10 @@ class EndToEndTest(unittest.TestCase):
 
     # The forensic instance should be live in the analysis GCP project and
     # the disk should be attached
-    analysis_vm_name = self.test_state.output[0][0]
-    expected_disk_name = self.test_state.output[0][1].name
+    forensics_vms = self.test_state.GetContainers(containers.ForensicsVM)
+    analysis_vm = forensics_vms[0]
+    analysis_vm_name = analysis_vm.name
+    expected_disk_name = analysis_vm.evidence_disk.name
 
     gce_instances_client = self.gcp_client.GceApi().instances()
     request = gce_instances_client.get(
