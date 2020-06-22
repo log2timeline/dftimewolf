@@ -131,8 +131,8 @@ class DFTimewolfState(object):
 
     Args:
       container_class (type): AttributeContainer class used to filter data.
-      pop (Optional[bool]): Whether to remove the containers from the state when they
-          are retrieved.
+      pop (Optional[bool]): Whether to remove the containers from the state when
+          they are retrieved.
 
     Returns:
       list[AttributeContainer]: attribute container objects provided in
