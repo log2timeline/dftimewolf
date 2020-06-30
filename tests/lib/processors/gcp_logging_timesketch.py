@@ -14,6 +14,8 @@ from dftimewolf import config
 class GCPLoggingTimesketchTest(unittest.TestCase):
   """Tests for the GCP logging Timesketch processor."""
 
+  maxDiff = None
+
   def testInitialization(self):
     """Tests that the processor can be initialized."""
     test_state = state.DFTimewolfState(config.Config)
@@ -336,5 +338,144 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
     # pylint: disable=protected-access
     actual_timesketch_record = processor._ProcessLogLine(
         gce_creation, 'test_query', 'test_project')
+    actual_timesketch_record = json.loads(actual_timesketch_record)
+    self.assertDictEqual(expected_timesketch_record, actual_timesketch_record)
+
+  def testGCSCreateLog(self):
+    """Tests that a GCS bucket creation log is transformed correctly."""
+    test_state = state.DFTimewolfState(config.Config)
+    processor = gcp_logging_timesketch.GCPLoggingTimesketch(test_state)
+
+    gcs_creation = {
+        'protoPayload': {
+            '@type': 'type.googleapis.com/google.cloud.audit.AuditLog',
+            'status': {},
+            'authenticationInfo': {
+                'principalEmail':
+                    'heinz-57@ketchup-research.iam.gserviceaccount.com'
+            },
+            'requestMetadata': {
+                'callerIp': '100.100.100.100',
+                'callerSuppliedUserAgent': 'google-cloud-sdk gcloud/249.0.0',
+                'requestAttributes': {
+                    'time': '2020-06-16T05:09:57.437288734Z',
+                    'auth': {}
+                },
+                'destinationAttributes': {}
+            },
+            'serviceName': 'storage.googleapis.com',
+            'methodName': 'storage.buckets.create',
+            'authorizationInfo': [{
+                'resource': 'projects/_/buckets/test_bucket_1',
+                'permission': 'storage.buckets.create',
+                'granted': 'true',
+                'resourceAttributes': {}
+            }],
+            'resourceName': 'projects/_/buckets/test_bucket_1',
+            'serviceData': {
+                '@type': 'type.googleapis.com/google.iam.v1.logging.AuditData',
+                'policyDelta': {
+                    'bindingDeltas': [{
+                        'action': 'ADD',
+                        'role': 'roles/storage.legacyBucketOwner',
+                        'member': 'projectEditor:ketchup-research'
+                    }, {
+                        'action': 'ADD',
+                        'role': 'roles/storage.legacyBucketOwner',
+                        'member': 'projectOwner:ketchup-research'
+                    }, {
+                        'action': 'ADD',
+                        'role': 'roles/storage.legacyBucketReader',
+                        'member': 'projectViewer:ketchup-research'
+                    }]
+                }
+            },
+            'request': {
+                'defaultObjectAcl': {
+                    'bindings': [{
+                        'role': 'roles/storage.legacyObjectReader',
+                        'members': ['projectViewer:ketchup-research']
+                    }, {
+                        'role':
+                            'roles/storage.legacyObjectOwner',
+                        'members': [
+                            'projectOwner:ketchup-research',
+                            'projectEditor:ketchup-research'
+                        ]
+                    }],
+                    '@type': 'type.googleapis.com/google.iam.v1.Policy'
+                }
+            },
+            'resourceLocation': {
+                'currentLocations': ['us-east1']
+            }
+        },
+        'insertId':
+            '10329k5e3miwp',
+        'resource': {
+            'type': 'gcs_bucket',
+            'labels': {
+                'location': 'us-east1',
+                'project_id': 'ketchup-research',
+                'bucket_name': 'test_bucket_1'
+            }
+        },
+        'timestamp':
+            '2020-06-16T05:09:57.427874505Z',
+        'severity':
+            'NOTICE',
+        'logName':
+            'projects/ketchup-research/logs/cloudaudit.googleapis.com%2Factivity',
+        'receiveTimestamp':
+            '2020-06-16T05:09:58.131439936Z'
+    }
+
+    gcs_creation = json.dumps(gcs_creation)
+
+    expected_timesketch_record = {
+        'query':
+            'test_query',
+        'project_name':
+            'test_project',
+        'datetime':
+            '2020-06-16T05:09:57.427874505Z',
+        'timestamp_desc':
+            'Event Recorded',
+        'resource_label_location':
+            'us-east1',
+        'resource_label_project_id':
+            'ketchup-research',
+        'principalEmail':
+            'heinz-57@ketchup-research.iam.gserviceaccount.com',
+        'requestMetadata_callerIp':
+            '100.100.100.100',
+        'requestMetadata_callerSuppliedUserAgent':
+            'google-cloud-sdk gcloud/249.0.0',
+        'requestMetadata_destinationAttributes': {},
+        'requestMetadata_requestAttributes': {
+            'auth': {},
+            'time': '2020-06-16T05:09:57.437288734Z',
+        },
+        'serviceName':
+            'storage.googleapis.com',
+        'methodName':
+            'storage.buckets.create',
+        'resourceName': 'projects/_/buckets/test_bucket_1',
+        'resource_label_bucket_name': 'test_bucket_1',
+        'policyDelta': 'ADD projectEditor:ketchup-research with role '
+                       'roles/storage.legacyBucketOwner, ADD '
+                       'projectOwner:ketchup-research with role '
+                       'roles/storage.legacyBucketOwner, ADD '
+                       'projectViewer:ketchup-research with role '
+                       'roles/storage.legacyBucketReader',
+        'message':
+            'User heinz-57@ketchup-research.iam.gserviceaccount.com '
+            'performed storage.buckets.create on '
+            'projects/_/buckets/test_bucket_1'
+    }
+
+    # pylint: disable=protected-access
+    actual_timesketch_record = processor._ProcessLogLine(
+        gcs_creation, 'test_query', 'test_project')
     actual_timesketch_record = json.loads(actual_timesketch_record)
     self.assertDictEqual(expected_timesketch_record, actual_timesketch_record)
