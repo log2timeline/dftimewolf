@@ -55,7 +55,7 @@ class AWSCollector(module.BaseModule):
     self.analysis_profile_name = None
     self.analysis_zone = None
     self.analysis_vm = None
-    self.device_names = None
+    self.device_suffixes = None
 
   def Process(self):
     """Copies a volume and attaches it to the analysis VM."""
@@ -85,7 +85,7 @@ class AWSCollector(module.BaseModule):
             analysis_zone=None,
             boot_volume_size=50,
             cpu_cores=16,
-            ami='ami-0013b3aa57f8a4331'):
+            ami=None):
     """Sets up an Amazon web Services (AWS) collector.
 
     This method creates and starts an analysis VM in the AWS account and
@@ -131,6 +131,7 @@ class AWSCollector(module.BaseModule):
     if not (remote_profile_name and remote_zone):
       self.state.AddError('You must specify "remote_profile_name" and "zone" '
                           'parameters', critical=True)
+      return
 
     self.remote_profile_name = remote_profile_name
     self.remote_zone = remote_zone
@@ -146,7 +147,7 @@ class AWSCollector(module.BaseModule):
     self.analysis_profile_name = analysis_profile_name or remote_profile_name
 
     # See https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html
-    self.device_names = [chr(i) for i in range(ord('f'), ord('p') + 1)]
+    self.device_suffixes = list('fghijklmnop')
 
     analysis_vm_name = 'aws-forensics-vm-{0:s}'.format(self.incident_id)
     print('Your analysis VM will be: {0:s}'.format(analysis_vm_name))
@@ -182,6 +183,7 @@ class AWSCollector(module.BaseModule):
             'Volume "{0:s}" was not found in AWS account {1:s}'.format(
                 volume_id, self.remote_profile_name),
             critical=True)
+        return []
     return volumes
 
   def _GetVolumesFromInstance(self, instance_id, all_volumes):
@@ -189,7 +191,7 @@ class AWSCollector(module.BaseModule):
 
     Args:
       instance_id (str): Instance ID of the instance to get the volumes from.
-      all_volumes (bool): If set, get all volumes attached to the instance. If
+      all_volumes (bool): If True, get all volumes attached to the instance. If
           False, get only the instance's boot volume.
 
     Returns:
@@ -206,7 +208,7 @@ class AWSCollector(module.BaseModule):
     return [remote_instance.GetBootVolume()]
 
   def _FindVolumesToCopy(self):
-    """Determines which volumes to copy depending on object attributes.
+    """Determines which volumes to copy depending on the collector's attributes.
 
     Returns:
       list[AWSVolume]: A list of the volumes to copy.
@@ -227,6 +229,7 @@ class AWSCollector(module.BaseModule):
     if not volumes_to_copy:
       self.state.AddError(
           'Could not find any volumes to copy', critical=True)
+      return []
 
     return volumes_to_copy
 
@@ -236,10 +239,10 @@ class AWSCollector(module.BaseModule):
     AWS recommends using device names that are within /dev/sd[f-p][1-6].
 
     Returns:
-      str: A device name.
+      str: A device name, or an empty string if a name could not be obtained.
     """
     try:
-      next_available = self.device_names.pop(0)
+      next_available = self.device_suffixes.pop(0)
     except IndexError as exception:
       self.state.AddError('Error: there are no more device names available '
                           'for this VM. Consider copying less volumes! '
