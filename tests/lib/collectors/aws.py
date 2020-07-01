@@ -90,7 +90,7 @@ class AWSCollectorTest(unittest.TestCase):
         'aws-forensics-vm-fake_incident_id',
         'test-remote-zone',
         50,
-        ami='ami-0013b3aa57f8a4331',
+        ami=None,
         cpu_cores=16,
         dst_profile='test-remote-profile-name'
     )
@@ -130,7 +130,7 @@ class AWSCollectorTest(unittest.TestCase):
         'aws-forensics-vm-fake_incident_id',
         'test-analysis-zone',
         50,
-        ami='ami-0013b3aa57f8a4331',
+        ami=None,
         cpu_cores=16,
         dst_profile='test-analysis-profile-name'
     )
