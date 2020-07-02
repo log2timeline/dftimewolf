@@ -85,6 +85,7 @@ if [[ "$*" =~ "include-timesketch" ]]; then
      sudo -E docker-compose up -d
      # Wait for Timesketch to initialize
      /bin/sleep 300
+     cd ../../../
 fi
 
 if [[ "$*" =~ "include-plaso" ]]; then
