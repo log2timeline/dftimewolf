@@ -26,19 +26,19 @@ DEVELOPMENT_DEPENDENCIES="python-sphinx
                           pylint";
 
 sudo add-apt-repository ppa:gift/dev -y
-sudo apt-get update -q
-sudo apt-get install -y ${PYTHON2_DEPENDENCIES}
+sudo apt-get update -qq
+sudo apt-get install -qq -y ${PYTHON2_DEPENDENCIES}
 
 # Pending resolution of https://github.com/log2timeline/l2tdevtools/issues/233.
 sudo apt-get install -y python3-pip
 sudo pip3 install grr-api-client
 
 if [[ "$*" =~ "include-development" ]]; then
-    sudo apt-get install -y ${DEVELOPMENT_DEPENDENCIES}
+    sudo apt-get install -qq -y ${DEVELOPMENT_DEPENDENCIES}
 fi
 
 if [[ "$*" =~ "include-test" ]]; then
-    sudo apt-get install -y ${TEST_DEPENDENCIES}
+    sudo apt-get install -qq -y ${TEST_DEPENDENCIES}
 fi
 
 if [[ "$*" =~ "include-docker" ]]; then
@@ -47,8 +47,8 @@ if [[ "$*" =~ "include-docker" ]]; then
        "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
        $(lsb_release -cs) \
        stable"
-    sudo apt-get update -q
-    sudo apt-get install -y docker-ce
+    sudo apt-get update -qq
+    sudo apt-get install -qq -y docker-ce
     curl -L https://github.com/docker/compose/releases/download/1.21.0/docker-compose-$(uname -s)-$(uname -m) -o docker-compose
     sudo cp docker-compose /usr/local/bin/docker-compose
     sudo chmod +x /usr/local/bin/docker-compose
@@ -85,16 +85,19 @@ if [[ "$*" =~ "include-timesketch" ]]; then
      sudo -E docker-compose up -d
      # Wait for Timesketch to initialize
      /bin/sleep 300
+     cd ../../../
 fi
 
 if [[ "$*" =~ "include-plaso" ]]; then
-    sudo apt-get -y install plaso-tools
+    sudo apt-get -qq -y install plaso-tools
 fi
 
 # pending resolution of https://github.com/log2timeline/l2tdevtools/issues/595
 if [[ "$*" =~ "include-turbinia" ]]; then
+    echo "Installing Turbinia"
     sudo pip3 install turbinia
 fi
 
+echo "Installing dftimewolf deps"
 # Install dftimewolf's pinned requirements
 pip3 install -r ../../requirements.txt

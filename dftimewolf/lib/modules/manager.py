@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 """Modules manager class."""
 
-from __future__ import unicode_literals
-
-
 class ModulesManager(object):
   """Modules manager."""
 

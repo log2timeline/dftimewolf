@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 """Processes artifacts using local grep ."""
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import mimetypes
 import os
@@ -12,7 +10,7 @@ import PyPDF2
 
 from dftimewolf.lib import module
 from dftimewolf.lib.modules import manager as modules_manager
-
+from dftimewolf.lib.containers import containers
 
 class GrepperSearch(module.BaseModule):
   """Processes a list of file paths with to search for
@@ -39,14 +37,15 @@ class GrepperSearch(module.BaseModule):
 
   def Process(self):
     """Executes grep on the module input."""
-    for _, path in self.state.input:
+    for file_container in self.state.GetContainers(containers.File):
+      path = file_container.path
       log_file_path = os.path.join(self._output_path, 'grepper.log')
       print('Log file: {0:s}'.format(log_file_path))
 
       print('Walking through dir (absolute) = ' + os.path.abspath(path))
       try:
         for root, _, files in os.walk(path):
-          for filename in files:
+          for filename in sorted(files):
             found = set()
             fullpath = '{0:s}/{1:s}'.format(os.path.abspath(root), filename)
             if mimetypes.guess_type(filename)[0] == 'application/pdf':
@@ -58,7 +57,7 @@ class GrepperSearch(module.BaseModule):
                       self._keywords, line, re.IGNORECASE)))
             if [item for item in found if item]:
               output = '{0:s}/{1:s}:{2:s}'.format(path, filename, ','.join(
-                  filter(None, found)))
+                  filter(None, sorted(found))))
               if self._final_output:
                 self._final_output += '\n' + output
               else:

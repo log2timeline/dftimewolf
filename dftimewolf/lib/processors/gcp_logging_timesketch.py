@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 """Processes Google Cloud Platform (GCP) logs for loading into Timesketch."""
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import tempfile
 import json
@@ -229,7 +227,8 @@ class GCPLoggingTimesketch(BaseModule):
     timeline_name = 'GCP logs {0:s} "{1:s}"'.format(
         logs_container.project_name, logs_container.filter_expression)
 
-    self.state.output.append([timeline_name, output_path])
+    container = containers.File(name=timeline_name, path=output_path)
+    self.state.StoreContainer(container)
 
   def Process(self):
     """Processes GCP logs containers for insertion into Timesketch."""

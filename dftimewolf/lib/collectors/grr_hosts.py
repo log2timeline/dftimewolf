@@ -1,21 +1,18 @@
 # -*- coding: utf-8 -*-
 """Definition of modules for collecting data from GRR hosts."""
 
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import datetime
 import os
 import re
-import time
 import threading
+import time
 import zipfile
 
 from grr_api_client import errors as grr_errors
-from grr_response_proto import flows_pb2
-from grr_response_proto import timeline_pb2
+from grr_response_proto import flows_pb2, timeline_pb2
 
 from dftimewolf.lib.collectors.grr_base import GRRBaseModule
+from dftimewolf.lib.containers import containers
 from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.modules import manager as modules_manager
 
@@ -340,10 +337,14 @@ class GRRArtifactCollector(GRRFlow):
       return
     self._AwaitFlow(client, flow_id)
     collected_flow_data = self._DownloadFiles(client, flow_id)
+
     if collected_flow_data:
       print('{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
-      fqdn = client.data.os_info.fqdn.lower()
-      self.state.output.append((fqdn, collected_flow_data))
+      container = containers.File(
+          name=client.data.os_info.fqdn.lower(),
+          path=collected_flow_data
+      )
+      self.state.StoreContainer(container)
 
   def Process(self):
     """Collects artifacts from a host with GRR.
@@ -444,8 +445,11 @@ class GRRFileCollector(GRRFlow):
     collected_flow_data = self._DownloadFiles(client, flow_id)
     if collected_flow_data:
       print('{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
-      fqdn = client.data.os_info.fqdn.lower()
-      self.state.output.append((fqdn, collected_flow_data))
+      container = containers.File(
+          name=client.data.os_info.fqdn.lower(),
+          path=collected_flow_data
+      )
+      self.state.StoreContainer(container)
 
   def Process(self):
     """Collects files from a host with GRR.
@@ -514,8 +518,11 @@ class GRRFlowCollector(GRRFlow):
     if collected_flow_data:
       print('{0:s}: Downloaded: {1:s}'.format(
           self.flow_id, collected_flow_data))
-      fqdn = client.data.os_info.fqdn.lower()
-      self.state.output.append((fqdn, collected_flow_data))
+      container = containers.File(
+          name=client.data.os_info.fqdn.lower(),
+          path=collected_flow_data
+      )
+      self.state.StoreContainer(container)
 
 
 class GRRTimelineCollector(GRRFlow):
@@ -583,8 +590,11 @@ class GRRTimelineCollector(GRRFlow):
     collected_flow_data = self._DownloadTimeline(client, flow_id)
     if collected_flow_data:
       print('{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
-      fqdn = client.data.os_info.fqdn.lower()
-      self.state.output.append((fqdn, collected_flow_data))
+      container = containers.File(
+          name=client.data.os_info.fqdn.lower(),
+          path=collected_flow_data
+      )
+      self.state.StoreContainer(container)
 
   def Process(self):
     """Collects a timeline from a host with GRR.

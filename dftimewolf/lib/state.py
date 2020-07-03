@@ -4,9 +4,6 @@
 Use it to track errors, abort on global failures, clean up after modules, etc.
 """
 
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import sys
 import threading
 import traceback
@@ -129,18 +126,23 @@ class DFTimewolfState(object):
     with self._state_lock:
       self.store.setdefault(container.CONTAINER_TYPE, []).append(container)
 
-  def GetContainers(self, container_class):
+  def GetContainers(self, container_class, pop=False):
     """Thread-safe method to retrieve data from the state's store.
 
     Args:
       container_class (type): AttributeContainer class used to filter data.
+      pop (Optional[bool]): Whether to remove the containers from the state when
+          they are retrieved.
 
     Returns:
       list[AttributeContainer]: attribute container objects provided in
           the store that correspond to the container type.
     """
     with self._state_lock:
-      return self.store.get(container_class.CONTAINER_TYPE, [])
+      containers = self.store.get(container_class.CONTAINER_TYPE, [])
+      if pop:
+        self.store[container_class.CONTAINER_TYPE] = []
+      return containers
 
   def _SetupModuleThread(self, module_definition):
     """Calls the module's SetUp() function and sets a threading event for it.
