@@ -49,7 +49,7 @@ if [[ "$*" =~ "include-docker" ]]; then
        stable"
     sudo apt-get update -qq
     sudo apt-get install -qq -y docker-ce
-    curl -L https://github.com/docker/compose/releases/download/1.21.0/docker-compose-$(uname -s)-$(uname -m) -o docker-compose
+    curl -L https://github.com/docker/compose/releases/download/1.26.1/docker-compose-$(uname -s)-$(uname -m) -o docker-compose
     sudo cp docker-compose /usr/local/bin/docker-compose
     sudo chmod +x /usr/local/bin/docker-compose
 fi
@@ -85,7 +85,8 @@ if [[ "$*" =~ "include-timesketch" ]]; then
      sudo -E docker-compose up -d
      # Wait for Timesketch to initialize
      /bin/sleep 300
-     cd ../../../
+     cd ../../..
+     echo "$PWD"
 fi
 
 if [[ "$*" =~ "include-plaso" ]]; then
@@ -100,4 +101,4 @@ fi
 
 echo "Installing dftimewolf deps"
 # Install dftimewolf's pinned requirements
-pip3 install -r ../../requirements.txt
+pip3 install -r requirements.txt
