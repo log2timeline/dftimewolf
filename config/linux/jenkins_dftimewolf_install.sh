@@ -86,7 +86,6 @@ if [[ "$*" =~ "include-timesketch" ]]; then
      # Wait for Timesketch to initialize
      /bin/sleep 300
      cd ../../..
-     echo "$PWD"
 fi
 
 if [[ "$*" =~ "include-plaso" ]]; then
@@ -99,6 +98,6 @@ if [[ "$*" =~ "include-turbinia" ]]; then
     sudo pip3 install turbinia
 fi
 
-echo "Installing dftimewolf deps"
+echo "Installing dftimewolf requirements"
 # Install dftimewolf's pinned requirements
 pip3 install -r requirements.txt
