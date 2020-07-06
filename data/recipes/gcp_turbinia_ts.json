@@ -26,6 +26,7 @@
         ["disk_name", "Name of GCP persistent disk to process", null],
         ["--incident_id", "Incident ID (used for Timesketch description)", null],
         ["--run_all_jobs", "Run all Turbinia processing jobs instead of a faster subset", false],
+        ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
         ["--sketch_id", "Sketch to which the timeline should be added", null]
     ]
 }

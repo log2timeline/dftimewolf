@@ -37,7 +37,8 @@ class TimesketchExporter(module.BaseModule):
   def SetUp(self,  # pylint: disable=arguments-differ
             incident_id=None,
             sketch_id=None,
-            analyzers=None):
+            analyzers=None,
+            token_password=''):
     """Setup a connection to a Timesketch server and create a sketch if needed.
 
     Args:
@@ -47,8 +48,16 @@ class TimesketchExporter(module.BaseModule):
           If not provided, a new sketch is created.
       analyzers (Optional[List[str]): If provided a list of analyzer names
           to run on the sketch after they've been imported to Timesketch.
+      token_password (str): optional password used to decrypt the
+          Timesketch credential storage.
     """
-    self.timesketch_api = timesketch_utils.GetApiClient(self.state)
+    self.timesketch_api = timesketch_utils.GetApiClient(
+        self.state, token_password=token_password)
+    if not self.timesketch_api:
+      self.state.AddError(
+          'Unable to get a Timesketch API client, try deleting the files '
+          '~/.timesketchrc and ~/.timesketch.token', critical=True)
+      return
     self.incident_id = incident_id
     self.sketch_id = int(sketch_id) if sketch_id else None
     sketch = None

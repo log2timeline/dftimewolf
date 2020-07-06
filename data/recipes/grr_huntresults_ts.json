@@ -32,6 +32,7 @@
         ["hunt_id", "ID of GRR Hunt results to fetch", null],
         ["reason", "Reason for exporting hunt (used for Timesketch description)", null],
         ["--sketch_id", "Sketch to which the timeline should be added", null],
+        ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
         ["--approvers", "Emails for GRR approval request", null],
         ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
         ["--verify", "Whether to verify the GRR TLS certificate", true],
