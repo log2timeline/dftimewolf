@@ -17,6 +17,7 @@
         "name": "TimesketchExporter",
         "args": {
             "incident_id": "@incident_id",
+	    "token_password": "@token_password",
             "sketch_id": "@sketch_id"
         }
     }],
