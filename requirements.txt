@@ -72,8 +72,8 @@ rsa==4.1; python_version >= '3.5' and python_version < '4.0'
 s3transfer==0.3.3
 six==1.15.0
 soupsieve==2.0.1; python_version >= '3.5'
-timesketch-api-client==20200608
-timesketch-import-client==20200527
+timesketch-api-client==20200620
+timesketch-import-client==20200706
 toolz==0.10.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 traitlets==4.3.3
 turbinia==20190819.10
