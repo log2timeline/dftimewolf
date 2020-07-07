@@ -18,6 +18,7 @@
         "name": "TimesketchExporter",
         "args": {
             "incident_id": "@incident_id",
+            "token_password": "@token_password",
             "sketch_id": "@sketch_id"
         }
     }],
@@ -25,5 +26,7 @@
         ["project_name", "Name of GCP project to collect logs from", null],
         ["instance_id", "Identifier for GCE instance", null],
         ["--incident_id", "Incident ID (used for Timesketch description)", null],
-        ["--sketch_id", "Sketch to which the timeline should be added", null]]
+        ["--sketch_id", "Sketch to which the timeline should be added", null],
+        ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""]
+    ]
 }
