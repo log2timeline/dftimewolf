@@ -1,5 +1,5 @@
 [timesketch]
-host_uri = http://localhost:5000
+host_uri = http://localhost:80
 username = your_username
 verify = True
 client_id = 
