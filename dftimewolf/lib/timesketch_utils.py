@@ -42,7 +42,7 @@ def GetApiClient(state, token_password=''):
     if not ts_client:
       state.AddError(
           'Unable to get a Timesketch API Client', critical=False)
-      return ts_client
+      return None
 
     assistant.save_config()
 
