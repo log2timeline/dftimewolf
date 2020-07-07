@@ -135,7 +135,7 @@ class AWSCollector(module.BaseModule):
           TLS.
     """
 
-    if not (self.remote_instance_id or self.volume_ids):
+    if not (remote_instance_id or volume_ids):
       self.state.AddError(
           'You need to specify at least an instance name or volume ids to copy',
           critical=True)
