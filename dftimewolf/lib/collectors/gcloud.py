@@ -124,8 +124,7 @@ class GoogleCloudCollector(module.BaseModule):
       image_family (Optional[str]): name of the image to use to create the
           analysis VM.
     """
-
-    if not (self.remote_instance_name or self.disk_names):
+    if not (remote_instance_name or disk_names):
       self.state.AddError(
           'You need to specify at least an instance name or disks to copy',
           critical=True)
