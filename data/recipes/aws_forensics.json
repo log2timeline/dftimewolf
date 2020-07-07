@@ -1,6 +1,6 @@
 {
   "name": "aws_forensics",
-  "short_description": "Copies volume from an AWS account to an analysis VM.",
+  "short_description": "Copies a volume from an AWS account to an analysis VM.",
   "description": "Copies a volume from an AWS account, creates an analysis VM, and attaches the copied volume to it.",
   "modules": [{
       "wants": [],

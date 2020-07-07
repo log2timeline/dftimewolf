@@ -20,7 +20,7 @@ class AWSCollector(module.BaseModule):
         source account in which the volume(s) exist(s).
     incident_id (str): Incident identifier used to name the analysis VM.
     remote_instance_id (str): Instance ID that needs forensicating.
-    volume_ids (list[str]): List of volume ids to copy.
+    volume_ids (list[str]): List of volume IDs to copy.
     all_volumes (bool): True if all volumes attached to the source
         instance should be copied.
     analysis_profile_name (str): The AWS account in which to create the
@@ -55,7 +55,8 @@ class AWSCollector(module.BaseModule):
     self.analysis_profile_name = None
     self.analysis_zone = None
     self.analysis_vm = None
-    self.device_suffixes = None
+    # See https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html
+    self.device_suffixes = list('fghijklmnop')
 
   def Process(self):
     """Copies a volume and attaches it to the analysis VM."""
@@ -71,7 +72,12 @@ class AWSCollector(module.BaseModule):
           new_volume, self._FindNextAvailableDeviceName())
       print('Volume {0:s} successfully copied to {1:s}'.format(
           volume.volume_id, new_volume.volume_id))
-      self.state.output.append((self.analysis_vm.name, new_volume))
+
+      container = containers.ForensicsVM(
+          name=self.analysis_vm.name,
+          evidence_disk=new_volume,
+          platform='aws')
+      self.state.StoreContainer(container)
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
@@ -125,8 +131,15 @@ class AWSCollector(module.BaseModule):
       cpu_cores (int): Optional. The number of CPU cores to use for the
           analysis VM. Default is 16.
       ami (str): Optional. The Amazon Machine Image ID to use to create the
-          analysis VM. Default is Ubuntu 18.04 TLS.
+          analysis VM. If not specified, will default to selecting Ubuntu 18.04
+          TLS.
     """
+
+    if not (self.remote_instance_id or self.volume_ids):
+      self.state.AddError(
+          'You need to specify at least an instance name or volume ids to copy',
+          critical=True)
+      return
 
     if not (remote_profile_name and remote_zone):
       self.state.AddError('You must specify "remote_profile_name" and "zone" '
@@ -145,9 +158,6 @@ class AWSCollector(module.BaseModule):
     self.all_volumes = all_volumes
     self.analysis_zone = analysis_zone or remote_zone
     self.analysis_profile_name = analysis_profile_name or remote_profile_name
-
-    # See https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html
-    self.device_suffixes = list('fghijklmnop')
 
     analysis_vm_name = 'aws-forensics-vm-{0:s}'.format(self.incident_id)
     print('Your analysis VM will be: {0:s}'.format(analysis_vm_name))
@@ -213,11 +223,6 @@ class AWSCollector(module.BaseModule):
     Returns:
       list[AWSVolume]: A list of the volumes to copy.
     """
-    if not (self.remote_instance_id or self.volume_ids):
-      self.state.AddError(
-          'You need to specify at least an instance name or volume ids to copy',
-          critical=True)
-      return []
 
     volumes_to_copy = []
     if self.volume_ids:
