@@ -273,8 +273,8 @@ class GRRHuntDownloader(GRRHunt):
     """
     # TODO: handle incorrect file contents.
     yamldict = yaml.safe_load(client_info_contents)
-    fqdn = yamldict['system_info']['fqdn']
-    client_id = yamldict['client_id'].split('/')[1]
+    fqdn = yamldict['os_info']['fqdn']
+    client_id = yamldict['client_id']
     return client_id, fqdn
 
   def _ExtractHuntResults(self, output_file_path):
