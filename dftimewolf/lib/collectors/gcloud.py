@@ -55,14 +55,14 @@ class GoogleCloudCollector(module.BaseModule):
   def Process(self):
     """Copies a disk to the analysis project."""
     for disk in self._FindDisksToCopy():
-      print('Disk copy of {0:s} started...'.format(disk.name))
+      self.logger.info('Disk copy of {0:s} started...'.format(disk.name))
       new_disk = gcp_forensics.CreateDiskCopy(
           self.remote_project.project_id,
           self.analysis_project.project_id,
           None,
           self.analysis_project.default_zone,
           disk_name=disk.name)
-      print('Disk {0:s} successfully copied to {1:s}'.format(
+      self.logger.info('Disk {0:s} successfully copied to {1:s}'.format(
           disk.name, new_disk.name))
       new_disk.AddLabels(self._gcp_label)
       self.analysis_vm.AttachDisk(new_disk)
@@ -139,9 +139,9 @@ class GoogleCloudCollector(module.BaseModule):
 
     analysis_vm_name = 'gcp-forensics-vm-{0:s}'.format(self.incident_id)
 
-    print('Your analysis VM will be: {0:s}'.format(analysis_vm_name))
-    print('Complimentary gcloud command:')
-    print('gcloud compute ssh --project {0:s} {1:s} --zone {2:s}'.format(
+    self.logger.info('Your analysis VM will be: {0:s}'.format(analysis_vm_name))
+    self.logger.info('Complimentary gcloud command:')
+    self.logger.info('gcloud compute ssh --project {0:s} {1:s} --zone {2:s}'.format(
         self.analysis_project.project_id,
         analysis_vm_name,
         zone))

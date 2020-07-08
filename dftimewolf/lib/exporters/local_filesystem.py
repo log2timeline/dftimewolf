@@ -46,7 +46,7 @@ class LocalFilesystemCopy(module.BaseModule):
                 self._target_directory, exception),
             critical=True)
         return
-      print('{0:s} -> {1:s}'.format(file_container.path,
+      self.logger.info('{0:s} -> {1:s}'.format(file_container.path,
                                     self._target_directory))
 
   def _CopyFileOrDirectory(self, source, destination_directory):
