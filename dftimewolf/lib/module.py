@@ -2,7 +2,9 @@
 """Class definition for DFTimewolf modules."""
 
 import abc
+import logging
 
+from dftimewolf.lib import logging_utils
 
 class BaseModule(object):
   """Interface of a DFTimewolf module.
@@ -25,6 +27,11 @@ class BaseModule(object):
     super(BaseModule, self).__init__()
     self.critical = critical
     self.state = state
+    self.logger = logging.getLogger(name=self.__class__.__name__)
+    console_handler = logging.StreamHandler()
+    formatter = logging_utils.ColorFormatter(random_color=True)
+    console_handler.setFormatter(formatter)
+    self.logger.addHandler(console_handler)
 
   def CleanUp(self):
     """Cleans up module output to prepare it for the next module."""
