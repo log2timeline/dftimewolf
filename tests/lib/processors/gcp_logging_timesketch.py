@@ -425,7 +425,8 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
         'severity':
             'NOTICE',
         'logName':
-            'projects/ketchup-research/logs/cloudaudit.googleapis.com%2Factivity',
+            'projects/ketchup-research/logs/'
+            'cloudaudit.googleapis.com%2Factivity',
         'receiveTimestamp':
             '2020-06-16T05:09:58.131439936Z'
     }
