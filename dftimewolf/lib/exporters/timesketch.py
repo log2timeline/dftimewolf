@@ -157,13 +157,14 @@ class TimesketchExporter(module.BaseModule):
       if not results:
         print('Analyzer [{0:s}] not able to run on {1:s}'.format(
             analyzer, timeline_name))
-      objects = results.get('objects', [])
-      if not objects:
+      session_id = results.id
+      if not session_id:
         print(
             'Analyzer [{0:s}] didn\'t provide any session data'.format(
                 analyzer))
       print('Analyzer: {0:s} is running, session ID: {1:d}'.format(
-          analyzer, objects[0].get('analysis_session', 0)))
+          analyzer, session_id))
+      print(results.status_string)
 
 
 modules_manager.ModulesManager.RegisterModule(TimesketchExporter)
