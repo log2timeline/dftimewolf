@@ -29,7 +29,7 @@ class BaseModule(object):
     self.state = state
     self.logger = logging.getLogger(name=self.__class__.__name__)
     console_handler = logging.StreamHandler()
-    formatter = logging_utils.ColorFormatter(random_color=True)
+    formatter = logging_utils.WolfFormatter(random_color=True)
     console_handler.setFormatter(formatter)
     self.logger.addHandler(console_handler)
 

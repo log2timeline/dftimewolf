@@ -34,23 +34,27 @@ LEVEL_COLOR_MAP = {
 }
 
 
-class ColorFormatter(logging.Formatter):
+class WolfFormatter(logging.Formatter):
   """Helper class used to add color to log messages depending on their level."""
-  def __init__(self, random_color=False, **kwargs):
-    """Initializes the ColorFormatter object.
+  def __init__(self, colorize=True, random_color=False, **kwargs):
+    """Initializes the WolfFormatter object.
 
     Args:
+      colorize (bool): If True, output will be colorized.
       random_color (bool): If True, will colorize the module name with a random
           color picked from COLOR_SEQS.
     """
-    color = ''
-    if random_color:
-      color = random.choice(COLOR_SEQS)
-    kwargs['fmt'] = LOG_FORMAT.format(BOLD, RESET_SEQ, color=color)
-    super(ColorFormatter, self).__init__(**kwargs)
+    self.colorize = colorize
+    kwargs['fmt'] = LOG_FORMAT.format('', '', color='')
+    if self.colorize:
+      color = ''
+      if random_color:
+        color = random.choice(COLOR_SEQS)
+      kwargs['fmt'] = LOG_FORMAT.format(BOLD, RESET_SEQ, color=color)
+    super(WolfFormatter, self).__init__(**kwargs)
 
   def format(self, record):
-    """Hooks the native format method and colorizes messages.
+    """Hooks the native format method and colorizes messages if needed.
 
     Args:
       record (logging.LogRecord): Native log record.
@@ -58,9 +62,10 @@ class ColorFormatter(logging.Formatter):
     Returns:
       str: The formatted message string.
     """
-    message = record.getMessage()
-    loglevel_color = LEVEL_COLOR_MAP.get(record.levelname)
-    if loglevel_color:
-      message = loglevel_color + message + RESET_SEQ
-    record.msg = message
-    return super(ColorFormatter, self).format(record)
+    if self.colorize:
+      message = record.getMessage()
+      loglevel_color = LEVEL_COLOR_MAP.get(record.levelname)
+      if loglevel_color:
+        message = loglevel_color + message + RESET_SEQ
+      record.msg = message
+    return super(WolfFormatter, self).format(record)

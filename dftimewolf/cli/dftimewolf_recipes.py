@@ -41,6 +41,8 @@ from dftimewolf.lib.state import DFTimewolfState
 from dftimewolf.lib import logging_utils
 
 logger = logging.getLogger('dftimewolf')
+DEFAULT_LOG_FILE = os.path.join('/', 'tmp', 'dftimewolf.log')
+
 
 class DFTimewolfTool(object):
   """DFTimewolf tool."""
@@ -239,9 +241,18 @@ def SetupLogging():
   # We want all error messages. Maybe make this customizable in the future?
   logger.setLevel(logging.DEBUG)
 
+  # File handler needs go be added first because it doesn't format messages
+  # with color
+  file_handler = logging.handlers.RotatingFileHandler(
+      DEFAULT_LOG_FILE, maxBytes=5*1024*1024, backupCount=3)
+  file_handler.setFormatter(logging_utils.WolfFormatter(colorize=False))
+  logger.addHandler(file_handler)
+
   console_handler = logging.StreamHandler()
-  console_handler.setFormatter(logging_utils.ColorFormatter())
+  console_handler.setFormatter(logging_utils.WolfFormatter(colorize=True))
   logger.addHandler(console_handler)
+  logger.info('Logging to stdout and {0:s}'.format(DEFAULT_LOG_FILE))
+
 
 def Main():
   """Main function for DFTimewolf.
