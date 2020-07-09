@@ -222,8 +222,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
   @mock.patch('grr_api_client.flow.FlowBase.Get')
   @mock.patch('grr_api_client.client.ClientBase.CreateFlow')
-  def testProcess(self, mock_CreateFlow, mock_Get,
-                  mock_DownloadFiles):
+  def testProcess(self, mock_CreateFlow, mock_Get, mock_DownloadFiles):
     """Tests that the module is setup properly."""
     self.mock_grr_api.SearchClients.return_value = \
         mock_grr_hosts.MOCK_CLIENT_LIST
@@ -277,10 +276,7 @@ class GRRFileCollectorTest(unittest.TestCase):
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._LaunchFlow')
-  def testProcess(self,
-                  mock_LaunchFlow,
-                  mock_DownloadFiles,
-                  _):
+  def testProcess(self, mock_LaunchFlow, mock_DownloadFiles, _):
     """Tests that processing launches appropriate flows."""
     self.mock_grr_api.SearchClients.return_value = \
         mock_grr_hosts.MOCK_CLIENT_LIST
@@ -373,10 +369,7 @@ class GRRTimelineCollector(unittest.TestCase):
   # becomes available in pypi
   @mock.patch('grr_api_client.flow.FlowBase.Get')
   @mock.patch('grr_api_client.client.ClientBase.CreateFlow')
-  def testProcess(self,
-                  mock_CreateFlow,
-                  mock_Get,
-                  mock_DownloadTimeline):
+  def testProcess(self, mock_CreateFlow, mock_Get, mock_DownloadTimeline):
     """Tests that the collector can be initialized."""
     mock_CreateFlow.return_value = mock_grr_hosts.MOCK_FLOW
     self.mock_grr_api.SearchClients.return_value = \
