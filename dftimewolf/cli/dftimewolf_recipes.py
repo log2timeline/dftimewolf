@@ -238,6 +238,12 @@ def SetupLogging():
   root_log = logging.getLogger()
   root_log.handlers = []
 
+  # Add and silence a default stream handler, this is automatically set
+  # when other libraries call logging.info() or similar methods.
+  root_handler = logging.StreamHandler()
+  root_handler.addFilter(lambda x: False)
+  root_log.addHandler(root_handler)
+
   # We want all error messages. Maybe make this customizable in the future?
   logger.setLevel(logging.DEBUG)
 
