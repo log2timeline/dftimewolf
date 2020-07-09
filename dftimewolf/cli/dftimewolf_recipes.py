@@ -108,7 +108,8 @@ class DFTimewolfTool(object):
 
     # If all else fails, fall back to hardcoded default
     if not os.path.isdir(data_files_path):
-      logger.debug(data_files_path, 'not found, defaulting to /usr/local/share')
+      logger.debug('{0:s} not found, defaulting to /usr/local/share'.format(
+        data_files_path))
       data_files_path = self._DEFAULT_DATA_FILES_PATH
 
     logger.debug("Recipe data path: {0:s}".format(data_files_path))
