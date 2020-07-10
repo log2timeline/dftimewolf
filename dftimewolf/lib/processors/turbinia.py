@@ -160,12 +160,13 @@ class TurbiniaProcessor(module.BaseModule):
   def Process(self):
     """Process files with Turbinia."""
     log_file_path = os.path.join(self._output_path, 'turbinia.log')
-    print('Turbinia log file: {0:s}'.format(log_file_path))
+    self.logger.info('Turbinia log file: {0:s}'.format(log_file_path))
     vm_containers = self.state.GetContainers(containers.ForensicsVM)
     if vm_containers and not self.disk_name:
       forensics_vm = vm_containers[0]
       self.disk_name = forensics_vm.evidence_disk.name
-      print('Using disk {0:s} from previous collector'.format(self.disk_name))
+      self.logger.info(
+          'Using disk {0:s} from previous collector'.format(self.disk_name))
 
     evidence_ = evidence.GoogleCloudDisk(
         disk_name=self.disk_name, project=self.project, zone=self.turbinia_zone)
@@ -192,8 +193,9 @@ class TurbiniaProcessor(module.BaseModule):
     # objects.
     threatintel = self.state.GetContainers(containers.ThreatIntelligence)
     if threatintel:
-      print('Sending {0:d} threatintel to Turbinia GrepWorkers...'.format(
-          len(threatintel)))
+      self.logger.info(
+          'Sending {0:d} threatintel to Turbinia GrepWorkers...'.format(
+              len(threatintel)))
       indicators = [item.indicator for item in threatintel]
       request.recipe['filter_patterns'] = indicators
 
@@ -205,10 +207,11 @@ class TurbiniaProcessor(module.BaseModule):
     }
 
     try:
-      print('Creating Turbinia request {0:s} with Evidence {1!s}'.format(
-          request.request_id, evidence_.name))
+      self.logger.info(
+          'Creating Turbinia request {0:s} with Evidence {1!s}'.format(
+              request.request_id, evidence_.name))
       self.client.send_request(request)
-      print('Waiting for Turbinia request {0:s} to complete'.format(
+      self.logger.info('Waiting for Turbinia request {0:s} to complete'.format(
           request.request_id))
       self.client.wait_for_request(**request_dict)
       task_data = self.client.get_task_data(**request_dict)
@@ -220,7 +223,7 @@ class TurbiniaProcessor(module.BaseModule):
 
     message = self.client.format_task_status(**request_dict, full_report=True)
     short_message = self.client.format_task_status(**request_dict)
-    print(short_message)
+    self.logger.info(short_message)
 
     # Store the message for consumption by any reporting modules.
     report = containers.Report(
