@@ -40,9 +40,10 @@ class GrepperSearch(module.BaseModule):
     for file_container in self.state.GetContainers(containers.File):
       path = file_container.path
       log_file_path = os.path.join(self._output_path, 'grepper.log')
-      print('Log file: {0:s}'.format(log_file_path))
+      self.logger.info('Log file: {0:s}'.format(log_file_path))
 
-      print('Walking through dir (absolute) = ' + os.path.abspath(path))
+      self.logger.info('Walking through dir (absolute) = {0:s}'.format(
+          os.path.abspath(path)))
       try:
         for root, _, files in os.walk(path):
           for filename in sorted(files):
@@ -62,7 +63,7 @@ class GrepperSearch(module.BaseModule):
                 self._final_output += '\n' + output
               else:
                 self._final_output = output
-              print(output)
+              self.logger.info(output)
       except OSError as exception:
         self.state.AddError(str(exception), critical=True)
         return
