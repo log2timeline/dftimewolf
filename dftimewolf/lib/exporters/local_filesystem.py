@@ -46,8 +46,8 @@ class LocalFilesystemCopy(module.BaseModule):
                 self._target_directory, exception),
             critical=True)
         return
-      self.logger.info('{0:s} -> {1:s}'.format(file_container.path,
-                                    self._target_directory))
+      self.logger.info('{0:s} -> {1:s}'.format(
+          file_container.path, self._target_directory))
 
   def _CopyFileOrDirectory(self, source, destination_directory):
     """Recursively copies files from source to destination_directory.

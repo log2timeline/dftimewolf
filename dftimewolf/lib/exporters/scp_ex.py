@@ -83,7 +83,7 @@ class SCPExporter(module.BaseModule):
     if self._id_file:
       command.extend(["-i", self._id_file])
     self.logger.info(
-      'Checking SSH connectivity with: {0:s}'.format(' '.join(command)))
+        'Checking SSH connectivity with: {0:s}'.format(' '.join(command)))
     ret = subprocess.call(command)
     return ret == 0
 

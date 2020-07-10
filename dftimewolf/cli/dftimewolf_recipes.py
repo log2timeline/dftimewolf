@@ -109,7 +109,7 @@ class DFTimewolfTool(object):
     # If all else fails, fall back to hardcoded default
     if not os.path.isdir(data_files_path):
       logger.debug('{0:s} not found, defaulting to /usr/local/share'.format(
-        data_files_path))
+          data_files_path))
       data_files_path = self._DEFAULT_DATA_FILES_PATH
 
     logger.debug("Recipe data path: {0:s}".format(data_files_path))
@@ -272,7 +272,7 @@ def Main():
   version_tuple = (sys.version_info[0], sys.version_info[1])
   if version_tuple[0] != 3 or version_tuple < (3, 6):
     logger.critical(('Unsupported Python version: {0:s}, version 3.6 or higher '
-           'required.').format(sys.version))
+                     'required.').format(sys.version))
     return False
 
   tool = DFTimewolfTool()

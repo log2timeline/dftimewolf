@@ -141,10 +141,11 @@ class GoogleCloudCollector(module.BaseModule):
 
     self.logger.info('Your analysis VM will be: {0:s}'.format(analysis_vm_name))
     self.logger.info('Complimentary gcloud command:')
-    self.logger.info('gcloud compute ssh --project {0:s} {1:s} --zone {2:s}'.format(
-        self.analysis_project.project_id,
-        analysis_vm_name,
-        zone))
+    self.logger.info(
+        'gcloud compute ssh --project {0:s} {1:s} --zone {2:s}'.format(
+            self.analysis_project.project_id,
+            analysis_vm_name,
+            zone))
 
     self.state.StoreContainer(
         containers.TicketAttribute(
