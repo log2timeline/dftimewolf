@@ -103,7 +103,7 @@ class GCPLogsCollector(module.BaseModule):
       self.state.AddError(exception, critical=True)
       return
 
-    print('[gcp_logging] Downloaded logs to {0:s}'.format(output_path))
+    self.logger.info('Downloaded logs to {0:s}'.format(output_path))
     output_file.close()
 
     logs_report = containers.GCPLogs(
