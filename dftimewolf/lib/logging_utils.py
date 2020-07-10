@@ -1,9 +1,13 @@
-"""Module providing custom logging formatters."""
+"""Module providing custom logging formatters and colorization for ANSI
+compatible terminals."""
 import logging
 import random
 
 def _GenerateColorSequences():
-  """Generates ANSI codes for 256 colors."""
+  """Generates ANSI codes for 256 colors.
+
+  Works on Linux and macOS, Windows (WSL) to be confirmed.
+  """
   sequences = []
   for i in range(0, 16):
     for j in range(0, 16):
@@ -22,6 +26,8 @@ BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = COLOR_SEQS[8:16]
 BG_RED = '\u001b[41m'  # Red background
 BOLD = '\u001b[1m'  # Bold / bright modifier
 
+# We'll get something like this:
+# [2020-07-09 18:06:05,187] [TimesketchExporter  ] INFO     Sketch 23 created
 LOG_FORMAT = ('[%(asctime)s] [{0:s}{color:s}%(name)-20s{1:s}] %(levelname)-8s'
               ' %(message)s')
 

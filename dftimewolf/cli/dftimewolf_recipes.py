@@ -41,14 +41,14 @@ from dftimewolf.lib.state import DFTimewolfState
 from dftimewolf.lib import logging_utils
 
 logger = logging.getLogger('dftimewolf')
-DEFAULT_LOG_FILE = os.path.join('/', 'tmp', 'dftimewolf.log')
+DEFAULT_LOG_FILE = os.path.join(os.sep, 'tmp', 'dftimewolf.log')
 
 
 class DFTimewolfTool(object):
   """DFTimewolf tool."""
 
   _DEFAULT_DATA_FILES_PATH = os.path.join(
-      '/', 'usr', 'local', 'share', 'dftimewolf')
+      os.sep, 'usr', 'local', 'share', 'dftimewolf')
 
   def __init__(self):
     """Initializes a DFTimewolf tool."""
@@ -235,17 +235,18 @@ def SignalHandler(*unused_argvs):
 
 def SetupLogging():
   """Sets up a logging handler with dftimewolf's custom formatter."""
-  # Clear root handlers (Turbinia is setting them)
+  # Clear root handlers (for dependencies that are setting them)
   root_log = logging.getLogger()
   root_log.handlers = []
 
-  # Add and silence a default stream handler, this is automatically set
+  # Add a silent default stream handler, this is automatically set
   # when other libraries call logging.info() or similar methods.
   root_handler = logging.StreamHandler()
   root_handler.addFilter(lambda x: False)
   root_log.addHandler(root_handler)
 
-  # We want all error messages. Maybe make this customizable in the future?
+  # We want all DEBUG messages and above.
+  # TODO(tomchop): Consider making this a parameter in the future.
   logger.setLevel(logging.DEBUG)
 
   # File handler needs go be added first because it doesn't format messages
