@@ -83,7 +83,7 @@ class TimesketchExporter(module.BaseModule):
       sketch = self.timesketch_api.create_sketch(
           sketch_name, sketch_description)
       self.sketch_id = sketch.id
-      print('Sketch {0:d} created'.format(self.sketch_id))
+      self.logger.info('Sketch {0:d} created'.format(self.sketch_id))
 
     if not sketch:
       sketch = self.timesketch_api.get_sketch(self.sketch_id)
@@ -155,18 +155,18 @@ class TimesketchExporter(module.BaseModule):
       results = sketch.run_analyzer(
           analyzer_name=analyzer, timeline_name=timeline_name)
       if not results:
-        print('Analyzer [{0:s}] not able to run on {1:s}'.format(
+        self.logger.info('Analyzer [{0:s}] not able to run on {1:s}'.format(
             analyzer, timeline_name))
         continue
       session_id = results.id
       if not session_id:
-        print(
+        self.logger.info(
             'Analyzer [{0:s}] didn\'t provide any session data'.format(
                 analyzer))
         continue
-      print('Analyzer: {0:s} is running, session ID: {1:d}'.format(
+      self.logger.info('Analyzer: {0:s} is running, session ID: {1:d}'.format(
           analyzer, session_id))
-      print(results.status_string)
+      self.logger.info(results.status_string)
 
 
 modules_manager.ModulesManager.RegisterModule(TimesketchExporter)
