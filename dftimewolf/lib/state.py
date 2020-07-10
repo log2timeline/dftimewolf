@@ -4,6 +4,7 @@
 Use it to track errors, abort on global failures, clean up after modules, etc.
 """
 
+import logging
 import sys
 import threading
 import traceback
@@ -12,6 +13,9 @@ from dftimewolf.lib import errors
 from dftimewolf.lib import utils
 from dftimewolf.lib.modules import manager as modules_manager
 
+# TODO(tomchop): Consider changing this to `dftimewolf.state` if we ever need
+# more granularity.
+logger = logging.getLogger('dftimewolf')
 
 class DFTimewolfState(object):
   """The main State class.
@@ -206,7 +210,7 @@ class DFTimewolfState(object):
               exception, traceback.format_exc()),
           critical=True)
 
-    print('Module {0:s} completed'.format(module_name))
+    logger.info('Module {0:s} completed'.format(module_name))
     self._threading_event_per_module[module_name].set()
     self.CleanUp()
 
@@ -301,9 +305,10 @@ class DFTimewolfState(object):
     """
     error_objects = self.global_errors if is_global else self.errors
     if error_objects:
-      print('dfTimewolf encountered one or more errors:')
+      logger.error('dfTimewolf encountered one or more errors:')
       for error, critical in error_objects:
-        print('{0:s}  {1!s}'.format('CRITICAL: ' if critical else '', error))
+        for line in str(error).split('\n'):
+          logger.error('{0!s}'.format(line))
         if critical:
-          print('Critical error found. Aborting.')
+          logger.critical('Critical error found. Aborting.')
           sys.exit(1)

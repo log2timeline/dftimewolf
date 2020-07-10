@@ -85,10 +85,10 @@ class GRRBaseModule(module.BaseModule):
         return grr_function(*args, **kwargs)
 
       except grr_errors.AccessForbiddenError as exception:
-        print('No valid approval found: {0!s}'.format(exception))
+        self.logger.info('No valid approval found: {0!s}'.format(exception))
         # If approval was already sent, just wait a bit more.
         if approval_sent:
-          print('Approval not yet granted, waiting {0:d}s'.format(
+          self.logger.info('Approval not yet granted, waiting {0:d}s'.format(
               self._CHECK_APPROVAL_INTERVAL_SEC))
           time.sleep(self._CHECK_APPROVAL_INTERVAL_SEC)
           continue
@@ -104,8 +104,9 @@ class GRRBaseModule(module.BaseModule):
         grr_object.CreateApproval(
             reason=self.reason, notified_users=self.approvers)
         approval_sent = True
-        print('{0!s}: approval request sent to: {1!s} (reason: {2:s})'.format(
-            grr_object, self.approvers, self.reason))
+        self.logger.info(
+            '{0!s}: approval request sent to: {1!s} (reason: {2:s})'.format(
+                grr_object, self.approvers, self.reason))
 
   @abc.abstractmethod
   def Process(self):

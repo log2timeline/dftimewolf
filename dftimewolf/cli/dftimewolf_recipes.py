@@ -3,6 +3,7 @@
 """dftimewolf main entrypoint."""
 
 import argparse
+import logging
 import os
 import signal
 import sys
@@ -37,12 +38,17 @@ if not _ASKING_FOR_HELP:
 
 from dftimewolf.lib.recipes import manager as recipes_manager
 from dftimewolf.lib.state import DFTimewolfState
+from dftimewolf.lib import logging_utils
+
+logger = logging.getLogger('dftimewolf')
+DEFAULT_LOG_FILE = os.path.join(os.sep, 'tmp', 'dftimewolf.log')
+
 
 class DFTimewolfTool(object):
   """DFTimewolf tool."""
 
   _DEFAULT_DATA_FILES_PATH = os.path.join(
-      '/', 'usr', 'local', 'share', 'dftimewolf')
+      os.sep, 'usr', 'local', 'share', 'dftimewolf')
 
   def __init__(self):
     """Initializes a DFTimewolf tool."""
@@ -102,10 +108,11 @@ class DFTimewolfTool(object):
 
     # If all else fails, fall back to hardcoded default
     if not os.path.isdir(data_files_path):
-      print(data_files_path, 'not found, defaulting to /usr/local/share')
+      logger.debug('{0:s} not found, defaulting to /usr/local/share'.format(
+          data_files_path))
       data_files_path = self._DEFAULT_DATA_FILES_PATH
 
-    print("Recipe data path: {0:s}".format(data_files_path))
+    logger.debug("Recipe data path: {0:s}".format(data_files_path))
     self._data_files_path = data_files_path
 
   def _GenerateHelpText(self):
@@ -134,11 +141,11 @@ class DFTimewolfTool(object):
     """
     try:
       if config.Config.LoadExtra(configuration_file_path):
-        sys.stderr.write('Configuration loaded from: {0:s}\n'.format(
+        logger.debug('Configuration loaded from: {0:s}'.format(
             configuration_file_path))
 
     except errors.BadConfigurationError as exception:
-      sys.stderr.write('{0!s}'.format(exception))
+      logger.warning('{0!s}'.format(exception))
 
   def LoadConfiguration(self):
     """Loads the configuration."""
@@ -182,19 +189,19 @@ class DFTimewolfTool(object):
     self._recipe = self._command_line_options.recipe
 
     self._state = DFTimewolfState(config.Config)
-    print('Loading recipe...')
+    logger.info('Loading recipe {0:s}...'.format(self._recipe['name']))
     # Raises errors.RecipeParseError on error.
     self._state.LoadRecipe(self._recipe)
 
     number_of_modules = len(self._recipe['modules'])
-    print('Loaded recipe {0:s} with {1:d} modules'.format(
+    logger.info('Loaded recipe {0:s} with {1:d} modules'.format(
         self._recipe['name'], number_of_modules))
 
     self._state.command_line_options = vars(self._command_line_options)
 
   def RunPreflights(self):
     """Runs preflight modules."""
-    print('Running preflights...')
+    logger.info('Running preflights...')
     self._state.RunPreflights()
 
   def ReadRecipes(self):
@@ -206,17 +213,18 @@ class DFTimewolfTool(object):
 
   def RunModules(self):
     """Runs the modules."""
-    print('Running modules...')
+    logger.info('Running modules...')
     self._state.RunModules()
-    print('Recipe {0:s} executed successfully.'.format(self._recipe['name']))
+    logger.info('Recipe {0:s} executed successfully!'.format(
+        self._recipe['name']))
 
   def SetupModules(self):
     """Sets up the modules."""
     # TODO: refactor to only load modules that are used by the recipe.
 
-    print('Setting up modules...')
+    logger.info('Setting up modules...')
     self._state.SetupModules()
-    print('Modules successfully set up!')
+    logger.info('Modules successfully set up!')
 
 
 def SignalHandler(*unused_argvs):
@@ -225,27 +233,58 @@ def SignalHandler(*unused_argvs):
   sys.exit(0)
 
 
+def SetupLogging():
+  """Sets up a logging handler with dftimewolf's custom formatter."""
+  # Clear root handlers (for dependencies that are setting them)
+  root_log = logging.getLogger()
+  root_log.handlers = []
+
+  # Add a silent default stream handler, this is automatically set
+  # when other libraries call logging.info() or similar methods.
+  root_handler = logging.StreamHandler()
+  root_handler.addFilter(lambda x: False)
+  root_log.addHandler(root_handler)
+
+  # We want all DEBUG messages and above.
+  # TODO(tomchop): Consider making this a parameter in the future.
+  logger.setLevel(logging.DEBUG)
+
+  # File handler needs go be added first because it doesn't format messages
+  # with color
+  file_handler = logging.handlers.RotatingFileHandler(
+      DEFAULT_LOG_FILE, maxBytes=5*1024*1024, backupCount=3)
+  file_handler.setFormatter(logging_utils.WolfFormatter(colorize=False))
+  logger.addHandler(file_handler)
+
+  console_handler = logging.StreamHandler()
+  console_handler.setFormatter(logging_utils.WolfFormatter(colorize=True))
+  logger.addHandler(console_handler)
+  logger.info('Logging to stdout and {0:s}'.format(DEFAULT_LOG_FILE))
+
+
 def Main():
   """Main function for DFTimewolf.
 
   Returns:
     bool: True if DFTimewolf could be run successfully, False otherwise.
   """
+  SetupLogging()
+
   version_tuple = (sys.version_info[0], sys.version_info[1])
   if version_tuple[0] != 3 or version_tuple < (3, 6):
-    print(('Unsupported Python version: {0:s}, version 3.6 or higher '
-           'required.').format(sys.version))
+    logger.critical(('Unsupported Python version: {0:s}, version 3.6 or higher '
+                     'required.').format(sys.version))
     return False
 
   tool = DFTimewolfTool()
 
-  # TODO: print errors if this fails.
+  # TODO: log errors if this fails.
   tool.LoadConfiguration()
 
   try:
     tool.ReadRecipes()
   except (KeyError, errors.RecipeParseError) as exception:
-    print('{0!s}'.format(exception))
+    logger.critical('{0!s}'.format(exception))
     return False
 
   try:
@@ -256,10 +295,10 @@ def Main():
 
   tool.RunPreflights()
 
-  # TODO: print errors if this fails.
+  # TODO: log errors if this fails.
   tool.SetupModules()
 
-  # TODO: print errors if this fails.
+  # TODO: log errors if this fails.
   tool.RunModules()
 
   return True

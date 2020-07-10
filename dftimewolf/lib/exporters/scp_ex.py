@@ -62,7 +62,7 @@ class SCPExporter(module.BaseModule):
     cmd = ["scp"]
     cmd.extend(self._paths)
     cmd.append(dest)
-    print('Executing SCP command: {0:s}'.format(' '.join(cmd)))
+    self.logger.info('Executing SCP command: {0:s}'.format(' '.join(cmd)))
     ret = subprocess.call(cmd)
     if ret != 0:
       self.state.AddError("Failed copying {0!s}".format(self._paths),
@@ -82,7 +82,8 @@ class SCPExporter(module.BaseModule):
     command.extend([self._hostname, "true"])
     if self._id_file:
       command.extend(["-i", self._id_file])
-    print('Checking SSH connectivity with: {0:s}'.format(' '.join(command)))
+    self.logger.info(
+        'Checking SSH connectivity with: {0:s}'.format(' '.join(command)))
     ret = subprocess.call(command)
     return ret == 0
 
