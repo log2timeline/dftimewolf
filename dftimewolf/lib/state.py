@@ -13,6 +13,8 @@ from dftimewolf.lib import errors
 from dftimewolf.lib import utils
 from dftimewolf.lib.modules import manager as modules_manager
 
+# TODO(tomchop): Consider changing this to `dftimewolf.state` if we ever need
+# more granularity.
 logger = logging.getLogger('dftimewolf')
 
 class DFTimewolfState(object):
