@@ -7,6 +7,10 @@ import unittest
 import mock
 import six
 
+# Manually set TURBINIA_PROJECT to the value we expect.
+from turbinia import config as turbinia_config
+turbinia_config.TURBINIA_PROJECT = 'turbinia-project'
+
 from dftimewolf.lib import state
 
 # The easiest way to load our test Turbinia config is to add an environment
@@ -18,10 +22,6 @@ from dftimewolf.lib.containers import containers
 from dftimewolf.lib.processors import turbinia
 
 from dftimewolf import config
-
-# Manually set TURBINIA_PROJECT to the value we expect.
-from turbinia import config as turbinia_config
-turbinia_config.TURBINIA_PROJECT = 'turbinia-project'
 
 class TurbiniaProcessorTest(unittest.TestCase):
   """Tests for the Turbinia processor."""
