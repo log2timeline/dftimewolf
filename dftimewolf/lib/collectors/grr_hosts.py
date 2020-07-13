@@ -57,7 +57,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
       DFTimewolfError: if no client ID found for hostname.
     """
     # Search for the hostname in GRR
-    print('Searching for client: {0:s}'.format(hostname))
+    self.logger.info('Searching for client: {0:s}'.format(hostname))
     try:
       search_result = self.grr_api.SearchClients(hostname)
     except grr_errors.UnknownError as exception:
@@ -86,9 +86,9 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
         datetime.datetime.utcnow() - last_seen_datetime).total_seconds()
     last_seen_minutes = int(round(last_seen_seconds / 60))
 
-    print('{0:s}: Found active client'.format(client.client_id))
-    print('Found active client: {0:s}'.format(client.client_id))
-    print('Client last seen: {0:s} ({1:d} minutes ago)'.format(
+    self.logger.info('{0:s}: Found active client'.format(client.client_id))
+    self.logger.info('Found active client: {0:s}'.format(client.client_id))
+    self.logger.info('Client last seen: {0:s} ({1:d} minutes ago)'.format(
         last_seen_datetime.strftime('%Y-%m-%dT%H:%M:%S+0000'),
         last_seen_minutes))
 
@@ -131,12 +131,13 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
       return ''
 
     flow_id = flow.flow_id
-    print('{0:s}: Scheduled'.format(flow_id))
+    self.logger.info('{0:s}: Scheduled'.format(flow_id))
 
     if self.keepalive:
       keepalive_flow = client.CreateFlow(
           name='KeepAlive', args=flows_pb2.KeepAliveArgs())
-      print('KeepAlive Flow:{0:s} scheduled'.format(keepalive_flow.flow_id))
+      self.logger.info(
+          'KeepAlive Flow:{0:s} scheduled'.format(keepalive_flow.flow_id))
 
     return flow_id
 
@@ -151,7 +152,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     Raises:
       DFTimewolfError: if flow error encountered.
     """
-    print('{0:s}: Waiting to finish'.format(flow_id))
+    self.logger.info('{0:s}: Waiting to finish'.format(flow_id))
     while True:
       try:
         status = client.Flow(flow_id).Get().data
@@ -173,7 +174,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
                 flow_id, message))
 
       if status.state == flows_pb2.FlowContext.TERMINATED:
-        print('{0:s}: Complete'.format(flow_id))
+        self.logger.info('{0:s}: Complete'.format(flow_id))
         break
       time.sleep(self._CHECK_FLOW_INTERVAL_SEC)
 
@@ -192,7 +193,8 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
         self.output_path, '.'.join((flow_id, 'zip')))
 
     if os.path.exists(output_file_path):
-      print('{0:s} already exists: Skipping'.format(output_file_path))
+      self.logger.info(
+          '{0:s} already exists: Skipping'.format(output_file_path))
       return None
 
     flow = client.Flow(flow_id)
@@ -302,22 +304,24 @@ class GRRArtifactCollector(GRRFlow):
       client (object): a GRR client object.
     """
     system_type = client.data.os_info.system
-    print('System type: {0:s}'.format(system_type))
+    self.logger.info('System type: {0:s}'.format(system_type))
 
     # If the list is supplied by the user via a flag, honor that.
     artifact_list = []
     if self.artifacts:
-      print('Artifacts to be collected: {0!s}'.format(self.artifacts))
+      self.logger.info(
+          'Artifacts to be collected: {0!s}'.format(self.artifacts))
       artifact_list = self.artifacts
     else:
       default_artifacts = self.artifact_registry.get(system_type, None)
       if default_artifacts:
-        print('Collecting default artifacts for {0:s}: {1:s}'.format(
+        self.logger.info('Collecting default artifacts for {0:s}: {1:s}'.format(
             system_type, ', '.join(default_artifacts)))
         artifact_list.extend(default_artifacts)
 
     if self.extra_artifacts:
-      print('Throwing in an extra {0!s}'.format(self.extra_artifacts))
+      self.logger.info(
+          'Throwing in an extra {0!s}'.format(self.extra_artifacts))
       artifact_list.extend(self.extra_artifacts)
       artifact_list = list(set(artifact_list))
 
@@ -339,7 +343,8 @@ class GRRArtifactCollector(GRRFlow):
     collected_flow_data = self._DownloadFiles(client, flow_id)
 
     if collected_flow_data:
-      print('{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
+      self.logger.info(
+          '{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
       container = containers.File(
           name=client.data.os_info.fqdn.lower(),
           path=collected_flow_data
@@ -354,7 +359,7 @@ class GRRArtifactCollector(GRRFlow):
     """
     threads = []
     for client in self._FindClients(self.hostnames):
-      print(client)
+      self.logger.info(client)
       thread = threading.Thread(target=self._ProcessThread, args=(client, ))
       threads.append(thread)
       thread.start()
@@ -433,7 +438,7 @@ class GRRFileCollector(GRRFlow):
     file_list = self.files
     if not file_list:
       return
-    print('Filefinder to collect {0:d} items'.format(len(file_list)))
+    self.logger.info('Filefinder to collect {0:d} items'.format(len(file_list)))
 
     flow_action = flows_pb2.FileFinderAction(
         action_type=self.action)
@@ -444,7 +449,8 @@ class GRRFileCollector(GRRFlow):
     self._AwaitFlow(client, flow_id)
     collected_flow_data = self._DownloadFiles(client, flow_id)
     if collected_flow_data:
-      print('{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
+      self.logger.info(
+          '{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
       container = containers.File(
           name=client.data.os_info.fqdn.lower(),
           path=collected_flow_data
@@ -516,7 +522,7 @@ class GRRFlowCollector(GRRFlow):
     self._AwaitFlow(client, self.flow_id)
     collected_flow_data = self._DownloadFiles(client, self.flow_id)
     if collected_flow_data:
-      print('{0:s}: Downloaded: {1:s}'.format(
+      self.logger.info('{0:s}: Downloaded: {1:s}'.format(
           self.flow_id, collected_flow_data))
       container = containers.File(
           name=client.data.os_info.fqdn.lower(),
@@ -582,14 +588,16 @@ class GRRTimelineCollector(GRRFlow):
     root_path = self.root_path
     if not root_path:
       return
-    print('Timeline to start from \'{0:s}\' items'.format(root_path.decode()))
+    self.logger.info(
+        'Timeline to start from "{0:s}" items'.format(root_path.decode()))
 
     timeline_args = timeline_pb2.TimelineArgs(root=root_path,)
     flow_id = self._LaunchFlow(client, 'TimelineFlow', timeline_args)
     self._AwaitFlow(client, flow_id)
     collected_flow_data = self._DownloadTimeline(client, flow_id)
     if collected_flow_data:
-      print('{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
+      self.logger.info(
+          '{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
       container = containers.File(
           name=client.data.os_info.fqdn.lower(),
           path=collected_flow_data
@@ -624,7 +632,8 @@ class GRRTimelineCollector(GRRFlow):
         self.output_path, '.'.join((flow_id, extension)))
 
     if os.path.exists(output_file_path):
-      print('{0:s} already exists: Skipping'.format(output_file_path))
+      self.logger.info(
+          '{0:s} already exists: Skipping'.format(output_file_path))
       return None
 
     flow = client.Flow(flow_id)

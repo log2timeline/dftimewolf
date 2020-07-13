@@ -40,7 +40,7 @@ class GRRHunt(grr_base.GRRBaseModule):  # pylint: disable=abstract-method
     runner_args.description = self.reason
     hunt = self.grr_api.CreateHunt(
         flow_name=name, flow_args=args, hunt_runner_args=runner_args)
-    print('{0!s}: Hunt created'.format(hunt.hunt_id))
+    self.logger.info('{0!s}: Hunt created'.format(hunt.hunt_id))
     self._WrapGRRRequestWithApproval(hunt, hunt.Start)
     return hunt
 
@@ -103,7 +103,7 @@ class GRRHuntArtifactCollector(GRRHunt):
     Raises:
       RuntimeError: if no items specified for collection.
     """
-    print('Artifacts to be collected: {0!s}'.format(self.artifacts))
+    self.logger.info('Artifacts to be collected: {0!s}'.format(self.artifacts))
     hunt_args = grr_flows.ArtifactCollectorFlowArgs(
         artifact_list=self.artifacts,
         use_tsk=self.use_tsk,
@@ -164,8 +164,10 @@ class GRRHuntFileCollector(GRRHunt):
     Raises:
       RuntimeError: if no items specified for collection.
     """
-    print('Hunt to collect {0:d} items'.format(len(self.file_path_list)))
-    print('Files to be collected: {0!s}'.format(self.file_path_list))
+    self.logger.info(
+        'Hunt to collect {0:d} items'.format(len(self.file_path_list)))
+    self.logger.info(
+        'Files to be collected: {0!s}'.format(self.file_path_list))
     hunt_action = grr_flows.FileFinderAction(
         action_type=grr_flows.FileFinderAction.DOWNLOAD)
     hunt_args = grr_flows.FileFinderArgs(
@@ -238,14 +240,15 @@ class GRRHuntDownloader(GRRHunt):
         self.output_path, '.'.join((self.hunt_id, 'zip')))
 
     if os.path.exists(output_file_path):
-      print('{0:s} already exists: Skipping'.format(output_file_path))
+      self.logger.info(
+          '{0:s} already exists: Skipping'.format(output_file_path))
       return None
 
     self._WrapGRRRequestWithApproval(
         hunt, self._GetAndWriteArchive, hunt, output_file_path)
 
     results = self._ExtractHuntResults(output_file_path)
-    print('Wrote results of {0:s} to {1:s}'.format(
+    self.logger.info('Wrote results of {0:s} to {1:s}'.format(
         hunt.hunt_id, output_file_path))
     return results
 
@@ -318,7 +321,7 @@ class GRRHuntDownloader(GRRHunt):
             try:
               archive.extract(f, self.output_path)
             except KeyError as exception:
-              print('Extraction error: {0:s}'.format(exception))
+              self.logger.info('Extraction error: {0:s}'.format(exception))
               return []
 
     except OSError as exception:
@@ -335,7 +338,7 @@ class GRRHuntDownloader(GRRHunt):
     try:
       os.remove(output_file_path)
     except OSError as exception:
-      print('Output path {0:s} could not be removed: {1:s}'.format(
+      self.logger.info('Output path {0:s} could not be removed: {1:s}'.format(
           output_file_path, exception))
 
     # Translate GRR client IDs to FQDNs with the information retrieved

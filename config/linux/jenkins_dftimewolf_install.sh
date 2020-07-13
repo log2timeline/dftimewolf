@@ -86,6 +86,8 @@ if [[ "$*" =~ "include-timesketch" ]]; then
      # Wait for Timesketch to initialize
      /bin/sleep 300
      cd ../../..
+     cp config/linux/timesketchrc ~/.timesketchrc
+     cp config/linux/timesketch.token ~/.timesketch.token
 fi
 
 if [[ "$*" =~ "include-plaso" ]]; then

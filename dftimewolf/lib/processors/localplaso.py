@@ -37,7 +37,7 @@ class LocalPlasoProcessor(module.BaseModule):
       description = file_container.name
       path = file_container.path
       log_file_path = os.path.join(self._output_path, 'plaso.log')
-      print('Log file: {0:s}'.format(log_file_path))
+      self.logger.info('Log file: {0:s}'.format(log_file_path))
 
       # Build the plaso command line.
       cmd = ['log2timeline.py']
@@ -61,7 +61,7 @@ class LocalPlasoProcessor(module.BaseModule):
 
       # Run the l2t command
       full_cmd = ' '.join(cmd)
-      print('Running external command: "{0:s}"'.format(full_cmd))
+      self.logger.info('Running external command: "{0:s}"'.format(full_cmd))
       try:
         l2t_proc = subprocess.Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

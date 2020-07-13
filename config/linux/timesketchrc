@@ -1,0 +1,9 @@
+[timesketch]
+host_uri = http://localhost:80
+username = your_username
+verify = True
+client_id = 
+client_secret = 
+auth_mode = timesketch
+cred_key = a5zXx5hzenFppzjMp0kLUoHYfuFzd1MQDu2vKFYXZUQ=
+

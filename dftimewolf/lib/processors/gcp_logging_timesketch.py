@@ -101,6 +101,18 @@ class GCPLoggingTimesketch(BaseModule):
     if request:
       self._ParseProtoPayloadRequest(request, timesketch_record)
 
+    service_data = proto_payload.get('serviceData', None)
+    if service_data:
+      policy_delta = service_data.get('policyDelta', None)
+      if policy_delta:
+        binding_deltas = policy_delta.get('bindingDeltas', [])
+        if binding_deltas:
+          policy_deltas = []
+          for bd in binding_deltas:
+            policy_deltas.append('{0:s} {1:s} with role {2:s}'.format(
+                bd.get('action', ''), bd.get('member', ''), bd.get('role', '')))
+          timesketch_record['policyDelta'] = ', '.join(policy_deltas)
+
   def _ParseProtoPayloadRequest(self, request, timesketch_record):
     """Extracts information from the request field of a protoPayload field.
 
