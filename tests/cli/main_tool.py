@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Tests the local filesystem collector."""
+"""Tests the main tool functionality."""
 
 import unittest
 import logging
@@ -9,7 +9,7 @@ from dftimewolf.cli import dftimewolf_recipes
 
 
 class MainToolTest(unittest.TestCase):
-  """Tests for recipe construction."""
+  """Tests for main tool functions."""
 
   def setUp(self):
     pass
