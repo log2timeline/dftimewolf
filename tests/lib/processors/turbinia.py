@@ -20,7 +20,7 @@ from dftimewolf.lib.processors import turbinia
 from dftimewolf import config
 
 # Manually set TURBINIA_PROJECT to the value we expect.
-# pylint: disable=wrong-import-position
+# pylint: disable=wrong-import-position, wrong-import-order
 from turbinia import config as turbinia_config
 turbinia_config.TURBINIA_PROJECT = 'turbinia-project'
 
