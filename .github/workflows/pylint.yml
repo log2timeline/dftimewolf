@@ -23,6 +23,6 @@ jobs:
       run: |
       pip install pipenv
       pipenv install -d
-    - name: Test with unittest
+    - name: Run pylint on dftimewolf and tests
       run: |
         pylint --rcfile=.pylintrc setup.py dftimewolf tests
