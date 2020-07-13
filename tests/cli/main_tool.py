@@ -15,6 +15,7 @@ class MainToolTest(unittest.TestCase):
     pass
 
   def testSetupLogging(self):
+    """Tests the SetupLogging function."""
     dftimewolf_recipes.SetupLogging()
     logger = logging.getLogger('dftimewolf')
     root_logger = logging.getLogger()
