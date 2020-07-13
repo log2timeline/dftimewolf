@@ -65,7 +65,8 @@ class GRRBaseModuleTest(unittest.TestCase):
                      ['approver1@example.com', 'approver2@example.com'])
     self.assertEqual(grr_base_module.output_path, '/fake')
 
-  def testApprovalWrapper(self):
+  @mock.patch('grr_api_client.api.InitHttp')
+  def testApprovalWrapper(self, _):
     """Tests that the approval wrapper works correctly."""
     test_state = state.DFTimewolfState(config.Config)
     grr_base_module = grr_base.GRRBaseModule(test_state)
@@ -100,7 +101,8 @@ class GRRBaseModuleTest(unittest.TestCase):
         reason='random reason',
         notified_users=['approver1@example.com', 'approver2@example.com'])
 
-  def testNoApproversErrorsOut(self):
+  @mock.patch('grr_api_client.api.InitHttp')
+  def testNoApproversErrorsOut(self, _):
     """Tests that an error is generated if no approvers are specified.
 
     This should only error on unauthorized objects, which is how our mock
