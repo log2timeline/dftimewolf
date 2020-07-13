@@ -13,6 +13,7 @@ from libcloudforensics.providers.aws.internal import ebs, ec2
 from dftimewolf import config
 from dftimewolf.lib import state
 from dftimewolf.lib.collectors import aws
+from dftimewolf.lib.containers import containers
 
 FAKE_AWS_ACCOUNT = aws_account.AWSAccount(
     default_availability_zone='fake-zone-2b')
@@ -72,7 +73,8 @@ class AWSCollectorTest(unittest.TestCase):
     aws_collector.SetUp(
         'test-remote-profile-name',
         'test-remote-zone',
-        'fake_incident_id'
+        'fake_incident_id',
+        remote_instance_id='my-owned-instance-id'
     )
     self.assertEqual([], test_state.errors)
     self.assertEqual(
@@ -81,7 +83,6 @@ class AWSCollectorTest(unittest.TestCase):
     self.assertEqual('fake_incident_id', aws_collector.incident_id)
     self.assertEqual([], aws_collector.volume_ids)
     self.assertEqual(aws_collector.all_volumes, False)
-    self.assertIsNone(aws_collector.remote_instance_id)
     self.assertEqual(
         'test-remote-profile-name', aws_collector.analysis_profile_name)
     self.assertEqual('test-remote-zone', aws_collector.analysis_zone)
@@ -169,8 +170,11 @@ class AWSCollectorTest(unittest.TestCase):
         volume_id=FAKE_VOLUME.volume_id,
         src_profile='test-remote-profile-name',
         dst_profile='test-analysis-profile-name')
-    self.assertEqual(test_state.output[0][0], 'fake-analysis-vm')
-    self.assertEqual(test_state.output[0][1].volume_id, 'fake-volume-id-copy')
+    forensics_vms = test_state.GetContainers(containers.ForensicsVM)
+    forensics_vm = forensics_vms[0]
+    self.assertEqual('fake-analysis-vm', forensics_vm.name)
+    self.assertEqual(
+        'fake-volume-id-copy', forensics_vm.evidence_disk.volume_id)
 
   # pylint: disable=line-too-long
   @mock.patch('libcloudforensics.providers.aws.internal.ec2.AWSInstance.GetBootVolume')
