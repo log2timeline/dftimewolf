@@ -68,8 +68,8 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         'test-target-project-name',
         'fake_incident_id',
         'fake_zone',
-        'pd-standard',
         42.0,
+        'pd-standard',
         16,
         remote_instance_name='my-owned-instance',
     )
@@ -87,8 +87,8 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         'test-analysis-project-name',
         'gcp-forensics-vm-fake_incident_id',
         'fake_zone',
-        'pd-standard',
         42.0,
+        'pd-standard',
         16,
         image_family='ubuntu-1804-lts',
         image_project='ubuntu-os-cloud'
@@ -125,8 +125,8 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         'test-target-project-name',
         'fake_incident_id',
         'fake_zone',
-        'pd-standard',
         42.0,
+        'pd-standard',
         16,
         remote_instance_name='my-owned-instance',
     )
@@ -179,8 +179,8 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         'test-target-project-name',
         'fake_incident_id',
         'fake_zone',
-        'pd-standard',
         42.0,
+        'pd-standard',
         16,
         remote_instance_name='my-owned-instance',
     )
@@ -196,8 +196,8 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         'test-target-project-name',
         'fake_incident_id',
         'fake_zone',
-        'pd-standard',
         42.0,
+        'pd-standard',
         16,
         remote_instance_name='my-owned-instance',
         all_disks=True
@@ -213,8 +213,8 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         'test-target-project-name',
         'fake_incident_id',
         'fake_zone',
-        'pd-standard',
         42.0,
+        'pd-standard',
         16,
         remote_instance_name='my-owned-instance',
         disk_names='disk1'
