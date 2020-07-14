@@ -158,7 +158,8 @@ class GRRFHuntDownloader(unittest.TestCase):
     with self.assertRaises(errors.DFTimewolfError) as error:
       self.grr_hunt_downloader._ExtractHuntResults(test_zip)
     self.assertEqual(1, len(self.test_state.errors))
-    self.assertEqual(error.exception.message,
+    self.assertEqual(
+        error.exception.message,
         'Error manipulating file tests/lib/collectors/test_data/hunt.zip: ')
     self.assertTrue(error.exception.critical)
     mock_remove.assert_not_called()
@@ -176,7 +177,8 @@ class GRRFHuntDownloader(unittest.TestCase):
       self.grr_hunt_downloader._ExtractHuntResults(test_zip)
 
     self.assertEqual(1, len(self.test_state.errors))
-    self.assertEqual(error.exception.message,
+    self.assertEqual(
+        error.exception.message,
         'Bad zipfile tests/lib/collectors/test_data/hunt.zip: ')
     self.assertTrue(error.exception.critical)
     mock_remove.assert_not_called()

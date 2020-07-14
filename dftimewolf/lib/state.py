@@ -227,7 +227,7 @@ class DFTimewolfState(object):
               module.name))
     except Exception as exception:  # pylint: disable=broad-except
       msg = 'An unknown error occurred in module {0:s}: {1!s}'.format(
-        module.name, exception)
+          module.name, exception)
       logger.critical(msg)
       # We're catching any exception that is not a DFTimewolfError, so we want
       # to generate an error for further reporting.
@@ -333,7 +333,7 @@ class DFTimewolfState(object):
 
     for index, error in enumerate(error_objects):
       logger.error('{0:d}: error from {1:s}: {2:s}'.format(
-        index+1, error.name, error.message))
+          index+1, error.name, error.message))
       if error.stacktrace:
         for line in error.stacktrace.split('\n'):
           logger.error(line)

@@ -4,7 +4,6 @@
 import os
 
 from dftimewolf.lib import module
-from dftimewolf.lib import errors
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.containers import containers
 
