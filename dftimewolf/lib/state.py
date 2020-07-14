@@ -50,6 +50,7 @@ class DFTimewolfState(object):
     self.recipe = None
     self.store = {}
     self.streaming_callbacks = {}
+    self._abort_execution = False
 
   def _InvokeModulesInThreads(self, callback):
     """Invokes the callback function on all the modules in separate threads.
@@ -157,18 +158,26 @@ class DFTimewolfState(object):
       module_definition (dict[str, str]): recipe module definition.
     """
     module_name = module_definition['name']
-
+    logger.info('Setting up module: {0:s}'.format(module_name))
     new_args = utils.ImportArgsFromDict(
         module_definition['args'], self.command_line_options, self.config)
     module = self._module_pool[module_name]
 
     try:
       module.SetUp(**new_args)
+    except errors.DFTimewolfError as exception:
+      msg = "A critical error occurred in module {0:s}, aborting execution."
+      logger.critical(msg.format(module.name))
     except Exception as exception:  # pylint: disable=broad-except
-      self.AddError(
-          'An unknown error occurred: {0!s}\nFull traceback:\n{1:s}'.format(
-              exception, traceback.format_exc()),
-          critical=True)
+      msg = 'An unknown error occurred in module {0:s}: {1!s}'.format(
+          module.name, exception)
+      logger.critical(msg)
+      # We're catching any exception that is not a DFTimewolfError, so we want
+      # to generate an error for further reporting.
+      stacktrace = traceback.format_exc()
+      error = errors.DFTimewolfError(
+          message=msg, name='state', stacktrace=stacktrace, critical=True)
+      self.AddError(error)
 
     self._threading_event_per_module[module_name] = threading.Event()
     self.CleanUp()
@@ -200,17 +209,33 @@ class DFTimewolfState(object):
 
     module = self._module_pool[module_name]
 
+    # Abort processing if a module has had critical failures before.
+    if self._abort_execution:
+      logger.critical(
+          'Aborting execution of {0:s} due to previous errors'.format(
+              module.name))
+      self._threading_event_per_module[module_name].set()
+      self.CleanUp()
+      return
+
     try:
       module.Process()
     except errors.DFTimewolfError as exception:
-      self.AddError(exception.message, critical=True)
+      logger.critical(
+          "Critical error in module {0:s}, aborting execution".format(
+              module.name))
     except Exception as exception:  # pylint: disable=broad-except
-      self.AddError(
-          'An unknown error occurred: {0!s}\nFull traceback:\n{1:s}'.format(
-              exception, traceback.format_exc()),
+      msg = 'An unknown error occurred in module {0:s}: {1!s}'.format(
+        module.name, exception)
+      logger.critical(msg)
+      # We're catching any exception that is not a DFTimewolfError, so we want
+      # to generate an error for further reporting.
+      error = errors.DFTimewolfError(
+          message=msg, name='state', stacktrace=traceback.format_exc(),
           critical=True)
+      self.AddError(error)
 
-    logger.info('Module {0:s} completed'.format(module_name))
+    logger.info('Module {0:s} finished execution'.format(module_name))
     self._threading_event_per_module[module_name].set()
     self.CleanUp()
 
@@ -271,15 +296,15 @@ class DFTimewolfState(object):
     for callback in self.streaming_callbacks.get(type(container), []):
       callback(container)
 
-  def AddError(self, error, critical=False):
+  def AddError(self, error):
     """Adds an error to the state.
 
     Args:
-      error (str): text that will be added to the error list.
-      critical (Optional[bool]): True if dfTimewolf cannot recover from
-          the error and should abort.
+      error (errors.DFTimewolfError): The dfTimewolf error to add.
     """
-    self.errors.append((error, critical))
+    if error.critical:
+      self._abort_execution = True
+    self.errors.append(error)
 
   def CleanUp(self):
     """Cleans up after running a module.
@@ -292,10 +317,6 @@ class DFTimewolfState(object):
     self.global_errors.extend(self.errors)
     self.errors = []
 
-    # Make the previous module's output available to the next module
-    self.input = self.output
-    self.output = []
-
   def CheckErrors(self, is_global=False):
     """Checks for errors and exits if any of them are critical.
 
@@ -304,11 +325,20 @@ class DFTimewolfState(object):
           be checked. False if the error attribute should be checked.
     """
     error_objects = self.global_errors if is_global else self.errors
+    critical_errors = False
+
     if error_objects:
       logger.error('dfTimewolf encountered one or more errors:')
-      for error, critical in error_objects:
-        for line in str(error).split('\n'):
-          logger.error('{0!s}'.format(line))
-        if critical:
-          logger.critical('Critical error found. Aborting.')
-          sys.exit(1)
+
+    for index, error in enumerate(error_objects):
+      logger.error('{0:d}: error from {1:s}: {2:s}'.format(
+        index+1, error.name, error.message))
+      if error.stacktrace:
+        for line in error.stacktrace.split('\n'):
+          logger.error(line)
+      if error.critical:
+        critical_errors = True
+
+    if critical_errors:
+      logger.critical('Critical error found. Aborting.')
+      sys.exit(1)
