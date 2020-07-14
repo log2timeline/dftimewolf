@@ -25,4 +25,4 @@ jobs:
         pipenv install -d
     - name: Run pylint on dftimewolf and tests
       run: |
-        pylint --rcfile=.pylintrc setup.py dftimewolf tests
+        pipenv run pylint --rcfile=.pylintrc setup.py dftimewolf tests
