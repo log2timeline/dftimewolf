@@ -8,10 +8,8 @@ import mock
 
 from dftimewolf import config
 from dftimewolf.lib import resources
-from dftimewolf.lib import errors
 from dftimewolf.lib import state
 from dftimewolf.lib.containers import containers
-from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.recipes import manager as recipes_manager
 
@@ -114,7 +112,6 @@ class StateTest(unittest.TestCase):
     test_state.command_line_options = {}
     test_state.LoadRecipe(test_recipe.contents)
     mock_process1.side_effect = Exception('asd')
-    mock_process2.side_effect = DFTimewolfError('dfTimewolf Error')
     test_state.SetupModules()
     test_state.RunModules()
     mock_process1.assert_called_with()

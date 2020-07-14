@@ -60,7 +60,7 @@ class LocalFileSystemTest(unittest.TestCase):
     scp_exporter = scp_ex.SCPExporter(test_state)
     with self.assertRaises(errors.DFTimewolfError) as error:
       scp_exporter.SetUp('/path1,/path2', '/destination', 'fakeuser',
-                        'fakehost', 'fakeid', True)
+                         'fakehost', 'fakeid', True)
 
     self.assertEqual(test_state.errors[0], error.exception)
     self.assertEqual(error.exception.message, 'Unable to connect to host.')

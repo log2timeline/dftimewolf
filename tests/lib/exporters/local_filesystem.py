@@ -90,6 +90,7 @@ class LocalFileSystemTest(unittest.TestCase):
     with self.assertRaises(errors.DFTimewolfError) as error:
       local_filesystem_copy.Process()
     self.assertEqual(len(test_state.errors), 1)
+    self.assertEqual(test_state.errors[0], error.exception)
 
   @mock.patch('os.makedirs')
   def testSetupManualDir(self, mock_makedirs):

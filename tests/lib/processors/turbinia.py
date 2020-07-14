@@ -69,12 +69,12 @@ class TurbiniaProcessorTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     turbinia_processor = turbinia.TurbiniaProcessor(test_state)
     with self.assertRaises(errors.DFTimewolfError) as error:
-        turbinia_processor.SetUp(
-            disk_name='disk-1',
-            project='turbinia-wrong-project',
-            turbinia_zone='europe-west1',
-            sketch_id=None,
-            run_all_jobs=False)
+      turbinia_processor.SetUp(
+          disk_name='disk-1',
+          project='turbinia-wrong-project',
+          turbinia_zone='europe-west1',
+          sketch_id=None,
+          run_all_jobs=False)
 
     self.assertEqual(len(test_state.errors), 1)
     self.assertEqual(test_state.errors[0], error.exception)
