@@ -4,6 +4,7 @@
 
 import argparse
 import logging
+from logging import handlers
 import os
 import signal
 import sys
@@ -252,7 +253,7 @@ def SetupLogging():
 
   # File handler needs go be added first because it doesn't format messages
   # with color
-  file_handler = logging.handlers.RotatingFileHandler(
+  file_handler = handlers.RotatingFileHandler(
       DEFAULT_LOG_FILE, maxBytes=5*1024*1024, backupCount=3)
   file_handler.setFormatter(logging_utils.WolfFormatter(colorize=False))
   logger.addHandler(file_handler)
