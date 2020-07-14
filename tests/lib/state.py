@@ -8,6 +8,7 @@ import mock
 
 from dftimewolf import config
 from dftimewolf.lib import resources
+from dftimewolf.lib import errors
 from dftimewolf.lib import state
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.errors import DFTimewolfError
@@ -117,15 +118,15 @@ class StateTest(unittest.TestCase):
     test_state.SetupModules()
     test_state.RunModules()
     mock_process1.assert_called_with()
-    mock_process2.assert_called_with()
+    # Procesds() in module 2 is never called since the failure in Module1
+    # will abort execution
+    mock_process2.assert_not_called()
     mock_exit.assert_called_with(1)
-    self.assertEqual(len(test_state.global_errors), 2)
-    msg, critical = sorted(test_state.global_errors, key=lambda x: x[0])[0]
-    self.assertIn('An unknown error occurred: asd', msg)
-    self.assertTrue(critical)
-    msg, critical = sorted(test_state.global_errors, key=lambda x: x[0])[1]
-    self.assertIn('dfTimewolf Error', msg)
-    self.assertTrue(critical)
+    self.assertEqual(len(test_state.global_errors), 1)
+    error = test_state.global_errors[0]
+    self.assertIn('An unknown error occurred in module DummyModule1: asd',
+                  error.message)
+    self.assertTrue(error.critical)
 
   @mock.patch('tests.test_modules.modules.DummyModule1.Callback')
   def testStreamingCallback(self, mock_callback):

@@ -7,6 +7,7 @@ import unittest
 import mock
 
 from dftimewolf.lib import state
+from dftimewolf.lib import errors
 from dftimewolf.lib.collectors import filesystem
 from dftimewolf.lib.containers import containers
 
@@ -36,14 +37,16 @@ class LocalFileSystemTest(unittest.TestCase):
     self.assertEqual(files[1].path, '/fake/path/2')
     self.assertEqual(files[1].name, '2')
 
-  @mock.patch('dftimewolf.lib.state.DFTimewolfState.AddError')
-  def testSetup(self, mock_add_error):
+  def testSetup(self):
     """Tests that no paths specified in setup will generate an error."""
     test_state = state.DFTimewolfState(config.Config)
     filesystem_collector = filesystem.FilesystemCollector(test_state)
-    filesystem_collector.SetUp(paths=None)
-    mock_add_error.assert_called_with(
-        'No `paths` argument provided in recipe, bailing', critical=True)
+    with self.assertRaises(errors.DFTimewolfError) as error:
+      filesystem_collector.SetUp(paths=None)
+    self.assertEqual(
+        'No `paths` argument provided in recipe, bailing',
+        error.exception.message)
+
     self.assertIsNone(filesystem_collector._paths)  # pylint: disable=protected-access
 
 if __name__ == '__main__':

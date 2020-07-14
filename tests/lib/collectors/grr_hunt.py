@@ -10,6 +10,7 @@ from grr_response_proto import flows_pb2
 
 from dftimewolf import config
 from dftimewolf.lib import state
+from dftimewolf.lib import errors
 from dftimewolf.lib.collectors import grr_hunt
 from tests.lib.collectors.test_data import mock_grr_hosts
 
@@ -153,13 +154,13 @@ class GRRFHuntDownloader(unittest.TestCase):
     test_zip = 'tests/lib/collectors/test_data/hunt.zip'
     mock_extract.side_effect = OSError
     # pylint: disable=protected-access
-    result = self.grr_hunt_downloader._ExtractHuntResults(test_zip)
-    self.assertEqual(result, [])
-    self.assertEqual(
-        self.test_state.errors[0],
-        ('Error manipulating file tests/lib/collectors/test_data/hunt.zip: ',
-         True)
-    )
+
+    with self.assertRaises(errors.DFTimewolfError) as error:
+      self.grr_hunt_downloader._ExtractHuntResults(test_zip)
+    self.assertEqual(1, len(self.test_state.errors))
+    self.assertEqual(error.exception.message,
+        'Error manipulating file tests/lib/collectors/test_data/hunt.zip: ')
+    self.assertTrue(error.exception.critical)
     mock_remove.assert_not_called()
 
   @mock.patch('os.remove')
@@ -171,12 +172,13 @@ class GRRFHuntDownloader(unittest.TestCase):
 
     mock_extract.side_effect = zipfile.BadZipfile
     # pylint: disable=protected-access
-    result = self.grr_hunt_downloader._ExtractHuntResults(test_zip)
-    self.assertEqual(result, [])
-    self.assertEqual(
-        self.test_state.errors[0],
-        ('Bad zipfile tests/lib/collectors/test_data/hunt.zip: ', True)
-    )
+    with self.assertRaises(errors.DFTimewolfError) as error:
+      self.grr_hunt_downloader._ExtractHuntResults(test_zip)
+
+    self.assertEqual(1, len(self.test_state.errors))
+    self.assertEqual(error.exception.message,
+        'Bad zipfile tests/lib/collectors/test_data/hunt.zip: ')
+    self.assertTrue(error.exception.critical)
     mock_remove.assert_not_called()
 
 
