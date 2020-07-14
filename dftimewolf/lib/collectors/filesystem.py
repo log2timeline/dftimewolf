@@ -4,6 +4,7 @@
 import os
 
 from dftimewolf.lib import module
+from dftimewolf.lib import errors
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.containers import containers
 
@@ -32,7 +33,7 @@ class FilesystemCollector(module.BaseModule):
       paths (Optional[str]): Comma-separated paths to collect.
     """
     if not paths:
-      self.state.AddError(
+      self.ModuleError(
           'No `paths` argument provided in recipe, bailing', critical=True)
     else:
       self._paths = [path.strip() for path in paths.split(',')]
@@ -45,10 +46,11 @@ class FilesystemCollector(module.BaseModule):
         container = containers.File(os.path.basename(path), path)
         file_containers.append(container)
       else:
-        self.state.AddError(
-            'Path {0:s} does not exist'.format(str(path)), critical=False)
+        self.logger.warning('Path {0:s} does not exist'.format(path))
     if not file_containers:
-      self.state.AddError('No valid paths collected, bailing', critical=True)
+      self.ModuleError(
+          message='No valid paths collected, bailing',
+          critical=True)
     for container in file_containers:
       self.state.StoreContainer(container)
 

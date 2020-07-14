@@ -61,10 +61,9 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     try:
       search_result = self.grr_api.SearchClients(hostname)
     except grr_errors.UnknownError as exception:
-      self.state.AddError('Could not search for host {0:s}: {1!s}'.format(
+      self.ModuleError('Could not search for host {0:s}: {1!s}'.format(
           hostname, exception
       ), critical=True)
-      return None
 
     result = []
     for client in search_result:
@@ -72,9 +71,8 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
         result.append((client.data.last_seen_at, client))
 
     if not result:
-      self.state.AddError('Could not get client_id for {0:s}'.format(
+      self.ModuleError('Could not get client_id for {0:s}'.format(
           hostname), critical=True)
-      return None
 
     last_seen, client = sorted(result, key=lambda x: x[0], reverse=True)[0]
     # Remove microseconds and create datetime object
@@ -159,10 +157,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
       except grr_errors.UnknownError:
         msg = 'Unable to stat flow {0:s} for host {1:s}'.format(
             flow_id, client.data.os_info.fqdn.lower())
-        self.state.AddError(msg)
-        raise DFTimewolfError(
-            'Unable to stat flow {0:s} for host {1:s}'.format(
-                flow_id, client.data.os_info.fqdn.lower()))
+        self.ModuleError(msg, critical=True)
 
       if status.state == flows_pb2.FlowContext.ERROR:
         # TODO(jbn): If one artifact fails, what happens? Test.
@@ -337,8 +332,7 @@ class GRRArtifactCollector(GRRFlow):
     if not flow_id:
       msg = 'Flow could not be launched on {0:s}.'.format(client.client_id)
       msg += '\nArtifactCollectorFlow args: {0!s}'.format(flow_args)
-      self.state.AddError(msg, critical=True)
-      return
+      self.ModuleError(msg, critical=True)
     self._AwaitFlow(client, flow_id)
     collected_flow_data = self._DownloadFiles(client, flow_id)
 
@@ -423,8 +417,8 @@ class GRRFileCollector(GRRFlow):
     if action.lower() in self._ACTIONS:
       self.action = self._ACTIONS[action.lower()]
     if self.action is None:
-      self.state.AddError("Invalid action {0!s}".format(action),
-                          critical=True)
+      self.ModuleError("Invalid action {0!s}".format(action),
+                       critical=True)
 
   # TODO: change object to more specific GRR type information.
   def _ProcessThread(self, client):
@@ -576,7 +570,8 @@ class GRRTimelineCollector(GRRFlow):
     self._timeline_format = int(timeline_format)
     self.root_path = root_path.encode()
     if self._timeline_format not in [1, 2]:
-      self.state.AddError('Timeline format must be 1 (BODY) or 2 (RAW).', True)
+      self.ModuleError('Timeline format must be 1 (BODY) or 2 (RAW).',
+                       critical=True)
 
   # TODO: change object to more specific GRR type information.
   def _ProcessThread(self, client):
