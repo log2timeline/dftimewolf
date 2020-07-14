@@ -1,0 +1,28 @@
+name: pylint
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: [3.7]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        pip install pipenv
+        pipenv install -d
+    - name: Run pylint on dftimewolf and tests
+      run: |
+        pipenv run pylint --rcfile=.pylintrc setup.py dftimewolf tests
