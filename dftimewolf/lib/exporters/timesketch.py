@@ -56,10 +56,9 @@ class TimesketchExporter(module.BaseModule):
     self.timesketch_api = timesketch_utils.GetApiClient(
         self.state, token_password=token_password)
     if not self.timesketch_api:
-      self.state.AddError(
+      self.ModuleError(
           'Unable to get a Timesketch API client, try deleting the files '
           '~/.timesketchrc and ~/.timesketch.token', critical=True)
-      return
     self.incident_id = incident_id
     self.sketch_id = int(sketch_id) if sketch_id else None
     sketch = None
@@ -67,8 +66,7 @@ class TimesketchExporter(module.BaseModule):
     # Check that we have a timesketch session.
     if not (self.timesketch_api or self.timesketch_api.session):
       message = 'Could not connect to Timesketch server'
-      self.state.AddError(message, critical=True)
-      return
+      self.ModuleError(message, critical=True)
 
     if not self.sketch_id:
       self.sketch_id = self._GetSketchIDFromAttributes()
@@ -111,7 +109,7 @@ class TimesketchExporter(module.BaseModule):
     """Executes a Timesketch export."""
     if not self.timesketch_api:
       message = 'Could not connect to Timesketch server'
-      self.state.AddError(message, critical=True)
+      self.ModuleError(message, critical=True)
 
     sketch = self.state.GetFromCache('timesketch_sketch')
     if not sketch:
