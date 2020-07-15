@@ -27,6 +27,9 @@ def GetApiClient(state, token_password=''):
 
   Returns:
     object: A timesketch API object (instance of TimesketchApi).
+
+  Raises:
+    RuntimeError: If the configuration file cannot be modified.
   """
   with LOCK:
     ts_client = state.GetFromCache('timesketch_client', default_value=None)
@@ -35,14 +38,19 @@ def GetApiClient(state, token_password=''):
 
     assistant = config.ConfigAssistant()
     assistant.load_config_file()
+    try:
+      config.configure_missing_parameters(
+          config_assistant=assistant, token_password=token_password)
+    except OSError:
+      state.ModuleError(
+          'Unable to get a Timesketch API Client', critical=False)
+      return None
 
-    config.configure_missing_parameters(
-        config_assistant=assistant, token_password=token_password)
 
     ts_client = assistant.get_client(token_password=token_password)
 
     if not ts_client:
-      state.AddError(
+      state.ModuleError(
           'Unable to get a Timesketch API Client', critical=False)
       return None
 

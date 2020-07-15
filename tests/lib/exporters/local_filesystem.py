@@ -8,6 +8,7 @@ import mock
 
 from dftimewolf import config
 from dftimewolf.lib import state
+from dftimewolf.lib import errors
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.exporters import local_filesystem
 
@@ -86,8 +87,10 @@ class LocalFileSystemTest(unittest.TestCase):
         containers.File(name='blah', path='/sourcefile'))
     local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
     local_filesystem_copy.SetUp(target_directory="/nonexistent")
-    local_filesystem_copy.Process()
+    with self.assertRaises(errors.DFTimewolfError) as error:
+      local_filesystem_copy.Process()
     self.assertEqual(len(test_state.errors), 1)
+    self.assertEqual(test_state.errors[0], error.exception)
 
   @mock.patch('os.makedirs')
   def testSetupManualDir(self, mock_makedirs):

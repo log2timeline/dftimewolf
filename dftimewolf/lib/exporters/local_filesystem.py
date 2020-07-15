@@ -41,11 +41,10 @@ class LocalFilesystemCopy(module.BaseModule):
       try:
         self._CopyFileOrDirectory(file_container.path, self._target_directory)
       except OSError as exception:
-        self.state.AddError(
+        self.ModuleError(
             'Could not copy files to {0:s}: {1!s}'.format(
                 self._target_directory, exception),
             critical=True)
-        return
       self.logger.info('{0:s} -> {1:s}'.format(
           file_container.path, self._target_directory))
 

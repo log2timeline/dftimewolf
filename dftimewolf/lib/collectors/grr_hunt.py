@@ -94,7 +94,7 @@ class GRRHuntArtifactCollector(GRRHunt):
 
     self.artifacts = [item.strip() for item in artifacts.strip().split(',')]
     if not artifacts:
-      self.state.AddError('No artifacts were specified.', critical=True)
+      self.ModuleError('No artifacts were specified.', critical=True)
     self.use_tsk = use_tsk
 
   def Process(self):
@@ -155,7 +155,7 @@ class GRRHuntFileCollector(GRRHunt):
     self.file_path_list = [item.strip() for item
                            in file_path_list.strip().split(',')]
     if not file_path_list:
-      self.state.AddError('Files must be specified for hunts', critical=True)
+      self.ModuleError('Files must be specified for hunts', critical=True)
 
   # TODO: this method does not raise itself, indicate what function call does.
   def Process(self):
@@ -327,13 +327,11 @@ class GRRHuntDownloader(GRRHunt):
     except OSError as exception:
       msg = 'Error manipulating file {0:s}: {1!s}'.format(
           output_file_path, exception)
-      self.state.AddError(msg, critical=True)
-      return []
+      self.ModuleError(msg, critical=True)
     except zipfile.BadZipfile as exception:
       msg = 'Bad zipfile {0:s}: {1!s}'.format(
           output_file_path, exception)
-      self.state.AddError(msg, critical=True)
-      return []
+      self.ModuleError(msg, critical=True)
 
     try:
       os.remove(output_file_path)
@@ -349,9 +347,8 @@ class GRRHuntDownloader(GRRHunt):
       fqdn_collection_paths.append((fqdn, path))
 
     if not fqdn_collection_paths:
-      self.state.AddError(
+      self.ModuleError(
           'Nothing was extracted from the hunt archive', critical=True)
-      return []
 
     return fqdn_collection_paths
 

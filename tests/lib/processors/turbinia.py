@@ -8,6 +8,7 @@ import mock
 import six
 
 from dftimewolf.lib import state
+from dftimewolf.lib import errors
 
 # The easiest way to load our test Turbinia config is to add an environment
 # variable
@@ -67,21 +68,23 @@ class TurbiniaProcessorTest(unittest.TestCase):
     """Tests that specifying the wrong Turbinia project generates an error."""
     test_state = state.DFTimewolfState(config.Config)
     turbinia_processor = turbinia.TurbiniaProcessor(test_state)
-    turbinia_processor.SetUp(
-        disk_name='disk-1',
-        project='turbinia-wrong-project',
-        turbinia_zone='europe-west1',
-        sketch_id=None,
-        run_all_jobs=False)
+    with self.assertRaises(errors.DFTimewolfError) as error:
+      turbinia_processor.SetUp(
+          disk_name='disk-1',
+          project='turbinia-wrong-project',
+          turbinia_zone='europe-west1',
+          sketch_id=None,
+          run_all_jobs=False)
 
     self.assertEqual(len(test_state.errors), 1)
-    error_msg, is_critical = test_state.errors[0]
+    self.assertEqual(test_state.errors[0], error.exception)
+    error_msg = error.exception.message
     self.assertEqual(error_msg, 'Specified project turbinia-wrong-project does'
                                 ' not match Turbinia configured project '
                                 'turbinia-project. Use gcp_turbinia_import '
                                 'recipe to copy the disk into the same '
                                 'project.')
-    self.assertEqual(is_critical, True)
+    self.assertTrue(error.exception.critical)
 
   @mock.patch('turbinia.client.TurbiniaClient')
   def testWrongSetup(self, _mock_TurbiniaClient): # pylint: disable=invalid-name
@@ -108,11 +111,14 @@ class TurbiniaProcessorTest(unittest.TestCase):
     for combination in params:
       test_state = state.DFTimewolfState(config.Config)
       turbinia_processor = turbinia.TurbiniaProcessor(test_state)
-      turbinia_processor.SetUp(**combination)
+      with self.assertRaises(errors.DFTimewolfError) as error:
+        turbinia_processor.SetUp(**combination)
+
       self.assertEqual(len(test_state.errors), 1)
-      error_msg, is_critical = test_state.errors[0]
+      self.assertEqual(test_state.errors[0], error.exception)
+      error_msg = error.exception.message
       self.assertEqual(error_msg, expected_error)
-      self.assertEqual(is_critical, True)
+      self.assertTrue(error.exception.critical)
 
   @mock.patch('os.path.exists')
   @mock.patch('turbinia.output_manager.GCSOutputWriter')
