@@ -65,10 +65,9 @@ class TurbiniaProcessor(module.BaseModule):
     # module or by the CLI.
 
     if project is None or turbinia_zone is None:
-      self.state.AddError(
+      self.ModuleError(
           'project or turbinia_zone are not all specified, bailing out',
           critical=True)
-      return
 
     self.disk_name = disk_name
     self.project = project
@@ -81,19 +80,17 @@ class TurbiniaProcessor(module.BaseModule):
       self.turbinia_region = turbinia_config.TURBINIA_REGION
       self.instance = turbinia_config.PUBSUB_TOPIC
       if turbinia_config.TURBINIA_PROJECT != self.project:
-        self.state.AddError(
+        self.ModuleError(
             'Specified project {0!s} does not match Turbinia configured '
             'project {1!s}. Use gcp_turbinia_import recipe to copy the disk '
             'into the same project.'.format(
                 self.project, turbinia_config.TURBINIA_PROJECT), critical=True)
-        return
       self._output_path = tempfile.mkdtemp()
       self.client = turbinia_client.TurbiniaClient()
     except TurbiniaException as exception:
       # TODO: determine if exception should be converted into a string as
       # elsewhere in the codebase.
-      self.state.AddError(exception, critical=True)
-      return
+      self.ModuleError(str(exception), critical=True)
 
   def _DeterminePaths(self, task_data):
     """Builds lists of local and remote paths from data retured by Turbinia.
@@ -150,7 +147,7 @@ class TurbiniaProcessor(module.BaseModule):
       except TurbiniaException as exception:
         # Don't add a critical error for now, until we start raising errors
         # instead of returning manually each
-        self.state.AddError(exception, critical=False)
+        self.ModuleError(exception, critical=False)
 
     if local_path:
       local_paths.append((timeline_label, local_path))
@@ -173,8 +170,7 @@ class TurbiniaProcessor(module.BaseModule):
     try:
       evidence_.validate()
     except TurbiniaException as exception:
-      self.state.AddError(exception, critical=True)
-      return
+      self.ModuleError(exception, critical=True)
 
     request = TurbiniaRequest(requester=getpass.getuser())
     request.evidence.append(evidence_)
@@ -218,8 +214,7 @@ class TurbiniaProcessor(module.BaseModule):
     except TurbiniaException as exception:
       # TODO: determine if exception should be converted into a string as
       # elsewhere in the codebase.
-      self.state.AddError(exception, critical=True)
-      return
+      self.ModuleError(exception, critical=True)
 
     message = self.client.format_task_status(**request_dict, full_report=True)
     short_message = self.client.format_task_status(**request_dict)
@@ -233,9 +228,8 @@ class TurbiniaProcessor(module.BaseModule):
     local_paths, gs_paths = self._DeterminePaths(task_data)
 
     if not local_paths and not gs_paths:
-      self.state.AddError(
+      self.ModuleError(
           'No interesting files found in Turbinia output.', critical=True)
-      return
 
     timeline_label = '{0:s}-{1:s}'.format(self.project, self.disk_name)
     # Any local files that exist we can add immediately to the output
@@ -246,7 +240,7 @@ class TurbiniaProcessor(module.BaseModule):
     all_local_paths.extend(downloaded_gs_paths)
 
     if not all_local_paths:
-      self.state.AddError('No interesting files could be found.', critical=True)
+      self.ModuleError('No interesting files could be found.', critical=True)
 
     for description, path in all_local_paths:
       if path.endswith('BinaryExtractorTask.tar.gz'):
