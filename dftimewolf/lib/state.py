@@ -17,6 +17,9 @@ from dftimewolf.lib.modules import manager as modules_manager
 # more granularity.
 logger = logging.getLogger('dftimewolf')
 
+NEW_ISSUE_URL = 'https://github.com/log2timeline/dftimewolf/issues/new'
+
+
 class DFTimewolfState(object):
   """The main State class.
 
@@ -174,9 +177,9 @@ class DFTimewolfState(object):
       logger.critical(msg)
       # We're catching any exception that is not a DFTimewolfError, so we want
       # to generate an error for further reporting.
-      stacktrace = traceback.format_exc()
       error = errors.DFTimewolfError(
-          message=msg, name='state', stacktrace=stacktrace, critical=True)
+          message=msg, name='state', stacktrace=traceback.format_exc(),
+          critical=True, unexpected=True)
       self.AddError(error)
 
     self._threading_event_per_module[module_name] = threading.Event()
@@ -233,7 +236,7 @@ class DFTimewolfState(object):
       # to generate an error for further reporting.
       error = errors.DFTimewolfError(
           message=msg, name='state', stacktrace=traceback.format_exc(),
-          critical=True)
+          critical=True, unexpected=True)
       self.AddError(error)
 
     logger.info('Module {0:s} finished execution'.format(module_name))
@@ -339,6 +342,11 @@ class DFTimewolfState(object):
           logger.error(line)
       if error.critical:
         critical_errors = True
+
+    if any(error.unexpected for error in error_objects):
+      logger.critical('One or more unexpected errors occurred.')
+      logger.critical(
+          'Please consider opening an issue: {0:s}'.format(NEW_ISSUE_URL))
 
     if critical_errors:
       logger.critical('Critical error found. Aborting.')
