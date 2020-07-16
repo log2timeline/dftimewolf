@@ -12,7 +12,8 @@ class DFTimewolfError(Exception):
     unexpected (Optional[bool]): Whether the error is unexpected.
   """
 
-  def __init__(self, message=None, name=None, stacktrace=None, critical=False, unexpected=False):
+  def __init__(self, message=None, name=None, stacktrace=None, critical=False,
+               unexpected=False):
     """Initializes the DFTimewolfError with provided or default message."""
     super(DFTimewolfError, self).__init__(message)
     self.message = message or 'An error occurred.'
