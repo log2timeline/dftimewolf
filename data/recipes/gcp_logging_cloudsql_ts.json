@@ -12,16 +12,12 @@
       }
     },
     {
-      "wants": [
-        "GCPLogsCollector"
-      ],
+      "wants": ["GCPLogsCollector"],
       "name": "GCPLoggingTimesketch",
       "args": {}
     },
     {
-      "wants": [
-        "GCPLoggingTimesketch"
-      ],
+      "wants": ["GCPLoggingTimesketch"],
       "name": "TimesketchExporter",
       "args": {
         "incident_id": "@incident_id",
