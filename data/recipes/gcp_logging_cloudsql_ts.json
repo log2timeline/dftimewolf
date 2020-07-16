@@ -12,9 +12,7 @@
       }
     },
     {
-      "wants": [
-        "GCPLogsCollector"
-      ],
+      "wants": ["GCPLogsCollector"],
       "name": "GCPLoggingTimesketch",
       "args": {}
     },
