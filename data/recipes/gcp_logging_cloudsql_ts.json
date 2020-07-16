@@ -1,0 +1,36 @@
+{
+  "name": "gcp_logging_cloudsql_ts",
+  "description": "Collects GCP logs from Cloud SQL instances for a project and exports them to Timesketch.",
+  "short_description": "Collects GCP logs from Cloud SQL instances for a project and exports them to Timesketch.",
+  "modules": [
+    {
+      "wants": [],
+      "name": "GCPLogsCollector",
+      "args": {
+        "project_name": "@project_name",
+        "filter_expression": "logName:\"projects/@project_name/logs/cloudsql.googleapis.com\" timestamp>\"@start_date\" timestamp<\"@end_date\""
+      }
+    },
+    {
+      "wants": ["GCPLogsCollector"],
+      "name": "GCPLoggingTimesketch",
+      "args": {}
+    },
+    {
+      "wants": ["GCPLoggingTimesketch"],
+      "name": "TimesketchExporter",
+      "args": {
+        "incident_id": "@incident_id",
+        "token_password": "@token_password",
+        "sketch_id": "@sketch_id"
+      }
+    }
+  ],
+  "args": [
+    ["project_name", "Name of GCP project to collect logs from", null],
+    ["start_date", "Start date (yyyy-mm-ddTHH:MM:SSZ)", null],
+    ["end_date", "End date (yyyy-mm-ddTHH:MM:SSZ)", null],
+    ["--incident_id", "Incident ID (used for Timesketch description)", null],
+    ["--sketch_id", "Sketch to which the timeline should be added", null],
+    ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""]]
+}
