@@ -68,18 +68,12 @@ class LocalPlasoProcessor(module.BaseModule):
         _, error = l2t_proc.communicate()
         l2t_status = l2t_proc.wait()
       except OSError as exception:
-        self.state.AddError(str(exception), critical=True)
-        return
-      # Catch all remaining errors since we want to gracefully report them
-      except Exception as exception:  # pylint: disable=broad-except
-        self.state.AddError(str(exception), critical=True)
-        return
+        self.ModuleError(str(exception), critical=True)
 
       if l2t_status:
         message = ('The log2timeline command {0:s} failed: {1!s}.'
                    ' Check log file for details.').format(full_cmd, error)
-        self.state.AddError(message, critical=True)
-        return
+        self.ModuleError(message, critical=True)
 
       container = containers.File(description, plaso_storage_file_path)
       self.state.StoreContainer(container)
