@@ -12,7 +12,9 @@
       }
     },
     {
-      "wants": ["GCPLogsCollector"],
+      "wants": [
+        "GCPLogsCollector"
+      ],
       "name": "GCPLoggingTimesketch",
       "args": {}
     },
@@ -29,35 +31,10 @@
     }
   ],
   "args": [
-    [
-      "project_name",
-      "Name of GCP project to collect logs from",
-      null
-    ],
-    [
-      "start_date",
-      "Start date (yyyy-mm-ddTHH:MM:SSZ)",
-      null
-    ],
-    [
-      "end_date",
-      "End date (yyyy-mm-ddTHH:MM:SSZ)",
-      null
-    ],
-    [
-      "--incident_id",
-      "Incident ID (used for Timesketch description)",
-      null
-    ],
-    [
-      "--sketch_id",
-      "Sketch to which the timeline should be added",
-      null
-    ],
-    [
-      "--token_password",
-      "Optional custom password to decrypt Timesketch credential file with",
-      ""
-    ]
-  ]
+    ["project_name", "Name of GCP project to collect logs from", null],
+    ["start_date", "Start date (yyyy-mm-ddTHH:MM:SSZ)", null],
+    ["end_date", "End date (yyyy-mm-ddTHH:MM:SSZ)", null],
+    ["--incident_id", "Incident ID (used for Timesketch description)", null],
+    ["--sketch_id", "Sketch to which the timeline should be added", null],
+    ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""]]
 }
