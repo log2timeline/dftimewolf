@@ -235,8 +235,7 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
             'User heinz-57@ketchup-research.iam.gserviceaccount.com '
             'performed v1.compute.firewalls.insert on '
             'projects/ketchup-research/global/firewalls/deny-tomchop-access',
-        'severity':
-            'NOTICE'
+        'severity': 'NOTICE'
     }
 
     actual_timesketch_record = processor._ProcessLogLine(
@@ -324,8 +323,7 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
             'performed v1.compute.instances.insert '
             'on projects/ketchup-research/zones/europe-west1-c/instances/'
             'example-instance-2',
-        'severity':
-            'NOTICE'
+        'severity': 'NOTICE'
     }
 
     # pylint: disable=protected-access
@@ -465,8 +463,7 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
             'User heinz-57@ketchup-research.iam.gserviceaccount.com '
             'performed storage.buckets.create on '
             'projects/_/buckets/test_bucket_1',
-        'severity':
-            'NOTICE'
+        'severity': 'NOTICE'
     }
 
     # pylint: disable=protected-access
