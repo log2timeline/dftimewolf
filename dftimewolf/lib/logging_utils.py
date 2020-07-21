@@ -2,6 +2,10 @@
 compatible terminals."""
 import logging
 import random
+import os
+
+DEFAULT_LOG_FILE = os.path.join(os.sep, 'tmp', 'dftimewolf.log')
+
 
 def _GenerateColorSequences():
   """Generates ANSI codes for 256 colors.
