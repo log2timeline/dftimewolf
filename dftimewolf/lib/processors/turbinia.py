@@ -147,7 +147,8 @@ class TurbiniaProcessor(module.BaseModule):
       except TurbiniaException as exception:
         # Don't add a critical error for now, until we start raising errors
         # instead of returning manually each
-        self.ModuleError(exception, critical=False)
+        self.ModuleError(str(exception), critical=False)
+      self.logger.info('Downlaoded {0:s} to {1:s}'.format(path, local_path))
 
       if local_path:
         local_paths.append((timeline_label, local_path))
@@ -214,7 +215,7 @@ class TurbiniaProcessor(module.BaseModule):
     except TurbiniaException as exception:
       # TODO: determine if exception should be converted into a string as
       # elsewhere in the codebase.
-      self.ModuleError(exception, critical=True)
+      self.ModuleError(str(exception), critical=True)
 
     message = self.client.format_task_status(**request_dict, full_report=True)
     short_message = self.client.format_task_status(**request_dict)
@@ -238,18 +239,22 @@ class TurbiniaProcessor(module.BaseModule):
 
     downloaded_gs_paths = self._DownloadFilesFromGCS(timeline_label, gs_paths)
     all_local_paths.extend(downloaded_gs_paths)
+    self.logger.info('Collected {0:d} results'.format(len(all_local_paths)))
 
     if not all_local_paths:
       self.ModuleError('No interesting files could be found.', critical=True)
 
     for description, path in all_local_paths:
       if path.endswith('BinaryExtractorTask.tar.gz'):
+        self.logger.info('Found BinaryExtractorTask result: {0:s}'.format(path))
         container = containers.ThreatIntelligence(
             name='BinaryExtractorResults', indicator=None, path=path)
       if path.endswith('hashes.json'):
+        self.logger.info('Found hashes.json: {0:s}'.format(path))
         container = containers.ThreatIntelligence(
             name='ImageExportHashes', indicator=None, path=path)
       if path.endswith('.plaso'):
+        self.logger.info('Found plaso result: {0:s}'.format(path))
         container = containers.File(name=description, path=path)
       self.state.StoreContainer(container)
 
