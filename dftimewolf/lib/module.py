@@ -3,6 +3,9 @@
 
 import abc
 import logging
+# Some AttributeErrors occured when trying to access logging.handlers, so
+# we import them separately
+from logging import handlers
 import traceback
 import sys
 
@@ -30,10 +33,23 @@ class BaseModule(object):
     super(BaseModule, self).__init__()
     self.critical = critical
     self.state = state
+    self.SetupLogging()
+
+  def SetupLogging(self):
+    """Sets up stream and file logging for a specific module."""
     self.logger = logging.getLogger(name=self.__class__.__name__)
+
+    file_handler = handlers.RotatingFileHandler(
+        logging_utils.DEFAULT_LOG_FILE,
+        maxBytes=logging_utils.MAX_BYTES,
+        backupCount=logging_utils.BACKUP_COUNT)
+    file_handler.setFormatter(logging_utils.WolfFormatter(colorize=False))
+    self.logger.addHandler(file_handler)
+
     console_handler = logging.StreamHandler()
     formatter = logging_utils.WolfFormatter(random_color=True)
     console_handler.setFormatter(formatter)
+
     self.logger.addHandler(console_handler)
 
   @property
