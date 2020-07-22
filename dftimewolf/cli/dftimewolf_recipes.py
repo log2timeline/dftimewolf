@@ -4,6 +4,8 @@
 
 import argparse
 import logging
+# Some AttributeErrors occured when trying to access logging.handlers, so
+# we import them separately
 from logging import handlers
 import os
 import signal

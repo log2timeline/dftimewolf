@@ -3,6 +3,8 @@
 
 import abc
 import logging
+# Some AttributeErrors occured when trying to access logging.handlers, so
+# we import them separately
 from logging import handlers
 import traceback
 import sys
