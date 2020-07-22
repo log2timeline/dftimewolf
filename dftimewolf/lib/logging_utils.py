@@ -5,7 +5,8 @@ import random
 import os
 
 DEFAULT_LOG_FILE = os.path.join(os.sep, 'tmp', 'dftimewolf.log')
-
+MAX_BYTES = 5*1024*1024
+BACKUP_COUNT = 3
 
 def _GenerateColorSequences():
   """Generates ANSI codes for 256 colors.

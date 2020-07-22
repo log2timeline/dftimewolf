@@ -38,7 +38,9 @@ class BaseModule(object):
     self.logger = logging.getLogger(name=self.__class__.__name__)
 
     file_handler = handlers.RotatingFileHandler(
-        logging_utils.DEFAULT_LOG_FILE, maxBytes=5*1024*1024, backupCount=3)
+        logging_utils.DEFAULT_LOG_FILE,
+        maxBytes=logging_utils.MAX_BYTES,
+        backupCount=logging_utils.BACKUP_COUNT)
     file_handler.setFormatter(logging_utils.WolfFormatter(colorize=False))
     self.logger.addHandler(file_handler)
 
