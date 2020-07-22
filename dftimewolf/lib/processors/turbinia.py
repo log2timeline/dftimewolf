@@ -149,8 +149,8 @@ class TurbiniaProcessor(module.BaseModule):
         # instead of returning manually each
         self.ModuleError(exception, critical=False)
 
-    if local_path:
-      local_paths.append((timeline_label, local_path))
+      if local_path:
+        local_paths.append((timeline_label, local_path))
 
     return local_paths
 
