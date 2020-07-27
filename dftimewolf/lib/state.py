@@ -206,7 +206,6 @@ class DFTimewolfState(object):
       module_definition (str): module definition.
     """
     module_name = module_definition['name']
-    logger.info('Running module: {0:s}'.format(module_name))
 
     for dependency in module_definition['wants']:
       self._threading_event_per_module[dependency].wait()
@@ -221,6 +220,8 @@ class DFTimewolfState(object):
       self._threading_event_per_module[module_name].set()
       self.CleanUp()
       return
+
+    logger.info('Running module: {0:s}'.format(module_name))
 
     try:
       module.Process()
