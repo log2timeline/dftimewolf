@@ -136,14 +136,14 @@ class AWSCollector(module.BaseModule):
     """
 
     if not (remote_instance_id or volume_ids):
-      self.state.AddError(
+      self.ModuleError(
           'You need to specify at least an instance name or volume ids to copy',
           critical=True)
       return
 
     if not (remote_profile_name and remote_zone):
-      self.state.AddError('You must specify "remote_profile_name" and "zone" '
-                          'parameters', critical=True)
+      self.ModuleError('You must specify "remote_profile_name" and "zone" '
+                       'parameters', critical=True)
       return
 
     self.remote_profile_name = remote_profile_name
@@ -189,7 +189,7 @@ class AWSCollector(module.BaseModule):
       try:
         volumes.append(self.source_account.GetVolumeById(volume_id))
       except RuntimeError:
-        self.state.AddError(
+        self.ModuleError(
             'Volume "{0:s}" was not found in AWS account {1:s}'.format(
                 volume_id, self.remote_profile_name),
             critical=True)
@@ -232,7 +232,7 @@ class AWSCollector(module.BaseModule):
                                                      self.all_volumes)
 
     if not volumes_to_copy:
-      self.state.AddError(
+      self.ModuleError(
           'Could not find any volumes to copy', critical=True)
       return []
 
@@ -249,10 +249,9 @@ class AWSCollector(module.BaseModule):
     try:
       next_available = self.device_suffixes.pop(0)
     except IndexError as exception:
-      self.state.AddError('Error: there are no more device names available '
-                          'for this VM. Consider copying less volumes! '
-                          '{0:s}'.format(str(exception)),
-                          critical=True)
+      self.ModuleError('Error: there are no more device names available '
+                       'for this VM. Consider copying less volumes! '
+                       '{0:s}'.format(str(exception)), critical=True)
       return ''
     return '/dev/sd' + next_available
 
