@@ -60,12 +60,14 @@ class AWSCollectorTest(unittest.TestCase):
     self.assertIsNotNone(gcloud_collector)
 
   # pylint: disable=invalid-name
+  @mock.patch('boto3.session.Session._setup_loader')
   @mock.patch('libcloudforensics.providers.aws.internal.ec2.AWSInstance')
   @mock.patch('libcloudforensics.providers.aws.forensics.StartAnalysisVm')
-  def testSetUp1(self, mock_StartAnalysisVm, mock_AWSInstance):
+  def testSetUp1(self, mock_StartAnalysisVm, mock_AWSInstance, mock_loader):
     """Tests that the collector can be initialized."""
     test_state = state.DFTimewolfState(config.Config)
     mock_StartAnalysisVm.return_value = (mock_AWSInstance, None)
+    mock_loader.return_value = None
 
     aws_collector = aws.AWSCollector(test_state)
 
@@ -97,11 +99,13 @@ class AWSCollectorTest(unittest.TestCase):
     )
 
   # pylint: disable=invalid-name
+  @mock.patch('boto3.session.Session._setup_loader')
   @mock.patch('libcloudforensics.providers.aws.forensics.StartAnalysisVm')
-  def testSetUp2(self, mock_StartAnalysisVm):
+  def testSetUp2(self, mock_StartAnalysisVm, mock_loader):
     """Tests that the collector can be initialized."""
     test_state = state.DFTimewolfState(config.Config)
     mock_StartAnalysisVm.return_value = (FAKE_INSTANCE, None)
+    mock_loader.return_value = None
 
     aws_collector = aws.AWSCollector(test_state)
 
@@ -137,6 +141,7 @@ class AWSCollectorTest(unittest.TestCase):
     )
 
   # pylint: disable=line-too-long, invalid-name
+  @mock.patch('boto3.session.Session._setup_loader')
   @mock.patch('libcloudforensics.providers.aws.forensics.StartAnalysisVm')
   @mock.patch('libcloudforensics.providers.aws.forensics.CreateVolumeCopy')
   @mock.patch('dftimewolf.lib.collectors.aws.AWSCollector._FindVolumesToCopy')
@@ -145,11 +150,13 @@ class AWSCollectorTest(unittest.TestCase):
                   unused_mock_AttachVolume,
                   mock_FindVolumesToCopy,
                   mock_CreateVolumeCopy,
-                  mock_StartAnalysisVm):
+                  mock_StartAnalysisVm,
+                  mock_loader):
     """Tests the collector's Process() function."""
     mock_StartAnalysisVm.return_value = (FAKE_ANALYSIS_VM, None)
     mock_FindVolumesToCopy.return_value = [FAKE_VOLUME]
     mock_CreateVolumeCopy.return_value = FAKE_VOLUME_COPY
+    mock_loader.return_value = None
 
     test_state = state.DFTimewolfState(config.Config)
     aws_collector = aws.AWSCollector(test_state)
@@ -177,6 +184,7 @@ class AWSCollectorTest(unittest.TestCase):
         'fake-volume-id-copy', forensics_vm.evidence_disk.volume_id)
 
   # pylint: disable=line-too-long
+  @mock.patch('boto3.session.Session._setup_loader')
   @mock.patch('libcloudforensics.providers.aws.internal.ec2.AWSInstance.GetBootVolume')
   @mock.patch('libcloudforensics.providers.aws.internal.account.AWSAccount.GetVolumeById')
   @mock.patch('libcloudforensics.providers.aws.internal.ec2.AWSInstance.ListVolumes')
@@ -189,11 +197,13 @@ class AWSCollectorTest(unittest.TestCase):
                             mock_GetInstanceById,
                             mock_ListVolumes,
                             mock_GetVolumeById,
-                            mock_GetBootVolume):
+                            mock_GetBootVolume,
+                            mock_loader):
     """Tests the FindVolumesToCopy function with different SetUp() calls."""
     test_state = state.DFTimewolfState(config.Config)
     aws_collector = aws.AWSCollector(test_state)
     mock_StartAnalysisVm.return_value = (FAKE_INSTANCE, None)
+    mock_loader.return_value = None
     mock_ListVolumes.return_value = {
         FAKE_BOOT_VOLUME.volume_id: FAKE_BOOT_VOLUME,
         FAKE_VOLUME.volume_id: FAKE_VOLUME

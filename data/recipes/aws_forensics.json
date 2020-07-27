@@ -16,7 +16,7 @@
           "all_volumes": "@all_volumes",
           "boot_volume_size": "@boot_volume_size",
           "cpu_cores": 16,
-          "ami": "ami-0013b3aa57f8a4331"
+          "ami": null
       }
   }],
   "args": [
