@@ -15,8 +15,10 @@ from dftimewolf.lib import state
 from dftimewolf.lib.collectors import aws
 from dftimewolf.lib.containers import containers
 
-FAKE_AWS_ACCOUNT = aws_account.AWSAccount(
-    default_availability_zone='fake-zone-2b')
+with mock.patch('boto3.session.Session._setup_loader') as mock_session:
+  mock_session.return_value = None
+  FAKE_AWS_ACCOUNT = aws_account.AWSAccount(
+      default_availability_zone='fake-zone-2b')
 FAKE_ANALYSIS_VM = ec2.AWSInstance(
     FAKE_AWS_ACCOUNT,
     'fake-analysis-vm-id',
