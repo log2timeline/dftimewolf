@@ -92,7 +92,7 @@ class TimesketchEnhancer(module.BaseModule):
       self._views_to_skip = []
 
     if formatter.lower() == 'markdown':
-      self._formatter = utils.MarkdwownFormatter()
+      self._formatter = utils.MarkdownFormatter()
     else:
       self._formatter = utils.HTMLFormatter()
 
