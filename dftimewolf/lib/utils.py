@@ -84,7 +84,7 @@ class FormatterInterface(object):
     """
     pass
 
-  def IntendEnd(self):
+  def IndentEnd(self):
     """Return a formatted text for ending an indent."""
     pass
 
@@ -140,7 +140,7 @@ class HTMLFormatter(FormatterInterface):
     """
     return '<li>{0:s}</li>'.format(text)
 
-  def IntendEnd(self):
+  def IndentEnd(self):
     """Return a formatted text for ending an indent."""
     return '</ul>'
 
