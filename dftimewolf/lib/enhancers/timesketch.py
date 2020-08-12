@@ -14,13 +14,7 @@ from dftimewolf.lib.modules import manager as modules_manager
 class TimesketchEnhancer(module.BaseModule):
   """Enhance Timesketch results with additional reports.
 
-  input: A list of paths to plaso or CSV files.
-  output: A URL to the generated timeline.
-
   Attributes:
-    incident_id (str): Incident ID or reference. Used in sketch description.
-    sketch_id (int): Sketch ID to add the resulting timeline to. If not
-        provided, a new sketch is created.
     timesketch_api (TimesketchApiClient): Timesketch API client.
   """
 
@@ -38,8 +32,14 @@ class TimesketchEnhancer(module.BaseModule):
   _REPORT_NAME = 'TimesketchEnhancer'
 
   def __init__(self, state):
-    super(TimesketchExporter, self).__init__(state)
+    super(TimesketchEnhancer, self).__init__(state)
     self.timesketch_api = None
+
+    self._aggregations_to_skip = []
+    self._formatter = None
+    self._include_stories = False
+    self._timesketch_quick = False
+    self._views_to_skip = []
 
   def SetUp(self,  # pylint: disable=arguments-differ
             timesketch_quick=False,
@@ -77,6 +77,9 @@ class TimesketchEnhancer(module.BaseModule):
           'Unable to get a Timesketch API client, try deleting the files '
           '~/.timesketchrc and ~/.timesketch.token', critical=True)
 
+    self._include_stories = include_stories
+    self._timesketch_quick = timesketch_quick
+
     if aggregations_to_skip:
       self._aggregations_to_skip = [
           str(x) for x in json.loads(aggregations_to_skip)]
@@ -89,11 +92,9 @@ class TimesketchEnhancer(module.BaseModule):
       self._views_to_skip = []
 
     if formatter.lower() == 'markdown':
-      self._formatter = MarkdwownFormatter()
+      self._formatter = utils.MarkdwownFormatter()
     else:
-      self._formatter = HTMLFormatter()
-
-    self._include_stories = include_stories
+      self._formatter = utils.HTMLFormatter()
 
     # Check that we have a timesketch session.
     if not (self.timesketch_api or self.timesketch_api.session):
@@ -119,7 +120,7 @@ class TimesketchEnhancer(module.BaseModule):
       sketch (timesketch_api.sketch.Sketch): the sketch object.
 
     Returns:
-        A formatted string with the results of aggregation runs
+        str: A formatted string with the results of aggregation runs
         on the sketch.
     """
     aggregation_strings = []
@@ -170,7 +171,7 @@ class TimesketchEnhancer(module.BaseModule):
       sketch (timesketch_api.sketch.Sketch): the sketch object.
 
     Returns:
-        A formatted string with the results of all stories stored in
+        str: A formatted string with the results of all stories stored in
         the sketch.
     """
     story_strings = []
@@ -200,7 +201,7 @@ class TimesketchEnhancer(module.BaseModule):
       sketch (timesketch_api.sketch.Sketch): the sketch object.
 
     Returns:
-        A formatted string with the results of aggregation runs
+        str: A formatted string with the results of aggregation runs
         on the sketch.
     """
     view_strings = []
@@ -307,7 +308,7 @@ class TimesketchEnhancer(module.BaseModule):
 
     view_string = self._GenerateViewString(sketch)
     if view_string:
-      summar_lines.append(self._formatter.IndentText(
+      summary_lines.append(self._formatter.IndentText(
           'The following views were discovered:\n'
           '{0:s}{1:s}{2:s}'.format(
               self._formatter.IndentStart(),
