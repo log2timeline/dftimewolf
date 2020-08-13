@@ -4,10 +4,8 @@
 
 import os
 from libcloudforensics.providers.gcp.internal import project as gcp_project
-from dftimewolf import config
-from dftimewolf.lib import state as state_mod
+from googleapiclient.errors import HttpError
 from dftimewolf.lib import module
-from dftimewolf.lib.collectors import gcloud
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 
@@ -23,6 +21,10 @@ class GoogleCloudDiskExport(module.BaseModule):
     analysis_project (gcp_project.GoogleCloudProject): Project where the
         disk image is created then exported.
         If not exit, source_project will be used.
+    remote_instance_name (str): Instance that needs forensicating.
+    disk_names (list[str]): Comma-separated list of disk names to copy.
+    all_disks (bool): True if all disks attached to the source
+        instance should be copied.
     source_disks (list[gcp_project.compute.GoogleComputeDisk]): List of disks
         to be exported.
     exported_image_name (Optional[str]): Optional. Name of the output file, must
@@ -43,6 +45,9 @@ class GoogleCloudDiskExport(module.BaseModule):
     self.source_project = None
     self.gcs_output_location = None
     self.analysis_project = None
+    self.remote_instance_name = None
+    self.disk_names = []
+    self.all_disks = False
     self.source_disks = []
     self.exported_image_name = None
 
@@ -126,19 +131,95 @@ class GoogleCloudDiskExport(module.BaseModule):
           critical=True)
       return
 
-    init_state = state_mod.DFTimewolfState(config.Config)
-    gcloud_collector = gcloud.GoogleCloudCollector(init_state)
-    gcloud_collector.SetUp(
-        analysis_project_name=self.analysis_project.project_id,
-        remote_project_name=self.source_project.project_id,
-        create_analysis_vm=False,
-        disk_names=disk_names,
-        all_disks=all_disks,
-        remote_instance_name=remote_instance_name)
+    self.remote_instance_name = remote_instance_name
+    disk_names = disk_names.split(',') if disk_names else []
+    self.disk_names = disk_names
+    self.all_disks = all_disks
 
-    self.source_disks = gcloud_collector.FindDisksToCopy()
+    self.source_disks = self._FindDisksToCopy()
     self.gcs_output_location = gcs_output_location
     if exported_image_name and len(self.source_disks) == 1:
       self.exported_image_name = exported_image_name
+
+  def _GetDisksFromNames(self, disk_names):
+    """Gets disks from a project by disk name.
+
+    Args:
+      disk_names (list[str]): List of disk names to get from the project.
+
+    Returns:
+      list[GoogleComputeDisk]: List of GoogleComputeDisk objects to copy.
+    """
+    disks = []
+    for name in disk_names:
+      try:
+        disks.append(self.source_project.compute.GetDisk(name))
+      except RuntimeError:
+        self.ModuleError(
+            'Disk "{0:s}" was not found in project {1:s}'.format(
+                name, self.source_project.project_id),
+            critical=True)
+    return disks
+
+  def _GetDisksFromInstance(self, instance_name, all_disks):
+    """Gets disks to copy based on an instance name.
+
+    Args:
+      instance_name (str): Name of the instance to get the disks from.
+      all_disks (bool): If set, get all disks attached to the instance. If
+          False, get only the instance's boot disk.
+
+    Returns:
+      list[GoogleComputeDisk]: List of GoogleComputeDisk objects to copy.
+    """
+    try:
+      remote_instance = self.source_project.compute.GetInstance(instance_name)
+    except RuntimeError as exception:
+      self.ModuleError(str(exception), critical=True)
+
+    if all_disks:
+      return list(remote_instance.ListDisks().values())
+    return [remote_instance.GetBootDisk()]
+
+  def _FindDisksToCopy(self):
+    """Determines which disks to copy depending on object attributes.
+
+    Returns:
+      list[GoogleComputeDisk]: the disks to copy to the
+          analysis project.
+    """
+    if not (self.remote_instance_name or self.disk_names):
+      self.ModuleError(
+          'You need to specify at least an instance name or disks to copy',
+          critical=True)
+
+    disks_to_copy = []
+
+    try:
+
+      if self.disk_names:
+        disks_to_copy = self._GetDisksFromNames(self.disk_names)
+
+      elif self.remote_instance_name:
+        disks_to_copy = self._GetDisksFromInstance(self.remote_instance_name,
+                                                   self.all_disks)
+
+    except HttpError as exception:
+      if exception.resp.status == 403:
+        self.ModuleError(
+            '403 response. Do you have appropriate permissions on the project?',
+            critical=True)
+      if exception.resp.status == 404:
+        self.ModuleError(
+            'GCP resource not found. Maybe a typo in the project / instance / '
+            'disk name?',
+            critical=True)
+      self.ModuleError(str(exception), critical=True)
+
+    if not disks_to_copy:
+      self.ModuleError(
+          'Could not find any disks to copy', critical=True)
+
+    return disks_to_copy
 
 modules_manager.ModulesManager.RegisterModule(GoogleCloudDiskExport)

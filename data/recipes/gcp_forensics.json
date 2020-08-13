@@ -23,7 +23,7 @@
   }],
   "args": [
       ["remote_project_name", "Name of the project containing the instance / disks to copy ", null],
-      ["analysis_project_name", "Name of the project where the analysis VM will be created", null],
+      ["--analysis_project_name", "Name of the project where the analysis VM will be created", null],
       ["--incident_id", "Incident ID to label the VM with.", null],
       ["--instance", "Name of the instance to analyze.", null],
       ["--disks", "Comma-separated list of disks to copy.", null],

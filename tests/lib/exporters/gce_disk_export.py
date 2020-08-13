@@ -38,22 +38,23 @@ class GoogleCloudDiskExportTest(unittest.TestCase):
     self.assertIsNotNone(google_disk_export)
 
   # pylint: disable=line-too-long
-  @mock.patch('dftimewolf.lib.collectors.gcloud.GoogleCloudCollector.FindDisksToCopy')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetDisk')
   @mock.patch('dftimewolf.lib.collectors.gcloud.GoogleCloudCollector.SetUp')
   @mock.patch('libcloudforensics.providers.gcp.internal.project.GoogleCloudProject')
   def testSetUp(
       self,
       mock_gcp_project,
       mock_gcloud_setup,
-      mock_gcloud_find_disk):
+      mock_get_disk):
     """Tests that the exporter can be initialized."""
 
     test_state = state.DFTimewolfState(config.Config)
     cloud_disk_exporter = gce_disk_export.GoogleCloudDiskExport(
         test_state)
     mock_gcp_project.return_value = FAKE_SOURCE_PROJECT
+    FAKE_SOURCE_PROJECT.compute.GetDisk = mock_get_disk
+    mock_get_disk.return_value = FAKE_DISK
     mock_gcloud_setup.side_effect = None
-    mock_gcloud_find_disk.return_value = [FAKE_DISK]
     cloud_disk_exporter.SetUp(
         'fake-source-project',
         'gs://fake-bucket',

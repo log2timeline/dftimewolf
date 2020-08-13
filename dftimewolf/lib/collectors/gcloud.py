@@ -54,7 +54,7 @@ class GoogleCloudCollector(module.BaseModule):
 
   def Process(self):
     """Copies a disk to the analysis project."""
-    for disk in self.FindDisksToCopy():
+    for disk in self._FindDisksToCopy():
       self.logger.info('Disk copy of {0:s} started...'.format(disk.name))
       new_disk = gcp_forensics.CreateDiskCopy(
           self.remote_project.project_id,
@@ -79,10 +79,10 @@ class GoogleCloudCollector(module.BaseModule):
             analysis_project_name,
             remote_project_name,
             incident_id=None,
-            zone=None,
+            zone='us-central1-f',
             create_analysis_vm=True,
-            boot_disk_size=None,
-            boot_disk_type=None,
+            boot_disk_size=50,
+            boot_disk_type='pd-standard',
             cpu_cores=4,
             remote_instance_name=None,
             disk_names=None,
@@ -93,6 +93,9 @@ class GoogleCloudCollector(module.BaseModule):
 
     This method creates and starts an analysis VM in the analysis project and
     selects disks to copy from the remote project.
+
+    If analysis_project_name is not specified, analysis_project will be same
+    as remote_project.
 
     If disk_names is specified, it will copy the corresponding disks from the
     project, ignoring disks belonging to any specific instances.
@@ -106,8 +109,8 @@ class GoogleCloudCollector(module.BaseModule):
     disk_names takes precedence over instance_names
 
     Args:
-      analysis_project_name (str): name of the project that contains
-          the analysis VM.
+      analysis_project_name (str): Optional. name of the project that contains
+          the analysis VM. Default is None.
       remote_project_name (str): name of the remote project where the disks
           must be copied from.
       incident_id (Optional[str]): Optional. Incident identifier on which the
@@ -119,9 +122,9 @@ class GoogleCloudCollector(module.BaseModule):
       create_analysis_vm (Optional[bool]): Optional. Create analysis VM in
           the analysis project. Default is True.
       boot_disk_size (Optional[float]): Optional. Size of the analysis VM boot
-          disk (in GB).
+          disk (in GB). Default is 50.
       boot_disk_type (Optional[str]): Optional. Disk type to use.
-          Default is [pd-standard, pd-ssd]
+          Default is pd-standard.
       cpu_cores (Optional[int]): Optional. Number of CPU cores to
           create the VM with. Default is 4.
       remote_instance_name (Optional[str]): Optional. Name of the instance in
@@ -141,14 +144,13 @@ class GoogleCloudCollector(module.BaseModule):
       return
 
     disk_names = disk_names.split(',') if disk_names else []
-    if zone:
+    self.remote_project = gcp_project.GoogleCloudProject(
+        remote_project_name, default_zone=zone)
+    if analysis_project_name:
       self.analysis_project = gcp_project.GoogleCloudProject(
           analysis_project_name, default_zone=zone)
     else:
-      self.analysis_project = gcp_project.GoogleCloudProject(
-          analysis_project_name)
-    self.remote_project = gcp_project.GoogleCloudProject(
-        remote_project_name)
+      self.analysis_project = self.remote_project
 
     self.remote_instance_name = remote_instance_name
     self.disk_names = disk_names
@@ -242,7 +244,7 @@ class GoogleCloudCollector(module.BaseModule):
       return list(remote_instance.ListDisks().values())
     return [remote_instance.GetBootDisk()]
 
-  def FindDisksToCopy(self):
+  def _FindDisksToCopy(self):
     """Determines which disks to copy depending on object attributes.
 
     Returns:
