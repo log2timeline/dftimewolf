@@ -162,7 +162,7 @@ class HTMLFormatter(FormatterInterface):
 
   def Line(self):
     """Return a formatted new line."""
-    return '</br>'
+    return '<br/>'
 
   def Heading(self, text, level=1):
     """Return a formatted heading."""
@@ -190,7 +190,7 @@ class MarkdownFormatter(FormatterInterface):
     Returns:
         str: A formatted indented string.
     """
-    return '{0:s}{1:s}\n'.format(' '*(2 * level), text)
+    return '{0:s}+ {1:s}\n'.format(' '*(2 * level), text)
 
   def BoldText(self, text):
     """Return a formatted text that will be bold."""
@@ -219,3 +219,11 @@ class MarkdownFormatter(FormatterInterface):
   def Paragraph(self, text):
     """Return a formatted paragraph."""
     return '{0:s}\n'.format(text)
+
+  def IndentStart(self):
+    """Return formatted text for starting an indent."""
+    return ''
+
+  def IndentEnd(self):
+    """Return a formatted text for ending an indent."""
+    return ''
