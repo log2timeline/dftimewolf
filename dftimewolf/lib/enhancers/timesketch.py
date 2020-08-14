@@ -86,7 +86,7 @@ class TimesketchEnhancer(module.BaseModule):
           '~/.timesketchrc and ~/.timesketch.token', critical=True)
 
     if max_checks:
-      self._max_checks = max_checks
+      self._max_checks = int(max_checks)
     self._include_stories = include_stories
     self._timesketch_quick = timesketch_quick
 

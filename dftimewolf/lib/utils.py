@@ -150,7 +150,7 @@ class HTMLFormatter(FormatterInterface):
 
   def Link(self, url, text):
     """Return a formatted text that contains a link."""
-    return '<a href="{0:s} target="_blank">{1:s}</a>'.format(url, text)
+    return '<a href="{0:s}" target="_blank">{1:s}</a>'.format(url, text)
 
   def ItalicText(self, text):
     """Return a formatted text that will be italic."""
