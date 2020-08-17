@@ -231,7 +231,7 @@ class AzureCollectorTest(unittest.TestCase):
                           mock_GetBootDisk,
                           mock_GetCredentials,
                           mock_GetOrCreateResourceGroup):
-    """Tests the FindVolumesToCopy function with different SetUp() calls."""
+    """Tests the FindDisksToCopy function with different SetUp() calls."""
     test_state = state.DFTimewolfState(config.Config)
     azure_collector = azure.AzureCollector(test_state)
     mock_ListDisks.return_value = {
