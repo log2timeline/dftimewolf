@@ -64,7 +64,7 @@ if [[ "$*" =~ "include-grr" ]]; then
       -e ADMIN_PASSWORD="admin" \
       --ulimit nofile=1048576:1048576 \
       -p 127.0.0.1:8000:8000 -p 127.0.0.1:8080:8080 \
-      -d grrdocker/grr:latest grr
+      -d grrdocker/grr:release grr
 
     # Wait for GRR to initialize.
     /bin/sleep 120
