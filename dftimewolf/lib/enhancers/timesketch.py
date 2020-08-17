@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """Timesketch enhancer that exports Timesketch results."""
 
-import json
 import time
 
 from dftimewolf.lib import module
@@ -39,11 +38,11 @@ class TimesketchEnhancer(module.BaseModule):
     self._formatter = None
     self._include_stories = False
     self._max_checks = self._ANALYZER_MAX_CHECKS
-    self._timesketch_quick = False
+    self._wait_for_analyzers = True
     self._views_to_skip = []
 
   def SetUp(self,  # pylint: disable=arguments-differ
-            timesketch_quick=False,
+            wait_for_analyzers=True,
             views_to_skip='',
             aggregations_to_skip='',
             include_stories=False,
@@ -53,12 +52,13 @@ class TimesketchEnhancer(module.BaseModule):
     """Sets up a Timesketch Enhancer module.
 
     Args:
-      timesketch_quick (bool): If set to True then the enhancer will not wait
-          until all analyzers are done running (and therefore skip adding
-          reports).
-      views_to_skip (str): A JSON formatted string with a list of View names
+      wait_for_analyzers (bool): If set to True then the enhancer will wait
+          until all analyzers are done running. If set to False, the module
+          will be skipped, since it does not wait for any results. Defaults to
+          True.
+      views_to_skip (str): A comma separated string with a list of View names
           that are not to be included when generating reports.
-      aggregations_to_skip (str): A JSON formatted string with a list of
+      aggregations_to_skip (str): A comma separated string with a list of
           Aggregation names that are not to be included when generating
           reports.
       include_stories (bool): If set to True then story content will be
@@ -80,36 +80,29 @@ class TimesketchEnhancer(module.BaseModule):
     """
     self.timesketch_api = timesketch_utils.GetApiClient(
         self.state, token_password=token_password)
-    if not self.timesketch_api:
+
+    if not (self.timesketch_api or self.timesketch_api.session):
       self.ModuleError(
           'Unable to get a Timesketch API client, try deleting the files '
           '~/.timesketchrc and ~/.timesketch.token', critical=True)
 
     if max_checks:
       self._max_checks = int(max_checks)
+
     self._include_stories = include_stories
-    self._timesketch_quick = timesketch_quick
+    self._wait_for_analyzers = wait_for_analyzers
 
     if aggregations_to_skip:
       self._aggregations_to_skip = [
-          str(x) for x in json.loads(aggregations_to_skip)]
-    else:
-      self._aggregations_to_skip = []
+          x.strip() for aggregations_to_skip.split(',')]
 
     if views_to_skip:
-      self._views_to_skip = [str(x) for x in json.loads(views_to_skip)]
-    else:
-      self._views_to_skip = []
+      self._views_to_skip = [x.strip() for x in views_to_skip.split(',')]
 
     if formatter.lower() == 'markdown':
       self._formatter = utils.MarkdownFormatter()
     else:
       self._formatter = utils.HTMLFormatter()
-
-    # Check that we have a timesketch session.
-    if not (self.timesketch_api or self.timesketch_api.session):
-      message = 'Could not connect to Timesketch server'
-      self.ModuleError(message, critical=True)
 
   def _GetSketchURL(self, sketch):
     """Returns a URL to access a sketch."""
@@ -122,7 +115,7 @@ class TimesketchEnhancer(module.BaseModule):
 
     The function runs through all saved aggregations in a sketch
     and returns back a formatted string (using the formatter)
-    with the results of teh run. Additionally all aggregation
+    with the results of the run. Additionally all aggregation
     DataFrames are stored as containers, so that other modules
     can make use of them.
 
@@ -294,8 +287,9 @@ class TimesketchEnhancer(module.BaseModule):
 
   def Process(self):
     """Executes a Timesketch enhancer module."""
-    if self._timesketch_quick:
-      self.logger.info('Not waiting for analyzers to run.')
+    if not self._wait_for_analyzers:
+      self.logger.warning(
+          'Not waiting for analyzers to run, skipping enhancer.')
       return
 
     if not self.timesketch_api:
@@ -304,7 +298,10 @@ class TimesketchEnhancer(module.BaseModule):
 
     sketch = self.state.GetFromCache('timesketch_sketch')
     if not sketch:
-      message = 'Missing the sketch, unable to connect to Timesketch.'
+      message = (
+          'Sketch not found in cache, maybe the previous module was unable '
+          'to connect to Timesketch or unable to connect to and/or create '
+          'a sketch.')
       self.ModuleError(message, critical=True)
 
     self.logger.info('Waiting for analyzers to complete their run.')
@@ -327,48 +324,56 @@ class TimesketchEnhancer(module.BaseModule):
     summary_lines.append(self._formatter.IndentStart())
 
     view_string = self._GenerateViewString(sketch)
+    formatted_string = ''
     if view_string:
-      summary_lines.append(self._formatter.IndentText(
+      formatted_string = self._formatter.IndentText(
           'The following views were discovered:\n'
           '{0:s}{1:s}{2:s}'.format(
               self._formatter.IndentStart(),
               view_string,
-              self._formatter.IndentEnd())))
+              self._formatter.IndentEnd()))
     else:
-      summary_lines.append(self._formatter.IndentText(
-          'No views were generated by analyzers.'))
+      formatted_string = self._formatter.IndentText(
+          'No views were generated by analyzers.')
+    summary_lines.append(formatted_string)
 
     aggregation_string = self._GenerateAggregationString(sketch)
     if aggregation_string:
-      summary_lines.append(self._formatter.IndentText(
-          'Following aggregations were discovered:\n{0:s}{1:s}{2:s}'.format(
+      formatted_string = self._formatter.IndentText(
+          'The following aggregations were discovered:'
+          '\n{0:s}{1:s}{2:s}'.format(
               self._formatter.IndentStart(),
               aggregation_string,
-              self._formatter.IndentEnd())))
+              self._formatter.IndentEnd()))
 
     else:
-      summary_lines.append(self._formatter.IndentText(
-          'No aggregations were generated by analyzers.'))
+      formatted_string = self._formatter.IndentText(
+          'No aggregations were generated by analyzers.')
+    summary_lines.append(formatted_string)
 
     story_string = self._GenerateStoryString(sketch)
     if story_string:
-      summary_lines.append(self._formatter.IndentText(
+      formatted_string = self._formatter.IndentText(
           'The following stories were generated:\n{0:s}{1:s}{2:s}'.format(
               self._formatter.IndentStart(),
               story_string,
-              self._formatter.IndentEnd())))
+              self._formatter.IndentEnd()))
     else:
-      summary_lines.append(self._formatter.IndentText(
-          'No stories were generated by analyzers.'))
+      formatted_string = self._formatter.IndentText(
+          'No stories were generated by analyzers.')
+    summary_lines.append(formatted_string)
 
     summary_lines.append(self._formatter.IndentEnd())
 
     analyzer_results = sketch.get_analyzer_status(as_sessions=True)
     if analyzer_results:
-      summary_lines.append(self._formatter.Line())
-      summary_lines.append(self._formatter.Paragraph(
-          'Information from analyzer run:'))
-      summary_lines.append(self._formatter.IndentStart())
+      line_string = self._formatter.Line()
+      summary_lines.append(line_string)
+      paragraph = self._formatter.Paragraph(
+          'Information from analyzer run:')
+      summary_lines.append(paragraph)
+      indent = self._formatter.IndentStart()
+      summary_lines.append(indent)
 
       completed_ids = set()
       for result in analyzer_results:
@@ -381,7 +386,7 @@ class TimesketchEnhancer(module.BaseModule):
         else:
           log_text = ''
 
-        summary_lines.append(self._formatter.IndentText(
+        formatted_string = self._formatter.IndentText(
             'ID: {0:d}\n{1:s}{2:s}\n{3:s}{4:s}'.format(
                 result.id,
                 self._formatter.IndentStart(),
@@ -390,7 +395,8 @@ class TimesketchEnhancer(module.BaseModule):
                 log_text,
                 self._formatter.IndentEnd()
             )
-        ))
+        )
+        summary_lines.append(formatted_string)
         completed_ids.add(result.id)
       summary_lines.append(self._formatter.IndentEnd())
 
