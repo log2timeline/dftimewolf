@@ -188,9 +188,9 @@ class AWSCollectorTest(unittest.TestCase):
   # pylint: disable=line-too-long
   @mock.patch('boto3.session.Session._setup_loader')
   @mock.patch('libcloudforensics.providers.aws.internal.ec2.AWSInstance.GetBootVolume')
-  @mock.patch('libcloudforensics.providers.aws.internal.account.AWSAccount.GetVolumeById')
+  @mock.patch('libcloudforensics.providers.aws.internal.ebs.EBS.GetVolumeById')
   @mock.patch('libcloudforensics.providers.aws.internal.ec2.AWSInstance.ListVolumes')
-  @mock.patch('libcloudforensics.providers.aws.internal.account.AWSAccount.GetInstanceById')
+  @mock.patch('libcloudforensics.providers.aws.internal.ec2.EC2.GetInstanceById')
   @mock.patch('libcloudforensics.providers.aws.forensics.StartAnalysisVm')
   # We're manually calling protected functions
   # pylint: disable=protected-access, invalid-name

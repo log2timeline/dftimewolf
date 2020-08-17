@@ -187,7 +187,7 @@ class AWSCollector(module.BaseModule):
     volumes = []
     for volume_id in volume_ids:
       try:
-        volumes.append(self.source_account.GetVolumeById(volume_id))
+        volumes.append(self.source_account.ebs.GetVolumeById(volume_id))
       except RuntimeError:
         self.ModuleError(
             'Volume "{0:s}" was not found in AWS account {1:s}'.format(
@@ -208,7 +208,7 @@ class AWSCollector(module.BaseModule):
       list[AWSVolume]: List of AWSVolume objects to copy.
     """
     try:
-      remote_instance = self.source_account.GetInstanceById(instance_id)
+      remote_instance = self.source_account.ec2.GetInstanceById(instance_id)
     except RuntimeError as exception:
       self.state.AddError(str(exception), critical=True)
       return []
