@@ -191,7 +191,7 @@ class AzureCollector(module.BaseModule):
     disks = []
     for name in disk_names:
       try:
-        disks.append(self.source_account.GetDisk(name))
+        disks.append(self.source_account.compute.GetDisk(name))
       except RuntimeError:
         self.ModuleError(
             'Disk "{0:s}" was not found in subscription {1:s}'.format(
@@ -212,7 +212,7 @@ class AzureCollector(module.BaseModule):
       list[AZDisk]: List of AZDisk objects to copy.
     """
     try:
-      remote_instance = self.source_account.GetInstance(instance_name)
+      remote_instance = self.source_account.compute.GetInstance(instance_name)
     except RuntimeError as exception:
       self.ModuleError(str(exception), critical=True)
       return []
