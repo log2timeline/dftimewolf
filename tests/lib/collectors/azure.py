@@ -224,13 +224,13 @@ class AzureCollectorTest(unittest.TestCase):
   @mock.patch('libcloudforensics.providers.azure.internal.compute.AZCompute.GetInstance')
   # We're manually calling protected functions
   # pylint: disable=protected-access, invalid-name
-  def testFindVolumesToCopy(self,
-                            mock_GetInstance,
-                            mock_ListDisks,
-                            mock_GetDisk,
-                            mock_GetBootDisk,
-                            mock_GetCredentials,
-                            mock_GetOrCreateResourceGroup):
+  def testFindDisksToCopy(self,
+                          mock_GetInstance,
+                          mock_ListDisks,
+                          mock_GetDisk,
+                          mock_GetBootDisk,
+                          mock_GetCredentials,
+                          mock_GetOrCreateResourceGroup):
     """Tests the FindVolumesToCopy function with different SetUp() calls."""
     test_state = state.DFTimewolfState(config.Config)
     azure_collector = azure.AzureCollector(test_state)
