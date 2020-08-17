@@ -4,20 +4,20 @@ altair==4.1.0; python_version >= '3.6'
 astroid==2.4.2; python_version >= '3.5'
 attrs==19.3.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 azure-common==1.1.25
-azure-core==1.7.0
-azure-identity==1.3.1
+azure-core==1.8.0
+azure-identity==1.4.0
 azure-mgmt-compute==13.0.0
 azure-mgmt-monitor==0.10.0
 azure-mgmt-network==11.0.0
 azure-mgmt-resource==10.2.0
 azure-mgmt-storage==11.1.0
-azure-storage-blob==12.3.2
+azure-storage-blob==12.4.0
 beautifulsoup4==4.9.1
-boto3==1.14.35
-botocore==1.17.35
+boto3==1.14.43
+botocore==1.17.43
 cachetools==4.1.1; python_version ~= '3.5'
 certifi==2020.6.20
-cffi==1.14.1
+cffi==1.14.2
 chardet==3.0.4
 click==7.1.2; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
 colorlog==2.10.0
@@ -27,21 +27,21 @@ docutils==0.15.2; python_version >= '2.6' and python_version not in '3.0, 3.1, 3
 ecdsa==0.15; python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'
 entrypoints==0.3; python_version >= '2.7'
 filelock==3.0.12
-google-api-core[grpc]==1.22.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+google-api-core[grpc]==1.22.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 google-api-python-client==1.10.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 google-auth-httplib2==0.0.4
 google-auth-oauthlib==0.4.1
-google-auth==1.20.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-google-cloud-core==1.4.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-google-cloud-datastore==1.13.2; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-google-cloud-logging==1.15.0
+google-auth==1.20.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+google-cloud-core==1.4.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+google-cloud-datastore==1.15.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+google-cloud-logging==1.15.1
 google-cloud-pubsub==1.7.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
 google-cloud-storage==1.30.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 google-crc32c==0.1.0; python_version >= '3.5'
-google-resumable-media==0.7.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
+google-resumable-media==0.7.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
 googleapis-common-protos[grpc]==1.52.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 grpc-google-iam-v1==0.12.3
-grpcio==1.30.0
+grpcio==1.31.0
 grr-api-client==3.4.2.post1
 grr-response-proto==3.4.2.post1
 httplib2==0.18.1
@@ -53,18 +53,18 @@ jinja2==2.11.2; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2
 jmespath==0.10.0; python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'
 jsonschema==3.2.0
 lazy-object-proxy==1.4.3; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-libcloudforensics==20200803
+libcloudforensics==20200817
 markupsafe==1.1.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 mccabe==0.6.1
 mock==4.0.2
-msal-extensions==0.1.3
+msal-extensions==0.2.2
 msal==1.4.3
 msrest==0.6.18
 msrestazure==0.6.4
 numpy==1.19.1; python_version >= '3.6'
 oauthlib==3.1.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 pandas==1.1.0; python_full_version >= '3.6.1'
-portalocker==1.7.1
+portalocker==1.7.1; platform_system != 'Windows'
 protobuf==3.12.2
 psq==0.8.0
 pyasn1-modules==0.2.8
@@ -90,7 +90,7 @@ timesketch-api-client==20200707
 timesketch-import-client==20200707
 toml==0.10.1
 toolz==0.10.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-turbinia==20190819.13
+turbinia==20190819.14
 typed-ast==1.4.1; python_version < '3.8' and implementation_name == 'cpython'
 uritemplate==3.0.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 urllib3[secure]==1.25.10; python_version != '3.4'
