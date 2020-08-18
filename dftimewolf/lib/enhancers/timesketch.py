@@ -94,7 +94,7 @@ class TimesketchEnhancer(module.BaseModule):
 
     if aggregations_to_skip:
       self._aggregations_to_skip = [
-          x.strip() for aggregations_to_skip.split(',')]
+          x.strip() for x in aggregations_to_skip.split(',')]
 
     if views_to_skip:
       self._views_to_skip = [x.strip() for x in views_to_skip.split(',')]
@@ -110,29 +110,46 @@ class TimesketchEnhancer(module.BaseModule):
     ts_url, _, _ = api_root.partition('/api/v1')
     return '{0:s}/sketch/{1:d}/'.format(ts_url, sketch.id)
 
-  def _GenerateAggregationString(self, sketch):
+  def _GenerateAggregationString(self, aggregations):
     """Returns a string with aggregation data.
 
     The function runs through all saved aggregations in a sketch
     and returns back a formatted string (using the formatter)
-    with the results of the run. Additionally all aggregation
-    DataFrames are stored as containers, so that other modules
-    can make use of them.
+    with the results of the run.
 
     Args:
-      sketch (timesketch_api.sketch.Sketch): the sketch object.
+      aggregations (list): a list of aggregation objects (Aggregation).
 
     Returns:
         str: A formatted string with the results of aggregation runs
         on the sketch.
     """
     aggregation_strings = []
-    for aggregation in sketch.list_aggregations(
-        exclude_labels=['informational']):
+    for aggregation in aggregations:
+      if aggregation.name in self._aggregations_to_skip:
+        continue
+
+      data_frame = aggregation.table
+      if data_frame.empty():
+        continue
+
       aggregation_strings.append(self._formatter.IndentText(
           '{0:s}: {1:s}'.format(aggregation.name, aggregation.description),
           level=2))
 
+    return '\n'.join(aggregation_strings)
+
+  def _ProcessAggregations(self, aggregations):
+    """Extract and store dataframes from aggregations as containers.
+
+    The function runs through all saved aggregations in a sketch
+    and extracts DataFrames from them. The data frames are stored
+    as containers, so that other modules can make use of them.
+
+    Args:
+      aggregations (list): a list of aggregation objects (Aggregation).
+    """
+    for aggregation in aggregations:
       if aggregation.name in self._aggregations_to_skip:
         continue
 
@@ -144,9 +161,12 @@ class TimesketchEnhancer(module.BaseModule):
 
       data_frame.drop(['bucket_name'], axis=1, inplace=True)
       columns = list(data_frame.columns)
+
       # We are presenting aggregations here, which is a table that consists of
       # a column name and then the count. For easier reading in reports we want
-      # the count to be the last column displayed.
+      # the count to be the last column displayed. In case the aggregation
+      # does not have a column named "count" a ValueError will get raised,
+      # in those cases we don't want to modify the data frame.
       try:
         count_index = columns.index('count')
         count = columns.pop(count_index)
@@ -159,64 +179,66 @@ class TimesketchEnhancer(module.BaseModule):
           description='Timesketch Aggregation: {0:s}'.format(
               aggregation.name), name=self._REPORT_NAME))
 
-    return '\n'.join(aggregation_strings)
-
-  def _GenerateStoryString(self, sketch):
+  def _GenerateStoryString(self, stories, sketch_url):
     """Returns a string with story data.
 
     The function runs through all saved stories in a sketch and returns
     back a formatted string with an overview of all stored stories.
-    In addition to that it adds a report container to the state object
-    for each of the saved stories with the content of the story saved
-    as a formatted text.
 
     Args:
-      sketch (timesketch_api.sketch.Sketch): the sketch object.
+      stories (list): a list of Story objects (timesketch_api.story.Story).
+      sketch_url (str): the full URL to the sketch.
 
     Returns:
         str: A formatted string with the results of all stories stored in
         the sketch.
     """
     story_strings = []
-    sketch_url = self._GetSketchURL(sketch)
-    for story in sketch.list_stories():
+    for story in stories:
       story_url = '{0:s}story/{1:d}'.format(sketch_url, story.id)
       story_strings.append(self._formatter.IndentText(
           self._formatter.Link(url=story_url, text=story.title), level=2))
 
-      if self._include_stories:
-        if self._formatter.FORMAT == 'html':
-          story_string = story.to_html()
-        elif self._formatter.FORMAT == 'markdown':
-          story_string = story.to_markdown()
-        else:
-          story_string = story.to_export_format(self._formatter.FORMAT)
-
-        self.state.StoreContainer(containers.Report(
-            module_name='TimesketchEnhancer',
-            text_format=self._formatter.FORMAT,
-            text=story_string))
-
     return '\n'.join(story_strings)
 
-  def _GenerateViewString(self, sketch):
+  def _ProcessStories(self, stories):
+    """Extracts story content from a list of stories and saves as a report.
+
+    The function runs through all saved stories in a sketch and adds a
+    formatted version of the story as a report container.
+
+    Args:
+      stories (list): a list of Story objects (timesketch_api.story.Story).
+    """
+    for story in stories:
+      if self._formatter.FORMAT == 'html':
+        story_string = story.to_html()
+      elif self._formatter.FORMAT == 'markdown':
+        story_string = story.to_markdown()
+      else:
+        story_string = story.to_export_format(self._formatter.FORMAT)
+
+      self.state.StoreContainer(containers.Report(
+          module_name='TimesketchEnhancer',
+          text_format=self._formatter.FORMAT,
+          text=story_string))
+
+  def _GenerateViewString(self, views, sketch_url):
     """Returns a string with view data.
 
     The function runs through all saved views in a sketch and returns
-    back a formatted string with the results of the run. In addition
-    it adds a dataframe container to the state object with the resulting
-    events from the view.
+    back a formatted string with the results of the run.
 
     Args:
-      sketch (timesketch_api.sketch.Sketch): the sketch object.
+      views (list): a list of View objects (timesketch_api.view.View).
+      sketch_url (str): the full URL to the sketch.
 
     Returns:
         str: A formatted string with the results of aggregation runs
         on the sketch.
     """
     view_strings = []
-    sketch_url = self._GetSketchURL(sketch)
-    for view in sketch.list_views():
+    for view in views:
       if view.name in self._views_to_skip:
         continue
 
@@ -227,6 +249,27 @@ class TimesketchEnhancer(module.BaseModule):
       view_url = '{0:s}explore?view={1:d}'.format(sketch_url, view.id)
       view_strings.append(self._formatter.IndentText(
           self._formatter.Link(url=view_url, text=view.name), level=2))
+
+    return '\n'.join(view_strings)
+
+  def _ProcessViews(self, views, sketch):
+    """Extract events from views and store results as a container.
+
+    The function runs through all saved views in a sketch and queries
+    the datastore for all events that match it and the results as a
+    dataframe container to the state object.
+
+    Args:
+      views (list): a list of View objects (timesketch_api.view.View).
+      sketch (timesketch_api.sketch.Sketch): the sketch object.
+    """
+    for view in views:
+      if view.name in self._views_to_skip:
+        continue
+
+      # We only want to include automatically generated views from analyzers.
+      if view.user != 'System':
+        continue
 
       data_frame = sketch.explore(view=view, as_pandas=True)
 
@@ -254,8 +297,6 @@ class TimesketchEnhancer(module.BaseModule):
               name=self._REPORT_NAME,
               description='Timesketch View: {0:s} - {1:s}'.format(
                   view.name, view.description)))
-
-    return '\n'.join(view_strings)
 
   def _WaitForAnalyzers(self, sketch):
     """Wait for all analyzers to complete their run.
@@ -323,7 +364,10 @@ class TimesketchEnhancer(module.BaseModule):
 
     summary_lines.append(self._formatter.IndentStart())
 
-    view_string = self._GenerateViewString(sketch)
+    views = sketch.list_views()
+    self._ProcessViews(views, sketch)
+    sketch_url = self._GetSketchURL(sketch)
+    view_string = self._GenerateViewString(views, sketch_url)
     formatted_string = ''
     if view_string:
       formatted_string = self._formatter.IndentText(
@@ -337,7 +381,10 @@ class TimesketchEnhancer(module.BaseModule):
           'No views were generated by analyzers.')
     summary_lines.append(formatted_string)
 
-    aggregation_string = self._GenerateAggregationString(sketch)
+    aggregations = sketch.list_aggregations(
+        exclude_labels=['informational'])
+    self._ProcessAggregations(aggregations)
+    aggregation_string = self._GenerateAggregationString(aggregations)
     if aggregation_string:
       formatted_string = self._formatter.IndentText(
           'The following aggregations were discovered:'
@@ -351,7 +398,11 @@ class TimesketchEnhancer(module.BaseModule):
           'No aggregations were generated by analyzers.')
     summary_lines.append(formatted_string)
 
-    story_string = self._GenerateStoryString(sketch)
+    stories = sketch.list_stories()
+    if self._include_stories:
+      self._ProcessStories(stories)
+
+    story_string = self._GenerateStoryString(stories, sketch_url)
     if story_string:
       formatted_string = self._formatter.IndentText(
           'The following stories were generated:\n{0:s}{1:s}{2:s}'.format(
