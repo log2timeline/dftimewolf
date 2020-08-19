@@ -113,17 +113,17 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:640a8372ce0edfbb84a8f63584a0b64c78d61a751a27c2a47f92d2ebaf021ce4",
-                "sha256:a6c9a3d3abbad2ff2e5751af599492a9271633a7c9fef343482524464c53e451"
+                "sha256:02ad765927bb46b9f45c3bce65e763960733919eee7883217995c5df5d096695",
+                "sha256:4421aad9a9740ce95199460f3262859e1c3594cc6c86cbe552745f4bbff34300"
             ],
-            "version": "==1.14.43"
+            "version": "==1.14.45"
         },
         "botocore": {
             "hashes": [
-                "sha256:3fb144d2b5d705127f394f7483737ece6fa79577ca7c493e4f42047ac8636200",
-                "sha256:f8801ce7f7603922ccab1c86c448e802f94183e31d99457e85fb9985a20d3abc"
+                "sha256:17470c97435891cf40e147f533069de0109cda24c208c918f28997274bbac399",
+                "sha256:bc8b1c83ccc0d77963849b66a94bbb20a666ff0225aff84de7ed0175db1fd6f7"
             ],
-            "version": "==1.17.43"
+            "version": "==1.17.45"
         },
         "cachetools": {
             "hashes": [
@@ -492,11 +492,11 @@
         },
         "libcloudforensics": {
             "hashes": [
-                "sha256:14c2abba5dbc8f84ed87d4f4b0737a78d70475e242dc4237351f98acbbd0655c",
-                "sha256:37289461982bd4f0aeca07e2c73ea65a4f2ec07af0d174021731df981d5cbf9e"
+                "sha256:1b188ef84ad4119e91e74a5cdd36330e5e998a5b481023f953977f2d0c9e2da5",
+                "sha256:33bb9d1279cb87e409670339eb06701f8e5b9791082516022af35f7df11c25af"
             ],
             "index": "pypi",
-            "version": "==20200817"
+            "version": "==20200818"
         },
         "markupsafe": {
             "hashes": [
