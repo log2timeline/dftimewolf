@@ -130,7 +130,7 @@ class TimesketchEnhancer(module.BaseModule):
         continue
 
       data_frame = aggregation.table
-      if data_frame.empty():
+      if data_frame.empty:
         continue
 
       aggregation_strings.append(self._formatter.IndentText(
