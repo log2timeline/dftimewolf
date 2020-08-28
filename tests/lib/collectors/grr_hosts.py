@@ -43,20 +43,20 @@ class GRRFlowTests(unittest.TestCase):
     """Tests that the collector can be initialized."""
     self.assertIsNotNone(self.grr_flow_module)
 
-  def testGetClientByHostname(self):
-    """Tests that GetClientByHostname fetches the most recent GRR client."""
+  def testGetClientBySelector(self):
+    """Tests that GetClientBySelector fetches the most recent GRR client."""
     self.mock_grr_api.SearchClients.return_value = \
         mock_grr_hosts.MOCK_CLIENT_LIST
-    client = self.grr_flow_module._GetClientByHostname('tomchop')
+    client = self.grr_flow_module._GetClientBySelector('tomchop')
     self.mock_grr_api.SearchClients.assert_called_with('tomchop')
     self.assertEqual(
         client.data.client_id, mock_grr_hosts.MOCK_CLIENT_RECENT.data.client_id)
 
-  def testGetClientByHostnameError(self):
-    """Tests that GetClientByHostname fetches the most recent GRR client."""
+  def testGetClientBySelectorError(self):
+    """Tests that GetClientBySelector fetches the most recent GRR client."""
     self.mock_grr_api.SearchClients.side_effect = grr_errors.UnknownError
     with self.assertRaises(errors.DFTimewolfError) as error:
-      self.grr_flow_module._GetClientByHostname('tomchop')
+      self.grr_flow_module._GetClientBySelector('tomchop')
     self.assertEqual(
         'Could not search for host tomchop: ', error.exception.message)
     self.assertEqual(len(self.test_state.errors), 1)
