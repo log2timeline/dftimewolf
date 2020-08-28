@@ -109,7 +109,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     clients = []
     for selector in selectors:
       client = self._GetClientBySelector(selector)
-      if client:
+      if client is not None:
         clients.append(client)
     return clients
 
