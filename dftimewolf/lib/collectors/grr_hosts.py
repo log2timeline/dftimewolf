@@ -516,7 +516,7 @@ class GRRFlowCollector(GRRFlow):
     Raises:
       DFTimewolfError: if no files specified
     """
-    # TODO (tomchop): The host attribute into something more appropriate
+    # TODO (tomchop): Change the host attribute into something more appropriate
     # like 'selectors', and the corresponding recipes.
     client = self._GetClientBySelector(self.host)
     self._AwaitFlow(client, self.flow_id)
