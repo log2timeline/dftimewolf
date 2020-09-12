@@ -154,9 +154,7 @@ class TimesketchEnhancer(module.BaseModule):
         continue
 
       data_frame = aggregation.table
-      nr_rows, _ = data_frame.shape
-      # Check whether a data frame is empty or not.
-      if not nr_rows:
+      if data_frame.empty:
         continue
 
       data_frame.drop(['bucket_name'], axis=1, inplace=True)
@@ -272,9 +270,7 @@ class TimesketchEnhancer(module.BaseModule):
         continue
 
       data_frame = sketch.explore(view=view, as_pandas=True)
-
-      nr_rows, _ = data_frame.shape
-      if not nr_rows:
+      if data_frame.empty:
         continue
 
       # Clean up the data frame, remove Timesketch specific columns.
