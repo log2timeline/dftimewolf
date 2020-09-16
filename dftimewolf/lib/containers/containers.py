@@ -164,3 +164,21 @@ class URL(interface.AttributeContainer):
   def __init__(self, path):
     super(URL, self).__init__()
     self.path = path
+
+
+class DataFrame(interface.AttributeContainer):
+  """Attribute container definition for a Pandas DataFrame.
+
+  Attributes:
+    data_frame (pandas.DataFrame): DataFrame containing the data.
+    description (str): Description of the data in the data frame.
+    name (str): Name of the data frame.
+  """
+
+  CONTAINER_TYPE = 'data_frame'
+
+  def __init__(self, data_frame, description, name):
+    super(DataFrame, self).__init__()
+    self.data_frame = data_frame
+    self.description = description
+    self.name = name
