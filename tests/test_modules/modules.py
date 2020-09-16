@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """Contains dummy modules used in tests."""
 
-from __future__ import print_function, unicode_literals
-
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 
@@ -12,7 +10,6 @@ class DummyModule1(module.BaseModule):
 
   def __init__(self, state):
     super(DummyModule1, self).__init__(state)
-    self.name = 'Dummy1'
 
   def SetUp(self):  # pylint: disable=arguments-differ
     """Dummy setup function."""
@@ -32,7 +29,6 @@ class DummyModule2(module.BaseModule):
 
   def __init__(self, state):
     super(DummyModule2, self).__init__(state)
-    self.name = 'Dummy2'
 
   def SetUp(self):  # pylint: disable=arguments-differ
     """Dummy setup function."""
@@ -47,7 +43,6 @@ class DummyPreflightModule(module.PreflightModule):
 
   def __init__(self, state):
     super(DummyPreflightModule, self).__init__(state)
-    self.name = 'DummyPreflight'
 
   def SetUp(self, args):  # pylint: disable=arguments-differ
     """Dummy Process function."""

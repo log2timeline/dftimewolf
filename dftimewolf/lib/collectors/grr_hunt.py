@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
 """Definition of modules for collecting data from GRR Hunts."""
 
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import os
 import tempfile
 import zipfile
-import yaml
 
+import yaml
 from grr_response_proto import flows_pb2 as grr_flows
 
 from dftimewolf.lib.collectors import grr_base
+from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 
 
@@ -42,7 +40,7 @@ class GRRHunt(grr_base.GRRBaseModule):  # pylint: disable=abstract-method
     runner_args.description = self.reason
     hunt = self.grr_api.CreateHunt(
         flow_name=name, flow_args=args, hunt_runner_args=runner_args)
-    print('{0!s}: Hunt created'.format(hunt.hunt_id))
+    self.logger.info('{0!s}: Hunt created'.format(hunt.hunt_id))
     self._WrapGRRRequestWithApproval(hunt, hunt.Start)
     return hunt
 
@@ -96,7 +94,7 @@ class GRRHuntArtifactCollector(GRRHunt):
 
     self.artifacts = [item.strip() for item in artifacts.strip().split(',')]
     if not artifacts:
-      self.state.AddError('No artifacts were specified.', critical=True)
+      self.ModuleError('No artifacts were specified.', critical=True)
     self.use_tsk = use_tsk
 
   def Process(self):
@@ -105,7 +103,7 @@ class GRRHuntArtifactCollector(GRRHunt):
     Raises:
       RuntimeError: if no items specified for collection.
     """
-    print('Artifacts to be collected: {0!s}'.format(self.artifacts))
+    self.logger.info('Artifacts to be collected: {0!s}'.format(self.artifacts))
     hunt_args = grr_flows.ArtifactCollectorFlowArgs(
         artifact_list=self.artifacts,
         use_tsk=self.use_tsk,
@@ -157,7 +155,7 @@ class GRRHuntFileCollector(GRRHunt):
     self.file_path_list = [item.strip() for item
                            in file_path_list.strip().split(',')]
     if not file_path_list:
-      self.state.AddError('Files must be specified for hunts', critical=True)
+      self.ModuleError('Files must be specified for hunts', critical=True)
 
   # TODO: this method does not raise itself, indicate what function call does.
   def Process(self):
@@ -166,8 +164,10 @@ class GRRHuntFileCollector(GRRHunt):
     Raises:
       RuntimeError: if no items specified for collection.
     """
-    print('Hunt to collect {0:d} items'.format(len(self.file_path_list)))
-    print('Files to be collected: {0!s}'.format(self.file_path_list))
+    self.logger.info(
+        'Hunt to collect {0:d} items'.format(len(self.file_path_list)))
+    self.logger.info(
+        'Files to be collected: {0!s}'.format(self.file_path_list))
     hunt_action = grr_flows.FileFinderAction(
         action_type=grr_flows.FileFinderAction.DOWNLOAD)
     hunt_args = grr_flows.FileFinderArgs(
@@ -240,14 +240,15 @@ class GRRHuntDownloader(GRRHunt):
         self.output_path, '.'.join((self.hunt_id, 'zip')))
 
     if os.path.exists(output_file_path):
-      print('{0:s} already exists: Skipping'.format(output_file_path))
+      self.logger.info(
+          '{0:s} already exists: Skipping'.format(output_file_path))
       return None
 
     self._WrapGRRRequestWithApproval(
         hunt, self._GetAndWriteArchive, hunt, output_file_path)
 
     results = self._ExtractHuntResults(output_file_path)
-    print('Wrote results of {0:s} to {1:s}'.format(
+    self.logger.info('Wrote results of {0:s} to {1:s}'.format(
         hunt.hunt_id, output_file_path))
     return results
 
@@ -275,8 +276,8 @@ class GRRHuntDownloader(GRRHunt):
     """
     # TODO: handle incorrect file contents.
     yamldict = yaml.safe_load(client_info_contents)
-    fqdn = yamldict['system_info']['fqdn']
-    client_id = yamldict['client_id'].split('/')[1]
+    fqdn = yamldict['os_info']['fqdn']
+    client_id = yamldict['client_id']
     return client_id, fqdn
 
   def _ExtractHuntResults(self, output_file_path):
@@ -320,24 +321,22 @@ class GRRHuntDownloader(GRRHunt):
             try:
               archive.extract(f, self.output_path)
             except KeyError as exception:
-              print('Extraction error: {0:s}'.format(exception))
+              self.logger.info('Extraction error: {0:s}'.format(exception))
               return []
 
     except OSError as exception:
       msg = 'Error manipulating file {0:s}: {1!s}'.format(
           output_file_path, exception)
-      self.state.AddError(msg, critical=True)
-      return []
+      self.ModuleError(msg, critical=True)
     except zipfile.BadZipfile as exception:
       msg = 'Bad zipfile {0:s}: {1!s}'.format(
           output_file_path, exception)
-      self.state.AddError(msg, critical=True)
-      return []
+      self.ModuleError(msg, critical=True)
 
     try:
       os.remove(output_file_path)
     except OSError as exception:
-      print('Output path {0:s} could not be removed: {1:s}'.format(
+      self.logger.info('Output path {0:s} could not be removed: {1:s}'.format(
           output_file_path, exception))
 
     # Translate GRR client IDs to FQDNs with the information retrieved
@@ -348,9 +347,8 @@ class GRRHuntDownloader(GRRHunt):
       fqdn_collection_paths.append((fqdn, path))
 
     if not fqdn_collection_paths:
-      self.state.AddError(
+      self.ModuleError(
           'Nothing was extracted from the hunt archive', critical=True)
-      return []
 
     return fqdn_collection_paths
 
@@ -361,7 +359,9 @@ class GRRHuntDownloader(GRRHunt):
       RuntimeError: if no items specified for collection.
     """
     hunt = self.grr_api.Hunt(self.hunt_id).Get()
-    self.state.output = self._CollectHuntResults(hunt)
+    for description, path in self._CollectHuntResults(hunt):
+      container = containers.File(name=description, path=path)
+      self.state.StoreContainer(container)
 
 
 modules_manager.ModulesManager.RegisterModules([

@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 """Processes Google Cloud Platform (GCP) logs for loading into Timesketch."""
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import tempfile
 import json
@@ -53,6 +51,11 @@ class GCPLoggingTimesketch(BaseModule):
           timesketch_attribute = 'resource_label_{0:s}'.format(attribute)
           timesketch_record[timesketch_attribute] = value
 
+    # Some Cloud logs pass through Severity from the underlying log source
+    severity = log_record.get('severity', None)
+    if severity:
+      timesketch_record['severity'] = severity
+
     # The log entry will have either a jsonPayload, a protoPayload or a
     # textPayload.
     json_payload = log_record.get('jsonPayload', None)
@@ -102,6 +105,20 @@ class GCPLoggingTimesketch(BaseModule):
     request = proto_payload.get('request', None)
     if request:
       self._ParseProtoPayloadRequest(request, timesketch_record)
+
+    service_data = proto_payload.get('serviceData', None)
+    if service_data:
+      policy_delta = service_data.get('policyDelta', None)
+      if policy_delta:
+        binding_deltas = policy_delta.get('bindingDeltas', [])
+        if binding_deltas:
+          policy_deltas = []
+          for bd in binding_deltas:
+            policy_deltas.append(
+                '{0:s} {1:s} with role {2:s}'.format(
+                    bd.get('action', ''), bd.get('member', ''),
+                    bd.get('role', '')))
+          timesketch_record['policyDelta'] = ', '.join(policy_deltas)
 
   def _ParseProtoPayloadRequest(self, request, timesketch_record):
     """Extracts information from the request field of a protoPayload field.
@@ -229,12 +246,14 @@ class GCPLoggingTimesketch(BaseModule):
     timeline_name = 'GCP logs {0:s} "{1:s}"'.format(
         logs_container.project_name, logs_container.filter_expression)
 
-    self.state.output.append([timeline_name, output_path])
+    container = containers.File(name=timeline_name, path=output_path)
+    self.state.StoreContainer(container)
 
   def Process(self):
     """Processes GCP logs containers for insertion into Timesketch."""
     logs_containers = self.state.GetContainers(containers.GCPLogs)
     for logs_container in logs_containers:
       self._ProcessLogContainer(logs_container)
+
 
 modules_manager.ModulesManager.RegisterModule(GCPLoggingTimesketch)

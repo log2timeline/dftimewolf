@@ -2,12 +2,11 @@
 # -*- coding: utf-8 -*-
 """Tests the local filesystem exporter."""
 
-from __future__ import unicode_literals
-
 import unittest
 import mock
 
 from dftimewolf.lib import state
+from dftimewolf.lib import errors
 from dftimewolf.lib.exporters import scp_ex
 
 from dftimewolf import config
@@ -59,10 +58,13 @@ class LocalFileSystemTest(unittest.TestCase):
     mock_subprocess_call.return_value = -1
     test_state = state.DFTimewolfState(config.Config)
     scp_exporter = scp_ex.SCPExporter(test_state)
-    scp_exporter.SetUp('/path1,/path2', '/destination', 'fakeuser',
-                       'fakehost', 'fakeid', True)
+    with self.assertRaises(errors.DFTimewolfError) as error:
+      scp_exporter.SetUp('/path1,/path2', '/destination', 'fakeuser',
+                         'fakehost', 'fakeid', True)
 
-    self.assertEqual(test_state.errors[0], ('Unable to connect to host.', True))
+    self.assertEqual(test_state.errors[0], error.exception)
+    self.assertEqual(error.exception.message, 'Unable to connect to host.')
+    self.assertTrue(error.exception.critical)
 
   @mock.patch('subprocess.call')
   def testProcessError(self, mock_subprocess_call):
@@ -74,10 +76,13 @@ class LocalFileSystemTest(unittest.TestCase):
                        'fakehost', 'fakeid', True)
 
     mock_subprocess_call.return_value = -1
-    scp_exporter.Process()
+    with self.assertRaises(errors.DFTimewolfError) as error:
+      scp_exporter.Process()
 
-    self.assertEqual(test_state.errors[0],
-                     ("Failed copying ['/path1', '/path2']", True))
+    self.assertEqual(test_state.errors[0], error.exception)
+    self.assertEqual(error.exception.message,
+                     "Failed copying ['/path1', '/path2']")
+    self.assertTrue(error.exception.critical)
 
 
 if __name__ == '__main__':

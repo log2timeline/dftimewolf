@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 """Reads logs from a GCP cloud project."""
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import json
 import tempfile
 
@@ -73,40 +70,34 @@ class GCPLogsCollector(module.BaseModule):
         output_file.write('\n')
 
     except google_api_exceptions.NotFound as exception:
-      self.state.AddError(
+      self.ModuleError(
           'Error accessing project: {0!s}'.format(exception), critical=True)
-      return
 
     except google_api_exceptions.InvalidArgument as exception:
-      self.state.AddError(
+      self.ModuleError(
           'Unable to parse filter {0:s} with error {1:s}'.format(
               self._filter_expression, exception), critical=True)
-      return
 
     except (google_auth_exceptions.DefaultCredentialsError,
             google_auth_exceptions.RefreshError) as exception:
-      self.state.AddError(
+      self.ModuleError(
           'Something is wrong with your gcloud access token or '
           'Application Default Credentials. Try running:\n '
           '$ gcloud auth application-default login')
       # TODO: determine if exception should be converted into a string as
       # elsewhere in the codebase.
-      self.state.AddError(exception, critical=True)
-      return
+      self.ModuleError(exception, critical=True)
 
     except HttpError as exception:
       if exception.resp.status == 403:
-        self.state.AddError(
+        self.ModuleError(
             'Make sure you have the appropriate permissions on the project')
       if exception.resp.status == 404:
-        self.state.AddError(
+        self.ModuleError(
             'GCP resource not found. Maybe a typo in the project name?')
-      # TODO: determine if exception should be converted into a string as
-      # elsewhere in the codebase.
-      self.state.AddError(exception, critical=True)
-      return
+      self.ModuleError(str(exception), critical=True)
 
-    print('[gcp_logging] Downloaded logs to {0:s}'.format(output_path))
+    self.logger.info('Downloaded logs to {0:s}'.format(output_path))
     output_file.close()
 
     logs_report = containers.GCPLogs(

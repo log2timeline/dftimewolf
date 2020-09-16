@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 """Collects artifacts from the local file system."""
 
-from __future__ import unicode_literals
-
 import os
 
 from dftimewolf.lib import module
 from dftimewolf.lib.modules import manager as modules_manager
-
+from dftimewolf.lib.containers import containers
 
 class FilesystemCollector(module.BaseModule):
   """Local file system collector.
@@ -34,21 +32,26 @@ class FilesystemCollector(module.BaseModule):
       paths (Optional[str]): Comma-separated paths to collect.
     """
     if not paths:
-      self.state.AddError(
+      self.ModuleError(
           'No `paths` argument provided in recipe, bailing', critical=True)
     else:
       self._paths = [path.strip() for path in paths.split(',')]
 
   def Process(self):
     """Collects paths from the local file system."""
+    file_containers = []
     for path in self._paths:
       if os.path.exists(path):
-        self.state.output.append((os.path.basename(path), path))
+        container = containers.File(os.path.basename(path), path)
+        file_containers.append(container)
       else:
-        self.state.AddError(
-            'Path {0:s} does not exist'.format(str(path)), critical=False)
-    if not self.state.output:
-      self.state.AddError('No valid paths collected, bailing', critical=True)
+        self.logger.warning('Path {0:s} does not exist'.format(path))
+    if not file_containers:
+      self.ModuleError(
+          message='No valid paths collected, bailing',
+          critical=True)
+    for container in file_containers:
+      self.state.StoreContainer(container)
 
 
 modules_manager.ModulesManager.RegisterModule(FilesystemCollector)

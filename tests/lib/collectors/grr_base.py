@@ -2,14 +2,13 @@
 # -*- coding: utf-8 -*-
 """Tests the GRR base collector."""
 
-from __future__ import unicode_literals
-
 import unittest
 import mock
 
 from grr_api_client import errors as grr_errors
 
 from dftimewolf.lib import state
+from dftimewolf.lib import errors
 from dftimewolf.lib.collectors import grr_base
 
 from dftimewolf import config
@@ -67,7 +66,8 @@ class GRRBaseModuleTest(unittest.TestCase):
                      ['approver1@example.com', 'approver2@example.com'])
     self.assertEqual(grr_base_module.output_path, '/fake')
 
-  def testApprovalWrapper(self):
+  @mock.patch('grr_api_client.api.InitHttp')
+  def testApprovalWrapper(self, _):
     """Tests that the approval wrapper works correctly."""
     test_state = state.DFTimewolfState(config.Config)
     grr_base_module = grr_base.GRRBaseModule(test_state)
@@ -102,7 +102,8 @@ class GRRBaseModuleTest(unittest.TestCase):
         reason='random reason',
         notified_users=['approver1@example.com', 'approver2@example.com'])
 
-  def testNoApproversErrorsOut(self):
+  @mock.patch('grr_api_client.api.InitHttp')
+  def testNoApproversErrorsOut(self, _):
     """Tests that an error is generated if no approvers are specified.
 
     This should only error on unauthorized objects, which is how our mock
@@ -123,19 +124,18 @@ class GRRBaseModuleTest(unittest.TestCase):
     mock_grr_object = MockGRRObject()
     mock_forbidden_function = mock.Mock(
         wraps=mock_grr_object.ForbiddenFunction)
-    result = grr_base_module._WrapGRRRequestWithApproval(
-        mock_grr_object,
-        mock_forbidden_function,
-        'random1',
-        'random2',
-        random3=4,
-        random4=4)
-    self.assertIsNone(result)
-    # Only one error message is generateds
+    with self.assertRaises(errors.DFTimewolfError) as error:
+      grr_base_module._WrapGRRRequestWithApproval(
+          mock_grr_object,
+          mock_forbidden_function,
+          'random1',
+          'random2',
+          random3=4,
+          random4=4)
+    self.assertEqual('GRR needs approval but no approvers specified '
+                     '(hint: use --approvers)', error.exception.message)
+    self.assertTrue(error.exception.critical)
     self.assertEqual(len(test_state.errors), 1)
-    # Correct error message is generated
-    self.assertIn('no approvers specified', test_state.errors[0][0])
-    self.assertTrue(test_state.errors[0][1])  # critical=True
 
 if __name__ == '__main__':
   unittest.main()

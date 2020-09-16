@@ -2,7 +2,15 @@
 """Class definition for DFTimewolf modules."""
 
 import abc
+import logging
+# Some AttributeErrors occured when trying to access logging.handlers, so
+# we import them separately
+from logging import handlers
+import traceback
+import sys
 
+from dftimewolf.lib import errors
+from dftimewolf.lib import logging_utils
 
 class BaseModule(object):
   """Interface of a DFTimewolf module.
@@ -25,11 +33,61 @@ class BaseModule(object):
     super(BaseModule, self).__init__()
     self.critical = critical
     self.state = state
+    self.SetupLogging()
+
+  def SetupLogging(self):
+    """Sets up stream and file logging for a specific module."""
+    self.logger = logging.getLogger(name=self.__class__.__name__)
+
+    file_handler = handlers.RotatingFileHandler(
+        logging_utils.DEFAULT_LOG_FILE,
+        maxBytes=logging_utils.MAX_BYTES,
+        backupCount=logging_utils.BACKUP_COUNT)
+    file_handler.setFormatter(logging_utils.WolfFormatter(colorize=False))
+    self.logger.addHandler(file_handler)
+
+    console_handler = logging.StreamHandler()
+    formatter = logging_utils.WolfFormatter(random_color=True)
+    console_handler.setFormatter(formatter)
+
+    self.logger.addHandler(console_handler)
+
+  @property
+  def name(self):
+    """Returns the class name for this module."""
+    return self.__class__.__name__
 
   def CleanUp(self):
     """Cleans up module output to prepare it for the next module."""
     # No clean up is required.
     return
+
+  def ModuleError(self, message, critical=False):
+    """Declares a module error.
+
+    Errors will be stored in a DFTimewolfError error object and passed on to the
+    state. Critical errors will also raise a DFTimewolfError error.
+
+    Args:
+      message (str): Error text.
+      critical (Optional[bool]): True if dfTimewolf cannot recover from
+          the error and should abort execution.
+
+    Raises:
+      errors.DFTimewolfError: If the error is critical and dfTimewolf
+          should abort execution of the recipe.
+    """
+    stacktrace = None
+    if sys.exc_info() != (None, None, None):
+      stacktrace = traceback.format_exc()
+
+    error = errors.DFTimewolfError(
+        message, name=self.name, stacktrace=stacktrace, critical=critical)
+    self.state.AddError(error)
+    if critical:
+      self.logger.critical(error.message)
+      raise error
+    self.logger.error(error.message)
 
   @abc.abstractmethod
   def Process(self):

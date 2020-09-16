@@ -1,19 +1,15 @@
 # -*- coding: utf-8 -*-
 """Processes GCP cloud disks using Turbinia."""
 
-from __future__ import unicode_literals
-from __future__ import absolute_import
-from __future__ import print_function
-
 import getpass
 import os
 import tempfile
 
+# We import a class to avoid importing the whole turbinia module.
+from turbinia import TurbiniaException
 from turbinia import client as turbinia_client
 from turbinia import config as turbinia_config
-from turbinia import evidence
-from turbinia import output_manager
-from turbinia import TurbiniaException
+from turbinia import evidence, output_manager
 from turbinia.message import TurbiniaRequest
 
 from dftimewolf.lib import module
@@ -53,6 +49,50 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.sketch_id = None
     self.turbinia_region = None
     self.turbinia_zone = None
+    self.sketch_id = None
+    self.run_all_jobs = None
+
+  # pylint: disable=arguments-differ
+  def SetUp(self, disk_name, project, turbinia_zone, sketch_id, run_all_jobs):
+    """Sets up the object attributes.
+
+    Args:
+      disk_name (str): name of the disk to process.
+      project (str): name of the GPC project containing the disk to process.
+      turbinia_zone (str): GCP zone in which the Turbinia server is running.
+      sketch_id (int): The Timesketch sketch id
+      run_all_jobs (bool): Whether to run all jobs instead of a faster subset.
+    """
+    # TODO: Consider the case when multiple disks are provided by the previous
+    # module or by the CLI.
+
+    if project is None or turbinia_zone is None:
+      self.ModuleError(
+          'project or turbinia_zone are not all specified, bailing out',
+          critical=True)
+
+    self.disk_name = disk_name
+    self.project = project
+    self.turbinia_zone = turbinia_zone
+    self.sketch_id = sketch_id
+    self.run_all_jobs = run_all_jobs
+
+    try:
+      turbinia_config.LoadConfig()
+      self.turbinia_region = turbinia_config.TURBINIA_REGION
+      self.instance = turbinia_config.PUBSUB_TOPIC
+      if turbinia_config.TURBINIA_PROJECT != self.project:
+        self.ModuleError(
+            'Specified project {0!s} does not match Turbinia configured '
+            'project {1!s}. Use gcp_turbinia_import recipe to copy the disk '
+            'into the same project.'.format(
+                self.project, turbinia_config.TURBINIA_PROJECT), critical=True)
+      self._output_path = tempfile.mkdtemp()
+      self.client = turbinia_client.TurbiniaClient()
+    except TurbiniaException as exception:
+      # TODO: determine if exception should be converted into a string as
+      # elsewhere in the codebase.
+      self.ModuleError(str(exception), critical=True)
 
   def _DeterminePaths(self, task_data):
     """Builds lists of local and remote paths from data retured by Turbinia.
@@ -112,10 +152,11 @@ class TurbiniaProcessorBase(module.BaseModule):
       except TurbiniaException as exception:
         # Don't add a critical error for now, until we start raising errors
         # instead of returning manually each
-        self.state.AddError(exception, critical=False)
+        self.ModuleError(str(exception), critical=False)
+      self.logger.info('Downlaoded {0:s} to {1:s}'.format(path, local_path))
 
-    if local_path:
-      local_paths.append((timeline_label, local_path))
+      if local_path:
+        local_paths.append((timeline_label, local_path))
 
     return local_paths
 
@@ -133,6 +174,17 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.turbinia_zone = turbinia_zone
     self.sketch_id = sketch_id
     self.run_all_jobs = run_all_jobs
+
+  def Process(self):
+    """Process files with Turbinia."""
+    log_file_path = os.path.join(self._output_path, 'turbinia.log')
+    self.logger.info('Turbinia log file: {0:s}'.format(log_file_path))
+    vm_containers = self.state.GetContainers(containers.ForensicsVM)
+    if vm_containers and not self.disk_name:
+      forensics_vm = vm_containers[0]
+      self.disk_name = forensics_vm.evidence_disk.name
+      self.logger.info(
+          'Using disk {0:s} from previous collector'.format(self.disk_name))
 
     turbinia_config.LoadConfig()
     if not self.project:
@@ -170,23 +222,28 @@ class TurbiniaProcessorBase(module.BaseModule):
     try:
       evidence_.validate()
     except TurbiniaException as exception:
-      self.state.AddError(exception, critical=True)
-      return []
+      self.ModuleError(exception, critical=True)
 
     request = TurbiniaRequest(requester=getpass.getuser())
     request.evidence.append(evidence_)
     if self.sketch_id:
       request.recipe['sketch_id'] = self.sketch_id
     if not self.run_all_jobs:
-      request.recipe['jobs_blacklist'] = ['StringsJob']
+      # TODO(aarontp): Remove once the release with
+      # https://github.com/google/turbinia/pull/554 is live.
+      request.recipe['jobs_blacklist'] = [
+          'StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob']
+      request.recipe['jobs_denylist'] = [
+          'StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob']
 
     # Get threat intelligence data from any modules that have stored some.
     # In this case, observables is a list of containers.ThreatIntelligence
     # objects.
     threatintel = self.state.GetContainers(containers.ThreatIntelligence)
     if threatintel:
-      print('Sending {0:d} threatintel to Turbinia GrepWorkers...'.format(
-          len(threatintel)))
+      self.logger.info(
+          'Sending {0:d} threatintel to Turbinia GrepWorkers...'.format(
+              len(threatintel)))
       indicators = [item.indicator for item in threatintel]
       request.recipe['filter_patterns'] = indicators
 
@@ -199,22 +256,22 @@ class TurbiniaProcessorBase(module.BaseModule):
 
     task_data = None
     try:
-      print('Creating Turbinia request {0:s} with Evidence {1!s}'.format(
-          request.request_id, evidence_.name))
+      self.logger.info(
+          'Creating Turbinia request {0:s} with Evidence {1!s}'.format(
+              request.request_id, evidence_.name))
       self.client.send_request(request)
-      print('Waiting for Turbinia request {0:s} to complete'.format(
+      self.logger.info('Waiting for Turbinia request {0:s} to complete'.format(
           request.request_id))
       self.client.wait_for_request(**request_dict)
       task_data = self.client.get_task_data(**request_dict)
     except TurbiniaException as exception:
       # TODO: determine if exception should be converted into a string as
       # elsewhere in the codebase.
-      self.state.AddError(exception, critical=True)
-      return []
+      self.ModuleError(str(exception), critical=True)
 
     message = self.client.format_task_status(full_report=True, **request_dict)
     short_message = self.client.format_task_status(**request_dict)
-    print(short_message)
+    self.logger.info(short_message)
 
     # Store the message for consumption by any reporting modules.
     report = containers.Report(
@@ -282,9 +339,8 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase):
     local_paths, gs_paths = self._DeterminePaths(task_data)
 
     if not local_paths and not gs_paths:
-      self.state.AddError(
+      self.ModuleError(
           'No interesting files found in Turbinia output.', critical=True)
-      return
 
     timeline_label = '{0:s}-{1:s}'.format(self.project, self.disk_name)
     # Any local files that exist we can add immediately to the output
@@ -293,20 +349,24 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase):
 
     downloaded_gs_paths = self._DownloadFilesFromGCS(timeline_label, gs_paths)
     all_local_paths.extend(downloaded_gs_paths)
+    self.logger.info('Collected {0:d} results'.format(len(all_local_paths)))
 
     if not all_local_paths:
-      self.state.AddError('No interesting files could be found.', critical=True)
-    self.state.output = all_local_paths
+      self.ModuleError('No interesting files could be found.', critical=True)
 
-    for _, path in all_local_paths:
+    for description, path in all_local_paths:
       if path.endswith('BinaryExtractorTask.tar.gz'):
-        self.state.StoreContainer(
-            containers.ThreatIntelligence(
-                name='BinaryExtractorResults', indicator=None, path=path))
+        self.logger.info('Found BinaryExtractorTask result: {0:s}'.format(path))
+        container = containers.ThreatIntelligence(
+            name='BinaryExtractorResults', indicator=None, path=path)
       if path.endswith('hashes.json'):
-        self.state.StoreContainer(
-            containers.ThreatIntelligence(
-                name='ImageExportHashes', indicator=None, path=path))
+        self.logger.info('Found hashes.json: {0:s}'.format(path))
+        container = containers.ThreatIntelligence(
+            name='ImageExportHashes', indicator=None, path=path)
+      if path.endswith('.plaso'):
+        self.logger.info('Found plaso result: {0:s}'.format(path))
+        container = containers.File(name=description, path=path)
+      self.state.StoreContainer(container)
 
 
 modules_manager.ModulesManager.RegisterModule(TurbiniaGCPProcessor)

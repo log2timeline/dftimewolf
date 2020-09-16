@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 """Local file system exporter module."""
 
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import os
 import shutil
 import tempfile
 
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib import module
+from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib import utils
 
@@ -39,30 +37,43 @@ class LocalFilesystemCopy(module.BaseModule):
     self._target_directory = target_directory
     self._compress = compress
     if not target_directory:
-      self._target_directory = tempfile.mkdtemp()
-    elif not os.path.exists(target_directory):
-      os.makedirs(target_directory)
+      target_directory = tempfile.mkdtemp(prefix='dftimewolf_local_fs')
+    elif os.path.exists(target_directory):
+      target_directory = os.path.join(target_directory, 'dftimewolf')
+      os.makedirs(target_directory, exist_ok=True)
+    self._target_directory = target_directory
 
   def Process(self):
     """Checks whether the paths exists and updates the state accordingly."""
-    for _, path in self.state.input:
+    for file_container in self.state.GetContainers(containers.File):
+      self.logger.info('{0:s} -> {1:s}'.format(
+          file_container.path, self._target_directory))
+      try:
+        self._CopyFileOrDirectory(file_container.path, self._target_directory)
+      except OSError as exception:
+        self.ModuleError(
+            'Could not copy files to {0:s}: {1!s}'.format(
+                self._target_directory, exception),
+            critical=True)
+
       if not self._compress:
-        full_paths = self._CopyFileOrDirectory(path, self._target_directory)
-        print('{0:s} -> {1:s}'.format(path, self._target_directory))
         for path_ in full_paths:
           self.state.StoreContainer(containers.FSPath(path=path_))
       else:
         try:
           tar_file = utils.Compress(path, self._target_directory)
           self.state.StoreContainer(containers.FSPath(path=tar_file))
-          print('{0:s} was compressed into {1:s}'.format(
+          self.logger.info('{0:s} was compressed into {1:s}'.format(
               path, tar_file))
         except RuntimeError as exception:
-          self.state.AddError(exception, critical=True)
+          self.ModuleError(exception, critical=True)
           return
 
   def _CopyFileOrDirectory(self, source, destination_directory):
     """Recursively copies files from source to destination_directory.
+
+    Files will be copied to `destination_directory`'s root. Directories
+    will be copied to subdirectories in `destination_directory`.
 
     Args:
       source (str): source file or directory to copy into the destination
@@ -73,13 +84,14 @@ class LocalFilesystemCopy(module.BaseModule):
     Returns:
       list[str]: The full copied output paths.
     """
-    full_paths = []
+    counter = 0
     if os.path.isdir(source):
-      for item in os.listdir(source):
-        full_source = os.path.join(source, item)
-        full_destination = os.path.join(destination_directory, item)
-        shutil.copytree(full_source, full_destination)
-        full_paths.append(full_destination)
+      try:
+        shutil.copytree(source, destination_directory)
+      except FileExistsError:
+        new_directory = os.path.join(destination_directory, str(counter))
+        shutil.copytree(source, new_directory)
+        counter += 1
     else:
       shutil.copy2(source, destination_directory)
       full_paths.append(os.path.join(destination_directory, source))

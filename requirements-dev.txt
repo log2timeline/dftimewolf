@@ -1,11 +1,79 @@
 -i https://pypi.org/simple
-astroid==2.4.1
-isort==4.3.21
-lazy-object-proxy==1.4.3
+altair==4.1.0; python_version >= '3.6'
+astroid==2.4.2; python_version >= '3.5'
+attrs==19.3.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+beautifulsoup4==4.9.1
+boto3==1.14.19
+botocore==1.17.19
+cachetools==4.1.1; python_version ~= '3.5'
+certifi==2020.6.20
+cffi==1.14.0
+chardet==3.0.4
+click==7.1.2; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
+colorlog==2.10.0
+coverage==5.2
+cryptography==2.9.2
+docutils==0.15.2; python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'
+entrypoints==0.3; python_version >= '2.7'
+filelock==3.0.12
+google-api-core[grpc]==1.21.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+google-api-python-client==1.9.3; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+google-auth-httplib2==0.0.4
+google-auth-oauthlib==0.4.1
+google-auth==1.18.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+google-cloud-core==1.3.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+google-cloud-datastore==1.12.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+google-cloud-logging==1.15.0
+google-cloud-pubsub==1.6.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
+google-cloud-storage==1.29.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+google-resumable-media==0.5.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
+googleapis-common-protos[grpc]==1.52.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+grpc-google-iam-v1==0.12.3
+grpcio==1.30.0
+grr-api-client==3.4.2.post1
+grr-response-proto==3.4.2.post1
+httplib2==0.18.1
+idna==2.10
+importlib-metadata==1.7.0; python_version < '3.8'
+isort==4.3.21; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+jinja2==2.11.2; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
+jmespath==0.10.0; python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'
+jsonschema==3.2.0
+lazy-object-proxy==1.4.3; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+libcloudforensics==20200630
+markupsafe==1.1.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 mccabe==0.6.1
 mock==4.0.2
-pylint==2.5.2
-six==1.14.0
+numpy==1.19.0; python_version >= '3.6'
+oauthlib==3.1.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+pandas==1.0.5; python_full_version >= '3.6.1'
+protobuf==3.12.2
+psq==0.8.0
+pyasn1-modules==0.2.8
+pyasn1==0.4.8
+pycparser==2.20; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+pylint==2.5.3
+pyopenssl==19.1.0
+pypdf2==1.26.0
+pyrsistent==0.16.0
+python-dateutil==2.8.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+pytz==2020.1
+pyyaml==5.3.1
+requests-oauthlib==1.3.0
+requests==2.23.0
+rsa==4.6; python_version >= '3'
+s3transfer==0.3.3
+six==1.15.0
+soupsieve==2.0.1; python_version >= '3.5'
+timesketch-api-client==20200707
+timesketch-import-client==20200707
 toml==0.10.1
-typed-ast==1.4.1 ; implementation_name == 'cpython' and python_version < '3.8'
+toolz==0.10.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+turbinia==20190819.13
+typed-ast==1.4.1; python_version < '3.8' and implementation_name == 'cpython'
+uritemplate==3.0.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+urllib3[secure]==1.25.9; python_version != '3.4'
+werkzeug==0.16.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 wrapt==1.12.1
+xlrd==1.2.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+zipp==3.1.0; python_version >= '3.6'

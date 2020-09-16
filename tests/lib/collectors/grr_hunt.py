@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 """Tests the GRR hunt collectors."""
 
-from __future__ import unicode_literals
-
 import unittest
 import zipfile
 import mock
@@ -12,16 +10,20 @@ from grr_response_proto import flows_pb2
 
 from dftimewolf import config
 from dftimewolf.lib import state
+from dftimewolf.lib import errors
 from dftimewolf.lib.collectors import grr_hunt
 from tests.lib.collectors.test_data import mock_grr_hosts
 
 
 # Mocking of classes.
-# pylint: disable=invalid-name
+# pylint: disable=invalid-name,arguments-differ
 class GRRHuntArtifactCollectorTest(unittest.TestCase):
   """Tests for the GRR artifact collector."""
 
-  def setUp(self):
+  @mock.patch('grr_api_client.api.InitHttp')
+  def setUp(self, mock_InitHttp):
+    self.mock_grr_api = mock.Mock()
+    mock_InitHttp.return_value = self.mock_grr_api
     self.test_state = state.DFTimewolfState(config.Config)
     self.grr_hunt_artifact_collector = grr_hunt.GRRHuntArtifactCollector(
         self.test_state)
@@ -35,11 +37,11 @@ class GRRHuntArtifactCollectorTest(unittest.TestCase):
         approvers='approver1,approver2'
     )
 
-  @mock.patch('grr_api_client.hunt.CreateHunt')
-  def testProcess(self, mock_CreateHunt):
+  def testProcess(self):
     """Tests that the process function issues correct GRR API calls."""
     self.grr_hunt_artifact_collector.Process()
-    call_kwargs = mock_CreateHunt.call_args[1]  # extract call kwargs
+    # extract call kwargs
+    call_kwargs = self.mock_grr_api.CreateHunt.call_args[1]
     self.assertEqual(call_kwargs['flow_args'].artifact_list,
                      ['RandomArtifact'])
     self.assertEqual(call_kwargs['flow_args'].use_tsk, True)
@@ -51,7 +53,10 @@ class GRRHuntArtifactCollectorTest(unittest.TestCase):
 class GRRHuntFileCollectorTest(unittest.TestCase):
   """Tests for the GRR file collector."""
 
-  def setUp(self):
+  @mock.patch('grr_api_client.api.InitHttp')
+  def setUp(self, mock_InitHttp):
+    self.mock_grr_api = mock.Mock()
+    mock_InitHttp.return_value = self.mock_grr_api
     self.test_state = state.DFTimewolfState(config.Config)
     self.grr_hunt_file_collector = grr_hunt.GRRHuntFileCollector(
         self.test_state)
@@ -71,11 +76,11 @@ class GRRHuntFileCollectorTest(unittest.TestCase):
         ['/etc/passwd', '/etc/shadow']
     )
 
-  @mock.patch('grr_api_client.hunt.CreateHunt')
-  def testProcess(self, mock_CreateHunt):
+  def testProcess(self):
     """Tests that the process method invokes the correct GRR API calls."""
     self.grr_hunt_file_collector.Process()
-    call_kwargs = mock_CreateHunt.call_args[1]  # extract call kwargs
+    # extract call kwargs
+    call_kwargs = self.mock_grr_api.CreateHunt.call_args[1]
     self.assertEqual(call_kwargs['flow_args'].paths,
                      ['/etc/passwd', '/etc/shadow'])
     self.assertEqual(call_kwargs['flow_args'].action.action_type,
@@ -89,7 +94,10 @@ class GRRHuntFileCollectorTest(unittest.TestCase):
 class GRRFHuntDownloader(unittest.TestCase):
   """Tests for the GRR hunt downloader."""
 
-  def setUp(self):
+  @mock.patch('grr_api_client.api.InitHttp')
+  def setUp(self, mock_InitHttp):
+    self.mock_grr_api = mock.Mock()
+    mock_InitHttp.return_value = self.mock_grr_api
     self.test_state = state.DFTimewolfState(config.Config)
     self.grr_hunt_downloader = grr_hunt.GRRHuntDownloader(self.test_state)
     self.grr_hunt_downloader.SetUp(
@@ -108,13 +116,12 @@ class GRRFHuntDownloader(unittest.TestCase):
 
   @mock.patch('dftimewolf.lib.collectors.grr_hunt.GRRHuntDownloader._ExtractHuntResults')  # pylint: disable=line-too-long
   @mock.patch('dftimewolf.lib.collectors.grr_hunt.GRRHuntDownloader._GetAndWriteArchive')  # pylint: disable=line-too-long
-  @mock.patch('grr_api_client.hunt.HuntRef.Get')
   def testCollectHuntResults(self,
-                             mock_Get,
                              mock_get_write_archive,
                              mock_ExtractHuntResults):
     """Tests that hunt results are downloaded to the correct file."""
-    mock_Get.return_value = mock_grr_hosts.MOCK_HUNT
+    self.mock_grr_api.Hunt.return_value.Get.return_value = \
+        mock_grr_hosts.MOCK_HUNT
     self.grr_hunt_downloader.Process()
     mock_get_write_archive.assert_called_with(mock_grr_hosts.MOCK_HUNT,
                                               '/tmp/test/H:12345.zip')
@@ -147,13 +154,14 @@ class GRRFHuntDownloader(unittest.TestCase):
     test_zip = 'tests/lib/collectors/test_data/hunt.zip'
     mock_extract.side_effect = OSError
     # pylint: disable=protected-access
-    result = self.grr_hunt_downloader._ExtractHuntResults(test_zip)
-    self.assertEqual(result, [])
+
+    with self.assertRaises(errors.DFTimewolfError) as error:
+      self.grr_hunt_downloader._ExtractHuntResults(test_zip)
+    self.assertEqual(1, len(self.test_state.errors))
     self.assertEqual(
-        self.test_state.errors[0],
-        ('Error manipulating file tests/lib/collectors/test_data/hunt.zip: ',
-         True)
-    )
+        error.exception.message,
+        'Error manipulating file tests/lib/collectors/test_data/hunt.zip: ')
+    self.assertTrue(error.exception.critical)
     mock_remove.assert_not_called()
 
   @mock.patch('os.remove')
@@ -165,12 +173,14 @@ class GRRFHuntDownloader(unittest.TestCase):
 
     mock_extract.side_effect = zipfile.BadZipfile
     # pylint: disable=protected-access
-    result = self.grr_hunt_downloader._ExtractHuntResults(test_zip)
-    self.assertEqual(result, [])
+    with self.assertRaises(errors.DFTimewolfError) as error:
+      self.grr_hunt_downloader._ExtractHuntResults(test_zip)
+
+    self.assertEqual(1, len(self.test_state.errors))
     self.assertEqual(
-        self.test_state.errors[0],
-        ('Bad zipfile tests/lib/collectors/test_data/hunt.zip: ', True)
-    )
+        error.exception.message,
+        'Bad zipfile tests/lib/collectors/test_data/hunt.zip: ')
+    self.assertTrue(error.exception.critical)
     mock_remove.assert_not_called()
 
 

@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """Tests for the attribute containers."""
 
-from __future__ import unicode_literals
-
 import unittest
 
 from dftimewolf.lib.containers import containers
