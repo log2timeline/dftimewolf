@@ -71,10 +71,10 @@ class LocalFileSystemTest(unittest.TestCase):
   def testProcessCompress(self, mock_mkdtemp, mock_compress):
     """Tests that the module processes input and compresses correctly."""
     test_state = state.DFTimewolfState(config.Config)
-    test_state.input = [
-        ('description', '/fake/evidence_directory'),
-        ('description2', '/fake/evidence_file'),
-    ]
+    test_state.StoreContainer(containers.File(
+        name='description', path='/fake/evidence_directory'))
+    test_state.StoreContainer(containers.File(
+        name='description2', path='/fake/evidence_file'))
     mock_mkdtemp.return_value = '/fake/random'
     local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
     local_filesystem_copy.SetUp(compress=True)

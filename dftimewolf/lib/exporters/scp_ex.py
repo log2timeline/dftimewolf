@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Send files using SCP."""
 
+import os
 import subprocess
 
 from dftimewolf.lib.containers import containers
