@@ -7,7 +7,6 @@ import tempfile
 
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib import module
-from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib import utils
 
@@ -48,23 +47,25 @@ class LocalFilesystemCopy(module.BaseModule):
     for file_container in self.state.GetContainers(containers.File):
       self.logger.info('{0:s} -> {1:s}'.format(
           file_container.path, self._target_directory))
-      try:
-        self._CopyFileOrDirectory(file_container.path, self._target_directory)
-      except OSError as exception:
-        self.ModuleError(
-            'Could not copy files to {0:s}: {1!s}'.format(
-                self._target_directory, exception),
-            critical=True)
 
       if not self._compress:
+        try:
+          full_paths = self._CopyFileOrDirectory(
+              file_container.path, self._target_directory)
+        except OSError as exception:
+          self.ModuleError(
+              'Could not copy files to {0:s}: {1!s}'.format(
+                  self._target_directory, exception),
+              critical=True)
         for path_ in full_paths:
           self.state.StoreContainer(containers.FSPath(path=path_))
+
       else:
         try:
-          tar_file = utils.Compress(path, self._target_directory)
+          tar_file = utils.Compress(file_container.path, self._target_directory)
           self.state.StoreContainer(containers.FSPath(path=tar_file))
           self.logger.info('{0:s} was compressed into {1:s}'.format(
-              path, tar_file))
+              file_container.path, tar_file))
         except RuntimeError as exception:
           self.ModuleError(exception, critical=True)
           return
@@ -85,12 +86,15 @@ class LocalFilesystemCopy(module.BaseModule):
       list[str]: The full copied output paths.
     """
     counter = 0
+    full_paths = []
     if os.path.isdir(source):
       try:
         shutil.copytree(source, destination_directory)
+        full_paths.append(destination_directory)
       except FileExistsError:
         new_directory = os.path.join(destination_directory, str(counter))
         shutil.copytree(source, new_directory)
+        full_paths.append(new_directory)
         counter += 1
     else:
       shutil.copy2(source, destination_directory)

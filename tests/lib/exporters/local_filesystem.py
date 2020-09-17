@@ -76,6 +76,7 @@ class LocalFileSystemTest(unittest.TestCase):
     test_state.StoreContainer(containers.File(
         name='description2', path='/fake/evidence_file'))
     mock_mkdtemp.return_value = '/fake/random'
+    mock_compress.return_value = '/fake/tarball.tgz'
     local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
     local_filesystem_copy.SetUp(compress=True)
     local_filesystem_copy.Process()
