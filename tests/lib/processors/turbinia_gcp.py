@@ -81,9 +81,9 @@ class TurbiniaProcessorTest(unittest.TestCase):
     error_msg = error.exception.message
     self.assertEqual(error_msg, 'Specified project turbinia-wrong-project does'
                                 ' not match Turbinia configured project '
-                                'turbinia-project. Use gcp_turbinia_disk_copy_ts'
-                                'recipe to copy the disk into the same '
-                                'project.')
+                                'turbinia-project. Use '
+                                'gcp_turbinia_disk_copy_ts recipe to copy the '
+                                'disk into the same project.')
     self.assertTrue(error.exception.critical)
 
   @mock.patch('dftimewolf.lib.processors.turbinia_gcp.turbinia_config')
