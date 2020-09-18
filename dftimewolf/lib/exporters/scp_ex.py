@@ -54,7 +54,8 @@ class SCPExporter(module.BaseModule):
     self._user = user
 
     if check_ssh and not self._SSHAvailable():
-      self.ModuleError('Unable to connect to host.', critical=True)
+      self.ModuleError(
+          'Unable to connect to {0:s}.'.format(self._hostname), critical=True)
 
   def Process(self):
     """Copies the list of paths to the destination on user@hostname"""
