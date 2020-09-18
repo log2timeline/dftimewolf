@@ -78,8 +78,8 @@ class SCPExporter(module.BaseModule):
     self.logger.info('Executing SCP command: {0:s}'.format(' '.join(cmd)))
     ret = subprocess.call(cmd)
     if ret != 0:
-      self.ModuleError('Failed copying {0!s}'.format(self._paths),
-                          critical=True)
+      self.ModuleError(
+          'Failed copying {0!s}'.format(self._paths), critical=True)
       return
 
     for path_ in self._paths:
