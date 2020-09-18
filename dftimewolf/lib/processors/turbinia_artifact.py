@@ -36,10 +36,12 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase):
 
   # pylint: disable=arguments-differ
   def SetUp(
-      self, directory_path, sketch_id, run_all_jobs):
+      self, project, turbinia_zone, directory_path, sketch_id, run_all_jobs):
     """Sets up the object attributes.
 
     Args:
+      project (str): name of the GPC project containing the disk to process.
+      turbinia_zone (str): GCP zone in which the Turbinia server is running.
       directory_path (str): Name of the directory to process.
       sketch_id (int): The Timesketch sketch id
       run_all_jobs (bool): Whether to run all jobs instead of a faster subset.
@@ -47,20 +49,20 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase):
     self.directory_path = directory_path
 
     try:
-      self.TurbiniaSetUp(None, None, sketch_id, run_all_jobs)
+      self.TurbiniaSetUp(project, turbinia_zone, sketch_id, run_all_jobs)
     except TurbiniaException as exception:
-      self.state.AddError(exception, critical=True)
+      self.ModuleError(str(exception), critical=True)
       return
 
   def Process(self):
     """Process files with Turbinia."""
     log_file_path = os.path.join(self._output_path, 'turbinia.log')
-    print('Turbinia log file: {0:s}'.format(log_file_path))
+    self.logger.info('Turbinia log file: {0:s}'.format(log_file_path))
 
     fspaths = self.state.GetContainers(containers.RemoteFSPath)
 
     for fspath in fspaths:
-      print(
+      self.logger.info(
           'Processing remote FS path {0:s} from previous collector'.format(
               fspath.path))
       evidence_ = evidence.CompressedDirectory(
