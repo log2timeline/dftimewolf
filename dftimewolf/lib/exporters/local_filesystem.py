@@ -34,13 +34,14 @@ class LocalFilesystemCopy(module.BaseModule):
       compress (bool): Whether to compress the resulting directory or not
     """
     self._target_directory = target_directory
+    if not self._target_directory:
+      self._target_directory = tempfile.mkdtemp()
     self._compress = compress
     if not target_directory:
       target_directory = tempfile.mkdtemp(prefix='dftimewolf_local_fs')
     elif os.path.exists(target_directory):
       target_directory = os.path.join(target_directory, 'dftimewolf')
       os.makedirs(target_directory, exist_ok=True)
-    self._target_directory = target_directory
 
   def Process(self):
     """Checks whether the paths exists and updates the state accordingly."""
