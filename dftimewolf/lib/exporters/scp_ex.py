@@ -64,8 +64,9 @@ class SCPExporter(module.BaseModule):
       self._paths = [fspath.path for fspath in fspaths]
 
     if not self._paths:
-      self.state.AddError('No paths specified to SCP module.', critical=True)
-      return
+      self.ModuleError('No paths specified to SCP module.', critical=True)
+
+    self._CreateDestinationDirectory()
 
     dest = self._destination
     user = ''
@@ -81,7 +82,6 @@ class SCPExporter(module.BaseModule):
     if ret != 0:
       self.ModuleError(
           'Failed copying {0!s}'.format(self._paths), critical=True)
-      return
 
     for path_ in self._paths:
       file_name = os.path.basename(path_)
@@ -90,6 +90,25 @@ class SCPExporter(module.BaseModule):
       fspath = containers.RemoteFSPath(
           path=full_path, hostname=self._hostname)
       self.state.StoreContainer(fspath)
+
+  def _CreateDestinationDirectory(self):
+    """Creates the destination directory on the host."""
+    user = ''
+    if self._user:
+      user = '{0:s}@'.format(self._user)
+    if self._hostname:
+      dest = '{0:s}{1:s}'.format(user, self._hostname)
+
+    cmd = ['ssh', dest]
+    cmd.extend(['mkdir', '-p', self._destination])
+    self.logger.info(
+        'Creating destination directory {0:s} on host {1:s}'.format(
+            self._destination, self._hostname))
+    self.logger.info('Shelling out: {0:s}'.format(' '.join(cmd)))
+    ret = subprocess.call(cmd)
+    if ret != 0:
+      self.ModuleError(
+          'Failed creating destination directory, bailing.', critical=True)
 
   def _SSHAvailable(self):
     """Checks that the SSH authentication succeeds on a given host.
