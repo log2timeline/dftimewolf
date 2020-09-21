@@ -43,7 +43,7 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase):
       project (str): name of the GPC project containing the disk to process.
       turbinia_zone (str): GCP zone in which the Turbinia server is running.
       directory_path (str): Name of the directory to process.
-      sketch_id (int): The Timesketch sketch id
+      sketch_id (int): The Timesketch sketch ID.
       run_all_jobs (bool): Whether to run all jobs instead of a faster subset.
     """
     self.directory_path = directory_path

@@ -121,7 +121,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     Args:
       project (str): name of the GPC project containing the disk to process.
       turbinia_zone (str): GCP zone in which the Turbinia server is running.
-      sketch_id (int): The Timesketch sketch id
+      sketch_id (int): The Timesketch sketch ID.
       run_all_jobs (bool): Whether to run all jobs instead of a faster subset.
     """
     self.project = project
@@ -250,7 +250,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase):
       disk_name (str): name of the disk to process.
       project (str): name of the GPC project containing the disk to process.
       turbinia_zone (str): GCP zone in which the Turbinia server is running.
-      sketch_id (int): The Timesketch sketch id
+      sketch_id (int): The Timesketch sketch ID.
       run_all_jobs (bool): Whether to run all jobs instead of a faster subset.
     """
     # TODO: Consider the case when multiple disks are provided by the previous
