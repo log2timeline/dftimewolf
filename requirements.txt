@@ -22,7 +22,7 @@ chardet==3.0.4
 click==7.1.2; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
 colorlog==2.10.0
 cryptography==2.9.2
-ecdsa==0.16.0; python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'
+ecdsa==0.16.0; python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2'
 entrypoints==0.3; python_version >= '2.7'
 filelock==3.0.12
 google-api-core[grpc]==1.22.2; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
@@ -47,7 +47,7 @@ idna==2.10
 importlib-metadata==2.0.0; python_version < '3.8'
 isodate==0.6.0
 jinja2==2.11.2; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
-jmespath==0.10.0; python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'
+jmespath==0.10.0; python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2'
 jsonschema==3.2.0
 libcloudforensics==20200818
 libcst==0.3.10; python_version >= '3.6'
@@ -59,7 +59,7 @@ msrestazure==0.6.4
 mypy-extensions==0.4.3
 numpy==1.19.2; python_version >= '3.6'
 oauthlib==3.1.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-pandas==1.1.2; python_full_version >= '3.6.1'
+pandas==1.1.2
 portalocker==1.7.1; platform_system != 'Windows'
 proto-plus==1.10.0
 protobuf==3.12.2
@@ -72,7 +72,7 @@ pyjwt[crypto]==1.7.1
 pyopenssl==19.1.0
 pypdf2==1.26.0
 pyrsistent==0.17.3; python_version >= '3.5'
-python-dateutil==2.8.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+python-dateutil==2.8.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2'
 pytz==2020.1
 pyyaml==5.3.1
 requests-oauthlib==1.3.0
