@@ -21,6 +21,16 @@ class LocalPlasoProcessor(module.BaseModule):
     super(LocalPlasoProcessor, self).__init__(state)
     self._timezone = None
     self._output_path = None
+    self._plaso_path = None
+
+  def _DeterminePlasoPath(self):
+    """Checks if log2timeline is somewhere in the user's PATH."""
+    for path in os.environ['PATH'].split(os.pathsep):
+      full_path = os.path.join(path, 'log2timeline.py')
+      if os.path.isfile(full_path):
+        self._plaso_path = full_path
+        return True
+    return False
 
   def SetUp(self, timezone=None):  # pylint: disable=arguments-differ
     """Sets up the local time zone with Plaso (log2timeline) should use.
@@ -30,6 +40,11 @@ class LocalPlasoProcessor(module.BaseModule):
     """
     self._timezone = timezone
     self._output_path = tempfile.mkdtemp()
+    if not self._DeterminePlasoPath():
+      self.ModuleError('log2timeline.py was not found in your PATH. To fix: \n'
+                       '  apt-get install plaso-tools',
+                       critical=True)
+
 
   def Process(self):
     """Executes log2timeline.py on the module input."""
@@ -40,7 +55,7 @@ class LocalPlasoProcessor(module.BaseModule):
       self.logger.info('Log file: {0:s}'.format(log_file_path))
 
       # Build the plaso command line.
-      cmd = ['log2timeline.py']
+      cmd = [self._plaso_path]
       # Since we might be running alongside another Module, always disable
       # the status view.
       cmd.extend(['-q', '--status_view', 'none'])
