@@ -43,9 +43,6 @@ def Compress(source_path, output_directory=None):
     with tarfile.TarFile.open(output_file, 'w:gz') as tar:
       tar.add(source_path, arcname=arcname)
       tar.close()
-      print(
-          'The tar file has been created and can be found at: {0:s}'.format(
-              output_file))
   except (IOError, tarfile.TarError) as exception:
     raise RuntimeError(
         'An error has while compressing directory {0:s}: {1!s}'.format(
