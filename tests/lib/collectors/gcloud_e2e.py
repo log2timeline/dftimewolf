@@ -205,12 +205,12 @@ def ReadProjectInfo():
       project_info = json.load(json_file)
     except ValueError as exception:
       raise RuntimeError('Error: cannot parse JSON file. {0:s}'.format(
-          str(exception)))
+          str(exception))) from ValueError
     json_file.close()
   except OSError as exception:
     raise OSError('Error: could not open/close file {0:s}: {1:s}'.format(
         project_info, str(exception)
-    ))
+    )) from OSError
 
   if not all(key in project_info for key in ['project_id', 'instance',
                                              'zone']):
