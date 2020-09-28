@@ -46,7 +46,7 @@ def Compress(source_path, output_directory=None):
   except (IOError, tarfile.TarError) as exception:
     raise RuntimeError(
         'An error has while compressing directory {0:s}: {1!s}'.format(
-            source_path, exception), critial=True)
+            source_path, exception), critial=True) from exception
 
   return output_file
 
