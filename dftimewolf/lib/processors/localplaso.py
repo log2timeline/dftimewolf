@@ -42,7 +42,7 @@ class LocalPlasoProcessor(module.BaseModule):
     self._output_path = tempfile.mkdtemp()
     if not self._DeterminePlasoPath():
       self.ModuleError('log2timeline.py was not found in your PATH. To fix: \n'
-                       '  apt-get install plaso-tools',
+                       '  apt install plaso-tools',
                        critical=True)
 
 
