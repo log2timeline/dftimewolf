@@ -70,7 +70,7 @@ class LocalPlasoTest(unittest.TestCase):
       local_plaso_processor.SetUp()
     self.assertEqual(
       ('log2timeline.py was not found in your PATH. To fix: \n'
-       '  apt-get install plaso-tools'),
+       '  apt install plaso-tools'),
       error.exception.message)
 
 if __name__ == '__main__':
