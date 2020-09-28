@@ -63,12 +63,12 @@ class LocalFileSystemTest(unittest.TestCase):
                          'fakehost', 'fakeid', True)
 
     self.assertEqual(test_state.errors[0], error.exception)
-    self.assertEqual(error.exception.message, 'Unable to connect to host.')
+    self.assertEqual(error.exception.message, 'Unable to connect to fakehost.')
     self.assertTrue(error.exception.critical)
 
   @mock.patch('subprocess.call')
   def testProcessError(self, mock_subprocess_call):
-    """Tests that the specified directory is used if created."""
+    """Tests that failures creating directories are properly caught."""
     mock_subprocess_call.return_value = 0
     test_state = state.DFTimewolfState(config.Config)
     scp_exporter = scp_ex.SCPExporter(test_state)
@@ -81,7 +81,7 @@ class LocalFileSystemTest(unittest.TestCase):
 
     self.assertEqual(test_state.errors[0], error.exception)
     self.assertEqual(error.exception.message,
-                     "Failed copying ['/path1', '/path2']")
+                     "Failed creating destination directory, bailing.")
     self.assertTrue(error.exception.critical)
 
 
