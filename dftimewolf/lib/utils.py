@@ -59,3 +59,171 @@ def ImportArgsFromDict(value, args, config):
   elif isinstance(value, tuple):
     return tuple(ImportArgsFromDict(val, args, config) for val in value)
   return value
+
+
+class FormatterInterface(object):
+  """Interface to format text in reports."""
+
+  # A text representation of the format.
+  FORMAT = ''
+
+  def IndentStart(self):
+    """Return formatted text for starting an indent."""
+    pass
+
+  def IndentText(self, text, level=1):
+    """Return a formatted text that is indented.
+
+    Args:
+      text (str): The text to indent.
+      level (int): The indentation level, may be ignored by
+          some formats.
+
+    Returns:
+        str: A formatted indented string.
+    """
+    pass
+
+  def IndentEnd(self):
+    """Return a formatted text for ending an indent."""
+    pass
+
+  def BoldText(self, text):
+    """Return a formatted text that will be bold."""
+    pass
+
+  def Link(self, url, text):
+    """Return a formatted text that contains a link."""
+    pass
+
+  def ItalicText(self, text):
+    """Return a formatted text that will be italic."""
+    pass
+
+  def UnderlineText(self, text):
+    """Return a formatted text that will be underlined."""
+    pass
+
+  def Line(self):
+    """Return a formatted new line."""
+    pass
+
+  def Heading(self, text, level=1):
+    """Return a formatted heading."""
+    pass
+
+  def Paragraph(self, text):
+    """Return a formatted paragraph."""
+    pass
+
+
+class HTMLFormatter(FormatterInterface):
+  """HTML formatter."""
+
+  # A text representation of the format.
+  FORMAT = 'html'
+
+  def IndentStart(self):
+    """Return formatted text for starting an indent."""
+    return '<ul>'
+
+  def IndentText(self, text, level=1):
+    """Return a formatted text that is indented.
+
+    Args:
+      text (str): The text to indent.
+      level (int): The indentation level, may be ignored by
+          some formats.
+
+    Returns:
+        str: A formatted indented string.
+    """
+    return '<li>{0:s}</li>'.format(text)
+
+  def IndentEnd(self):
+    """Return a formatted text for ending an indent."""
+    return '</ul>'
+
+  def BoldText(self, text):
+    """Return a formatted text that will be bold."""
+    return '<b>{0:s}</b>'.format(text)
+
+  def Link(self, url, text):
+    """Return a formatted text that contains a link."""
+    return '<a href="{0:s}" target="_blank">{1:s}</a>'.format(url, text)
+
+  def ItalicText(self, text):
+    """Return a formatted text that will be italic."""
+    return '<i>{0:s}</i>'.format(text)
+
+  def UnderlineText(self, text):
+    """Return a formatted text that will be underlined."""
+    return '<u>{0:s}</u>'.format(text)
+
+  def Line(self):
+    """Return a formatted new line."""
+    return '<br/>'
+
+  def Heading(self, text, level=1):
+    """Return a formatted heading."""
+    return '<h{0:d}>{1:s}</h{0:d}>'.format(level, text)
+
+  def Paragraph(self, text):
+    """Return a formatted paragraph."""
+    return '<p>{0:s}</p>'.format(text)
+
+
+class MarkdownFormatter(FormatterInterface):
+  """Markdown formatter."""
+
+  # A text representation of the format.
+  FORMAT = 'markdown'
+
+  def IndentText(self, text, level=1):
+    """Return a formatted text that is indented.
+
+    Args:
+      text (str): The text to indent.
+      level (int): The indentation level, may be ignored by
+          some formats.
+
+    Returns:
+        str: A formatted indented string.
+    """
+    return '{0:s}+ {1:s}\n'.format(' '*(2 * level), text)
+
+  def BoldText(self, text):
+    """Return a formatted text that will be bold."""
+    return '**{0:s}**'.format(text)
+
+  def Link(self, url, text):
+    """Return a formatted text that contains a link."""
+    return '[{0:s}]({1:s})'.format(text, url)
+
+  def ItalicText(self, text):
+    """Return a formatted text that will be italic."""
+    return '*{0:s}*'.format(text)
+
+  def UnderlineText(self, text):
+    """Return a formatted text that will be underlined."""
+    return '**_{0:s}_**'.format(text)
+
+  def Line(self):
+    """Return a formatted new line."""
+    return '\n\n'
+
+  def Heading(self, text, level=1):
+    """Return a formatted heading."""
+    return '{0:s} {1:s}\n'.format('#'*level, text)
+
+  def Paragraph(self, text):
+    """Return a formatted paragraph."""
+    return '{0:s}\n'.format(text)
+
+  def IndentStart(self):
+    """Return formatted text for starting an indent."""
+    return ''
+
+  def IndentEnd(self):
+    """Return a formatted text for ending an indent."""
+    return ''

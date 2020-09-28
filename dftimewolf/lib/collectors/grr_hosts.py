@@ -44,35 +44,38 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     self.keepalive = False
 
   # TODO: change object to more specific GRR type information.
-  def _GetClientByHostname(self, hostname):
-    """Searches GRR by hostname and get the latest active client.
+  def _GetClientBySelector(self, selector):
+    """Searches GRR by selector and get the latest active client.
 
     Args:
-      hostname (str): hostname to search for.
+      selector (str): selector to search for. This can be a hostname or GRR
+          client ID.
 
     Returns:
       object: GRR API Client object
 
     Raises:
-      DFTimewolfError: if no client ID found for hostname.
+      DFTimewolfError: if no client ID found for selector.
     """
-    # Search for the hostname in GRR
-    self.logger.info('Searching for client: {0:s}'.format(hostname))
+    # Search for the selector in GRR
+    self.logger.info('Searching for client: {0:s}'.format(selector))
     try:
-      search_result = self.grr_api.SearchClients(hostname)
+      search_result = self.grr_api.SearchClients(selector)
     except grr_errors.UnknownError as exception:
       self.ModuleError('Could not search for host {0:s}: {1!s}'.format(
-          hostname, exception
+          selector, exception
       ), critical=True)
 
     result = []
     for client in search_result:
-      if hostname.lower() in client.data.os_info.fqdn.lower():
+      fqdn = client.data.os_info.fqdn.lower()
+      client_id = client.data.client_id.lower()
+      if selector.lower() in fqdn or selector.lower() in client_id:
         result.append((client.data.last_seen_at, client))
 
     if not result:
-      self.ModuleError('Could not get client_id for {0:s}'.format(
-          hostname), critical=True)
+      self.ModuleError('Could not get client for {0:s}'.format(
+          selector), critical=True)
 
     last_seen, client = sorted(result, key=lambda x: x[0], reverse=True)[0]
     # Remove microseconds and create datetime object
@@ -93,20 +96,22 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     return client
 
   # TODO: change object to more specific GRR type information.
-  def _FindClients(self, hosts):
-    """Finds GRR clients given a list of hosts.
+  def _FindClients(self, selectors):
+    """Finds GRR clients given a list of selectors.
 
     Args:
-      hosts (list[str]): FQDNs of hosts.
+      selectors (list[str]): FQDNs or client IDs to search for.
 
     Returns:
       list[object]: GRR client objects.
     """
     # TODO(tomchop): Thread this
     clients = []
-    for host in hosts:
-      clients.append(self._GetClientByHostname(host))
-    return [client for client in clients if client is not None]
+    for selector in selectors:
+      client = self._GetClientBySelector(selector)
+      if client is not None:
+        clients.append(client)
+    return clients
 
   # TODO: change object to more specific GRR type information.
   def _LaunchFlow(self, client, name, args):
@@ -353,7 +358,6 @@ class GRRArtifactCollector(GRRFlow):
     """
     threads = []
     for client in self._FindClients(self.hostnames):
-      self.logger.info(client)
       thread = threading.Thread(target=self._ProcessThread, args=(client, ))
       threads.append(thread)
       thread.start()
@@ -512,7 +516,9 @@ class GRRFlowCollector(GRRFlow):
     Raises:
       DFTimewolfError: if no files specified
     """
-    client = self._GetClientByHostname(self.host)
+    # TODO (tomchop): Change the host attribute into something more appropriate
+    # like 'selectors', and the corresponding recipes.
+    client = self._GetClientBySelector(self.host)
     self._AwaitFlow(client, self.flow_id)
     collected_flow_data = self._DownloadFiles(client, self.flow_id)
     if collected_flow_data:
