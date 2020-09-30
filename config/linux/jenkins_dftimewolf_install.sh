@@ -80,8 +80,8 @@ if [[ "$*" =~ "include-timesketch" ]]; then
      export TIMESKETCH_PASSWORD="your_password"
      export ELASTICSEARCH_VERSION=7.6.2
      git clone https://github.com/kiddinn/timesketch.git
-     git checkout jenkins_throw
      cd timesketch
+     git checkout jenkins_throw
      cd docker
      cd e2e
      sudo -E docker-compose up -d
