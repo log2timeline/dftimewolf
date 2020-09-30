@@ -225,7 +225,8 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
       return
 
     self.logger.warning(
-      'Skipped waiting for {0:d} flows because hosts were offline')
+      'Skipped waiting for {0:d} flows because hosts were offline'.format(
+        len(self._skipped_flows)))
     self.logger.warning(
       'Run the grr_flow_collect recipe with --wait_for_offline_hosts in a'
       ' tmux shell'
