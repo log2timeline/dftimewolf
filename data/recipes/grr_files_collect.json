@@ -15,6 +15,7 @@
             "use_tsk": "@use_tsk",
             "approvers": "@approvers",
             "verify": "@verify",
+            "skip_offline_clients": "@skip_offline_clients",
             "action": "@action"
         }
     }, {
