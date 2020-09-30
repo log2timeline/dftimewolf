@@ -79,7 +79,8 @@ if [[ "$*" =~ "include-timesketch" ]]; then
      export TIMESKETCH_USER="your_username"
      export TIMESKETCH_PASSWORD="your_password"
      export ELASTICSEARCH_VERSION=7.6.2
-     git clone https://github.com/google/timesketch.git
+     git clone https://github.com/kiddinn/timesketch.git
+     git checkout jenkins_throw
      cd timesketch
      cd docker
      cd e2e
