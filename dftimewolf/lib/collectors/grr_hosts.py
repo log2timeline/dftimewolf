@@ -29,7 +29,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
   """
   _CHECK_APPROVAL_INTERVAL_SEC = 10
   _CHECK_FLOW_INTERVAL_SEC = 10
-  _MAX_OFFLINE_TIME_SEC = 1  # One hour
+  _MAX_OFFLINE_TIME_SEC = 3600  # One hour
 
   _CLIENT_ID_REGEX = re.compile(r'^c\.[0-9a-f]{16}$', re.IGNORECASE)
 
