@@ -77,9 +77,8 @@ fi
 if [[ "$*" =~ "include-timesketch" ]]; then
     # Start the Timesketch server container.
      export ELASTICSEARCH_VERSION=7.6.2
-     git clone https://github.com/kiddinn/timesketch.git
+     git clone https://github.com/google/timesketch.git
      cd timesketch
-     git checkout jenkins_throw
      cd docker
      cd e2e
      sudo -E docker-compose up -d
