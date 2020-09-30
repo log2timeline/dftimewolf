@@ -76,8 +76,6 @@ fi
 
 if [[ "$*" =~ "include-timesketch" ]]; then
     # Start the Timesketch server container.
-     export TIMESKETCH_USER="your_username"
-     export TIMESKETCH_PASSWORD="your_password"
      export ELASTICSEARCH_VERSION=7.6.2
      git clone https://github.com/kiddinn/timesketch.git
      cd timesketch
