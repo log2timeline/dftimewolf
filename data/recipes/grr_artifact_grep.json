@@ -15,6 +15,7 @@
             "extra_artifacts": "@extra_artifacts",
             "use_tsk": "@use_tsk",
             "approvers": "@approvers",
+            "skip_offline_clients": "@skip_offline_clients",
             "verify": "@verify"
         }
     }, {
