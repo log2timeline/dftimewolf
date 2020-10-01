@@ -45,6 +45,7 @@
         ["--incident_id", "Incident ID (used for Timesketch description)", null],
         ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
         ["--verify", "Whether to verify the GRR TLS certificate", true],
+        ["--skip_offline_clients", "Whether to skip clients that are offline", false],
         ["--grr_username", "GRR username", "admin"],
         ["--grr_password", "GRR password", "admin"]
     ]
