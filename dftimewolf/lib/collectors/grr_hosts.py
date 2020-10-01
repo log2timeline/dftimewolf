@@ -209,14 +209,14 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
       if not self.skip_offline_clients:
         continue
 
-      client_last_seen = datetime.datetime.utcfromtimestamp(
-          client.data.last_seen_at / 1000000)
-      now = datetime.datetime.utcnow()
+      client_last_seen = datetime.datetime.fromtimestamp(
+          client.data.last_seen_at / 1000000, datetime.timezone.utc)
+      now = datetime.datetime.now(datetime.timezone.utc)
       if (now - client_last_seen).total_seconds() > self._MAX_OFFLINE_TIME_SEC:
         self.logger.warning(
-              'Client {0:s} has been offline for more than an'
-              ' hour, skipping...'.format(
-                  client.client_id))
+              'Client {0:s} has been offline for more than {1:.1f} minutes'
+              ', skipping...'.format(
+                  client.client_id, self._MAX_OFFLINE_TIME_SEC / 60))
         self._skipped_flows.append((client.client_id, flow_id))
         break
 
@@ -617,7 +617,7 @@ class GRRTimelineCollector(GRRFlow):
 
   # We're overriding the behavior of GRRFlow's SetUp function to include new
   # parameters.
-  # pylint: disable=arguments-differ
+  # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
             hosts, root_path,
             reason, timeline_format, grr_server_url, grr_username, grr_password,
