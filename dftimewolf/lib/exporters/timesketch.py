@@ -106,7 +106,7 @@ class TimesketchExporter(module.BaseModule):
     self.sketch_id = sketch.id
     self.logger.info('Sketch {0:d} created'.format(self.sketch_id))
 
-    return sketch.id
+    return sketch
 
   def _GetSketchIDFromAttributes(self):
     """Attempts to retrieve a Timesketch ID from ticket attributes.
