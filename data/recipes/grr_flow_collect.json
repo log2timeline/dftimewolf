@@ -13,7 +13,8 @@
             "grr_username": "@grr_username",
             "grr_password": "@grr_password",
             "approvers": "@approvers",
-            "verify": "@verify"
+            "verify": "@verify",
+            "skip_offline_clients": "@skip_offline_clients"
         }
     }, {
         "wants": ["GRRFlowCollector"],
@@ -30,6 +31,7 @@
         ["--approvers", "Emails for GRR approval request", null],
         ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
         ["--verify", "Whether to verify the GRR TLS certificate", true],
+        ["--skip_offline_clients", "Whether to skip clients that are offline", false],
         ["--grr_username", "GRR username", "admin"],
         ["--grr_password", "GRR password", "admin"]
     ]

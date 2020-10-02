@@ -15,6 +15,7 @@
             "use_tsk": "@use_tsk",
             "approvers": "@approvers",
             "verify": "@verify",
+            "skip_offline_clients": "@skip_offline_clients",
             "action": "@action"
         }
     }, {
@@ -32,6 +33,7 @@
         ["--use_tsk", "Use TSK to fetch artifacts", false],
         ["--approvers", "Emails for GRR approval request", null],
         ["--verify", "Whether to verify the GRR TLS certificate", true],
+        ["--skip_offline_clients", "Whether to skip clients that are offline", false],
         ["--action", "String denoting action (download/hash/stat) to take", "download"],
         ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
         ["--grr_username", "GRR username", "admin"],
