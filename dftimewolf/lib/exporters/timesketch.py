@@ -87,6 +87,14 @@ class TimesketchExporter(module.BaseModule):
       self._analyzers = analyzers
 
   def _CreateSketch(self, incident_id=None):
+    """Creates a new Timesketch sketch.
+
+    Args:
+      incident_id (str): Incident ID to use sketch description.
+
+    Returns:
+      timesketch_api_client.Sketch: An instance of the sketch object.
+    """
     if incident_id:
         sketch_name = 'Sketch for incident ID: ' + incident_id
     else:
@@ -98,7 +106,7 @@ class TimesketchExporter(module.BaseModule):
     self.sketch_id = sketch.id
     self.logger.info('Sketch {0:d} created'.format(self.sketch_id))
 
-    return sketch
+    return sketch.id
 
   def _GetSketchIDFromAttributes(self):
     """Attempts to retrieve a Timesketch ID from ticket attributes.
