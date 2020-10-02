@@ -39,12 +39,10 @@ class GoogleCloudDiskExportTest(unittest.TestCase):
 
   # pylint: disable=line-too-long
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetDisk')
-  @mock.patch('dftimewolf.lib.collectors.gcloud.GoogleCloudCollector.SetUp')
   @mock.patch('libcloudforensics.providers.gcp.internal.project.GoogleCloudProject')
   def testSetUp(
       self,
       mock_gcp_project,
-      mock_gcloud_setup,
       mock_get_disk):
     """Tests that the exporter can be initialized."""
 
@@ -54,7 +52,6 @@ class GoogleCloudDiskExportTest(unittest.TestCase):
     mock_gcp_project.return_value = FAKE_SOURCE_PROJECT
     FAKE_SOURCE_PROJECT.compute.GetDisk = mock_get_disk
     mock_get_disk.return_value = FAKE_DISK
-    mock_gcloud_setup.side_effect = None
     cloud_disk_exporter.SetUp(
         'fake-source-project',
         'gs://fake-bucket',
@@ -99,8 +96,8 @@ class GoogleCloudDiskExportTest(unittest.TestCase):
     cloud_disk_exporter.SetUp(
         source_project_name='fake-source-project',
         gcs_output_location='gs://fake-bucket',
-        disk_names='fake-source-disk',
-        exported_image_name='image-df-export-temp'
+        source_disk_names='fake-source-disk',
+        exported_image_name='image-df-export-temp'\
     )
     FAKE_SOURCE_PROJECT.compute.CreateImageFromDisk = mock_create_image_from_disk
     mock_create_image_from_disk.return_value = FAKE_IMAGE

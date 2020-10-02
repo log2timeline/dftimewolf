@@ -137,6 +137,7 @@ class GoogleCloudCollectorTest(unittest.TestCase):
     mock_CreateDiskCopy.assert_called_with(
         'test-target-project-name',
         'test-analysis-project-name',
+        None,
         FAKE_DISK.zone,
         disk_name=FAKE_DISK.name)
     forensics_vms = test_state.GetContainers(containers.ForensicsVM)
