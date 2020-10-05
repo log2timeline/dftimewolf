@@ -105,6 +105,7 @@ class TimesketchExporter(module.BaseModule):
         sketch_name, sketch_description)
     self.sketch_id = sketch.id
     self.logger.info('Sketch {0:d} created'.format(self.sketch_id))
+    self.state.AddToCache('timesketch_sketch', sketch)
 
     return sketch
 
@@ -130,7 +131,7 @@ class TimesketchExporter(module.BaseModule):
       self.ModuleError(message, critical=True)
 
     sketch = self.state.GetFromCache('timesketch_sketch')
-    if not sketch:
+    if not sketch and self.sketch_id:
       sketch = self.timesketch_api.get_sketch(self.sketch_id)
 
     # Create the sketch if no sketch was stored in the cache.
