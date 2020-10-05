@@ -38,6 +38,7 @@ class BaseModule(object):
   def SetupLogging(self):
     """Sets up stream and file logging for a specific module."""
     self.logger = logging.getLogger(name=self.__class__.__name__)
+    self.logger.setLevel(logging.DEBUG)
 
     file_handler = handlers.RotatingFileHandler(
         logging_utils.DEFAULT_LOG_FILE,

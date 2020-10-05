@@ -33,6 +33,7 @@ class LocalFilesystemCopy(module.BaseModule):
       target_directory = tempfile.mkdtemp(prefix='dftimewolf_local_fs')
     elif os.path.exists(target_directory):
       target_directory = os.path.join(target_directory, 'dftimewolf')
+      os.makedirs(target_directory, exist_ok=True)
     self._target_directory = target_directory
 
   def Process(self):
