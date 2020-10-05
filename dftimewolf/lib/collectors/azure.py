@@ -137,7 +137,7 @@ class AzureCollector(module.BaseModule):
 
     if not ssh_public_key:
       self.ModuleError('You need to specify a SSH public key to add to the '
-                       'VM, otherwise ', critical=True)
+                       'VM.', critical=True)
       return
 
     if not (remote_profile_name and analysis_resource_group_name):
