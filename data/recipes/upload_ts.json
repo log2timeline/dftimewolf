@@ -14,13 +14,15 @@
         "args": {
             "incident_id": "@incident_id",
             "token_password": "@token_password",
-            "sketch_id": "@sketch_id"
+            "sketch_id": "@sketch_id",
+            "wait_for_timelines": "@wait_for_timelines"
         }
     }],
     "args": [
         ["files", "Comma-separated list of paths to CSV files or Plaso storage files", null],
         ["--sketch_id", "Sketch to which the timeline should be added", null],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
-        ["--incident_id", "Incident ID (used for Timesketch description)", null]
+        ["--incident_id", "Incident ID (used for Timesketch description)", null],
+        ["--wait_for_timelines", "Whether to wait for timelines to finish processing.", true]
     ]
 }

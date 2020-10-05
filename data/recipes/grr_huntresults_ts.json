@@ -26,7 +26,8 @@
         "args": {
             "incident_id": "@reason",
             "token_password": "@token_password",
-            "sketch_id": "@sketch_id"
+            "sketch_id": "@sketch_id",
+            "wait_for_timelines": "@wait_for_timelines"
         }
     }],
     "args": [
@@ -34,6 +35,7 @@
         ["reason", "Reason for exporting hunt (used for Timesketch description)", null],
         ["--sketch_id", "Sketch to which the timeline should be added", null],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
+        ["--wait_for_timelines", "Whether to wait for timelines to finish processing.", true],
         ["--approvers", "Emails for GRR approval request", null],
         ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
         ["--verify", "Whether to verify the GRR TLS certificate", true],
