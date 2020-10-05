@@ -131,8 +131,10 @@ class GoogleCloudDiskExport(module.BaseModule):
           critical=True)
 
     self.remote_instance_name = remote_instance_name
-    source_disk_names = source_disk_names.split(
-        ',') if source_disk_names else []
+    if source_disk_names:
+      source_disk_names = source_disk_names.split(',')
+    else:
+      source_disk_names = []
     self.source_disk_names = source_disk_names
     self.all_disks = all_disks
 
@@ -192,18 +194,13 @@ class GoogleCloudDiskExport(module.BaseModule):
       self.ModuleError(
           'You need to specify at least an instance name or disks to copy',
           critical=True)
-
     disks_to_copy = []
-
     try:
-
       if self.source_disk_names:
         disks_to_copy = self._GetDisksFromNames(self.source_disk_names)
-
       elif self.remote_instance_name:
         disks_to_copy = self._GetDisksFromInstance(self.remote_instance_name,
                                                    self.all_disks)
-
     except HttpError as exception:
       if exception.resp.status == 403:
         self.ModuleError(

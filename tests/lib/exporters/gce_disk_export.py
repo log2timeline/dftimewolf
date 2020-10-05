@@ -97,7 +97,7 @@ class GoogleCloudDiskExportTest(unittest.TestCase):
         source_project_name='fake-source-project',
         gcs_output_location='gs://fake-bucket',
         source_disk_names='fake-source-disk',
-        exported_image_name='image-df-export-temp'\
+        exported_image_name='image-df-export-temp'
     )
     FAKE_SOURCE_PROJECT.compute.CreateImageFromDisk = mock_create_image_from_disk
     mock_create_image_from_disk.return_value = FAKE_IMAGE

@@ -59,7 +59,6 @@ class GoogleCloudCollector(module.BaseModule):
       new_disk = gcp_forensics.CreateDiskCopy(
           self.remote_project.project_id,
           self.analysis_project.project_id,
-          None,
           self.analysis_project.default_zone,
           disk_name=disk.name)
       self.logger.info('Disk {0:s} successfully copied to {1:s}'.format(
