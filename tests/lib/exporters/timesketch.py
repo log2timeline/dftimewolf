@@ -96,6 +96,42 @@ class TimesketchExporterTest(unittest.TestCase):
         'Your Timesketch URL is: timesketch.com/sketches/1234/')
     self.assertEqual(report.text_format, 'markdown')
 
+  # pylint: disable=invalid-name
+  @mock.patch('time.sleep')
+  @mock.patch('timesketch_import_client.importer.ImportStreamer')
+  @mock.patch('dftimewolf.lib.timesketch_utils.GetApiClient')
+  def testWaitForTimeline(self, mock_GetApiClient, unused_streamer, unused_sleep):
+    """Tests the SetUp function."""
+    mock_sketch = mock.Mock()
+    mock_sketch.id = 1234
+    mock_sketch.my_acl = ['write']
+    mock_sketch.api.api_root = 'timesketch.com/api/v1'
+
+    mock_api_client = mock.Mock()
+    mock_api_client.get_sketch.return_value = mock_sketch
+    mock_api_client.create_sketch.return_value = mock_sketch
+    # We also mock the attributes for the underlying .client object
+    mock_api_client.client.get_sketch.return_value = mock_sketch
+    mock_api_client.client.create_sketch.return_value = mock_sketch
+    mock_GetApiClient.return_value = mock_api_client
+
+    mock_timeline = mock.Mock()
+    mock_timeline.status = 'ready'
+
+    mock_sketch.list_timelines.return_value = [mock_timeline]
+
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.recipe = {'name': 'test_recipe'}
+    timesketch_exporter = timesketch.TimesketchExporter(test_state)
+    timesketch_exporter.SetUp(
+        incident_id=None,
+        sketch_id=None,
+        analyzers=None,
+        wait_for_timelines=True
+    )
+    timesketch_exporter.Process()
+    mock_sketch.list_timelines.assert_called_once()
+
 
 if __name__ == '__main__':
   unittest.main()
