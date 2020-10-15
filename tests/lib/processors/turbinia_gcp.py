@@ -42,6 +42,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     turbinia_processor = turbinia_gcp.TurbiniaGCPProcessor(test_state)
     turbinia_processor.SetUp(
+        turbinia_config_file=None,
         disk_name='disk-1',
         project='turbinia-project',
         turbinia_zone='europe-west1',
@@ -70,6 +71,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
     turbinia_processor = turbinia_gcp.TurbiniaGCPProcessor(test_state)
     with self.assertRaises(errors.DFTimewolfError) as error:
       turbinia_processor.SetUp(
+          turbinia_config_file=None,
           disk_name='disk-1',
           project='turbinia-wrong-project',
           turbinia_zone='europe-west1',
@@ -93,6 +95,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
     """Tests that invalid setup options generate errors."""
     params = [
         {
+             'turbinia_config_file': None,
             'disk_name': 'disk-1',
             'project': None,
             'turbinia_zone': 'europe-west1',
@@ -100,6 +103,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
             'run_all_jobs': False,
         },
         {
+             'turbinia_config_file': None,
             'disk_name': 'disk-1',
             'project': 'turbinia-project',
             'turbinia_zone': None,
@@ -139,6 +143,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     turbinia_processor = turbinia_gcp.TurbiniaGCPProcessor(test_state)
     turbinia_processor.SetUp(
+        turbinia_config_file=None,
         disk_name='disk-1',
         project='turbinia-project',
         turbinia_zone='europe-west1',
