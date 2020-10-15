@@ -4,6 +4,39 @@
 from dftimewolf.lib.containers import interface
 
 
+class FSPath(interface.AttributeContainer):
+  """Filesystem path container.
+  Attributes:
+    path (str): Filesystem path
+  """
+  CONTAINER_TYPE = 'fspath'
+
+  def __init__(self, path=None):
+    """Initializes the FSPath object.
+    Args:
+      path (str): Filesystem path
+    """
+    super(FSPath, self).__init__()
+    self.path = path
+
+
+class RemoteFSPath(FSPath):
+  """Remote Filesystem path container.
+  Attributes:
+    hostname (str): Hostname where the file is located
+  """
+  CONTAINER_TYPE = 'remotefspath'
+
+  def __init__(self, path=None, hostname=None):
+    """Initializes the FSPath object.
+    Args:
+      path (str): Filesystem path
+      hostname (str): Hostname where the file is located
+    """
+    super(RemoteFSPath, self).__init__(path=path)
+    self.hostname = hostname
+
+
 class Report(interface.AttributeContainer):
   """Analysis report attribute container.
 

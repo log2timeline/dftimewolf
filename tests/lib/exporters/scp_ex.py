@@ -28,7 +28,7 @@ class LocalFileSystemTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     scp_exporter = scp_ex.SCPExporter(test_state)
     scp_exporter.SetUp('/path1,/path2', '/destination', 'fakeuser',
-                       'fakehost', 'fakeid', True)
+                       'fakehost', 'fakeid', 'upload', True)
 
     mock_subprocess_call.assert_called_with(
         ['ssh', '-q', '-l', 'fakeuser', 'fakehost', 'true', '-i', 'fakeid'])
@@ -46,21 +46,37 @@ class LocalFileSystemTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     scp_exporter = scp_ex.SCPExporter(test_state)
     scp_exporter.SetUp('/path1,/path2', '/destination', 'fakeuser',
-                       'fakehost', 'fakeid', True)
+                       'fakehost', 'fakeid', 'upload', True)
     scp_exporter.Process()
 
     mock_subprocess_call.assert_called_with(
-        ['scp', '/path1', '/path2', 'fakeuser@fakehost:/destination'])
+        ['scp', '-i', 'fakeid', '/path1', '/path2',
+        'fakeuser@fakehost:/destination'])
+
+  @mock.patch('subprocess.call')
+  def testProcessDownload(self, mock_subprocess_call):
+    """Tests that the specified directory is used if created."""
+    mock_subprocess_call.return_value = 0
+    test_state = state.DFTimewolfState(config.Config)
+    scp_exporter = scp_ex.SCPExporter(test_state)
+    scp_exporter.SetUp('/path1,/path2', '/destination', 'fakeuser',
+                       'fakehost', 'fakeid', 'download', True)
+    scp_exporter.Process()
+
+    mock_subprocess_call.assert_called_with(
+        ['scp', '-i', 'fakeid',
+        'fakeuser@fakehost:/path1', 'fakeuser@fakehost:/path2',
+        '/destination'])
 
   @mock.patch('subprocess.call')
   def testSetupError(self, mock_subprocess_call):
-    """Tests that the specified directory is used if created."""
+    """Tests that recipe errors out if connection check fails."""
     mock_subprocess_call.return_value = -1
     test_state = state.DFTimewolfState(config.Config)
     scp_exporter = scp_ex.SCPExporter(test_state)
     with self.assertRaises(errors.DFTimewolfError) as error:
       scp_exporter.SetUp('/path1,/path2', '/destination', 'fakeuser',
-                         'fakehost', 'fakeid', True)
+                         'fakehost', 'fakeid', 'upload', True)
 
     self.assertEqual(test_state.errors[0], error.exception)
     self.assertEqual(error.exception.message, 'Unable to connect to host.')
@@ -72,8 +88,9 @@ class LocalFileSystemTest(unittest.TestCase):
     mock_subprocess_call.return_value = 0
     test_state = state.DFTimewolfState(config.Config)
     scp_exporter = scp_ex.SCPExporter(test_state)
+    scp_exporter._CreateDestinationDirectory = mock.Mock()
     scp_exporter.SetUp('/path1,/path2', '/destination', 'fakeuser',
-                       'fakehost', 'fakeid', True)
+                       'fakehost', 'fakeid', 'upload', True)
 
     mock_subprocess_call.return_value = -1
     with self.assertRaises(errors.DFTimewolfError) as error:
@@ -83,6 +100,25 @@ class LocalFileSystemTest(unittest.TestCase):
     self.assertEqual(error.exception.message,
                      "Failed copying ['/path1', '/path2']")
     self.assertTrue(error.exception.critical)
+
+  @mock.patch('subprocess.call')
+  def testCreateDestinationDirectory(self, mock_subprocess_call):
+    """Tests that the remote directory is created as expected."""
+    mock_subprocess_call.return_value = 0
+    test_state = state.DFTimewolfState(config.Config)
+    scp_exporter = scp_ex.SCPExporter(test_state)
+    scp_exporter.SetUp('/path1,/path2', '/destination', 'fakeuser',
+                       'fakehost', 'fakeid', 'upload', False)
+
+    # pytlint: disable=protected-access
+    scp_exporter._CreateDestinationDirectory(remote=True)
+    mock_subprocess_call.assert_called_with(
+      ['ssh', 'fakeuser@fakehost', 'mkdir', '-p', '/destination']
+    )
+    scp_exporter._CreateDestinationDirectory(remote=False)
+    mock_subprocess_call.assert_called_with(
+      ['mkdir', '-p', '/destination']
+    )
 
 
 if __name__ == '__main__':
