@@ -23,6 +23,7 @@ class TurbiniaProcessorBase(module.BaseModule):
   """Base class for processing with Turbinia.
 
   Attributes:
+    turbinia_config_file (str): Full path to the Turbinia config file to use.
     client (TurbiniaClient): Turbinia client.
     instance (str): name of the Turbinia instance
     project (str): name of the GPC project containing the disk to process.
@@ -41,6 +42,7 @@ class TurbiniaProcessorBase(module.BaseModule):
           the entire recipe to fail if the module encounters an error.
     """
     super(TurbiniaProcessorBase, self).__init__(state, critical=critical)
+    self.turbinia_config_file = None
     self._output_path = None
     self.client = None
     self.instance = None
@@ -129,7 +131,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.sketch_id = sketch_id
     self.run_all_jobs = run_all_jobs
 
-    turbinia_config.LoadConfig()
+    turbinia_config.LoadConfig(config_file=self.turbinia_config_file)
     if not self.project:
       self.project = turbinia_config.TURBINIA_PROJECT
     if not self.turbinia_zone:
@@ -243,10 +245,17 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase):
     self.disk_name = None
 
   # pylint: disable=arguments-differ
-  def SetUp(self, disk_name, project, turbinia_zone, sketch_id, run_all_jobs):
+  def SetUp(self,
+            turbinia_config_file,
+            disk_name,
+            project,
+            turbinia_zone,
+            sketch_id,
+            run_all_jobs):
     """Sets up the object attributes.
 
     Args:
+      turbinia_config_file (str): Full path to the Turbinia config file to use.
       disk_name (str): name of the disk to process.
       project (str): name of the GPC project containing the disk to process.
       turbinia_zone (str): GCP zone in which the Turbinia server is running.
@@ -256,6 +265,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase):
     # TODO: Consider the case when multiple disks are provided by the previous
     # module or by the CLI.
 
+    self.turbinia_config_file = turbinia_config_file
     self.disk_name = disk_name
 
     try:

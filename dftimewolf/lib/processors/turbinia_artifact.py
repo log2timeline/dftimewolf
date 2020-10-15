@@ -35,19 +35,25 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase):
     self.directory_path = None
 
   # pylint: disable=arguments-differ
-  def SetUp(
-      self, project, turbinia_zone, directory_path, sketch_id, run_all_jobs):
+  def SetUp(self,
+            turbinia_config_file,
+            project,
+            turbinia_zone,
+            directory_path,
+            sketch_id,
+            run_all_jobs):
     """Sets up the object attributes.
 
     Args:
+      turbinia_config_file (str): Full path to the Turbinia config file to use.
       project (str): name of the GPC project containing the disk to process.
       turbinia_zone (str): GCP zone in which the Turbinia server is running.
       directory_path (str): Name of the directory to process.
       sketch_id (int): The Timesketch sketch ID.
       run_all_jobs (bool): Whether to run all jobs instead of a faster subset.
     """
+    self.turbinia_config_file = turbinia_config_file
     self.directory_path = directory_path
-
     try:
       self.TurbiniaSetUp(project, turbinia_zone, sketch_id, run_all_jobs)
     except TurbiniaException as exception:
