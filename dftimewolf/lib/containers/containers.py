@@ -6,8 +6,9 @@ from dftimewolf.lib.containers import interface
 
 class FSPath(interface.AttributeContainer):
   """Filesystem path container.
+
   Attributes:
-    path (str): Filesystem path
+    path (str): Filesystem path.
   """
   CONTAINER_TYPE = 'fspath'
 
@@ -22,8 +23,10 @@ class FSPath(interface.AttributeContainer):
 
 class RemoteFSPath(FSPath):
   """Remote Filesystem path container.
+
   Attributes:
-    hostname (str): Hostname where the file is located
+    hostname (str): Hostname where the file is located.
+    path (str): Filesystem path.
   """
   CONTAINER_TYPE = 'remotefspath'
 
@@ -44,7 +47,7 @@ class Report(interface.AttributeContainer):
     module_name (str): name of the module that generated the report.
     text (str): report text.
     text_format (str): format of text in the report. Must be either 'plaintext'
-      or 'markdown'
+      or 'markdown'.
     attributes (list): attribute list, dicts must contain 'name',
       'type', 'values' keys.
   """
@@ -103,9 +106,9 @@ class ThreatIntelligence(interface.AttributeContainer):
   """Threat Intelligence attribute container.
 
   Attributes:
-    name (string): name of the threat
-    indicator (string): regular expression relevant to a threat
-    path (string): path to the indicator data (e.g. file)
+    name (string): name of the threat.
+    indicator (string): regular expression relevant to a threat.
+    path (string): path to the indicator data (e.g. file).
   """
   CONTAINER_TYPE = 'threat_intelligence'
 
@@ -113,8 +116,8 @@ class ThreatIntelligence(interface.AttributeContainer):
     """Initializes the Threat Intelligence container.
 
     Args:
-      name (string): name of the threat
-      indicator (string): regular expression relevant to a threat
+      name (string): name of the threat.
+      indicator (string): regular expression relevant to a threat.
       path (string): path to the indicator data (e.g. file)
     """
     super(ThreatIntelligence, self).__init__()
@@ -170,10 +173,10 @@ class ForensicsVM(interface.AttributeContainer):
   """Attribute container definition for a forensics virtual machine.
 
   Attributes:
-    name (str): Identifying name for the virtual machine
+    name (str): Identifying name for the virtual machine.
     evidence_disk (libcloudforensics.GoogleComputeDisk): The disk containing
         the forensic evidence. Full definition in
-        libcloudforensics.providers.gcp.internal.GoogleComputeDisk
+        libcloudforensics.providers.gcp.internal.GoogleComputeDisk.
     platform (str): The cloud platform where the VM is located. One of
         {gcp,aws,azure}.
   """
