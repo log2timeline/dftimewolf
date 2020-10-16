@@ -88,6 +88,7 @@ class LocalFileSystemTest(unittest.TestCase):
     mock_subprocess_call.return_value = 0
     test_state = state.DFTimewolfState(config.Config)
     scp_exporter = scp_ex.SCPExporter(test_state)
+    # pylint: disable=protected-access
     scp_exporter._CreateDestinationDirectory = mock.Mock()
     scp_exporter.SetUp('/path1,/path2', '/destination', 'fakeuser',
                        'fakehost', 'fakeid', 'upload', True)
@@ -110,7 +111,7 @@ class LocalFileSystemTest(unittest.TestCase):
     scp_exporter.SetUp('/path1,/path2', '/destination', 'fakeuser',
                        'fakehost', 'fakeid', 'upload', False)
 
-    # pytlint: disable=protected-access
+    # pylint: disable=protected-access
     scp_exporter._CreateDestinationDirectory(remote=True)
     mock_subprocess_call.assert_called_with(
       ['ssh', 'fakeuser@fakehost', 'mkdir', '-p', '/destination']
