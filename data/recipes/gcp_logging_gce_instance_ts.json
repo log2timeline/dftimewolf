@@ -19,7 +19,8 @@
         "args": {
             "incident_id": "@incident_id",
             "token_password": "@token_password",
-            "sketch_id": "@sketch_id"
+            "sketch_id": "@sketch_id",
+            "wait_for_timelines": "@wait_for_timelines"
         }
     }],
     "args": [
@@ -27,6 +28,7 @@
         ["instance_id", "Identifier for GCE instance", null],
         ["--incident_id", "Incident ID (used for Timesketch description)", null],
         ["--sketch_id", "Sketch to which the timeline should be added", null],
-        ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""]
+        ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
+        ["--wait_for_timelines", "Whether to wait for timelines to finish processing.", true]
     ]
 }
