@@ -4,10 +4,10 @@
 
 Ideally you'll want to install dftimewolf in its own virtual environment.
 
-```
-$ git clone https://github.com/log2timeline/dftimewolf.git && cd dftimewolf
-$ pip install -r requirements.txt
-$ pip install -e .
+```code
+git clone https://github.com/log2timeline/dftimewolf.git && cd dftimewolf
+pip install -r requirements.txt
+pip install -e .
 ```
 
 <div class="admonition note">
@@ -18,64 +18,80 @@ $ pip install -e .
 
 You can then invoke the `dftimewolf` command from any directory.
 
-You can still use `python setup.py install` or `pip install -e .` if you'd rather
-install dftimewolf this way.
-
+You can also install dfTimewolf the SetupTools way: `python setup.py install`
 
 ## Quick how-to
 
 dfTimewolf is typically run by specifying a recipe name and any arguments the
 recipe defines. For example:
 
+```code
+dftimewolf local_plaso /tmp/path1,/tmp/path2 --incident_id 12345
 ```
-$ dftimewolf local_plaso /tmp/path1,/tmp/path2 --incident_id 12345
-```
-This will launch the local_plaso recipe against `path1` and `path2` in `/tmp`. In this
-recipe `--incident_id` is used by Timesketch as a sketch description.
+
+This will launch the local_plaso recipe against `path1` and `path2` in `/tmp`.
+In this recipe `--incident_id` is used by Timesketch as a sketch description.
 
 Details on a recipe can be obtained using the standard python help flags:
 
-```
+```code
 $ dftimewolf -h
+[2020-10-06 14:29:42,111] [dftimewolf          ] INFO     Logging to stdout and /tmp/dftimewolf.log
+[2020-10-06 14:29:42,111] [dftimewolf          ] DEBUG    Recipe data path: /Users/tomchop/code/dftimewolf/data
+[2020-10-06 14:29:42,112] [dftimewolf          ] DEBUG    Configuration loaded from: /Users/tomchop/code/dftimewolf/data/config.json
 usage: dftimewolf [-h]
-                  {grr_huntresults_plaso_timesketch,local_plaso,...}
+                             {aws_forensics,gce_disk_export,gcp_forensics,gcp_logging_cloudaudit_ts,gcp_logging_cloudsql_ts,...}
 
 Available recipes:
 
- local_plaso                        Processes a list of file paths using plaso and sends results to Timesketch.
+ aws_forensics                      Copies a volume from an AWS account to an analysis VM.
+ gce_disk_export                    Export disk image from a GCP project to Google Cloud Storage.
+ gcp_forensics                      Copies disk from a GCP project to an analysis VM.
+ gcp_logging_cloudaudit_ts          Collects GCP logs from a project and exports them to Timesketch.
+ [...]
 
 positional arguments:
-  {grr_huntresults_plaso_timesketch,local_plaso,...}
+  {aws_forensics,gce_disk_export,gcp_forensics,gcp_logging_cloudaudit_ts,...}
 
 optional arguments:
   -h, --help            show this help message and exit
 ```
 
-To get more help on a recipe's specific flags, specify a recipe name before
-the `-h` flag:
+To get details on an individual recipe, call the recipe with the `-h` flag.
 
-```
-$ dftimewolf local_plaso -h
-usage: dftimewolf local_plaso [-h] [--incident_id INCIDENT_ID]
-                              [--sketch_id SKETCH_ID]
-                              paths
+```code
+$ dftimewolf gcp_forensics -h
+[...]
+usage: dftimewolf gcp_forensics [-h] [--instance INSTANCE]
+                                           [--disks DISKS] [--all_disks]
+                                           [--analysis_project_name ANALYSIS_PROJECT_NAME]
+                                           [--boot_disk_size BOOT_DISK_SIZE]
+                                           [--boot_disk_type BOOT_DISK_TYPE]
+                                           [--zone ZONE]
+                                           remote_project_name incident_id
 
-Analyze local file paths with plaso and send results to Timesketch.
-
-- Collectors collect from a path in the FS
-- Processes them with a local install of plaso
-- Exports them to a new Timesketch sketch
+Copies a disk from a project to another, creates an analysis VM, and attaches the copied disk to it.
 
 positional arguments:
-  paths                 Paths to process
+  remote_project_name   Name of the project containing the instance / disks to
+                        copy
+  incident_id           Incident ID to label the VM with.
 
 optional arguments:
   -h, --help            show this help message and exit
-  --incident_id INCIDENT_ID
-                        Incident ID (used for Timesketch description)
-                        (default: None)
-  --sketch_id SKETCH_ID
-                        Sketch to which the timeline should be added (default:
-                        None)
-
+  --instance INSTANCE   Name of the instance to analyze. (default: None)
+  --disks DISKS         Comma-separated list of disks to copy. (default: None)
+  --all_disks           Copy all disks in the designated instance. Overrides
+                        disk_names if specified (default: False)
+  --analysis_project_name ANALYSIS_PROJECT_NAME
+                        Name of the project where the analysis VM will be
+                        created (default: None)
+  --boot_disk_size BOOT_DISK_SIZE
+                        The size of the analysis VM boot disk (in GB)
+                        (default: 50.0)
+  --boot_disk_type BOOT_DISK_TYPE
+                        Disk type to use [pd-standard, pd-ssd] (default: pd-
+                        standard)
+  --zone ZONE           The GCP zone where the Analysis VM and copied disks
+                        will be created (default: us-central1-f)
 ```

@@ -19,7 +19,5 @@ data on to one another. How modules are orchestrated is defined in predefined
 
   * [Getting started](getting-started.md)
   * [User manual](user-manual.md)
-  * [Recipe list](recipe-list.md)
-  * [Module list](module-list.md)
   * [Developer's guide](developers-guide.md)
   * [Architecture](architecture.md)
