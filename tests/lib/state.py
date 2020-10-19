@@ -50,6 +50,18 @@ class StateTest(unittest.TestCase):
     self.assertIn('DummyPreflightModule', test_state._module_pool)
     self.assertEqual(len(test_state._module_pool), 3)
 
+  def testLoadRecipeWithRuntimeNames(self):
+    """Tests that a recipe can be loaded correctly."""
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.LoadRecipe(test_recipe.named_modules_contents)
+    # pylint: disable=protected-access
+    self.assertIn('DummyModule1', test_state._module_pool)
+    self.assertIn('DummyModule2', test_state._module_pool)
+    self.assertIn('DummyModule1-2', test_state._module_pool)
+    self.assertIn('DummyModule2-2', test_state._module_pool)
+    self.assertIn('DummyPreflightModule', test_state._module_pool)
+    self.assertEqual(len(test_state._module_pool), 5)
+
   def testStoreContainer(self):
     """Tests that containers are stored correctly."""
     test_state = state.DFTimewolfState(config.Config)

@@ -8,8 +8,8 @@ from dftimewolf.lib.containers import containers
 class DummyModule1(module.BaseModule):
   """This is a dummy module."""
 
-  def __init__(self, state):
-    super(DummyModule1, self).__init__(state)
+  def __init__(self, state, name=None):
+    super(DummyModule1, self).__init__(state, name)
 
   def SetUp(self):  # pylint: disable=arguments-differ
     """Dummy setup function."""
@@ -27,8 +27,8 @@ class DummyModule1(module.BaseModule):
 class DummyModule2(module.BaseModule):
   """This is a dummy module."""
 
-  def __init__(self, state):
-    super(DummyModule2, self).__init__(state)
+  def __init__(self, state, name=None):
+    super(DummyModule2, self).__init__(state, name)
 
   def SetUp(self):  # pylint: disable=arguments-differ
     """Dummy setup function."""
@@ -41,8 +41,8 @@ class DummyModule2(module.BaseModule):
 class DummyPreflightModule(module.PreflightModule):
   """Dummy preflight module."""
 
-  def __init__(self, state):
-    super(DummyPreflightModule, self).__init__(state)
+  def __init__(self, state, name=None):
+    super(DummyPreflightModule, self).__init__(state, name)
 
   def SetUp(self, args):  # pylint: disable=arguments-differ
     """Dummy Process function."""

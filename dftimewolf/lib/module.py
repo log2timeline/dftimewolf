@@ -19,6 +19,8 @@ class BaseModule(object):
     critical (bool): True if this module is critical to the execution of
         the recipe. If set to True, and the module fails to properly run,
         the recipe will be aborted.
+    name (str): A unique name for a specific instance of the module
+          class. If not provided, will default to the module's class name.
     state (DFTimewolfState): recipe state.
   """
 
@@ -33,7 +35,7 @@ class BaseModule(object):
           the entire recipe to fail if the module encounters an error.
     """
     super(BaseModule, self).__init__()
-    self.name = name if name else self.__class__.name
+    self.name = name if name else self.__class__.__name__
     self.critical = critical
     self.state = state
     self.SetupLogging()
@@ -55,11 +57,6 @@ class BaseModule(object):
     console_handler.setFormatter(formatter)
 
     self.logger.addHandler(console_handler)
-
-  @property
-  def name(self):
-    """Returns the name for this module."""
-    return self.name
 
   def CleanUp(self):
     """Cleans up module output to prepare it for the next module."""

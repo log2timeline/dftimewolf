@@ -93,7 +93,10 @@ class DFTimewolfState(object):
         raise errors.RecipeParseError(
             'Recipe uses unknown module: {0:s}'.format(module_name))
 
-      self._module_pool[module_name] = module_class(self)
+      runtime_name = module_definition.get('runtime_name')
+      if not runtime_name:
+        runtime_name = module_name
+      self._module_pool[runtime_name] = module_class(self, name=runtime_name)
 
   def AddToCache(self, name, value):
     """Thread-safe method to add data to the state's cache.
