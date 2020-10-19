@@ -9,10 +9,12 @@ class DummyModule1(module.BaseModule):
   """This is a dummy module."""
 
   def __init__(self, state, name=None):
+    self.runtime_value = None
     super(DummyModule1, self).__init__(state, name)
 
-  def SetUp(self):  # pylint: disable=arguments-differ
+  def SetUp(self, runtime_value=None):  # pylint: disable=arguments-differ
     """Dummy setup function."""
+    self.runtime_value = runtime_value
     print(self.name + ' Setup!')
     self.state.RegisterStreamingCallback(self.Callback, containers.Report)
 
@@ -28,10 +30,12 @@ class DummyModule2(module.BaseModule):
   """This is a dummy module."""
 
   def __init__(self, state, name=None):
+    self.runtime_value = None
     super(DummyModule2, self).__init__(state, name)
 
-  def SetUp(self):  # pylint: disable=arguments-differ
+  def SetUp(self, runtime_value=None):  # pylint: disable=arguments-differ
     """Dummy setup function."""
+    self.runtime_value = runtime_value
     print(self.name + ' Setup!')
 
   def Process(self):

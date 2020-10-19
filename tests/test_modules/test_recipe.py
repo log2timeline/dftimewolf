@@ -29,21 +29,29 @@ named_modules_contents = {
     'modules': [{
         'wants': [],
         'name': 'DummyModule1',
-        'args': {},
+        'args': {
+            'runtime_value': '1-1'
+        },
     }, {
         'wants': ['DummyModule1'],
         'name': 'DummyModule2',
-        'args': {},
+        'args': {
+            'runtime_value': '2-1'
+        },
     }, {
         'wants': ['DummyModule2'],
         'name': 'DummyModule1',
         'runtime_name': 'DummyModule1-2',
-        'args': {},
+        'args': {
+            'runtime_value': '1-2'
+        },
     }, {
         'wants': ['DummyModule1-2'],
         'name': 'DummyModule2',
         'runtime_name': 'DummyModule2-2',
-        'args': {},
+        'args': {
+            'runtime_value': '2-2'
+        },
     }]
 }
 
