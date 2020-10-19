@@ -99,7 +99,7 @@ class LocalFileSystemTest(unittest.TestCase):
 
     self.assertEqual(test_state.errors[0], error.exception)
     self.assertEqual(error.exception.message,
-                     "Failed creating destination directory, bailing.")
+                     "Failed copying ['/path1', '/path2']")
     self.assertTrue(error.exception.critical)
 
   @mock.patch('subprocess.call')
