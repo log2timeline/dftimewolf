@@ -33,6 +33,7 @@ class LocalFilesystemCopy(module.BaseModule):
       target_directory = tempfile.mkdtemp(prefix='dftimewolf_local_fs')
     elif os.path.exists(target_directory):
       target_directory = os.path.join(target_directory, 'dftimewolf')
+      os.makedirs(target_directory, exist_ok=True)
     self._target_directory = target_directory
 
   def Process(self):
@@ -41,11 +42,10 @@ class LocalFilesystemCopy(module.BaseModule):
       try:
         self._CopyFileOrDirectory(file_container.path, self._target_directory)
       except OSError as exception:
-        self.state.AddError(
+        self.ModuleError(
             'Could not copy files to {0:s}: {1!s}'.format(
                 self._target_directory, exception),
             critical=True)
-        return
       self.logger.info('{0:s} -> {1:s}'.format(
           file_container.path, self._target_directory))
 

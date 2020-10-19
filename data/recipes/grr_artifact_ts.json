@@ -15,6 +15,7 @@
             "extra_artifacts": "@extra_artifacts",
             "use_tsk": "@use_tsk",
             "approvers": "@approvers",
+            "skip_offline_clients": "@skip_offline_clients",
             "verify": "@verify"
         }
     }, {
@@ -29,7 +30,8 @@
         "args": {
             "incident_id": "@reason",
             "token_password": "@token_password",
-            "sketch_id": "@sketch_id"
+            "sketch_id": "@sketch_id",
+            "wait_for_timelines": "@wait_for_timelines"
         }
     }],
     "args": [
@@ -40,10 +42,12 @@
         ["--use_tsk", "Use TSK to fetch artifacts", false],
         ["--approvers", "Emails for GRR approval request", null],
         ["--sketch_id", "Sketch to which the timeline should be added", null],
+        ["--wait_for_timelines", "Whether to wait for timelines to finish processing.", true],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
         ["--incident_id", "Incident ID (used for Timesketch description)", null],
         ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
         ["--verify", "Whether to verify the GRR TLS certificate", true],
+        ["--skip_offline_clients", "Whether to skip clients that are offline", false],
         ["--grr_username", "GRR username", "admin"],
         ["--grr_password", "GRR password", "admin"]
     ]

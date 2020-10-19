@@ -29,6 +29,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
   """
   _CHECK_APPROVAL_INTERVAL_SEC = 10
   _CHECK_FLOW_INTERVAL_SEC = 10
+  _MAX_OFFLINE_TIME_SEC = 3600  # One hour
 
   _CLIENT_ID_REGEX = re.compile(r'^c\.[0-9a-f]{16}$', re.IGNORECASE)
 
@@ -42,39 +43,64 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     """
     super(GRRFlow, self).__init__(state, critical=critical)
     self.keepalive = False
+    self._skipped_flows = []
+    self.skip_offline_clients = False
 
-  # TODO: change object to more specific GRR type information.
-  def _GetClientByHostname(self, hostname):
-    """Searches GRR by hostname and get the latest active client.
+  # pylint: disable=arguments-differ,too-many-arguments
+  def SetUp(
+      self, reason, grr_server_url, grr_username, grr_password, approvers=None,
+      verify=True, skip_offline_clients=False):
+    """Initializes a GRR hunt result collector.
 
     Args:
-      hostname (str): hostname to search for.
+      reason (str): justification for GRR access.
+      grr_server_url (str): GRR server URL.
+      grr_username (str): GRR username.
+      grr_password (str): GRR password.
+      approvers (Optional[str]): comma-separated GRR approval recipients.
+      verify (Optional[bool]): True to indicate GRR server's x509 certificate
+          should be verified.
+      skip_offline_clients (Optional[bool]): Whether to wait for flows
+          to complete on clients that have been offline for more than an hour.
+    """
+    self.skip_offline_clients = skip_offline_clients
+    super(GRRFlow, self).SetUp(
+        reason, grr_server_url, grr_username, grr_password,
+        approvers=approvers, verify=verify)
+
+  # TODO: change object to more specific GRR type information.
+  def _GetClientBySelector(self, selector):
+    """Searches GRR by selector and get the latest active client.
+
+    Args:
+      selector (str): selector to search for. This can be a hostname or GRR
+          client ID.
 
     Returns:
       object: GRR API Client object
 
     Raises:
-      DFTimewolfError: if no client ID found for hostname.
+      DFTimewolfError: if no client ID found for selector.
     """
-    # Search for the hostname in GRR
-    self.logger.info('Searching for client: {0:s}'.format(hostname))
+    # Search for the selector in GRR
+    self.logger.info('Searching for client: {0:s}'.format(selector))
     try:
-      search_result = self.grr_api.SearchClients(hostname)
+      search_result = self.grr_api.SearchClients(selector)
     except grr_errors.UnknownError as exception:
-      self.state.AddError('Could not search for host {0:s}: {1!s}'.format(
-          hostname, exception
+      self.ModuleError('Could not search for host {0:s}: {1!s}'.format(
+          selector, exception
       ), critical=True)
-      return None
 
     result = []
     for client in search_result:
-      if hostname.lower() in client.data.os_info.fqdn.lower():
+      fqdn = client.data.os_info.fqdn.lower()
+      client_id = client.data.client_id.lower()
+      if selector.lower() in fqdn or selector.lower() in client_id:
         result.append((client.data.last_seen_at, client))
 
     if not result:
-      self.state.AddError('Could not get client_id for {0:s}'.format(
-          hostname), critical=True)
-      return None
+      self.ModuleError('Could not get client for {0:s}'.format(
+          selector), critical=True)
 
     last_seen, client = sorted(result, key=lambda x: x[0], reverse=True)[0]
     # Remove microseconds and create datetime object
@@ -95,20 +121,22 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     return client
 
   # TODO: change object to more specific GRR type information.
-  def _FindClients(self, hosts):
-    """Finds GRR clients given a list of hosts.
+  def _FindClients(self, selectors):
+    """Finds GRR clients given a list of selectors.
 
     Args:
-      hosts (list[str]): FQDNs of hosts.
+      selectors (list[str]): FQDNs or client IDs to search for.
 
     Returns:
       list[object]: GRR client objects.
     """
     # TODO(tomchop): Thread this
     clients = []
-    for host in hosts:
-      clients.append(self._GetClientByHostname(host))
-    return [client for client in clients if client is not None]
+    for selector in selectors:
+      client = self._GetClientBySelector(selector)
+      if client is not None:
+        clients.append(client)
+    return clients
 
   # TODO: change object to more specific GRR type information.
   def _LaunchFlow(self, client, name, args):
@@ -150,19 +178,19 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
       flow_id (str): GRR identifier of the flow to await.
 
     Raises:
-      DFTimewolfError: if flow error encountered.
+      DFTimewolfError: If a Flow error was encountered.
     """
     self.logger.info('{0:s}: Waiting to finish'.format(flow_id))
+    if self.skip_offline_clients:
+      self.logger.info('Client will be skipped if offline.')
+
     while True:
       try:
         status = client.Flow(flow_id).Get().data
       except grr_errors.UnknownError:
         msg = 'Unable to stat flow {0:s} for host {1:s}'.format(
             flow_id, client.data.os_info.fqdn.lower())
-        self.state.AddError(msg)
-        raise DFTimewolfError(
-            'Unable to stat flow {0:s} for host {1:s}'.format(
-                flow_id, client.data.os_info.fqdn.lower()))
+        self.ModuleError(msg, critical=True)
 
       if status.state == flows_pb2.FlowContext.ERROR:
         # TODO(jbn): If one artifact fails, what happens? Test.
@@ -176,7 +204,38 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
       if status.state == flows_pb2.FlowContext.TERMINATED:
         self.logger.info('{0:s}: Complete'.format(flow_id))
         break
+
       time.sleep(self._CHECK_FLOW_INTERVAL_SEC)
+      if not self.skip_offline_clients:
+        continue
+
+      client_last_seen = datetime.datetime.fromtimestamp(
+          client.data.last_seen_at / 1000000, datetime.timezone.utc)
+      now = datetime.datetime.now(datetime.timezone.utc)
+      if (now - client_last_seen).total_seconds() > self._MAX_OFFLINE_TIME_SEC:
+        self.logger.warning(
+              'Client {0:s} has been offline for more than {1:.1f} minutes'
+              ', skipping...'.format(
+                  client.client_id, self._MAX_OFFLINE_TIME_SEC / 60))
+        self._skipped_flows.append((client.client_id, flow_id))
+        break
+
+  def _CheckSkippedFlows(self):
+    if not self._skipped_flows:
+      return
+
+    self.logger.warning(
+        'Skipped waiting for {0:d} flows because hosts were offline'.format(
+            len(self._skipped_flows)))
+    self.logger.warning(
+      'Run the grr_flow_collect recipe with --wait_for_offline_hosts in a'
+      ' tmux shell'
+    )
+    for client_id, flow_id in self._skipped_flows:
+      self.logger.warning(
+          'dftimewolf grr_flow_collect {0:s} {1:s} {2:s} /tmp/directory'.format(
+              client_id, flow_id, self.reason
+        ))
 
   # TODO: change object to more specific GRR type information.
   def _DownloadFiles(self, client, flow_id):
@@ -263,7 +322,7 @@ class GRRArtifactCollector(GRRFlow):
   def SetUp(self,
             hosts, artifacts, extra_artifacts, use_tsk,
             reason, grr_server_url, grr_username, grr_password, approvers=None,
-            verify=True):
+            verify=True, skip_offline_clients=False):
     """Initializes a GRR artifact collector.
 
     Args:
@@ -279,10 +338,12 @@ class GRRArtifactCollector(GRRFlow):
       approvers (Optional[str]): list of GRR approval recipients.
       verify (Optional[bool]): True to indicate GRR server's x509 certificate
           should be verified.
+      skip_offline_clients (Optional[bool]): Whether to wait for flows
+          to complete on clients that have been offline for more than an hour.
     """
     super(GRRArtifactCollector, self).SetUp(
         reason, grr_server_url, grr_username, grr_password, approvers=approvers,
-        verify=verify)
+        verify=verify, skip_offline_clients=skip_offline_clients)
 
     if artifacts is not None:
       self.artifacts = [item.strip() for item in artifacts.strip().split(',')]
@@ -337,8 +398,7 @@ class GRRArtifactCollector(GRRFlow):
     if not flow_id:
       msg = 'Flow could not be launched on {0:s}.'.format(client.client_id)
       msg += '\nArtifactCollectorFlow args: {0!s}'.format(flow_args)
-      self.state.AddError(msg, critical=True)
-      return
+      self.ModuleError(msg, critical=True)
     self._AwaitFlow(client, flow_id)
     collected_flow_data = self._DownloadFiles(client, flow_id)
 
@@ -359,7 +419,6 @@ class GRRArtifactCollector(GRRFlow):
     """
     threads = []
     for client in self._FindClients(self.hostnames):
-      self.logger.info(client)
       thread = threading.Thread(target=self._ProcessThread, args=(client, ))
       threads.append(thread)
       thread.start()
@@ -394,7 +453,7 @@ class GRRFileCollector(GRRFlow):
   def SetUp(self,
             hosts, files, use_tsk,
             reason, grr_server_url, grr_username, grr_password, approvers=None,
-            verify=True, action='download'):
+            verify=True, skip_offline_clients=False, action='download'):
     """Initializes a GRR file collector.
 
     Args:
@@ -408,11 +467,14 @@ class GRRFileCollector(GRRFlow):
       approvers (Optional[str]): list of GRR approval recipients.
       verify (Optional[bool]): True to indicate GRR server's x509 certificate
           should be verified.
+      skip_offline_clients (Optional[bool]): Whether to wait for flows
+          to complete on clients that have been offline for more than an hour.
       action (Optional[str]): Action (download/hash/stat) (default: download).
     """
     super(GRRFileCollector, self).SetUp(
         reason, grr_server_url, grr_username, grr_password,
-        approvers=approvers, verify=verify)
+        approvers=approvers, verify=verify,
+        skip_offline_clients=skip_offline_clients)
 
     if files is not None:
       self.files = [item.strip() for item in files.strip().split(',')]
@@ -423,8 +485,8 @@ class GRRFileCollector(GRRFlow):
     if action.lower() in self._ACTIONS:
       self.action = self._ACTIONS[action.lower()]
     if self.action is None:
-      self.state.AddError("Invalid action {0!s}".format(action),
-                          critical=True)
+      self.ModuleError("Invalid action {0!s}".format(action),
+                       critical=True)
 
   # TODO: change object to more specific GRR type information.
   def _ProcessThread(self, client):
@@ -472,6 +534,7 @@ class GRRFileCollector(GRRFlow):
     for thread in threads:
       thread.join()
 
+    self._CheckSkippedFlows()
 
 class GRRFlowCollector(GRRFlow):
   """Flow collector.
@@ -492,7 +555,7 @@ class GRRFlowCollector(GRRFlow):
   def SetUp(self,
             host, flow_id,
             reason, grr_server_url, grr_username, grr_password, approvers=None,
-            verify=True):
+            verify=True, skip_offline_clients=False):
     """Initializes a GRR flow collector.
 
     Args:
@@ -505,10 +568,14 @@ class GRRFlowCollector(GRRFlow):
       approvers (Optional[str]): list of GRR approval recipients.
       verify (Optional[bool]): True to indicate GRR server's x509 certificate
           should be verified.
+      skip_offline_clients (Optional[bool]): Whether to wait for flows
+          to complete on clients that have been offline for more than an hour.
     """
     super(GRRFlowCollector, self).SetUp(
         reason, grr_server_url, grr_username, grr_password,
-        approvers=approvers, verify=verify)
+        approvers=approvers, verify=verify,
+        skip_offline_clients=skip_offline_clients)
+
     self.flow_id = flow_id
     self.host = host
 
@@ -518,8 +585,11 @@ class GRRFlowCollector(GRRFlow):
     Raises:
       DFTimewolfError: if no files specified
     """
-    client = self._GetClientByHostname(self.host)
+    # TODO (tomchop): Change the host attribute into something more appropriate
+    # like 'selectors', and the corresponding recipes.
+    client = self._GetClientBySelector(self.host)
     self._AwaitFlow(client, self.flow_id)
+    self._CheckSkippedFlows()
     collected_flow_data = self._DownloadFiles(client, self.flow_id)
     if collected_flow_data:
       self.logger.info('{0:s}: Downloaded: {1:s}'.format(
@@ -547,11 +617,11 @@ class GRRTimelineCollector(GRRFlow):
 
   # We're overriding the behavior of GRRFlow's SetUp function to include new
   # parameters.
-  # pylint: disable=arguments-differ
+  # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
             hosts, root_path,
             reason, timeline_format, grr_server_url, grr_username, grr_password,
-            approvers=None, verify=True):
+            approvers=None, verify=True, skip_offline_clients=False):
     """Initializes a GRR timeline collector.
     Args:
       hosts (str): comma-separated hostnames to launch the flow on.
@@ -564,10 +634,13 @@ class GRRTimelineCollector(GRRFlow):
       approvers (Optional[str]): list of GRR approval recipients.
       verify (Optional[bool]): True to indicate GRR server's x509 certificate
           should be verified.
+      skip_offline_clients (Optional[bool]): Whether to wait for flows
+          to complete on clients that have been offline for more than an hour.
     """
     super(GRRTimelineCollector, self).SetUp(
         reason, grr_server_url, grr_username, grr_password,
-        approvers=approvers, verify=verify)
+        approvers=approvers, verify=verify,
+        skip_offline_clients=skip_offline_clients)
 
     if root_path is not None:
       self.root_path = root_path.strip()
@@ -576,7 +649,8 @@ class GRRTimelineCollector(GRRFlow):
     self._timeline_format = int(timeline_format)
     self.root_path = root_path.encode()
     if self._timeline_format not in [1, 2]:
-      self.state.AddError('Timeline format must be 1 (BODY) or 2 (RAW).', True)
+      self.ModuleError('Timeline format must be 1 (BODY) or 2 (RAW).',
+                       critical=True)
 
   # TODO: change object to more specific GRR type information.
   def _ProcessThread(self, client):
@@ -617,7 +691,7 @@ class GRRTimelineCollector(GRRFlow):
 
     for thread in threads:
       thread.join()
-
+    self._CheckSkippedFlows()
 
   def _DownloadTimeline(self, client, flow_id):
     """Download a timeline in BODY format from the specified flow.

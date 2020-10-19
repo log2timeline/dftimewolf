@@ -71,8 +71,14 @@ flow_pb_error = flow_pb2.ApiFlow(
     flow_id="F:12345",
     state=flows_pb2.FlowContext.ERROR
 )
+flow_pb_running= flow_pb2.ApiFlow(
+    urn="C.0000000000000001",
+    flow_id="F:12345",
+    state=flows_pb2.FlowContext.RUNNING
+)
 MOCK_FLOW = flow.Flow(data=flow_pb_terminated, context=True)
 MOCK_FLOW_ERROR = flow.Flow(data=flow_pb_error, context=True)
+MOCK_FLOW_RUNNING = flow.Flow(data=flow_pb_running, context=True)
 
 hunt_pb = hunt_pb2.ApiHunt(
     urn="hunts/12345",

@@ -64,7 +64,7 @@ if [[ "$*" =~ "include-grr" ]]; then
       -e ADMIN_PASSWORD="admin" \
       --ulimit nofile=1048576:1048576 \
       -p 127.0.0.1:8000:8000 -p 127.0.0.1:8080:8080 \
-      -d grrdocker/grr:v3.2.2.0 grr
+      -d grrdocker/grr:release grr
 
     # Wait for GRR to initialize.
     /bin/sleep 120
@@ -76,8 +76,7 @@ fi
 
 if [[ "$*" =~ "include-timesketch" ]]; then
     # Start the Timesketch server container.
-     export TIMESKETCH_USER="your_username"
-     export TIMESKETCH_PASSWORD="your_password"
+     export ELASTICSEARCH_VERSION=7.6.2
      git clone https://github.com/google/timesketch.git
      cd timesketch
      cd docker

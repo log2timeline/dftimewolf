@@ -59,7 +59,6 @@ class GoogleCloudCollector(module.BaseModule):
       new_disk = gcp_forensics.CreateDiskCopy(
           self.remote_project.project_id,
           self.analysis_project.project_id,
-          None,
           self.analysis_project.default_zone,
           disk_name=disk.name)
       self.logger.info('Disk {0:s} successfully copied to {1:s}'.format(
@@ -177,10 +176,10 @@ class GoogleCloudCollector(module.BaseModule):
 
     except (RefreshError,
             DefaultCredentialsError) as exception:
-      self.state.AddError(
-          'Something is wrong with your Application Default Credentials. '
-          'Try running:\n  $ gcloud auth application-default login')
-      self.state.AddError(exception, critical=True)
+      msg = ('Something is wrong with your Application Default Credentials. '
+             'Try running:\n  $ gcloud auth application-default login\n')
+      msg += str(exception)
+      self.ModuleError(msg, critical=True)
 
   def _GetDisksFromNames(self, disk_names):
     """Gets disks from a project by disk name.
@@ -196,7 +195,7 @@ class GoogleCloudCollector(module.BaseModule):
       try:
         disks.append(self.remote_project.compute.GetDisk(name))
       except RuntimeError:
-        self.state.AddError(
+        self.ModuleError(
             'Disk "{0:s}" was not found in project {1:s}'.format(
                 name, self.remote_project.project_id),
             critical=True)
@@ -216,8 +215,7 @@ class GoogleCloudCollector(module.BaseModule):
     try:
       remote_instance = self.remote_project.compute.GetInstance(instance_name)
     except RuntimeError as exception:
-      self.state.AddError(str(exception), critical=True)
-      return []
+      self.ModuleError(str(exception), critical=True)
 
     if all_disks:
       return list(remote_instance.ListDisks().values())
@@ -230,6 +228,10 @@ class GoogleCloudCollector(module.BaseModule):
       list[GoogleComputeDisk]: the disks to copy to the
           analysis project.
     """
+    if not (self.remote_instance_name or self.disk_names):
+      self.ModuleError(
+          'You need to specify at least an instance name or disks to copy',
+          critical=True)
 
     disks_to_copy = []
 
@@ -244,16 +246,18 @@ class GoogleCloudCollector(module.BaseModule):
 
     except HttpError as exception:
       if exception.resp.status == 403:
-        self.state.AddError(
-            'Make sure you have the appropriate permissions on the project')
+        self.ModuleError(
+            '403 response. Do you have appropriate permissions on the project?',
+            critical=True)
       if exception.resp.status == 404:
-        self.state.AddError(
+        self.ModuleError(
             'GCP resource not found. Maybe a typo in the project / instance / '
-            'disk name?')
-      self.state.AddError(str(exception), critical=True)
+            'disk name?',
+            critical=True)
+      self.ModuleError(str(exception), critical=True)
 
     if not disks_to_copy:
-      self.state.AddError(
+      self.ModuleError(
           'Could not find any disks to copy', critical=True)
 
     return disks_to_copy

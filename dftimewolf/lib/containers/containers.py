@@ -4,6 +4,44 @@
 from dftimewolf.lib.containers import interface
 
 
+class FSPath(interface.AttributeContainer):
+  """Filesystem path container.
+
+  Attributes:
+    path (str): Filesystem path.
+  """
+  CONTAINER_TYPE = 'fspath'
+
+  def __init__(self, path=None):
+    """Initializes the FSPath object.
+
+    Args:
+      path (str): Filesystem path
+    """
+    super(FSPath, self).__init__()
+    self.path = path
+
+
+class RemoteFSPath(FSPath):
+  """Remote Filesystem path container.
+
+  Attributes:
+    hostname (str): Hostname where the file is located.
+    path (str): Filesystem path.
+  """
+  CONTAINER_TYPE = 'remotefspath'
+
+  def __init__(self, path=None, hostname=None):
+    """Initializes the FSPath object.
+
+    Args:
+      path (str): Filesystem path
+      hostname (str): Hostname where the file is located
+    """
+    super(RemoteFSPath, self).__init__(path=path)
+    self.hostname = hostname
+
+
 class Report(interface.AttributeContainer):
   """Analysis report attribute container.
 
@@ -11,7 +49,7 @@ class Report(interface.AttributeContainer):
     module_name (str): name of the module that generated the report.
     text (str): report text.
     text_format (str): format of text in the report. Must be either 'plaintext'
-      or 'markdown'
+      or 'markdown'.
     attributes (list): attribute list, dicts must contain 'name',
       'type', 'values' keys.
   """
@@ -70,9 +108,9 @@ class ThreatIntelligence(interface.AttributeContainer):
   """Threat Intelligence attribute container.
 
   Attributes:
-    name (string): name of the threat
-    indicator (string): regular expression relevant to a threat
-    path (string): path to the indicator data (e.g. file)
+    name (string): name of the threat.
+    indicator (string): regular expression relevant to a threat.
+    path (string): path to the indicator data (e.g. file).
   """
   CONTAINER_TYPE = 'threat_intelligence'
 
@@ -80,8 +118,8 @@ class ThreatIntelligence(interface.AttributeContainer):
     """Initializes the Threat Intelligence container.
 
     Args:
-      name (string): name of the threat
-      indicator (string): regular expression relevant to a threat
+      name (string): name of the threat.
+      indicator (string): regular expression relevant to a threat.
       path (string): path to the indicator data (e.g. file)
     """
     super(ThreatIntelligence, self).__init__()
@@ -137,10 +175,10 @@ class ForensicsVM(interface.AttributeContainer):
   """Attribute container definition for a forensics virtual machine.
 
   Attributes:
-    name (str): Identifying name for the virtual machine
+    name (str): Identifying name for the virtual machine.
     evidence_disk (libcloudforensics.GoogleComputeDisk): The disk containing
         the forensic evidence. Full definition in
-        libcloudforensics.providers.gcp.internal.GoogleComputeDisk
+        libcloudforensics.providers.gcp.internal.GoogleComputeDisk.
     platform (str): The cloud platform where the VM is located. One of
         {gcp,aws,azure}.
   """
@@ -164,3 +202,21 @@ class URL(interface.AttributeContainer):
   def __init__(self, path):
     super(URL, self).__init__()
     self.path = path
+
+
+class DataFrame(interface.AttributeContainer):
+  """Attribute container definition for a Pandas DataFrame.
+
+  Attributes:
+    data_frame (pandas.DataFrame): DataFrame containing the data.
+    description (str): Description of the data in the data frame.
+    name (str): Name of the data frame.
+  """
+
+  CONTAINER_TYPE = 'data_frame'
+
+  def __init__(self, data_frame, description, name):
+    super(DataFrame, self).__init__()
+    self.data_frame = data_frame
+    self.description = description
+    self.name = name
