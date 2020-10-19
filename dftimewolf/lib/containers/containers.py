@@ -14,6 +14,7 @@ class FSPath(interface.AttributeContainer):
 
   def __init__(self, path=None):
     """Initializes the FSPath object.
+
     Args:
       path (str): Filesystem path
     """
@@ -32,6 +33,7 @@ class RemoteFSPath(FSPath):
 
   def __init__(self, path=None, hostname=None):
     """Initializes the FSPath object.
+
     Args:
       path (str): Filesystem path
       hostname (str): Hostname where the file is located
