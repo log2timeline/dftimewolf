@@ -38,20 +38,16 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
                 'project_id': 'ketchup-research'
             }
         },
-        'insertId':
-            '9g6l0dd4nlo',
-        'severity':
-            'NOTICE',
-        'timestamp':
-            '2019-06-06T09:00:41.797000Z',
+        'insertId': '9g6l0dd4nlo',
+        'severity': 'NOTICE',
+        'timestamp': '2019-06-06T09:00:41.797000Z',
         'operation': {
             'id': 'operation-1559811626986-58aa3f1f16a4c-6840f50a-8fab23b9',
             'producer': 'compute.googleapis.com',
             'last': True
         },
         'protoPayload': {
-            '@type':
-                'type.googleapis.com/google.cloud.audit.AuditLog',
+            '@type': 'type.googleapis.com/google.cloud.audit.AuditLog',
             'authenticationInfo': {
                 'principalEmail':
                     'heinz-57@ketchup-research.iam.gserviceaccount.com'
@@ -60,10 +56,8 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
                 'callerIp': 'gce-internal-ip',
                 'callerSuppliedUserAgent': 'google-cloud-sdk gcloud/249.0.0'
             },
-            'serviceName':
-                'compute.googleapis.com',
-            'methodName':
-                'v1.compute.firewalls.insert',
+            'serviceName': 'compute.googleapis.com',
+            'methodName': 'v1.compute.firewalls.insert',
             'resourceName':
                 'projects/ketchup-research/global/firewalls/'
                 'deny-tomchop-access',
@@ -102,7 +96,8 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
         'message':
             'User heinz-57@ketchup-research.iam.gserviceaccount.com '
             'performed v1.compute.firewalls.insert '
-            'on projects/ketchup-research/global/firewalls/deny-tomchop-access'
+            'on projects/ketchup-research/global/firewalls/deny-tomchop-access',
+        'severity': 'NOTICE'
     }
 
     # pylint: disable=protected-access
@@ -122,20 +117,16 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
                 'project_id': 'ketchup-research'
             }
         },
-        'insertId':
-            '329e1bd92jo',
-        'severity':
-            'NOTICE',
-        'timestamp':
-            '2019-06-06T09:00:27.066000Z',
+        'insertId': '329e1bd92jo',
+        'severity': 'NOTICE',
+        'timestamp': '2019-06-06T09:00:27.066000Z',
         'operation': {
             'id': 'operation-1559811626986-58aa3f1f16a4c-6840f50a-8fab23b9',
             'producer': 'type.googleapis.com',
             'first': True
         },
         'protoPayload': {
-            '@type':
-                'type.googleapis.com/google.cloud.audit.AuditLog',
+            '@type': 'type.googleapis.com/google.cloud.audit.AuditLog',
             'authenticationInfo': {
                 'principalEmail':
                     'heinz-57@ketchup-research.iam.gserviceaccount.com'
@@ -144,10 +135,8 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
                 'callerIp': 'gce-internal-ip',
                 'callerSuppliedUserAgent': 'google-cloud-sdk gcloud/249.0.0'
             },
-            'serviceName':
-                'compute.googleapis.com',
-            'methodName':
-                'v1.compute.firewalls.insert',
+            'serviceName': 'compute.googleapis.com',
+            'methodName': 'v1.compute.firewalls.insert',
             'authorizationInfo': [{
                 'permission': 'compute.firewalls.create',
                 'granted': True
@@ -245,7 +234,8 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
         'message':
             'User heinz-57@ketchup-research.iam.gserviceaccount.com '
             'performed v1.compute.firewalls.insert on '
-            'projects/ketchup-research/global/firewalls/deny-tomchop-access'
+            'projects/ketchup-research/global/firewalls/deny-tomchop-access',
+        'severity': 'NOTICE'
     }
 
     actual_timesketch_record = processor._ProcessLogLine(
@@ -332,7 +322,8 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
             'User heinz-57@ketchup-research.iam.gserviceaccount.com '
             'performed v1.compute.instances.insert '
             'on projects/ketchup-research/zones/europe-west1-c/instances/'
-            'example-instance-2'
+            'example-instance-2',
+        'severity': 'NOTICE'
     }
 
     # pylint: disable=protected-access
@@ -410,8 +401,7 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
                 'currentLocations': ['us-east1']
             }
         },
-        'insertId':
-            '10329k5e3miwp',
+        'insertId': '10329k5e3miwp',
         'resource': {
             'type': 'gcs_bucket',
             'labels': {
@@ -420,15 +410,12 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
                 'bucket_name': 'test_bucket_1'
             }
         },
-        'timestamp':
-            '2020-06-16T05:09:57.427874505Z',
-        'severity':
-            'NOTICE',
+        'timestamp': '2020-06-16T05:09:57.427874505Z',
+        'severity': 'NOTICE',
         'logName':
             'projects/ketchup-research/logs/'
             'cloudaudit.googleapis.com%2Factivity',
-        'receiveTimestamp':
-            '2020-06-16T05:09:58.131439936Z'
+        'receiveTimestamp': '2020-06-16T05:09:58.131439936Z'
     }
 
     gcs_creation = json.dumps(gcs_creation)
@@ -461,18 +448,22 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
             'storage.googleapis.com',
         'methodName':
             'storage.buckets.create',
-        'resourceName': 'projects/_/buckets/test_bucket_1',
-        'resource_label_bucket_name': 'test_bucket_1',
-        'policyDelta': 'ADD projectEditor:ketchup-research with role '
-                       'roles/storage.legacyBucketOwner, ADD '
-                       'projectOwner:ketchup-research with role '
-                       'roles/storage.legacyBucketOwner, ADD '
-                       'projectViewer:ketchup-research with role '
-                       'roles/storage.legacyBucketReader',
+        'resourceName':
+            'projects/_/buckets/test_bucket_1',
+        'resource_label_bucket_name':
+            'test_bucket_1',
+        'policyDelta':
+            'ADD projectEditor:ketchup-research with role '
+            'roles/storage.legacyBucketOwner, ADD '
+            'projectOwner:ketchup-research with role '
+            'roles/storage.legacyBucketOwner, ADD '
+            'projectViewer:ketchup-research with role '
+            'roles/storage.legacyBucketReader',
         'message':
             'User heinz-57@ketchup-research.iam.gserviceaccount.com '
             'performed storage.buckets.create on '
-            'projects/_/buckets/test_bucket_1'
+            'projects/_/buckets/test_bucket_1',
+        'severity': 'NOTICE'
     }
 
     # pylint: disable=protected-access

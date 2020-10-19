@@ -4,6 +4,9 @@
 
 import argparse
 import logging
+# Some AttributeErrors occured when trying to access logging.handlers, so
+# we import them separately
+from logging import handlers
 import os
 import signal
 import sys
@@ -23,6 +26,7 @@ if not _ASKING_FOR_HELP:
   # These will be registered automatically upon import
   # pylint: disable=unused-import
   from dftimewolf.lib import collectors
+  from dftimewolf.lib.collectors import aws
   from dftimewolf.lib.collectors import filesystem
   from dftimewolf.lib.collectors import gcloud
   from dftimewolf.lib.collectors import gcp_logging
@@ -41,7 +45,6 @@ from dftimewolf.lib.state import DFTimewolfState
 from dftimewolf.lib import logging_utils
 
 logger = logging.getLogger('dftimewolf')
-DEFAULT_LOG_FILE = os.path.join(os.sep, 'tmp', 'dftimewolf.log')
 
 
 class DFTimewolfTool(object):
@@ -251,15 +254,19 @@ def SetupLogging():
 
   # File handler needs go be added first because it doesn't format messages
   # with color
-  file_handler = logging.handlers.RotatingFileHandler(
-      DEFAULT_LOG_FILE, maxBytes=5*1024*1024, backupCount=3)
+  file_handler = handlers.RotatingFileHandler(
+      logging_utils.DEFAULT_LOG_FILE,
+      maxBytes=logging_utils.MAX_BYTES,
+      backupCount=logging_utils.BACKUP_COUNT)
   file_handler.setFormatter(logging_utils.WolfFormatter(colorize=False))
   logger.addHandler(file_handler)
 
   console_handler = logging.StreamHandler()
-  console_handler.setFormatter(logging_utils.WolfFormatter(colorize=True))
+  colorize = not bool(os.environ.get('DFTIMEWOLF_NO_RAINBOW'))
+  console_handler.setFormatter(logging_utils.WolfFormatter(colorize=colorize))
   logger.addHandler(console_handler)
-  logger.info('Logging to stdout and {0:s}'.format(DEFAULT_LOG_FILE))
+  logger.info(
+      'Logging to stdout and {0:s}'.format(logging_utils.DEFAULT_LOG_FILE))
 
 
 def Main():

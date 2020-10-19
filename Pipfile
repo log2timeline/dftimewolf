@@ -20,6 +20,7 @@ six = "*"
 timesketch-api-client = ">=20200514"
 timesketch-import-client = ">=20200514"
 turbinia = "*"
+pandas = "*"
 
 [requires]
 python_version = "3.7"
