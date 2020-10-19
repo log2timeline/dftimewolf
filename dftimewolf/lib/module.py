@@ -22,22 +22,25 @@ class BaseModule(object):
     state (DFTimewolfState): recipe state.
   """
 
-  def __init__(self, state, critical=False):
+  def __init__(self, state, name=None, critical=False):
     """Initialize a module.
 
     Args:
       state (DFTimewolfState): recipe state.
+      name (Optional[str]): A unique name for a specific instance of the module
+          class. If not provided, will default to the module's class name.
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
     super(BaseModule, self).__init__()
+    self.name = name if name else self.__class__.name
     self.critical = critical
     self.state = state
     self.SetupLogging()
 
   def SetupLogging(self):
     """Sets up stream and file logging for a specific module."""
-    self.logger = logging.getLogger(name=self.__class__.__name__)
+    self.logger = logging.getLogger(name=self.name)
     self.logger.setLevel(logging.DEBUG)
 
     file_handler = handlers.RotatingFileHandler(
@@ -55,8 +58,8 @@ class BaseModule(object):
 
   @property
   def name(self):
-    """Returns the class name for this module."""
-    return self.__class__.__name__
+    """Returns the name for this module."""
+    return self.name
 
   def CleanUp(self):
     """Cleans up module output to prepare it for the next module."""
