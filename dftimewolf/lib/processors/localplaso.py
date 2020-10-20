@@ -18,7 +18,8 @@ class LocalPlasoProcessor(module.BaseModule):
   """
 
   def __init__(self, state, name=None, critical=False):
-    super(LocalPlasoProcessor, self).__init__(state, name=name, critical=critical)
+    super(LocalPlasoProcessor, self).__init__(
+        state, name=name, critical=critical)
     self._timezone = None
     self._output_path = None
     self._plaso_path = None

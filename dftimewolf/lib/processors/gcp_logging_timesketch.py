@@ -18,7 +18,8 @@ class GCPLoggingTimesketch(BaseModule):
     # No configuration required.
 
   def __init__(self, state, name=None, critical=False):
-    super(GCPLoggingTimesketch, self).__init__(state, name=name, critical=critical)
+    super(GCPLoggingTimesketch, self).__init__(
+        state, name=name, critical=critical)
 
   def _ProcessLogLine(self, log_line, query, project_name):
     """Processes a single JSON formatted Google Clod Platform log line.

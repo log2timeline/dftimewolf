@@ -36,7 +36,8 @@ class GoogleCloudDiskExport(module.BaseModule):
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    super(GoogleCloudDiskExport, self).__init__(state, name=name, critical=critical)
+    super(GoogleCloudDiskExport, self).__init__(
+        state, name=name, critical=critical)
     self.analysis_project = None
     self.source_project = None
     self.source_disk = None
