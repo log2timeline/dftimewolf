@@ -56,15 +56,16 @@ class GRRHuntArtifactCollector(GRRHunt):
         system artifacts.
   """
 
-  def __init__(self, state, critical=False):
+  def __init__(self, state, name=None, critical=False):
     """Initializes a GRR artifact collector hunt.
 
     Args:
       state (DFTimewolfState): recipe state.
+      name (Optional[str]): The module's runtime name.
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    super(GRRHuntArtifactCollector, self).__init__(state, critical=critical)
+    super(GRRHuntArtifactCollector, self).__init__(state, name=name, critical=critical)
     self.artifacts = None
     self.use_tsk = None
     self.hunt = None
@@ -121,15 +122,16 @@ class GRRHuntFileCollector(GRRHunt):
     file_path_list: comma-separated list of file paths.
   """
 
-  def __init__(self, state, critical=False):
+  def __init__(self, state, name=None, critical=False):
     """Initializes a GRR file collector hunt.
 
     Args:
       state (DFTimewolfState): recipe state.
+      name (Optional[str]): The module's runtime name.
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    super(GRRHuntFileCollector, self).__init__(state, critical=critical)
+    super(GRRHuntFileCollector, self).__init__(state, name=name, critical=critical)
     self.file_path_list = None
 
   # pylint: disable=arguments-differ
@@ -183,15 +185,16 @@ class GRRHuntDownloader(GRRHunt):
     approvers (str): comma-separated GRR approval recipients.
   """
 
-  def __init__(self, state, critical=False):
+  def __init__(self, state, name=None, critical=False):
     """Initializes a GRR hunt results downloader.
 
     Args:
       state (DFTimewolfState): recipe state.
+      name (Optional[str]): The module's runtime name.
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    super(GRRHuntDownloader, self).__init__(state, critical=critical)
+    super(GRRHuntDownloader, self).__init__(state, name=name, critical=critical)
     self.hunt_id = None
     self.output_path = None
 

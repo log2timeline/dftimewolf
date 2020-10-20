@@ -33,15 +33,16 @@ class GoogleCloudCollector(module.BaseModule):
   _ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME = 'Analysis VM'
   _ANALYSIS_VM_CONTAINER_ATTRIBUTE_TYPE = 'text'
 
-  def __init__(self, state, critical=False):
+  def __init__(self, state, name=None, critical=False):
     """Initializes a Google Cloud Platform (GCP) collector.
 
     Args:
       state (DFTimewolfState): recipe state.
+      name (Optional[str]): The module's runtime name.
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    super(GoogleCloudCollector, self).__init__(state, critical=critical)
+    super(GoogleCloudCollector, self).__init__(state, name=name, critical=critical)
     self.analysis_project = None
     self.analysis_vm = None
     self.incident_id = None

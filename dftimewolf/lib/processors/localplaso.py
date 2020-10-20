@@ -17,8 +17,8 @@ class LocalPlasoProcessor(module.BaseModule):
   output: The path to the resulting Plaso storage file.
   """
 
-  def __init__(self, state):
-    super(LocalPlasoProcessor, self).__init__(state)
+  def __init__(self, state, name=None, critical=False):
+    super(LocalPlasoProcessor, self).__init__(state, name=name, critical=critical)
     self._timezone = None
     self._output_path = None
     self._plaso_path = None
