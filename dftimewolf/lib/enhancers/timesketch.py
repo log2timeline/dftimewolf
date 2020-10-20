@@ -31,7 +31,8 @@ class TimesketchEnhancer(module.BaseModule):
   _REPORT_NAME = 'TimesketchEnhancer'
 
   def __init__(self, state, name=None, critical=False):
-    super(TimesketchEnhancer, self).__init__(state, name=name, critical=critical)
+    super(TimesketchEnhancer, self).__init__(
+        state, name=name, critical=critical)
     self.timesketch_api = None
 
     self._aggregations_to_skip = []

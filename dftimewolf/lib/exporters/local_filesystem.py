@@ -19,7 +19,8 @@ class LocalFilesystemCopy(module.BaseModule):
 
   def __init__(self, state, name=None, critical=False):
     """Initializes a local file system exporter module."""
-    super(LocalFilesystemCopy, self).__init__(state, name=name, critical=critical)
+    super(LocalFilesystemCopy, self).__init__(
+        state, name=name, critical=critical)
     self._target_directory = None
 
   def SetUp(self, target_directory=None):  # pylint: disable=arguments-differ

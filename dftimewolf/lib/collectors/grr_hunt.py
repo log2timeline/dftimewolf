@@ -65,7 +65,8 @@ class GRRHuntArtifactCollector(GRRHunt):
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    super(GRRHuntArtifactCollector, self).__init__(state, name=name, critical=critical)
+    super(GRRHuntArtifactCollector, self).__init__(
+        state, name=name, critical=critical)
     self.artifacts = None
     self.use_tsk = None
     self.hunt = None
@@ -131,7 +132,8 @@ class GRRHuntFileCollector(GRRHunt):
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    super(GRRHuntFileCollector, self).__init__(state, name=name, critical=critical)
+    super(GRRHuntFileCollector, self).__init__(
+        state, name=name, critical=critical)
     self.file_path_list = None
 
   # pylint: disable=arguments-differ

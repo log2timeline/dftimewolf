@@ -29,7 +29,8 @@ class TimesketchExporter(module.BaseModule):
   _SKETCH_ATTRIBUTE_NAME = 'Timesketch URL'
 
   def __init__(self, state, name=None, critical=False):
-    super(TimesketchExporter, self).__init__(state, name=name, critical=critical)
+    super(TimesketchExporter, self).__init__(
+        state, name=name, critical=critical)
     self.incident_id = None
     self.sketch_id = None
     self.timesketch_api = None

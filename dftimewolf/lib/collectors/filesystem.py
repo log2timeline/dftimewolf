@@ -23,7 +23,8 @@ class FilesystemCollector(module.BaseModule):
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    super(FilesystemCollector, self).__init__(state, name=name, critical=critical)
+    super(FilesystemCollector, self).__init__(
+        state, name=name, critical=critical)
     self._paths = None
 
   def SetUp(self, paths=None):  # pylint: disable=arguments-differ
