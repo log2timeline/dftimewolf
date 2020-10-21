@@ -23,7 +23,7 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase):
     directory_path (str): Name of the directory to process.
   """
 
-  def __init__(self, state, critical=False):
+  def __init__(self, state, name=None, critical=False):
     """Initializes a Turbinia Google Cloud (GCP) disks processor.
 
     Args:
@@ -31,7 +31,7 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase):
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    super(TurbiniaArtifactProcessor, self).__init__(state, critical=critical)
+    super(TurbiniaArtifactProcessor, self).__init__(state, name=name, critical=critical)
     self.directory_path = None
 
   # pylint: disable=arguments-differ
