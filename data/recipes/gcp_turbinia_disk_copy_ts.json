@@ -36,7 +36,8 @@
         "args": {
             "incident_id": "@incident_id",
             "token_password": "@token_password",
-            "sketch_id": "@sketch_id"
+            "sketch_id": "@sketch_id",
+            "wait_for_timelines": "@wait_for_timelines"
         }
     }],
     "args": [
@@ -48,6 +49,7 @@
         ["--sketch_id", "Sketch to which the timeline should be added", null],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
         ["--analysis_vm", "Create an analysis VM.", true],
+        ["--wait_for_timelines", "Whether to wait for timelines to finish processing.", true],
         ["--instance", "Name of the instance to analyze.", null],
         ["--disks", "Comma-separated list of disks to copy.", null],
         ["--all_disks", "Copy all disks in the designated instance. Overrides disk_names if specified", false],

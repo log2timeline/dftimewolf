@@ -33,15 +33,18 @@ class GoogleCloudDiskExport(module.BaseModule):
         image name as "exported-image-{TIMESTAMP('%Y%m%d%H%M%S')}".
   """
 
-  def __init__(self, state, critical=False):
+  def __init__(self, state, name=None, critical=False):
     """Initializes a Google Cloud Platform (GCP) Disk Export.
 
     Args:
       state (DFTimewolfState): recipe state.
+      name (Optional[str]): The module's runtime name.
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    super(GoogleCloudDiskExport, self).__init__(state, critical=critical)
+    super(GoogleCloudDiskExport, self).__init__(
+        state, name=name, critical=critical)
+    self.analysis_project = None
     self.source_project = None
     self.gcs_output_location = None
     self.analysis_project = None
