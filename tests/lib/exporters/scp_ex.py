@@ -65,7 +65,7 @@ class LocalFileSystemTest(unittest.TestCase):
 
     mock_subprocess_call.assert_called_with(
         ['scp', '-i', 'fakeid',
-        'fakeuser@fakehost:"/path1 /path2"', '/destination'])
+        'fakeuser@fakehost:/path1 /path2', '/destination'])
 
   @mock.patch('subprocess.call')
   def testSetupError(self, mock_subprocess_call):
