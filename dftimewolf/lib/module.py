@@ -29,7 +29,6 @@ class BaseModule(object):
 
     Args:
       state (DFTimewolfState): recipe state.
-      name (Optional[str]): The module's runtime name.
       name (Optional[str]): A unique name for a specific instance of the module
           class. If not provided, will default to the module's class name.
       critical (Optional[bool]): True if the module is critical, which causes
