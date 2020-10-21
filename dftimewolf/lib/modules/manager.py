@@ -30,7 +30,7 @@ class ModulesManager(object):
 
   @classmethod
   def GetModuleByName(cls, name):
-    """Retrieves a specific by its name.
+    """Retrieves a specific module by its name.
 
     Args:
       name (str): name of the module.
