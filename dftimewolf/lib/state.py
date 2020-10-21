@@ -168,7 +168,7 @@ class DFTimewolfState(object):
     logger.info('Setting up module: {0:s}'.format(runtime_name))
     new_args = utils.ImportArgsFromDict(
         module_definition['args'], self.command_line_options, self.config)
-    module = self._module_pool[module_name]
+    module = self._module_pool[runtime_name]
 
     try:
       module.SetUp(**new_args)
