@@ -31,9 +31,9 @@ logging.entries.ProtobufEntry.to_api_repr = _CustomToAPIRepr
 class GCPLogsCollector(module.BaseModule):
   """Collector for Google Cloud Platform logs."""
 
-  def __init__(self, state):
+  def __init__(self, state, name=None, critical=False):
     """Initializes a GCP logs collector."""
-    super(GCPLogsCollector, self).__init__(state)
+    super(GCPLogsCollector, self).__init__(state, name=name, critical=critical)
     self._filter_expression = None
     self._project_name = None
 

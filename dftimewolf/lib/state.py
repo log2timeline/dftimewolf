@@ -93,7 +93,10 @@ class DFTimewolfState(object):
         raise errors.RecipeParseError(
             'Recipe uses unknown module: {0:s}'.format(module_name))
 
-      self._module_pool[module_name] = module_class(self)
+      runtime_name = module_definition.get('runtime_name')
+      if not runtime_name:
+        runtime_name = module_name
+      self._module_pool[runtime_name] = module_class(self, name=runtime_name)
 
   def AddToCache(self, name, value):
     """Thread-safe method to add data to the state's cache.
@@ -161,7 +164,8 @@ class DFTimewolfState(object):
       module_definition (dict[str, str]): recipe module definition.
     """
     module_name = module_definition['name']
-    logger.info('Setting up module: {0:s}'.format(module_name))
+    runtime_name = module_definition.get('runtime_name', module_name)
+    logger.info('Setting up module: {0:s}'.format(runtime_name))
     new_args = utils.ImportArgsFromDict(
         module_definition['args'], self.command_line_options, self.config)
     module = self._module_pool[module_name]
@@ -182,7 +186,7 @@ class DFTimewolfState(object):
           critical=True, unexpected=True)
       self.AddError(error)
 
-    self._threading_event_per_module[module_name] = threading.Event()
+    self._threading_event_per_module[runtime_name] = threading.Event()
     self.CleanUp()
 
   def SetupModules(self):
@@ -203,25 +207,26 @@ class DFTimewolfState(object):
     sets an Event flag declaring the module has completed.
 
     Args:
-      module_definition (str): module definition.
+      module_definition (dict): module definition.
     """
     module_name = module_definition['name']
+    runtime_name = module_definition.get('runtime_name', module_name)
 
     for dependency in module_definition['wants']:
       self._threading_event_per_module[dependency].wait()
 
-    module = self._module_pool[module_name]
+    module = self._module_pool[runtime_name]
 
     # Abort processing if a module has had critical failures before.
     if self._abort_execution:
       logger.critical(
           'Aborting execution of {0:s} due to previous errors'.format(
               module.name))
-      self._threading_event_per_module[module_name].set()
+      self._threading_event_per_module[runtime_name].set()
       self.CleanUp()
       return
 
-    logger.info('Running module: {0:s}'.format(module_name))
+    logger.info('Running module: {0:s}'.format(runtime_name))
 
     try:
       module.Process()
@@ -240,8 +245,8 @@ class DFTimewolfState(object):
           critical=True, unexpected=True)
       self.AddError(error)
 
-    logger.info('Module {0:s} finished execution'.format(module_name))
-    self._threading_event_per_module[module_name].set()
+    logger.info('Module {0:s} finished execution'.format(runtime_name))
+    self._threading_event_per_module[runtime_name].set()
     self.CleanUp()
 
   def RunPreflights(self):

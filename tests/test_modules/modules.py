@@ -8,11 +8,13 @@ from dftimewolf.lib.containers import containers
 class DummyModule1(module.BaseModule):
   """This is a dummy module."""
 
-  def __init__(self, state):
-    super(DummyModule1, self).__init__(state)
+  def __init__(self, state, name=None):
+    self.runtime_value = None
+    super(DummyModule1, self).__init__(state, name)
 
-  def SetUp(self):  # pylint: disable=arguments-differ
+  def SetUp(self, runtime_value=None):  # pylint: disable=arguments-differ
     """Dummy setup function."""
+    self.runtime_value = runtime_value
     print(self.name + ' Setup!')
     self.state.RegisterStreamingCallback(self.Callback, containers.Report)
 
@@ -27,11 +29,13 @@ class DummyModule1(module.BaseModule):
 class DummyModule2(module.BaseModule):
   """This is a dummy module."""
 
-  def __init__(self, state):
-    super(DummyModule2, self).__init__(state)
+  def __init__(self, state, name=None):
+    self.runtime_value = None
+    super(DummyModule2, self).__init__(state, name)
 
-  def SetUp(self):  # pylint: disable=arguments-differ
+  def SetUp(self, runtime_value=None):  # pylint: disable=arguments-differ
     """Dummy setup function."""
+    self.runtime_value = runtime_value
     print(self.name + ' Setup!')
 
   def Process(self):
@@ -41,8 +45,8 @@ class DummyModule2(module.BaseModule):
 class DummyPreflightModule(module.PreflightModule):
   """Dummy preflight module."""
 
-  def __init__(self, state):
-    super(DummyPreflightModule, self).__init__(state)
+  def __init__(self, state, name=None):
+    super(DummyPreflightModule, self).__init__(state, name)
 
   def SetUp(self, args):  # pylint: disable=arguments-differ
     """Dummy Process function."""

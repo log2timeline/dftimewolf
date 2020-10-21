@@ -20,8 +20,8 @@ class GrepperSearch(module.BaseModule):
   output: filepath and keyword match, to stdout (final_output).
   """
 
-  def __init__(self, state):
-    super(GrepperSearch, self).__init__(state)
+  def __init__(self, state, name=None, critical=False):
+    super(GrepperSearch, self).__init__(state, name=name, critical=critical)
     self._keywords = None
     self._output_path = None
     self._final_output = None

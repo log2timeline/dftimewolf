@@ -21,15 +21,16 @@ class GRRBaseModule(module.BaseModule):
 
   _CHECK_APPROVAL_INTERVAL_SEC = 10
 
-  def __init__(self, state, critical=False):
+  def __init__(self, state, name=None, critical=False):
     """Initializes a GRR hunt or flow module.
 
     Args:
       state (DFTimewolfState): recipe state.
+      name (Optional[str]): The module's runtime name.
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    super(GRRBaseModule, self).__init__(state, critical=critical)
+    super(GRRBaseModule, self).__init__(state, name=name, critical=critical)
     self.reason = None
     self.grr_api = None
     self.approvers = None

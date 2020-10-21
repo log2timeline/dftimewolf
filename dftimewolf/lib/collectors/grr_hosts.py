@@ -33,15 +33,16 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
 
   _CLIENT_ID_REGEX = re.compile(r'^c\.[0-9a-f]{16}$', re.IGNORECASE)
 
-  def __init__(self, state, critical=False):
+  def __init__(self, state, name=None, critical=False):
     """Initializes a GRR flow module.
 
     Args:
       state (DFTimewolfState): recipe state.
+      name (Optional[str]): The module's runtime name.
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    super(GRRFlow, self).__init__(state, critical=critical)
+    super(GRRFlow, self).__init__(state, name=name, critical=critical)
     self.keepalive = False
     self._skipped_flows = []
     self.skip_offline_clients = False
@@ -310,8 +311,9 @@ class GRRArtifactCollector(GRRFlow):
       'Windows': _DEFAULT_ARTIFACTS_WINDOWS
   }
 
-  def __init__(self, state):
-    super(GRRArtifactCollector, self).__init__(state)
+  def __init__(self, state, name=None, critical=False):
+    super(GRRArtifactCollector, self).__init__(
+        state, name=name, critical=critical)
     self._clients = []
     self.artifacts = []
     self.extra_artifacts = []
@@ -441,8 +443,8 @@ class GRRFileCollector(GRRFlow):
               'stat': flows_pb2.FileFinderAction.STAT,
              }
 
-  def __init__(self, state):
-    super(GRRFileCollector, self).__init__(state)
+  def __init__(self, state, name=None, critical=False):
+    super(GRRFileCollector, self).__init__(state, name=name, critical=critical)
     self._clients = []
     self.files = []
     self.hostnames = None
@@ -545,8 +547,8 @@ class GRRFlowCollector(GRRFlow):
     host (str): Target of GRR collection.
   """
 
-  def __init__(self, state):
-    super(GRRFlowCollector, self).__init__(state)
+  def __init__(self, state, name=None, critical=False):
+    super(GRRFlowCollector, self).__init__(state, name=name, critical=critical)
     self.client_id = None
     self.flow_id = None
     self.host = None
@@ -603,13 +605,15 @@ class GRRFlowCollector(GRRFlow):
 
 class GRRTimelineCollector(GRRFlow):
   """Timeline collector for GRR flows.
+
   Attributes:
     root_path (str): root path.
     hostnames (list[str]): FDQNs of the GRR client hosts.
   """
 
-  def __init__(self, state):
-    super(GRRTimelineCollector, self).__init__(state)
+  def __init__(self, state, name=None, critical=False):
+    super(GRRTimelineCollector, self).__init__(
+        state, name=name, critical=critical)
     self._clients = []
     self.root_path = None
     self.hostnames = None

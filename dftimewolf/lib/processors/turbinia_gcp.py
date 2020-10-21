@@ -33,15 +33,17 @@ class TurbiniaProcessorBase(module.BaseModule):
     turbinia_zone (str): GCP zone in which the Turbinia server is running.
   """
 
-  def __init__(self, state, critical=False):
+  def __init__(self, state, name=None, critical=False):
     """Initializes a Turbinia Google Cloud (GCP) disks processor.
 
     Args:
       state (DFTimewolfState): recipe state.
+      name (Optional[str]): The module's runtime name.
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    super(TurbiniaProcessorBase, self).__init__(state, critical=critical)
+    super(TurbiniaProcessorBase, self).__init__(
+        state, name=name, critical=critical)
     self.turbinia_config_file = None
     self._output_path = None
     self.client = None

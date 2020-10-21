@@ -18,9 +18,10 @@ class LocalFilesystemCopy(module.BaseModule):
   output: The directory in which the files have been copied.
   """
 
-  def __init__(self, state):
+  def __init__(self, state, name=None, critical=False):
     """Initializes a local file system exporter module."""
-    super(LocalFilesystemCopy, self).__init__(state)
+    super(LocalFilesystemCopy, self).__init__(
+        state, name=name, critical=critical)
     self._target_directory = None
     self._compress = None
 
