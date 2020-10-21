@@ -135,7 +135,7 @@ class SCPExporter(module.BaseModule):
     """
     prefix = self._GenerateRemotePrefix()
     if group:
-      prefixed_paths = ['{0:s}:"{1:s}"'.format(prefix, ' '.join(paths))]
+      prefixed_paths = ['{0:s}:{1:s}'.format(prefix, ' '.join(paths))]
       return prefixed_paths
     prefixed_paths = ['{0:s}:{1:s}'.format(prefix, path) for path in paths]
     return prefixed_paths
