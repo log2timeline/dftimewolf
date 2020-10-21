@@ -60,12 +60,14 @@ class LocalFilesystemCopy(module.BaseModule):
                   self._target_directory, exception),
               critical=True)
         for path_ in full_paths:
-          self.state.StoreContainer(containers.FSPath(path=path_))
+          file_name = os.path.basename(path_)
+          self.state.StoreContainer(containers.File(name=file_name, path=path_))
 
       else:
         try:
           tar_file = utils.Compress(file_container.path, self._target_directory)
-          self.state.StoreContainer(containers.FSPath(path=tar_file))
+          self.state.StoreContainer(containers.File(
+              name=os.path.basename(tar_file), path=tar_file))
           self.logger.info('{0:s} was compressed into {1:s}'.format(
               file_container.path, tar_file))
         except RuntimeError as exception:
