@@ -23,8 +23,8 @@ class SCPExporter(module.BaseModule):
     _id_file (str): Identity file to use.
   """
 
-  def __init__(self, state):
-    super(SCPExporter, self).__init__(state)
+  def __init__(self, state, name=None, critical=False):
+    super(SCPExporter, self).__init__(state, name=name, critical=critical)
     self._paths = None
     self._user = None
     self._hostname = None
