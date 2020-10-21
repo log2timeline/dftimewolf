@@ -1,18 +1,13 @@
 # -*- coding: utf-8 -*-
 """Processes a directory of artifacts with Turbinia."""
 
-from __future__ import unicode_literals
-from __future__ import absolute_import
-from __future__ import print_function
-
 import os
-
-from turbinia import evidence
-from turbinia import TurbiniaException
+import tempfile
 
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.processors.turbinia_gcp import TurbiniaProcessorBase
+from turbinia import TurbiniaException, evidence
 
 # pylint: disable=no-member
 
@@ -54,6 +49,10 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase):
     """
     self.turbinia_config_file = turbinia_config_file
     self.directory_path = directory_path
+    if not self.directory_path:
+      self.directory_path = tempfile.mkdtemp(prefix='turbinia-results')
+      self.logger.info('Turbinia results will be dumped to {0:s}'.format(
+          self.directory_path))
     try:
       self.TurbiniaSetUp(project, turbinia_zone, sketch_id, run_all_jobs)
     except TurbiniaException as exception:
