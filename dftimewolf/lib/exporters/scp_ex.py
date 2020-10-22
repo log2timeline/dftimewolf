@@ -31,6 +31,7 @@ class SCPExporter(module.BaseModule):
     self._destination = None
     self._id_file = None
     self._upload = None
+    self._multiplexing = None
 
   def SetUp(self, # pylint: disable=arguments-differ
             paths,
@@ -39,6 +40,7 @@ class SCPExporter(module.BaseModule):
             hostname,
             id_file,
             direction,
+            multiplexing,
             check_ssh):
     """Sets up the _target_directory attribute.
 
@@ -50,6 +52,8 @@ class SCPExporter(module.BaseModule):
       id_file (str): Identity file to use.
       direction (str): 'upload' or 'download', depending on which directions
           the files should be SCP'd.
+      multiplexing (boolean): Whether the module should attempt to use a
+          multiplexed SSH connection.
       check_ssh (boolean): Whether to check for SSH connectivity on module
           setup.
     """
@@ -58,6 +62,7 @@ class SCPExporter(module.BaseModule):
     self._id_file = id_file
     self._paths = paths.split(",")
     self._user = user
+    self._multiplexing = multiplexing
 
     if direction not in ['upload', 'download']:
       self.ModuleError(
@@ -85,6 +90,12 @@ class SCPExporter(module.BaseModule):
     self._CreateDestinationDirectory(remote=self._upload)
 
     cmd = ['scp']
+    # Set options for SSH multiplexing
+    if self._multiplexing:
+      cmd.extend([
+        '-o', 'ControlMaster=auto',
+        '-o', 'ControlPath= ~/.ssh/ctrl-%C',
+      ])
     if self._id_file:
       cmd.extend(['-i', self._id_file])
     if self._upload:
@@ -174,10 +185,10 @@ class SCPExporter(module.BaseModule):
     """
     if not self._hostname:
       return True
-    command = ["ssh", "-q"]
+    command = ['ssh', '-q']
     if self._user:
-      command.extend(["-l", self._user])
-    command.extend([self._hostname, "true"])
+      command.extend(['-l', self._user])
+    command.extend([self._hostname, 'true'])
     if self._id_file:
       command.extend(['-i', self._id_file])
     self.logger.debug(
