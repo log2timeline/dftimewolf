@@ -264,6 +264,16 @@ class DFTimewolfState(object):
       finally:
         self.CheckErrors(is_global=True)
 
+  def CleanUpPreflights(self):
+    """Executes any cleanup actions defined in preflight modules."""
+    for preflight_definition in self.recipe.get('preflights', []):
+      preflight_name = preflight_definition['name']
+      preflight = self._module_pool[preflight_name]
+      try:
+        preflight.CleanUp()
+      finally:
+        self.CheckErrors(is_global=True)
+
   def InstantiateModule(self, module_name):
     """Instantiates an arbitrary dfTimewolf module.
 
