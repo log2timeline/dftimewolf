@@ -92,6 +92,15 @@ class StateTest(unittest.TestCase):
     mock_setup.assert_called_with()
     mock_process.assert_called_with()
 
+  @mock.patch('tests.test_modules.modules.DummyPreflightModule.CleanUp')
+  def testCleanupPreflightModules(self, mock_cleanup):
+    """Tests that preflight's process function is called correctly."""
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.command_line_options = {}
+    test_state.LoadRecipe(test_recipe.contents)
+    test_state.CleanUpPreflights()
+    mock_cleanup.assert_called_with()
+
   @mock.patch('tests.test_modules.modules.DummyModule2.SetUp')
   @mock.patch('tests.test_modules.modules.DummyModule1.SetUp')
   def testSetupModules(self, mock_setup1, mock_setup2):

@@ -229,6 +229,9 @@ class DFTimewolfTool(object):
     self._state.SetupModules()
     logger.info('Modules successfully set up!')
 
+  def CleanUpPreflights(self):
+    """Calls the preflight's CleanUp functions."""
+    self._state.CleanUpPreflights()
 
 def SignalHandler(*unused_argvs):
   """Catches Ctrl + C to exit cleanly."""
@@ -307,6 +310,8 @@ def Main():
 
   # TODO: log errors if this fails.
   tool.RunModules()
+
+  tool.CleanUpPreflights()
 
   return True
 
