@@ -121,3 +121,7 @@ class PreflightModule(BaseModule):
   @abc.abstractmethod
   def SetUp(self, *args, **kwargs):
     """Sets up necessary module configuration options."""
+
+  @abc.abstractmethod
+  def CleanUp(self):
+    """Carries out optional cleanup actions at the end of the recipe run."""
