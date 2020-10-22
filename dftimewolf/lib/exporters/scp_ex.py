@@ -6,7 +6,6 @@ import subprocess
 
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib import module
-from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 
 

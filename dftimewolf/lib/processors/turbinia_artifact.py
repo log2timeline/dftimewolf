@@ -4,10 +4,11 @@
 import os
 import tempfile
 
+from turbinia import TurbiniaException, evidence
+
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.processors.turbinia_gcp import TurbiniaProcessorBase
-from turbinia import TurbiniaException, evidence
 
 # pylint: disable=no-member
 
@@ -23,10 +24,12 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase):
 
     Args:
       state (DFTimewolfState): recipe state.
+      name (Optional[str]): The module's runtime name.
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    super(TurbiniaArtifactProcessor, self).__init__(state, name=name, critical=critical)
+    super(TurbiniaArtifactProcessor, self).__init__(
+        state, name=name, critical=critical)
     self.directory_path = None
 
   # pylint: disable=arguments-differ
