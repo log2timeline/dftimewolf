@@ -10,7 +10,9 @@ class SSHMultiplexer(module.PreflightModule):
   """Opens an SSH connection.
 
   Attributes:
-    attributes: a list of Attribute proto objects.
+    hostname (str): The hostname we want to multiplex connections to.
+    user (str): The username to connect as.
+    id_file (str): SSH private key to use.
   """
 
   def __init__(self, state, name=None, critical=False):
@@ -21,7 +23,12 @@ class SSHMultiplexer(module.PreflightModule):
     self.id_file = None
 
   def SetUp(self, user, hostname, id_file):  # pylint: disable=arguments-differ
-    """Sets up the SSH connection.
+    """Sets up the SSH multiplexer module's attributes.
+
+    Args:
+      hostname (str): The hostname we want to multiplex connections to.
+      user (str): The username to connect as.
+      id_file (str): SSH private key to use.
     """
     self.hostname = hostname
     self.user = user
