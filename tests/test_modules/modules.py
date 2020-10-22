@@ -55,3 +55,7 @@ class DummyPreflightModule(module.PreflightModule):
   def Process(self):
     """Dummy Process function."""
     print(self.name + ' Process!')
+
+  def CleanUp(self):
+    """Dummy cleanup function."""
+    print(self.name + 'CleanUp!')
