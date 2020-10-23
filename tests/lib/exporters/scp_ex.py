@@ -68,6 +68,23 @@ class SCPExporterTest(unittest.TestCase):
         'fakeuser@fakehost:/path1 /path2', '/destination'])
 
   @mock.patch('subprocess.call')
+  def testProcessDownloadMultiplex(self, mock_subprocess_call):
+    """Tests that the specified directory is used if created."""
+    mock_subprocess_call.return_value = 0
+    test_state = state.DFTimewolfState(config.Config)
+    scp_exporter = scp_ex.SCPExporter(test_state)
+    scp_exporter.SetUp('/path1,/path2', '/destination', 'fakeuser',
+                       'fakehost', 'fakeid', 'download', True, True)
+    scp_exporter.Process()
+
+    mock_subprocess_call.assert_called_with(
+        ['scp',
+         '-o', 'ControlMaster=auto',
+         '-o', 'ControlPath=~/.ssh/ctrl-%C',
+         '-i', 'fakeid',
+        'fakeuser@fakehost:/path1 /path2', '/destination'])
+
+  @mock.patch('subprocess.call')
   def testSetupError(self, mock_subprocess_call):
     """Tests that recipe errors out if connection check fails."""
     mock_subprocess_call.return_value = -1

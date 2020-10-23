@@ -30,9 +30,11 @@ class SSHMultiplexer(unittest.TestCase):
     ssh_multi.Process()
 
     mock_call.assert_called_with([
-      'ssh', '-q', '-l', 'fakeuser', 'fakehost', 'true',
-      '-o', 'ControlMaster=auto', '-o', 'ControlPersist=yes',
-      '-o', 'ControlPath= ~/.ssh/ctrl-%C'
+      'ssh', '-q', '-l', 'fakeuser',
+      '-o', 'ControlMaster=auto',
+      '-o', 'ControlPersist=yes',
+      '-o', 'ControlPath=~/.ssh/ctrl-%C',
+      'fakehost', 'true',
     ])
 
   @mock.patch('subprocess.call')

@@ -98,7 +98,7 @@ class SCPExporter(module.BaseModule):
     if self._multiplexing:
       cmd.extend([
         '-o', 'ControlMaster=auto',
-        '-o', 'ControlPath= ~/.ssh/ctrl-%C',
+        '-o', 'ControlPath=~/.ssh/ctrl-%C',
       ])
     if self._id_file:
       cmd.extend(['-i', self._id_file])
@@ -173,7 +173,12 @@ class SCPExporter(module.BaseModule):
     mkdir_command = ['mkdir', '-p', self._destination]
 
     if remote:
-      cmd = ['ssh', self._GenerateRemotePrefix()]
+      cmd = ['ssh']
+
+      if self._multiplexing:
+        cmd.extend(['-o', 'ControlPath=~/.ssh/ctrl-%C'])
+
+      cmd.extend([self._GenerateRemotePrefix()])
       cmd.extend(mkdir_command)
       self.logger.info(
         'Creating destination directory {0:s} on host {1:s}'.format(
