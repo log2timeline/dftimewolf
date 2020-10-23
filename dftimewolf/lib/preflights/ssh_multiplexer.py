@@ -39,14 +39,14 @@ class SSHMultiplexer(module.PreflightModule):
     command = ['ssh', '-q']
     if self.user:
       command.extend(['-l', self.user])
-    command.extend([self.hostname, 'true'])  # execute `true` and return
     if self.id_file:
       command.extend(['-i', self.id_file])
     command.extend([
        '-o', 'ControlMaster=auto',
        '-o', 'ControlPersist=yes',
-       '-o', 'ControlPath= ~/.ssh/ctrl-%C',
+       '-o', 'ControlPath=~/.ssh/ctrl-%C',
     ])
+    command.extend([self.hostname, 'true'])  # execute `true` and return
     self.logger.debug(
         'Opening shared SSH connection to: {0:s}'.format(' '.join(command)))
     ret = subprocess.call(command)
