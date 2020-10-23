@@ -78,7 +78,7 @@ class SCPExporter(module.BaseModule):
     if not self._paths:
       if self._upload:
         # We're uploading local paths to the remote host.
-        fspaths = self.state.GetContainers(containers.FSPath)
+        fspaths = self.state.GetContainers(containers.File)
       else:
         # We're downloading remote paths to the local host.
         fspaths = self.state.GetContainers(containers.RemoteFSPath)
@@ -122,7 +122,7 @@ class SCPExporter(module.BaseModule):
             path=full_path, hostname=self._hostname)
       else:
         self.logger.info('Local filesystem path {0:s}'.format(full_path))
-        fspath = containers.FSPath(path=full_path)
+        fspath = containers.File(name=file_name, path=full_path)
 
       self.state.StoreContainer(fspath)
 
