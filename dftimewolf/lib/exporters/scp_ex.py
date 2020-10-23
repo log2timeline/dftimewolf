@@ -4,8 +4,8 @@
 import os
 import subprocess
 
-from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
+from dftimewolf.lib import module
 from dftimewolf.lib.modules import manager as modules_manager
 
 
@@ -60,7 +60,10 @@ class SCPExporter(module.BaseModule):
     self._destination = destination
     self._hostname = hostname
     self._id_file = id_file
-    self._paths = paths.split(",")
+    if paths:
+      self._paths = paths.split(',')
+    else:
+      self._paths = None
     self._user = user
     self._multiplexing = multiplexing
 
@@ -71,7 +74,8 @@ class SCPExporter(module.BaseModule):
     self._upload = direction == 'upload'
 
     if check_ssh and not self._SSHAvailable():
-      self.ModuleError("Unable to connect to host.", critical=True)
+      self.ModuleError(
+          'Unable to connect to {0:s}.'.format(self._hostname), critical=True)
 
   def Process(self):
     """Copies the list of paths to or from the remote host."""
