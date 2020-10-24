@@ -20,7 +20,7 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase):
   """
 
   def __init__(self, state, name=None, critical=False):
-    """Initializes a Turbinia Google Cloud (GCP) disks processor.
+    """Initializes a Turbinia Artifacts disks processor.
 
     Args:
       state (DFTimewolfState): recipe state.
@@ -44,7 +44,7 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase):
 
     Args:
       turbinia_config_file (str): Full path to the Turbinia config file to use.
-      project (str): name of the GPC project containing the disk to process.
+      project (str): name of the GCP project containing the disk to process.
       turbinia_zone (str): GCP zone in which the Turbinia server is running.
       directory_path (str): Name of the directory to process.
       sketch_id (int): The Timesketch sketch ID.
@@ -89,7 +89,6 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase):
 
           # We're only interested in plaso files for the time being.
           if path.endswith('.plaso'):
-            path = path.replace('/var/lib/turbinia', '/mnt/turbinia/output')
             self.logger.info('  {0:s}: {1:s}'.format(task['name'], path))
             container = containers.RemoteFSPath(path=path)
             self.state.StoreContainer(container)

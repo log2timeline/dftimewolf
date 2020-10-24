@@ -26,7 +26,7 @@ class TurbiniaProcessor(module.BaseModule):
     client (TurbiniaClient): Turbinia client.
     disk_name (str): name of the disk to process.
     instance (str): name of the Turbinia instance
-    project (str): name of the GPC project containing the disk to process.
+    project (str): name of the GCP project containing the disk to process.
     turbinia_region (str): GCP region in which the Turbinia server is running.
     turbinia_zone (str): GCP zone in which the Turbinia server is running.
   """
@@ -57,7 +57,7 @@ class TurbiniaProcessor(module.BaseModule):
 
     Args:
       disk_name (str): name of the disk to process.
-      project (str): name of the GPC project containing the disk to process.
+      project (str): name of the GCP project containing the disk to process.
       turbinia_zone (str): GCP zone in which the Turbinia server is running.
       sketch_id (int): The Timesketch sketch id
       run_all_jobs (bool): Whether to run all jobs instead of a faster subset.
@@ -79,7 +79,7 @@ class TurbiniaProcessor(module.BaseModule):
     try:
       turbinia_config.LoadConfig()
       self.turbinia_region = turbinia_config.TURBINIA_REGION
-      self.instance = turbinia_config.PUBSUB_TOPIC
+      self.instance = turbinia_config.INSTANCE_ID
       if turbinia_config.TURBINIA_PROJECT != self.project:
         self.ModuleError(
             'Specified project {0!s} does not match Turbinia configured '

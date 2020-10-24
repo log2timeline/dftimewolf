@@ -26,7 +26,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     turbinia_config_file (str): Full path to the Turbinia config file to use.
     client (TurbiniaClient): Turbinia client.
     instance (str): name of the Turbinia instance
-    project (str): name of the GPC project containing the disk to process.
+    project (str): name of the GCP project containing the disk to process.
     run_all_jobs (bool): Whether to run all jobs instead of a faster subset.
     sketch_id (int): The Timesketch sketch id
     turbinia_region (str): GCP region in which the Turbinia server is running.
@@ -34,7 +34,7 @@ class TurbiniaProcessorBase(module.BaseModule):
   """
 
   def __init__(self, state, name=None, critical=False):
-    """Initializes a Turbinia Google Cloud (GCP) disks processor.
+    """Initializes a Turbinia base processor.
 
     Args:
       state (DFTimewolfState): recipe state.
@@ -122,8 +122,9 @@ class TurbiniaProcessorBase(module.BaseModule):
 
   def TurbiniaSetUp(self, project, turbinia_zone, sketch_id, run_all_jobs):
     """Sets up the object attributes.
+
     Args:
-      project (str): name of the GPC project containing the disk to process.
+      project (str): name of the GCP project containing the disk to process.
       turbinia_zone (str): GCP zone in which the Turbinia server is running.
       sketch_id (int): The Timesketch sketch ID.
       run_all_jobs (bool): Whether to run all jobs instead of a faster subset.
@@ -146,7 +147,7 @@ class TurbiniaProcessorBase(module.BaseModule):
       return
 
     self.turbinia_region = turbinia_config.TURBINIA_REGION
-    self.instance = turbinia_config.PUBSUB_TOPIC
+    self.instance = turbinia_config.INSTANCE_ID
     if turbinia_config.TURBINIA_PROJECT != self.project:
       self.ModuleError(
           'Specified project {0!s} does not match Turbinia configured '
@@ -259,7 +260,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase):
     Args:
       turbinia_config_file (str): Full path to the Turbinia config file to use.
       disk_name (str): name of the disk to process.
-      project (str): name of the GPC project containing the disk to process.
+      project (str): name of the GCP project containing the disk to process.
       turbinia_zone (str): GCP zone in which the Turbinia server is running.
       sketch_id (int): The Timesketch sketch ID.
       run_all_jobs (bool): Whether to run all jobs instead of a faster subset.
