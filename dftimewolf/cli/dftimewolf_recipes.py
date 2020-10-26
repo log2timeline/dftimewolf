@@ -38,7 +38,9 @@ if not _ASKING_FOR_HELP:
   from dftimewolf.lib.processors import gcp_logging_timesketch
   from dftimewolf.lib.processors import grepper
   from dftimewolf.lib.processors import localplaso
-  from dftimewolf.lib.processors import turbinia
+  from dftimewolf.lib.processors import turbinia_artifact
+  from dftimewolf.lib.processors import turbinia_gcp
+
 
 from dftimewolf.lib.recipes import manager as recipes_manager
 from dftimewolf.lib.state import DFTimewolfState

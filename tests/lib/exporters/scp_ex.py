@@ -100,7 +100,7 @@ class SCPExporterTest(unittest.TestCase):
 
   @mock.patch('subprocess.call')
   def testProcessError(self, mock_subprocess_call):
-    """Tests that the specified directory is used if created."""
+    """Tests that failures creating directories are properly caught."""
     mock_subprocess_call.return_value = 0
     test_state = state.DFTimewolfState(config.Config)
     scp_exporter = scp_ex.SCPExporter(test_state)

@@ -1,0 +1,65 @@
+{
+    "name": "upload_turbinia",
+    "description": ["Uploads arbitrary files to Turbinia"],
+    "short_description": "Uploads arbitrary files to Turbinia.",
+    "modules": [{
+      "wants": [],
+      "name": "FilesystemCollector",
+      "args": {
+          "paths": "@files"
+      }
+    }, {
+      "wants": ["FilesystemCollector"],
+      "name": "LocalFilesystemCopy",
+      "args": {
+          "target_directory": "@directory",
+          "compress": true
+      }
+    }, {
+          "wants": ["LocalFilesystemCopy"],
+          "runtime_name": "SCP-Upload",
+          "name": "SCPExporter",
+          "args": {
+            "paths": null,
+            "destination": "@destination_turbinia_dir",
+            "hostname": "@hostname",
+            "user": null,
+            "id_file": null,
+            "check_ssh": true,
+            "direction": "upload"
+          }
+    }, {
+        "wants": ["SCP-Upload"],
+        "name": "TurbiniaArtifactProcessor",
+        "args": {
+            "turbinia_config_file": "@turbinia_config",
+            "project": null,
+            "turbinia_zone": "us-central1-f",
+            "directory_path": null,
+            "sketch_id": null,
+            "run_all_jobs": false
+        }
+    }, {
+          "wants": ["TurbiniaArtifactProcessor"],
+          "runtime_name": "SCP-Download",
+          "name": "SCPExporter",
+          "args": {
+            "paths": null,
+            "destination": "@local_turbinia_results",
+            "hostname": "@hostname",
+            "user": null,
+            "id_file": null,
+            "check_ssh": true,
+            "direction": "download"
+          }
+      }],
+    "args": [
+        ["files", "Paths to process", null],
+        ["--destination_turbinia_dir", "Destination path in Turbinia host to write the files to", null],
+        ["--hostname", "Remote host.", null],
+        ["--directory", "Directory in which to copy and compress files.", null],
+        ["--turbinia_config", "Turbinia config file to use.", null],
+        ["--local_turbinia_results", "Directory where Turbinia results will be downloaded to.", null],
+        ["--sketch_id", "Timesketch sketch ID", null]
+    ]
+  }

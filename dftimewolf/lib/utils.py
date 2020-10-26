@@ -2,12 +2,53 @@
 """Common utilities for DFTimewolf."""
 
 import argparse
+import os
 import re
+import tarfile
+import tempfile
+from time import time
 
 import six
 
 
 TOKEN_REGEX = re.compile(r'\@([\w_]+)')
+
+
+def Compress(source_path, output_directory=None):
+  """Compresses files.
+
+  Args:
+    source_path (str): The data to be compressed.
+    output_directory (str): The path to the output directory.
+
+  Returns:
+    str: The path to the compressed output.
+
+  Raises:
+    RuntimeError: If there are problems compressing the file.
+  """
+  if not output_directory:
+    output_directory = tempfile.mkdtemp()
+
+  output_file = os.path.basename(source_path)
+  arcname = '{0:d}-{1:s}'.format(int(time()), output_file)
+  output_file = '{0:s}.tgz'.format(arcname)
+  output_file = os.path.join(output_directory, output_file)
+
+  if os.path.exists(output_file):
+    raise RuntimeError(
+        'Output file {0:s} already exists.'.format(output_file))
+
+  try:
+    with tarfile.TarFile.open(output_file, 'w:gz') as tar:
+      tar.add(source_path, arcname=arcname)
+      tar.close()
+  except (IOError, tarfile.TarError) as exception:
+    raise RuntimeError(
+        'An error has while compressing directory {0:s}: {1!s}'.format(
+            source_path, exception), critial=True) from exception
+
+  return output_file
 
 
 # preserve python2 compatibility
