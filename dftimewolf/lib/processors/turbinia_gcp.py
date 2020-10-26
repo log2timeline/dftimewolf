@@ -27,7 +27,8 @@ class TurbiniaProcessorBase(module.BaseModule):
     client (TurbiniaClient): Turbinia client.
     instance (str): name of the Turbinia instance
     project (str): name of the GCP project containing the disk to process.
-    run_all_jobs (bool): Whether to run all jobs instead of a faster subset.
+    run_all_jobs (bool): Whether to run all jobs or to remove slow-running jobs:
+        'StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob'.
     sketch_id (int): The Timesketch sketch id
     turbinia_region (str): GCP region in which the Turbinia server is running.
     turbinia_zone (str): GCP zone in which the Turbinia server is running.

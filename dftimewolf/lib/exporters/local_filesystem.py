@@ -62,7 +62,6 @@ class LocalFilesystemCopy(module.BaseModule):
         for path_ in full_paths:
           file_name = os.path.basename(path_)
           self.state.StoreContainer(containers.File(name=file_name, path=path_))
-
       else:
         try:
           tar_file = utils.Compress(file_container.path, self._target_directory)
