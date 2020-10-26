@@ -26,6 +26,7 @@ if not _ASKING_FOR_HELP:
   # These will be registered automatically upon import
   # pylint: disable=unused-import
   from dftimewolf.lib import collectors
+  from dftimewolf.lib.preflights import ssh_multiplexer
   from dftimewolf.lib.collectors import aws
   from dftimewolf.lib.collectors import filesystem
   from dftimewolf.lib.collectors import gcloud
