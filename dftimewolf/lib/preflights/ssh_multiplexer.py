@@ -56,7 +56,10 @@ class SSHMultiplexer(module.PreflightModule):
 
   def CleanUp(self):
     """Close the shared SSH connection."""
-    command = ['ssh', '-O', 'exit', self.hostname]
+    command = ['ssh',
+               '-O', 'exit',
+               '-o', 'ControlPath=~/.ssh/ctrl-%C',
+               self.hostname]
     ret = subprocess.call(command)
     if ret != 0:
       self.logger.error('Error cleaning up the shared SSH connection. Remove '
