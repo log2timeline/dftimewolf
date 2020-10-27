@@ -237,15 +237,17 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase):
     disk_name (str): name of the disk to process.
   """
 
-  def __init__(self, state, critical=False):
+  def __init__(self, state, name=None, critical=False):
     """Initializes a Turbinia Google Cloud (GCP) disks processor.
 
     Args:
       state (DFTimewolfState): recipe state.
+      name (Optional[str]): The module's runtime name.
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    super(TurbiniaGCPProcessor, self).__init__(state, critical=critical)
+    super(TurbiniaGCPProcessor, self).__init__(
+        state, name=name, critical=critical)
     self.disk_name = None
 
   # pylint: disable=arguments-differ
