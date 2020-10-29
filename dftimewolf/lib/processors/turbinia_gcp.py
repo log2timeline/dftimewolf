@@ -171,7 +171,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     try:
       evidence_.validate()
     except TurbiniaException as exception:
-      self.ModuleError(exception, critical=True)
+      self.ModuleError(str(exception), critical=True)
 
     request = TurbiniaRequest(requester=getpass.getuser())
     request.evidence.append(evidence_)
@@ -277,7 +277,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase):
     try:
       self.TurbiniaSetUp(project, turbinia_zone, sketch_id, run_all_jobs)
     except TurbiniaException as exception:
-      self.ModuleError(exception, critical=True)
+      self.ModuleError(str(exception), critical=True)
       return
 
   def Process(self):
