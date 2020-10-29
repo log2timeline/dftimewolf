@@ -285,10 +285,12 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase):
     log_file_path = os.path.join(self._output_path, 'turbinia.log')
     print('Turbinia log file: {0:s}'.format(log_file_path))
 
-    if self.state.input and not self.disk_name:
-      _, disk = self.state.input[0]
-      self.disk_name = disk.name
-      print('Using disk {0:s} from previous collector'.format(self.disk_name))
+    vm_containers = self.state.GetContainers(containers.ForensicsVM)
+    if vm_containers and not self.disk_name:
+      forensics_vm = vm_containers[0]
+      self.disk_name = forensics_vm.evidence_disk.name
+      self.logger.info(
+          'Using disk {0:s} from previous collector'.format(self.disk_name))
 
     evidence_ = evidence.GoogleCloudDisk(
         disk_name=self.disk_name, project=self.project, zone=self.turbinia_zone)
