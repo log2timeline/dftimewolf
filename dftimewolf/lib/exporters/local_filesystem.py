@@ -100,7 +100,10 @@ class LocalFilesystemCopy(module.BaseModule):
         full_paths.append(new_directory)
         counter += 1
     else:
-      shutil.copy2(source, destination_directory)
+      try:
+        shutil.copy2(source, destination_directory)
+      except shutil.SameFileError as exception:
+        self.logger.warning(str(exception))
       full_paths.append(os.path.join(destination_directory, source))
 
     return full_paths
