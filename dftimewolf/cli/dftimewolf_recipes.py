@@ -33,6 +33,7 @@ if not _ASKING_FOR_HELP:
   from dftimewolf.lib.collectors import gcp_logging
   from dftimewolf.lib.collectors import grr_hosts
   from dftimewolf.lib.collectors import grr_hunt
+  from dftimewolf.lib.exporters import gce_disk_export
   from dftimewolf.lib.exporters import local_filesystem
   from dftimewolf.lib.exporters import scp_ex
   from dftimewolf.lib.exporters import timesketch
