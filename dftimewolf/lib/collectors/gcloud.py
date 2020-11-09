@@ -164,14 +164,7 @@ class GoogleCloudCollector(module.BaseModule):
     try:
       if self.remote_instance_name:
         self.remote_project.compute.GetInstance(self.remote_instance_name)
-    except ResourceNotFoundError as exception:
-      self.ModuleError(
-        message='Instance "{0:s}" not found or insufficient permissions'.format(
-          self.remote_instance_name),
-        critical=True)
-      return
 
-    try:
       # TODO: Make creating an analysis VM optional
       # pylint: disable=too-many-function-args
       # pylint: disable=redundant-keyword-arg
@@ -187,6 +180,11 @@ class GoogleCloudCollector(module.BaseModule):
       self.analysis_vm.AddLabels(self._gcp_label)
       self.analysis_vm.GetBootDisk().AddLabels(self._gcp_label)
 
+    except ResourceNotFoundError as exception:
+      self.ModuleError(
+        message='Instance "{0:s}" not found or insufficient permissions'.format(
+          self.remote_instance_name),
+        critical=True)
     except (RefreshError,
             DefaultCredentialsError) as exception:
       msg = ('Something is wrong with your Application Default Credentials. '
