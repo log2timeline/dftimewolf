@@ -161,15 +161,15 @@ class GoogleCloudCollector(module.BaseModule):
             type_=self._ANALYSIS_VM_CONTAINER_ATTRIBUTE_TYPE,
             value=analysis_vm_name))
 
-#    try:
-#      if self.remote_instance_name:
-#        self.remote_project.compute.GetInstance(self.remote_instance_name)
-#    except ResourceNotFoundError as exception:
-#      self.ModuleError(
-#        message='Instance "{0:s}" not found or insufficient permissions'.format(
-#          self.remote_instance_name),
-#        critical=True)
-#      return
+    try:
+      if self.remote_instance_name:
+        self.remote_project.compute.GetInstance(self.remote_instance_name)
+    except ResourceNotFoundError as exception:
+      self.ModuleError(
+        message='Instance "{0:s}" not found or insufficient permissions'.format(
+          self.remote_instance_name),
+        critical=True)
+      return
 
     try:
       # TODO: Make creating an analysis VM optional
