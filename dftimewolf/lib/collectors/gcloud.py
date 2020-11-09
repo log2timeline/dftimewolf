@@ -3,7 +3,7 @@
 
 from google.auth.exceptions import DefaultCredentialsError, RefreshError
 from googleapiclient.errors import HttpError
-#from libcloudforensics.errors import ResourceNotFoundError
+from libcloudforensics.errors import ResourceNotFoundError
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp import forensics as gcp_forensics
 
