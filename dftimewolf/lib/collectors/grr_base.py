@@ -1,6 +1,5 @@
 """Base GRR module class. GRR modules should extend it."""
 import abc
-import os
 import tempfile
 import time
 
