@@ -111,7 +111,7 @@ class GRRBaseModule(module.BaseModule):
             reason=self.reason, notified_users=self.approvers)
         approval_sent = True
         approval_url = ('{0:s}/#/users/{1:s}/approvals/client/{2:s}/{3:s}'.
-                        format(self.grr_url, os.environ['USER'],
+                        format(self.grr_url, approval.username,
                                approval.client_id,
                                approval.approval_id))
         self.logger.info(
