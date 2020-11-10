@@ -2,6 +2,13 @@
     "name": "gcp_logging_collect",
     "description": "Collects logs from a GCP project and dumps on the filesystem.",
     "short_description": "Collects logs from a GCP project and dumps on the filesystem.",
+    "preflights": [{
+      "wants": [],
+      "name": "GCPTokenCheck",
+      "args": {
+          "project_name": "@project_name"
+      }
+    }],
     "modules": [{
         "wants": [],
         "name": "GCPLogsCollector",

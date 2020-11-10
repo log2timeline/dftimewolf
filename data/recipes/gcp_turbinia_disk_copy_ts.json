@@ -2,6 +2,22 @@
     "name": "gcp_turbinia_disk_copy_ts",
     "description": "Imports a remote GCP persistent disk and sends to Turbinia and Timesketch.\n\n- Copies a disk from a remote GCP project\n- Creates a Turbinia processing requests\n- Downloads and sends results to Timesketch.\n\nIt will also start an analysis VM with the attached disk. If the target disk is already in the same project as Turbinia you can use the `gcp_turbinia` recipe.",
     "short_description": "Imports a remote GCP persistent disk, processes it with Turbinia and sends results to Timesketch.",
+    "preflights": [{
+      "wants": [],
+      "name": "GCPTokenCheck",
+      "runtime_name": "GCPTokenCheck-analysis",
+      "args": {
+          "project_name": "@analysis_project_name"
+      }
+    },
+    {
+      "wants": [],
+      "name": "GCPTokenCheck",
+      "runtime_name": "GCPTokenCheck-source",
+      "args": {
+          "project_name": "@source_project_name"
+      }
+    }],
     "modules": [{
         "wants": [],
         "name": "GoogleCloudCollector",

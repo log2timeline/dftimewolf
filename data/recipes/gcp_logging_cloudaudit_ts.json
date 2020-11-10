@@ -2,6 +2,13 @@
     "name": "gcp_logging_cloudaudit_ts",
     "description": "Collects GCP logs from a project and exports them to Timesketch.",
     "short_description": "Collects GCP logs from a project and exports them to Timesketch.",
+    "preflights": [{
+      "wants": [],
+      "name": "GCPTokenCheck",
+      "args": {
+          "project_name": "@project_name"
+      }
+    }],
     "modules": [{
         "wants": [],
         "name": "GCPLogsCollector",
