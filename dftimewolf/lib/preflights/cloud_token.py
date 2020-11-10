@@ -10,7 +10,7 @@ from dftimewolf.lib.modules import manager as modules_manager
 class GCPTokenCheck(module.PreflightModule):
   """Checks for GCP authentication."""
 
-  def SetUp(self, project_name):
+  def SetUp(self, project_name):  # pylint: disable=arguments-differ
     """Runs gcloud to make sure we can authenticate to GCP APIs.
 
     Args:
