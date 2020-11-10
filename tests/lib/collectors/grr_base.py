@@ -21,10 +21,11 @@ class MockGRRObject(object):
   """Fake GRR object that will be used in the access forbidden wrapper test"""
   _access_forbidden_counter = 0
   CreateApproval = mock.MagicMock()
+  CreateApproval.client_id = "abcd"
+  CreateApproval.approval_id = "dcba"
 
   hunt_id = "123"
   client_id = "321"
-  approval_id = "abcd"
 
   # pylint: disable=unused-argument
   def ForbiddenFunction(self, random1, random2, random3=None, random4=None):
