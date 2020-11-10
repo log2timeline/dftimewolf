@@ -20,8 +20,8 @@ class GCPTokenCheck(module.PreflightModule):
     gcloud_path = shutil.which('gcloud')
     if not gcloud_path:
       self.ModuleError(
-          'Could not find path to gcloud tool. Please install gcloud SDK, as it '
-          'required to authenticate to GCP')
+          'Could not find path to gcloud tool. Please install gcloud SDK, as it'
+          'is required to authenticate to GCP')
     try:
       subprocess.check_output(
           [gcloud_path, 'auth', 'application-default', 'print-access-token', '--project', project_name])  # pylint: disable=line-too-long
