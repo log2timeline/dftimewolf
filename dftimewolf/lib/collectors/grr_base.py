@@ -94,9 +94,9 @@ class GRRBaseModule(module.BaseModule):
         self.logger.info('No valid approval found: {0!s}'.format(exception))
         # If approval was already sent, just wait a bit more.
         if approval_sent:
-          self.logger.info('Approval not yet granted, waiting {0:d}s:\n{1:s}'.
-                           format(self._CHECK_APPROVAL_INTERVAL_SEC,
-                                  approval_url))
+          self.logger.info('Approval not yet granted, waiting {0:d}s'.format(
+              self._CHECK_APPROVAL_INTERVAL_SEC))
+          self.logger.info(approval_url)
           time.sleep(self._CHECK_APPROVAL_INTERVAL_SEC)
           continue
 
