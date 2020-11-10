@@ -33,7 +33,7 @@ class GCPTokenCheck(module.PreflightModule):
   def Process(self):
     """Processes input and builds the module's output attribute."""
 
-  def Cleanup(self):
+  def CleanUp(self):
     """Carries out optional cleanup actions at the end of the recipe run."""
 
 
