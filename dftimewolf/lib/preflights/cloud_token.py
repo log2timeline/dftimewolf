@@ -24,7 +24,7 @@ class GCPTokenCheck(module.PreflightModule):
           'required to authenticate to GCP')
     try:
       subprocess.check_output(
-          ['gcloud', 'auth', 'application-default', 'print-access-token', '--project', project_name])  # pylint: disable=line-too-long
+          [gcloud_path, 'auth', 'application-default', 'print-access-token', '--project', project_name])  # pylint: disable=line-too-long
     except subprocess.CalledProcessError:
       self.ModuleError(
           'Your GCP application credentials are invalid. Please run '
