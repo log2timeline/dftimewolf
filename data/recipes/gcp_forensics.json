@@ -7,15 +7,15 @@
     "name": "GCPTokenCheck",
     "runtime_name": "GCPTokenCheck-analysis",
     "args": {
-        "project": "@analysis_project_name"
+        "project_name": "@analysis_project_name"
     }
   },
   {
     "wants": [],
     "name": "GCPTokenCheck",
-    "runtime_name": "GCPTokenCheck-source",
+    "runtime_name": "GCPTokenCheck-remote",
     "args": {
-        "project": "@source_project_name"
+        "project": "@remote_project_name"
     }
   }],
   "modules": [{
