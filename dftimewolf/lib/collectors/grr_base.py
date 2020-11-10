@@ -110,10 +110,10 @@ class GRRBaseModule(module.BaseModule):
         approval = grr_object.CreateApproval(
             reason=self.reason, notified_users=self.approvers)
         approval_sent = True
-        approval_url = ('{0:s}/#/users/{1:s}/approvals/client/'
-                        '{2:s}/{3:s}').format(self.grr_url, os.environ['USER'],
-                                              approval.client_id,
-                                              approval.approval_id)
+        approval_url = ('{0:s}/#/users/{1:s}/approvals/client/{2:s}/{3:s}'.
+                        format(self.grr_url, os.environ['USER'],
+                               approval.client_id,
+                               approval.approval_id))
         self.logger.info(
             '{0!s}: approval request sent to: {1!s} (reason: {2:s})'.format(
                 grr_object, self.approvers, self.reason))
