@@ -15,7 +15,7 @@
       "name": "GCPTokenCheck",
       "runtime_name": "GCPTokenCheck-source",
       "args": {
-          "project": "@source_project_name"
+          "project_name": "@source_project_name"
       }
     }],
     "modules": [{

@@ -15,7 +15,7 @@
     "name": "GCPTokenCheck",
     "runtime_name": "GCPTokenCheck-remote",
     "args": {
-        "project": "@remote_project_name"
+        "project_name": "@remote_project_name"
     }
   }],
   "modules": [{
