@@ -21,8 +21,10 @@ class MockGRRObject(object):
   """Fake GRR object that will be used in the access forbidden wrapper test"""
   _access_forbidden_counter = 0
   CreateApproval = mock.MagicMock()
-  CreateApproval.client_id = "abcd"
-  CreateApproval.approval_id = "dcba"
+  ClientApproval = mock.MagicMock()
+  ClientApproval.client_id = "abcd"
+  ClientApproval.approval_id = "dcba"
+  CreateApproval.return_value = ClientApproval
 
   hunt_id = "123"
   client_id = "321"
