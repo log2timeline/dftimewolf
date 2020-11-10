@@ -24,6 +24,7 @@ class MockGRRObject(object):
   ClientApproval = mock.MagicMock()
   ClientApproval.client_id = "abcd"
   ClientApproval.approval_id = "dcba"
+  ClientApproval.usernam = "nobody"
   CreateApproval.return_value = ClientApproval
 
   hunt_id = "123"
