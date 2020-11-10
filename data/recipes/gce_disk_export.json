@@ -37,4 +37,3 @@
         ["--exported_disk_name", "Name of the output file, must comply with ^[A-Za-z0-9-]*$' and '.tar.gz' will be appended to the name. If not exist, random name will be generated and printed to screen.", null]
     ]
   }
-
