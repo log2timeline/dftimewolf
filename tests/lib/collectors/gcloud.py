@@ -54,6 +54,7 @@ class GoogleCloudCollectorTest(unittest.TestCase):
   @mock.patch('libcloudforensics.providers.gcp.internal.compute_base_resource.GoogleComputeBaseResource.AddLabels')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute_base_resource.GoogleComputeBaseResource')
   @mock.patch('libcloudforensics.providers.gcp.forensics.StartAnalysisVm')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
   def testSetUp(self,
                 mock_StartAnalysisVm,
                 mock_GoogleComputeBaseResource,
@@ -103,6 +104,7 @@ class GoogleCloudCollectorTest(unittest.TestCase):
   @mock.patch('libcloudforensics.providers.gcp.forensics.CreateDiskCopy')
   @mock.patch('dftimewolf.lib.collectors.gcloud.GoogleCloudCollector._FindDisksToCopy')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.AttachDisk')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
   def testProcess(self,
                   unused_MockAttachDisk,
                   mock_FindDisks,
