@@ -30,5 +30,11 @@ class GCPTokenCheck(module.PreflightModule):
           'Your GCP application credentials are invalid. Please run '
           'gcloud auth application-default login')
 
+  def Process(self):
+    pass
+
+  def Cleanup(self):
+    pass
+
 
 modules_manager.ModulesManager.RegisterModule(GCPTokenCheck)
