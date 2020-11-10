@@ -24,6 +24,7 @@ class MockGRRObject(object):
 
   hunt_id = "123"
   client_id = "321"
+  approval_id = "abcd"
 
   # pylint: disable=unused-argument
   def ForbiddenFunction(self, random1, random2, random3=None, random4=None):
