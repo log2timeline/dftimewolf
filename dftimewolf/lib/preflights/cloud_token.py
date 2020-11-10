@@ -32,11 +32,9 @@ class GCPTokenCheck(module.PreflightModule):
 
   def Process(self):
     """Processes input and builds the module's output attribute."""
-    pass
 
   def Cleanup(self):
     """Carries out optional cleanup actions at the end of the recipe run."""
-    pass
 
 
 modules_manager.ModulesManager.RegisterModule(GCPTokenCheck)
