@@ -3,6 +3,7 @@
 
 from google.auth.exceptions import DefaultCredentialsError, RefreshError
 from googleapiclient.errors import HttpError
+from libcloudforensics.errors import ResourceNotFoundError
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp import forensics as gcp_forensics
 
@@ -159,6 +160,16 @@ class GoogleCloudCollector(module.BaseModule):
             name=self._ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME,
             type_=self._ANALYSIS_VM_CONTAINER_ATTRIBUTE_TYPE,
             value=analysis_vm_name))
+
+    try:
+      if self.remote_instance_name:
+        self.remote_project.compute.GetInstance(self.remote_instance_name)
+    except ResourceNotFoundError as exception:
+      self.ModuleError(
+        message='Instance "{0:s}" not found or insufficient permissions'.format(
+          self.remote_instance_name),
+        critical=True)
+      return
 
     try:
       # TODO: Make creating an analysis VM optional
