@@ -24,7 +24,8 @@ named_modules_contents = {
         'dummy_recipe',
     'short_description': 'Nothing to see here.',
     'preflights': [{
-        'name': 'DummyPreflightModule'
+        'name': 'DummyPreflightModule',
+        'runtime_name': 'DummyPreflightModule-runtime'
     }],
     'modules': [{
         'wants': [],
