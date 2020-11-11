@@ -59,7 +59,7 @@ class GoogleCloudCollectorTest(unittest.TestCase):
                 mock_StartAnalysisVm,
                 mock_GoogleComputeBaseResource,
                 mock_AddLabels,
-                mock_TargetInstance):
+                mock_GetInstance):
     """Tests that the collector can be initialized."""
     test_state = state.DFTimewolfState(config.Config)
     mock_StartAnalysisVm.return_value = (mock_GoogleComputeBaseResource, None)
@@ -114,7 +114,7 @@ class GoogleCloudCollectorTest(unittest.TestCase):
                   mock_StartAnalysisVm,
                   mock_AddLabels,
                   mock_GetBootDisk,
-                  mock_TargetInstance):
+                  mock_GetInstance):
     """Tests the collector's Process() function."""
     mock_StartAnalysisVm.return_value = (FAKE_ANALYSIS_VM, None)
     mock_FindDisks.return_value = [FAKE_DISK]
