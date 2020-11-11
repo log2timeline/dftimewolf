@@ -253,11 +253,13 @@ class DFTimewolfState(object):
     """Runs preflight modules."""
     for preflight_definition in self.recipe.get('preflights', []):
       preflight_name = preflight_definition['name']
+      runtime_name = preflight_definition.get('runtime_name', preflight_name)
+
       args = preflight_definition.get('args', {})
 
       new_args = utils.ImportArgsFromDict(
           args, self.command_line_options, self.config)
-      preflight = self._module_pool[preflight_name]
+      preflight = self._module_pool[runtime_name]
       try:
         preflight.SetUp(**new_args)
         preflight.Process()
@@ -268,7 +270,8 @@ class DFTimewolfState(object):
     """Executes any cleanup actions defined in preflight modules."""
     for preflight_definition in self.recipe.get('preflights', []):
       preflight_name = preflight_definition['name']
-      preflight = self._module_pool[preflight_name]
+      runtime_name = preflight_definition.get('runtime_name', preflight_name)
+      preflight = self._module_pool[runtime_name]
       try:
         preflight.CleanUp()
       finally:
