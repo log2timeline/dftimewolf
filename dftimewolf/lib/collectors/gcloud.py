@@ -126,7 +126,7 @@ class GoogleCloudCollector(module.BaseModule):
           analysis VM.
     """
     if not (remote_instance_name or disk_names):
-      self.state.AddError(
+      self.ModuleError(
           'You need to specify at least an instance name or disks to copy',
           critical=True)
       return
