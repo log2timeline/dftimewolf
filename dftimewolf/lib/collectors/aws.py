@@ -211,7 +211,7 @@ class AWSCollector(module.BaseModule):
     try:
       remote_instance = self.source_account.ec2.GetInstanceById(instance_id)
     except RuntimeError as exception:
-      self.state.AddError(str(exception), critical=True)
+      self.ModuleError(str(exception), critical=True)
       return []
 
     if all_volumes:
