@@ -13,11 +13,13 @@ class SanityChecks(unittest.TestCase):
   """Tests for the Sanity Checker preflight."""
 
   def testInitialization(self):
+    """Test initialisation of the sanity checker."""
     test_state = state.DFTimewolfState(config.Config)
     checker = sanity_checks.SanityChecks(test_state)
     self.assertIsNotNone(checker)
 
   def testInvalidDateOrder(self):
+    """Test that dates in the incorrect order produces an error."""
     test_state = state.DFTimewolfState(config.Config)
     checker = sanity_checks.SanityChecks(test_state)
 
@@ -31,6 +33,7 @@ class SanityChecks(unittest.TestCase):
         'Date order validation succeeded when it should have failed')
 
   def testInvalidDateFormat(self):
+    """Test that invalid date formats produce an error."""
     test_state = state.DFTimewolfState(config.Config)
     checker = sanity_checks.SanityChecks(test_state)
 
@@ -44,6 +47,7 @@ class SanityChecks(unittest.TestCase):
         'Date format validation succeeded when it should have failed')
 
   def testValidDates(self):
+    """Test that valid dates produce no error."""
     test_state = state.DFTimewolfState(config.Config)
     checker = sanity_checks.SanityChecks(test_state)
 

@@ -2,7 +2,6 @@
 from __future__ import print_function
 
 import datetime
-import re
 
 from dftimewolf.lib import module
 from dftimewolf.lib.errors import DFTimewolfError
@@ -24,7 +23,7 @@ class SanityChecks(module.PreflightModule):
     self.dateformat = None
 
 
-  def SetUp(self, startdate=None, enddate=None, dateformat=None):
+  def SetUp(self, startdate=None, enddate=None, dateformat=None):  # pylint: disable=arguments-differ
     """Sets up a SanityChecks instance.
 
     Args:
@@ -42,7 +41,7 @@ class SanityChecks(module.PreflightModule):
     try:
       if (self.startdate and self.enddate and self.dateformat):
         self._AreDatesValid()
-    except (DFTimewolfError):  # We don't need the extra stacktrace here
+    except DFTimewolfError:  # We don't need the extra stacktrace here
       return
 
   def _AreDatesValid(self):
@@ -60,5 +59,8 @@ class SanityChecks(module.PreflightModule):
     except (ValueError) as e:  # Date parsing failure
       self.ModuleError(str(e), critical=True)
 
+  def CleanUp(self):
+    # We don't need to do any cleanup
+    return
 
 modules_manager.ModulesManager.RegisterModule(SanityChecks)
