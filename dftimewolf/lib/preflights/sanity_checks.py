@@ -9,11 +9,7 @@ from dftimewolf.lib.modules import manager as modules_manager
 
 
 class SanityChecks(module.PreflightModule):
-  """Collects attributes from Vimes and populates recipe arguments.
-
-  Attributes:
-    attributes: a list of Attribute proto objects.
-  """
+  """Verifies logic of parameters and fails fast on issues."""
 
   def __init__(self, state, name=None, critical=False):
     super(SanityChecks, self).__init__(
