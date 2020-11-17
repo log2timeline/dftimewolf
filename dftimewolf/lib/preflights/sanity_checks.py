@@ -22,10 +22,9 @@ class SanityChecks(module.PreflightModule):
     self.startdate = None
     self.enddate = None
     self.dateformat = None
-    self.emails = None
 
 
-  def SetUp(self, startdate=None, enddate=None, dateformat=None, emails=None):
+  def SetUp(self, startdate=None, enddate=None, dateformat=None):
     """Sets up a SanityChecks instance.
 
     Args:
@@ -36,7 +35,6 @@ class SanityChecks(module.PreflightModule):
     self.startdate = startdate
     self.enddate = enddate
     self.dateformat = dateformat
-    self.emails = emails
 
   def Process(self):
     """Test whether the values we've received are sane."""
@@ -44,8 +42,6 @@ class SanityChecks(module.PreflightModule):
     try:
       if (self.startdate and self.enddate and self.dateformat):
         self._AreDatesValid()
-      if self.emails:
-        self._AreEmailsValid()
     except (DFTimewolfError):  # We don't need the extra stacktrace here
       return
 
