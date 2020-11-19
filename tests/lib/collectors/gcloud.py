@@ -51,16 +51,19 @@ class GoogleCloudCollectorTest(unittest.TestCase):
     self.assertIsNotNone(gcloud_collector)
 
   # pylint: disable=invalid-name,line-too-long
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute_base_resource.GoogleComputeBaseResource.AddLabels')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute_base_resource.GoogleComputeBaseResource')
   @mock.patch('libcloudforensics.providers.gcp.forensics.StartAnalysisVm')
   def testSetUp(self,
                 mock_StartAnalysisVm,
                 mock_GoogleComputeBaseResource,
-                mock_AddLabels):
+                mock_AddLabels,
+                mock_GetInstance):
     """Tests that the collector can be initialized."""
     test_state = state.DFTimewolfState(config.Config)
     mock_StartAnalysisVm.return_value = (mock_GoogleComputeBaseResource, None)
+    mock_GetInstance.return_value = FAKE_INSTANCE
 
     gcloud_collector = gcloud.GoogleCloudCollector(test_state)
     gcloud_collector.SetUp(
@@ -98,6 +101,7 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         [mock.call({'incident_id': 'fake_incident_id'})])
 
   # pylint: disable=line-too-long
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.GetBootDisk')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute_base_resource.GoogleComputeBaseResource.AddLabels')
   @mock.patch('libcloudforensics.providers.gcp.forensics.StartAnalysisVm')
@@ -110,11 +114,13 @@ class GoogleCloudCollectorTest(unittest.TestCase):
                   mock_CreateDiskCopy,
                   mock_StartAnalysisVm,
                   mock_AddLabels,
-                  mock_GetBootDisk):
+                  mock_GetBootDisk,
+                  mock_GetInstance):
     """Tests the collector's Process() function."""
     mock_StartAnalysisVm.return_value = (FAKE_ANALYSIS_VM, None)
     mock_FindDisks.return_value = [FAKE_DISK]
     mock_CreateDiskCopy.return_value = FAKE_DISK_COPY
+    mock_GetInstance.return_value = FAKE_INSTANCE
     FAKE_ANALYSIS_VM.AddLabels = mock_AddLabels
     FAKE_ANALYSIS_VM.GetBootDisk = mock_GetBootDisk
     FAKE_DISK_COPY.AddLabels = mock_AddLabels

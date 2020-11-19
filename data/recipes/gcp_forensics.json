@@ -2,6 +2,22 @@
   "name": "gcp_forensics",
   "short_description": "Copies disk from a GCP project to an analysis VM.",
   "description": "Copies a disk from a project to another, creates an analysis VM, and attaches the copied disk to it.",
+  "preflights": [{
+    "wants": [],
+    "name": "GCPTokenCheck",
+    "runtime_name": "GCPTokenCheck-analysis",
+    "args": {
+        "project_name": "@analysis_project_name"
+    }
+  },
+  {
+    "wants": [],
+    "name": "GCPTokenCheck",
+    "runtime_name": "GCPTokenCheck-remote",
+    "args": {
+        "project_name": "@remote_project_name"
+    }
+  }],
   "modules": [{
       "wants": [],
       "name": "GoogleCloudCollector",

@@ -139,7 +139,7 @@ class GoogleCloudCollector(module.BaseModule):
           create the analysis VM.
     """
     if not (remote_instance_name or disk_names):
-      self.state.AddError(
+      self.ModuleError(
           'You need to specify at least an instance name or disks to copy',
           critical=True)
       return
@@ -153,7 +153,15 @@ class GoogleCloudCollector(module.BaseModule):
     else:
       self.analysis_project = self.remote_project
 
-    self.remote_instance_name = remote_instance_name
+    try:
+      if self.remote_instance_name:
+        self.remote_project.compute.GetInstance(self.remote_instance_name)
+    except ResourceNotFoundError as exception:
+      self.ModuleError(
+        message='Instance "{0:s}" not found or insufficient permissions'.format(
+          self.remote_instance_name),
+        critical=True)
+      return
     self.disk_names = disk_names
     self.all_disks = all_disks
     if incident_id:

@@ -119,7 +119,7 @@ class TimesketchExporter(module.BaseModule):
   def _WaitForTimelines(self):
     """Waits for all timelines in a sketch to be processed."""
     time.sleep(5)  # Give Timesketch time to populate recently added timelines.
-    sketch = self.timesketch_api.client.get_sketch(self.sketch_id)
+    sketch = self.timesketch_api.get_sketch(self.sketch_id)
     timelines = sketch.list_timelines()
     while True:
       if all(tl.status in ['fail', 'ready', 'timeout', 'archived']

@@ -15,6 +15,7 @@ class GRRBaseModule(module.BaseModule):
   Attributes:
     output_path (str): path to store collected artifacts.
     grr_api: GRR HTTP API client.
+    grr_url: GRR HTTP URL.
     reason (str): justification for GRR access.
     approvers: list of GRR approval recipients.
   """
@@ -33,6 +34,7 @@ class GRRBaseModule(module.BaseModule):
     super(GRRBaseModule, self).__init__(state, name=name, critical=critical)
     self.reason = None
     self.grr_api = None
+    self.grr_url = None
     self.approvers = None
     self.output_path = None
 
@@ -58,6 +60,7 @@ class GRRBaseModule(module.BaseModule):
     self.grr_api = grr_api.InitHttp(api_endpoint=grr_server_url,
                                     auth=grr_auth,
                                     verify=verify)
+    self.grr_url = grr_server_url
     self.output_path = tempfile.mkdtemp()
     self.reason = reason
 
@@ -80,6 +83,7 @@ class GRRBaseModule(module.BaseModule):
       object: return value of the execution of grr_function(*args, **kwargs).
     """
     approval_sent = False
+    approval_url = None
 
     while True:
       try:
@@ -91,6 +95,7 @@ class GRRBaseModule(module.BaseModule):
         if approval_sent:
           self.logger.info('Approval not yet granted, waiting {0:d}s'.format(
               self._CHECK_APPROVAL_INTERVAL_SEC))
+          self.logger.info(approval_url)
           time.sleep(self._CHECK_APPROVAL_INTERVAL_SEC)
           continue
 
@@ -101,9 +106,13 @@ class GRRBaseModule(module.BaseModule):
           self.ModuleError(message, critical=True)
 
         # Otherwise, send a request for approval
-        grr_object.CreateApproval(
+        approval = grr_object.CreateApproval(
             reason=self.reason, notified_users=self.approvers)
         approval_sent = True
+        approval_url = ('{0:s}/#/users/{1:s}/approvals/client/{2:s}/{3:s}'.
+                        format(self.grr_url, approval.username,
+                               approval.client_id,
+                               approval.approval_id))
         self.logger.info(
             '{0!s}: approval request sent to: {1!s} (reason: {2:s})'.format(
                 grr_object, self.approvers, self.reason))

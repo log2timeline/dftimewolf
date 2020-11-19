@@ -58,8 +58,9 @@ class RecipeTests(unittest.TestCase):
       declared_modules = set()
       wanted_modules = set()
       for module in recipe.contents['modules']:
-
-        declared_modules.add(module['name'])
+        module_name = module['name']
+        runtime_name = module.get('runtime_name', module_name)
+        declared_modules.add(runtime_name)
         for wanted in module['wants']:
           wanted_modules.add(wanted)
 

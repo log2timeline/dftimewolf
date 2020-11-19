@@ -2,6 +2,13 @@
     "name": "gcp_logging_gce_ts",
     "description": "Loads GCP Cloud Audit Logs for GCE into Timesketch.",
     "short_description": "Loads GCP Cloud Audit Logs for GCE into Timesketch",
+    "preflights": [{
+      "wants": [],
+      "name": "GCPTokenCheck",
+      "args": {
+          "project_name": "@project_name"
+      }
+    }],
     "modules": [{
         "wants": [],
         "name": "GCPLogsCollector",
