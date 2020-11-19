@@ -8,6 +8,7 @@
         "args": {
             "hosts": "@hosts",
             "reason": "@reason",
+            "client_ids": "@client_id",
             "grr_server_url": "@grr_server_url",
             "grr_username": "@grr_username",
             "grr_password": "@grr_password",
@@ -37,6 +38,7 @@
     "args": [
         ["hosts", "Comma-separated list of hosts to process", null],
         ["reason", "Reason for collection", null],
+        ["--client_ids", "Comma-separated list of GRR client IDs, overrides hosts.", null],
         ["--artifacts", "Comma-separated list of artifacts to fetch (override default artifacts)", null],
         ["--extra_artifacts", "Comma-separated list of artifacts to append to the default artifact list", null],
         ["--use_tsk", "Use TSK to fetch artifacts", false],

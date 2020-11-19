@@ -49,8 +49,9 @@ class GRRFlowTests(unittest.TestCase):
     """Tests that GetClientBySelector fetches the most recent GRR client."""
     self.mock_grr_api.SearchClients.return_value = \
         mock_grr_hosts.MOCK_CLIENT_LIST
-    client = self.grr_flow_module._GetClientBySelector('tomchop')
-    self.mock_grr_api.SearchClients.assert_called_with('tomchop')
+    client = self.grr_flow_module._GetClientBySelector(
+        'C.0000000000000001', is_fqdn=False)
+    self.mock_grr_api.SearchClients.assert_called_with('C.0000000000000001')
     self.assertEqual(
         client.data.client_id, mock_grr_hosts.MOCK_CLIENT_RECENT.data.client_id)
 
@@ -58,7 +59,7 @@ class GRRFlowTests(unittest.TestCase):
     """Tests that GetClientBySelector fetches the most recent GRR client."""
     self.mock_grr_api.SearchClients.side_effect = grr_errors.UnknownError
     with self.assertRaises(errors.DFTimewolfError) as error:
-      self.grr_flow_module._GetClientBySelector('tomchop')
+      self.grr_flow_module._GetClientBySelector('tomchop', is_fqdn=True)
     self.assertEqual(
         'Could not search for host tomchop: ', error.exception.message)
     self.assertEqual(len(self.test_state.errors), 1)
@@ -181,7 +182,8 @@ class GRRArtifactCollectorTest(unittest.TestCase):
         grr_password='password',
         approvers='approver1,approver2',
         verify=False,
-        skip_offline_clients=False
+        skip_offline_clients=False,
+        client_ids='C.0000000000000001'
     )
 
   def testInitialization(self):
@@ -196,6 +198,8 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     self.assertEqual(self.grr_artifact_collector.hostnames,
                      ['tomchop'])
     self.assertTrue(self.grr_artifact_collector.use_tsk)
+    self.assertEqual(self.grr_artifact_collector.client_ids,
+                     ['C.0000000000000001'])
 
   @mock.patch('grr_api_client.api.InitHttp')
   @mock.patch('grr_api_client.flow.FlowRef.Get')
@@ -227,7 +231,8 @@ class GRRArtifactCollectorTest(unittest.TestCase):
         grr_password='password',
         approvers='approver1,approver2',
         verify=False,
-        skip_offline_clients=False
+        skip_offline_clients=False,
+        client_ids='C.0000000000000001'
     )
     self.grr_artifact_collector.Process()
     kwargs = mock_ArtifactCollectorFlowArgs.call_args[1]
@@ -249,7 +254,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     mock_Get.return_value = mock_grr_hosts.MOCK_FLOW
     self.grr_artifact_collector.Process()
     # Flow ID is F:12345, Client ID is C.0000000000000001
-    self.mock_grr_api.SearchClients.assert_any_call('tomchop')
+    self.mock_grr_api.SearchClients.assert_any_call('C.0000000000000001')
     self.assertEqual(mock_CreateFlow.call_count, 1)
     self.assertEqual(mock_DownloadFiles.call_count, 1)
     mock_DownloadFiles.assert_called_with(
@@ -281,6 +286,7 @@ class GRRFileCollectorTest(unittest.TestCase):
         approvers='approver1,approver2',
         skip_offline_clients=False,
         action='stat',
+        client_ids='C.0000000000000001'
     )
 
   def testInitialization(self):
@@ -289,6 +295,8 @@ class GRRFileCollectorTest(unittest.TestCase):
     self.assertEqual(self.grr_file_collector.hostnames,
                      ['tomchop'])
     self.assertEqual(self.grr_file_collector.files, ['/etc/passwd'])
+    self.assertEqual(self.grr_file_collector.client_ids,
+                     ['C.0000000000000001'])
 
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
@@ -333,6 +341,7 @@ class GRRFlowCollector(unittest.TestCase):
         grr_password='admin',
         approvers='approver1,approver2',
         skip_offline_clients=False,
+        client_id='C.0000000000000001'
     )
 
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
@@ -372,6 +381,7 @@ class GRRTimelineCollector(unittest.TestCase):
         grr_password='admin',
         approvers='approver1,approver2',
         skip_offline_clients=False,
+        client_ids='C.0000000000000001'
     )
 
   def testInitialization(self):
@@ -381,6 +391,8 @@ class GRRTimelineCollector(unittest.TestCase):
                      ['tomchop'])
     self.assertEqual(self.grr_timeline_collector.root_path, b'/')
     self.assertEqual(self.grr_timeline_collector._timeline_format, 1)
+    self.assertEqual(self.grr_timeline_collector.client_ids,
+                     ['C.0000000000000001'])
 
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.'
               'GRRTimelineCollector._DownloadTimeline')
