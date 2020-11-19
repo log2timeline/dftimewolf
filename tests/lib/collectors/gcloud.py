@@ -75,7 +75,7 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         42.0,
         'pd-standard',
         16,
-        remote_instance_name='my-owned-instance',
+        remote_instance_name='my-owned-instance'
     )
     self.assertEqual(test_state.errors, [])
     self.assertEqual(gcloud_collector.disk_names, [])

@@ -152,6 +152,13 @@ class GoogleCloudCollector(module.BaseModule):
           analysis_project_name, default_zone=zone)
     else:
       self.analysis_project = self.remote_project
+    
+    self.remote_instance_name = remote_instance_name
+    self.disk_names = disk_names
+    self.all_disks = all_disks
+    if incident_id:
+      self.incident_id = incident_id
+      self._gcp_label = {'incident_id': self.incident_id}
 
     try:
       if self.remote_instance_name:
@@ -162,11 +169,6 @@ class GoogleCloudCollector(module.BaseModule):
           self.remote_instance_name),
         critical=True)
       return
-    self.disk_names = disk_names
-    self.all_disks = all_disks
-    if incident_id:
-      self.incident_id = incident_id
-      self._gcp_label = {'incident_id': self.incident_id}
 
     if create_analysis_vm:
       if self.incident_id:
