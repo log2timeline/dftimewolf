@@ -4,7 +4,6 @@ from __future__ import print_function
 import datetime
 
 from dftimewolf.lib import module
-from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.modules import manager as modules_manager
 
 # pylint: disable=line-too-long
