@@ -23,14 +23,23 @@ class SanityChecks(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     checker = sanity_checks.SanityChecks(test_state)
 
+    start_date = '2020-10-31'
+    end_date = '2020-10-01'
+    expected_error = sanity_checks.DATE_ORDER_ERROR_STRING.format(
+        start_date, end_date)
+
     checker.SetUp(
-        startdate='2020-10-31', enddate='2020-10-01', dateformat='%Y-%m-%d')
+        startdate=start_date, enddate=end_date, dateformat='%Y-%m-%d')
     checker.Process()
 
     # The incorrect date order should mean an error was encountered
     self.assertEqual(
         len(checker.state.errors), 1,
         'Date order validation succeeded when it should have failed')
+    self.assertEqual(
+        checker.state.errors[0].message,
+        expected_error,
+        'Error message differs from expected')
 
   def testInvalidDateFormat(self):
     """Test that invalid date formats produce an error."""
@@ -45,6 +54,11 @@ class SanityChecks(unittest.TestCase):
     self.assertEqual(
         len(checker.state.errors), 1,
         'Date format validation succeeded when it should have failed')
+
+    self.assertEqual(
+        checker.state.errors[0].message,
+        "time data '20-10-01' does not match format '%Y-%m-%d'",
+        'Error message differs from expected')
 
   def testValidDates(self):
     """Test that valid dates produce no error."""

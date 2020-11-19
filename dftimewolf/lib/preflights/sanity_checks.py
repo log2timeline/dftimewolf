@@ -7,6 +7,8 @@ from dftimewolf.lib import module
 from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.modules import manager as modules_manager
 
+# pylint: disable=line-too-long
+DATE_ORDER_ERROR_STRING = 'Hold fast time traveller, your start date {0:s} is after your end date {1:s}'
 
 class SanityChecks(module.PreflightModule):
   """Verifies logic of parameters and fails fast on issues."""
@@ -34,11 +36,8 @@ class SanityChecks(module.PreflightModule):
   def Process(self):
     """Test whether the values we've received are sane."""
 
-    try:
-      if (self.startdate and self.enddate and self.dateformat):
-        self._AreDatesValid()
-    except DFTimewolfError:  # We don't need the extra stacktrace here
-      return
+    if (self.startdate and self.enddate and self.dateformat):
+      self._AreDatesValid()
 
   def _AreDatesValid(self):
     """Test the dates we've received, if any, are sane."""
@@ -48,12 +47,10 @@ class SanityChecks(module.PreflightModule):
       end = datetime.datetime.strptime(self.enddate, self.dateformat)
       if start > end:
         self.ModuleError(
-            # pylint: disable=line-too-long
-            'Hold fast time traveller, your start date {0:s} is after your end date {1:s}'
-            .format(self.startdate, self.enddate),
+            DATE_ORDER_ERROR_STRING.format(self.startdate, self.enddate),
             critical=True)
-    except (ValueError) as e:  # Date parsing failure
-      self.ModuleError(str(e), critical=True)
+    except (ValueError) as exception:  # Date parsing failure
+      self.ModuleError(str(exception), critical=True)
 
   def CleanUp(self):
     # We don't need to do any cleanup
