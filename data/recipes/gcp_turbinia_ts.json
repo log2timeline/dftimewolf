@@ -2,6 +2,13 @@
     "name": "gcp_turbinia_ts",
     "description": "Process a GCP persistent disk with Turbinia and send output to Timesketch.\n\nThis processes a disk that is already in the project where Turbinia exists. If you want to copy the disk from another project, use the gcp_turbinia_import recipe.",
     "short_description": "Processes an existing GCP persistent disk in the Turbinia project and sends results to Timesketch.",
+    "preflights": [{
+      "wants": [],
+      "name": "GCPTokenCheck",
+      "args": {
+          "project_name": "@analysis_project_name"
+      }
+    }],
     "modules": [{
         "wants": [],
         "name": "TurbiniaProcessor",
@@ -18,7 +25,8 @@
         "args": {
             "incident_id": "@incident_id",
             "token_password": "@token_password",
-            "sketch_id": "@sketch_id"
+            "sketch_id": "@sketch_id",
+            "wait_for_timelines": "@wait_for_timelines"
         }
     }],
     "args": [
@@ -28,6 +36,7 @@
         ["--incident_id", "Incident ID (used for Timesketch description)", null],
         ["--run_all_jobs", "Run all Turbinia processing jobs instead of a faster subset", false],
         ["--sketch_id", "Sketch to which the timeline should be added", null],
-        ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""]
+        ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
+        ["--wait_for_timelines", "Whether to wait for timelines to finish processing.", true]
     ]
 }

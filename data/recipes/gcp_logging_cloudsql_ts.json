@@ -2,6 +2,13 @@
   "name": "gcp_logging_cloudsql_ts",
   "description": "Collects GCP logs from Cloud SQL instances for a project and exports them to Timesketch.",
   "short_description": "Collects GCP logs from Cloud SQL instances for a project and exports them to Timesketch.",
+    "preflights": [{
+      "wants": [],
+      "name": "GCPTokenCheck",
+      "args": {
+          "project_name": "@project_name"
+      }
+    }],
   "modules": [
     {
       "wants": [],
@@ -22,7 +29,8 @@
       "args": {
         "incident_id": "@incident_id",
         "token_password": "@token_password",
-        "sketch_id": "@sketch_id"
+        "sketch_id": "@sketch_id",
+        "wait_for_timelines": "@wait_for_timelines"
       }
     }
   ],
@@ -32,5 +40,7 @@
     ["end_date", "End date (yyyy-mm-ddTHH:MM:SSZ)", null],
     ["--incident_id", "Incident ID (used for Timesketch description)", null],
     ["--sketch_id", "Sketch to which the timeline should be added", null],
-    ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""]]
+    ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
+    ["--wait_for_timelines", "Whether to wait for timelines to finish processing.", true]
+  ]
 }

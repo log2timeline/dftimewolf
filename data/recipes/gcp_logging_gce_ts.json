@@ -2,6 +2,13 @@
     "name": "gcp_logging_gce_ts",
     "description": "Loads GCP Cloud Audit Logs for GCE into Timesketch.",
     "short_description": "Loads GCP Cloud Audit Logs for GCE into Timesketch",
+    "preflights": [{
+      "wants": [],
+      "name": "GCPTokenCheck",
+      "args": {
+          "project_name": "@project_name"
+      }
+    }],
     "modules": [{
         "wants": [],
         "name": "GCPLogsCollector",
@@ -19,7 +26,8 @@
         "args": {
             "incident_id": "@incident_id",
             "token_password": "@token_password",
-            "sketch_id": "@sketch_id"
+            "sketch_id": "@sketch_id",
+            "wait_for_timelines": "@wait_for_timelines"
         }
     }],
     "args": [
@@ -28,6 +36,7 @@
         ["end_date", "End date (yyyy-mm-ddTHH:MM:SSZ)", null],
         ["--incident_id", "Incident ID (used for Timesketch description)", null],
         ["--sketch_id", "Sketch to which the timeline should be added", null],
-        ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""]
+        ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
+        ["--wait_for_timelines", "Whether to wait for timelines to finish processing.", true]
     ]
 }

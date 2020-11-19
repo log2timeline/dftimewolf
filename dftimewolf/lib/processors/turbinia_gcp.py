@@ -18,79 +18,42 @@ from dftimewolf.lib.modules import manager as modules_manager
 
 # pylint: disable=no-member
 
-
-class TurbiniaProcessor(module.BaseModule):
-  """Processes Google Cloud (GCP) disks with Turbinia.
+# pylint: disable=abstract-method
+class TurbiniaProcessorBase(module.BaseModule):
+  """Base class for processing with Turbinia.
 
   Attributes:
+    turbinia_config_file (str): Full path to the Turbinia config file to use.
     client (TurbiniaClient): Turbinia client.
-    disk_name (str): name of the disk to process.
     instance (str): name of the Turbinia instance
-    project (str): name of the GPC project containing the disk to process.
+    project (str): name of the GCP project containing the disk to process.
+    run_all_jobs (bool): Whether to run all jobs or to remove slow-running jobs:
+        'StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob'.
+    sketch_id (int): The Timesketch sketch id
     turbinia_region (str): GCP region in which the Turbinia server is running.
     turbinia_zone (str): GCP zone in which the Turbinia server is running.
   """
 
-  def __init__(self, state, critical=False):
-    """Initializes a Turbinia Google Cloud (GCP) disks processor.
+  def __init__(self, state, name=None, critical=False):
+    """Initializes a Turbinia base processor.
 
     Args:
       state (DFTimewolfState): recipe state.
+      name (Optional[str]): The module's runtime name.
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    super(TurbiniaProcessor, self).__init__(state, critical=critical)
+    super(TurbiniaProcessorBase, self).__init__(
+        state, name=name, critical=critical)
+    self.turbinia_config_file = None
     self._output_path = None
     self.client = None
-    self.disk_name = None
     self.instance = None
     self.project = None
+    self.run_all_jobs = None
+    self.sketch_id = None
     self.turbinia_region = None
     self.turbinia_zone = None
-    self.sketch_id = None
-    self.run_all_jobs = None
-
-  # pylint: disable=arguments-differ
-  def SetUp(self, disk_name, project, turbinia_zone, sketch_id, run_all_jobs):
-    """Sets up the object attributes.
-
-    Args:
-      disk_name (str): name of the disk to process.
-      project (str): name of the GPC project containing the disk to process.
-      turbinia_zone (str): GCP zone in which the Turbinia server is running.
-      sketch_id (int): The Timesketch sketch id
-      run_all_jobs (bool): Whether to run all jobs instead of a faster subset.
-    """
-    # TODO: Consider the case when multiple disks are provided by the previous
-    # module or by the CLI.
-
-    if project is None or turbinia_zone is None:
-      self.ModuleError(
-          'project or turbinia_zone are not all specified, bailing out',
-          critical=True)
-
-    self.disk_name = disk_name
-    self.project = project
-    self.turbinia_zone = turbinia_zone
-    self.sketch_id = sketch_id
-    self.run_all_jobs = run_all_jobs
-
-    try:
-      turbinia_config.LoadConfig()
-      self.turbinia_region = turbinia_config.TURBINIA_REGION
-      self.instance = turbinia_config.PUBSUB_TOPIC
-      if turbinia_config.TURBINIA_PROJECT != self.project:
-        self.ModuleError(
-            'Specified project {0!s} does not match Turbinia configured '
-            'project {1!s}. Use gcp_turbinia_import recipe to copy the disk '
-            'into the same project.'.format(
-                self.project, turbinia_config.TURBINIA_PROJECT), critical=True)
-      self._output_path = tempfile.mkdtemp()
-      self.client = turbinia_client.TurbiniaClient()
-    except TurbiniaException as exception:
-      # TODO: determine if exception should be converted into a string as
-      # elsewhere in the codebase.
-      self.ModuleError(str(exception), critical=True)
 
   def _DeterminePaths(self, task_data):
     """Builds lists of local and remote paths from data retured by Turbinia.
@@ -133,7 +96,10 @@ class TurbiniaProcessor(module.BaseModule):
       gs_paths (str):  gs:// URI to files that need to be downloaded from GS.
 
     Returns:
-      list(str): A list of local paths were GS files have been copied to.
+      list:
+        tuple: containing:
+          str: The timeline label for this path.
+          str: A local path where GS files have been copied to.
     """
     # TODO: Externalize fetching files from GCS buckets to a different module.
 
@@ -148,30 +114,64 @@ class TurbiniaProcessor(module.BaseModule):
         # Don't add a critical error for now, until we start raising errors
         # instead of returning manually each
         self.ModuleError(str(exception), critical=False)
-      self.logger.info('Downlaoded {0:s} to {1:s}'.format(path, local_path))
+      self.logger.info('Downloaded {0:s} to {1:s}'.format(path, local_path))
 
       if local_path:
         local_paths.append((timeline_label, local_path))
 
     return local_paths
 
-  def Process(self):
-    """Process files with Turbinia."""
-    log_file_path = os.path.join(self._output_path, 'turbinia.log')
-    self.logger.info('Turbinia log file: {0:s}'.format(log_file_path))
-    vm_containers = self.state.GetContainers(containers.ForensicsVM)
-    if vm_containers and not self.disk_name:
-      forensics_vm = vm_containers[0]
-      self.disk_name = forensics_vm.evidence_disk.name
-      self.logger.info(
-          'Using disk {0:s} from previous collector'.format(self.disk_name))
+  def TurbiniaSetUp(self, project, turbinia_zone, sketch_id, run_all_jobs):
+    """Sets up the object attributes.
 
-    evidence_ = evidence.GoogleCloudDisk(
-        disk_name=self.disk_name, project=self.project, zone=self.turbinia_zone)
+    Args:
+      project (str): name of the GCP project containing the disk to process.
+      turbinia_zone (str): GCP zone in which the Turbinia server is running.
+      sketch_id (int): The Timesketch sketch ID.
+      run_all_jobs (bool): Whether to run all jobs instead of a faster subset.
+    """
+    self.project = project
+    self.turbinia_zone = turbinia_zone
+    self.sketch_id = sketch_id
+    self.run_all_jobs = run_all_jobs
+
+    turbinia_config.LoadConfig(config_file=self.turbinia_config_file)
+    if not self.project:
+      self.project = turbinia_config.TURBINIA_PROJECT
+    if not self.turbinia_zone:
+      self.turbinia_zone = turbinia_config.TURBINIA_ZONE
+
+    if self.project is None or self.turbinia_zone is None:
+      self.ModuleError(
+          'project or turbinia_zone are not all specified, bailing out',
+          critical=True)
+      return
+
+    self.turbinia_region = turbinia_config.TURBINIA_REGION
+    self.instance = turbinia_config.INSTANCE_ID
+    if turbinia_config.TURBINIA_PROJECT != self.project:
+      self.ModuleError(
+          'Specified project {0!s} does not match Turbinia configured '
+          'project {1!s}. Use gcp_turbinia_disk_copy_ts recipe to copy the '
+          'disk into the same project.'.format(
+              self.project, turbinia_config.TURBINIA_PROJECT), critical=True)
+      return
+    self._output_path = tempfile.mkdtemp()
+    self.client = turbinia_client.TurbiniaClient()
+
+  def TurbiniaProcess(self, evidence_):
+    """Creates and sends a Turbinia processing request.
+
+    Args:
+      evidence_(turbinia.evidence.Evidence): The evience to proecess
+
+    Returns:
+      list[dict]: The Turbinia task data
+    """
     try:
       evidence_.validate()
     except TurbiniaException as exception:
-      self.ModuleError(exception, critical=True)
+      self.ModuleError(str(exception), critical=True)
 
     request = TurbiniaRequest(requester=getpass.getuser())
     request.evidence.append(evidence_)
@@ -203,6 +203,7 @@ class TurbiniaProcessor(module.BaseModule):
         'request_id': request.request_id
     }
 
+    task_data = None
     try:
       self.logger.info(
           'Creating Turbinia request {0:s} with Evidence {1!s}'.format(
@@ -217,7 +218,7 @@ class TurbiniaProcessor(module.BaseModule):
       # elsewhere in the codebase.
       self.ModuleError(str(exception), critical=True)
 
-    message = self.client.format_task_status(**request_dict, full_report=True)
+    message = self.client.format_task_status(full_report=True, **request_dict)
     short_message = self.client.format_task_status(**request_dict)
     self.logger.info(short_message)
 
@@ -225,6 +226,76 @@ class TurbiniaProcessor(module.BaseModule):
     report = containers.Report(
         module_name='TurbiniaProcessor', text=message, text_format='markdown')
     self.state.StoreContainer(report)
+
+    return task_data
+
+
+class TurbiniaGCPProcessor(TurbiniaProcessorBase):
+  """Processes Google Cloud (GCP) disks with Turbinia.
+
+  Attributes:
+    disk_name (str): name of the disk to process.
+  """
+
+  def __init__(self, state, name=None, critical=False):
+    """Initializes a Turbinia Google Cloud (GCP) disks processor.
+
+    Args:
+      state (DFTimewolfState): recipe state.
+      name (Optional[str]): The module's runtime name.
+      critical (Optional[bool]): True if the module is critical, which causes
+          the entire recipe to fail if the module encounters an error.
+    """
+    super(TurbiniaGCPProcessor, self).__init__(
+        state, name=name, critical=critical)
+    self.disk_name = None
+
+  # pylint: disable=arguments-differ
+  def SetUp(self,
+            turbinia_config_file,
+            disk_name,
+            project,
+            turbinia_zone,
+            sketch_id,
+            run_all_jobs):
+    """Sets up the object attributes.
+
+    Args:
+      turbinia_config_file (str): Full path to the Turbinia config file to use.
+      disk_name (str): name of the disk to process.
+      project (str): name of the GCP project containing the disk to process.
+      turbinia_zone (str): GCP zone in which the Turbinia server is running.
+      sketch_id (int): The Timesketch sketch ID.
+      run_all_jobs (bool): Whether to run all jobs instead of a faster subset.
+    """
+    # TODO: Consider the case when multiple disks are provided by the previous
+    # module or by the CLI.
+
+    self.turbinia_config_file = turbinia_config_file
+    self.disk_name = disk_name
+
+    try:
+      self.TurbiniaSetUp(project, turbinia_zone, sketch_id, run_all_jobs)
+    except TurbiniaException as exception:
+      self.ModuleError(str(exception), critical=True)
+      return
+
+  def Process(self):
+    """Process files with Turbinia."""
+    log_file_path = os.path.join(self._output_path, 'turbinia.log')
+    print('Turbinia log file: {0:s}'.format(log_file_path))
+
+    vm_containers = self.state.GetContainers(containers.ForensicsVM)
+    if vm_containers and not self.disk_name:
+      forensics_vm = vm_containers[0]
+      self.disk_name = forensics_vm.evidence_disk.name
+      self.logger.info(
+          'Using disk {0:s} from previous collector'.format(self.disk_name))
+
+    evidence_ = evidence.GoogleCloudDisk(
+        disk_name=self.disk_name, project=self.project, zone=self.turbinia_zone)
+
+    task_data = self.TurbiniaProcess(evidence_)
 
     local_paths, gs_paths = self._DeterminePaths(task_data)
 
@@ -259,4 +330,4 @@ class TurbiniaProcessor(module.BaseModule):
       self.state.StoreContainer(container)
 
 
-modules_manager.ModulesManager.RegisterModule(TurbiniaProcessor)
+modules_manager.ModulesManager.RegisterModule(TurbiniaGCPProcessor)

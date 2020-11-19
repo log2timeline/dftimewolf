@@ -27,19 +27,24 @@ if not _ASKING_FOR_HELP:
   # pylint: disable=unused-import
   from dftimewolf.lib import collectors
   from dftimewolf.lib.collectors import azure
+  from dftimewolf.lib.preflights import cloud_token
+  from dftimewolf.lib.preflights import ssh_multiplexer
   from dftimewolf.lib.collectors import aws
   from dftimewolf.lib.collectors import filesystem
   from dftimewolf.lib.collectors import gcloud
   from dftimewolf.lib.collectors import gcp_logging
   from dftimewolf.lib.collectors import grr_hosts
   from dftimewolf.lib.collectors import grr_hunt
+  from dftimewolf.lib.exporters import gce_disk_export
   from dftimewolf.lib.exporters import local_filesystem
   from dftimewolf.lib.exporters import scp_ex
   from dftimewolf.lib.exporters import timesketch
   from dftimewolf.lib.processors import gcp_logging_timesketch
   from dftimewolf.lib.processors import grepper
   from dftimewolf.lib.processors import localplaso
-  from dftimewolf.lib.processors import turbinia
+  from dftimewolf.lib.processors import turbinia_artifact
+  from dftimewolf.lib.processors import turbinia_gcp
+
 
 from dftimewolf.lib.recipes import manager as recipes_manager
 from dftimewolf.lib.state import DFTimewolfState
@@ -230,6 +235,9 @@ class DFTimewolfTool(object):
     self._state.SetupModules()
     logger.info('Modules successfully set up!')
 
+  def CleanUpPreflights(self):
+    """Calls the preflight's CleanUp functions."""
+    self._state.CleanUpPreflights()
 
 def SignalHandler(*unused_argvs):
   """Catches Ctrl + C to exit cleanly."""
@@ -308,6 +316,8 @@ def Main():
 
   # TODO: log errors if this fails.
   tool.RunModules()
+
+  tool.CleanUpPreflights()
 
   return True
 

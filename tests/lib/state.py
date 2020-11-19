@@ -50,6 +50,18 @@ class StateTest(unittest.TestCase):
     self.assertIn('DummyPreflightModule', test_state._module_pool)
     self.assertEqual(len(test_state._module_pool), 3)
 
+  def testLoadRecipeWithRuntimeNames(self):
+    """Tests that a recipe can be loaded correctly."""
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.LoadRecipe(test_recipe.named_modules_contents)
+    # pylint: disable=protected-access
+    self.assertIn('DummyModule1', test_state._module_pool)
+    self.assertIn('DummyModule2', test_state._module_pool)
+    self.assertIn('DummyModule1-2', test_state._module_pool)
+    self.assertIn('DummyModule2-2', test_state._module_pool)
+    self.assertIn('DummyPreflightModule-runtime', test_state._module_pool)
+    self.assertEqual(len(test_state._module_pool), 5)
+
   def testStoreContainer(self):
     """Tests that containers are stored correctly."""
     test_state = state.DFTimewolfState(config.Config)
@@ -80,6 +92,26 @@ class StateTest(unittest.TestCase):
     mock_setup.assert_called_with()
     mock_process.assert_called_with()
 
+  @mock.patch('tests.test_modules.modules.DummyPreflightModule.Process')
+  @mock.patch('tests.test_modules.modules.DummyPreflightModule.SetUp')
+  def testProcessNamedPreflightModules(self, mock_setup, mock_process):
+    """Tests that preflight's process function is called correctly."""
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.command_line_options = {}
+    test_state.LoadRecipe(test_recipe.named_modules_contents)
+    test_state.RunPreflights()
+    mock_setup.assert_called_with()
+    mock_process.assert_called_with()
+
+  @mock.patch('tests.test_modules.modules.DummyPreflightModule.CleanUp')
+  def testCleanupPreflightModules(self, mock_cleanup):
+    """Tests that preflight's process function is called correctly."""
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.command_line_options = {}
+    test_state.LoadRecipe(test_recipe.contents)
+    test_state.CleanUpPreflights()
+    mock_cleanup.assert_called_with()
+
   @mock.patch('tests.test_modules.modules.DummyModule2.SetUp')
   @mock.patch('tests.test_modules.modules.DummyModule1.SetUp')
   def testSetupModules(self, mock_setup1, mock_setup2):
@@ -90,6 +122,21 @@ class StateTest(unittest.TestCase):
     test_state.SetupModules()
     mock_setup1.assert_called_with()
     mock_setup2.assert_called_with()
+
+  @mock.patch('tests.test_modules.modules.DummyModule2.SetUp')
+  @mock.patch('tests.test_modules.modules.DummyModule1.SetUp')
+  def testSetupNamedModules(self, mock_setup1, mock_setup2):
+    """Tests that module's setup functions are correctly called."""
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.command_line_options = {}
+    test_state.LoadRecipe(test_recipe.named_modules_contents)
+    test_state.SetupModules()
+    self.assertEqual(
+      mock_setup1.call_args_list,
+      [mock.call(runtime_value='1-1'), mock.call(runtime_value='1-2')])
+    self.assertEqual(
+      mock_setup2.call_args_list,
+      [mock.call(runtime_value='2-1'), mock.call(runtime_value='2-2')])
 
   @mock.patch('tests.test_modules.modules.DummyModule2.Process')
   @mock.patch('tests.test_modules.modules.DummyModule1.Process')
@@ -102,6 +149,23 @@ class StateTest(unittest.TestCase):
     test_state.RunModules()
     mock_process1.assert_called_with()
     mock_process2.assert_called_with()
+
+  @mock.patch('tests.test_modules.modules.DummyModule2.Process')
+  @mock.patch('tests.test_modules.modules.DummyModule1.Process')
+  def testProcessNamedModules(self, mock_process1, mock_process2):
+    """Tests that modules' process functions are correctly called."""
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.command_line_options = {}
+    test_state.LoadRecipe(test_recipe.named_modules_contents)
+    test_state.SetupModules()
+    test_state.RunModules()
+    # pylint: disable=protected-access
+    self.assertIn('DummyModule1', test_state._threading_event_per_module)
+    self.assertIn('DummyModule2', test_state._threading_event_per_module)
+    self.assertIn('DummyModule1-2', test_state._threading_event_per_module)
+    self.assertIn('DummyModule2-2', test_state._threading_event_per_module)
+    self.assertEqual(mock_process1.call_count, 2)
+    self.assertEqual(mock_process2.call_count, 2)
 
   @mock.patch('tests.test_modules.modules.DummyModule2.Process')
   @mock.patch('tests.test_modules.modules.DummyModule1.Process')

@@ -3,6 +3,7 @@
 
 from google.auth.exceptions import DefaultCredentialsError, RefreshError
 from googleapiclient.errors import HttpError
+from libcloudforensics.errors import ResourceNotFoundError
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp import forensics as gcp_forensics
 
@@ -33,15 +34,17 @@ class GoogleCloudCollector(module.BaseModule):
   _ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME = 'Analysis VM'
   _ANALYSIS_VM_CONTAINER_ATTRIBUTE_TYPE = 'text'
 
-  def __init__(self, state, critical=False):
+  def __init__(self, state, name=None, critical=False):
     """Initializes a Google Cloud Platform (GCP) collector.
 
     Args:
       state (DFTimewolfState): recipe state.
+      name (Optional[str]): The module's runtime name.
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    super(GoogleCloudCollector, self).__init__(state, critical=critical)
+    super(GoogleCloudCollector, self).__init__(
+        state, name=name, critical=critical)
     self.analysis_project = None
     self.analysis_vm = None
     self.incident_id = None
@@ -124,7 +127,7 @@ class GoogleCloudCollector(module.BaseModule):
           analysis VM.
     """
     if not (remote_instance_name or disk_names):
-      self.state.AddError(
+      self.ModuleError(
           'You need to specify at least an instance name or disks to copy',
           critical=True)
       return
@@ -157,6 +160,16 @@ class GoogleCloudCollector(module.BaseModule):
             name=self._ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME,
             type_=self._ANALYSIS_VM_CONTAINER_ATTRIBUTE_TYPE,
             value=analysis_vm_name))
+
+    try:
+      if self.remote_instance_name:
+        self.remote_project.compute.GetInstance(self.remote_instance_name)
+    except ResourceNotFoundError as exception:
+      self.ModuleError(
+        message='Instance "{0:s}" not found or insufficient permissions'.format(
+          self.remote_instance_name),
+        critical=True)
+      return
 
     try:
       # TODO: Make creating an analysis VM optional
