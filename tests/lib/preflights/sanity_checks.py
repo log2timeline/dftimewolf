@@ -51,16 +51,6 @@ class SanityChecks(unittest.TestCase):
           "time data '20-10-01' does not match format '%Y-%m-%d'",
           'Error message differs from expected')
 
-    # The incorrect date format should mean an error was encountered
-#    self.assertEqual(
-#        len(checker.state.errors), 1,
-#        'Date format validation succeeded when it should have failed')
-
-#    self.assertEqual(
-#        checker.state.errors[0].message,
-#        "time data '20-10-01' does not match format '%Y-%m-%d'",
-#        'Error message differs from expected')
-
   def testValidDates(self):
     """Test that valid dates produce no error."""
     test_state = state.DFTimewolfState(config.Config)
