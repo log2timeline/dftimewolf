@@ -136,7 +136,7 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         42.0,
         'pd-standard',
         16,
-        remote_instance_name='my-owned-instance',
+        remote_instance_name='my-owned-instance'
     )
     gcloud_collector.Process()
 
@@ -190,7 +190,7 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         42.0,
         'pd-standard',
         16,
-        remote_instance_name='my-owned-instance',
+        remote_instance_name='my-owned-instance'
     )
     disks = gcloud_collector._FindDisksToCopy()
     self.assertEqual(len(disks), 1)

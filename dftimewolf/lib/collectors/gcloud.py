@@ -3,6 +3,7 @@
 
 from google.auth.exceptions import DefaultCredentialsError, RefreshError
 from googleapiclient.errors import HttpError
+from libcloudforensics.errors import ResourceNotFoundError
 from libcloudforensics.providers.gcp.internal import common
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp import forensics as gcp_forensics
@@ -152,7 +153,7 @@ class GoogleCloudCollector(module.BaseModule):
           analysis_project_name, default_zone=zone)
     else:
       self.analysis_project = self.remote_project
-    
+
     self.remote_instance_name = remote_instance_name
     self.disk_names = disk_names
     self.all_disks = all_disks
