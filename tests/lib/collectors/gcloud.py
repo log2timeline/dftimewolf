@@ -71,10 +71,11 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         'test-target-project-name',
         'fake_incident_id',
         'fake_zone',
+        True,
         42.0,
         'pd-standard',
         16,
-        remote_instance_name='my-owned-instance',
+        remote_instance_name='my-owned-instance'
     )
     self.assertEqual(test_state.errors, [])
     self.assertEqual(gcloud_collector.disk_names, [])
@@ -93,8 +94,8 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         42.0,
         'pd-standard',
         16,
-        image_family='ubuntu-1804-lts',
-        image_project='ubuntu-os-cloud'
+        image_family=None,
+        image_project=None
     )
     mock_AddLabels.assert_has_calls(
         [mock.call({'incident_id': 'fake_incident_id'})])
@@ -131,10 +132,11 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         'test-target-project-name',
         'fake_incident_id',
         'fake_zone',
+        True,
         42.0,
         'pd-standard',
         16,
-        remote_instance_name='my-owned-instance',
+        remote_instance_name='my-owned-instance'
     )
     gcloud_collector.Process()
 
@@ -165,7 +167,7 @@ class GoogleCloudCollectorTest(unittest.TestCase):
                           mock_get_disk,
                           mock_GetBootDisk,
                           mock_GoogleComputeBaseResource):
-    """Tests the FindDisksToCopy function with different SetUp() calls."""
+    """Tests the _FindDisksToCopy function with different SetUp() calls."""
     test_state = state.DFTimewolfState(config.Config)
     gcloud_collector = gcloud.GoogleCloudCollector(test_state)
     mock_StartAnalysisVm.return_value = (mock_GoogleComputeBaseResource, None)
@@ -184,10 +186,11 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         'test-target-project-name',
         'fake_incident_id',
         'fake_zone',
+        True,
         42.0,
         'pd-standard',
         16,
-        remote_instance_name='my-owned-instance',
+        remote_instance_name='my-owned-instance'
     )
     disks = gcloud_collector._FindDisksToCopy()
     self.assertEqual(len(disks), 1)
@@ -201,6 +204,7 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         'test-target-project-name',
         'fake_incident_id',
         'fake_zone',
+        True,
         42.0,
         'pd-standard',
         16,
@@ -218,6 +222,7 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         'test-target-project-name',
         'fake_incident_id',
         'fake_zone',
+        True,
         42.0,
         'pd-standard',
         16,
