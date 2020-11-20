@@ -24,32 +24,28 @@ class SanityChecks(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     checker = sanity_checks.SanityChecks(test_state)
 
-    start_date = '2020-10-31'
-    end_date = '2020-10-01'
-    expected_error = sanity_checks.DATE_ORDER_ERROR_STRING.format(
-        start_date, end_date)
-
-    try:
+    with self.assertRaises(DFTimewolfError) as cm:
       checker.SetUp(
-          startdate=start_date, enddate=end_date, dateformat='%Y-%m-%d')
+          startdate='2020-10-31', enddate='2020-10-01', dateformat='%Y-%m-%d')
       checker.Process()
-    except (DFTimewolfError) as exception:
-      self.assertEqual(str(exception), expected_error,
-          'Exception differs from expected')
+
+    self.assertEqual(str(cm.exception),
+        'Hold fast time traveller, your start date 2020-10-31 is after your end date 2020-10-01',  # pylint: disable=line-too-long
+        'Exception differs from expected')
 
   def testInvalidDateFormat(self):
     """Test that invalid date formats produce an error."""
     test_state = state.DFTimewolfState(config.Config)
     checker = sanity_checks.SanityChecks(test_state)
 
-    try:
+    with self.assertRaises(DFTimewolfError) as cm:
       checker.SetUp(
           startdate='20-10-01', enddate='20-10-31', dateformat='%Y-%m-%d')
       checker.Process()
-    except (DFTimewolfError) as exception:
-      self.assertEqual(str(exception),
-          "time data '20-10-01' does not match format '%Y-%m-%d'",
-          'Error message differs from expected')
+
+    self.assertEqual(str(cm.exception),
+        "time data '20-10-01' does not match format '%Y-%m-%d'",
+        'Error message differs from expected')
 
   def testValidDates(self):
     """Test that valid dates produce no error."""
