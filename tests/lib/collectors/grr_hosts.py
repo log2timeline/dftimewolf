@@ -49,8 +49,8 @@ class GRRFlowTests(unittest.TestCase):
     """Tests that GetClientBySelector fetches the most recent GRR client."""
     self.mock_grr_api.SearchClients.return_value = \
         mock_grr_hosts.MOCK_CLIENT_LIST
-    client = self.grr_flow_module._GetClientBySelector('tomchop')
-    self.mock_grr_api.SearchClients.assert_called_with('tomchop')
+    client = self.grr_flow_module._GetClientBySelector('C.0000000000000001')
+    self.mock_grr_api.SearchClients.assert_called_with('C.0000000000000001')
     self.assertEqual(
         client.data.client_id, mock_grr_hosts.MOCK_CLIENT_RECENT.data.client_id)
 
@@ -171,7 +171,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     self.grr_artifact_collector = grr_hosts.GRRArtifactCollector(
         self.test_state)
     self.grr_artifact_collector.SetUp(
-        hosts='tomchop',
+        hosts='C.0000000000000001',
         artifacts=None,
         extra_artifacts=None,
         use_tsk=True,
@@ -194,7 +194,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     self.assertEqual(
         self.grr_artifact_collector.extra_artifacts, [])
     self.assertEqual(self.grr_artifact_collector.hostnames,
-                     ['tomchop'])
+                     ['C.0000000000000001'])
     self.assertTrue(self.grr_artifact_collector.use_tsk)
 
   @mock.patch('grr_api_client.api.InitHttp')
@@ -217,7 +217,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     self.grr_artifact_collector = grr_hosts.GRRArtifactCollector(
         self.test_state)
     self.grr_artifact_collector.SetUp(
-        hosts='tomchop',
+        hosts='C.0000000000000001',
         artifacts='RandomArtifact',
         extra_artifacts='AnotherArtifact',
         use_tsk=True,
@@ -249,7 +249,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     mock_Get.return_value = mock_grr_hosts.MOCK_FLOW
     self.grr_artifact_collector.Process()
     # Flow ID is F:12345, Client ID is C.0000000000000001
-    self.mock_grr_api.SearchClients.assert_any_call('tomchop')
+    self.mock_grr_api.SearchClients.assert_any_call('C.0000000000000001')
     self.assertEqual(mock_CreateFlow.call_count, 1)
     self.assertEqual(mock_DownloadFiles.call_count, 1)
     mock_DownloadFiles.assert_called_with(
@@ -271,7 +271,7 @@ class GRRFileCollectorTest(unittest.TestCase):
     self.test_state = state.DFTimewolfState(config.Config)
     self.grr_file_collector = grr_hosts.GRRFileCollector(self.test_state)
     self.grr_file_collector.SetUp(
-        hosts='tomchop',
+        hosts='C.0000000000000001',
         files='/etc/passwd',
         use_tsk=True,
         reason='random reason',
@@ -287,7 +287,7 @@ class GRRFileCollectorTest(unittest.TestCase):
     """Tests that the collector can be initialized."""
     self.assertIsNotNone(self.grr_file_collector)
     self.assertEqual(self.grr_file_collector.hostnames,
-                     ['tomchop'])
+                     ['C.0000000000000001'])
     self.assertEqual(self.grr_file_collector.files, ['/etc/passwd'])
 
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow')
@@ -325,7 +325,7 @@ class GRRFlowCollector(unittest.TestCase):
     self.test_state = state.DFTimewolfState(config.Config)
     self.grr_flow_collector = grr_hosts.GRRFlowCollector(self.test_state)
     self.grr_flow_collector.SetUp(
-        host='tomchop',
+        host='C.0000000000000001',
         flow_id='F:12345',
         reason='random reason',
         grr_server_url='http://fake/endpoint',
@@ -363,7 +363,7 @@ class GRRTimelineCollector(unittest.TestCase):
     self.grr_timeline_collector = grr_hosts.GRRTimelineCollector(
         self.test_state)
     self.grr_timeline_collector.SetUp(
-        hosts='tomchop',
+        hosts='C.0000000000000001',
         root_path='/',
         reason='random reason',
         timeline_format='1',
@@ -378,7 +378,7 @@ class GRRTimelineCollector(unittest.TestCase):
     """Tests that the collector can be initialized."""
     self.assertIsNotNone(self.grr_timeline_collector)
     self.assertEqual(self.grr_timeline_collector.hostnames,
-                     ['tomchop'])
+                     ['C.0000000000000001'])
     self.assertEqual(self.grr_timeline_collector.root_path, b'/')
     self.assertEqual(self.grr_timeline_collector._timeline_format, 1)
 

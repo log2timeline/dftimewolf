@@ -103,6 +103,39 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
       self.ModuleError('Could not get client for {0:s}'.format(
           selector), critical=True)
 
+    def _SeenLastMonth(timestamp):
+      """ Take a UTC timestamp and check if it is in the last month.
+
+      Args:
+        timestamp (int): A timestamp in microseconds.
+
+      Returns:
+        boolean: True if the timestamp is in last month from now.
+      """
+      last_seen_datetime = datetime.datetime.utcfromtimestamp(
+          timestamp / 1000000)
+      diff_year_in_month = (datetime.datetime.utcnow().year
+          - last_seen_datetime.year) * 12
+      diff_month_in_month = (datetime.datetime.utcnow().month
+          - last_seen_datetime.month)
+      diff_month = diff_year_in_month + diff_month_in_month
+      return bool(diff_month < 1)
+
+    last_month_list = list(filter(lambda x: _SeenLastMonth(x[0]), result))
+
+    if len(last_month_list) >1:
+      self.ModuleError(
+            'Multiple hosts with the same FQDN: "{0:s}" have '
+            'been active in the last month.\n'
+            'Please use client ID instead of the hostname.'.format(
+        selector), critical=True)
+    if not last_month_list and len(result) > 1:
+      self.ModuleError(
+            'Multiple hosts with the same FQDN: "{0:s}" non '
+            'of them have been active in the last month.\n'
+            'Please use client ID instead of the hostname.'.format(
+        selector), critical=True)
+
     last_seen, client = sorted(result, key=lambda x: x[0], reverse=True)[0]
     # Remove microseconds and create datetime object
     last_seen_datetime = datetime.datetime.utcfromtimestamp(
