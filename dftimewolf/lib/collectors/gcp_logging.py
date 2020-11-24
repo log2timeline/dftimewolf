@@ -6,6 +6,8 @@ import tempfile
 from google.api_core import exceptions as google_api_exceptions
 from google.auth import exceptions as google_auth_exceptions
 from google.cloud import logging
+from google.cloud.logging_v2 import entries
+
 from googleapiclient.errors import HttpError
 
 from dftimewolf.lib import module
@@ -20,12 +22,12 @@ from dftimewolf.lib.modules import manager as modules_manager
 # https://github.com/googleapis/google-cloud-python/issues/7918
 def _CustomToAPIRepr(self):
   """API repr (JSON format) for entry."""
-  info = super(logging.entries.ProtobufEntry, self).to_api_repr()
+  info = super(entries.ProtobufEntry, self).to_api_repr()
   info['protoPayload'] = self.payload
   return info
 
 
-logging.entries.ProtobufEntry.to_api_repr = _CustomToAPIRepr
+entries.ProtobufEntry.to_api_repr = _CustomToAPIRepr
 
 
 class GCPLogsCollector(module.BaseModule):
