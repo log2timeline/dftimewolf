@@ -94,8 +94,8 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         42.0,
         'pd-standard',
         16,
-        image_family=None,
-        image_project=None
+        image_project='ubuntu-os-cloud',
+        image_family='ubuntu-1804-lts'
     )
     mock_AddLabels.assert_has_calls(
         [mock.call({'incident_id': 'fake_incident_id'})])
