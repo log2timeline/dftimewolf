@@ -69,6 +69,33 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
         reason, grr_server_url, grr_username, grr_password,
         approvers=approvers, verify=verify)
 
+  def _SeenLastMonth(self, timestamp):
+    """Take a UTC timestamp and check if it is in the last month.
+
+    Args:
+      timestamp (int): A timestamp in microseconds.
+
+    Returns:
+      boolean: True if the timestamp is in last month from now.
+    """
+    last_seen_datetime = datetime.datetime.utcfromtimestamp(
+        timestamp / 1000000)
+    # 30 days before now()
+    month_ago = datetime.datetime.utcnow() - datetime.timedelta(30)
+    return  last_seen_datetime > month_ago
+
+  def _ActiveLastMonth(self, result):
+    """Take a list of clients and return clients active last month.
+
+    Args:
+      result list[str]: A list of clients.
+
+    Returns:
+      list[str]: A list of clients active last month.
+    """
+    last_month_list = list(filter(lambda x: self._SeenLastMonth(x[0]), result))
+    return last_month_list
+
   # TODO: change object to more specific GRR type information.
   def _GetClientBySelector(self, selector):
     """Searches GRR by selector and get the latest active client.
@@ -103,40 +130,21 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
       self.ModuleError('Could not get client for {0:s}'.format(
           selector), critical=True)
 
-    def _SeenLastMonth(timestamp):
-      """ Take a UTC timestamp and check if it is in the last month.
-
-      Args:
-        timestamp (int): A timestamp in microseconds.
-
-      Returns:
-        boolean: True if the timestamp is in last month from now.
-      """
-      last_seen_datetime = datetime.datetime.utcfromtimestamp(
-          timestamp / 1000000)
-      diff_year_in_month = (datetime.datetime.utcnow().year
-          - last_seen_datetime.year) * 12
-      diff_month_in_month = (datetime.datetime.utcnow().month
-          - last_seen_datetime.month)
-      diff_month = diff_year_in_month + diff_month_in_month
-      return bool(diff_month < 1)
-
-    last_month_list = list(filter(lambda x: _SeenLastMonth(x[0]), result))
-
+    last_month_list = self._ActiveLastMonth(result)
     if len(last_month_list) >1:
       self.ModuleError(
-            'Multiple hosts with the same FQDN: "{0:s}" have '
-            'been active in the last month.\n'
+            'Multiple hosts ({0:d}) with the same '
+            'FQDN: "{1:s}" have been active in the last month.\n'
             'Please use client ID instead of the hostname.'.format(
-        selector), critical=True)
-    if not last_month_list and len(result) > 1:
+                len(last_month_list), selector), critical=True)
+    if not last_month_list:
       self.ModuleError(
-            'Multiple hosts with the same FQDN: "{0:s}" non '
-            'of them have been active in the last month.\n'
+            'No host with FQDN: "{0:s}" '
+            'has been active in the last month.\n'
             'Please use client ID instead of the hostname.'.format(
-        selector), critical=True)
+                selector), critical=True)
 
-    last_seen, client = sorted(result, key=lambda x: x[0], reverse=True)[0]
+    last_seen, client = last_month_list[0]
     # Remove microseconds and create datetime object
     last_seen_datetime = datetime.datetime.utcfromtimestamp(
         last_seen / 1000000)
