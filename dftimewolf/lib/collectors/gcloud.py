@@ -89,8 +89,8 @@ class GoogleCloudCollector(module.BaseModule):
             remote_instance_name=None,
             disk_names=None,
             all_disks=False,
-            image_project=None,
-            image_family=None):
+            image_project='ubuntu-os-cloud',
+            image_family='ubuntu-1804-lts'):
     """Sets up a Google Cloud Platform(GCP) collector.
 
     This method creates and starts an analysis VM in the analysis project and
