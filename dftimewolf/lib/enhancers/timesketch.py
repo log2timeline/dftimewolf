@@ -255,7 +255,7 @@ class TimesketchEnhancer(module.BaseModule):
 
     return '\n'.join(search_strings)
 
-  def _ProcessSavedSearches(self, saved_searches, sketch):
+  def _ProcessSavedSearches(self, saved_searches):
     """Extract events from saved searches and store results as a container.
 
     The function runs through all saved searches in a sketch and queries
@@ -265,7 +265,6 @@ class TimesketchEnhancer(module.BaseModule):
     Args:
       saved_searches (list): a list of Search
           objects (timesketch_api.search.Search).
-      sketch (timesketch_api.sketch.Sketch): the sketch object.
     """
     for saved_search in saved_searches:
       if saved_search.name in self._searches_to_skip:
@@ -368,7 +367,7 @@ class TimesketchEnhancer(module.BaseModule):
     summary_lines.append(self._formatter.IndentStart())
 
     saved_searches = sketch.list_saved_searches()
-    self._ProcessSavedSearches(saved_searches, sketch)
+    self._ProcessSavedSearches(saved_searches)
     sketch_url = self._GetSketchURL(sketch)
     search_string = self._GenerateSavedSearchString(
         saved_searches, sketch_url)
