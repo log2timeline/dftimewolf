@@ -112,6 +112,9 @@ class TimesketchExporter(module.BaseModule):
     sketch = self.timesketch_api.create_sketch(
         sketch_name, sketch_description)
     self.sketch_id = sketch.id
+    if incident_id:
+      sketch.add_attribute(
+          'incident_id', incident_id, ontology='text')
     self.state.AddToCache('timesketch_sketch', sketch)
 
     return sketch
@@ -180,7 +183,10 @@ class TimesketchExporter(module.BaseModule):
 
       for file_container in self.state.GetContainers(containers.File):
         path = file_container.path
+        description = file_container.description
         streamer.add_file(path)
+        if streamer.response and description:
+          streamer.timeline.description = description
 
     api_root = sketch.api.api_root
     host_url = api_root.partition('api/v1')[0]
