@@ -82,7 +82,7 @@ s3transfer==0.3.3
 six==1.15.0
 soupsieve==2.0.1; python_version >= '3.0'
 sshpubkeys==3.1.0
-timesketch-api-client==20201130
+timesketch-api-client==20201204
 timesketch-import-client==20200910
 toolz==0.11.1; python_version >= '3.5'
 turbinia==20190819.19
