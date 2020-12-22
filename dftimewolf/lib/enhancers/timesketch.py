@@ -40,11 +40,11 @@ class TimesketchEnhancer(module.BaseModule):
     self._include_stories = False
     self._max_checks = self._ANALYZER_MAX_CHECKS
     self._wait_for_analyzers = True
-    self._views_to_skip = []
+    self._searches_to_skip = []
 
   def SetUp(self,  # pylint: disable=arguments-differ
             wait_for_analyzers=True,
-            views_to_skip='',
+            searches_to_skip='',
             aggregations_to_skip='',
             include_stories=False,
             token_password='',
@@ -57,8 +57,8 @@ class TimesketchEnhancer(module.BaseModule):
           until all analyzers are done running. If set to False, the module
           will be skipped, since it does not wait for any results. Defaults to
           True.
-      views_to_skip (str): A comma separated string with a list of View names
-          that are not to be included when generating reports.
+      searches_to_skip (str): A comma separated string with a list of names of
+          saved searches that are not to be included when generating reports.
       aggregations_to_skip (str): A comma separated string with a list of
           Aggregation names that are not to be included when generating
           reports.
@@ -97,8 +97,8 @@ class TimesketchEnhancer(module.BaseModule):
       self._aggregations_to_skip = [
           x.strip() for x in aggregations_to_skip.split(',')]
 
-    if views_to_skip:
-      self._views_to_skip = [x.strip() for x in views_to_skip.split(',')]
+    if searches_to_skip:
+      self._searches_to_skip = [x.strip() for x in searches_to_skip.split(',')]
 
     if formatter.lower() == 'markdown':
       self._formatter = utils.MarkdownFormatter()
@@ -222,55 +222,60 @@ class TimesketchEnhancer(module.BaseModule):
           text_format=self._formatter.FORMAT,
           text=story_string))
 
-  def _GenerateViewString(self, views, sketch_url):
-    """Returns a string with view data.
+  def _GenerateSavedSearchString(self, saved_searches, sketch_url):
+    """Returns a string with saved search data.
 
-    The function runs through all saved views in a sketch and returns
+    The function runs through all saved searches in a sketch and returns
     back a formatted string with the results of the run.
 
     Args:
-      views (list): a list of View objects (timesketch_api.view.View).
+      saved_searches (list): a list of Search objects
+          (timesketch_api.search.Search).
       sketch_url (str): the full URL to the sketch.
 
     Returns:
-        str: A formatted string with the results of aggregation runs
-        on the sketch.
+        str: A formatted string with the results of the saved searches in
+        the sketch.
     """
-    view_strings = []
-    for view in views:
-      if view.name in self._views_to_skip:
+    search_strings = []
+    for saved_search in saved_searches:
+      if saved_search.name in self._searches_to_skip:
         continue
 
-      # We only want to include automatically generated views from analyzers.
-      if view.user != 'System':
+      # We only want to include automatically generated saved searches
+      # from analyzers.
+      if saved_search.user != 'System':
         continue
 
-      view_url = '{0:s}explore?view={1:d}'.format(sketch_url, view.id)
-      view_strings.append(self._formatter.IndentText(
-          self._formatter.Link(url=view_url, text=view.name), level=2))
+      search_url = '{0:s}explore?view={1:d}'.format(
+          sketch_url, saved_search.id)
+      search_strings.append(self._formatter.IndentText(
+          self._formatter.Link(url=search_url, text=saved_search.name),
+          level=2))
 
-    return '\n'.join(view_strings)
+    return '\n'.join(search_strings)
 
-  def _ProcessViews(self, views, sketch):
-    """Extract events from views and store results as a container.
+  def _ProcessSavedSearches(self, saved_searches):
+    """Extract events from saved searches and store results as a container.
 
-    The function runs through all saved views in a sketch and queries
+    The function runs through all saved searches in a sketch and queries
     the datastore for all events that match it and the results as a
     dataframe container to the state object.
 
     Args:
-      views (list): a list of View objects (timesketch_api.view.View).
-      sketch (timesketch_api.sketch.Sketch): the sketch object.
+      saved_searches (list): a list of Search
+          objects (timesketch_api.search.Search).
     """
-    for view in views:
-      if view.name in self._views_to_skip:
+    for saved_search in saved_searches:
+      if saved_search.name in self._searches_to_skip:
         continue
 
-      # We only want to include automatically generated views from analyzers.
-      if view.user != 'System':
+      # We only want to include automatically generated searches from
+      # analyzers.
+      if saved_search.user != 'System':
         continue
 
-      data_frame = sketch.explore(view=view, as_pandas=True)
+      data_frame = saved_search.table
       if data_frame.empty:
         continue
 
@@ -292,8 +297,8 @@ class TimesketchEnhancer(module.BaseModule):
           containers.DataFrame(
               data_frame=data_frame[columns],
               name=self._REPORT_NAME,
-              description='Timesketch View: {0:s} - {1:s}'.format(
-                  view.name, view.description)))
+              description='Timesketch Saved Search: {0:s} - {1:s}'.format(
+                  saved_search.name, saved_search.description)))
 
   def _WaitForAnalyzers(self, sketch):
     """Wait for all analyzers to complete their run.
@@ -361,21 +366,22 @@ class TimesketchEnhancer(module.BaseModule):
 
     summary_lines.append(self._formatter.IndentStart())
 
-    views = sketch.list_views()
-    self._ProcessViews(views, sketch)
+    saved_searches = sketch.list_saved_searches()
+    self._ProcessSavedSearches(saved_searches)
     sketch_url = self._GetSketchURL(sketch)
-    view_string = self._GenerateViewString(views, sketch_url)
+    search_string = self._GenerateSavedSearchString(
+        saved_searches, sketch_url)
     formatted_string = ''
-    if view_string:
+    if search_string:
       formatted_string = self._formatter.IndentText(
-          'The following views were discovered:\n'
+          'The following saved searches were discovered:\n'
           '{0:s}{1:s}{2:s}'.format(
               self._formatter.IndentStart(),
-              view_string,
+              search_string,
               self._formatter.IndentEnd()))
     else:
       formatted_string = self._formatter.IndentText(
-          'No views were generated by analyzers.')
+          'Analyzers didn\'t save any searches.')
     summary_lines.append(formatted_string)
 
     aggregations = sketch.list_aggregations(
