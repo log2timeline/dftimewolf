@@ -1,6 +1,6 @@
 {
     "name": "upload_web_ts",
-    "description": "Uploads a parsed web history or EVTX records stored in a CSV or Plaso file to Timesketch.",
+    "description": "Uploads a CSV or Plaso file to Timesketch and executes web artifact analyzers on the uploaded data",
     "short_description": "Uploads a CSV/JSONL or Plaso file to Timesketch.",
     "modules": [{
         "wants": [],
@@ -42,3 +42,4 @@
         ["--aggregations_to_skip", "A comma separated list of aggregation names that should not be uploaded.", null]
     ]
 }
+
