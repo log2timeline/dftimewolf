@@ -84,17 +84,18 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     month_ago = datetime.datetime.utcnow() - datetime.timedelta(30)
     return  last_seen_datetime > month_ago
 
-  def _ActiveLastMonth(self, result):
+  def _FilterActiveClients(self, result):
     """Take a list of clients and return clients active last month.
 
     Args:
       result list[str]: A list of clients.
 
     Returns:
-      list[str]: A list of clients active last month.
+      list[tuple[int, grr_api_client.client]]: A list of tuples
+          storing the last seen timestamps and client objects.
     """
-    last_month_list = list(filter(lambda x: self._SeenLastMonth(x[0]), result))
-    return last_month_list
+    active_clients = list(filter(lambda x: self._SeenLastMonth(x[0]), result))
+    return active_clients
 
   # TODO: change object to more specific GRR type information.
   def _GetClientBySelector(self, selector):
@@ -130,21 +131,21 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
       self.ModuleError('Could not get client for {0:s}'.format(
           selector), critical=True)
 
-    last_month_list = self._ActiveLastMonth(result)
-    if len(last_month_list) >1:
+    active_clients = self._FilterActiveClients(result)
+    if len(active_clients) >1:
       self.ModuleError(
             'Multiple hosts ({0:d}) with the same '
             'FQDN: "{1:s}" have been active in the last month.\n'
             'Please use client ID instead of the hostname.'.format(
-                len(last_month_list), selector), critical=True)
-    if not last_month_list:
+                len(active_clients), selector), critical=True)
+    if not active_clients:
       self.ModuleError(
-            'No host with FQDN: "{0:s}" '
-            'has been active in the last month.\n'
-            'Please use client ID instead of the hostname.'.format(
-                selector), critical=True)
+            '{0:d} inactive/old clients were found '
+            'for selector: "{1:s}", non of them '
+            'has been active in the last 30 days.'.format(
+                len(result), selector), critical=True)
 
-    last_seen, client = last_month_list[0]
+    last_seen, client = active_clients[0]
     # Remove microseconds and create datetime object
     last_seen_datetime = datetime.datetime.utcfromtimestamp(
         last_seen / 1000000)
