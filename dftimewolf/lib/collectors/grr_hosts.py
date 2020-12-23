@@ -88,7 +88,8 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     """Take a list of clients and return clients active last month.
 
     Args:
-      result list[str]: A list of clients.
+      result list[tuple[int, grr_api_client.client]]: A list of tuples
+          storing the last seen timestamps and client objects.
 
     Returns:
       list[tuple[int, grr_api_client.client]]: A list of tuples
