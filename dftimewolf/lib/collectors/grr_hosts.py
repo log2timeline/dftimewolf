@@ -98,6 +98,18 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     active_clients = list(filter(lambda x: self._SeenLastMonth(x[0]), result))
     return active_clients
 
+  def _FilterSelectionCriteria(self, selector, client):
+    result = []
+    selector = selector.lower()
+    for client in search_result:
+      fqdn_match = selector in client.data.os_info.fqdn.lower()
+      client_id_match = selector in client.data.client_id.lower()
+      usernames = [user.username for user in client.data.users]
+      username_match = selector in usernames and len(usernames) == 1
+      if fqdn_match or client_id_match or username_match:
+        result.append((client.data.last_seen_at, client))
+    return result
+
   # TODO: change object to more specific GRR type information.
   def _GetClientBySelector(self, selector):
     """Searches GRR by selector and get the latest active client.
@@ -121,12 +133,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
           selector, exception
       ), critical=True)
 
-    result = []
-    for client in search_result:
-      fqdn = client.data.os_info.fqdn.lower()
-      client_id = client.data.client_id.lower()
-      if selector.lower() in fqdn or selector.lower() in client_id:
-        result.append((client.data.last_seen_at, client))
+    result = self._FilterSelectionCriteria(selector, search_result)
 
     if not result:
       self.ModuleError('Could not get client for {0:s}'.format(
