@@ -29,12 +29,14 @@ if not _ASKING_FOR_HELP:
   from dftimewolf.lib.collectors import azure
   from dftimewolf.lib.preflights import cloud_token
   from dftimewolf.lib.preflights import ssh_multiplexer
+  from dftimewolf.lib.preflights import sanity_checks
   from dftimewolf.lib.collectors import aws
   from dftimewolf.lib.collectors import filesystem
   from dftimewolf.lib.collectors import gcloud
   from dftimewolf.lib.collectors import gcp_logging
   from dftimewolf.lib.collectors import grr_hosts
   from dftimewolf.lib.collectors import grr_hunt
+  from dftimewolf.lib.enhancers import timesketch as timesketch_enhancer
   from dftimewolf.lib.exporters import gce_disk_export
   from dftimewolf.lib.exporters import local_filesystem
   from dftimewolf.lib.exporters import scp_ex

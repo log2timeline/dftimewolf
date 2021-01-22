@@ -155,21 +155,24 @@ class File(interface.AttributeContainer):
   """Attribute container definition for generic files.
 
   Attributes:
-    name (str): Human-friendly name or description of the file.
+    name (str): Human-friendly name or short description of the file.
     path (str): Full path to the file.
+    description (str): Longer description of the file.
   """
   CONTAINER_TYPE = 'file'
 
-  def __init__(self, name, path):
+  def __init__(self, name, path, description=None):
     """Initializes the attribute.
 
     Args:
-      name (str): Human-friendly name or description of the file.
+      name (str): Human-friendly name or short description of the file.
       path (str): Full path to the file.
+      description (Optional[str]): Longer description of the file.
     """
     super(File, self).__init__()
     self.name = name
     self.path = path
+    self.description = description
 
 class ForensicsVM(interface.AttributeContainer):
   """Attribute container definition for a forensics virtual machine.
