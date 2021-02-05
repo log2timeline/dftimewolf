@@ -125,3 +125,7 @@ of GRR approvers), you can use a `.dftimewolfrc` file. Just create a
 This will set your `ts_endpoint` and `approvers` parameters for all subsequent
 dftimewolf runs. You can still override these settings for one-shot usages by
 manually specifying the argument in the command-line.
+
+## Remove colorization
+
+dfTimewolf output will not be colorized if the environment variable ```DFTIMEWOLF_NO_RAINBOW``` is set.
