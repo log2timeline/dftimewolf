@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Reads logs from a GCP cloud project."""
+import collections
 import json
 import tempfile
 
@@ -24,8 +25,8 @@ def _CustomToAPIRepr(self):
   """API repr (JSON format) for entry."""
   info = super(entries.ProtobufEntry, self).to_api_repr()
   info['protoPayload'] = self.payload
-  info['protoPayload'] = str(info['protoPayload']).replace(
-      '[type.googleapis.com/google.cloud.audit.AuditLog]', '')
+  if not isinstance(info['protoPayload'], collections.OrderedDict):
+    info['protoPayload'] = json.dumps(str(info['protoPayload']))
   return info
 
 
