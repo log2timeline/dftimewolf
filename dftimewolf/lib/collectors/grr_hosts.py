@@ -98,7 +98,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     active_clients = list(filter(lambda x: self._SeenLastMonth(x[0]), result))
     return active_clients
 
-  def _FilterSelectionCriteria(self, selector, client):
+  def _FilterSelectionCriteria(self, selector, search_result):
     result = []
     selector = selector.lower()
     for client in search_result:
