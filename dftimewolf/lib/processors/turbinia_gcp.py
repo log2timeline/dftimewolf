@@ -157,7 +157,7 @@ class TurbiniaProcessorBase(module.BaseModule):
               self.project, turbinia_config.TURBINIA_PROJECT), critical=True)
       return
     self._output_path = tempfile.mkdtemp()
-    self.client = turbinia_client.TurbiniaClient()
+    self.client = turbinia_client.get_turbinia_client(run_local=False)
 
   def TurbiniaProcess(self, evidence_):
     """Creates and sends a Turbinia processing request.
