@@ -10,7 +10,7 @@ coverage = "*"
 
 [packages]
 beautifulsoup4 = "*"
-google-cloud-logging = "*"
+google-cloud-logging = ">=2.0"
 pyOpenSSL = "<20.0.0"  # GRR uses an older version of cryptography
 grr_api_client = "*"
 libcloudforensics = "*"
