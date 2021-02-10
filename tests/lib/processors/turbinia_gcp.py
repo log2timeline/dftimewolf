@@ -35,7 +35,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
     turbinia_processor = turbinia_gcp.TurbiniaGCPProcessor(test_state)
     self.assertIsNotNone(turbinia_processor)
 
-  @mock.patch('turbinia.client.TurbiniaClient')
+  @mock.patch('turbinia.client.get_turbinia_client')
   # pylint: disable=invalid-name
   def testSetup(self, _mock_TurbiniaClient):
     """Tests that the processor is set up correctly."""
@@ -63,7 +63,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
     six.assertRegex(self, turbinia_processor._output_path,
                     '(/tmp/tmp|/var/folders).+')
 
-  @mock.patch('turbinia.client.TurbiniaClient')
+  @mock.patch('turbinia.client.get_turbinia_client')
   # pylint: disable=invalid-name
   def testWrongProject(self, _mock_TurbiniaClient):
     """Tests that specifying the wrong Turbinia project generates an error."""
@@ -89,7 +89,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
     self.assertTrue(error.exception.critical)
 
   @mock.patch('dftimewolf.lib.processors.turbinia_gcp.turbinia_config')
-  @mock.patch('turbinia.client.TurbiniaClient')
+  @mock.patch('turbinia.client.get_turbinia_client')
   # pylint: disable=invalid-name
   def testWrongSetup(self, _mock_TurbiniaClient, mock_turbinia_config):
     """Tests that invalid setup options generate errors."""
@@ -131,7 +131,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
   @mock.patch('os.path.exists')
   @mock.patch('turbinia.output_manager.GCSOutputWriter')
   @mock.patch('turbinia.evidence.GoogleCloudDisk')
-  @mock.patch('turbinia.client.TurbiniaClient')
+  @mock.patch('turbinia.client.get_turbinia_client')
   # pylint: disable=invalid-name
   def testProcess(self,
                   _mock_TurbiniaClient,
