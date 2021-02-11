@@ -178,10 +178,6 @@ class TurbiniaProcessorBase(module.BaseModule):
     if self.sketch_id:
       request.recipe['sketch_id'] = self.sketch_id
     if not self.run_all_jobs:
-      # TODO(aarontp): Remove once the release with
-      # https://github.com/google/turbinia/pull/554 is live.
-      request.recipe['jobs_blacklist'] = [
-          'StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob']
       request.recipe['jobs_denylist'] = [
           'StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob']
 
