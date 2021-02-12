@@ -7,14 +7,12 @@ from google.api_core import exceptions as google_api_exceptions
 from google.auth import exceptions as google_auth_exceptions
 from google.cloud import logging
 from google.cloud.logging_v2 import entries
-
 from googleapiclient.errors import HttpError
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 # Need to register with in the protobuf registry.
 # pylint: disable=unused-import
-from dftimewolf.lib.collectors import audit_log_pb2 as _
 from dftimewolf.lib.modules import manager as modules_manager
 
 
@@ -52,20 +50,20 @@ class GCPLogsCollector(module.BaseModule):
 
   def Process(self):
     """Copies logs from a cloud project."""
-    descending = logging.DESCENDING
 
     output_file = tempfile.NamedTemporaryFile(
         mode='w', delete=False, encoding='utf-8', suffix='.jsonl')
     output_path = output_file.name
+    self.logger.info(f'Downloading logs to {output_path}')
 
     try:
       if self._project_name:
-        logging_client = logging.Client(project=self._project_name)
+        logging_client = logging.Client(_use_grpc=False, project=self._project_name)
       else:
-        logging_client = logging.Client()
+        logging_client = logging.Client(_use_grpc=False)
 
       for entry in logging_client.list_entries(
-          order_by=descending, filter_=self._filter_expression):
+          order_by=logging.DESCENDING, filter_=self._filter_expression):
 
         log_dict = entry.to_api_repr()
         output_file.write(json.dumps(log_dict))
