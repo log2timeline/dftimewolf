@@ -21,14 +21,14 @@ class GCPTokenCheck(module.PreflightModule):
     if not gcloud_path:
       self.ModuleError(
           'Could not find path to gcloud tool. Please install gcloud SDK, as it'
-          'is required to authenticate to GCP')
+          'is required to authenticate to GCP', critical=True)
     try:
       subprocess.check_output(
           [gcloud_path, 'auth', 'application-default', 'print-access-token', '--project', project_name])  # pylint: disable=line-too-long
     except subprocess.CalledProcessError:
       self.ModuleError(
           'Your GCP application credentials are invalid. Please run '
-          'gcloud auth application-default login')
+          'gcloud auth application-default login', critical=True)
 
   def Process(self):
     """Processes input and builds the module's output attribute."""
