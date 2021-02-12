@@ -157,7 +157,7 @@ class TurbiniaProcessorBase(module.BaseModule):
               self.project, turbinia_config.TURBINIA_PROJECT), critical=True)
       return
     self._output_path = tempfile.mkdtemp()
-    self.client = turbinia_client.TurbiniaClient()
+    self.client = turbinia_client.get_turbinia_client(run_local=False)
 
   def TurbiniaProcess(self, evidence_):
     """Creates and sends a Turbinia processing request.
@@ -178,10 +178,6 @@ class TurbiniaProcessorBase(module.BaseModule):
     if self.sketch_id:
       request.recipe['sketch_id'] = self.sketch_id
     if not self.run_all_jobs:
-      # TODO(aarontp): Remove once the release with
-      # https://github.com/google/turbinia/pull/554 is live.
-      request.recipe['jobs_blacklist'] = [
-          'StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob']
       request.recipe['jobs_denylist'] = [
           'StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob']
 
