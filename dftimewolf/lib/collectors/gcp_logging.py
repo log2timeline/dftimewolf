@@ -11,8 +11,6 @@ from googleapiclient.errors import HttpError
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
-# Need to register with in the protobuf registry.
-# pylint: disable=unused-import
 from dftimewolf.lib.modules import manager as modules_manager
 
 
@@ -54,7 +52,7 @@ class GCPLogsCollector(module.BaseModule):
     output_file = tempfile.NamedTemporaryFile(
         mode='w', delete=False, encoding='utf-8', suffix='.jsonl')
     output_path = output_file.name
-    self.logger.info(f'Downloading logs to {output_path}')
+    self.logger.info('Downloading logs to {0:s}'.format(output_path))
 
     try:
       if self._project_name:
