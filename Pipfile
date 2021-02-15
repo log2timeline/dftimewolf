@@ -20,7 +20,7 @@ requests = "*"
 six = "*"
 timesketch-api-client = ">=20200514"
 timesketch-import-client = ">=20200514"
-turbinia = {ref = "deps", git = "https://github.com/tomchop/turbinia.git"}
+turbinia = "*"
 pandas = "*"
 
 [requires]
