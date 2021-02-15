@@ -56,7 +56,8 @@ class GCPLogsCollector(module.BaseModule):
 
     try:
       if self._project_name:
-        logging_client = logging.Client(_use_grpc=False, project=self._project_name)
+        logging_client = logging.Client(_use_grpc=False,
+                                        project=self._project_name)
       else:
         logging_client = logging.Client(_use_grpc=False)
 
