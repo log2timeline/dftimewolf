@@ -122,7 +122,7 @@ class DFTimewolfState(object):
 
     Returns:
       object: object from the cache that corresponds to the name, or
-          the value of "default_value" if the cach does not contain
+          the value of "default_value" if the cache does not contain
           the variable.
     """
     with self._state_lock:

@@ -24,7 +24,7 @@ class LocalFileSystemTest(unittest.TestCase):
 
   @mock.patch('os.path.exists')
   def testOutput(self, mock_exists):
-    """Tests that the module ouput is consistent with the input."""
+    """Tests that the module output is consistent with the input."""
     test_state = state.DFTimewolfState(config.Config)
     filesystem_collector = filesystem.FilesystemCollector(test_state)
     fake_paths = '/fake/path/1,/fake/path/2'
