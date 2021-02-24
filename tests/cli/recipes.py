@@ -94,7 +94,7 @@ def _FindModuleDependencies(module_name, recipe, original_module_name):
         for cyclic dependencies.
 
   Returns:
-    set[str]: depencency names found.
+    set[str]: dependency names found.
   """
   module_dependencies = set()
   for module in recipe.contents['modules']:

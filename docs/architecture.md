@@ -46,7 +46,7 @@ Modules can also report errors using their `ModuleError` function. Errors added
 this way will be reported at the end of the run. Semantically, they mean that
 the recipe flow didn't go as expected and should be examined.
 
-`ModuleError` also takes a `critical` parameter, that will raise an execption
+`ModuleError` also takes a `critical` parameter, that will raise an exception
 and interrupt the flow of the recipe. This should be used for errors that
 dftimewolf can't recover from (e.g. if a binary run by one of the modules can't
 be found on disk).
@@ -103,7 +103,7 @@ The dfTimewolf cycle is as follows:
   the semaphores that will schedule the execution of the Module's `Process`
   functions.
 - Command-line arguments are taken into account and passed to Module's `SetUp`
-  function. This occurs in parallel for all modules, regarless of the semaphores
+  function. This occurs in parallel for all modules, regardless of the semaphores
   they declared in the recipe.
 - The modules with no blocking semaphores start running their `Process`
   function. At the end of their run, they free their semaphore, signalling other
