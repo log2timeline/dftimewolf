@@ -759,7 +759,9 @@ class GRRTimelineCollector(GRRFlow):
 
     flow = client.Flow(flow_id)
     if self._timeline_format == 1:
-      timeline = flow.GetCollectedTimelineBody(backslash_escape=True)
+      timeline = flow.GetCollectedTimelineBody(
+        timestamp_subsecond_precision=True,
+        backslash_escape=True)
     else:
       timeline = flow.GetCollectedTimeline(self._timeline_format)
     timeline.WriteToFile(output_file_path)
