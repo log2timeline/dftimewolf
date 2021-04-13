@@ -30,6 +30,7 @@ if not _ASKING_FOR_HELP:
   from dftimewolf.lib.preflights import ssh_multiplexer
   from dftimewolf.lib.preflights import sanity_checks
   from dftimewolf.lib.collectors import aws
+  from dftimewolf.lib.collectors import aws_logging
   from dftimewolf.lib.collectors import filesystem
   from dftimewolf.lib.collectors import gcloud
   from dftimewolf.lib.collectors import gcp_logging

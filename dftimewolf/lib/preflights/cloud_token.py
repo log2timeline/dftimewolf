@@ -3,6 +3,9 @@
 import shutil
 import subprocess
 
+from boto3.session import Session as BotoSession
+from botocore import exceptions as boto_exceptions
+
 from dftimewolf.lib import module
 from dftimewolf.lib.modules import manager as modules_manager
 
@@ -37,4 +40,37 @@ class GCPTokenCheck(module.PreflightModule):
     """Carries out optional cleanup actions at the end of the recipe run."""
 
 
-modules_manager.ModulesManager.RegisterModule(GCPTokenCheck)
+class AWSAccountCheck(module.PreflightModule):
+  """Checks for AWS authentication."""
+
+  def SetUp(self, profile_name=None):  # pylint: disable=arguments-differ
+    """Runs a boto3 check to ensure AWS authentication is configured"""
+
+    try:
+      session = BotoSession(profile_name=profile_name)
+    except boto_exceptions.ProfileNotFound:
+      self.ModuleError(
+          'Profile not found see'
+          'https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html#configuration', # pylint: disable=line-too-long
+          critical=True)
+
+    client = session.client('sts')
+
+    try:
+      client.get_caller_identity()
+    except boto_exceptions.NoCredentialsError:
+      self.ModuleError(
+          'AWS authentication is not configured, please see '
+          'https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html#configuration', # pylint: disable=line-too-long
+          critical=True)
+
+  def Process(self):
+    """Processes input and builds the module's output attribute."""
+
+  def CleanUp(self):
+    """Carries out optional cleanup actions at the end of the recipe run."""
+
+
+modules_manager.ModulesManager.RegisterModules([
+  GCPTokenCheck,
+  AWSAccountCheck])
