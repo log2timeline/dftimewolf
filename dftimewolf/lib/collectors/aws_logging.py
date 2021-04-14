@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Creates an analysis VM and copies AWS volumes to it for analysis."""
+"""Reads logs from an AWS account"""
 
 import json
 import tempfile
+from datetime import datetime
 
 from libcloudforensics.providers.aws.internal import account as aws_account
 from libcloudforensics.providers.aws.internal import log as aws_log
@@ -20,27 +21,46 @@ class AWSLogsCollector(module.BaseModule):
     self._zone = None
     self._profile_name = None
     self._query_filter = None
+    self._start_time = None
+    self._end_time = None
 
   # pylint: disable=arguments-differ
-  def SetUp(self, zone, profile_name=None, query_filter=None):
+  def SetUp(self, zone, profile_name=None, query_filter=None,
+    start_time=None, end_time=None):
+    """Sets up an AWS logs collector
+
+    Args:
+      zone (str): default availability zone for libcloudforensics AWSAccount.
+      profile_name (str): Optional. The profile name to collect logs with.
+      query_filter (str): Optional. The CloudTrail query filter in the form
+        'key,value'
+      start_time (str): Optional. The start time for the query in the format
+        'YYYY-MM-DD HH:MM:SS'
+      end_time (str): Optional. The end time for the query in the format
+        'YYYY-MM-DD HH:MM:SS'
+    """
     self._zone = zone
     self._profile_name = profile_name
     self._query_filter = query_filter
+    if start_time:
+      self._start_time = datetime.fromisoformat(start_time)
+    if end_time:
+      self._end_time = datetime.fromisoformat(end_time)
 
   def Process(self):
-    """Write me a docstring"""
+    """Copies logs from an AWS account."""
+
     output_file = tempfile.NamedTemporaryFile(
         mode='w', delete=False, encoding='utf-8', suffix='.jsonl')
     output_path = output_file.name
-
     log_account = aws_account.AWSAccount(
         self._zone,
         aws_profile=self._profile_name)
-
     log_client = aws_log.AWSCloudTrail(log_account)
 
     self.logger.info('Downloading logs to {0:s}'.format(output_path))
-    events = log_client.LookupEvents(qfilter='Username,jonathangreig')
+    events = log_client.LookupEvents(qfilter=self._query_filter,
+        starttime=self._start_time, endtime=self._end_time)
     self.logger.info('Downloaded {0:d} log events.'.format(len(events)))
 
     # Set the default serializer to str() to account for datetime objects.
