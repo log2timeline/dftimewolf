@@ -3,7 +3,7 @@
 import shutil
 import subprocess
 
-from boto3.session import Session as BotoSession
+from boto3 import session as boto_session
 from botocore import exceptions as boto_exceptions
 
 from dftimewolf.lib import module
@@ -51,7 +51,7 @@ class AWSAccountCheck(module.PreflightModule):
     """
 
     try:
-      session = BotoSession(profile_name=profile_name)
+      session = boto_session.Session(profile_name=profile_name)
       client = session.client('sts')
       client.get_caller_identity()
     except boto_exceptions.ProfileNotFound:

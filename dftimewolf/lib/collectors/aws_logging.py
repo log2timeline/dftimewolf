@@ -54,8 +54,7 @@ class AWSLogsCollector(module.BaseModule):
         mode='w', delete=False, encoding='utf-8', suffix='.jsonl')
     output_path = output_file.name
     log_account = aws_account.AWSAccount(
-        self._zone,
-        aws_profile=self._profile_name)
+        self._zone, aws_profile=self._profile_name)
     log_client = aws_log.AWSCloudTrail(log_account)
 
     self.logger.info('Downloading logs to {0:s}'.format(output_path))
