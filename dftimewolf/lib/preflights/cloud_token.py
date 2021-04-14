@@ -44,23 +44,24 @@ class AWSAccountCheck(module.PreflightModule):
   """Checks for AWS authentication."""
 
   def SetUp(self, profile_name=None):  # pylint: disable=arguments-differ
-    """Runs a boto3 check to ensure AWS authentication is configured"""
+    """Runs a boto3 check to ensure AWS authentication is configured
+
+    Args:
+      profile_name (str): Optional. The profile to test.
+    """
 
     try:
       session = BotoSession(profile_name=profile_name)
+      client = session.client('sts')
+      client.get_caller_identity()
     except boto_exceptions.ProfileNotFound:
       self.ModuleError(
-          'Profile not found see'
+          'Profile not found, see '
           'https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html#configuration', # pylint: disable=line-too-long
           critical=True)
-
-    client = session.client('sts')
-
-    try:
-      client.get_caller_identity()
     except boto_exceptions.NoCredentialsError:
       self.ModuleError(
-          'AWS authentication is not configured, please see '
+          'AWS authentication is not configured, see '
           'https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html#configuration', # pylint: disable=line-too-long
           critical=True)
 
