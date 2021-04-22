@@ -758,7 +758,14 @@ class GRRTimelineCollector(GRRFlow):
       return None
 
     flow = client.Flow(flow_id)
-    timeline = flow.GetCollectedTimeline(self._timeline_format)
+    if self._timeline_format == 1:
+      ntfs_inodes = client.data.os_info.lower() == 'windows'
+      timeline = flow.GetCollectedTimelineBody(
+          timestamp_subsecond_precision=True,
+          inode_ntfs_file_reference_format=ntfs_inodes,
+          backslash_escape=True)
+    else:
+      timeline = flow.GetCollectedTimeline(self._timeline_format)
     timeline.WriteToFile(output_file_path)
 
     return output_file_path
