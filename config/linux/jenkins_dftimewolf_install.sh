@@ -6,40 +6,10 @@
 # Exit on error.
 set -e
 
-# Dependencies for running dftimewolf, alphabetized, one per line.
-# This should not include packages only required for testing or development.
-PYTHON2_DEPENDENCIES="python-bs4
-                      python-certifi
-                      python-chardet
-                      python-idna
-                      python-requests
-                      python-tz
-                      python-urllib3";
-
-# Additional dependencies for running dftimewolf tests, alphabetized,
-# one per line.
-TEST_DEPENDENCIES="python-mock";
-
-# Additional dependencies for doing dftimewolf development, alphabetized,
-# one per line.
-DEVELOPMENT_DEPENDENCIES="python-sphinx
-                          pylint";
-
 sudo add-apt-repository ppa:gift/dev -y
 sudo apt-get update -qq
-sudo apt-get install -qq -y ${PYTHON2_DEPENDENCIES}
-
-# Pending resolution of https://github.com/log2timeline/l2tdevtools/issues/233.
 sudo apt-get install -y python3-pip
-sudo pip3 install grr-api-client
 
-if [[ "$*" =~ "include-development" ]]; then
-    sudo apt-get install -qq -y ${DEVELOPMENT_DEPENDENCIES}
-fi
-
-if [[ "$*" =~ "include-test" ]]; then
-    sudo apt-get install -qq -y ${TEST_DEPENDENCIES}
-fi
 
 if [[ "$*" =~ "include-docker" ]]; then
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -

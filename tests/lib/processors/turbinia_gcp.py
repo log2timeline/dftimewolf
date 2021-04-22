@@ -180,9 +180,6 @@ class TurbiniaProcessorTest(unittest.TestCase):
     request = turbinia_processor.client.send_request.call_args[0][0]
     self.assertEqual(request.recipe['sketch_id'], 4567)
     self.assertListEqual(
-        request.recipe['jobs_blacklist'],
-        ['StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob'])
-    self.assertListEqual(
         request.recipe['jobs_denylist'],
         ['StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob'])
     turbinia_processor.client.get_task_data.assert_called()
