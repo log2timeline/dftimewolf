@@ -13,7 +13,7 @@ data on to one another. How modules are orchestrated is defined in predefined
 ## Status
 [Travis-CI](https://travis-ci.com/) |  [Codecov](https://codecov.io/) | [CodeFactor](https://codefactor.io)
 --- | --- | --
-[![Build Status](https://travis-ci.com/log2timeline/dftimewolf.svg?branch=master)](https://travis-ci.com/log2timeline/dftimewolf) | [![codecov](https://codecov.io/gh/log2timeline/dftimewolf/branch/master/graph/badge.svg)](https://codecov.io/gh/log2timeline/dftimewolf) | [![CodeFactor](https://www.codefactor.io/repository/github/log2timeline/dftimewolf/badge)](https://www.codefactor.io/repository/github/log2timeline/dftimewolf)
+[![Build Status](https://travis-ci.com/log2timeline/dftimewolf.svg?branch=main)](https://travis-ci.com/log2timeline/dftimewolf) | [![codecov](https://codecov.io/gh/log2timeline/dftimewolf/branch/main/graph/badge.svg)](https://codecov.io/gh/log2timeline/dftimewolf) | [![CodeFactor](https://www.codefactor.io/repository/github/log2timeline/dftimewolf/badge)](https://www.codefactor.io/repository/github/log2timeline/dftimewolf)
 
 ### Getting started
 
