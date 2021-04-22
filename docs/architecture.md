@@ -17,7 +17,7 @@ are all stored in a **State** object that is attached to each module.
 ## Modules
 
 Modules all extend the `BaseModule`
-[class](https://github.com/log2timeline/dftimewolf/blob/master/dftimewolf/lib/module.py),
+[class](https://github.com/log2timeline/dftimewolf/blob/main/dftimewolf/lib/module.py),
 and implement the `SetUp`, and `Process` functions.
 
 `SetUp` is what is called with the recipe's modified arguments. Actions here
@@ -80,7 +80,7 @@ specific format:
 ## State and AttributeContainers
 
 The State object is an instance of the
-[DFTimewolfState class](https://github.com/log2timeline/dftimewolf/blob/master/dftimewolf/lib/state.py).
+[DFTimewolfState class](https://github.com/log2timeline/dftimewolf/blob/main/dftimewolf/lib/state.py).
 It has a couple of useful functions and attributes:
 
 - `StoreContainer`: Store your containers to make them available to future
