@@ -8,20 +8,20 @@ read it already.
 
 As for other Log2Timeline projects, all contributions to dfTimewolf undergo code
 review. The process is documented
-[here](https://github.com/log2timeline/l2tdocs/blob/master/process/Code%20review%20process.md).
+[here](https://github.com/log2timeline/l2tdocs/blob/main/process/Code%20review%20process.md).
 
 ## Code style
 
 dfTimewolf follows the
-[Log2Timeline style guide](https://github.com/log2timeline/l2tdocs/blob/master/process/Style-guide.md).
+[Log2Timeline style guide](https://github.com/log2timeline/l2tdocs/blob/main/process/Style-guide.md).
 
 ## Creating a recipe
 
 If you're not satisfied with the way modules are chained, or default arguments
 that are passed to some of the recipes, then you can create your own. See
-[existing recipes](https://github.com/log2timeline/dftimewolf/tree/master/dftimewolf/cli/recipes)
+[existing recipes](https://github.com/log2timeline/dftimewolf/tree/main/dftimewolf/cli/recipes)
 for simple examples like
-[local_plaso](https://github.com/log2timeline/dftimewolf/blob/master/dftimewolf/cli/recipes/local_plaso.py).
+[local_plaso](https://github.com/log2timeline/dftimewolf/blob/main/dftimewolf/cli/recipes/local_plaso.py).
 Details on recipe keys are given [here](architecture.md#recipes).
 
 ### Recipe arguments
@@ -39,7 +39,7 @@ form of `@parameter` placeholders. How these are populated is then specified in
 the `args` variable right after, as a list of
 `(argument, help_text, default_value)` tuples that will be passed to `argparse`.
 For example, the public version of the
-[grr_artifact_hosts.py](https://github.com/log2timeline/dftimewolf/blob/master/data/recipes/gcp_forensics.json)
+[grr_artifact_hosts.py](https://github.com/log2timeline/dftimewolf/blob/main/data/recipes/gcp_forensics.json)
 recipe specifies arguments in the following way:
 
     "args": [
@@ -65,5 +65,5 @@ dfTimewolf. "There is no learning curve™".
 
 Check out the [Module architecture](architecture#modules) and read up on simple
 existing modules such as the
-[LocalPlasoProcessor](https://github.com/log2timeline/dftimewolf/blob/master/dftimewolf/lib/processors/localplaso.py)
+[LocalPlasoProcessor](https://github.com/log2timeline/dftimewolf/blob/main/dftimewolf/lib/processors/localplaso.py)
 module for an example of simple Module.
