@@ -39,7 +39,7 @@ class AWSLoggingTest(unittest.TestCase):
         start_time=start_time, end_time=end_time)
     aws_logging_collector.Process()
 
-    # pylint: disable=protected-access
+    # pylint: disable=protected-access,no-member
     aws_logging_collector._log_client.LookupEvents.assert_called_with(
         qfilter=query_filter, starttime=dt.fromisoformat(start_time),
         endtime = dt.fromisoformat(end_time))
