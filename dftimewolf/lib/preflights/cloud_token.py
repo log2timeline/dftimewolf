@@ -44,10 +44,13 @@ class AWSAccountCheck(module.PreflightModule):
   """Checks for AWS authentication."""
 
   def SetUp(self, profile_name=None):  # pylint: disable=arguments-differ
-    """Runs a boto3 check to ensure AWS authentication is configured
+    """Tests that AWS authentication is configured by calling the
+    GetCallerIdentity action on the AWS Security Token Service (STS) API.
 
     Args:
-      profile_name (str): Optional. The profile to test.
+      profile_name (str): Optional. The profile to test. If this parameter
+        is not provided the default profile (as resolved by boto3) will be
+        checked.
     """
 
     try:

@@ -111,10 +111,12 @@ class AWSLogs(interface.AttributeContainer):
       path (str): path to a AWS log file.
       profile_name (str): the profile used to collect logs.
       query_filter (str): the query filter used in the log query.
-      start_time (str): the start time used in the log query.
-      end_time (str): the end time used in the log query.
+      start_time (str): the start time used in the log query in format
+        'YYYY-MM-DD HH:MM:SS.US'.
+      end_time (str): the end time used in the log query in format
+        'YYYY-MM-DD HH:MM:SS.US'.
   """
-  CONTAINER_TYPE = 'gcp_logs'
+  CONTAINER_TYPE = 'aws_logs'
 
   def __init__(self, path, profile_name, query_filter, start_time, end_time):
     """Initializes the analysis report.
@@ -123,15 +125,15 @@ class AWSLogs(interface.AttributeContainer):
       path (str): path to a AWS log file.
       profile_name (str): the profile used to collect logs.
       query_filter (str): the query filter used in the log query.
-      start_time (str): the start time used in the log query.
-      end_time (str): the end time used in the log query.
+      start_time (datetime): the start time used in the log query.
+      end_time (datetime): the end time used in the log query.
     """
     super(AWSLogs, self).__init__()
     self.path = path
     self.profile_name = profile_name
     self.query_filter = query_filter
-    self.start_time = start_time
-    self.end_time = end_time
+    self.start_time = str(start_time)
+    self.end_time = str(end_time)
 
 
 class ThreatIntelligence(interface.AttributeContainer):

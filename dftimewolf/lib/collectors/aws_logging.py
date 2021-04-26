@@ -24,6 +24,8 @@ class AWSLogsCollector(module.BaseModule):
     self._query_filter = None
     self._start_time = None
     self._end_time = None
+    self._log_account = None
+    self._log_client = None
 
   # pylint: disable=arguments-differ
   def SetUp(self, zone, profile_name=None, query_filter=None,
@@ -54,12 +56,12 @@ class AWSLogsCollector(module.BaseModule):
     output_file = tempfile.NamedTemporaryFile(
         mode='w', delete=False, encoding='utf-8', suffix='.jsonl')
     output_path = output_file.name
-    log_account = aws_account.AWSAccount(
+    self._log_account = aws_account.AWSAccount(
         self._zone, aws_profile=self._profile_name)
-    log_client = aws_log.AWSCloudTrail(log_account)
+    self._log_client = aws_log.AWSCloudTrail(self._log_account)
 
     self.logger.info('Downloading logs to {0:s}'.format(output_path))
-    events = log_client.LookupEvents(qfilter=self._query_filter,
+    events = self._log_client.LookupEvents(qfilter=self._query_filter,
         starttime=self._start_time, endtime=self._end_time)
     self.logger.info('Downloaded {0:d} log events.'.format(len(events)))
 
