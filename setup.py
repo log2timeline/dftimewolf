@@ -15,9 +15,16 @@ def ParseRequirements(filename):
   Returns:
     List[str]: a list of requirements.
   """
+  reqs = []
   with open(filename) as requirements:
-    # Skipping -i https://pypi.org/simple
-    return requirements.readlines()[1:]
+
+    for line in requirements.readlines():
+      if not (line.startswith('#') or line.startswith('-i') or not line):
+        # Skip lines starting with '#' and '-i https://pypi.org/simple'
+        continue
+      reqs.append(line)
+  return reqs
+
 
 try:
   from setuptools import find_packages, setup

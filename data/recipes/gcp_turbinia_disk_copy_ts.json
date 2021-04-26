@@ -38,7 +38,7 @@
         }
     }, {
         "wants": ["GoogleCloudCollector"],
-        "name": "TurbiniaProcessor",
+        "name": "TurbiniaGCPProcessor",
         "args": {
             "disk_name": null,
             "project": "@analysis_project_name",
@@ -47,7 +47,7 @@
             "sketch_id": "@sketch_id"
         }
     }, {
-        "wants": ["TurbiniaProcessor"],
+        "wants": ["TurbiniaGCPProcessor"],
         "name": "TimesketchExporter",
         "args": {
             "incident_id": "@incident_id",
