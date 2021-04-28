@@ -56,17 +56,17 @@ class AWSLoggingTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     aws_logging_collector = aws_logging.AWSLogsCollector(test_state)
 
-    query_filter = 'Username,fakename'
-    start_time = '2021-01-01 00:00:00'
-    end_time = '2021-01-02 00:00:00'
-    aws_logging_collector.SetUp(self.FAKE_ZONE, query_filter=query_filter,
-        start_time=start_time, end_time=end_time)
+    aws_logging_collector.SetUp(self.FAKE_ZONE,
+        query_filter='Username,fakename',
+        start_time='2021-01-01 00:00:00',
+        end_time='2021-01-02 00:00:00')
     aws_logging_collector.Process()
 
     # pylint: disable=protected-access,no-member
     aws_logging_collector._log_client.LookupEvents.assert_called_with(
-        qfilter=query_filter, starttime=dt.fromisoformat(start_time),
-        endtime=dt.fromisoformat(end_time))
+        qfilter='Username,fakename',
+        starttime=dt.fromisoformat('2021-01-01 00:00:00'),
+        endtime=dt.fromisoformat('2021-01-02 00:00:00'))
 
   @mock.patch('libcloudforensics.providers.aws.internal.account.AWSAccount')
   @mock.patch('libcloudforensics.providers.aws.internal.log.'
