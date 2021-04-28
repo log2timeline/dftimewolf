@@ -108,7 +108,7 @@ class DFTimewolfState(object):
       maxlen = maxlen if maxlen > spacing else spacing
 
     for module in self.recipe['modules']:
-      logger.debug(module['name'] + ':')
+      logger.debug('{0:s}:'.format(module['name']))
 
       new_args = utils.ImportArgsFromDict(
           module['args'], self.command_line_options, self.config)
