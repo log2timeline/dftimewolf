@@ -113,27 +113,27 @@ class DFTimewolfTool(object):
     data_files_path = os.environ.get('DFTIMEWOLF_DATA')
 
     if not data_files_path or not os.path.isdir(data_files_path):
-    # Figure out if the script is running out of a cloned repository
-    data_files_path = os.path.realpath(__file__)
-    data_files_path = os.path.dirname(data_files_path)
-    data_files_path = os.path.dirname(data_files_path)
-    data_files_path = os.path.dirname(data_files_path)
-    data_files_path = os.path.join(data_files_path, 'data')
-
-    # Use local package data files (python setup.py install)
-    if not os.path.isdir(data_files_path):
+      # Figure out if the script is running out of a cloned repository
+      data_files_path = os.path.realpath(__file__)
       data_files_path = os.path.dirname(data_files_path)
-      data_files_path = os.path.join(data_files_path, 'share', 'dftimewolf')
+      data_files_path = os.path.dirname(data_files_path)
+      data_files_path = os.path.dirname(data_files_path)
+      data_files_path = os.path.join(data_files_path, 'data')
 
-    # Use sys.prefix for user installs (e.g. pip install ...)
-    if not os.path.isdir(data_files_path):
-      data_files_path = os.path.join(sys.prefix, 'share', 'dftimewolf')
+      # Use local package data files (python setup.py install)
+      if not os.path.isdir(data_files_path):
+        data_files_path = os.path.dirname(data_files_path)
+        data_files_path = os.path.join(data_files_path, 'share', 'dftimewolf')
 
-    # If all else fails, fall back to hardcoded default
-    if not os.path.isdir(data_files_path):
-      logger.debug('{0:s} not found, defaulting to /usr/local/share'.format(
-          data_files_path))
-      data_files_path = self._DEFAULT_DATA_FILES_PATH
+      # Use sys.prefix for user installs (e.g. pip install ...)
+      if not os.path.isdir(data_files_path):
+        data_files_path = os.path.join(sys.prefix, 'share', 'dftimewolf')
+
+      # If all else fails, fall back to hardcoded default
+      if not os.path.isdir(data_files_path):
+        logger.debug('{0:s} not found, defaulting to /usr/local/share'.format(
+            data_files_path))
+        data_files_path = self._DEFAULT_DATA_FILES_PATH
 
     logger.debug("Recipe data path: {0:s}".format(data_files_path))
     self._data_files_path = data_files_path
@@ -336,6 +336,8 @@ def Main():
   except (errors.CommandLineParseError, errors.RecipeParseError) as exception:
     sys.stderr.write('{0!s}'.format(exception))
     return False
+
+  tool._state.LogExecutionPlan()
 
   tool.RunPreflights()
 
