@@ -71,6 +71,11 @@ class DFTimewolfTool(object):
 
     self._DetermineDataFilesPath()
 
+  @property
+  def state(self):
+    """Returns the internal state object."""
+    return self._state
+
   def _AddRecipeOptions(self, argument_parser):
     """Adds the recipe options to the argument group.
 
@@ -337,7 +342,7 @@ def Main():
     sys.stderr.write('{0!s}'.format(exception))
     return False
 
-  tool._state.LogExecutionPlan()
+  tool.state.LogExecutionPlan()
 
   tool.RunPreflights()
 
