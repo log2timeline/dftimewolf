@@ -66,7 +66,7 @@ class AWSLoggingTest(unittest.TestCase):
     # pylint: disable=protected-access,no-member
     aws_logging_collector._log_client.LookupEvents.assert_called_with(
         qfilter=query_filter, starttime=dt.fromisoformat(start_time),
-        endtime = dt.fromisoformat(end_time))
+        endtime=dt.fromisoformat(end_time))
 
   @mock.patch('libcloudforensics.providers.aws.internal.account.AWSAccount')
   @mock.patch('libcloudforensics.providers.aws.internal.log.'
