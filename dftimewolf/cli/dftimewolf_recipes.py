@@ -26,6 +26,7 @@ if not _ASKING_FOR_HELP:
   # These will be registered automatically upon import
   # pylint: disable=unused-import
   from dftimewolf.lib import collectors
+  from dftimewolf.lib.collectors import azure
   from dftimewolf.lib.preflights import cloud_token
   from dftimewolf.lib.preflights import ssh_multiplexer
   from dftimewolf.lib.preflights import sanity_checks
