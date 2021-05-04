@@ -223,3 +223,19 @@ class DataFrame(interface.AttributeContainer):
     self.data_frame = data_frame
     self.description = description
     self.name = name
+
+
+class Host(interface.AttributeContainer):
+  """Attribute container definition for a host.
+
+  Attributes:
+    hostname (str): The host's hostname.
+    platform (str): The host's platform. One of {win, linux, macos, unknown}.
+  """
+
+  CONTAINER_TYPE = 'host'
+
+  def __init__(self, hostname, platform='unkown'):
+    super(Host, self).__init__()
+    self.hostname = hostname
+    self.platform = platform
