@@ -98,6 +98,27 @@ class DFTimewolfState(object):
         runtime_name = module_name
       self._module_pool[runtime_name] = module_class(self, name=runtime_name)
 
+  def LogExecutionPlan(self):
+    """Logs loaded modules and their corresponding arguments to stdout."""
+    maxlen = 0
+    for module in self.recipe['modules']:
+      if not module['args']:
+        continue
+      spacing = len(max(module['args'].keys(), key=len))
+      maxlen = maxlen if maxlen > spacing else spacing
+
+    for module in self.recipe['modules']:
+      logger.debug('{0:s}:'.format(module['name']))
+
+      new_args = utils.ImportArgsFromDict(
+          module['args'], self.command_line_options, self.config)
+
+      if not new_args:
+        logger.debug('  *No params*')
+      for key, value in new_args.items():
+        logger.debug('  {0:s}{1:s}'.format(key.ljust(maxlen + 3), repr(value)))
+
+
   def AddToCache(self, name, value):
     """Thread-safe method to add data to the state's cache.
 

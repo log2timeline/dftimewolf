@@ -72,6 +72,11 @@ class DFTimewolfTool(object):
 
     self._DetermineDataFilesPath()
 
+  @property
+  def state(self):
+    """Returns the internal state object."""
+    return self._state
+
   def _AddRecipeOptions(self, argument_parser):
     """Adds the recipe options to the argument group.
 
@@ -99,29 +104,42 @@ class DFTimewolfTool(object):
       subparser.set_defaults(**config.Config.GetExtra())
 
   def _DetermineDataFilesPath(self):
-    """Determines the data files path."""
+    """Determines the data files path.
 
-    # Figure out if the script is running out of a cloned repository
-    data_files_path = os.path.realpath(__file__)
-    data_files_path = os.path.dirname(data_files_path)
-    data_files_path = os.path.dirname(data_files_path)
-    data_files_path = os.path.dirname(data_files_path)
-    data_files_path = os.path.join(data_files_path, 'data')
+    Data path is specified in the DFTIMEWOLF_DATA environment variable. If the
+    variable is not specified, dfTimewolf checks if any of the following
+    locations are valid:
 
-    # Use local package data files (python setup.py install)
-    if not os.path.isdir(data_files_path):
+    * Cloned repository base
+    * Local package data files
+    * sys.prefix
+    * Hardcoded default /usr/local/share
+    """
+
+    data_files_path = os.environ.get('DFTIMEWOLF_DATA')
+
+    if not data_files_path or not os.path.isdir(data_files_path):
+      # Figure out if the script is running out of a cloned repository
+      data_files_path = os.path.realpath(__file__)
       data_files_path = os.path.dirname(data_files_path)
-      data_files_path = os.path.join(data_files_path, 'share', 'dftimewolf')
+      data_files_path = os.path.dirname(data_files_path)
+      data_files_path = os.path.dirname(data_files_path)
+      data_files_path = os.path.join(data_files_path, 'data')
 
-    # Use sys.prefix for user installs (e.g. pip install ...)
-    if not os.path.isdir(data_files_path):
-      data_files_path = os.path.join(sys.prefix, 'share', 'dftimewolf')
+      # Use local package data files (python setup.py install)
+      if not os.path.isdir(data_files_path):
+        data_files_path = os.path.dirname(data_files_path)
+        data_files_path = os.path.join(data_files_path, 'share', 'dftimewolf')
 
-    # If all else fails, fall back to hardcoded default
-    if not os.path.isdir(data_files_path):
-      logger.debug('{0:s} not found, defaulting to /usr/local/share'.format(
-          data_files_path))
-      data_files_path = self._DEFAULT_DATA_FILES_PATH
+      # Use sys.prefix for user installs (e.g. pip install ...)
+      if not os.path.isdir(data_files_path):
+        data_files_path = os.path.join(sys.prefix, 'share', 'dftimewolf')
+
+      # If all else fails, fall back to hardcoded default
+      if not os.path.isdir(data_files_path):
+        logger.debug('{0:s} not found, defaulting to /usr/local/share'.format(
+            data_files_path))
+        data_files_path = self._DEFAULT_DATA_FILES_PATH
 
     logger.debug("Recipe data path: {0:s}".format(data_files_path))
     self._data_files_path = data_files_path
@@ -159,12 +177,18 @@ class DFTimewolfTool(object):
       logger.warning('{0!s}'.format(exception))
 
   def LoadConfiguration(self):
-    """Loads the configuration."""
-    configuration_file_path = os.path.join(self._data_files_path, 'config.json')
-    self._LoadConfigurationFromFile(configuration_file_path)
+    """Loads the configuration.
 
-    user_directory = os.path.expanduser('~')
-    configuration_file_path = os.path.join(user_directory, '.dftimewolfrc')
+    The following paths are tried. Values loaded last take precedence.
+
+    * <_data_files_path>/config.json
+    * /etc/dftimewolf.conf
+    * /usr/share/dftimewolf/dftimewolf.conf
+    * ~/.dftimewolfrc
+    * If set, wherever the DFTIMEWOLF_CONFIG environment variable points to.
+
+    """
+    configuration_file_path = os.path.join(self._data_files_path, 'config.json')
     self._LoadConfigurationFromFile(configuration_file_path)
 
     configuration_file_path = os.path.join('/', 'etc', 'dftimewolf.conf')
@@ -173,6 +197,14 @@ class DFTimewolfTool(object):
     configuration_file_path = os.path.join(
         '/', 'usr', 'share', 'dftimewolf', 'dftimewolf.conf')
     self._LoadConfigurationFromFile(configuration_file_path)
+
+    user_directory = os.path.expanduser('~')
+    configuration_file_path = os.path.join(user_directory, '.dftimewolfrc')
+    self._LoadConfigurationFromFile(configuration_file_path)
+
+    env_config = os.environ.get('DFTIMEWOLF_CONFIG')
+    if env_config:
+      self._LoadConfigurationFromFile(env_config)
 
   def ParseArguments(self, arguments):
     """Parses the command line arguments.
@@ -276,7 +308,7 @@ def SetupLogging():
   colorize = not bool(os.environ.get('DFTIMEWOLF_NO_RAINBOW'))
   console_handler.setFormatter(logging_utils.WolfFormatter(colorize=colorize))
   logger.addHandler(console_handler)
-  logger.info(
+  logger.debug(
       'Logging to stdout and {0:s}'.format(logging_utils.DEFAULT_LOG_FILE))
 
 
@@ -310,6 +342,8 @@ def Main():
   except (errors.CommandLineParseError, errors.RecipeParseError) as exception:
     sys.stderr.write('{0!s}'.format(exception))
     return False
+
+  tool.state.LogExecutionPlan()
 
   tool.RunPreflights()
 
