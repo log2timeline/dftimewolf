@@ -3,6 +3,7 @@
 """dftimewolf main entrypoint."""
 
 import argparse
+import importlib
 import logging
 # Some AttributeErrors occurred when trying to access logging.handlers, so
 # we import them separately
@@ -11,41 +12,39 @@ import os
 import signal
 import sys
 
-# Make dftimewolf faster by only importing modules if we're not actually
-# just asking for help
-_ASKING_FOR_HELP = '-h' in sys.argv or '--help' in sys.argv or len(sys.argv) < 2
-
 # pylint: disable=wrong-import-position
 from dftimewolf import config
 
 from dftimewolf.lib import errors
 from dftimewolf.lib import utils
 
-if not _ASKING_FOR_HELP:
-  # Import the collector modules.
-  # These will be registered automatically upon import
-  # pylint: disable=unused-import
-  from dftimewolf.lib import collectors
-  from dftimewolf.lib.collectors import azure
-  from dftimewolf.lib.preflights import cloud_token
-  from dftimewolf.lib.preflights import ssh_multiplexer
-  from dftimewolf.lib.preflights import sanity_checks
-  from dftimewolf.lib.collectors import aws
-  from dftimewolf.lib.collectors import filesystem
-  from dftimewolf.lib.collectors import gcloud
-  from dftimewolf.lib.collectors import gcp_logging
-  from dftimewolf.lib.collectors import grr_hosts
-  from dftimewolf.lib.collectors import grr_hunt
-  from dftimewolf.lib.enhancers import timesketch as timesketch_enhancer
-  from dftimewolf.lib.exporters import gce_disk_export
-  from dftimewolf.lib.exporters import local_filesystem
-  from dftimewolf.lib.exporters import scp_ex
-  from dftimewolf.lib.exporters import timesketch
-  from dftimewolf.lib.processors import gcp_logging_timesketch
-  from dftimewolf.lib.processors import grepper
-  from dftimewolf.lib.processors import localplaso
-  from dftimewolf.lib.processors import turbinia_artifact
-  from dftimewolf.lib.processors import turbinia_gcp
+MODULES = {
+  'AzureCollector': 'dftimewolf.lib.collectors.azure',
+  'GCPTokenCheck': 'dftimewolf.lib.preflights.cloud_token',
+  'SSHMultiplexer': 'dftimewolf.lib.preflights.ssh_multiplexer',
+  'SanityChecks': 'dftimewolf.lib.preflights.sanity_checks',
+  'AWSCollector': 'dftimewolf.lib.collectors.aws',
+  'FilesystemCollector': 'dftimewolf.lib.collectors.filesystem',
+  'GoogleCloudCollector': 'dftimewolf.lib.collectors.gcloud',
+  'GCPLogsCollector': 'dftimewolf.lib.collectors.gcp_logging',
+  'GRRArtifactCollector': 'dftimewolf.lib.collectors.grr_hosts',
+  'GRRFileCollector': 'dftimewolf.lib.collectors.grr_hosts',
+  'GRRFlowCollector': 'dftimewolf.lib.collectors.grr_hosts',
+  'GRRTimelineCollector': 'dftimewolf.lib.collectors.grr_hosts',
+  'GRRHuntArtifactCollector': 'dftimewolf.lib.collectors.grr_hunt',
+  'GRRHuntFileCollector': 'dftimewolf.lib.collectors.grr_hunt',
+  'GRRHuntDownloader,': 'dftimewolf.lib.collectors.grr_hunt',
+  'TimesketchEnchancer': 'dftimewolf.lib.enhancers.timesketch',
+  'GoogleCloudDiskExport': 'dftimewolf.lib.exporters.gce_disk_export',
+  'LocalFilesystemCopy': 'dftimewolf.lib.exporters.local_filesystem',
+  'SCPExporter': 'dftimewolf.lib.exporters.scp_ex',
+  'TimesketchExporter': 'dftimewolf.lib.exporters.timesketch',
+  'GCPLoggingTimesketch': 'dftimewolf.lib.processors.gcp_logging_timesketch',
+  'GrepperSearch': 'dftimewolf.lib.processors.grepper',
+  'LocalPlasoProcessor': 'dftimewolf.lib.processors.localplaso',
+  'TurbiniaArtifactProcessor': 'dftimewolf.lib.processors.turbinia_artifact',
+  'TurbiniaGCPProcessor': 'dftimewolf.lib.processors.turbinia_gcp',
+}
 
 
 from dftimewolf.lib.recipes import manager as recipes_manager
@@ -234,11 +233,11 @@ class DFTimewolfTool(object):
     self._state = DFTimewolfState(config.Config)
     logger.info('Loading recipe {0:s}...'.format(self._recipe['name']))
     # Raises errors.RecipeParseError on error.
-    self._state.LoadRecipe(self._recipe)
+    self._state.LoadRecipe(self._recipe, MODULES)
 
-    number_of_modules = len(self._recipe['modules'])
+    module_cnt = len(self._recipe['modules']) + len(self._recipe['preflights'])
     logger.info('Loaded recipe {0:s} with {1:d} modules'.format(
-        self._recipe['name'], number_of_modules))
+        self._recipe['name'], module_cnt))
 
     self._state.command_line_options = vars(self._command_line_options)
 

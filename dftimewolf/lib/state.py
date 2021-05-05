@@ -8,6 +8,7 @@ import logging
 import sys
 import threading
 import traceback
+import importlib
 
 from dftimewolf.lib import errors
 from dftimewolf.lib import utils
@@ -73,7 +74,15 @@ class DFTimewolfState(object):
 
     self.CheckErrors(is_global=True)
 
-  def LoadRecipe(self, recipe):
+  def ImportRecipeModules(self, module_locations):
+    """Dynamically loads the modules declared in a recipe."""
+    module_names = [module['name'] for module in self.recipe['modules']]
+    preflight_names = [module['name'] for module in self.recipe['preflights']]
+    for name in module_names + preflight_names:
+      logger.info(f'Loading module {name} from {module_locations[name]}')
+      importlib.import_module(module_locations[name])
+
+  def LoadRecipe(self, recipe, module_locations):
     """Populates the internal module pool with modules declared in a recipe.
 
     Args:
@@ -85,6 +94,7 @@ class DFTimewolfState(object):
     self.recipe = recipe
     module_definitions = recipe.get('modules', [])
     preflight_definitions = recipe.get('preflights', [])
+    self.ImportRecipeModules(module_locations)
     for module_definition in module_definitions + preflight_definitions:
       # Combine CLI args with args from the recipe description
       module_name = module_definition['name']
