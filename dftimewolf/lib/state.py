@@ -75,13 +75,30 @@ class DFTimewolfState(object):
     self.CheckErrors(is_global=True)
 
   def ImportRecipeModules(self, module_locations):
-    """Dynamically loads the modules declared in a recipe."""
+    """Dynamically loads the modules declared in a recipe.
+
+    Args:
+      module_location (dict[str, str]): A dfTimewolf module name - Python module
+          mapping. e.g.:
+            {'GRRArtifactCollector': 'dftimewolf.lib.collectors.grr_hosts'}
+
+    Raises:
+      errors.RecipeParseError: if a module requested in a recipe does not
+          exist in the mapping.
+    """
     module_names = [module['name'] for module in self.recipe['modules']]
     preflight_names = [module['name'] for module in self.recipe['preflights']]
     for name in module_names + preflight_names:
+      if name not in module_locations:
+        msg = f'Module {name} cannot be found. It may not have been declared.'
+        raise errors.RecipeParseError(msg)
       logger.debug('Loading module {0:s} from {1:s}'.format(
           name, module_locations[name]))
+      try:
       importlib.import_module(module_locations[name])
+      except ModuleNotFoundError as exception:
+        msg = f'Cannot find Python module for {name}: {exception}'
+        raise errors.RecipeParseError(msg)
 
   def LoadRecipe(self, recipe, module_locations):
     """Populates the internal module pool with modules declared in a recipe.
@@ -90,19 +107,17 @@ class DFTimewolfState(object):
       recipe (dict[str, str]): recipe declaring modules to load.
 
     Raises:
-      RecipeParseError: if a module in the recipe does not exist.
+      RecipeParseError: if a module in the recipe has not been declared.
     """
     self.recipe = recipe
     module_definitions = recipe.get('modules', [])
     preflight_definitions = recipe.get('preflights', [])
     self.ImportRecipeModules(module_locations)
+
     for module_definition in module_definitions + preflight_definitions:
       # Combine CLI args with args from the recipe description
       module_name = module_definition['name']
       module_class = modules_manager.ModulesManager.GetModuleByName(module_name)
-      if not module_class:
-        raise errors.RecipeParseError(
-            'Recipe uses unknown module: {0:s}'.format(module_name))
 
       runtime_name = module_definition.get('runtime_name')
       if not runtime_name:

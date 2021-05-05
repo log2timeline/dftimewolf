@@ -333,13 +333,13 @@ def Main():
   try:
     tool.ReadRecipes()
   except (KeyError, errors.RecipeParseError) as exception:
-    logger.critical('{0!s}'.format(exception))
+    logger.critical(str(exception))
     return False
 
   try:
     tool.ParseArguments(sys.argv[1:])
   except (errors.CommandLineParseError, errors.RecipeParseError) as exception:
-    sys.stderr.write('{0!s}'.format(exception))
+    logger.critical(str(exception))
     return False
 
   tool.state.LogExecutionPlan()
