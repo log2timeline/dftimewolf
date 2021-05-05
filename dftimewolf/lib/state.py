@@ -95,7 +95,7 @@ class DFTimewolfState(object):
       logger.debug('Loading module {0:s} from {1:s}'.format(
           name, module_locations[name]))
       try:
-      importlib.import_module(module_locations[name])
+        importlib.import_module(module_locations[name])
       except ModuleNotFoundError as exception:
         msg = f'Cannot find Python module for {name}: {exception}'
         raise errors.RecipeParseError(msg)
@@ -127,14 +127,21 @@ class DFTimewolfState(object):
   def LogExecutionPlan(self):
     """Logs loaded modules and their corresponding arguments to stdout."""
     maxlen = 0
-    for module in self.recipe['modules']:
+
+    modules = self.recipe['preflights'] + self.recipe['modules']
+
+    for module in modules:
       if not module['args']:
         continue
       spacing = len(max(module['args'].keys(), key=len))
       maxlen = maxlen if maxlen > spacing else spacing
 
-    for module in self.recipe['modules']:
-      logger.debug('{0:s}:'.format(module['name']))
+    for module in modules:
+      runtime_name = module.get('runtime_name')
+      if runtime_name:
+        logger.debug('{0:s} ({1:s}):'.format(runtime_name, module['name']))
+      else:
+        logger.debug('{0:s}:'.format(module['name']))
 
       new_args = utils.ImportArgsFromDict(
           module['args'], self.command_line_options, self.config)
