@@ -79,7 +79,8 @@ class DFTimewolfState(object):
     module_names = [module['name'] for module in self.recipe['modules']]
     preflight_names = [module['name'] for module in self.recipe['preflights']]
     for name in module_names + preflight_names:
-      logger.info(f'Loading module {name} from {module_locations[name]}')
+      logger.debug('Loading module {0:s} from {1:s}'.format(
+          name, module_locations[name]))
       importlib.import_module(module_locations[name])
 
   def LoadRecipe(self, recipe, module_locations):
