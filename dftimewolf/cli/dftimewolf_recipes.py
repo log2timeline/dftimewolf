@@ -3,7 +3,6 @@
 """dftimewolf main entrypoint."""
 
 import argparse
-import importlib
 import logging
 # Some AttributeErrors occurred when trying to access logging.handlers, so
 # we import them separately
