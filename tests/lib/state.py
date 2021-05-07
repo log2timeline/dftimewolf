@@ -16,6 +16,11 @@ from dftimewolf.lib.recipes import manager as recipes_manager
 from tests.test_modules import modules
 from tests.test_modules import test_recipe
 
+TEST_MODULES = {
+  'DummyModule1': 'tests.test_modules.modules',
+  'DummyModule2': 'tests.test_modules.modules',
+  'DummyPreflightModule': 'tests.test_modules.modules',
+}
 
 class StateTest(unittest.TestCase):
   """Tests for the DFTimewolfState class."""
@@ -43,7 +48,7 @@ class StateTest(unittest.TestCase):
   def testLoadRecipe(self):
     """Tests that a recipe can be loaded correctly."""
     test_state = state.DFTimewolfState(config.Config)
-    test_state.LoadRecipe(test_recipe.contents)
+    test_state.LoadRecipe(test_recipe.contents, TEST_MODULES)
     # pylint: disable=protected-access
     self.assertIn('DummyModule1', test_state._module_pool)
     self.assertIn('DummyModule2', test_state._module_pool)
@@ -53,7 +58,7 @@ class StateTest(unittest.TestCase):
   def testLoadRecipeWithRuntimeNames(self):
     """Tests that a recipe can be loaded correctly."""
     test_state = state.DFTimewolfState(config.Config)
-    test_state.LoadRecipe(test_recipe.named_modules_contents)
+    test_state.LoadRecipe(test_recipe.named_modules_contents, TEST_MODULES)
     # pylint: disable=protected-access
     self.assertIn('DummyModule1', test_state._module_pool)
     self.assertIn('DummyModule2', test_state._module_pool)
@@ -87,7 +92,7 @@ class StateTest(unittest.TestCase):
     """Tests that preflight's process function is called correctly."""
     test_state = state.DFTimewolfState(config.Config)
     test_state.command_line_options = {}
-    test_state.LoadRecipe(test_recipe.contents)
+    test_state.LoadRecipe(test_recipe.contents, TEST_MODULES)
     test_state.RunPreflights()
     mock_setup.assert_called_with()
     mock_process.assert_called_with()
@@ -98,7 +103,7 @@ class StateTest(unittest.TestCase):
     """Tests that preflight's process function is called correctly."""
     test_state = state.DFTimewolfState(config.Config)
     test_state.command_line_options = {}
-    test_state.LoadRecipe(test_recipe.named_modules_contents)
+    test_state.LoadRecipe(test_recipe.named_modules_contents, TEST_MODULES)
     test_state.RunPreflights()
     mock_setup.assert_called_with()
     mock_process.assert_called_with()
@@ -108,7 +113,7 @@ class StateTest(unittest.TestCase):
     """Tests that preflight's process function is called correctly."""
     test_state = state.DFTimewolfState(config.Config)
     test_state.command_line_options = {}
-    test_state.LoadRecipe(test_recipe.contents)
+    test_state.LoadRecipe(test_recipe.contents, TEST_MODULES)
     test_state.CleanUpPreflights()
     mock_cleanup.assert_called_with()
 
@@ -118,7 +123,7 @@ class StateTest(unittest.TestCase):
     """Tests that module's setup functions are correctly called."""
     test_state = state.DFTimewolfState(config.Config)
     test_state.command_line_options = {}
-    test_state.LoadRecipe(test_recipe.contents)
+    test_state.LoadRecipe(test_recipe.contents, TEST_MODULES)
     test_state.SetupModules()
     mock_setup1.assert_called_with()
     mock_setup2.assert_called_with()
@@ -129,7 +134,7 @@ class StateTest(unittest.TestCase):
     """Tests that module's setup functions are correctly called."""
     test_state = state.DFTimewolfState(config.Config)
     test_state.command_line_options = {}
-    test_state.LoadRecipe(test_recipe.named_modules_contents)
+    test_state.LoadRecipe(test_recipe.named_modules_contents, TEST_MODULES)
     test_state.SetupModules()
     self.assertEqual(
       mock_setup1.call_args_list,
@@ -144,7 +149,7 @@ class StateTest(unittest.TestCase):
     """Tests that modules' process functions are correctly called."""
     test_state = state.DFTimewolfState(config.Config)
     test_state.command_line_options = {}
-    test_state.LoadRecipe(test_recipe.contents)
+    test_state.LoadRecipe(test_recipe.contents, TEST_MODULES)
     test_state.SetupModules()
     test_state.RunModules()
     mock_process1.assert_called_with()
@@ -156,7 +161,7 @@ class StateTest(unittest.TestCase):
     """Tests that modules' process functions are correctly called."""
     test_state = state.DFTimewolfState(config.Config)
     test_state.command_line_options = {}
-    test_state.LoadRecipe(test_recipe.named_modules_contents)
+    test_state.LoadRecipe(test_recipe.named_modules_contents, TEST_MODULES)
     test_state.SetupModules()
     test_state.RunModules()
     # pylint: disable=protected-access
@@ -174,7 +179,7 @@ class StateTest(unittest.TestCase):
     """Tests that module's errors are correctly caught."""
     test_state = state.DFTimewolfState(config.Config)
     test_state.command_line_options = {}
-    test_state.LoadRecipe(test_recipe.contents)
+    test_state.LoadRecipe(test_recipe.contents, TEST_MODULES)
     mock_process1.side_effect = Exception('asd')
     test_state.SetupModules()
     test_state.RunModules()
@@ -193,7 +198,7 @@ class StateTest(unittest.TestCase):
   def testStreamingCallback(self, mock_callback):
     """Tests that registered callbacks are appropriately called."""
     test_state = state.DFTimewolfState(config.Config)
-    test_state.LoadRecipe(test_recipe.contents)
+    test_state.LoadRecipe(test_recipe.contents, TEST_MODULES)
     test_state.SetupModules()
     # DummyModule1 has registered a StreamingConsumer
     report = containers.Report(module_name='testing', text='asd')
@@ -205,7 +210,7 @@ class StateTest(unittest.TestCase):
     """Tests that registered callbacks are called only on types for which
     they are registered."""
     test_state = state.DFTimewolfState(config.Config)
-    test_state.LoadRecipe(test_recipe.contents)
+    test_state.LoadRecipe(test_recipe.contents, TEST_MODULES)
     test_state.SetupModules()
     # DummyModule1's registered StreamingConsumer only consumes Reports, not
     # TicketAtttributes
