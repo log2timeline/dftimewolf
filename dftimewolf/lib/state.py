@@ -86,9 +86,8 @@ class DFTimewolfState(object):
       errors.RecipeParseError: if a module requested in a recipe does not
           exist in the mapping.
     """
-    module_names = [module['name'] for module in self.recipe['modules']]
-    preflight_names = [module['name'] for module in self.recipe['preflights']]
-    for name in module_names + preflight_names:
+    for module in self.recipe['modules'] + self.recipe.get('preflights', []):
+      name = module['name']
       if name not in module_locations:
         msg = f'Module {name} cannot be found. It may not have been declared.'
         raise errors.RecipeParseError(msg)
@@ -128,7 +127,7 @@ class DFTimewolfState(object):
     """Logs loaded modules and their corresponding arguments to stdout."""
     maxlen = 0
 
-    modules = self.recipe['preflights'] + self.recipe['modules']
+    modules = self.recipe.get('preflights', []) + self.recipe('modules', [])
 
     for module in modules:
       if not module['args']:
