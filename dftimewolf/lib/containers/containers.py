@@ -235,7 +235,7 @@ class Host(interface.AttributeContainer):
 
   CONTAINER_TYPE = 'host'
 
-  def __init__(self, hostname, platform='unkown'):
+  def __init__(self, hostname, platform='unknown'):
     super(Host, self).__init__()
     self.hostname = hostname
     self.platform = platform
