@@ -127,7 +127,7 @@ class DFTimewolfState(object):
     """Logs loaded modules and their corresponding arguments to stdout."""
     maxlen = 0
 
-    modules = self.recipe.get('preflights', []) + self.recipe('modules', [])
+    modules = self.recipe.get('preflights', []) + self.recipe.get('modules', [])
 
     for module in modules:
       if not module['args']:
