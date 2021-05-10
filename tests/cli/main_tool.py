@@ -21,3 +21,16 @@ class MainToolTest(unittest.TestCase):
     root_logger = logging.getLogger()
     self.assertEqual(len(logger.handlers), 2)
     self.assertEqual(len(root_logger.handlers), 1)
+
+  def testToolWithArbitraryRecipe(self):
+    """Tests that recipes are read and valid, and an exec plan is logged."""
+    tool = dftimewolf_recipes.DFTimewolfTool()
+    tool.LoadConfiguration()
+    tool.ReadRecipes()
+    # We want to ensure that recipes are loaded (10 is arbitrary)
+    # pylint: disable=protected-access
+    self.assertGreater(len(tool._recipes_manager._recipes), 10)
+    # Conversion to parse arguments is done within ParseArguments
+    # We can pass an arbitrary recipe with valid args here.
+    tool.ParseArguments(['upload_ts', '/tmp/test'])
+    tool.state.LogExecutionPlan()
