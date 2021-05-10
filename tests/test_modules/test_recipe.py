@@ -19,6 +19,21 @@ contents = {
     }]
 }
 
+contents_no_preflights = {
+    'name':
+        'dummy_recipe',
+    'short_description': 'Nothing to see here.',
+    'modules': [{
+        'wants': [],
+        'name': 'DummyModule1',
+        'args': {},
+    }, {
+        'wants': ['DummyModule1'],
+        'name': 'DummyModule2',
+        'args': {},
+    }]
+}
+
 named_modules_contents = {
     'name':
         'dummy_recipe',
