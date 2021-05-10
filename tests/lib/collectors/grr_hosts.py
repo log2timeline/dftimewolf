@@ -178,7 +178,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     self.grr_artifact_collector = grr_hosts.GRRArtifactCollector(
         self.test_state)
     self.grr_artifact_collector.SetUp(
-        hosts='C.0000000000000001',
+        hostnames='C.0000000000000001',
         artifacts=None,
         extra_artifacts=None,
         use_tsk=True,
@@ -200,7 +200,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     self.assertEqual(self.grr_artifact_collector.artifacts, [])
     self.assertEqual(
         self.grr_artifact_collector.extra_artifacts, [])
-    self.assertEqual(self.grr_artifact_collector.hostnames[0].hostname,
+    self.assertEqual(self.grr_artifact_collector.hosts[0].hostname,
                      'C.0000000000000001')
     self.assertTrue(self.grr_artifact_collector.use_tsk)
 
@@ -224,7 +224,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     self.grr_artifact_collector = grr_hosts.GRRArtifactCollector(
         self.test_state)
     self.grr_artifact_collector.SetUp(
-        hosts='C.0000000000000001',
+        hostnames='C.0000000000000001',
         artifacts='RandomArtifact',
         extra_artifacts='AnotherArtifact',
         use_tsk=True,
@@ -281,9 +281,10 @@ class GRRArtifactCollectorTest(unittest.TestCase):
                                 mock_InitHttp):
     """Tests that processing works when only containers are passed."""
     mock_InitHttp.return_value = self.mock_grr_api
-    self.grr_artifact_collector.hostnames = []
+    self.grr_artifact_collector = grr_hosts.GRRArtifactCollector(
+        self.test_state)
     self.grr_artifact_collector.SetUp(
-        hosts='',
+        hostnames='',
         artifacts='RandomArtifact',
         extra_artifacts='AnotherArtifact',
         use_tsk=True,
@@ -313,7 +314,7 @@ class GRRFileCollectorTest(unittest.TestCase):
     self.test_state = state.DFTimewolfState(config.Config)
     self.grr_file_collector = grr_hosts.GRRFileCollector(self.test_state)
     self.grr_file_collector.SetUp(
-        hosts='C.0000000000000001',
+        hostnames='C.0000000000000001',
         files='/etc/passwd',
         use_tsk=True,
         reason='random reason',
@@ -328,7 +329,7 @@ class GRRFileCollectorTest(unittest.TestCase):
   def testInitialization(self):
     """Tests that the collector can be initialized."""
     self.assertIsNotNone(self.grr_file_collector)
-    self.assertEqual(self.grr_file_collector.hostnames[0].hostname,
+    self.assertEqual(self.grr_file_collector.hosts[0].hostname,
                      'C.0000000000000001')
     self.assertEqual(self.grr_file_collector.files, ['/etc/passwd'])
 
@@ -369,9 +370,10 @@ class GRRFileCollectorTest(unittest.TestCase):
                                 mock_InitHttp):
     """Tests that processing works when only containers are passed."""
     mock_InitHttp.return_value = self.mock_grr_api
-    self.grr_file_collector.hostnames = []
+    self.grr_file_collector = grr_hosts.GRRFileCollector(
+        self.test_state)
     self.grr_file_collector.SetUp(
-        hosts='',
+        hostnames='',
         files='/etc/passwd',
         use_tsk=True,
         reason='random reason',
@@ -398,7 +400,7 @@ class GRRFlowCollector(unittest.TestCase):
     self.test_state = state.DFTimewolfState(config.Config)
     self.grr_flow_collector = grr_hosts.GRRFlowCollector(self.test_state)
     self.grr_flow_collector.SetUp(
-        host='C.0000000000000001',
+        hostname='C.0000000000000001',
         flow_id='F:12345',
         reason='random reason',
         grr_server_url='http://fake/endpoint',
@@ -436,7 +438,7 @@ class GRRTimelineCollector(unittest.TestCase):
     self.grr_timeline_collector = grr_hosts.GRRTimelineCollector(
         self.test_state)
     self.grr_timeline_collector.SetUp(
-        hosts='C.0000000000000001',
+        hostnames='C.0000000000000001',
         root_path='/',
         reason='random reason',
         timeline_format='1',
@@ -450,7 +452,7 @@ class GRRTimelineCollector(unittest.TestCase):
   def testInitialization(self):
     """Tests that the collector can be initialized."""
     self.assertIsNotNone(self.grr_timeline_collector)
-    self.assertEqual(self.grr_timeline_collector.hostnames[0].hostname,
+    self.assertEqual(self.grr_timeline_collector.hosts[0].hostname,
                      'C.0000000000000001')
     self.assertEqual(self.grr_timeline_collector.root_path, b'/')
     self.assertEqual(self.grr_timeline_collector._timeline_format, 1)
@@ -490,9 +492,10 @@ class GRRTimelineCollector(unittest.TestCase):
                                 mock_InitHttp):
     """Tests that processing works when only containers are passed."""
     mock_InitHttp.return_value = self.mock_grr_api
-    self.grr_timeline_collector.hostnames = []
+    self.grr_timeline_collector = grr_hosts.GRRTimelineCollector(
+        self.test_state)
     self.grr_timeline_collector.SetUp(
-        hosts='',
+        hostnames='',
         root_path='/',
         reason='random reason',
         timeline_format='1',
