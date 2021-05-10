@@ -34,3 +34,5 @@ class MainToolTest(unittest.TestCase):
     # We can pass an arbitrary recipe with valid args here.
     tool.ParseArguments(['upload_ts', '/tmp/test'])
     tool.state.LogExecutionPlan()
+    for recipe in tool._recipes_manager.GetRecipes():
+      tool._recipes_manager.DeregisterRecipe(recipe)
