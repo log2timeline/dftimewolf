@@ -12,6 +12,7 @@ from dftimewolf.lib import state
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.recipes import manager as recipes_manager
+from dftimewolf.lib import errors
 
 from tests.test_modules import modules
 from tests.test_modules import test_recipe
@@ -191,12 +192,12 @@ class StateTest(unittest.TestCase):
     test_state.LoadRecipe(test_recipe.contents, TEST_MODULES)
     mock_process1.side_effect = Exception('asd')
     test_state.SetupModules()
-    test_state.RunModules()
+    with self.assertRaises(errors.CriticalError):
+      test_state.RunModules()
     mock_process1.assert_called_with()
-    # Procesds() in module 2 is never called since the failure in Module1
+    # Process() in module 2 is never called since the failure in Module1
     # will abort execution
     mock_process2.assert_not_called()
-    mock_exit.assert_called_with(1)
     self.assertEqual(len(test_state.global_errors), 1)
     error = test_state.global_errors[0]
     self.assertIn('An unknown error occurred in module DummyModule1: asd',

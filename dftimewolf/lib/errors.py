@@ -33,3 +33,6 @@ class RecipeParseError(DFTimewolfError):
 
 class CommandLineParseError(DFTimewolfError):
   """Error when parsing the command-line arguments."""
+
+class CriticalError(DFTimewolfError):
+  """Critical error that should abort the whole workflow."""

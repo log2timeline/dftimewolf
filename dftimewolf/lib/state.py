@@ -421,5 +421,4 @@ class DFTimewolfState(object):
           'Please consider opening an issue: {0:s}'.format(NEW_ISSUE_URL))
 
     if critical_errors:
-      logger.critical('Critical error found. Aborting.')
-      sys.exit(1)
+      raise errors.CriticalError()
