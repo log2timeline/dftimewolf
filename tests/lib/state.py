@@ -184,8 +184,7 @@ class StateTest(unittest.TestCase):
 
   @mock.patch('tests.test_modules.modules.DummyModule2.Process')
   @mock.patch('tests.test_modules.modules.DummyModule1.Process')
-  @mock.patch('sys.exit')
-  def testProcessErrors(self, mock_exit, mock_process1, mock_process2):
+  def testProcessErrors(self, mock_process1, mock_process2):
     """Tests that module's errors are correctly caught."""
     test_state = state.DFTimewolfState(config.Config)
     test_state.command_line_options = {}

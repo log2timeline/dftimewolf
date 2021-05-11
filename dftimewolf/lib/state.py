@@ -5,7 +5,6 @@ Use it to track errors, abort on global failures, clean up after modules, etc.
 """
 
 import logging
-import sys
 import threading
 import traceback
 import importlib
