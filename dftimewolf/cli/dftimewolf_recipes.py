@@ -348,11 +348,17 @@ def Main():
 
   tool.RunPreflights()
 
-  # TODO: log errors if this fails.
-  tool.SetupModules()
+  try:
+    tool.SetupModules()
+  except errors.CriticalError as exception:
+    logger.critical(str(exception))
+    return False
 
-  # TODO: log errors if this fails.
-  tool.RunModules()
+  try:
+    tool.RunModules()
+  except errors.CriticalError as exception:
+    logger.critical(str(exception))
+    return False
 
   tool.CleanUpPreflights()
 
