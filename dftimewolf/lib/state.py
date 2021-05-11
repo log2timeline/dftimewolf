@@ -420,4 +420,4 @@ class DFTimewolfState(object):
           'Please consider opening an issue: {0:s}'.format(NEW_ISSUE_URL))
 
     if critical_errors:
-      raise errors.CriticalError()
+      raise errors.CriticalError('Critical error found. Aborting.')
