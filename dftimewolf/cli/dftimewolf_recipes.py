@@ -332,13 +332,15 @@ def Main():
 
   try:
     tool.ReadRecipes()
-  except (KeyError, errors.RecipeParseError) as exception:
+  except (KeyError, errors.RecipeParseError, errors.CriticalError) as exception:
     logger.critical(str(exception))
     return False
 
   try:
     tool.ParseArguments(sys.argv[1:])
-  except (errors.CommandLineParseError, errors.RecipeParseError) as exception:
+  except (errors.CommandLineParseError,
+          errors.RecipeParseError,
+          errors.CriticalError) as exception:
     logger.critical(str(exception))
     return False
 
@@ -346,11 +348,17 @@ def Main():
 
   tool.RunPreflights()
 
-  # TODO: log errors if this fails.
-  tool.SetupModules()
+  try:
+    tool.SetupModules()
+  except errors.CriticalError as exception:
+    logger.critical(str(exception))
+    return False
 
-  # TODO: log errors if this fails.
-  tool.RunModules()
+  try:
+    tool.RunModules()
+  except errors.CriticalError as exception:
+    logger.critical(str(exception))
+    return False
 
   tool.CleanUpPreflights()
 
