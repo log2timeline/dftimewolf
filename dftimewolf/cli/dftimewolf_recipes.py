@@ -17,12 +17,15 @@ from dftimewolf import config
 from dftimewolf.lib import errors
 from dftimewolf.lib import utils
 
+
 MODULES = {
   'AWSCollector': 'dftimewolf.lib.collectors.aws',
+  'AWSLogsCollector': 'dftimewolf.lib.collectors.aws_logging',
   'AzureCollector': 'dftimewolf.lib.collectors.azure',
   'FilesystemCollector': 'dftimewolf.lib.collectors.filesystem',
   'GCPLoggingTimesketch': 'dftimewolf.lib.processors.gcp_logging_timesketch',
   'GCPLogsCollector': 'dftimewolf.lib.collectors.gcp_logging',
+  'AWSAccountCheck': 'dftimewolf.lib.preflights.cloud_token',
   'GCPTokenCheck': 'dftimewolf.lib.preflights.cloud_token',
   'GoogleCloudCollector': 'dftimewolf.lib.collectors.gcloud',
   'GoogleCloudDiskExport': 'dftimewolf.lib.exporters.gce_disk_export',
