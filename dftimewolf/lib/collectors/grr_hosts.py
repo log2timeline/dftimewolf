@@ -330,7 +330,7 @@ class GRRArtifactCollector(GRRFlow):
   Attributes:
     artifacts (list[str]): artifact definition names.
     extra_artifacts (list[str]): extra artifact definition names.
-    hostnames (list[str]): FDQNs of the GRR client hosts.
+    hosts (list[containers.Host]): Hosts to collect artifacts from.
     use_tsk (bool): True if GRR should use Sleuthkit (TSK) to collect file
         system artifacts.
   """
@@ -367,18 +367,18 @@ class GRRArtifactCollector(GRRFlow):
     self._clients = []
     self.artifacts = []
     self.extra_artifacts = []
-    self.hostnames = None
+    self.hosts = []
     self.use_tsk = False
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
-            hosts, artifacts, extra_artifacts, use_tsk,
+            hostnames, artifacts, extra_artifacts, use_tsk,
             reason, grr_server_url, grr_username, grr_password, approvers=None,
             verify=True, skip_offline_clients=False):
     """Initializes a GRR artifact collector.
 
     Args:
-      hosts (str): comma-separated hostnames to launch the flow on.
+      hostnames (str): comma-separated hostnames to launch the flow on.
       artifacts (str): comma-separated artifact definition names.
       extra_artifacts (str): comma-separated extra artifact definition names.
       use_tsk (bool): True if GRR should use Sleuthkit (TSK) to collect file
@@ -404,7 +404,12 @@ class GRRArtifactCollector(GRRFlow):
       self.extra_artifacts = [item.strip() for item
                               in extra_artifacts.strip().split(',')]
 
-    self.hostnames = [item.strip() for item in hosts.strip().split(',')]
+    for item in hostnames.strip().split(','):
+      hostname = item.strip()
+      if hostname:
+        host = containers.Host(hostname=hostname)
+        self.hosts.append(host)
+
     self.use_tsk = use_tsk
 
   # TODO: change object to more specific GRR type information.
@@ -469,8 +474,10 @@ class GRRArtifactCollector(GRRFlow):
     Raises:
       DFTimewolfError: if no artifacts specified nor resolved by platform.
     """
+    self.hosts.extend(self.state.GetContainers(containers.Host))
+
     threads = []
-    for client in self._FindClients(self.hostnames):
+    for client in self._FindClients([host.hostname for host in self.hosts]):
       thread = threading.Thread(target=self._ProcessThread, args=(client, ))
       threads.append(thread)
       thread.start()
@@ -484,7 +491,7 @@ class GRRFileCollector(GRRFlow):
 
   Attributes:
     files (list[str]): file paths.
-    hostnames (list[str]): FDQNs of the GRR client hosts.
+    hosts (list[containers.Host]): Hosts to collect artifacts from.
     use_tsk (bool): True if GRR should use Sleuthkit (TSK) to collect files.
     action (FileFinderAction): Enum denoting action to take.
   """
@@ -497,19 +504,19 @@ class GRRFileCollector(GRRFlow):
     super(GRRFileCollector, self).__init__(state, name=name, critical=critical)
     self._clients = []
     self.files = []
-    self.hostnames = None
+    self.hosts = []
     self.use_tsk = False
     self.action = None
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
-            hosts, files, use_tsk,
+            hostnames, files, use_tsk,
             reason, grr_server_url, grr_username, grr_password, approvers=None,
             verify=True, skip_offline_clients=False, action='download'):
     """Initializes a GRR file collector.
 
     Args:
-      hosts (str): comma-separated hostnames to launch the flow on.
+      hostnames (str): comma-separated hostnames to launch the flow on.
       files (str): comma-separated file paths.
       use_tsk (bool): True if GRR should use Sleuthkit (TSK) to collect files.
       reason (str): justification for GRR access.
@@ -531,7 +538,12 @@ class GRRFileCollector(GRRFlow):
     if files is not None:
       self.files = [item.strip() for item in files.strip().split(',')]
 
-    self.hostnames = [item.strip() for item in hosts.strip().split(',')]
+    for item in hostnames.strip().split(','):
+      hostname = item.strip()
+      if hostname:
+        host = containers.Host(hostname=hostname)
+        self.hosts.append(host)
+
     self.use_tsk = use_tsk
 
     if action.lower() in self._ACTIONS:
@@ -577,8 +589,10 @@ class GRRFileCollector(GRRFlow):
     Raises:
       DFTimewolfError: if no files specified.
     """
+    self.hosts.extend(self.state.GetContainers(containers.Host))
+
     threads = []
-    for client in self._FindClients(self.hostnames):
+    for client in self._FindClients([host.hostname for host in self.hosts]):
       thread = threading.Thread(target=self._ProcessThread, args=(client, ))
       threads.append(thread)
       thread.start()
@@ -605,13 +619,13 @@ class GRRFlowCollector(GRRFlow):
 
   # pylint: disable=arguments-differ
   def SetUp(self,
-            host, flow_id,
+            hostname, flow_id,
             reason, grr_server_url, grr_username, grr_password, approvers=None,
             verify=True, skip_offline_clients=False):
     """Initializes a GRR flow collector.
 
     Args:
-      host (str): hostname of machine.
+      hostname (str): Hostname to gather the flow from.
       flow_id (str): GRR identifier of the flow to retrieve.
       reason (str): justification for GRR access.
       grr_server_url (str): GRR server URL.
@@ -629,7 +643,7 @@ class GRRFlowCollector(GRRFlow):
         skip_offline_clients=skip_offline_clients)
 
     self.flow_id = flow_id
-    self.host = host
+    self.host = containers.Host(hostname=hostname)
 
   def Process(self):
     """Downloads the results of a GRR collection flow.
@@ -639,7 +653,7 @@ class GRRFlowCollector(GRRFlow):
     """
     # TODO (tomchop): Change the host attribute into something more appropriate
     # like 'selectors', and the corresponding recipes.
-    client = self._GetClientBySelector(self.host)
+    client = self._GetClientBySelector(self.host.hostname)
     self._AwaitFlow(client, self.flow_id)
     self._CheckSkippedFlows()
     collected_flow_data = self._DownloadFiles(client, self.flow_id)
@@ -658,7 +672,7 @@ class GRRTimelineCollector(GRRFlow):
 
   Attributes:
     root_path (str): root path.
-    hostnames (list[str]): FDQNs of the GRR client hosts.
+    hosts (list[containers.Host]): Hosts to collect artifacts from.
   """
 
   def __init__(self, state, name=None, critical=False):
@@ -666,19 +680,19 @@ class GRRTimelineCollector(GRRFlow):
         state, name=name, critical=critical)
     self._clients = []
     self.root_path = None
-    self.hostnames = None
+    self.hosts = []
     self._timeline_format = None
 
   # We're overriding the behavior of GRRFlow's SetUp function to include new
   # parameters.
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
-            hosts, root_path,
+            hostnames, root_path,
             reason, timeline_format, grr_server_url, grr_username, grr_password,
             approvers=None, verify=True, skip_offline_clients=False):
     """Initializes a GRR timeline collector.
     Args:
-      hosts (str): comma-separated hostnames to launch the flow on.
+      hostnames (str): comma-separated hostnames to launch the flow on.
       root_path (str): path to start the recursive timeline.
       reason (str): justification for GRR access.
       timeline_format (str): Timeline format (1 is BODY, 2 is RAW).
@@ -699,7 +713,12 @@ class GRRTimelineCollector(GRRFlow):
     if root_path is not None:
       self.root_path = root_path.strip()
 
-    self.hostnames = [item.strip() for item in hosts.strip().split(',')]
+    for item in hostnames.strip().split(','):
+      hostname = item.strip()
+      if hostname:
+        host = containers.Host(hostname=hostname)
+        self.hosts.append(host)
+
     self._timeline_format = int(timeline_format)
     self.root_path = root_path.encode()
     if self._timeline_format not in [1, 2]:
@@ -737,8 +756,10 @@ class GRRTimelineCollector(GRRFlow):
     Raises:
       DFTimewolfError: if no files specified.
     """
+    self.hosts.extend(self.state.GetContainers(containers.Host))
+
     threads = []
-    for client in self._FindClients(self.hostnames):
+    for client in self._FindClients([host.hostname for host in self.hosts]):
       thread = threading.Thread(target=self._ProcessThread, args=(client, ))
       threads.append(thread)
       thread.start()

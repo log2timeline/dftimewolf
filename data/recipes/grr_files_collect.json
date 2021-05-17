@@ -6,7 +6,7 @@
         "wants": [],
         "name": "GRRFileCollector",
         "args": {
-            "hosts": "@hosts",
+            "hostnames": "@hostnames",
             "reason": "@reason",
             "grr_server_url": "@grr_server_url",
             "grr_username": "@grr_username",
@@ -26,7 +26,7 @@
         }
     }],
     "args": [
-        ["hosts", "Comma-separated list of hosts to process", null],
+        ["hostnames", "Comma-separated list of hostnames or GRR client IDs to process", null],
         ["reason", "Reason for collection", null],
         ["files", "Comma-separated list of files to fetch (supports GRR variable interpolation)", null],
         ["directory", "Directory in which to export files.", null],
