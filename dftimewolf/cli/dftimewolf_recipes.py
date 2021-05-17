@@ -17,12 +17,15 @@ from dftimewolf import config
 from dftimewolf.lib import errors
 from dftimewolf.lib import utils
 
+
 MODULES = {
   'AWSCollector': 'dftimewolf.lib.collectors.aws',
+  'AWSLogsCollector': 'dftimewolf.lib.collectors.aws_logging',
   'AzureCollector': 'dftimewolf.lib.collectors.azure',
   'FilesystemCollector': 'dftimewolf.lib.collectors.filesystem',
   'GCPLoggingTimesketch': 'dftimewolf.lib.processors.gcp_logging_timesketch',
   'GCPLogsCollector': 'dftimewolf.lib.collectors.gcp_logging',
+  'AWSAccountCheck': 'dftimewolf.lib.preflights.cloud_token',
   'GCPTokenCheck': 'dftimewolf.lib.preflights.cloud_token',
   'GoogleCloudCollector': 'dftimewolf.lib.collectors.gcloud',
   'GoogleCloudDiskExport': 'dftimewolf.lib.exporters.gce_disk_export',
@@ -332,13 +335,15 @@ def Main():
 
   try:
     tool.ReadRecipes()
-  except (KeyError, errors.RecipeParseError) as exception:
+  except (KeyError, errors.RecipeParseError, errors.CriticalError) as exception:
     logger.critical(str(exception))
     return False
 
   try:
     tool.ParseArguments(sys.argv[1:])
-  except (errors.CommandLineParseError, errors.RecipeParseError) as exception:
+  except (errors.CommandLineParseError,
+          errors.RecipeParseError,
+          errors.CriticalError) as exception:
     logger.critical(str(exception))
     return False
 
@@ -346,11 +351,17 @@ def Main():
 
   tool.RunPreflights()
 
-  # TODO: log errors if this fails.
-  tool.SetupModules()
+  try:
+    tool.SetupModules()
+  except errors.CriticalError as exception:
+    logger.critical(str(exception))
+    return False
 
-  # TODO: log errors if this fails.
-  tool.RunModules()
+  try:
+    tool.RunModules()
+  except errors.CriticalError as exception:
+    logger.critical(str(exception))
+    return False
 
   tool.CleanUpPreflights()
 
