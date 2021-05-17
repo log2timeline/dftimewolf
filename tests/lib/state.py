@@ -12,6 +12,7 @@ from dftimewolf.lib import state
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.recipes import manager as recipes_manager
+from dftimewolf.lib import errors
 
 from tests.test_modules import modules
 from tests.test_modules import test_recipe
@@ -183,20 +184,19 @@ class StateTest(unittest.TestCase):
 
   @mock.patch('tests.test_modules.modules.DummyModule2.Process')
   @mock.patch('tests.test_modules.modules.DummyModule1.Process')
-  @mock.patch('sys.exit')
-  def testProcessErrors(self, mock_exit, mock_process1, mock_process2):
+  def testProcessErrors(self, mock_process1, mock_process2):
     """Tests that module's errors are correctly caught."""
     test_state = state.DFTimewolfState(config.Config)
     test_state.command_line_options = {}
     test_state.LoadRecipe(test_recipe.contents, TEST_MODULES)
     mock_process1.side_effect = Exception('asd')
     test_state.SetupModules()
-    test_state.RunModules()
+    with self.assertRaises(errors.CriticalError):
+      test_state.RunModules()
     mock_process1.assert_called_with()
-    # Procesds() in module 2 is never called since the failure in Module1
+    # Process() in module 2 is never called since the failure in Module1
     # will abort execution
     mock_process2.assert_not_called()
-    mock_exit.assert_called_with(1)
     self.assertEqual(len(test_state.global_errors), 1)
     error = test_state.global_errors[0]
     self.assertIn('An unknown error occurred in module DummyModule1: asd',
