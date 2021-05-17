@@ -7,7 +7,7 @@
     "wants": [],
     "name": "GRRTimelineCollector",
     "args": {
-      "hosts": "@hosts",
+      "hostnames": "@hostnames",
       "root_path": "@root_path",
       "reason": "incident_id: @reason",
       "timeline_format": "1",
@@ -39,7 +39,7 @@
     }
   }],
   "args": [
-    ["hosts", "Hosts to process", null],
+    ["hostnames", "Comma-separated list of hostnames or GRR client IDs to process", null],
     ["root_path", "Root path for timeline generation", "/"],
     ["reason", "Reason for collection", null],
     ["--skip_offline_clients", "Whether to skip clients that are offline", false],
