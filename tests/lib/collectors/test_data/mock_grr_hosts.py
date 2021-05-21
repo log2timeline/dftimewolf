@@ -100,4 +100,4 @@ hunt_pb = hunt_pb2.ApiHunt(
     state=1
 )
 
-MOCK_HUNT = hunt.Hunt(data=hunt_pb)
+MOCK_HUNT = hunt.Hunt(data=hunt_pb, context=None)
