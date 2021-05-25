@@ -86,7 +86,7 @@ class TimesketchExporter(module.BaseModule):
       sketch = self.timesketch_api.get_sketch(self.sketch_id)
       if 'write' not in sketch.my_acl:
         self.ModuleError(
-            'No write access to sketch ID {0:d}, aborting'.format(sketch_id),
+            'No write access to sketch ID {0:d}, aborting'.format(self.sketch_id),
             critical=True)
       self.state.AddToCache('timesketch_sketch', sketch)
       self.sketch_id = sketch.id
