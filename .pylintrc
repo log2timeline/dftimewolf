@@ -56,9 +56,9 @@ confidence=
 # --disable=W"
 #
 disable=
-    super-with-arguments,
     assignment-from-none,
     bad-inline-option,
+    consider-using-with,
     deprecated-pragma,
     duplicate-code,
     eq-without-hash,
@@ -73,6 +73,7 @@ disable=
     no-self-use,
     parameter-unpacking,
     raw-checker-failed,
+    super-with-arguments,
     suppressed-message,
     too-few-public-methods,
     too-many-ancestors,
