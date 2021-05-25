@@ -32,7 +32,8 @@ except ImportError:
   from distutils.core import find_packages, setup
 
 try:
-  from distutils.command.bdist_msi import bdist_msi
+  # bdist seems to raise a weird syntax error that pylint doesn't like
+  from distutils.command.bdist_msi import bdist_msi  # pylint: disable=syntax-error,line-too-long
 except ImportError:
   bdist_msi = None
 
