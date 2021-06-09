@@ -306,14 +306,14 @@ class WorkspaceLogs(interface.AttributeContainer):
 
   Attributes:
     application_name (str): Name of the application the audit records are for
-    filter_expression (str): Workspace audit logs filter expression
-          used to generate the results.
+    filter_expression (str): GCP logging advanced logs filter expression
+        used to generate the results.
     path (str): path to a Workspace log file.
   """
   CONTAINER_TYPE = 'workspace_logs'
 
-  def __init__(self, application_name: str, path: str, filter_expression: str):
-    """Initializes the Workspace logs container.
+  def __init__(self, application_name,path, filter_expression):
+    """Initializes the analysis report.
 
     Args:
       application_name (str): Name of the application the audit records are for
