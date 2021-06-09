@@ -7,14 +7,13 @@ import tempfile
 
 from google.auth.exceptions import DefaultCredentialsError, RefreshError
 from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient import discovery
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.oauth2.credentials import Credentials
-
-from googleapiclient import discovery
 
 
 class WorkspaceAuditCollector(module.BaseModule):
@@ -35,8 +34,8 @@ class WorkspaceAuditCollector(module.BaseModule):
     self._user_key = 'all'
     self._end_time = None
 
-  def _BuildAuditService(self, credentials):
-    """Builds a reports service to use to request logs.
+  def _BuildAuditResource(self, credentials):
+    """Builds a reports resource object to use to request logs.
 
     Args:
       credentials: Google API credentials
@@ -93,6 +92,7 @@ class WorkspaceAuditCollector(module.BaseModule):
 
     return credentials
 
+  # pylint: disable=arguments-differ
   def SetUp(self, application_name, filter_expression, user_key='all',
       start_time=None, end_time=None):
     """Sets up a a Workspace Audit logs collector.
@@ -102,9 +102,10 @@ class WorkspaceAuditCollector(module.BaseModule):
           https://developers.google.com/admin-sdk/reports/reference/rest/v1
           /activities/list#ApplicationName
       filter_expression (str): Workspace logs filter expression.
-      user_key (Optional[str]): profile ID or email for which data should be collected.
-          Can be 'all' for all information.
-      start_time (Optional[str]): Beginning of the time period to return results for.
+      user_key (Optional[str]): profile ID or email for which data should be
+          collected. Can be 'all' for all users.
+      start_time (Optional[str]): Beginning of the time period to return results
+          for.
       end_time (Optional[str]): End of the time period to return results for.
     """
     self._credentials = self._GetCredentials()
@@ -121,7 +122,7 @@ class WorkspaceAuditCollector(module.BaseModule):
     output_path = output_file.name
     self.logger.info('Downloading logs to {0:s}'.format(output_path))
 
-    service = self._BuildAuditService(self._credentials)
+    audit_resource = self._BuildAuditResource(self._credentials)
     request_parameters = {
         'userKey': self._user_key,
         'applicationName': self._application_name
@@ -134,7 +135,9 @@ class WorkspaceAuditCollector(module.BaseModule):
       request_parameters['endTime'] = self._end_time
 
     try:
-      request = service.activities().list(**request_parameters)
+      # Pylint can't see the activities method.
+      # pylint: disable=no-member
+      request = audit_resource.activities().list(**request_parameters)
       while request is not None:
         response = request.execute()
         audit_records = response.get('items', [])
@@ -142,7 +145,9 @@ class WorkspaceAuditCollector(module.BaseModule):
           output_file.write(json.dumps(audit_record))
           output_file.write('\n')
 
-        request = service.activities().list_next(request, response)
+        # Pylint can't see the activities method.
+        # pylint: disable=no-member
+        request = audit_resource.activities().list_next(request, response)
     except (RefreshError, DefaultCredentialsError) as exception:
       self.ModuleError(
           'Something is wrong with your gcloud access token or '
