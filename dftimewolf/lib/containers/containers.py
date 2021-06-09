@@ -284,7 +284,7 @@ class WorkspaceLogs(interface.AttributeContainer):
   """
   CONTAINER_TYPE = 'workspace_logs'
 
-  def __init__(self, application_name,path, filter_expression):
+  def __init__(self, application_name, path, filter_expression):
     """Initializes the analysis report.
 
     Args:
