@@ -2,6 +2,7 @@
 """Reads logs from a GCP cloud project."""
 import json
 import tempfile
+import time
 
 from google.api_core import exceptions as google_api_exceptions
 from google.auth import exceptions as google_auth_exceptions
@@ -61,12 +62,29 @@ class GCPLogsCollector(module.BaseModule):
       else:
         logging_client = logging.Client(_use_grpc=False)
 
-      for entry in logging_client.list_entries(
-          order_by=logging.DESCENDING, filter_=self._filter_expression):
+      results = logging_client.list_entries(
+          order_by=logging.DESCENDING,
+          filter_=self._filter_expression,
+          page_size=1000)
 
-        log_dict = entry.to_api_repr()
-        output_file.write(json.dumps(log_dict))
-        output_file.write('\n')
+      pages = results.pages
+
+      while True:
+        try:
+          page = next(pages)
+        except google_api_exceptions.TooManyRequests as exception:
+          self.logger.warning(
+              'Hit quota limit requesting GCP logs: {0:s}', str(exception))
+          time.sleep(4)
+          continue
+        except StopIteration:
+          break
+
+        for entry in page:
+
+          log_dict = entry.to_api_repr()
+          output_file.write(json.dumps(log_dict))
+          output_file.write('\n')
 
     except google_api_exceptions.NotFound as exception:
       self.ModuleError(
