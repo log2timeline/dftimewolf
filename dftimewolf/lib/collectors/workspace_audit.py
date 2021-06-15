@@ -2,10 +2,10 @@
 """Pulls audit logs from Google Workspace."""
 
 import os.path
-import filelock
 import json
 import tempfile
 
+import filelock
 from google.auth.exceptions import DefaultCredentialsError, RefreshError
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
