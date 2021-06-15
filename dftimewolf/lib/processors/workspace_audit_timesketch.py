@@ -29,8 +29,8 @@ class WorkspaceAuditTimesketch(BaseModule):
     """Sets up necessary module configuration options."""
     # No configuration required.
 
-  def _FlattenActor(self, actor_dict):
-    """Flattens out actor information from a Workspace log record.
+  def _ExtractActorInformation(self, actor_dict):
+    """Extracts actor information from a Workspace log record.
 
     Args:
       actor_dict (dict): contents of the 'actor' dict in a Workspace log record
@@ -52,7 +52,7 @@ class WorkspaceAuditTimesketch(BaseModule):
       [{"name": "event_id", "value": "4"}, {"name": "title", "value": "foo"}]
 
     This method turns it into:
-      {"event_id": 4, "title": "foo"}
+      {"event_id": "4", "title": "foo"}
 
     Args:
       parameters (list): the contents of a Workspace parameters list.
@@ -64,12 +64,17 @@ class WorkspaceAuditTimesketch(BaseModule):
     parameters_dict = {}
     for parameter in parameters:
       name = parameter.get('name')
+      if not name:
+        self.ModuleError(
+            'Encountered a parameter with no name. '
+            'Full parameter dictionary: {0:s}'.format(str(parameters)))
+        continue
       value = parameter.get('value')
       if not value:
         value = parameter.get('multiValue', '')
         value = ', '.join(value)
       if name and value:
-        parameters_dict[name] = value
+        parameters_dict[name] = str(value)
     return parameters_dict
 
   def _AddMessageString(self, timesketch_record):
@@ -114,7 +119,7 @@ class WorkspaceAuditTimesketch(BaseModule):
       list[str]: one or more Timesketch records.
     """
     log_record = json.loads(log_record)
-    actor = self._FlattenActor(log_record.pop('actor', {}))
+    actor = self._ExtractActorInformation(log_record.pop('actor', {}))
     identifiers = log_record.pop('id', {})
     timestamp = identifiers.pop('time')
     events = log_record.pop('events', [])
@@ -145,11 +150,15 @@ class WorkspaceAuditTimesketch(BaseModule):
       logs_container (WorkspaceLogs): logs container.
     """
     if not logs_container.path:
+      self.ModuleError('Encountered a logs container with an empty path')
       return
 
     output_file = tempfile.NamedTemporaryFile(
         mode='w', encoding='utf-8', delete=False, suffix='.jsonl')
     output_path = output_file.name
+    self.logger.info(
+        'Adding Timesketch attributes to logs from {0:s} to {1:s}'.format(
+            logs_container.path, output_path))
 
     with open(logs_container.path, 'r') as input_file:
       for line in input_file:

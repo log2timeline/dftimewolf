@@ -2,6 +2,7 @@
 """Pulls audit logs from Google Workspace."""
 
 import os.path
+import filelock
 import json
 import tempfile
 
@@ -60,35 +61,39 @@ class WorkspaceAuditCollector(module.BaseModule):
     # time.
     credentials_path = os.path.join(
         os.path.expanduser('~'), self._CREDENTIALS_FILENAME)
-    if os.path.exists(credentials_path):
-      try:
-        credentials = Credentials.from_authorized_user_file(
-            credentials_path, self.SCOPES)
-      except ValueError as exception:
-        self.logger.warning(
-            'Unable to load credentials: {0:s}'.format(exception))
-        credentials = None
+    lock = filelock.FileLock(credentials_path + '.lock')
+    with lock:
+      if os.path.exists(credentials_path):
+        try:
+          credentials = Credentials.from_authorized_user_file(
+              credentials_path, self.SCOPES)
+        except ValueError as exception:
+          self.logger.warning(
+              'Unable to load credentials: {0:s}'.format(exception))
+          credentials = None
 
-    # If there are no (valid) credentials available, let the user log in.
-    if not credentials or not credentials.valid:
-      if credentials and credentials.expired and credentials.refresh_token:
-        credentials.refresh(Request())
-      else:
-        secrets_path = os.path.join(
-            os.path.expanduser('~'), self._CLIENT_SECRET_FILENAME)
-        if not os.path.exists(secrets_path):
-          self.ModuleError(
-              'No OAUTH application credentials available to retrieve '
-              'workspace logs. Please generate oauth application credentials '
-              'and save them to {0:s}.'.format(
-                  secrets_path))
-        flow = InstalledAppFlow.from_client_secrets_file(
-            secrets_path, self.SCOPES)
-        credentials = flow.run_console()
+      # If there are no (valid) credentials available, let the user log in.
+      if not credentials or not credentials.valid:
+        if credentials and credentials.expired and credentials.refresh_token:
+          credentials.refresh(Request())
+        else:
+          secrets_path = os.path.join(
+              os.path.expanduser('~'), self._CLIENT_SECRET_FILENAME)
+          if not os.path.exists(secrets_path):
+            error_message = (
+                'No OAuth application credentials available to retrieve '
+                'workspace logs. Please generate OAuth application credentials '
+                '(see https://developers.google.com/workspace/guides/'
+                'create-credentials#desktop) and save them to {0:s}.').format(
+                    secrets_path)
+            self.ModuleError(error_message, True)
+          flow = InstalledAppFlow.from_client_secrets_file(
+              secrets_path, self.SCOPES)
+          credentials = flow.run_console()
 
-      # Save the credentials for the next run
-      with open(credentials_path, 'w') as token_file:
-        token_file.write(credentials.to_json())
+        # Save the credentials for the next run
+        with open(credentials_path, 'w') as token_file:
+          token_file.write(credentials.to_json())
 
     return credentials
 

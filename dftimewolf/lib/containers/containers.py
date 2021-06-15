@@ -43,7 +43,7 @@ class RemoteFSPath(FSPath):
 
 
 class Report(interface.AttributeContainer):
-  """Analysis report attribute container.
+  """Report attribute container.
 
   Attributes:
     module_name (str): name of the module that generated the report.
@@ -60,8 +60,7 @@ class Report(interface.AttributeContainer):
     """Initializes the analysis report.
 
     Args:
-      module_name (str): name of the analysis plugin that generated
-          the report.
+      module_name (str): name of the module that generated the report.
       text (str): report text.
       text_format (str): format of text in the report. Must be either
         'plaintext' or 'markdown'.
@@ -90,7 +89,7 @@ class GCPLogs(interface.AttributeContainer):
   CONTAINER_TYPE = 'gcp_logs'
 
   def __init__(self, path, filter_expression, project_name):
-    """Initializes the analysis report.
+    """Initializes the GCP logs container.
 
     Args:
       filter_expression (str): GCP advanced logs filter expression
@@ -119,7 +118,7 @@ class AWSLogs(interface.AttributeContainer):
   CONTAINER_TYPE = 'aws_logs'
 
   def __init__(self, path, profile_name, query_filter, start_time, end_time):
-    """Initializes the analysis report.
+    """Initializes the AWS logs container.
 
     Args:
       path (str): path to a AWS log file.
@@ -278,14 +277,14 @@ class WorkspaceLogs(interface.AttributeContainer):
 
   Attributes:
     application_name (str): Name of the application the audit records are for
-    filter_expression (str): GCP logging advanced logs filter expression
-        used to generate the results.
+    filter_expression (str): Workspace audit logs filter expression
+          used to generate the results.
     path (str): path to a Workspace log file.
   """
   CONTAINER_TYPE = 'workspace_logs'
 
   def __init__(self, application_name, path, filter_expression):
-    """Initializes the analysis report.
+    """Initializes the Workspace logs container.
 
     Args:
       application_name (str): Name of the application the audit records are for
