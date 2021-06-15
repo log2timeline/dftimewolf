@@ -74,7 +74,8 @@ class GCPLogsCollector(module.BaseModule):
           page = next(pages)
         except google_api_exceptions.TooManyRequests as exception:
           self.logger.warning(
-              'Hit quota limit requesting GCP logs: {0:s}', str(exception))
+              'Hit quota limit requesting GCP logs: {0:s}'.format(
+                  str(exception)))
           time.sleep(4)
           continue
         except StopIteration:
