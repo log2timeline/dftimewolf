@@ -22,7 +22,7 @@ class GCPLoggingTimesketch(BaseModule):
         state, name=name, critical=critical)
 
   def _ProcessLogLine(self, log_line, query, project_name):
-    """Processes a single JSON formatted Google Clod Platform log line.
+    """Processes a single JSON formatted Google Cloud Platform log line.
 
     Args:
       log_line (str): a JSON formatted GCP log entry.
@@ -173,7 +173,9 @@ class GCPLoggingTimesketch(BaseModule):
       timesketch_record (dict): a dictionary that will be serialized to JSON
         and uploaded to Timesketch.
     """
-    json_attributes = ['event_type', 'event_subtype']
+    json_attributes = [
+        'event_type', 'event_subtype', 'container', 'filename', 'message'
+    ]
     for attribute in json_attributes:
       if attribute in json_payload:
         timesketch_record[attribute] = json_payload[attribute]
@@ -190,6 +192,8 @@ class GCPLoggingTimesketch(BaseModule):
       timesketch_record (dict): a dictionary that will be serialized to JSON
         and uploaded to Timesketch.
     """
+    if 'message' in timesketch_record:
+      return
     user = ''
     action = ''
     resource = ''
