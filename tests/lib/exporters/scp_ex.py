@@ -130,11 +130,11 @@ class SCPExporterTest(unittest.TestCase):
     # pylint: disable=protected-access
     scp_exporter._CreateDestinationDirectory(remote=True)
     mock_subprocess_call.assert_called_with(
-      ['ssh', 'fakeuser@fakehost', 'mkdir', '-p', '/destination']
+      ['ssh', 'fakeuser@fakehost', 'mkdir', '-m', 'g+w', '-p', '/destination']
     )
     scp_exporter._CreateDestinationDirectory(remote=False)
     mock_subprocess_call.assert_called_with(
-      ['mkdir', '-p', '/destination']
+      ['mkdir', '-m', 'g+w', '-p', '/destination']
     )
 
 
