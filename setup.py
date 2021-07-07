@@ -19,7 +19,7 @@ def ParseRequirements(filename):
   with open(filename) as requirements:
 
     for line in requirements.readlines():
-      if not (line.startswith('#') or line.startswith('-i') or not line):
+      if line.startswith('#') or line.startswith('-i') or not line:
         # Skip lines starting with '#' and '-i https://pypi.org/simple'
         continue
       reqs.append(line)
