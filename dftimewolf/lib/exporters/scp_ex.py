@@ -170,7 +170,7 @@ class SCPExporter(module.BaseModule):
       remote (bool): Whether the destination directory should be created on
           the remote host.
     """
-    mkdir_command = ['mkdir', '-p', self._destination]
+    mkdir_command = ['mkdir', '-m', 'g+w', '-p', self._destination]
 
     if remote:
       cmd = ['ssh']
