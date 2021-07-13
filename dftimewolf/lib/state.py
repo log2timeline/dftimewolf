@@ -122,8 +122,16 @@ class DFTimewolfState(object):
         runtime_name = module_name
       self._module_pool[runtime_name] = module_class(self, name=runtime_name)
 
-  def LogExecutionPlan(self):
-    """Logs loaded modules and their corresponding arguments to stdout."""
+  def FormatExecutionPlan(self):
+    """Formats execution plan.
+
+    Returns information about loaded modules and their corresponding arguments
+    to stdout.
+
+    Returns:
+      str: String representation of loaded modules and their parameters.
+    """
+    plan = ""
     maxlen = 0
 
     modules = self.recipe.get('preflights', []) + self.recipe.get('modules', [])
@@ -137,18 +145,24 @@ class DFTimewolfState(object):
     for module in modules:
       runtime_name = module.get('runtime_name')
       if runtime_name:
-        logger.debug('{0:s} ({1:s}):'.format(runtime_name, module['name']))
+        plan += '{0:s} ({1:s}):\n'.format(runtime_name, module['name'])
       else:
-        logger.debug('{0:s}:'.format(module['name']))
+        plan += '{0:s}:\n'.format(module['name'])
 
       new_args = utils.ImportArgsFromDict(
           module['args'], self.command_line_options, self.config)
 
       if not new_args:
-        logger.debug('  *No params*')
+        plan += '  *No params*\n'
       for key, value in new_args.items():
-        logger.debug('  {0:s}{1:s}'.format(key.ljust(maxlen + 3), repr(value)))
+        plan += '  {0:s}{1:s}\n'.format(key.ljust(maxlen + 3), repr(value))
 
+    return plan
+
+  def LogExecutionPlan(self):
+    """Logs the result of FormatExecutionPlan() using the base logger."""
+    for line in self.FormatExecutionPlan().split('\n'):
+      logger.debug(line)
 
   def AddToCache(self, name, value):
     """Thread-safe method to add data to the state's cache.
