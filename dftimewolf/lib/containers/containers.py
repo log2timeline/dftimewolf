@@ -133,9 +133,9 @@ class AWSLogs(interface.AttributeContainer):
   def __init__(self,
                path: str,
                profile_name: str,
-               query_filter: str,
-               start_time: datetime,
-               end_time: datetime) -> None:
+               query_filter: Optional[str],
+               start_time: Optional[datetime],
+               end_time: Optional[datetime]) -> None:
     """Initializes the AWS logs container.
 
     Args:

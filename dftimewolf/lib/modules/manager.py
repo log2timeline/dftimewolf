@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 """Modules manager class."""
 
+from typing import Dict
+
 class ModulesManager(object):
   """Modules manager."""
 
   # Allow a previously registered module to be overridden.
   ALLOW_MODULE_OVERRIDE = False
 
-  _module_classes = {}
+  _module_classes = {}  # type: Dict[str, type]
 
   @classmethod
   def DeregisterModule(cls, module_class):

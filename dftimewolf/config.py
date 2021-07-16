@@ -3,13 +3,15 @@
 
 import json
 
+from typing import Dict
+
 from dftimewolf.lib import errors
 
 
 class Config(object):
   """Class that handles DFTimewolf's configuration parameters."""
 
-  _extra_config = {}
+  _extra_config = {}  # type: Dict[str, str]
 
   @classmethod
   def GetExtra(cls, name=None):
