@@ -7,6 +7,11 @@ name = "pypi"
 mock = "*"
 pylint = "*"
 coverage = "*"
+monkeytype = "*"
+mypy = "*"
+yapf = "*"
+types-protobuf = "*"
+types-filelock = "*"
 
 [packages]
 beautifulsoup4 = "*"
