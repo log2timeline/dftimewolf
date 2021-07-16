@@ -7,7 +7,6 @@ import unittest
 import mock
 
 from dftimewolf.lib import state
-from dftimewolf.lib import errors
 from dftimewolf.lib.collectors import filesystem
 from dftimewolf.lib.containers import containers
 

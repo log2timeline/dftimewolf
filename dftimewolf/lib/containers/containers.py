@@ -2,13 +2,14 @@
 """Attribute container definitions."""
 
 from datetime import datetime
-from typing import Optional, Union, List
-
-from libcloudforensics.providers.aws.internal.ebs import AWSVolume
-from libcloudforensics.providers.azure.internal.compute import AZComputeDisk
-from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk
+from typing import Optional, Union, List, TYPE_CHECKING
 
 from dftimewolf.lib.containers import interface
+
+if TYPE_CHECKING:
+  from libcloudforensics.providers.aws.internal.ebs import AWSVolume
+  from libcloudforensics.providers.azure.internal.compute import AZComputeDisk
+  from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk
 
 
 class FSPath(interface.AttributeContainer):
@@ -238,9 +239,9 @@ class ForensicsVM(interface.AttributeContainer):
 
   def __init__(self,
                name: str,
-               evidence_disk: Union[GoogleComputeDisk,
-                                    AWSVolume,
-                                    AZComputeDisk],
+               evidence_disk: Union["GoogleComputeDisk",
+                                    "AWSVolume",
+                                    "AZComputeDisk"],
                platform: str) -> None:
     super(ForensicsVM, self).__init__()
     self.name = name
