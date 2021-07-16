@@ -4,9 +4,12 @@
 import os
 import subprocess
 
+from typing import List, Optional, Union
+
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib import module
 from dftimewolf.lib.modules import manager as modules_manager
+from dftimewolf.lib.state import DFTimewolfState
 
 
 class SCPExporter(module.BaseModule):
@@ -23,25 +26,28 @@ class SCPExporter(module.BaseModule):
     _id_file (str): Identity file to use.
   """
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str],
+               critical: bool=False) -> None:
     super(SCPExporter, self).__init__(state, name=name, critical=critical)
-    self._paths = None
-    self._user = None
-    self._hostname = None
-    self._destination = None
-    self._id_file = None
-    self._upload = None
-    self._multiplexing = None
+    self._paths = []  # type: List[str]
+    self._user = str()
+    self._hostname = str()
+    self._destination = str()
+    self._id_file = str()
+    self._upload = False
+    self._multiplexing = False
 
   def SetUp(self, # pylint: disable=arguments-differ
-            paths,
-            destination,
-            user,
-            hostname,
-            id_file,
-            direction,
-            multiplexing,
-            check_ssh):
+            paths: str,
+            destination: str,
+            user: str,
+            hostname: str,
+            id_file: str,
+            direction: str,
+            multiplexing: bool,
+            check_ssh: bool) -> None:
     """Sets up the _target_directory attribute.
 
     Args:
@@ -63,7 +69,7 @@ class SCPExporter(module.BaseModule):
     if paths:
       self._paths = paths.split(',')
     else:
-      self._paths = None
+      self._paths = []
     self._user = user
     self._multiplexing = multiplexing
 
@@ -77,7 +83,7 @@ class SCPExporter(module.BaseModule):
       self.ModuleError(
           'Unable to connect to {0:s}.'.format(self._hostname), critical=True)
 
-  def Process(self):
+  def Process(self) -> None:
     """Copies the list of paths to or from the remote host."""
     if not self._paths:
       if self._upload:
@@ -120,6 +126,7 @@ class SCPExporter(module.BaseModule):
       self.ModuleError(
           'Failed copying {0!s}'.format(self._paths), critical=True)
 
+    fspath: Union[containers.File, containers.RemoteFSPath]
     for path_ in self._paths:
       file_name = os.path.basename(path_)
       full_path = os.path.join(self._destination, file_name)
@@ -133,7 +140,7 @@ class SCPExporter(module.BaseModule):
 
       self.state.StoreContainer(fspath)
 
-  def _PrefixRemotePaths(self, paths, group=True):
+  def _PrefixRemotePaths(self, paths: List[str], group: bool=True) -> List[str]:
     """Prefixes a list of paths with remote SSH access information.
 
     Args:
@@ -150,7 +157,7 @@ class SCPExporter(module.BaseModule):
     prefixed_paths = ['{0:s}:{1:s}'.format(prefix, path) for path in paths]
     return prefixed_paths
 
-  def _GenerateRemotePrefix(self):
+  def _GenerateRemotePrefix(self) -> str:
     """Generates the remote prefix for this module's configuration.
 
     Returns:
@@ -163,7 +170,7 @@ class SCPExporter(module.BaseModule):
       prefix = '{0:s}{1:s}'.format(user, self._hostname)
     return prefix
 
-  def _CreateDestinationDirectory(self, remote):
+  def _CreateDestinationDirectory(self, remote: bool) -> None:
     """Creates the file's destination directory.
 
     Args:
@@ -192,7 +199,7 @@ class SCPExporter(module.BaseModule):
       self.ModuleError(
           'Failed creating destination directory, bailing.', critical=True)
 
-  def _SSHAvailable(self):
+  def _SSHAvailable(self) -> bool:
     """Checks that the SSH authentication succeeds on a given host.
 
     Returns:

@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 """Creates an analysis VM and copies AWS volumes to it for analysis."""
 
-from libcloudforensics.providers.aws.internal import account as aws_account
+from typing import List, Optional
+
 from libcloudforensics.providers.aws import forensics as aws_forensics
+from libcloudforensics.providers.aws.internal import account as aws_account
+from libcloudforensics.providers.aws.internal import ebs
+from libcloudforensics.providers.aws.internal import ec2  # pylint: disable=unused-import,line-too-long  # used in typing
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
+from dftimewolf.lib.state import DFTimewolfState
 
 
 class AWSCollector(module.BaseModule):
@@ -36,7 +41,10 @@ class AWSCollector(module.BaseModule):
   _ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME = 'Analysis VM'
   _ANALYSIS_VM_CONTAINER_ATTRIBUTE_TYPE = 'text'
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str],
+               critical: bool=False) -> None:
     """Initializes an Amazon Web Services (AWS) collector.
 
     Args:
@@ -46,20 +54,20 @@ class AWSCollector(module.BaseModule):
           the entire recipe to fail if the module encounters an error.
     """
     super(AWSCollector, self).__init__(state, name=name, critical=critical)
-    self.remote_profile_name = None
-    self.remote_zone = None
-    self.source_account = None
-    self.incident_id = None
-    self.remote_instance_id = None
-    self.volume_ids = []
+    self.remote_profile_name = str()
+    self.remote_zone = str()
+    self.source_account = None  # type: aws_account.AWSAccount
+    self.incident_id = str()
+    self.remote_instance_id = None  # type: Optional[str]
+    self.volume_ids = []  # type: List[str]
     self.all_volumes = False
-    self.analysis_profile_name = None
-    self.analysis_zone = None
-    self.analysis_vm = None
+    self.analysis_profile_name = None  # type: Optional[str]
+    self.analysis_zone = None  # type: Optional[str]
+    self.analysis_vm = None  # type: ec2.AWSInstance
     # See https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html
     self.device_suffixes = list('fghijklmnop')
 
-  def Process(self):
+  def Process(self) -> None:
     """Copies a volume and attaches it to the analysis VM."""
     for volume in self._FindVolumesToCopy():
       print('Volume copy of {0:s} started...'.format(volume.volume_id))
@@ -82,17 +90,17 @@ class AWSCollector(module.BaseModule):
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
-            remote_profile_name,
-            remote_zone,
-            incident_id,
-            remote_instance_id=None,
-            volume_ids=None,
-            all_volumes=False,
-            analysis_profile_name=None,
-            analysis_zone=None,
-            boot_volume_size=50,
-            cpu_cores=16,
-            ami=None):
+            remote_profile_name: str,
+            remote_zone: str,
+            incident_id: str,
+            remote_instance_id: Optional[str]=None,
+            volume_ids: Optional[str]=None,
+            all_volumes: bool=False,
+            analysis_profile_name: Optional[str]=None,
+            analysis_zone: Optional[str]=None,
+            boot_volume_size: int=50,
+            cpu_cores: int=16,
+            ami: None=None) -> None:
     """Sets up an Amazon web Services (AWS) collector.
 
     This method creates and starts an analysis VM in the AWS account and
@@ -176,14 +184,14 @@ class AWSCollector(module.BaseModule):
         dst_profile=self.analysis_profile_name,
     )
 
-  def _GetVolumesFromIds(self, volume_ids):
+  def _GetVolumesFromIds(self, volume_ids: List[str]) -> List[ebs.AWSVolume]:
     """Gets volumes from an account by volume IDs.
 
     Args:
       volume_ids (list[str]): List of volume ids to get from the account.
 
     Returns:
-      list[AWSVolume]: List of AWSVolume objects to copy.
+      list[ebs.AWSVolume]: List of ebs.AWSVolume objects to copy.
     """
     volumes = []
     for volume_id in volume_ids:
@@ -197,7 +205,9 @@ class AWSCollector(module.BaseModule):
         return []
     return volumes
 
-  def _GetVolumesFromInstance(self, instance_id, all_volumes):
+  def _GetVolumesFromInstance(self,
+                              instance_id: str,
+                              all_volumes: bool) -> List[ebs.AWSVolume]:
     """Gets volumes to copy based on an instance name.
 
     Args:
@@ -206,7 +216,7 @@ class AWSCollector(module.BaseModule):
           False, get only the instance's boot volume.
 
     Returns:
-      list[AWSVolume]: List of AWSVolume objects to copy.
+      list[ebs.AWSVolume]: List of ebs.AWSVolume objects to copy.
     """
     try:
       remote_instance = self.source_account.ec2.GetInstanceById(instance_id)
@@ -218,11 +228,11 @@ class AWSCollector(module.BaseModule):
       return list(remote_instance.ListVolumes().values())
     return [remote_instance.GetBootVolume()]
 
-  def _FindVolumesToCopy(self):
+  def _FindVolumesToCopy(self) -> List[ebs.AWSVolume]:
     """Determines which volumes to copy depending on the collector's attributes.
 
     Returns:
-      list[AWSVolume]: A list of the volumes to copy.
+      list[ebs.AWSVolume]: A list of the volumes to copy.
     """
 
     volumes_to_copy = []
@@ -239,7 +249,7 @@ class AWSCollector(module.BaseModule):
 
     return volumes_to_copy
 
-  def _FindNextAvailableDeviceName(self):
+  def _FindNextAvailableDeviceName(self) -> str:
     """Determine the next available device name to attach volumes to the VM.
 
     AWS recommends using device names that are within /dev/sd[f-p][1-6].

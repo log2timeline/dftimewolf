@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 """Creates an analysis VM and copies Azure disks to it for analysis."""
 
+from typing import List, Optional
+
 from libcloudforensics.providers.azure import forensics as az_forensics
 from libcloudforensics.providers.azure.internal import account
+from libcloudforensics.providers.azure.internal import compute
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
+from dftimewolf.lib.state import DFTimewolfState
 
 
 class AzureCollector(module.BaseModule):
@@ -36,7 +40,7 @@ class AzureCollector(module.BaseModule):
   _ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME = 'Analysis VM'
   _ANALYSIS_VM_CONTAINER_ATTRIBUTE_TYPE = 'text'
 
-  def __init__(self, state, critical=False):
+  def __init__(self, state: DFTimewolfState, critical: bool=False) -> None:
     """Initializes a Microsoft Azure collector.
 
     Args:
@@ -45,18 +49,18 @@ class AzureCollector(module.BaseModule):
           the entire recipe to fail if the module encounters an error.
     """
     super(AzureCollector, self).__init__(state, critical=critical)
-    self.remote_profile_name = None
-    self.source_account = None
-    self.incident_id = None
-    self.remote_instance_name = None
-    self.disk_names = []
+    self.remote_profile_name = str()
+    self.source_account = None  # type: account.AZAccount
+    self.incident_id = str()
+    self.remote_instance_name = str()  # type: Optional[str]
+    self.disk_names = []  # type: List[str]
     self.all_disks = False
-    self.analysis_profile_name = None
-    self.analysis_region = None
-    self.analysis_resource_group_name = None
-    self.analysis_vm = None
+    self.analysis_profile_name = str()
+    self.analysis_region = str()  # type: Optional[str]
+    self.analysis_resource_group_name = str()
+    self.analysis_vm = None  # type: compute.AZComputeVirtualMachine
 
-  def Process(self):
+  def Process(self) -> None:
     """Copies a disk to the analysis account."""
     for disk in self._FindDisksToCopy():
       self.logger.info('Disk copy of {0:s} started...'.format(disk.name))
@@ -78,18 +82,18 @@ class AzureCollector(module.BaseModule):
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
-            remote_profile_name,
-            analysis_resource_group_name,
-            incident_id,
-            ssh_public_key,
-            remote_instance_name=None,
-            disk_names=None,
-            all_disks=False,
-            analysis_profile_name=None,
-            analysis_region=None,
-            boot_disk_size=50,
-            cpu_cores=4,
-            memory_in_mb=8192):
+            remote_profile_name: str,
+            analysis_resource_group_name: str,
+            incident_id: str,
+            ssh_public_key: str,
+            remote_instance_name: Optional[str]=None,
+            disk_names: Optional[str]=None,
+            all_disks: bool=False,
+            analysis_profile_name: Optional[str]=None,
+            analysis_region: Optional[str]=None,
+            boot_disk_size: int=50,
+            cpu_cores: int=4,
+            memory_in_mb: int=8192) -> None:
     """Sets up a Microsoft Azure collector.
 
     This method creates and starts an analysis VM in the analysis account and
@@ -148,7 +152,6 @@ class AzureCollector(module.BaseModule):
 
     self.remote_profile_name = remote_profile_name
     self.analysis_resource_group_name = analysis_resource_group_name
-    self.analysis_profile_name = analysis_profile_name
     self.source_account = account.AZAccount(
         self.analysis_resource_group_name,
         profile_name=self.remote_profile_name)
@@ -179,7 +182,8 @@ class AzureCollector(module.BaseModule):
         dst_profile=self.analysis_profile_name,
     )
 
-  def _GetDisksFromNames(self, disk_names):
+  def _GetDisksFromNames(self,
+                         disk_names: List[str]) -> List[compute.AZComputeDisk]:
     """Gets disks from an Azure account by disk name.
 
     Args:
@@ -200,7 +204,9 @@ class AzureCollector(module.BaseModule):
         return []
     return disks
 
-  def _GetDisksFromInstance(self, instance_name, all_disks):
+  def _GetDisksFromInstance(self,
+                            instance_name: str,
+                            all_disks: bool) -> List[compute.AZComputeDisk]:
     """Gets disks to copy based on an instance name.
 
     Args:
@@ -221,7 +227,7 @@ class AzureCollector(module.BaseModule):
       return list(remote_instance.ListDisks().values())
     return [remote_instance.GetBootDisk()]
 
-  def _FindDisksToCopy(self):
+  def _FindDisksToCopy(self) -> List[compute.AZComputeDisk]:
     """Determines which disks to copy depending on object attributes.
 
     Returns:

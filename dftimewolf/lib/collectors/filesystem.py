@@ -2,10 +2,13 @@
 """Collects artifacts from the local file system."""
 
 import os
+from typing import Optional, List
 
 from dftimewolf.lib import module
-from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.containers import containers
+from dftimewolf.lib.modules import manager as modules_manager
+from dftimewolf.lib.state import DFTimewolfState
+
 
 class FilesystemCollector(module.BaseModule):
   """Local file system collector.
@@ -14,7 +17,10 @@ class FilesystemCollector(module.BaseModule):
   output: A list of existing file paths.
   """
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str],
+               critical: bool=False) -> None:
     """Initializes a local file system collector.
 
     Args:
@@ -25,21 +31,17 @@ class FilesystemCollector(module.BaseModule):
     """
     super(FilesystemCollector, self).__init__(
         state, name=name, critical=critical)
-    self._paths = None
+    self._paths = [] # type: List[str]
 
-  def SetUp(self, paths=None):  # pylint: disable=arguments-differ
+  def SetUp(self, paths: str) -> None:  # pylint: disable=arguments-differ
     """Sets up the paths to collect.
 
     Args:
-      paths (Optional[str]): Comma-separated paths to collect.
+      paths (str): Comma-separated paths to collect.
     """
-    if not paths:
-      self.ModuleError(
-          'No `paths` argument provided in recipe, bailing', critical=True)
-    else:
-      self._paths = [path.strip() for path in paths.split(',')]
+    self._paths = [path.strip() for path in paths.split(',')]
 
-  def Process(self):
+  def Process(self) -> None:
     """Collects paths from the local file system."""
     file_containers = []
     for path in self._paths:

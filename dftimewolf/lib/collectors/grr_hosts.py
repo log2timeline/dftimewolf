@@ -7,14 +7,17 @@ import re
 import threading
 import time
 import zipfile
+from typing import List, Optional, Tuple
 
 from grr_api_client import errors as grr_errors
+from grr_api_client.client import Client
 from grr_response_proto import flows_pb2, timeline_pb2
 
 from dftimewolf.lib.collectors.grr_base import GRRBaseModule
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.modules import manager as modules_manager
+from dftimewolf.lib.state import DFTimewolfState
 
 
 # TODO: GRRFlow should be extended by classes that actually implement
@@ -33,7 +36,10 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
 
   _CLIENT_ID_REGEX = re.compile(r'^c\.[0-9a-f]{16}$', re.IGNORECASE)
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str],
+               critical: bool=False) -> None:
     """Initializes a GRR flow module.
 
     Args:
@@ -44,13 +50,19 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     """
     super(GRRFlow, self).__init__(state, name=name, critical=critical)
     self.keepalive = False
-    self._skipped_flows = []
+    self._skipped_flows = []  # type: List[Tuple[str, str]]
     self.skip_offline_clients = False
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(
-      self, reason, grr_server_url, grr_username, grr_password, approvers=None,
-      verify=True, skip_offline_clients=False):
+      self,
+      reason: str,
+      grr_server_url: str,
+      grr_username: str,
+      grr_password: str,
+      approvers: Optional[str]=None,
+      verify: bool=True,
+      skip_offline_clients: bool=False) -> None:
     """Initializes a GRR hunt result collector.
 
     Args:
@@ -69,7 +81,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
         reason, grr_server_url, grr_username, grr_password,
         approvers=approvers, verify=verify)
 
-  def _SeenLastMonth(self, timestamp):
+  def _SeenLastMonth(self, timestamp: int) -> bool:
     """Take a UTC timestamp and check if it is in the last month.
 
     Args:
@@ -84,7 +96,8 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     month_ago = datetime.datetime.utcnow() - datetime.timedelta(30)
     return  last_seen_datetime > month_ago
 
-  def _FilterActiveClients(self, result):
+  def _FilterActiveClients(
+      self, result: List[Tuple[int, Client]]) -> List[Tuple[int, Client]]:
     """Take a list of clients and return clients active last month.
 
     Args:
@@ -98,7 +111,10 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     active_clients = list(filter(lambda x: self._SeenLastMonth(x[0]), result))
     return active_clients
 
-  def _FilterSelectionCriteria(self, selector, search_result):
+  def _FilterSelectionCriteria(
+      self,
+      selector: str,
+      search_result: List[Client]) -> List[Tuple[int, Client]]:
     result = []
     selector = selector.lower()
     for client in search_result:
@@ -111,7 +127,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     return result
 
   # TODO: change object to more specific GRR type information.
-  def _GetClientBySelector(self, selector):
+  def _GetClientBySelector(self, selector: str) -> Client:
     """Searches GRR by selector and get the latest active client.
 
     Args:
@@ -172,7 +188,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     return client
 
   # TODO: change object to more specific GRR type information.
-  def _FindClients(self, selectors):
+  def _FindClients(self, selectors: List[str]) -> List[Client]:
     """Finds GRR clients given a list of selectors.
 
     Args:
@@ -190,7 +206,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     return clients
 
   # TODO: change object to more specific GRR type information.
-  def _LaunchFlow(self, client, name, args):
+  def _LaunchFlow(self, client: Client, name: str, args: str) -> str:
     """Creates the specified flow, setting KeepAlive if requested.
 
     Args:
@@ -221,7 +237,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     return flow_id
 
   # TODO: change object to more specific GRR type information.
-  def _AwaitFlow(self, client, flow_id):
+  def _AwaitFlow(self, client: Client, flow_id: str) -> None:
     """Waits for a specific GRR flow to complete.
 
     Args:
@@ -271,7 +287,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
         self._skipped_flows.append((client.client_id, flow_id))
         break
 
-  def _CheckSkippedFlows(self):
+  def _CheckSkippedFlows(self) -> None:
     if not self._skipped_flows:
       return
 
@@ -289,7 +305,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
         ))
 
   # TODO: change object to more specific GRR type information.
-  def _DownloadFiles(self, client, flow_id):
+  def _DownloadFiles(self, client: Client, flow_id: str) -> Optional[str]:
     """Download files from the specified flow.
 
     Args:
@@ -361,20 +377,31 @@ class GRRArtifactCollector(GRRFlow):
       'Windows': _DEFAULT_ARTIFACTS_WINDOWS
   }
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str],
+               critical: bool=False) -> None:
     super(GRRArtifactCollector, self).__init__(
         state, name=name, critical=critical)
-    self._clients = []
-    self.artifacts = []
-    self.extra_artifacts = []
-    self.hosts = []
+    self._clients = []  # type: List[Client]
+    self.artifacts = []  # type: List[str]
+    self.extra_artifacts = [] # type: List[str]
+    self.hosts = [] # type: List[containers.Host]
     self.use_tsk = False
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
-            hostnames, artifacts, extra_artifacts, use_tsk,
-            reason, grr_server_url, grr_username, grr_password, approvers=None,
-            verify=True, skip_offline_clients=False):
+            hostnames: str,
+            artifacts: Optional[str],
+            extra_artifacts: Optional[str],
+            use_tsk: bool,
+            reason: str,
+            grr_server_url: str,
+            grr_username: str,
+            grr_password: str,
+            approvers: Optional[str]=None,
+            verify: bool=True,
+            skip_offline_clients: bool=False) -> None:
     """Initializes a GRR artifact collector.
 
     Args:
@@ -468,7 +495,7 @@ class GRRArtifactCollector(GRRFlow):
       )
       self.state.StoreContainer(container)
 
-  def Process(self):
+  def Process(self) -> None:
     """Collects artifacts from a host with GRR.
 
     Raises:
@@ -500,19 +527,30 @@ class GRRFileCollector(GRRFlow):
               'stat': flows_pb2.FileFinderAction.STAT,
              }
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str],
+               critical: bool=False) -> None:
     super(GRRFileCollector, self).__init__(state, name=name, critical=critical)
-    self._clients = []
-    self.files = []
-    self.hosts = []
+    self._clients = []  # type: List[Client]
+    self.files = []  # type: List[str]
+    self.hosts = []  # type: List[containers.Host]
     self.use_tsk = False
     self.action = None
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
-            hostnames, files, use_tsk,
-            reason, grr_server_url, grr_username, grr_password, approvers=None,
-            verify=True, skip_offline_clients=False, action='download'):
+            hostnames: str,
+            files: str,
+            use_tsk: bool,
+            reason: str,
+            grr_server_url: str,
+            grr_username: str,
+            grr_password: str,
+            approvers: Optional[str]=None,
+            verify: bool=True,
+            skip_offline_clients: bool=False,
+            action: str='download') -> None:
     """Initializes a GRR file collector.
 
     Args:
@@ -583,7 +621,7 @@ class GRRFileCollector(GRRFlow):
       )
       self.state.StoreContainer(container)
 
-  def Process(self):
+  def Process(self) -> None:
     """Collects files from a host with GRR.
 
     Raises:
@@ -608,20 +646,29 @@ class GRRFlowCollector(GRRFlow):
   Attributes:
     client_id (str): GRR identifier of the client.
     flow_id (str): GRR identifier of the flow to retrieve.
-    host (str): Target of GRR collection.
+    host (containers.Host): Target of GRR collection.
   """
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str],
+               critical: bool=False) -> None:
     super(GRRFlowCollector, self).__init__(state, name=name, critical=critical)
-    self.client_id = None
-    self.flow_id = None
-    self.host = None
+    self.client_id = str()
+    self.flow_id = str()
+    self.host = None  # type: containers.Host  # type: ignore[assignment]
 
   # pylint: disable=arguments-differ
   def SetUp(self,
-            hostname, flow_id,
-            reason, grr_server_url, grr_username, grr_password, approvers=None,
-            verify=True, skip_offline_clients=False):
+            hostname: str,
+            flow_id: str,
+            reason: str,
+            grr_server_url: str,
+            grr_username: str,
+            grr_password: str,
+            approvers: Optional[str]=None,
+            verify: bool=True,
+            skip_offline_clients: bool=False) -> None:
     """Initializes a GRR flow collector.
 
     Args:
@@ -645,7 +692,7 @@ class GRRFlowCollector(GRRFlow):
     self.flow_id = flow_id
     self.host = containers.Host(hostname=hostname)
 
-  def Process(self):
+  def Process(self) -> None:
     """Downloads the results of a GRR collection flow.
 
     Raises:
@@ -671,25 +718,35 @@ class GRRTimelineCollector(GRRFlow):
   """Timeline collector for GRR flows.
 
   Attributes:
-    root_path (str): root path.
+    root_path (bytes): root path.
     hosts (list[containers.Host]): Hosts to collect artifacts from.
   """
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str],
+               critical: bool=False) -> None:
     super(GRRTimelineCollector, self).__init__(
         state, name=name, critical=critical)
-    self._clients = []
-    self.root_path = None
-    self.hosts = []
-    self._timeline_format = None
+    self._clients = []  # type: List[Client]
+    self.root_path = bytes()
+    self.hosts = []  # type: List[containers.Host]
+    self._timeline_format = 0
 
   # We're overriding the behavior of GRRFlow's SetUp function to include new
   # parameters.
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
-            hostnames, root_path,
-            reason, timeline_format, grr_server_url, grr_username, grr_password,
-            approvers=None, verify=True, skip_offline_clients=False):
+            hostnames: str,
+            root_path: str,
+            reason: str,
+            timeline_format: str,
+            grr_server_url: str,
+            grr_username: str,
+            grr_password: str,
+            approvers: Optional[str]=None,
+            verify: bool=True,
+            skip_offline_clients: bool=False) -> None:
     """Initializes a GRR timeline collector.
     Args:
       hostnames (str): comma-separated hostnames to launch the flow on.
@@ -710,8 +767,8 @@ class GRRTimelineCollector(GRRFlow):
         approvers=approvers, verify=verify,
         skip_offline_clients=skip_offline_clients)
 
-    if root_path is not None:
-      self.root_path = root_path.strip()
+    if root_path:
+      self.root_path = root_path.strip().encode()
 
     for item in hostnames.strip().split(','):
       hostname = item.strip()
@@ -720,7 +777,6 @@ class GRRTimelineCollector(GRRFlow):
         self.hosts.append(host)
 
     self._timeline_format = int(timeline_format)
-    self.root_path = root_path.encode()
     if self._timeline_format not in [1, 2]:
       self.ModuleError('Timeline format must be 1 (BODY) or 2 (RAW).',
                        critical=True)
@@ -751,7 +807,7 @@ class GRRTimelineCollector(GRRFlow):
       )
       self.state.StoreContainer(container)
 
-  def Process(self):
+  def Process(self) -> None:
     """Collects a timeline from a host with GRR.
     Raises:
       DFTimewolfError: if no files specified.

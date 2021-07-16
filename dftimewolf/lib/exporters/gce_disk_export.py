@@ -3,11 +3,16 @@
 
 
 import os
-from libcloudforensics.providers.gcp.internal import project as gcp_project
+from typing import List, Optional
+
 from googleapiclient.errors import HttpError
+from libcloudforensics.providers.gcp.internal import project as gcp_project
+from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk
+
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
+from dftimewolf.lib.state import DFTimewolfState
 
 
 class GoogleCloudDiskExport(module.BaseModule):
@@ -33,7 +38,10 @@ class GoogleCloudDiskExport(module.BaseModule):
         image name as "exported-image-{TIMESTAMP('%Y%m%d%H%M%S')}".
   """
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str],
+               critical: bool=False) -> None:
     """Initializes a Google Cloud Platform (GCP) Disk Export.
 
     Args:
@@ -44,17 +52,16 @@ class GoogleCloudDiskExport(module.BaseModule):
     """
     super(GoogleCloudDiskExport, self).__init__(
         state, name=name, critical=critical)
-    self.analysis_project = None
-    self.source_project = None
-    self.gcs_output_location = None
-    self.analysis_project = None
-    self.remote_instance_name = None
-    self.source_disk_names = []
+    self.source_project = None  # type: gcp_project.GoogleCloudProject
+    self.gcs_output_location = str()
+    self.analysis_project = None  # type: gcp_project.GoogleCloudProject
+    self.remote_instance_name = None  # type: Optional[str]
+    self.source_disk_names = []  # type: List[str]
     self.all_disks = False
-    self.source_disks = []
-    self.exported_image_name = None
+    self.source_disks = []  # type: List[GoogleComputeDisk]
+    self.exported_image_name = str()
 
-  def Process(self):
+  def Process(self) -> None:
     """Creates and exports disk image to the output bucket."""
     for source_disk in self.source_disks:
       image_object = self.analysis_project.compute.CreateImageFromDisk(
@@ -74,13 +81,13 @@ class GoogleCloudDiskExport(module.BaseModule):
 
   # pylint: disable=arguments-differ
   def SetUp(self,
-            source_project_name,
-            gcs_output_location,
-            analysis_project_name=None,
-            source_disk_names=None,
-            remote_instance_name=None,
-            all_disks=False,
-            exported_image_name=None):
+            source_project_name: str,
+            gcs_output_location: str,
+            analysis_project_name: Optional[str],
+            source_disk_names: Optional[str],
+            remote_instance_name: Optional[str],
+            all_disks: bool=False,
+            exported_image_name: Optional[str]=None) -> None:
     """Sets up a Google Cloud Platform (GCP) Disk Export.
 
     This method creates the required objects to initialize
@@ -134,11 +141,11 @@ class GoogleCloudDiskExport(module.BaseModule):
           critical=True)
 
     self.remote_instance_name = remote_instance_name
+
+    self.source_disk_names = []
     if source_disk_names:
-      source_disk_names = source_disk_names.split(',')
-    else:
-      source_disk_names = []
-    self.source_disk_names = source_disk_names
+      self.source_disk_names = source_disk_names.split(',')
+
     self.all_disks = all_disks
 
     self.source_disks = self._FindDisksToCopy()
@@ -146,7 +153,8 @@ class GoogleCloudDiskExport(module.BaseModule):
     if exported_image_name and len(self.source_disks) == 1:
       self.exported_image_name = exported_image_name
 
-  def _GetDisksFromNames(self, source_disk_names):
+  def _GetDisksFromNames(
+      self, source_disk_names: List[str]) -> List[GoogleComputeDisk]:
     """Gets disks from a project by disk name.
 
     Args:
@@ -166,7 +174,8 @@ class GoogleCloudDiskExport(module.BaseModule):
             critical=True)
     return disks
 
-  def _GetDisksFromInstance(self, instance_name, all_disks):
+  def _GetDisksFromInstance(
+      self, instance_name: str, all_disks: bool) -> List[GoogleComputeDisk]:
     """Gets disks to copy based on an instance name.
 
     Args:
@@ -186,7 +195,7 @@ class GoogleCloudDiskExport(module.BaseModule):
       return list(remote_instance.ListDisks().values())
     return [remote_instance.GetBootDisk()]
 
-  def _FindDisksToCopy(self):
+  def _FindDisksToCopy(self) -> List[GoogleComputeDisk]:
     """Determines which disks to copy depending on object attributes.
 
     Returns:

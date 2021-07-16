@@ -3,6 +3,7 @@
 import json
 import tempfile
 import time
+from typing import Optional
 
 from google.api_core import exceptions as google_api_exceptions
 from google.auth import exceptions as google_auth_exceptions
@@ -13,6 +14,7 @@ from googleapiclient.errors import HttpError
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
+from dftimewolf.lib.state import DFTimewolfState
 
 
 # Monkey patching the ProtobufEntry because of various issues, notably
@@ -30,7 +32,10 @@ entries.ProtobufEntry.to_api_repr = _CustomToAPIRepr
 class GCPLogsCollector(module.BaseModule):
   """Collector for Google Cloud Platform logs."""
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str],
+               critical: bool=False) -> None:
     """Initializes a GCP logs collector."""
     super(GCPLogsCollector, self).__init__(state, name=name, critical=critical)
     self._filter_expression = None

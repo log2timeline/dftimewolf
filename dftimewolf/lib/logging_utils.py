@@ -1,14 +1,17 @@
 """Module providing custom logging formatters and colorization for ANSI
 compatible terminals."""
 import logging
-import random
 import os
+import random
+from logging import LogRecord
+from typing import List
 
 DEFAULT_LOG_FILE = os.path.join(os.sep, 'tmp', 'dftimewolf.log')
-MAX_BYTES = 5*1024*1024
+MAX_BYTES = 5 * 1024 * 1024
 BACKUP_COUNT = 3
 
-def _GenerateColorSequences():
+
+def _GenerateColorSequences() -> List[str]:
   """Generates ANSI codes for 256 colors.
 
   Works on Linux and macOS, Windows (WSL) to be confirmed.
@@ -20,6 +23,7 @@ def _GenerateColorSequences():
       seq = '\u001b[38;5;' + code + 'm'
       sequences.append(seq)
   return sequences
+
 
 COLOR_SEQS = _GenerateColorSequences()
 RESET_SEQ = '\u001b[0m'
@@ -33,8 +37,9 @@ BOLD = '\u001b[1m'  # Bold / bright modifier
 
 # We'll get something like this:
 # [2020-07-09 18:06:05,187] [TimesketchExporter  ] INFO     Sketch 23 created
-LOG_FORMAT = ('[%(asctime)s] [{0:s}{color:s}%(name)-20s{1:s}] %(levelname)-8s'
-              ' %(message)s')
+LOG_FORMAT = (
+    '[%(asctime)s] [{0:s}{color:s}%(name)-20s{1:s}] %(levelname)-8s'
+    ' %(message)s')
 
 LEVEL_COLOR_MAP = {
     'WARNING': YELLOW,
@@ -47,7 +52,12 @@ LEVEL_COLOR_MAP = {
 
 class WolfFormatter(logging.Formatter):
   """Helper class used to add color to log messages depending on their level."""
-  def __init__(self, colorize=True, random_color=False, **kwargs):
+
+  def __init__(
+      self,
+      colorize: bool = True,
+      random_color: bool = False,
+      **kwargs) -> None:
     """Initializes the WolfFormatter object.
 
     Args:
@@ -64,7 +74,7 @@ class WolfFormatter(logging.Formatter):
       kwargs['fmt'] = LOG_FORMAT.format(BOLD, RESET_SEQ, color=color)
     super(WolfFormatter, self).__init__(**kwargs)
 
-  def format(self, record):
+  def format(self, record: LogRecord) -> str:
     """Hooks the native format method and colorizes messages if needed.
 
     Args:

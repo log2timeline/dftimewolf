@@ -1,16 +1,20 @@
 # -*- coding: utf-8 -*-
 """Creates an analysis VM and copies GCP disks to it for analysis."""
 
+from typing import List, Optional, Dict
+
 from google.auth.exceptions import DefaultCredentialsError, RefreshError
 from googleapiclient.errors import HttpError
 from libcloudforensics.errors import ResourceNotFoundError
+from libcloudforensics.providers.gcp import forensics as gcp_forensics
 from libcloudforensics.providers.gcp.internal import common
 from libcloudforensics.providers.gcp.internal import project as gcp_project
-from libcloudforensics.providers.gcp import forensics as gcp_forensics
+from libcloudforensics.providers.gcp.internal import compute
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
+from dftimewolf.lib.state import DFTimewolfState
 
 
 class GoogleCloudCollector(module.BaseModule):
@@ -35,7 +39,10 @@ class GoogleCloudCollector(module.BaseModule):
   _ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME = 'Analysis VM'
   _ANALYSIS_VM_CONTAINER_ATTRIBUTE_TYPE = 'text'
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str],
+               critical: bool=False) -> None:
     """Initializes a Google Cloud Platform (GCP) collector.
 
     Args:
@@ -46,16 +53,16 @@ class GoogleCloudCollector(module.BaseModule):
     """
     super(GoogleCloudCollector, self).__init__(
         state, name=name, critical=critical)
-    self.analysis_project = None
-    self.analysis_vm = None
-    self.incident_id = None
-    self.remote_project = None
-    self.remote_instance_name = None
-    self.disk_names = []
+    self.analysis_project = None  # type: gcp_project.GoogleCloudProject
+    self.analysis_vm = None  # type: compute.GoogleComputeInstance
+    self.incident_id = str()
+    self.remote_project = None  # type: gcp_project.GoogleCloudProject
+    self.remote_instance_name = None  # type: Optional[str]
+    self.disk_names = []  # type: List[str]
     self.all_disks = False
-    self._gcp_label = {}
+    self._gcp_label = {}  # type: Dict[str, str]
 
-  def Process(self):
+  def Process(self) -> None:
     """Copies a disk to the analysis project."""
     for disk in self._FindDisksToCopy():
       self.logger.info('Disk copy of {0:s} started...'.format(disk.name))
@@ -78,19 +85,19 @@ class GoogleCloudCollector(module.BaseModule):
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
-            analysis_project_name,
-            remote_project_name,
-            incident_id=None,
-            zone='us-central1-f',
-            create_analysis_vm=True,
-            boot_disk_size=50,
-            boot_disk_type='pd-standard',
-            cpu_cores=4,
-            remote_instance_name=None,
-            disk_names=None,
-            all_disks=False,
-            image_project='ubuntu-os-cloud',
-            image_family='ubuntu-1804-lts'):
+            analysis_project_name: str,
+            remote_project_name: str,
+            incident_id: Optional[str]=None,
+            zone: str='us-central1-f',
+            create_analysis_vm: bool=True,
+            boot_disk_size: float=50,
+            boot_disk_type: str='pd-standard',
+            cpu_cores: int=4,
+            remote_instance_name: Optional[str]=None,
+            disk_names: Optional[str]=None,
+            all_disks: bool=False,
+            image_project: str='ubuntu-os-cloud',
+            image_family: str='ubuntu-1804-lts') -> None:
     """Sets up a Google Cloud Platform(GCP) collector.
 
     This method creates and starts an analysis VM in the analysis project and
@@ -145,7 +152,6 @@ class GoogleCloudCollector(module.BaseModule):
           critical=True)
       return
 
-    disk_names = disk_names.split(',') if disk_names else []
     self.remote_project = gcp_project.GoogleCloudProject(
         remote_project_name, default_zone=zone)
     if analysis_project_name:
@@ -155,7 +161,7 @@ class GoogleCloudCollector(module.BaseModule):
       self.analysis_project = self.remote_project
 
     self.remote_instance_name = remote_instance_name
-    self.disk_names = disk_names
+    self.disk_names = disk_names.split(',') if disk_names else []
     self.all_disks = all_disks
     if incident_id:
       self.incident_id = incident_id
@@ -216,14 +222,16 @@ class GoogleCloudCollector(module.BaseModule):
         msg += str(exception)
         self.ModuleError(msg, critical=True)
 
-  def _GetDisksFromNames(self, disk_names):
+  def _GetDisksFromNames(
+      self, disk_names: List[str]) -> List[compute.GoogleComputeDisk]:
     """Gets disks from a project by disk name.
 
     Args:
       disk_names (list[str]): List of disk names to get from the project.
 
     Returns:
-      list[GoogleComputeDisk]: List of GoogleComputeDisk objects to copy.
+      list[compute.GoogleComputeDisk]: List of GoogleComputeDisk objects to
+          copy.
     """
     disks = []
     for name in disk_names:
@@ -236,7 +244,10 @@ class GoogleCloudCollector(module.BaseModule):
             critical=True)
     return disks
 
-  def _GetDisksFromInstance(self, instance_name, all_disks):
+  def _GetDisksFromInstance(
+      self,
+      instance_name: str,
+      all_disks: bool) -> List[compute.GoogleComputeDisk]:
     """Gets disks to copy based on an instance name.
 
     Args:
@@ -245,7 +256,8 @@ class GoogleCloudCollector(module.BaseModule):
           False, get only the instance's boot disk.
 
     Returns:
-      list[GoogleComputeDisk]: List of GoogleComputeDisk objects to copy.
+      list[compute.GoogleComputeDisk]: List of compute.GoogleComputeDisk
+          objects to copy.
     """
     try:
       remote_instance = self.remote_project.compute.GetInstance(instance_name)
@@ -256,11 +268,11 @@ class GoogleCloudCollector(module.BaseModule):
       return list(remote_instance.ListDisks().values())
     return [remote_instance.GetBootDisk()]
 
-  def _FindDisksToCopy(self):
+  def _FindDisksToCopy(self) -> List[compute.GoogleComputeDisk]:
     """Determines which disks to copy depending on object attributes.
 
     Returns:
-      list[GoogleComputeDisk]: the disks to copy to the
+      list[compute.GoogleComputeDisk]: the disks to copy to the
           analysis project.
     """
     if not (self.remote_instance_name or self.disk_names):

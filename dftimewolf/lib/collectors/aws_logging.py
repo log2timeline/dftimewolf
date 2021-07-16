@@ -4,6 +4,7 @@
 import json
 import tempfile
 from datetime import datetime
+from typing import Optional, Union
 
 from libcloudforensics.providers.aws.internal import account as aws_account
 from libcloudforensics.providers.aws.internal import log as aws_log
@@ -11,25 +12,33 @@ from libcloudforensics.providers.aws.internal import log as aws_log
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
+from dftimewolf.lib.state import DFTimewolfState
 
 
 class AWSLogsCollector(module.BaseModule):
   """Collector for Amazon Web Services (AWS) logs."""
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+               state: DFTimewolfState,
+               name: str,
+               critical: bool=False) -> None:
     """Initializes AWS logs collector."""
     super(AWSLogsCollector, self).__init__(state, name=name, critical=critical)
-    self._zone = None
-    self._profile_name = None
-    self._query_filter = None
-    self._start_time = None
-    self._end_time = None
-    self._log_account = None
-    self._log_client = None
+    self._zone = None  # type: Union[str, None]
+    self._profile_name = str()  # type: str
+    self._query_filter = None  # type: Optional[str]
+    self._start_time = None  # type: Optional[datetime]
+    self._end_time = None  # type: Optional[datetime]
+    self._log_account = None  # type: Union[str, None]
+    self._log_client = None  # type: Optional[aws_log.AWSCloudTrail]
 
   # pylint: disable=arguments-differ
-  def SetUp(self, zone, profile_name=None, query_filter=None,
-    start_time=None, end_time=None):
+  def SetUp(self,
+            zone: str,
+            profile_name: str,
+            query_filter: Optional[str]=None,
+            start_time: Optional[str]=None,
+            end_time: Optional[str]=None) -> None:
     """Sets up an AWS logs collector
 
     Args:
@@ -50,7 +59,7 @@ class AWSLogsCollector(module.BaseModule):
     if end_time:
       self._end_time = datetime.fromisoformat(end_time)
 
-  def Process(self):
+  def Process(self) -> None:
     """Copies logs from an AWS account."""
 
     output_file = tempfile.NamedTemporaryFile(

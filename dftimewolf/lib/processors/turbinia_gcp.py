@@ -4,6 +4,7 @@
 import getpass
 import os
 import tempfile
+from typing import Dict, List, Optional, Tuple, Any, Union
 
 # We import a class to avoid importing the whole turbinia module.
 from turbinia import TurbiniaException
@@ -15,10 +16,9 @@ from turbinia.message import TurbiniaRequest
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
+from dftimewolf.lib.state import DFTimewolfState
 
-# pylint: disable=no-member
-
-# pylint: disable=abstract-method
+# pylint: disable=abstract-method,no-member
 class TurbiniaProcessorBase(module.BaseModule):
   """Base class for processing with Turbinia.
 
@@ -34,7 +34,10 @@ class TurbiniaProcessorBase(module.BaseModule):
     turbinia_zone (str): GCP zone in which the Turbinia server is running.
   """
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str],
+               critical: bool=False) -> None:
     """Initializes a Turbinia base processor.
 
     Args:
@@ -46,16 +49,18 @@ class TurbiniaProcessorBase(module.BaseModule):
     super(TurbiniaProcessorBase, self).__init__(
         state, name=name, critical=critical)
     self.turbinia_config_file = None
-    self._output_path = None
-    self.client = None
+    self._output_path = str()
+    self.client = None  # type: turbinia_client.BaseTurbiniaClient
     self.instance = None
-    self.project = None
-    self.run_all_jobs = None
-    self.sketch_id = None
+    self.project = str()
+    self.run_all_jobs = False
+    self.sketch_id = int()
     self.turbinia_region = None
-    self.turbinia_zone = None
+    self.turbinia_zone = str()
 
-  def _DeterminePaths(self, task_data):
+  def _DeterminePaths(
+      self,
+      task_data: List[Dict[str, Any]]) -> Tuple[List[str], List[str]]:
     """Builds lists of local and remote paths from data retured by Turbinia.
 
     This finds all .plaso, hashes.json, and BinaryExtractorTask files in the
@@ -88,12 +93,15 @@ class TurbiniaProcessorBase(module.BaseModule):
 
     return local_paths, gs_paths
 
-  def _DownloadFilesFromGCS(self, timeline_label, gs_paths):
+  def _DownloadFilesFromGCS(self,
+                            timeline_label: str,
+                            gs_paths: List[str]) -> List[Tuple[str, str]]:
     """Downloads files stored in Google Cloud Storage to the local filesystem.
 
     Args:
       timeline_label (str): Label to use to construct the path list.
-      gs_paths (str):  gs:// URI to files that need to be downloaded from GS.
+      gs_paths (List[str]):  gs:// URI to files that need to be downloaded
+          from GS.
 
     Returns:
       list:
@@ -121,7 +129,11 @@ class TurbiniaProcessorBase(module.BaseModule):
 
     return local_paths
 
-  def TurbiniaSetUp(self, project, turbinia_zone, sketch_id, run_all_jobs):
+  def TurbiniaSetUp(self,
+                    project: str,
+                    turbinia_zone: str,
+                    sketch_id: int,
+                    run_all_jobs: bool) -> None:
     """Sets up the object attributes.
 
     Args:
@@ -159,7 +171,8 @@ class TurbiniaProcessorBase(module.BaseModule):
     self._output_path = tempfile.mkdtemp()
     self.client = turbinia_client.get_turbinia_client(run_local=False)
 
-  def TurbiniaProcess(self, evidence_):
+  def TurbiniaProcess(
+      self, evidence_: evidence.Evidence) -> List[Dict[str, Any]]:
     """Creates and sends a Turbinia processing request.
 
     Args:
@@ -199,7 +212,7 @@ class TurbiniaProcessorBase(module.BaseModule):
         'request_id': request.request_id
     }
 
-    task_data = None
+    task_data = []  # type: List[Dict]
     try:
       self.logger.info(
           'Creating Turbinia request {0:s} with Evidence {1!s}'.format(
@@ -233,7 +246,10 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase):
     disk_name (str): name of the disk to process.
   """
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str],
+               critical: bool=False) -> None:
     """Initializes a Turbinia Google Cloud (GCP) disks processor.
 
     Args:
@@ -244,16 +260,16 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase):
     """
     super(TurbiniaGCPProcessor, self).__init__(
         state, name=name, critical=critical)
-    self.disk_name = None
+    self.disk_name = str()
 
   # pylint: disable=arguments-differ
   def SetUp(self,
-            turbinia_config_file,
-            disk_name,
-            project,
-            turbinia_zone,
-            sketch_id,
-            run_all_jobs):
+            turbinia_config_file: None,
+            disk_name: str,
+            project: str,
+            turbinia_zone: str,
+            sketch_id: int,
+            run_all_jobs: bool) -> None:
     """Sets up the object attributes.
 
     Args:
@@ -276,7 +292,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase):
       self.ModuleError(str(exception), critical=True)
       return
 
-  def Process(self):
+  def Process(self) -> None:
     """Process files with Turbinia."""
     log_file_path = os.path.join(self._output_path, 'turbinia.log')
     print('Turbinia log file: {0:s}'.format(log_file_path))
@@ -311,6 +327,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase):
     if not all_local_paths:
       self.ModuleError('No interesting files could be found.', critical=True)
 
+    container: Union[containers.File, containers.ThreatIntelligence]
     for description, path in all_local_paths:
       if path.endswith('BinaryExtractorTask.tar.gz'):
         self.logger.info('Found BinaryExtractorTask result: {0:s}'.format(path))

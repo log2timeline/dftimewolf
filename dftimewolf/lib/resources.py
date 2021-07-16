@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Various dfTimewolf resource objects."""
+from typing import Any, Dict, List, Tuple
 
 
 class Recipe(object):
@@ -13,7 +14,10 @@ class Recipe(object):
     name (str): name that identifies the recipe.
   """
 
-  def __init__(self, description, contents, args):
+  def __init__(self,
+               description: str,
+               contents: Dict[str, Any],
+               args: List[Tuple[str, str, Any]]) -> None:
     """Initializes a recipe.
 
     Args:
@@ -28,7 +32,7 @@ class Recipe(object):
     self.name = contents['name']
     self.description = description
 
-  def GetHelpString(self):
+  def GetHelpString(self) -> str:
     """Generates a description for argparse help.
 
     Returns:

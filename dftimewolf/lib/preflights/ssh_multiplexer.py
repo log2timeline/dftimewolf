@@ -19,7 +19,7 @@ class SSHMultiplexer(module.PreflightModule):
 
   def __init__(self,
                state: DFTimewolfState,
-               name: None=None,
+               name: Optional[str],
                critical: bool=False) -> None:
     super(SSHMultiplexer, self).__init__(
         state, name=name, critical=critical)

@@ -7,9 +7,9 @@ import re
 import tarfile
 import tempfile
 from time import time
+from typing import Any, Dict
 
-import six
-
+from dftimewolf.config import Config
 
 TOKEN_REGEX = re.compile(r'\@([\w_]+)')
 
@@ -60,7 +60,7 @@ class DFTimewolfFormatterClass(
   pass
 
 
-def ImportArgsFromDict(value, args, config):
+def ImportArgsFromDict(value: Any, args: Dict[str, Any], config: Config) -> Any:
   """Replaces some arguments by those specified by a key-value dictionary.
 
   This function will be recursively called on a dictionary looking for any
@@ -81,13 +81,13 @@ def ImportArgsFromDict(value, args, config):
     object: the first caller of the function will receive a dictionary in
         which strings starting with "@" are replaced by the parameters in args.
   """
-  if isinstance(value, six.string_types):
+  if isinstance(value, str):
     for match in TOKEN_REGEX.finditer(str(value)):
       token = match.group(1)
       if token in args:
         actual_param = args[token]
-        if isinstance(actual_param, six.string_types):
-          value = value.replace("@"+token, args[token])
+        if isinstance(actual_param, str):
+          value = value.replace("@"+token, actual_param)
         else:
           value = actual_param
   elif isinstance(value, list):
