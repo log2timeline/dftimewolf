@@ -36,4 +36,5 @@ class LocalFileSystemTest(unittest.TestCase):
     self.assertEqual(files[1].path, '/fake/path/2')
     self.assertEqual(files[1].name, '2')
 
+if __name__ == '__main__':
   unittest.main()
