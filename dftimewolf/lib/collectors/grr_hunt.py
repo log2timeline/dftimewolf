@@ -66,7 +66,7 @@ class GRRHuntArtifactCollector(GRRHunt):
 
   def __init__(self,
                state: DFTimewolfState,
-               name: Optional[str],
+               name: Optional[str]=None,
                critical: bool=False) -> None:
     """Initializes a GRR artifact collector hunt.
 
@@ -141,7 +141,7 @@ class GRRHuntFileCollector(GRRHunt):
 
   def __init__(self,
                state: DFTimewolfState,
-               name: Optional[str],
+               name: Optional[str]=None,
                critical: bool=False) -> None:
     """Initializes a GRR file collector hunt.
 
@@ -212,7 +212,7 @@ class GRRHuntDownloader(GRRHunt):
 
   def __init__(self,
                state: DFTimewolfState,
-               name: Optional[str],
+               name: Optional[str]=None,
                critical: bool=False) -> None:
     """Initializes a GRR hunt results downloader.
 

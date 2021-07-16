@@ -21,11 +21,11 @@ class LocalPlasoProcessor(module.BaseModule):
 
   def __init__(self,
                state: DFTimewolfState,
-               name: Optional[str],
+               name: Optional[str]=None,
                critical: bool=False) -> None:
     super(LocalPlasoProcessor, self).__init__(
         state, name=name, critical=critical)
-    self._timezone = str()
+    self._timezone = None  # type: Optional[str]
     self._output_path = str()
     self._plaso_path = str()
 
@@ -38,7 +38,7 @@ class LocalPlasoProcessor(module.BaseModule):
         return True
     return False
 
-  def SetUp(self, timezone: str) -> None:  # pylint: disable=arguments-differ
+  def SetUp(self, timezone: Optional[str]=None) -> None:  # pylint: disable=arguments-differ
     """Sets up the local time zone with Plaso (log2timeline) should use.
 
     Args:

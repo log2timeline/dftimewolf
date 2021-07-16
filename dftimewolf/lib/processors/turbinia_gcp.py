@@ -36,7 +36,7 @@ class TurbiniaProcessorBase(module.BaseModule):
 
   def __init__(self,
                state: DFTimewolfState,
-               name: Optional[str],
+               name: Optional[str]=None,
                critical: bool=False) -> None:
     """Initializes a Turbinia base processor.
 
@@ -248,7 +248,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase):
 
   def __init__(self,
                state: DFTimewolfState,
-               name: Optional[str],
+               name: Optional[str]=None,
                critical: bool=False) -> None:
     """Initializes a Turbinia Google Cloud (GCP) disks processor.
 

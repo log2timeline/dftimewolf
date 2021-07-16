@@ -21,7 +21,7 @@ class LocalFilesystemCopy(module.BaseModule):
 
   def __init__(self,
                state: DFTimewolfState,
-               name: Optional[str],
+               name: Optional[str]=None,
                critical: bool=False) -> None:
     """Initializes a local file system exporter module."""
     super(LocalFilesystemCopy, self).__init__(

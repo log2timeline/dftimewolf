@@ -20,7 +20,7 @@ class AWSLogsCollector(module.BaseModule):
 
   def __init__(self,
                state: DFTimewolfState,
-               name: str,
+               name: Optional[str]=None,
                critical: bool=False) -> None:
     """Initializes AWS logs collector."""
     super(AWSLogsCollector, self).__init__(state, name=name, critical=critical)
@@ -35,7 +35,7 @@ class AWSLogsCollector(module.BaseModule):
   # pylint: disable=arguments-differ
   def SetUp(self,
             zone: str,
-            profile_name: str,
+            profile_name: Optional[str]=None,
             query_filter: Optional[str]=None,
             start_time: Optional[str]=None,
             end_time: Optional[str]=None) -> None:

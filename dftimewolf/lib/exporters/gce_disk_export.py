@@ -40,7 +40,7 @@ class GoogleCloudDiskExport(module.BaseModule):
 
   def __init__(self,
                state: DFTimewolfState,
-               name: Optional[str],
+               name: Optional[str]=None,
                critical: bool=False) -> None:
     """Initializes a Google Cloud Platform (GCP) Disk Export.
 
@@ -83,9 +83,9 @@ class GoogleCloudDiskExport(module.BaseModule):
   def SetUp(self,
             source_project_name: str,
             gcs_output_location: str,
-            analysis_project_name: Optional[str],
-            source_disk_names: Optional[str],
-            remote_instance_name: Optional[str],
+            analysis_project_name: Optional[str]=None,
+            source_disk_names: Optional[str]=None,
+            remote_instance_name: Optional[str]=None,
             all_disks: bool=False,
             exported_image_name: Optional[str]=None) -> None:
     """Sets up a Google Cloud Platform (GCP) Disk Export.

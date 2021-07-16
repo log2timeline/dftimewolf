@@ -29,7 +29,7 @@ class GRRBaseModule(module.BaseModule):
 
   def __init__(self,
                state: DFTimewolfState,
-               name: Optional[str],
+               name: Optional[str]=None,
                critical: bool=False) -> None:
     """Initializes a GRR hunt or flow module.
 

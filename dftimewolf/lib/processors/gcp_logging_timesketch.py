@@ -20,7 +20,7 @@ class GCPLoggingTimesketch(BaseModule):
 
   def __init__(self,
                state: DFTimewolfState,
-               name: Optional[str],
+               name: Optional[str]=None,
                critical: bool=False) -> None:
     super(GCPLoggingTimesketch, self).__init__(
         state, name=name, critical=critical)

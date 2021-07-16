@@ -28,7 +28,7 @@ class SCPExporter(module.BaseModule):
 
   def __init__(self,
                state: DFTimewolfState,
-               name: Optional[str],
+               name: Optional[str]=None,
                critical: bool=False) -> None:
     super(SCPExporter, self).__init__(state, name=name, critical=critical)
     self._paths = []  # type: List[str]

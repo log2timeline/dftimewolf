@@ -38,7 +38,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
 
   def __init__(self,
                state: DFTimewolfState,
-               name: Optional[str],
+               name: Optional[str]=None,
                critical: bool=False) -> None:
     """Initializes a GRR flow module.
 
@@ -379,7 +379,7 @@ class GRRArtifactCollector(GRRFlow):
 
   def __init__(self,
                state: DFTimewolfState,
-               name: Optional[str],
+               name: Optional[str]=None,
                critical: bool=False) -> None:
     super(GRRArtifactCollector, self).__init__(
         state, name=name, critical=critical)
@@ -529,7 +529,7 @@ class GRRFileCollector(GRRFlow):
 
   def __init__(self,
                state: DFTimewolfState,
-               name: Optional[str],
+               name: Optional[str]=None,
                critical: bool=False) -> None:
     super(GRRFileCollector, self).__init__(state, name=name, critical=critical)
     self._clients = []  # type: List[Client]
@@ -651,7 +651,7 @@ class GRRFlowCollector(GRRFlow):
 
   def __init__(self,
                state: DFTimewolfState,
-               name: Optional[str],
+               name: Optional[str]=None,
                critical: bool=False) -> None:
     super(GRRFlowCollector, self).__init__(state, name=name, critical=critical)
     self.client_id = str()
@@ -724,7 +724,7 @@ class GRRTimelineCollector(GRRFlow):
 
   def __init__(self,
                state: DFTimewolfState,
-               name: Optional[str],
+               name: Optional[str]=None,
                critical: bool=False) -> None:
     super(GRRTimelineCollector, self).__init__(
         state, name=name, critical=critical)

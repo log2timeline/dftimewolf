@@ -43,7 +43,7 @@ class AWSCollector(module.BaseModule):
 
   def __init__(self,
                state: DFTimewolfState,
-               name: Optional[str],
+               name: Optional[str]=None,
                critical: bool=False) -> None:
     """Initializes an Amazon Web Services (AWS) collector.
 

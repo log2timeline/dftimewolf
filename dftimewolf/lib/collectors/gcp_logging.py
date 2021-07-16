@@ -34,7 +34,7 @@ class GCPLogsCollector(module.BaseModule):
 
   def __init__(self,
                state: DFTimewolfState,
-               name: Optional[str],
+               name: Optional[str]=None,
                critical: bool=False) -> None:
     """Initializes a GCP logs collector."""
     super(GCPLogsCollector, self).__init__(state, name=name, critical=critical)

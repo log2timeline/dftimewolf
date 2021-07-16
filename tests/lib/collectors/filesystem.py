@@ -37,17 +37,4 @@ class LocalFileSystemTest(unittest.TestCase):
     self.assertEqual(files[1].path, '/fake/path/2')
     self.assertEqual(files[1].name, '2')
 
-  def testSetup(self):
-    """Tests that no paths specified in setup will generate an error."""
-    test_state = state.DFTimewolfState(config.Config)
-    filesystem_collector = filesystem.FilesystemCollector(test_state)
-    with self.assertRaises(errors.DFTimewolfError) as error:
-      filesystem_collector.SetUp(paths=None)
-    self.assertEqual(
-        'No `paths` argument provided in recipe, bailing',
-        error.exception.message)
-
-    self.assertIsNone(filesystem_collector._paths)  # pylint: disable=protected-access
-
-if __name__ == '__main__':
   unittest.main()
