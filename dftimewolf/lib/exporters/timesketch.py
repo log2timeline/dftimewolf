@@ -3,7 +3,7 @@
 
 import re
 import time
-from typing import Optional, List, Union
+from typing import Optional, List
 
 from timesketch_import_client import importer
 from timesketch_api_client import sketch as ts_sketch
@@ -38,14 +38,14 @@ class TimesketchExporter(module.BaseModule):
     super(TimesketchExporter, self).__init__(
         state, name=name, critical=critical)
     self.incident_id = None
-    self.sketch_id = None  # type: Optional[int]
+    self.sketch_id = 0
     self.timesketch_api = None  # type: ts_client.TimesketchApi
     self._analyzers = []  # type: List[str]
     self.wait_for_timelines = False
 
   def SetUp(self,  # pylint: disable=arguments-differ
             incident_id: None=None,
-            sketch_id: Optional[int]=None,
+            sketch_id: int=0,
             analyzers: None=None,
             token_password: str='',
             wait_for_timelines: bool=False) -> None:
@@ -74,7 +74,7 @@ class TimesketchExporter(module.BaseModule):
           'Unable to get a Timesketch API client, try deleting the files '
           '~/.timesketchrc and ~/.timesketch.token', critical=True)
     self.incident_id = incident_id
-    self.sketch_id = int(sketch_id) if sketch_id else None
+    self.sketch_id = int(sketch_id) if sketch_id else 0
     sketch = None
 
     # Check that we have a timesketch session.
@@ -137,20 +137,20 @@ class TimesketchExporter(module.BaseModule):
         break
       time.sleep(10)
 
-  def _GetSketchIDFromAttributes(self) -> Union[None, int]:
+  def _GetSketchIDFromAttributes(self) -> int:
     """Attempts to retrieve a Timesketch ID from ticket attributes.
 
     Returns:
-      int: the sketch idenifier, or None if one was not available.
+      int: the sketch idenifier, or 0 if one was not available.
     """
-    attributes = self.state.GetContainers(containers.TicketAttribute)  # type: List[containers.TicketAttribute]  # pylint: disable=line-too-long
+    attributes = self.state.GetContainers(containers.TicketAttribute)
     for attribute in attributes:
       if attribute.name == self._SKETCH_ATTRIBUTE_NAME:
         sketch_match = re.search(r'sketch/(\d+)/', attribute.value)
         if sketch_match:
           sketch_id = int(sketch_match.group(1), 10)
           return sketch_id
-    return None
+    return 0
 
   def Process(self) -> None:
     """Executes a Timesketch export."""
@@ -167,10 +167,11 @@ class TimesketchExporter(module.BaseModule):
     if not sketch:
       sketch = self._CreateSketch(incident_id=self.incident_id)
       self.sketch_id = sketch.id
-      self.logger.info('New sketch created: {0:d}'.format(self.sketch_id))  # type: ignore[str-format]  # pylint: disable=line-too-long
+      self.logger.info('New sketch created: {0:d}'.format(self.sketch_id))
 
     recipe_name = self.state.recipe.get('name', 'no_recipe')
     input_names = []
+
     for file_container in self.state.GetContainers(containers.File):
       description = file_container.name
       if not description:
@@ -191,10 +192,9 @@ class TimesketchExporter(module.BaseModule):
 
       for file_container in self.state.GetContainers(containers.File):
         path = file_container.path
-        description = file_container.description
         streamer.add_file(path)
-        if streamer.response and description:
-          streamer.timeline.description = description
+        if streamer.response and file_container.description:
+          streamer.timeline.description = file_container.description
 
     api_root = sketch.api.api_root
     host_url = api_root.partition('api/v1')[0]

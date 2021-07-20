@@ -75,7 +75,7 @@ class LocalFilesystemCopy(module.BaseModule):
           self.logger.info('{0:s} was compressed into {1:s}'.format(
               file_container.path, tar_file))
         except RuntimeError as exception:
-          self.ModuleError(exception, critical=True)
+          self.ModuleError(str(exception), critical=True)
           return
 
   def _CopyFileOrDirectory(

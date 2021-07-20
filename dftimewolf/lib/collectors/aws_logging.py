@@ -25,7 +25,7 @@ class AWSLogsCollector(module.BaseModule):
     """Initializes AWS logs collector."""
     super(AWSLogsCollector, self).__init__(state, name=name, critical=critical)
     self._zone = None  # type: Union[str, None]
-    self._profile_name = str()  # type: str
+    self._profile_name = None  # type: Optional[str]
     self._query_filter = None  # type: Optional[str]
     self._start_time = None  # type: Optional[datetime]
     self._end_time = None  # type: Optional[datetime]

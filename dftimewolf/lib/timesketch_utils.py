@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 LOCK = threading.Lock()
 
 
-def GetApiClient(state: state.DFTimewolfState,
+def GetApiClient(state: "state.DFTimewolfState",
                  token_password: str='') -> client.TimesketchApi:
   """Returns a Timesketch API client using thread safe methods.
 

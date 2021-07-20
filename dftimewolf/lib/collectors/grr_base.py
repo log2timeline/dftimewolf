@@ -2,7 +2,7 @@
 import abc
 import tempfile
 import time
-from typing import Optional, Union, Callable, List
+from typing import Optional, Union, Callable, List, Any
 
 from grr_api_client import api as grr_api
 from grr_api_client import errors as grr_errors
@@ -80,9 +80,9 @@ class GRRBaseModule(module.BaseModule):
   def _WrapGRRRequestWithApproval(
       self,
       grr_object: Union[Hunt, Client],
-      grr_function: Callable,
-      *args,
-      **kwargs
+      grr_function: Callable,  # type: ignore[type-arg]
+      *args: Any,
+      **kwargs: Any
   ) -> Union[Flow, Hunt]:
     """Wraps a GRR request with approval.
 
@@ -135,7 +135,7 @@ class GRRBaseModule(module.BaseModule):
                 grr_object, self.approvers, self.reason))
 
   @abc.abstractmethod
-  def Process(self):
+  def Process(self) -> None:
     """Processes input and builds the module's output attribute.
 
     Modules take input information and process it into output information,

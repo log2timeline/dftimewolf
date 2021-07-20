@@ -31,7 +31,7 @@ class BaseModule(object):
   """
 
   def __init__(self,
-               state: state.DFTimewolfState ,
+               state: "state.DFTimewolfState",
                name:Optional[str]=None,
                critical: Optional[bool]=False):
     """Initialize a module.

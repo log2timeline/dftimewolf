@@ -4,7 +4,7 @@
 import os
 import subprocess
 
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Sequence
 
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib import module
@@ -86,6 +86,7 @@ class SCPExporter(module.BaseModule):
   def Process(self) -> None:
     """Copies the list of paths to or from the remote host."""
     if not self._paths:
+      fspaths: Sequence[Union[containers.File, containers.RemoteFSPath]]
       if self._upload:
         # We're uploading local paths to the remote host.
         fspaths = self.state.GetContainers(containers.File)

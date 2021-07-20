@@ -5,6 +5,8 @@ import os.path
 import json
 import tempfile
 
+from typing import Optional, TYPE_CHECKING
+
 import filelock
 from google.auth.exceptions import DefaultCredentialsError, RefreshError
 from google.auth.transport.requests import Request
@@ -16,6 +18,10 @@ from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 
+if TYPE_CHECKING:
+  from dftimewolf.lib import state
+
+
 
 class WorkspaceAuditCollector(module.BaseModule):
   """Collector for Google Workspace Audit logs. """
@@ -24,18 +30,21 @@ class WorkspaceAuditCollector(module.BaseModule):
   _CREDENTIALS_FILENAME = '.dftimewolf_workspace_credentials.json'
   _CLIENT_SECRET_FILENAME = '.dftimewolf_workspace_client_secret.json'
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+               state: state.DFTimewolfState,
+               name: Optional[str]=None,
+               critical: bool=False):
     """Initializes a Workspace Audit Log collector."""
     super(WorkspaceAuditCollector, self).__init__(state, name=name,
         critical=critical)
-    self._start_time = None
     self._credentials = None
-    self._application_name = None
-    self._filter_expression = None
+    self._application_name = ''
+    self._filter_expression = ''
     self._user_key = 'all'
-    self._end_time = None
+    self._start_time = None  # type: Optional[str]
+    self._end_time = None # type: Optional[str]
 
-  def _BuildAuditResource(self, credentials):
+  def _BuildAuditResource(self, credentials: Credentials) -> discovery.Resource:
     """Builds a reports resource object to use to request logs.
 
     Args:
@@ -48,11 +57,11 @@ class WorkspaceAuditCollector(module.BaseModule):
         credentials=credentials)
     return service
 
-  def _GetCredentials(self):
+  def _GetCredentials(self) -> Credentials:
     """Obtains API credentials for accessing the Workspace audit API.
 
     Returns:
-      credentials: Google API credentials.
+      google.oauth2.credentials.Credentials: Google API credentials.
     """
     credentials = None
 
@@ -98,8 +107,12 @@ class WorkspaceAuditCollector(module.BaseModule):
     return credentials
 
   # pylint: disable=arguments-differ
-  def SetUp(self, application_name, filter_expression, user_key='all',
-      start_time=None, end_time=None):
+  def SetUp(self,
+            application_name: str,
+            filter_expression: str,
+            user_key: str='all',
+            start_time: Optional[str]=None,
+            end_time: Optional[str]=None) -> None:
     """Sets up a a Workspace Audit logs collector.
 
     Args:
@@ -120,7 +133,7 @@ class WorkspaceAuditCollector(module.BaseModule):
     self._start_time = start_time
     self._end_time = end_time
 
-  def Process(self):
+  def Process(self) -> None:
     """Copies audit logs from a Google Workspace log."""
     output_file = tempfile.NamedTemporaryFile(
         mode='w', delete=False, encoding='utf-8', suffix='.jsonl')

@@ -3,7 +3,7 @@
 
 import json
 import tempfile
-from typing import Any, Dict, Optional, TYPE_CHECKING, List
+from typing import Any, Dict, Optional, TYPE_CHECKING
 
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.module import BaseModule
@@ -17,7 +17,7 @@ class GCPLoggingTimesketch(BaseModule):
   """Transforms Google Cloud Platform logs for Timesketch."""
 
   def __init__(self,
-               state: state.DFTimewolfState,
+               state: "state.DFTimewolfState",
                name: Optional[str]=None,
                critical: bool=False) -> None:
     super(GCPLoggingTimesketch, self).__init__(
@@ -273,10 +273,7 @@ class GCPLoggingTimesketch(BaseModule):
 
   def Process(self) -> None:
     """Processes GCP logs containers for insertion into Timesketch."""
-    # Disable type checking as containers.GCPLogs is a subclass of
-    # containers.interface.AttributeContainers
-    logs_containers: List[containers.GCPLogs]
-    logs_containers = self.state.GetContainers(containers.GCPLogs)  # type: ignore  # pylint: disable=line-too-long
+    logs_containers = self.state.GetContainers(containers.GCPLogs)
     for logs_container in logs_containers:
       self._ProcessLogContainer(logs_container)
 

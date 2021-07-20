@@ -288,7 +288,7 @@ class GRRHuntDownloader(GRRHunt):
     return results
 
   # TODO: change object to more specific GRR type information.
-  def _GetAndWriteArchive(self, hunt, output_file_path):
+  def _GetAndWriteArchive(self, hunt: Hunt, output_file_path: str) -> None:
     """Retrieves and writes a hunt archive.
 
     Function is necessary for the _WrapGRRRequestWithApproval to work.

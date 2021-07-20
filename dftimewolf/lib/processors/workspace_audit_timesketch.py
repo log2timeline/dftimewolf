@@ -188,8 +188,7 @@ class WorkspaceAuditTimesketch(BaseModule):
     """Processes Workspace logs containers for insertion into Timesketch."""
     logs_containers = self.state.GetContainers(containers.WorkspaceLogs)
     for logs_container in logs_containers:
-      # WorkspaceLogs are a subclass of AttributeContainer
-      self._ProcessLogContainer(logs_container)  # type: ignore
+      self._ProcessLogContainer(logs_container)
 
 
 modules_manager.ModulesManager.RegisterModule(WorkspaceAuditTimesketch)

@@ -225,7 +225,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     if not flow:
       return ''
 
-    flow_id = flow.flow_id
+    flow_id = flow.flow_id  # type: str
     self.logger.info('{0:s}: Scheduled'.format(flow_id))
 
     if self.keepalive:
@@ -440,7 +440,7 @@ class GRRArtifactCollector(GRRFlow):
     self.use_tsk = use_tsk
 
   # TODO: change object to more specific GRR type information.
-  def _ProcessThread(self, client):
+  def _ProcessThread(self, client: Client) -> None:
     """Processes a single GRR client.
 
     This function is used as a callback for the processing thread.
@@ -591,7 +591,7 @@ class GRRFileCollector(GRRFlow):
                        critical=True)
 
   # TODO: change object to more specific GRR type information.
-  def _ProcessThread(self, client):
+  def _ProcessThread(self, client: Client) -> None:
     """Processes a single client.
 
     This function is used as a callback for the processing thread.
@@ -656,7 +656,7 @@ class GRRFlowCollector(GRRFlow):
     super(GRRFlowCollector, self).__init__(state, name=name, critical=critical)
     self.client_id = str()
     self.flow_id = str()
-    self.host = None  # type: containers.Host  # type: ignore[assignment]
+    self.host: containers.Host
 
   # pylint: disable=arguments-differ
   def SetUp(self,
@@ -782,7 +782,7 @@ class GRRTimelineCollector(GRRFlow):
                        critical=True)
 
   # TODO: change object to more specific GRR type information.
-  def _ProcessThread(self, client):
+  def _ProcessThread(self, client: Client) -> None:
     """Processes a single client.
     This function is used as a callback for the processing thread.
     Args:
@@ -824,7 +824,7 @@ class GRRTimelineCollector(GRRFlow):
       thread.join()
     self._CheckSkippedFlows()
 
-  def _DownloadTimeline(self, client, flow_id):
+  def _DownloadTimeline(self, client: Client, flow_id: str) -> Optional[str]:
     """Download a timeline in BODY format from the specified flow.
     Args:
       client (object): GRR Client object to which to download flow data from.

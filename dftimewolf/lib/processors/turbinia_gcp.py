@@ -4,7 +4,7 @@
 import getpass
 import os
 import tempfile
-from typing import Dict, List, Optional, Tuple, Any, Union
+from typing import Dict, List, Optional, TYPE_CHECKING, Tuple, Any, Union
 
 # We import a class to avoid importing the whole turbinia module.
 from turbinia import TurbiniaException
@@ -16,7 +16,9 @@ from turbinia.message import TurbiniaRequest
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.state import DFTimewolfState
+
+if TYPE_CHECKING:
+  from dftimewolf.lib import state
 
 # pylint: disable=abstract-method,no-member
 class TurbiniaProcessorBase(module.BaseModule):
@@ -35,20 +37,20 @@ class TurbiniaProcessorBase(module.BaseModule):
   """
 
   def __init__(self,
-               state: DFTimewolfState,
+               state: "state.DFTimewolfState",
                name: Optional[str]=None,
                critical: bool=False) -> None:
     """Initializes a Turbinia base processor.
 
     Args:
-      state (DFTimewolfState): recipe state.
+      state (state.DFTimewolfState): recipe state.
       name (Optional[str]): The module's runtime name.
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
     super(TurbiniaProcessorBase, self).__init__(
         state, name=name, critical=critical)
-    self.turbinia_config_file = None
+    self.turbinia_config_file = ''
     self._output_path = str()
     self.client = None  # type: turbinia_client.BaseTurbiniaClient
     self.instance = None
@@ -194,9 +196,6 @@ class TurbiniaProcessorBase(module.BaseModule):
       request.recipe['jobs_denylist'] = [
           'StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob']
 
-    # Get threat intelligence data from any modules that have stored some.
-    # In this case, observables is a list of containers.ThreatIntelligence
-    # objects.
     threatintel = self.state.GetContainers(containers.ThreatIntelligence)
     if threatintel:
       self.logger.info(
@@ -212,7 +211,7 @@ class TurbiniaProcessorBase(module.BaseModule):
         'request_id': request.request_id
     }
 
-    task_data = []  # type: List[Dict]
+    task_data = []  # type: List[Dict[str, str]]
     try:
       self.logger.info(
           'Creating Turbinia request {0:s} with Evidence {1!s}'.format(
@@ -247,13 +246,13 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase):
   """
 
   def __init__(self,
-               state: DFTimewolfState,
+               state: "state.DFTimewolfState",
                name: Optional[str]=None,
                critical: bool=False) -> None:
     """Initializes a Turbinia Google Cloud (GCP) disks processor.
 
     Args:
-      state (DFTimewolfState): recipe state.
+      state (state.DFTimewolfState): recipe state.
       name (Optional[str]): The module's runtime name.
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
@@ -264,7 +263,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase):
 
   # pylint: disable=arguments-differ
   def SetUp(self,
-            turbinia_config_file: None,
+            turbinia_config_file: str,
             disk_name: str,
             project: str,
             turbinia_zone: str,

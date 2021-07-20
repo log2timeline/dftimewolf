@@ -8,7 +8,7 @@ import importlib
 import logging
 import threading
 import traceback
-from typing import Callable, Dict, List, TYPE_CHECKING, Type, Any
+from typing import Callable, Dict, List, Sequence, TYPE_CHECKING, Type, Any, TypeVar, cast # pylint: disable=line-too-long
 
 from dftimewolf.config import Config
 from dftimewolf.lib import errors, utils
@@ -18,7 +18,7 @@ from dftimewolf.lib.modules import manager as modules_manager
 if TYPE_CHECKING:
   from dftimewolf.lib import module as dftw_module
   from dftimewolf.lib.containers import interface
-
+T = TypeVar("T", bound="interface.AttributeContainer")  # pylint: disable=invalid-name,line-too-long
 
 # TODO(tomchop): Consider changing this to `dftimewolf.state` if we ever need
 # more granularity.
@@ -44,7 +44,7 @@ class DFTimewolfState(object):
     store (dict[str, object]): arbitrary data for modules.
   """
 
-  def __init__(self, config: Config) -> None:
+  def __init__(self, config: Type[Config]) -> None:
     """Initializes a state."""
     super(DFTimewolfState, self).__init__()
     self.command_line_options = {}  # type: Dict[str, str]
@@ -211,8 +211,8 @@ class DFTimewolfState(object):
       self.store.setdefault(container.CONTAINER_TYPE, []).append(container)
 
   def GetContainers(self,
-                    container_class: Type["interface.AttributeContainer"],
-                    pop: bool=False) -> List["interface.AttributeContainer"]:
+                    container_class: Type[T],
+                    pop: bool=False) -> Sequence[T]:
     """Thread-safe method to retrieve data from the state's store.
 
     Args:
@@ -221,14 +221,15 @@ class DFTimewolfState(object):
           they are retrieved.
 
     Returns:
-      list[AttributeContainer]: attribute container objects provided in
+      Collection[AttributeContainer]: attribute container objects provided in
           the store that correspond to the container type.
     """
     with self._state_lock:
-      container_objects = self.store.get(container_class.CONTAINER_TYPE, [])
+      container_objects = cast(
+          List[T], self.store.get(container_class.CONTAINER_TYPE, []))
       if pop:
         self.store[container_class.CONTAINER_TYPE] = []
-      return container_objects
+      return tuple(container_objects)
 
   def _SetupModuleThread(self, module_definition: Dict[str, str]) -> None:
     """Calls the module's SetUp() function and sets a threading event for it.

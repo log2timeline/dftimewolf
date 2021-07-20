@@ -21,7 +21,7 @@ class FSPath(interface.AttributeContainer):
   """
   CONTAINER_TYPE = 'fspath'
 
-  def __init__(self, path: Optional[str]=None) -> None:
+  def __init__(self, path: str) -> None:
     """Initializes the FSPath object.
 
     Args:
@@ -41,8 +41,8 @@ class RemoteFSPath(FSPath):
   CONTAINER_TYPE = 'remotefspath'
 
   def __init__(self,
-               path: Optional[str]=None,
-               hostname: Optional[str]=None) -> None:
+               path: str,
+               hostname: str) -> None:
     """Initializes the FSPath object.
 
     Args:
@@ -134,7 +134,7 @@ class AWSLogs(interface.AttributeContainer):
 
   def __init__(self,
                path: str,
-               profile_name: str,
+               profile_name: Optional[str],
                query_filter: Optional[str],
                start_time: Optional[datetime],
                end_time: Optional[datetime]) -> None:
@@ -212,7 +212,10 @@ class File(interface.AttributeContainer):
   """
   CONTAINER_TYPE = 'file'
 
-  def __init__(self, name: str, path: str, description: None=None) -> None:
+  def __init__(self,
+               name: str,
+               path: str,
+               description: Optional[str]=None) -> None:
     """Initializes the attribute.
 
     Args:

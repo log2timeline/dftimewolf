@@ -7,7 +7,7 @@ import re
 import tarfile
 import tempfile
 from time import time
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Type
 
 from dftimewolf.config import Config
 
@@ -60,7 +60,10 @@ class DFTimewolfFormatterClass(
   pass
 
 
-def ImportArgsFromDict(value: Any, args: Dict[str, Any], config: Config) -> Any:
+def ImportArgsFromDict(value: Any,
+                       args: Dict[str,
+                       Any],
+                       config: Type[Config]) -> Any:
   """Replaces some arguments by those specified by a key-value dictionary.
 
   This function will be recursively called on a dictionary looking for any
