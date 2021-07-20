@@ -25,4 +25,4 @@ jobs:
         pipenv install -d
     - name: Run mypy on all files:
       run: |
-        mypy --ignore-missing-imports --strict --no-warn-unused-ignores -p dftimewolf -p utils
+        mypy -p dftimewolf
