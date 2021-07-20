@@ -1,5 +1,4 @@
 """Sanity checks for recipes."""
-from __future__ import print_function
 
 import datetime
 from typing import Optional
@@ -59,7 +58,7 @@ class SanityChecks(module.PreflightModule):
     except (ValueError) as exception:  # Date parsing failure
       self.ModuleError(str(exception), critical=True)
 
-  def CleanUp(self):
+  def CleanUp(self) -> None:
     # We don't need to do any cleanup
     return
 

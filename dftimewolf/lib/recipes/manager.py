@@ -110,7 +110,7 @@ class RecipesManager(object):
 
     self._recipes[recipe_name] = recipe
 
-  def RegisterRecipes(self, recipes):
+  def RegisterRecipes(self, recipes: List[Recipe]) -> None:
     """Registers recipes.
 
     The recipes are identified based on their lower case name.

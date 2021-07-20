@@ -3,27 +3,29 @@
 
 import json
 import tempfile
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, TYPE_CHECKING, List
 
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.module import BaseModule
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.state import DFTimewolfState
+
+if TYPE_CHECKING:
+  from dftimewolf.lib import state
 
 
 class GCPLoggingTimesketch(BaseModule):
   """Transforms Google Cloud Platform logs for Timesketch."""
 
-  def SetUp(self, *args, **kwargs):
-    """Sets up necessary module configuration options."""
-    # No configuration required.
-
   def __init__(self,
-               state: DFTimewolfState,
+               state: state.DFTimewolfState,
                name: Optional[str]=None,
                critical: bool=False) -> None:
     super(GCPLoggingTimesketch, self).__init__(
         state, name=name, critical=critical)
+
+  def SetUp(self, *args, **kwargs):  # type: ignore
+    """Sets up necessary module configuration options."""
+    # No configuration required.
 
   def _ProcessLogLine(self,
                       log_line: str,
@@ -241,7 +243,7 @@ class GCPLoggingTimesketch(BaseModule):
 
     timesketch_record['message'] = message
 
-  def _ProcessLogContainer(self, logs_container):
+  def _ProcessLogContainer(self, logs_container: containers.GCPLogs) -> None:
     """Processes a GCP logs container.
 
     Args:
@@ -269,9 +271,12 @@ class GCPLoggingTimesketch(BaseModule):
     container = containers.File(name=timeline_name, path=output_path)
     self.state.StoreContainer(container)
 
-  def Process(self):
+  def Process(self) -> None:
     """Processes GCP logs containers for insertion into Timesketch."""
-    logs_containers = self.state.GetContainers(containers.GCPLogs)
+    # Disable type checking as containers.GCPLogs is a subclass of
+    # containers.interface.AttributeContainers
+    logs_containers: List[containers.GCPLogs]
+    logs_containers = self.state.GetContainers(containers.GCPLogs)  # type: ignore  # pylint: disable=line-too-long
     for logs_container in logs_containers:
       self._ProcessLogContainer(logs_container)
 

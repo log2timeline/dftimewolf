@@ -4,7 +4,7 @@ import logging
 import os
 import random
 from logging import LogRecord
-from typing import List
+from typing import Any, List
 
 DEFAULT_LOG_FILE = os.path.join(os.sep, 'tmp', 'dftimewolf.log')
 MAX_BYTES = 5 * 1024 * 1024
@@ -57,7 +57,7 @@ class WolfFormatter(logging.Formatter):
       self,
       colorize: bool = True,
       random_color: bool = False,
-      **kwargs) -> None:
+      **kwargs: Any) -> None:
     """Initializes the WolfFormatter object.
 
     Args:

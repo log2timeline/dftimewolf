@@ -143,7 +143,7 @@ class TimesketchExporter(module.BaseModule):
     Returns:
       int: the sketch idenifier, or None if one was not available.
     """
-    attributes = self.state.GetContainers(containers.TicketAttribute)
+    attributes = self.state.GetContainers(containers.TicketAttribute)  # type: List[containers.TicketAttribute]  # pylint: disable=line-too-long
     for attribute in attributes:
       if attribute.name == self._SKETCH_ATTRIBUTE_NAME:
         sketch_match = re.search(r'sketch/(\d+)/', attribute.value)

@@ -2,7 +2,7 @@
 """Attribute container definitions."""
 
 from datetime import datetime
-from typing import Optional, Union, List, TYPE_CHECKING
+from typing import Optional, Union, List, TYPE_CHECKING, Dict, Any
 
 from dftimewolf.lib.containers import interface
 
@@ -10,6 +10,7 @@ if TYPE_CHECKING:
   from libcloudforensics.providers.aws.internal.ebs import AWSVolume
   from libcloudforensics.providers.azure.internal.compute import AZComputeDisk
   from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk
+  import pandas
 
 
 class FSPath(interface.AttributeContainer):
@@ -70,7 +71,7 @@ class Report(interface.AttributeContainer):
       module_name: str,
       text: str,
       text_format: str='plaintext',
-      attributes: Optional[List]=None) -> None:
+      attributes: Optional[List[Dict[str, Any]]]=None) -> None:
     """Initializes the analysis report.
 
     Args:
@@ -102,7 +103,7 @@ class GCPLogs(interface.AttributeContainer):
   """
   CONTAINER_TYPE = 'gcp_logs'
 
-  def __init__(self, path, filter_expression, project_name):
+  def __init__(self, path: str, filter_expression: str, project_name: str):
     """Initializes the GCP logs container.
 
     Args:
@@ -273,7 +274,8 @@ class DataFrame(interface.AttributeContainer):
 
   CONTAINER_TYPE = 'data_frame'
 
-  def __init__(self, data_frame, description, name):
+  def __init__(
+      self, data_frame: "pandas.DataFrame", description: str, name: str):
     super(DataFrame, self).__init__()
     self.data_frame = data_frame
     self.description = description
@@ -307,7 +309,7 @@ class WorkspaceLogs(interface.AttributeContainer):
   """
   CONTAINER_TYPE = 'workspace_logs'
 
-  def __init__(self, application_name, path, filter_expression):
+  def __init__(self, application_name: str, path: str, filter_expression: str):
     """Initializes the Workspace logs container.
 
     Args:

@@ -2,7 +2,8 @@
 """The attribute container interface."""
 from typing import List
 
-class AttributeContainer(object):
+
+class AttributeContainer():
   """The attribute container interface.
 
   This is the base class for those object that exists primarily as

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """Modules manager class."""
 
-from typing import Dict
+from typing import Dict, Type, List
+from dftimewolf.lib import module
 
 class ModulesManager(object):
   """Modules manager."""
@@ -9,10 +10,10 @@ class ModulesManager(object):
   # Allow a previously registered module to be overridden.
   ALLOW_MODULE_OVERRIDE = False
 
-  _module_classes = {}  # type: Dict[str, type]
+  _module_classes = {}  # type: Dict[str, Type[module.BaseModule]]
 
   @classmethod
-  def DeregisterModule(cls, module_class):
+  def DeregisterModule(cls, module_class: Type[module.BaseModule]) -> None:
     """Deregisters a module class.
 
     The module classes are identified based on their class name.
@@ -31,7 +32,7 @@ class ModulesManager(object):
     del cls._module_classes[class_name]
 
   @classmethod
-  def GetModuleByName(cls, name):
+  def GetModuleByName(cls, name: str) -> Type[module.BaseModule]:
     """Retrieves a specific module by its name.
 
     Args:
@@ -41,10 +42,10 @@ class ModulesManager(object):
       type: the module class, which is a subclass of BaseModule, or None if
           no corresponding module was found.
     """
-    return cls._module_classes.get(name, None)
+    return cls._module_classes[name]
 
   @classmethod
-  def RegisterModule(cls, module_class):
+  def RegisterModule(cls, module_class: Type[module.BaseModule]) -> None:
     """Registers a module class.
 
     The module classes are identified based on their class name.
@@ -63,7 +64,8 @@ class ModulesManager(object):
     cls._module_classes[class_name] = module_class
 
   @classmethod
-  def RegisterModules(cls, module_classes):
+  def RegisterModules(
+      cls, module_classes: List[Type[module.BaseModule]]) -> None:
     """Registers module classes.
 
     The module classes are identified based on their class name.

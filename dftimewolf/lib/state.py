@@ -8,14 +8,17 @@ import importlib
 import logging
 import threading
 import traceback
-from typing import Callable, Dict, List, Type, Any
+from typing import Callable, Dict, List, TYPE_CHECKING, Type, Any
 
 from dftimewolf.config import Config
 from dftimewolf.lib import errors, utils
-from dftimewolf.lib import module as dftw_module
-from dftimewolf.lib.containers import interface
 from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.modules import manager as modules_manager
+
+if TYPE_CHECKING:
+  from dftimewolf.lib import module as dftw_module
+  from dftimewolf.lib.containers import interface
+
 
 # TODO(tomchop): Consider changing this to `dftimewolf.state` if we ever need
 # more granularity.
@@ -48,16 +51,16 @@ class DFTimewolfState(object):
     self._cache = {}  # type: Dict[str, str]
     self._module_pool = {}  # type: Dict[str, dftw_module.BaseModule]
     self._state_lock = threading.Lock()
-    self._threading_event_per_module = {}  # type: Dict[str, str]
+    self._threading_event_per_module = {}  # type: Dict[str, threading.Event]
     self.config = config
     self.errors = []  # type: List[DFTimewolfError]
     self.global_errors = [] # type: List[DFTimewolfError]
     self.recipe = {} # type: Dict[str, Any]
-    self.store = {}  # type: Dict[str, Any]
-    self.streaming_callbacks = {}  # type: Dict[Type[interface.AttributeContainer], List[Callable]]  # pylint: disable=line-too-long
+    self.store = {}  # type: Dict[str, List[interface.AttributeContainer]]
+    self.streaming_callbacks = {}  # type: Dict[Type[interface.AttributeContainer], List[Callable[[Any], Any]]]  # pylint: disable=line-too-long
     self._abort_execution = False
 
-  def _InvokeModulesInThreads(self, callback: Callable) -> None:
+  def _InvokeModulesInThreads(self, callback: Callable[[Any], Any]) -> None:
     """Invokes the callback function on all the modules in separate threads.
 
     Args:
@@ -126,7 +129,7 @@ class DFTimewolfState(object):
         runtime_name = module_name
       self._module_pool[runtime_name] = module_class(self, name=runtime_name)
 
-  def FormatExecutionPlan(self):
+  def FormatExecutionPlan(self) -> str:
     """Formats execution plan.
 
     Returns information about loaded modules and their corresponding arguments
@@ -163,7 +166,7 @@ class DFTimewolfState(object):
 
     return plan
 
-  def LogExecutionPlan(self):
+  def LogExecutionPlan(self) -> None:
     """Logs the result of FormatExecutionPlan() using the base logger."""
     for line in self.FormatExecutionPlan().split('\n'):
       logger.debug(line)
@@ -198,7 +201,7 @@ class DFTimewolfState(object):
     with self._state_lock:
       return self._cache.get(name, default_value)
 
-  def StoreContainer(self, container: interface.AttributeContainer) -> None:
+  def StoreContainer(self, container: "interface.AttributeContainer") -> None:
     """Thread-safe method to store data in the state's store.
 
     Args:
@@ -208,8 +211,8 @@ class DFTimewolfState(object):
       self.store.setdefault(container.CONTAINER_TYPE, []).append(container)
 
   def GetContainers(self,
-                    container_class: Type[interface.AttributeContainer],
-                    pop: bool=False) -> List[interface.AttributeContainer]:
+                    container_class: Type["interface.AttributeContainer"],
+                    pop: bool=False) -> List["interface.AttributeContainer"]:
     """Thread-safe method to retrieve data from the state's store.
 
     Args:
@@ -222,12 +225,12 @@ class DFTimewolfState(object):
           the store that correspond to the container type.
     """
     with self._state_lock:
-      containers = self.store.get(container_class.CONTAINER_TYPE, [])
+      container_objects = self.store.get(container_class.CONTAINER_TYPE, [])
       if pop:
         self.store[container_class.CONTAINER_TYPE] = []
-      return containers
+      return container_objects
 
-  def _SetupModuleThread(self, module_definition):
+  def _SetupModuleThread(self, module_definition: Dict[str, str]) -> None:
     """Calls the module's SetUp() function and sets a threading event for it.
 
     Callback for _InvokeModulesInThreads.
@@ -270,7 +273,7 @@ class DFTimewolfState(object):
     # Note that vars() copies the values of argparse.Namespace to a dict.
     self._InvokeModulesInThreads(self._SetupModuleThread)
 
-  def _RunModuleThread(self, module_definition):
+  def _RunModuleThread(self, module_definition: Dict[str, str]) -> None:
     """Runs the module's Process() function.
 
     Callback for _InvokeModulesInThreads.
@@ -349,7 +352,7 @@ class DFTimewolfState(object):
       finally:
         self.CheckErrors(is_global=True)
 
-  def InstantiateModule(self, module_name):
+  def InstantiateModule(self, module_name: str) -> "dftw_module.BaseModule":
     """Instantiates an arbitrary dfTimewolf module.
 
     Args:
@@ -359,6 +362,7 @@ class DFTimewolfState(object):
       BaseModule: An instance of a dftimewolf Module, which is a subclass of
           BaseModule.
     """
+    module_class: Type["dftw_module.BaseModule"]
     module_class = modules_manager.ModulesManager.GetModuleByName(module_name)
     return module_class(self)
 
@@ -366,7 +370,10 @@ class DFTimewolfState(object):
     """Performs the actual processing for each module in the module pool."""
     self._InvokeModulesInThreads(self._RunModuleThread)
 
-  def RegisterStreamingCallback(self, target, container_type):
+  def RegisterStreamingCallback(
+      self,
+      target: Callable[["interface.AttributeContainer"], Any],
+      container_type: Type["interface.AttributeContainer"]) -> None:
     """Registers a callback for a type of container.
 
     The function to be registered should a single parameter of type
@@ -381,7 +388,7 @@ class DFTimewolfState(object):
       self.streaming_callbacks[container_type] = []
     self.streaming_callbacks[container_type].append(target)
 
-  def StreamContainer(self, container: interface.AttributeContainer) -> None:
+  def StreamContainer(self, container: "interface.AttributeContainer") -> None:
     """Streams a container to the callbacks that are registered to handle it.
 
     Args:
@@ -401,7 +408,7 @@ class DFTimewolfState(object):
       self._abort_execution = True
     self.errors.append(error)
 
-  def CleanUp(self):
+  def CleanUp(self) -> None:
     """Cleans up after running a module.
 
     The state's output becomes the input for the next stage. Any errors are

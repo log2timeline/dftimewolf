@@ -29,7 +29,7 @@ class Recipe(object):
     super(Recipe, self).__init__()
     self.args = args
     self.contents = contents
-    self.name = contents['name']
+    self.name = contents['name']  # type: str
     self.description = description
 
   def GetHelpString(self) -> str:

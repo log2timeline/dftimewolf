@@ -5,12 +5,18 @@ import mimetypes
 import os
 import re
 import tempfile
+from typing import TYPE_CHECKING, Optional, Set
 
 import PyPDF2
 
 from dftimewolf.lib import module
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.containers import containers
+
+
+if TYPE_CHECKING:
+  from dftimewolf.lib import state
+  from dftimewolf.lib.containers import interface
 
 class GrepperSearch(module.BaseModule):
   """Processes a list of file paths with to search for
@@ -20,24 +26,31 @@ class GrepperSearch(module.BaseModule):
   output: filepath and keyword match, to stdout (final_output).
   """
 
-  def __init__(self, state, name=None, critical=False):
-    super(GrepperSearch, self).__init__(state, name=name, critical=critical)
-    self._keywords = None
-    self._output_path = None
-    self._final_output = None
+  def __init__(self,
+               state: "state.DFTimewolfState",
+               name: Optional[str]=None,
+               critical: bool=False):
 
-  def SetUp(self, keywords=None):  # pylint: disable=arguments-differ
+    super(GrepperSearch, self).__init__(state, name=name, critical=critical)
+    self._keywords: str
+    self._output_path: str
+    self._final_output: str
+
+  def SetUp(self, keywords: str) -> None:  # pylint: disable=arguments-differ
     """Sets up the _keywords attribute.
 
     Args:
-      keywords (Optional[str]): pipe separated keywords to search
+      keywords (str): pipe separated keywords to search
     """
     self._keywords = keywords
     self._output_path = tempfile.mkdtemp()
 
-  def Process(self):
+  def Process(self) -> None:
     """Executes grep on the module input."""
-    for file_container in self.state.GetContainers(containers.File):
+    # ignoring type checking below as containers.File is a sublcass
+    # of containers.interface.AttributeContainer
+    file_container: containers.File
+    for file_container in self.state.GetContainers(containers.File):  # type: ignore   # pylint: disable=line-too-long
       path = file_container.path
       log_file_path = os.path.join(self._output_path, 'grepper.log')
       self.logger.info('Log file: {0:s}'.format(log_file_path))
@@ -68,7 +81,7 @@ class GrepperSearch(module.BaseModule):
         self.ModuleError(str(exception), critical=True)
       # Catch all remaining errors since we want to gracefully report them
 
-  def GrepPDF(self, path):
+  def GrepPDF(self, path:str) -> Set[str]:
     """Parses a PDF files text content for keywords.
 
     Args:

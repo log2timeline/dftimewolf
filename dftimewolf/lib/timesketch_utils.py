@@ -1,15 +1,23 @@
 # -*- coding: utf-8 -*-
 """Utility functions to get a Timesketch API client and an importer client."""
 import threading
+from typing import TYPE_CHECKING
 
+from timesketch_api_client import client
 from timesketch_api_client import config
 from timesketch_api_client import crypto
+
+from dftimewolf.lib.errors import DFTimewolfError
+
+if TYPE_CHECKING:
+  from dftimewolf.lib import state
 
 
 LOCK = threading.Lock()
 
 
-def GetApiClient(state, token_password=''):
+def GetApiClient(state: state.DFTimewolfState,
+                 token_password: str='') -> client.TimesketchApi:
   """Returns a Timesketch API client using thread safe methods.
 
   This function either returns an API client that has been stored
@@ -41,18 +49,17 @@ def GetApiClient(state, token_password=''):
     try:
       config.configure_missing_parameters(
           config_assistant=assistant, token_password=token_password)
-    except OSError:
-      state.ModuleError(
-          'Unable to get a Timesketch API Client', critical=False)
-      return None
+    except OSError as exception:
+      raise DFTimewolfError(
+          'Unable to get a Timesketch API Client',
+          critical=False) from exception
 
 
     ts_client = assistant.get_client(token_password=token_password)
 
     if not ts_client:
-      state.ModuleError(
+      raise DFTimewolfError(
           'Unable to get a Timesketch API Client', critical=False)
-      return None
 
     assistant.save_config()
 
