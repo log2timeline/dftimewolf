@@ -170,7 +170,7 @@ class AWSCollector(module.BaseModule):
     self.analysis_vm, _ = aws_forensics.StartAnalysisVm(
         analysis_vm_name,
         self.analysis_zone,
-        boot_volume_size,
+        int(boot_volume_size),
         ami=ami,
         cpu_cores=cpu_cores,
         dst_profile=self.analysis_profile_name,

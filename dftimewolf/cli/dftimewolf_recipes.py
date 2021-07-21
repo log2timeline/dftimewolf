@@ -278,6 +278,10 @@ class DFTimewolfTool(object):
     """Calls the preflight's CleanUp functions."""
     self._state.CleanUpPreflights()
 
+  def RecipeManager(self):
+    """Returns the recipes manager."""
+    return self._recipes_manager
+
 def SignalHandler(*unused_argvs):
   """Catches Ctrl + C to exit cleanly."""
   sys.stderr.write("\nCtrl^C caught, bailing...\n")

@@ -5,6 +5,7 @@ import io
 import glob
 import json
 import os
+from typing import Dict
 
 from dftimewolf.lib import errors
 from dftimewolf.lib import resources
@@ -120,3 +121,7 @@ class RecipesManager(object):
     """
     for recipe in recipes:
       self.RegisterRecipe(recipe)
+
+  def Recipes(self) -> Dict[str, resources.Recipe]:
+    """Returns recipes object."""
+    return self._recipes
