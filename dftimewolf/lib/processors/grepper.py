@@ -34,7 +34,7 @@ class GrepperSearch(module.BaseModule):
     super(GrepperSearch, self).__init__(state, name=name, critical=critical)
     self._keywords: str
     self._output_path: str
-    self._final_output: str
+    self._final_output = ''
 
   def SetUp(self, keywords: str) -> None:  # pylint: disable=arguments-differ
     """Sets up the _keywords attribute.
