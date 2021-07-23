@@ -12,6 +12,7 @@ mypy = "*"
 yapf = "*"
 types-protobuf = "*"
 types-filelock = "*"
+types-PyYAML = "*"
 
 [packages]
 beautifulsoup4 = "*"
