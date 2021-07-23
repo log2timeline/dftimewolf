@@ -3,11 +3,22 @@
 
 import time
 
+from typing import List, Optional, TYPE_CHECKING
+
 from dftimewolf.lib import module
 from dftimewolf.lib import timesketch_utils
 from dftimewolf.lib import utils
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
+
+
+if TYPE_CHECKING:
+  from dftimewolf.lib import state as dftw_state
+  from timesketch_api_client import client
+  from timesketch_api_client import sketch as ts_sketch
+  from timesketch_api_client import story as ts_story
+  from timesketch_api_client import search as ts_search
+  from timesketch_api_client import aggregation as ts_aggregation
 
 
 class TimesketchEnhancer(module.BaseModule):
@@ -30,26 +41,29 @@ class TimesketchEnhancer(module.BaseModule):
   # Name given to all report containers.
   _REPORT_NAME = 'TimesketchEnhancer'
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+               state: "dftw_state.DFTimewolfState",
+               name: Optional[str]=None,
+               critical: bool=False):
     super(TimesketchEnhancer, self).__init__(
         state, name=name, critical=critical)
-    self.timesketch_api = None
+    self.timesketch_api: "client.TimesketchApi"
 
-    self._aggregations_to_skip = []
-    self._formatter = None
+    self._aggregations_to_skip = []  # type: List[str]
+    self._formatter: utils.FormatterInterface
     self._include_stories = False
     self._max_checks = self._ANALYZER_MAX_CHECKS
     self._wait_for_analyzers = True
-    self._searches_to_skip = []
+    self._searches_to_skip = []  # type: List[str]
 
   def SetUp(self,  # pylint: disable=arguments-differ
-            wait_for_analyzers=True,
-            searches_to_skip='',
-            aggregations_to_skip='',
-            include_stories=False,
-            token_password='',
-            max_checks=0,
-            formatter='html'):
+            wait_for_analyzers: bool=True,
+            searches_to_skip: str='',
+            aggregations_to_skip: str='',
+            include_stories: bool=False,
+            token_password: str='',
+            max_checks: int=0,
+            formatter: str='html') -> None:
     """Sets up a Timesketch Enhancer module.
 
     Args:
@@ -105,13 +119,14 @@ class TimesketchEnhancer(module.BaseModule):
     else:
       self._formatter = utils.HTMLFormatter()
 
-  def _GetSketchURL(self, sketch):
+  def _GetSketchURL(self, sketch: "ts_sketch.Sketch") -> str:
     """Returns a URL to access a sketch."""
     api_root = sketch.api.api_root
     ts_url, _, _ = api_root.partition('/api/v1')
     return '{0:s}/sketch/{1:d}/'.format(ts_url, sketch.id)
 
-  def _GenerateAggregationString(self, aggregations):
+  def _GenerateAggregationString(
+      self, aggregations: List["ts_aggregation.Aggregation"]) -> str:
     """Returns a string with aggregation data.
 
     The function runs through all saved aggregations in a sketch
@@ -140,7 +155,8 @@ class TimesketchEnhancer(module.BaseModule):
 
     return '\n'.join(aggregation_strings)
 
-  def _ProcessAggregations(self, aggregations):
+  def _ProcessAggregations(
+     self, aggregations: List["ts_aggregation.Aggregation"]) -> None:
     """Extract and store dataframes from aggregations as containers.
 
     The function runs through all saved aggregations in a sketch
@@ -178,7 +194,8 @@ class TimesketchEnhancer(module.BaseModule):
           description='Timesketch Aggregation: {0:s}'.format(
               aggregation.name), name=self._REPORT_NAME))
 
-  def _GenerateStoryString(self, stories, sketch_url):
+  def _GenerateStoryString(
+      self, stories: List["ts_story.Story"], sketch_url: str) -> str:
     """Returns a string with story data.
 
     The function runs through all saved stories in a sketch and returns
@@ -200,7 +217,7 @@ class TimesketchEnhancer(module.BaseModule):
 
     return '\n'.join(story_strings)
 
-  def _ProcessStories(self, stories):
+  def _ProcessStories(self, stories: List["ts_story.Story"]) -> None:
     """Extracts story content from a list of stories and saves as a report.
 
     The function runs through all saved stories in a sketch and adds a
@@ -222,7 +239,8 @@ class TimesketchEnhancer(module.BaseModule):
           text_format=self._formatter.FORMAT,
           text=story_string))
 
-  def _GenerateSavedSearchString(self, saved_searches, sketch_url):
+  def _GenerateSavedSearchString(
+      self, saved_searches: List["ts_search.Search"], sketch_url: str) -> str:
     """Returns a string with saved search data.
 
     The function runs through all saved searches in a sketch and returns
@@ -255,7 +273,8 @@ class TimesketchEnhancer(module.BaseModule):
 
     return '\n'.join(search_strings)
 
-  def _ProcessSavedSearches(self, saved_searches):
+  def _ProcessSavedSearches(
+      self, saved_searches: List["ts_search.Search"]) -> None:
     """Extract events from saved searches and store results as a container.
 
     The function runs through all saved searches in a sketch and queries
@@ -300,7 +319,7 @@ class TimesketchEnhancer(module.BaseModule):
               description='Timesketch Saved Search: {0:s} - {1:s}'.format(
                   saved_search.name, saved_search.description)))
 
-  def _WaitForAnalyzers(self, sketch):
+  def _WaitForAnalyzers(self, sketch: "ts_sketch.Sketch") -> None:
     """Wait for all analyzers to complete their run.
 
     Args:
@@ -328,7 +347,7 @@ class TimesketchEnhancer(module.BaseModule):
       check_number += 1
       time.sleep(self._ANALYZER_SECONDS_BETWEEN_CHECK)
 
-  def Process(self):
+  def Process(self) -> None:
     """Executes a Timesketch enhancer module."""
     if not self._wait_for_analyzers:
       self.logger.warning(

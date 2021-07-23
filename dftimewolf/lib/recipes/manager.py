@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 """Recipes manager."""
 
-import io
 import glob
+import io
 import json
 import os
-from typing import Dict
+from io import StringIO, TextIOWrapper
+from typing import List, Union, Dict
 
-from dftimewolf.lib import errors
-from dftimewolf.lib import resources
+from dftimewolf.lib import errors, resources
+from dftimewolf.lib.resources import Recipe
 
 
 class RecipesManager(object):
@@ -17,9 +18,10 @@ class RecipesManager(object):
   # Allow a previously registered recipe to be overridden.
   ALLOW_RECIPE_OVERRIDE = False
 
-  _recipes = {}
+  _recipes = {}  # type: Dict[str, Recipe]
 
-  def _ReadRecipeFromFileObject(self, file_object):
+  def _ReadRecipeFromFileObject(
+      self, file_object: Union[StringIO, TextIOWrapper]) -> Recipe:
     """Reads a recipe from a JSON file-like object.
 
     Args:
@@ -38,7 +40,7 @@ class RecipesManager(object):
 
     return resources.Recipe(description, json_dict, args)
 
-  def DeregisterRecipe(self, recipe):
+  def DeregisterRecipe(self, recipe: Recipe) -> None:
     """Deregisters a recipe.
 
     The recipe are identified based on their lower case name.
@@ -55,7 +57,7 @@ class RecipesManager(object):
 
     del self._recipes[recipe_name]
 
-  def GetRecipes(self):
+  def GetRecipes(self) -> List[Recipe]:
     """Retrieves the registered recipes.
 
     Returns:
@@ -63,7 +65,7 @@ class RecipesManager(object):
     """
     return sorted(self._recipes.values(), key=lambda recipe: recipe.name)
 
-  def ReadRecipeFromFile(self, path):
+  def ReadRecipeFromFile(self, path: str) -> None:
     """Reads a recipe from a JSON file.
 
     Args:
@@ -82,7 +84,7 @@ class RecipesManager(object):
 
     self.RegisterRecipe(recipe)
 
-  def ReadRecipesFromDirectory(self, path):
+  def ReadRecipesFromDirectory(self, path: str) -> None:
     """Reads recipes from a directory containing JSON files.
 
     Args:
@@ -91,7 +93,7 @@ class RecipesManager(object):
     for file_path in glob.glob(os.path.join(path, '*.json')):
       self.ReadRecipeFromFile(file_path)
 
-  def RegisterRecipe(self, recipe):
+  def RegisterRecipe(self, recipe: Recipe) -> None:
     """Registers a recipe.
 
     The recipe are identified based on their lower case name.
@@ -108,7 +110,7 @@ class RecipesManager(object):
 
     self._recipes[recipe_name] = recipe
 
-  def RegisterRecipes(self, recipes):
+  def RegisterRecipes(self, recipes: List[Recipe]) -> None:
     """Registers recipes.
 
     The recipes are identified based on their lower case name.

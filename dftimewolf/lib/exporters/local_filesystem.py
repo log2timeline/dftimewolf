@@ -4,11 +4,12 @@
 import os
 import shutil
 import tempfile
+from typing import List, Optional
 
+from dftimewolf.lib import module, utils
 from dftimewolf.lib.containers import containers
-from dftimewolf.lib import module
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib import utils
+from dftimewolf.lib.state import DFTimewolfState
 
 
 class LocalFilesystemCopy(module.BaseModule):
@@ -18,15 +19,20 @@ class LocalFilesystemCopy(module.BaseModule):
   output: The directory in which the files have been copied.
   """
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str]=None,
+               critical: bool=False) -> None:
     """Initializes a local file system exporter module."""
     super(LocalFilesystemCopy, self).__init__(
         state, name=name, critical=critical)
-    self._target_directory = None
-    self._compress = None
+    self._target_directory = str()
+    self._compress = False
 
   # pylint: disable=arguments-differ
-  def SetUp(self, target_directory=None, compress=False):
+  def SetUp(self,
+            target_directory: Optional[str]=None,
+            compress: bool=False) -> None:
     """Sets up the _target_directory attribute.
 
     Args:
@@ -34,17 +40,16 @@ class LocalFilesystemCopy(module.BaseModule):
           collected files will be copied.
       compress (bool): Whether to compress the resulting directory or not
     """
-    self._target_directory = target_directory
-    if not self._target_directory:
-      self._target_directory = tempfile.mkdtemp()
     self._compress = compress
     if not target_directory:
-      target_directory = tempfile.mkdtemp(prefix='dftimewolf_local_fs')
-    elif os.path.exists(target_directory):
-      target_directory = os.path.join(target_directory, 'dftimewolf')
-      os.makedirs(target_directory, exist_ok=True)
+      self._target_directory = tempfile.mkdtemp(prefix='dftimewolf_local_fs')
+    else:
+      if os.path.exists(target_directory):
+        target_directory = os.path.join(target_directory, 'dftimewolf')
+        os.makedirs(target_directory, exist_ok=True)
+      self._target_directory = target_directory
 
-  def Process(self):
+  def Process(self) -> None:
     """Checks whether the paths exists and updates the state accordingly."""
     for file_container in self.state.GetContainers(containers.File, pop=True):
       self.logger.info('{0:s} -> {1:s}'.format(
@@ -70,10 +75,11 @@ class LocalFilesystemCopy(module.BaseModule):
           self.logger.info('{0:s} was compressed into {1:s}'.format(
               file_container.path, tar_file))
         except RuntimeError as exception:
-          self.ModuleError(exception, critical=True)
+          self.ModuleError(str(exception), critical=True)
           return
 
-  def _CopyFileOrDirectory(self, source, destination_directory):
+  def _CopyFileOrDirectory(
+      self, source: str, destination_directory: str) -> List[str]:
     """Recursively copies files from source to destination_directory.
 
     Files will be copied to `destination_directory`'s root. Directories
