@@ -1,9 +1,11 @@
 """Opens an SSH connection to a server using ControlMaster directives."""
 
 import subprocess
+from typing import Optional
 
 from dftimewolf.lib import module
 from dftimewolf.lib.modules import manager as modules_manager
+from dftimewolf.lib.state import DFTimewolfState
 
 
 class SSHMultiplexer(module.PreflightModule):
@@ -15,14 +17,20 @@ class SSHMultiplexer(module.PreflightModule):
     id_file (str): SSH private key to use.
   """
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str]=None,
+               critical: bool=False) -> None:
     super(SSHMultiplexer, self).__init__(
         state, name=name, critical=critical)
-    self.hostname = None
-    self.user = None
-    self.id_file = None
+    self.hostname = str()
+    self.user = None # type: Optional[str]
+    self.id_file = None  # type: Optional[str]
 
-  def SetUp(self, user, hostname, id_file):  # pylint: disable=arguments-differ
+  def SetUp(self,  # pylint: disable=arguments-differ
+            hostname: str,
+            user: Optional[str]=None,
+            id_file: Optional[str]=None) -> None:
     """Sets up the SSH multiplexer module's attributes.
 
     Args:
@@ -34,7 +42,7 @@ class SSHMultiplexer(module.PreflightModule):
     self.user = user
     self.id_file = id_file
 
-  def Process(self):
+  def Process(self) -> None:
     """Open a shared SSH connection."""
     command = ['ssh', '-q']
     if self.user:
@@ -54,7 +62,7 @@ class SSHMultiplexer(module.PreflightModule):
       self.ModuleError(
         'Unable to SSH to host {0:s}.'.format(self.hostname), critical=True)
 
-  def CleanUp(self):
+  def CleanUp(self) -> None:
     """Close the shared SSH connection."""
     command = ['ssh',
                '-O', 'exit',

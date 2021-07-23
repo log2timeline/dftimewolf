@@ -10,12 +10,16 @@ from logging import handlers
 import os
 import signal
 import sys
+from typing import TYPE_CHECKING, List, Optional, Dict, Any
 
 # pylint: disable=wrong-import-position
 from dftimewolf import config
 
 from dftimewolf.lib import errors
 from dftimewolf.lib import utils
+
+if TYPE_CHECKING:
+  from dftimewolf.lib import state as dftw_state
 
 
 MODULES = {
@@ -65,23 +69,23 @@ class DFTimewolfTool(object):
   _DEFAULT_DATA_FILES_PATH = os.path.join(
       os.sep, 'usr', 'local', 'share', 'dftimewolf')
 
-  def __init__(self):
+  def __init__(self) -> None:
     """Initializes a DFTimewolf tool."""
     super(DFTimewolfTool, self).__init__()
-    self._command_line_options = None
-    self._data_files_path = None
+    self._command_line_options: Optional[argparse.Namespace]
+    self._data_files_path = ''
     self._recipes_manager = recipes_manager.RecipesManager()
-    self._recipe = None
-    self._state = None
+    self._recipe = {}  # type: Dict[str, Any]
+    self._state: "dftw_state.DFTimewolfState"
 
     self._DetermineDataFilesPath()
 
   @property
-  def state(self):
+  def state(self) -> "dftw_state.DFTimewolfState":
     """Returns the internal state object."""
     return self._state
 
-  def _AddRecipeOptions(self, argument_parser):
+  def _AddRecipeOptions(self, argument_parser: argparse.ArgumentParser) -> None:
     """Adds the recipe options to the argument group.
 
     Args:
@@ -107,7 +111,7 @@ class DFTimewolfTool(object):
       # so that they can in turn be overridden in the commandline
       subparser.set_defaults(**config.Config.GetExtra())
 
-  def _DetermineDataFilesPath(self):
+  def _DetermineDataFilesPath(self) -> None:
     """Determines the data files path.
 
     Data path is specified in the DFTIMEWOLF_DATA environment variable. If the
@@ -148,7 +152,7 @@ class DFTimewolfTool(object):
     logger.debug("Recipe data path: {0:s}".format(data_files_path))
     self._data_files_path = data_files_path
 
-  def _GenerateHelpText(self):
+  def _GenerateHelpText(self) -> str:
     """Generates help text with alphabetically sorted recipes.
 
     Returns:
@@ -166,7 +170,7 @@ class DFTimewolfTool(object):
 
     return help_text
 
-  def _LoadConfigurationFromFile(self, configuration_file_path):
+  def _LoadConfigurationFromFile(self, configuration_file_path: str) -> None:
     """Loads a configuration from file.
 
     Args:
@@ -180,7 +184,7 @@ class DFTimewolfTool(object):
     except errors.BadConfigurationError as exception:
       logger.warning('{0!s}'.format(exception))
 
-  def LoadConfiguration(self):
+  def LoadConfiguration(self) -> None:
     """Loads the configuration.
 
     The following paths are tried. Values loaded last take precedence.
@@ -210,7 +214,7 @@ class DFTimewolfTool(object):
     if env_config:
       self._LoadConfigurationFromFile(env_config)
 
-  def ParseArguments(self, arguments):
+  def ParseArguments(self, arguments: List[str]) -> None:
     """Parses the command line arguments.
 
     Args:
@@ -247,26 +251,26 @@ class DFTimewolfTool(object):
 
     self._state.command_line_options = vars(self._command_line_options)
 
-  def RunPreflights(self):
+  def RunPreflights(self) -> None:
     """Runs preflight modules."""
     logger.info('Running preflights...')
     self._state.RunPreflights()
 
-  def ReadRecipes(self):
+  def ReadRecipes(self) -> None:
     """Reads the recipe files."""
     if os.path.isdir(self._data_files_path):
       recipes_path = os.path.join(self._data_files_path, 'recipes')
       if os.path.isdir(recipes_path):
         self._recipes_manager.ReadRecipesFromDirectory(recipes_path)
 
-  def RunModules(self):
+  def RunModules(self) -> None:
     """Runs the modules."""
     logger.info('Running modules...')
     self._state.RunModules()
     logger.info('Recipe {0:s} executed successfully!'.format(
         self._recipe['name']))
 
-  def SetupModules(self):
+  def SetupModules(self) -> None:
     """Sets up the modules."""
     # TODO: refactor to only load modules that are used by the recipe.
 
@@ -274,17 +278,17 @@ class DFTimewolfTool(object):
     self._state.SetupModules()
     logger.info('Modules successfully set up!')
 
-  def CleanUpPreflights(self):
+  def CleanUpPreflights(self) -> None:
     """Calls the preflight's CleanUp functions."""
     self._state.CleanUpPreflights()
 
-def SignalHandler(*unused_argvs):
+def SignalHandler(*unused_argvs: Any) -> None:
   """Catches Ctrl + C to exit cleanly."""
   sys.stderr.write("\nCtrl^C caught, bailing...\n")
   sys.exit(0)
 
 
-def SetupLogging():
+def SetupLogging() -> None:
   """Sets up a logging handler with dftimewolf's custom formatter."""
   # Clear root handlers (for dependencies that are setting them)
   root_log = logging.getLogger()
@@ -317,7 +321,7 @@ def SetupLogging():
       'Logging to stdout and {0:s}'.format(logging_utils.DEFAULT_LOG_FILE))
 
 
-def Main():
+def Main() -> bool:
   """Main function for DFTimewolf.
 
   Returns:

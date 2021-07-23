@@ -3,6 +3,7 @@
 import json
 import tempfile
 import time
+from typing import Optional, Dict, Any
 
 from google.api_core import exceptions as google_api_exceptions
 from google.auth import exceptions as google_auth_exceptions
@@ -13,13 +14,14 @@ from googleapiclient.errors import HttpError
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
+from dftimewolf.lib.state import DFTimewolfState
 
 
 # Monkey patching the ProtobufEntry because of various issues, notably
 # https://github.com/googleapis/google-cloud-python/issues/7918
-def _CustomToAPIRepr(self):
+def _CustomToAPIRepr(self: entries.ProtobufEntry) -> Dict[str, Any]:
   """API repr (JSON format) for entry."""
-  info = super(entries.ProtobufEntry, self).to_api_repr()
+  info = super(entries.ProtobufEntry, self).to_api_repr()  # type: Dict[str, Any]  # pylint: disable=line-too-long
   info['protoPayload'] = self.payload
   return info
 
@@ -30,14 +32,17 @@ entries.ProtobufEntry.to_api_repr = _CustomToAPIRepr
 class GCPLogsCollector(module.BaseModule):
   """Collector for Google Cloud Platform logs."""
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str]=None,
+               critical: bool=False) -> None:
     """Initializes a GCP logs collector."""
     super(GCPLogsCollector, self).__init__(state, name=name, critical=critical)
-    self._filter_expression = None
-    self._project_name = None
+    self._filter_expression = ''
+    self._project_name = ''
 
   # pylint: disable=arguments-differ
-  def SetUp(self, project_name, filter_expression):
+  def SetUp(self, project_name: str, filter_expression: str) -> None:
     """Sets up a a GCP logs collector.
 
     Args:
@@ -47,7 +52,7 @@ class GCPLogsCollector(module.BaseModule):
     self._project_name = project_name
     self._filter_expression = filter_expression
 
-  def Process(self):
+  def Process(self) -> None:
     """Copies logs from a cloud project."""
 
     output_file = tempfile.NamedTemporaryFile(

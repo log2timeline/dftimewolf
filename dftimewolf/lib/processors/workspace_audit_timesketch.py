@@ -6,11 +6,15 @@ import tempfile
 import json
 import string
 
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
+
 from dftimewolf.lib.module import BaseModule
 from dftimewolf.lib.containers import containers
 
 from dftimewolf.lib.modules import manager as modules_manager
 
+if TYPE_CHECKING:
+  from dftimewolf.lib import state
 
 class WorkspaceAuditTimesketch(BaseModule):
   """Transforms Google Workspace logs for Timesketch."""
@@ -18,18 +22,22 @@ class WorkspaceAuditTimesketch(BaseModule):
   _FORMAT_STRINGS_PATH = os.path.join(os.path.dirname(__file__),
       'workspace_format_strings.json')
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+               state: "state.DFTimewolfState",
+               name: Optional[str]=None,
+               critical: bool=False):
     super(WorkspaceAuditTimesketch, self).__init__(
         state, name=name, critical=critical)
 
     with open(self._FORMAT_STRINGS_PATH, 'r') as formatters_json:
       self._all_application_format_strings = json.load(formatters_json)
 
-  def SetUp(self, *args, **kwargs):
+  def SetUp(self, *args, **kwargs): # type: ignore
     """Sets up necessary module configuration options."""
     # No configuration required.
 
-  def _ExtractActorInformation(self, actor_dict):
+  def _ExtractActorInformation(
+      self, actor_dict: Dict[str, str]) -> Dict[str, Optional[str]]:
     """Extracts actor information from a Workspace log record.
 
     Args:
@@ -45,7 +53,8 @@ class WorkspaceAuditTimesketch(BaseModule):
         'actor_callerType': actor_dict.get('callerType'),
         'actor_key': actor_dict.get('key')}
 
-  def _FlattenParameters(self, parameters):
+  def _FlattenParameters(
+      self, parameters: List[Dict[str, str]]) -> Dict[str, str]:
     """Flattens out parameter information from a Workspace log record.
 
     The parameter list looks like this:
@@ -69,15 +78,15 @@ class WorkspaceAuditTimesketch(BaseModule):
             'Encountered a parameter with no name. '
             'Full parameter dictionary: {0:s}'.format(str(parameters)))
         continue
-      value = parameter.get('value')
+      value = parameter.get('value')  # type: Optional[str]
       if not value:
-        value = parameter.get('multiValue', '')
-        value = ', '.join(value)
+        multivalue = parameter.get('multiValue', '')  # type: str
+        value = ', '.join(multivalue)
       if name and value:
         parameters_dict[name] = str(value)
     return parameters_dict
 
-  def _AddMessageString(self, timesketch_record):
+  def _AddMessageString(self, timesketch_record: Dict[str, Any]) -> None:
     """Builds a Timesketch message string from a Timesketch record.
 
     Args:
@@ -109,16 +118,16 @@ class WorkspaceAuditTimesketch(BaseModule):
 
     timesketch_record['message'] = message
 
-  def _ProcessLogLine(self, log_record):
+  def _ProcessLogLine(self, log_record_string: str) -> List[str]:
     """Processes a single JSON formatted Google Workspace log line.
 
     Args:
-      log_record (str): a JSON formatted Workspace log entry.
+      log_record_string (str): a JSON formatted Workspace log entry.
 
     Returns:
       list[str]: one or more Timesketch records.
     """
-    log_record = json.loads(log_record)
+    log_record = json.loads(log_record_string)
     actor = self._ExtractActorInformation(log_record.pop('actor', {}))
     identifiers = log_record.pop('id', {})
     timestamp = identifiers.pop('time')
@@ -143,7 +152,8 @@ class WorkspaceAuditTimesketch(BaseModule):
       timesketch_records.append(json.dumps(timesketch_record))
     return timesketch_records
 
-  def _ProcessLogContainer(self, logs_container):
+  def _ProcessLogContainer(
+      self, logs_container: containers.WorkspaceLogs) -> None:
     """Processes a Workspace logs container.
 
     Args:
@@ -174,7 +184,7 @@ class WorkspaceAuditTimesketch(BaseModule):
     container = containers.File(name=timeline_name, path=output_path)
     self.state.StoreContainer(container)
 
-  def Process(self):
+  def Process(self) -> None:
     """Processes Workspace logs containers for insertion into Timesketch."""
     logs_containers = self.state.GetContainers(containers.WorkspaceLogs)
     for logs_container in logs_containers:

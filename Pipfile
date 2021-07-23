@@ -7,6 +7,12 @@ name = "pypi"
 mock = "*"
 pylint = "*"
 coverage = "*"
+monkeytype = "*"
+mypy = "*"
+yapf = "*"
+types-protobuf = "*"
+types-filelock = "*"
+types-PyYAML = "*"
 
 [packages]
 beautifulsoup4 = "*"
@@ -22,6 +28,7 @@ timesketch-api-client = ">=20200514"
 timesketch-import-client = ">=20200514"
 turbinia = "*"
 pandas = "*"
+google-cloud-error-reporting = "<1.2.0"  # While we wait for turbinia to bump the dep
 
 [requires]
 python_version = "3.8"
