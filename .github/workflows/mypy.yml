@@ -25,4 +25,4 @@ jobs:
         pipenv install -d
     - name: Run mypy on all files
       run: |
-        mypy -p dftimewolf
+        pipenv run mypy -p dftimewolf
