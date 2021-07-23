@@ -15,7 +15,8 @@ from dftimewolf.lib import errors
 from dftimewolf.lib import logging_utils
 
 if TYPE_CHECKING:
-  from dftimewolf.lib import state
+  # Import will only happen during type checking, disabling linter warning.
+  from dftimewolf.lib import state  # pylint: disable=cyclic-import
 
 
 class BaseModule(object):
