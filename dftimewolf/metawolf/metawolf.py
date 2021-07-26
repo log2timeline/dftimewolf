@@ -1,17 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Metawolf main entrypoint."""
 
 import argparse
-import hashlib
 import json
 import os
 import sys
 import signal
-from types import FrameType
-from typing import Dict, Optional, Union, Any
 
-import cmd2
-from prettytable import PrettyTable
+from types import FrameType
+from typing import Dict, Optional, Union, Any, List
+
+import cmd2  # pylint: disable=import-error
+from prettytable import PrettyTable  # pylint: disable=import-error
 
 from dftimewolf.metawolf import session
 from dftimewolf.metawolf import utils
@@ -23,6 +24,7 @@ RECIPE_SETTABLE = 'recipe'
 RECIPE_NAME_IGNORED = 'IGNORED'
 
 SHOW_RECIPES = 'recipes'
+SHOW_RECIPE = 'recipe'
 SHOW_SESSIONS = 'sessions'
 SHOW_RUNNING = 'running'
 SHOW_OUTPUT = 'output'
@@ -30,6 +32,7 @@ SET_ALL = 'all'
 
 LAST_ACTIVE_SESSION = 'last_active_session'
 LAST_ACTIVE_RECIPE = 'last_active_recipe'
+LAST_ACTIVE_PROCESSES = 'last_active_processes'
 
 
 class Metawolf(cmd2.Cmd):
@@ -41,11 +44,8 @@ class Metawolf(cmd2.Cmd):
     session_settables (Dict[str, SessionSettable]):
         Dictionary which holds the settables, keyed by a string of the form
         session_ID-recipe_name-settable_name.
-    processes (Dict[Tuple[str, str], Tuple[POpen, IO, int]): Dictionary that
-        holds the running processes, identified by tuples (session_id,
-        process_id). Keys are tuples holding the process' POpen object, its IO
-        file for writing/reading stdout/stderr and an integer representing the
-        output identifier to query.
+    processes (List[output.MetawolfProcess]): Holds the current metawolf
+        processes.
     last_active_session (str): Holds the value of the last active session.
     reload_settables (bool): If True, reload the recipe's settables.
     copy_over (bool): If True, settables values will be copied over to the new
@@ -61,18 +61,21 @@ class Metawolf(cmd2.Cmd):
     recipes (Dict[str, str]): Dictionary which maps recipe names to their
         description.
   """
-  def __init__(self):
+  # Method names must follow the format do_xxx to be exposed to cmd2.
+  # pylint: disable=invalid-name
+  def __init__(self) -> None:
     super(Metawolf, self).__init__(shortcuts=cmd2.DEFAULT_SHORTCUTS)
 
     self.metawolf_output = output.MetawolfOutput()
     self.metawolf_utils = utils.MetawolfUtils()
 
     self._settables = {}  # Ignore default CMD2 settables
-    self.session_settables = {}  # Track our own settables on a per recipe basis
-    self.processes = {}  # Stores running processes per sessions
+    self.session_settables = {}  # type: Dict[str, session.SessionSettable]
+    self.processes = []  # type: List[output.MetawolfProcess]
 
-    self.last_active_session = None
+    self.last_active_session = None  # type: Optional[str]
     self.reload_settables = False
+    self.reload_default = False
     self.copy_over = False
     self.nb_running_processes = 0
     self.debug = True
@@ -104,12 +107,14 @@ class Metawolf(cmd2.Cmd):
 
   @property
   def recipe(self) -> Any:
+    """Return recipe settable's value."""
     return self.recipe_settable.GetValue()
 
   @property
   def session_id(self) -> Any:
+    """Return session settable's value."""
     return self.session_id_settable.GetValue()
-  
+
   def postcmd(self, stop: bool, statement: Union[cmd2.Statement, str]) -> bool:
     """This is called right after any shell input.
 
@@ -161,7 +166,7 @@ class Metawolf(cmd2.Cmd):
     if not args.args:
       t = PrettyTable(['Name', 'Description', 'Type', 'Current Value'],
                       align='l')
-      for settable_id, settable in self.session_settables.items():
+      for _, settable in self.session_settables.items():
         value = settable.GetValue()
         t.add_row(
             [self.metawolf_output.Color(settable.name, output.GREEN),
@@ -183,12 +188,12 @@ class Metawolf(cmd2.Cmd):
 
     if what[0] == SET_ALL:
       if self.session_id and self.recipe:
-        for settable_id, settable in self.session_settables.items():
+        for _, settable in self.session_settables.items():
           if settable.recipe == RECIPE_NAME_IGNORED:
             # Session and recipe settables are not in scope.
             continue
           value = input('Value for parameter {0:s} ({1:s}: {2:s}. Press '
-                        '"enter" to skip or CTRL+C to abort.): '.format(
+                        '"enter" to skip.): '.format(
               settable.name,
               self.metawolf_output.Color('Current value', output.YELLOW),
               self.metawolf_output.Color(settable.GetValue(), output.GREEN)))
@@ -229,12 +234,12 @@ class Metawolf(cmd2.Cmd):
       if self.recipe:
         # If a recipe is already set, prompt the user for copy over option
         value = input('Would you like to copy over previous recipe ({0:s}) '
-                      'arguments to the new recipe ({1:s}): y/n? '.format(
-            self.recipe, recipe))
-        copy_over = self.metawolf_utils.str2bool(str(value))
+                      'arguments to the new recipe ({1:s}): [yN]? '.format(
+            self.recipe, recipe)) or 'n'
+        copy_over = self.metawolf_utils.Str2Bool(str(value))
         while copy_over not in [False, True]:
-          value = input('y/n? ')
-          copy_over = self.metawolf_utils.str2bool(str(value))
+          value = input('[yN]? ') or 'n'
+          copy_over = self.metawolf_utils.Str2Bool(str(value))
         self.copy_over = copy_over
 
       if self.recipe != recipe:
@@ -282,43 +287,54 @@ class Metawolf(cmd2.Cmd):
           self.metawolf_output.Color('set', output.YELLOW)))
       return
 
-    print(self.metawolf_output.Color('Running: {0:s}'.format(
-        ' '.join(cmd)), output.YELLOW))
-
-    process_id = '+'.join(cmd)
-    if (self.session_id, process_id) in self.processes:
-      print('There\'s already a process running with the same recipe'
-            ' arguments. To check its output, type `{0:s}`'.format(
-          self.metawolf_output.Color('show output', output.YELLOW)))
+    value = input('Confirm running: {0:s} [yN]? '.format(
+        self.metawolf_output.Color(' '.join(cmd), output.YELLOW))) or 'n'
+    ans = self.metawolf_utils.Str2Bool(str(value))
+    while ans not in [False, True]:
+      value = input('[yN]? ') or 'n'
+      ans = self.metawolf_utils.Str2Bool(str(value))
+    if not ans:
       return
-    process, out = self.metawolf_utils.RunRecipe(cmd)
-    self.processes[(self.session_id, process_id)] = (
-        process, out, self.nb_running_processes)
+
+    print('Running: {0:s}'.format(
+        self.metawolf_output.Color(' '.join(cmd), output.YELLOW)))
+
+    metawolf_process = output.MetawolfProcess(
+        session_id=self.session_id,
+        cmd=cmd,
+        output_id=self.nb_running_processes)
+    metawolf_process.Run()
+
+    self.processes.append(metawolf_process)
     self.nb_running_processes += 1
 
   def do_show(self, st: cmd2.Statement) -> None:
     """Show various information about the current session.
 
-    Possible choices: [`recipes`, `sessions`, `running`, `output output_id`].
-    `recipes` shows the user the available DFTimewolf recipes. `sessions` shows
-    the currently available Metawolf's sessions and any recipe in use, along
-    with information about the recipe's state. `running` displays running
-    jobs and their state. `output output_id` prints to STDOUT the output of the
-    matching output_id.
+    Possible choices: [`recipes`, `recipe recipe_name`, `sessions`, `running`,
+    `output output_id`]. `recipes` shows the user the available DFTimewolf
+    recipes, while `recipe recipe_name` shows the details of a given recipe.
+    `sessions` shows the currently available Metawolf's sessions and any recipe
+    in use, along with information about the recipe's state. `running`
+    displays running jobs and their state. `output output_id` prints to
+    STDOUT the output of the matching output_id.
 
     Args:
       st (Statement): The user's input.
     """
     if not st.args:
-      print(self.metawolf_output.Color(
-          'Usage of show: `show [recipes, sessions, running, output '
-          'output_id]`'.format(st.args), output.YELLOW))
+      print('Usage of show: `{0:s}`'.format(
+          self.metawolf_output.Color(
+              'show [recipes, recipe recipe_name, sessions, running, '
+              'output output_id]', output.YELLOW)))
       return
 
     if st.args == SHOW_RECIPES:
       t = PrettyTable(['Name', 'Description'], align='l')
       for recipe_name, recipe_desc in self.recipes.items():
-        t.add_row([self.metawolf_output.Color(recipe_name, output.GREEN), recipe_desc])
+        t.add_row([
+            self.metawolf_output.Color(recipe_name, output.GREEN),
+            recipe_desc])
       print(t)
       return
 
@@ -328,79 +344,107 @@ class Metawolf(cmd2.Cmd):
               self.metawolf_output.Color('new', output.YELLOW),
               self.metawolf_output.Color('set session session', output.YELLOW)),
            'Recipes in use',
-           'Status'],
+           'Status (latest run)',
+           'Timestamp (UTC)'],
           align='l')
-      for s in self.sessions:
-        if s == LAST_ACTIVE_SESSION:
+      for s_id, s in self.sessions.items():
+        if s_id == LAST_ACTIVE_SESSION:
           continue
         active_recipes = []
-        for recipe, _ in self.sessions[s].items():
-          if recipe == LAST_ACTIVE_RECIPE:
+        for recipe, _ in s.items():
+          if recipe in [LAST_ACTIVE_RECIPE, LAST_ACTIVE_PROCESSES]:
             continue
           active_recipes.append(recipe)
-        statuses = []
-        for session_info, proc_info in self.processes.items():
-          session_id, process_id = session_info
-          if s == session_id:
-            process, out, _ = proc_info
-            statuses.append(self.metawolf_utils.GetProcessStatus(out, process))
+        statuses = {}
+        for metawolf_process in self.processes:
+          if s_id == metawolf_process.session_id and metawolf_process.recipe:
+            statuses[metawolf_process.recipe] = (
+                metawolf_process.Status(),
+                metawolf_process.timestamp_readable or ''
+            )  # latest status of recipe run
         t.add_row(
-            [self.metawolf_output.Color(s, output.GREEN),
+            [self.metawolf_output.Color(s_id, output.GREEN),
              '\n'.join(active_recipes),
-             '\n'.join(statuses)])
+             '\n'.join([s for s, _ in statuses.values()]),
+             '\n'.join([t for _, t in statuses.values()])])
       print(t)
       return
 
     if st.args == SHOW_RUNNING:
       table = PrettyTable(
         ['Session ID',
-         'Command ID (`{0:s}`)'.format(self.metawolf_output.Color('kill command_id', output.YELLOW)),
+         'Command ID (`{0:s}`)'.format(
+             self.metawolf_output.Color('kill command_id', output.YELLOW)),
+         'Timestamp (UTC)',
          'Command',
          'Status',
-         'Output ID (`{0:s}`)'.format(self.metawolf_output.Color('show output_id', output.YELLOW))],
+         'Output ID (`{0:s}`)'.format(
+             self.metawolf_output.Color(
+                 'show output_id output_id', output.YELLOW))],
         align='l')
-      for session_info, proc_info in self.processes.items():
-        session_id, process_id = session_info
-        process, out, output_id = proc_info
-        command_id = hashlib.sha256(process_id.encode('utf-8')).hexdigest()[:6]
-        command = ' '.join(process_id.split('+'))
-        status = self.metawolf_utils.GetProcessStatus(out, process)
-        table.add_row([session_id, command_id, command, status, output_id])
+      for metawolf_process in self.processes:
+        table.add_row(
+            [metawolf_process.session_id,
+             metawolf_process.cmd_id,
+             metawolf_process.timestamp_readable,
+             metawolf_process.cmd_readable,
+             metawolf_process.Status(),
+             metawolf_process.output_id])
       print(table)
       return
 
-    # Otherwise, check if we show an output
-    command = st.args.split(' ')
-    if len(command) != 2:
+    # Otherwise, check if we show an output or a recipe details
+    user_input = st.args.split(' ')
+    if len(user_input) != 2:
       # Malformed command, do nothing.
       print('Malformed command. Type `{0:s}` to see available options.'.format(
           self.metawolf_output.Color('show', output.YELLOW)))
       return
 
-    action, value = command
+    action, value = user_input
+
+    if action == SHOW_RECIPE:
+      df_recipe = self.metawolf_utils.GetRecipe(value)
+      if not df_recipe:
+        print(self.metawolf_output.Color(
+            'Recipe {0!s} does not exist.'.format(value), output.RED))
+        return
+
+      # Recipe description
+      t = PrettyTable(
+          [self.metawolf_output.Color(df_recipe.name, output.GREEN)], align='l')
+      t.add_row([df_recipe.description])
+      print(t)
+
+      # Recipe's arguments
+      t = PrettyTable(
+          ['Argument', 'Description'],
+          align='l')
+      for name, desc, _ in df_recipe.args:
+        is_optional = name.startswith('--')
+        if is_optional:
+          name = name.replace('--', '')
+          desc = self.metawolf_output.Color(
+              '[Optional]. ', output.YELLOW) + desc
+        t.add_row([self.metawolf_output.Color(name, output.GREEN), desc])
+      print(t)
+      return
+
     if action == SHOW_OUTPUT:
-      for session_info, proc_info in self.processes.items():
-        _, process_id = session_info
-        process, out, output_id = proc_info
-        if value == str(output_id):
-          if process.poll() is None:
-            command = ' '.join(process_id.split('+'))
-            print('Command {0:s} is currently running.'.format(
-                self.metawolf_output.Color(command, output.YELLOW)))
-            # Duplicate file descriptor so we don't mess up write operations on
-            # the current process' IO object, and show live output
-            dup_out = os.dup(out.fileno())
-            # Re-position the file descriptor at the beginning of the file
-            os.lseek(dup_out, 0, 0)
-            # Read <output_size> bytes and decode to utf-8
-            live_output = os.read(
-                dup_out, os.fstat(dup_out).st_size).decode('utf-8')
-            print(live_output)
-            # Close the duplicated file descriptor.
-            os.close(dup_out)
-            return
-          out.seek(0)
-          print(out.read())
+      for metawolf_process in self.processes:
+        if value == str(metawolf_process.output_id):
+          out = metawolf_process.Read()
+          if out:
+            print(out)
+
+  def do_reload(self, _: cmd2.Statement) -> None:
+    """Reload the default recipe arguments.
+
+    Args:
+      _ (Statement): Unused.
+    """
+    self.reload_settables = True
+    self.reload_default = True
 
   def do_clear(self, _: cmd2.Statement) -> None:
     """Clear the recipe's settable values.
@@ -408,10 +452,32 @@ class Metawolf(cmd2.Cmd):
     Args:
       _ (Statement): Unused.
     """
-    for _, settable in self.session_settables.items():
+    # mypy associates the unused argument to below for-loop, so we ignore it.
+    for _, settable in self.session_settables.items():  # type: ignore
       if settable.name in [SESSION_ID_SETTABLE, RECIPE_SETTABLE]:
         continue
       settable.SetValue(None)
+
+  def do_clean(self, _: cmd2.Statement) -> None:
+    """Clean the processes associated to the current session.
+
+    - Delete output files
+    - Remove metawolf's runs from session file
+    - Reset output counter
+
+    Args:
+      _ (Statement): Unused.
+    """
+    for metawolf_process in self.processes:
+      if metawolf_process.Poll() is None:
+        metawolf_process.Terminate()
+      if metawolf_process.outfile_path:
+        try:
+          os.remove(metawolf_process.outfile_path)
+        except FileNotFoundError:
+          pass
+    self.nb_running_processes = 0
+    self.processes = []
 
   def do_kill(self, st: cmd2.Statement) -> None:
     """Kill a running recipe.
@@ -424,16 +490,9 @@ class Metawolf(cmd2.Cmd):
           'Usage of kill: `kill command_id`.', output.YELLOW))
       return
 
-    for session_info, proc_info in self.processes.items():
-      _, process_id = session_info
-      command_id = hashlib.sha256(process_id.encode('utf-8')).hexdigest()[:6]
-      if command_id == st.args:
-        process, _, _ = proc_info
-        if process.poll() is None:
-          process.terminate()
-          print(self.metawolf_output.Color('Killed: {0:s}'.format(command_id), output.YELLOW))
-        else:
-          print('{0:s} has already terminated'.format(command_id))
+    for metawolf_process in self.processes:
+      if metawolf_process.cmd_id == st.args:
+        metawolf_process.Terminate()
         break
 
   def do_quit(self, _: argparse.Namespace) -> Optional[bool]:
@@ -445,11 +504,11 @@ class Metawolf(cmd2.Cmd):
     Returns:
       Optional[bool]: True if the shell should be stopped.
     """
-    if not self.metawolf_utils.TerminateRunningProcesses(self.processes):
-      return
-    # Close any open files / terminate running processes
-    self.metawolf_utils.CleanupProcesses(self.processes)
-    return super(Metawolf, self).do_quit(_)
+    if not self.metawolf_utils.RunInBackground(self.processes):
+      # Close any open files / terminate running processes
+      for metawolf_process in self.processes:
+        metawolf_process.Terminate()
+    return super(Metawolf, self).do_quit(_)  # type: ignore
 
   def sigint_handler(self, signum: int, _: FrameType) -> None:
     """Handle SIGINT.
@@ -460,12 +519,12 @@ class Metawolf(cmd2.Cmd):
     """
 
     if signum == signal.SIGINT:
-      if not self.metawolf_utils.TerminateRunningProcesses(self.processes):
-        return
-      # Close any open files / terminate running processes
-      self.metawolf_utils.CleanupProcesses(self.processes)
+      if not self.metawolf_utils.RunInBackground(self.processes):
+        # Close any open files / terminate running processes
+        for metawolf_process in self.processes:
+          metawolf_process.Terminate()
       self.SaveSession()
-      exit(signum)
+      sys.exit(signum)
     else:
       super(Metawolf, self).sigint_handler(signum, _)
 
@@ -498,12 +557,22 @@ class Metawolf(cmd2.Cmd):
     for recipe, settables in loaded_sessions.get(self.session_id, {}).items():
       if recipe == LAST_ACTIVE_RECIPE or not last_recipe:
         continue
+      if recipe == LAST_ACTIVE_PROCESSES:
+        # Restore self.processes
+        for _, metawolf_process in settables.items():
+          proc = output.MetawolfProcess(from_dict=metawolf_process)
+          self.processes.append(proc)
+        continue
       for settable_id, settable in settables.items():
         s_id = '{0:s}-{1:s}-{2:s}'.format(
             self.session_id, self.recipe, settable.name)
         if settable_id == s_id and settable_id not in self.session_settables:
           self.AddSessionSettable(settable)
 
+    # Reset current nb of proc
+    if self.processes:
+      self.nb_running_processes = max(
+          [proc.output_id for proc in self.processes]) + 1
     return loaded_sessions
 
   def SaveSession(self) -> None:
@@ -534,6 +603,17 @@ class Metawolf(cmd2.Cmd):
           current_sessions[self.session_id][self.recipe][settable_id] = self.metawolf_utils.Marshal(settable)
           # pylint: enable=line-too-long
 
+    # If we cleared processes
+    if not self.processes:
+      current_sessions[self.session_id][LAST_ACTIVE_PROCESSES] = {}
+
+    # Save process state
+    for metawolf_process in self.processes:
+      if LAST_ACTIVE_PROCESSES not in current_sessions[self.session_id]:
+        current_sessions[self.session_id][LAST_ACTIVE_PROCESSES] = {}
+      current_sessions[self.session_id][LAST_ACTIVE_PROCESSES][
+        metawolf_process.cmd_id] = metawolf_process.Marshal()
+
     with open(os.path.expanduser(utils.METAWOLF_PATH), 'w') as f:
       f.write(json.dumps(current_sessions))
 
@@ -556,9 +636,10 @@ class Metawolf(cmd2.Cmd):
       prompt += self.metawolf_output.Color('${0:s}'.format(
           self.recipe), output.BLUE)
     prompt += self.metawolf_output.Color('> ', output.BLUE)
-    self.prompt = prompt
+    # self.prompt is inherited from cmd2
+    self.prompt = prompt  # pylint: disable=attribute-defined-outside-init
 
-  def ReloadSettables(self):
+  def ReloadSettables(self) -> None:
     """Reload Metawolf's settables based on the current recipe."""
 
     if not self.session_id or not self.recipe:
@@ -569,22 +650,25 @@ class Metawolf(cmd2.Cmd):
     current_sessions = self.metawolf_utils.ReadSessionFromFile()
     if self.copy_over:
       previous_settables = {
-          settable.name: settable.GetValue() for settable in self.session_settables.values()
+          settable.name: settable.GetValue(
+              ) for settable in self.session_settables.values()
       }
 
     self.ClearSessionSettables()
 
     # Add current recipe's settables
-    for name, desc, default_value in self.metawolf_utils.Recipes()[self.recipe].args:
+    recipes = self.metawolf_utils.Recipes()
+    for name, desc, default_value in recipes[self.recipe].args:
       t = type(default_value) if default_value is not None else str
       is_optional = name.startswith('--')
       if is_optional:
         name = name.replace('--', '')
         desc = self.metawolf_output.Color('[Optional]. ', output.YELLOW) + desc
       s_id = '{0:s}-{1:s}-{2:s}'.format(self.session_id, self.recipe, name)
-      if s_id not in self.session_settables:
-        current_settable = current_sessions.get(self.session_id, {}).get(self.recipe, {}).get(s_id)
-        if current_settable:
+      if s_id not in self.session_settables or self.reload_default:
+        current_settable = current_sessions.get(self.session_id, {}).get(
+            self.recipe, {}).get(s_id)
+        if current_settable and not self.reload_default:
           session_settable = current_settable
         else:
           session_settable = session.SessionSettable(
@@ -603,7 +687,7 @@ class Metawolf(cmd2.Cmd):
     # Recipes just reloaded, so we can turn this off.
     self.reload_settables = False
     self.copy_over = False
-      
+
   def AddSessionSettable(self, settable: session.SessionSettable) -> None:
     """Add a new session settable to the session's dictionary.
 

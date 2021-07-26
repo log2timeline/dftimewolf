@@ -1,33 +1,30 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Metawolf utilities."""
+
 import json
 import os
-import subprocess
-import tempfile
+import sys
 import uuid
-from pydoc import locate
-from typing import Any
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Tuple
 
-from typing.io import IO
+from pydoc import locate
+from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 from dftimewolf.lib import errors
-
 from dftimewolf.cli import dftimewolf_recipes
-from dftimewolf.metawolf import output
 from dftimewolf.metawolf import session
+from dftimewolf.lib import resources
+
+if TYPE_CHECKING:
+  from dftimewolf.metawolf import output  # pylint: disable=cyclic-import
 
 METAWOLF_PATH = '~/.metawolf'
 DFTIMEWOLF = 'dftimewolf'
 
 LAST_ACTIVE_SESSION = 'last_active_session'
 LAST_ACTIVE_RECIPE = 'last_active_recipe'
+LAST_ACTIVE_PROCESSES = 'last_active_processes'
 SESSION_ID_SETTABLE = 'session_id'
-
-CRITICAL_ERROR = 'Critical error found. Aborting.'
 
 
 class MetawolfUtils:
@@ -37,7 +34,7 @@ class MetawolfUtils:
     recipe_manager (RecipeManager): A DFTimewolf RecipeManager object.
   """
 
-  def __init__(self):
+  def __init__(self) -> None:
     self.recipe_manager = self.GetDFTool().RecipeManager()
 
   @staticmethod
@@ -47,11 +44,13 @@ class MetawolfUtils:
     tool.LoadConfiguration()
     try:
       tool.ReadRecipes()
-    except (KeyError,
-            errors.RecipeParseError,
+    except KeyError:
+      # Recipe already loaded
+      pass
+    except (errors.RecipeParseError,
             errors.CriticalError) as exception:
       print(exception)
-      exit(1)
+      sys.exit(1)
     return tool
 
   @staticmethod
@@ -74,8 +73,7 @@ class MetawolfUtils:
       bool: True if the string can be casted to an int.
     """
     try:
-      float_n = float(value)
-      _ = int(float_n)
+      _ = int(value)
     except ValueError:
       return False
     return True
@@ -97,7 +95,7 @@ class MetawolfUtils:
     return True
 
   @staticmethod
-  def str2bool(value: str) -> Optional[bool]:
+  def Str2Bool(value: str) -> Optional[bool]:
     """Convert a string to its boolean representation.
 
     Args:
@@ -109,8 +107,8 @@ class MetawolfUtils:
     """
     if not isinstance(value, str):
       return None
-    true_set = {'yes', 'true', 't', 'y', '1'}
-    false_set = {'no', 'false', 'f', 'n', '0'}
+    true_set = {'yes', 'true', 't', 'y'}
+    false_set = {'no', 'false', 'f', 'n'}
     if value.lower() in true_set:
       return True
     if value.lower() in false_set:
@@ -128,7 +126,7 @@ class MetawolfUtils:
     Returns:
       Any: The type for the string.
     """
-    if self.str2bool(value) in [False, True]:
+    if self.Str2Bool(value) in [False, True]:
       return bool
 
     if self.IsInt(value):
@@ -159,9 +157,9 @@ class MetawolfUtils:
       return float(value)
 
     if value_type == bool:
-      if self.str2bool(value) is None:
+      if self.Str2Bool(value) is None:
         return None
-      return self.str2bool(value)
+      return self.Str2Bool(value)
 
     return value
 
@@ -218,7 +216,9 @@ class MetawolfUtils:
           dictionary that maps session IDs and recipes to their corresponding
           settable (or JSON str).
     """
-    loaded_sessions = {}
+    # pylint: disable=line-too-long
+    loaded_sessions = {}  # type: Dict[str, Dict[str, Dict[str, Union[str, session.SessionSettable]]]]
+    # pylint: enable=line-too-long
     if not os.path.exists(os.path.expanduser(METAWOLF_PATH)):
       return loaded_sessions
 
@@ -242,6 +242,11 @@ class MetawolfUtils:
           # and is not a dictionary
           loaded_sessions[session_id][LAST_ACTIVE_RECIPE] = settables
           continue
+        if recipe == LAST_ACTIVE_PROCESSES:
+          # In this case, settables holds the list of processes run in the
+          # session
+          loaded_sessions[session_id][LAST_ACTIVE_PROCESSES] = settables
+          continue
         loaded_sessions[session_id][recipe] = {}
         for settable_id, settable in settables.items():
           loaded_sessions[session_id][recipe][settable_id] = self.Unmarshal(
@@ -249,101 +254,36 @@ class MetawolfUtils:
 
     return loaded_sessions
 
-  @staticmethod
-  def RunRecipe(cmd: List[str]) -> Tuple[subprocess.Popen, IO]:
-    """Run a DFTimewolf recipe in a separate process.
-
-    Args:
-      cmd (List[str]): The recipe and its arguments.
-
-    Returns:
-      Tuple[subprocess.Popes, IO]: The process running the recipe and the file
-          the output is written to.
-    """
-
-    # Temporary files are closed either:
-    #  - when detecting a `quit` or SIGINT
-    #  - through garbage collection in any other scenario
-    out = tempfile.TemporaryFile(mode='w+')
-    process = subprocess.Popen(
-        cmd, shell=False, stdout=out, stderr=out, text=True)
-    return process, out
-
-  def TerminateRunningProcesses(
+  def RunInBackground(
       self,
-      processes: Dict[Tuple[str, str], Tuple[subprocess.Popen, IO, int]]
+      processes: List['output.MetawolfProcess']
   ) -> bool:
     """Guard executed before `quit` or SIGINT.
 
-    If processes are still running, ask the user if they are sure they want
-    to quit Metawolf. If so, kill any running process to exit gracefully.
+    If processes are still running, ask the user if they want to let them run
+    in the background.
 
     Args:
-      processes (Dict[Tuple[str, str], Tuple[Popen, IO, int]): The processes
-          dictionary which holds the processes running Metawolf's commands.
+      processes (List[output.MetawolfProcess]): The processes associated to
+          Metawolf's session.
 
     Returns:
-      bool: True if it is safe to quit.
+      bool: True if the processes should keep running in the background.
     """
     still_running = False
-    for _, proc_info in processes.items():
-      process, _, _ = proc_info
-      if process.poll() is None:
+    for metawolf_process in processes:
+      if metawolf_process.Poll() is None:
         still_running = True
+        break
     if still_running:
-      value = input('Metawolf is still running commands. Are you sure you want '
-                    'to quit (y/n)? ')
-      q = self.str2bool(str(value))
+      value = input('Metawolf still has running processes. Would you like to '
+                    'keep them running in the background [Yn]? ') or 'y'
+      q = self.Str2Bool(str(value))
       while q not in [False, True]:
-        value = input('y/n? ')
-        q = self.str2bool(str(value))
+        value = input('[Yn]? ') or 'y'
+        q = self.Str2Bool(str(value))
       return q
     return True
-
-  @staticmethod
-  def GetProcessStatus(out: IO, process: subprocess.Popen) -> str:
-    """Return a process status.
-
-    Args:
-      out (IO): The IO object containing the process' stdout/stderr.
-      process (Popen): The process object.
-
-    Returns:
-      str: The status of the running recipe.
-    """
-    # https://docs.python.org/3/library/subprocess.html#subprocess.Popen.returncode
-    err = process.poll()
-
-    if err is None:
-      return output.MetawolfOutput.Color('Running', output.YELLOW)
-
-    # Process can be in 3 states: interrupted, failed, or completed.
-    if err < 0:
-      return output.MetawolfOutput.Color('Interrupted', output.RED)
-    out.seek(0)
-    if CRITICAL_ERROR in out.read():
-      return output.MetawolfOutput.Color('Failed', output.RED)
-    return output.MetawolfOutput.Color('Completed', output.GREEN)
-
-  @staticmethod
-  def CleanupProcesses(
-      processes: Dict[Tuple[str, str], Tuple[subprocess.Popen, IO, int]]
-  ) -> None:
-    """Close open IO objects linked to subprocesses stdout and stderr.
-
-    Terminate running processes.
-
-    Args:
-      processes (Dict[Tuple[str, str], Tuple[Popen, IO, int]): The processes
-          dictionary which holds the files to close.
-    """
-    for _, proc_info in processes.items():
-      process, out, _ = proc_info
-      if process.poll() is None:
-        # process is still running, kill it
-        process.terminate()
-      # Close the IO object.
-      out.close()
 
   def PrepareDFTimewolfCommand(
       self,
@@ -369,8 +309,7 @@ class MetawolfUtils:
         value = settable.GetValue()
         if value is None:
           return []
-        else:
-          cmd_components[settable.name] = '{0!s}'.format(value)
+        cmd_components[settable.name] = '{0!s}'.format(value)
       else:
         value = settable.GetValue()
         if value:
@@ -390,13 +329,27 @@ class MetawolfUtils:
     """Return available DFTimewolf recipes.
 
     Returns:
-      Dict[str, str]: A dictionary that maps recipe names to their description.
+      Dict[str, str]: A dictionary that maps recipe names to their short
+          description.
     """
     recipes = {}
     for recipe in self.recipe_manager.GetRecipes():
-      recipes[recipe.name] = recipe.description
+      short_desc = ' '.join(recipe.GetHelpString().split())
+      short_desc = short_desc.replace(recipe.name, '').strip()
+      recipes[recipe.name] = short_desc
     return recipes
 
-  def Recipes(self):
+  def GetRecipe(self, recipe_name: str) -> Optional[resources.Recipe]:
+    """Return a DFTimewolf Recipe object.
+
+    Args:
+      recipe_name (str): The name of the recipe to return.
+
+    Returns:
+      Recipe: The recipe object if recipe_name was found, or None.
+    """
+    return self.Recipes().get(recipe_name)
+
+  def Recipes(self) -> Dict[str, resources.Recipe]:
     """Return a dictionary that maps recipe names to Recipe objects."""
     return self.recipe_manager.Recipes()

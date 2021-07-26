@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Metawolf session settables."""
 
 from typing import Any
 
