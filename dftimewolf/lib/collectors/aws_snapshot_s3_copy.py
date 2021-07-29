@@ -69,36 +69,37 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
     try:
       ec2.describe_snapshots(SnapshotIds=self.snapshots)
       zone = self._PickAvailabilityZone(ec2, self.subnet)
-      threads = []
-      self.logger.info(
-        'Starting {0:d} copy threads, expect log messages from each'\
-          .format(len(self.snapshots)))
-      for snapshot in self.snapshots:
-        try:
-          thread = threading.Thread(
-            target=self._PerformCopyThread, args=(snapshot, zone))
-          thread.start()
-          threads.append(thread)
-          sleep(2) # Offest each thread start slightly
-        except ResourceCreationError as exception:
-          self.ModuleError('Exception during copy operation: {0!s}'\
-            .format(exception), critical=True)
-
-      outputs = []
-      for thread in threads:
-        outputs.append(thread.join())
-
-      self.logger.info('Snapshot copy complete: {0:s}'\
-        .format(','.join(self.state.GetContainers(\
-          aws_containers.AWSAttributeContainer)[0].s3_paths)))
     except ec2.exceptions.ClientError as exception:
       self.ModuleError('Error encountered describing snapshots: {0!s}'.\
         format(exception), critical=True)
 
+    threads = []
+    self.logger.info(
+      'Starting {0:d} copy threads, expect log messages from each'\
+        .format(len(self.snapshots)))
+    for snapshot in self.snapshots:
+      try:
+        thread = threading.Thread(
+          target=self._PerformCopyThread, args=(snapshot, zone))
+        thread.start()
+        threads.append(thread)
+        sleep(2) # Offest each thread start slightly
+      except ResourceCreationError as exception:
+        self.ModuleError('Exception during copy operation: {0!s}'\
+          .format(exception), critical=True)
+
+    for thread in threads:
+      thread.join()
+
+    self.logger.info('Snapshot copy complete: {0:s}'\
+      .format(','.join(self.state.GetContainers(\
+        aws_containers.AWSAttributeContainer)[0].s3_paths)))
+    
+
   def _PerformCopyThread(self, snapshot_id, zone):
     """Perform the copy operation. Designed to be called as a new thread from
     Process(). Will place the output file paths into the state container,
-    (creating it if it doesn't exist already.
+    (creating it if it doesn't exist already.)
 
     Args:
       snapshot_id (str): The snapshot ID.
