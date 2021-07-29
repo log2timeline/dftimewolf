@@ -24,12 +24,14 @@ FAKE_ANALYSIS_VM = ec2.AWSInstance(
     'fake-analysis-vm-id',
     'fake-zone-2',
     'fake-zone-2b',
+    'fake-vpc-id',
     name='fake-analysis-vm')
 FAKE_INSTANCE = ec2.AWSInstance(
     FAKE_AWS_ACCOUNT,
     'my-owned-instance-id',
     'fake-zone-2',
-    'fake-zone-2b')
+    'fake-zone-2b',
+    'fake-vpc-id')
 FAKE_VOLUME = ebs.AWSVolume(
     'fake-volume-id',
     FAKE_AWS_ACCOUNT,

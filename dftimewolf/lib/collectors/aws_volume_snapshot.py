@@ -9,7 +9,8 @@ from dftimewolf.lib.modules import manager as modules_manager
 
 
 class AWSVolumeSnapshotCollector(module.BaseModule):
-  """Takes snapshots of AWS EBS volumes.
+  """Takes snapshots of AWS EBS volumes. Volume ID list can be passed in via
+  SetUp args, or from a AWSAttributeContainer from a previous module.
 
   Attributes:
     volumes: The volumes to copy.
@@ -20,7 +21,7 @@ class AWSVolumeSnapshotCollector(module.BaseModule):
     super(AWSVolumeSnapshotCollector, self).__init__(
         state, name=name, critical=critical)
     self.volumes = None
-    self.ec2 = None
+    self.region = None
 
   # pylint: disable=arguments-differ
   def SetUp(self,
@@ -37,7 +38,7 @@ class AWSVolumeSnapshotCollector(module.BaseModule):
     # simultaneously across all modules, so state is not available yet. We'll
     # have to check it in Process. :(
     self.volumes = volumes
-    self.ec2 = boto3.client('ec2', region_name=region)
+    self.region = region
 
   def Process(self):
     """Images the volumes into S3."""
@@ -50,12 +51,13 @@ class AWSVolumeSnapshotCollector(module.BaseModule):
       self.volumes = self.state.GetContainers(
         aws_containers.AWSAttributeContainer)[0].volumes
     else:
-      self.ModuleError("No volume IDs specified", critical=True)
+      self.ModuleError('No volume IDs specified', critical=True)
 
+    ec2 = boto3.client('ec2', region_name=self.region)
     try:
-      self.ec2.describe_volumes(VolumeIds=self.volumes)
-    except self.ec2.exceptions.ClientError as exception:
-      self.ModuleError("Error encountered describing volumes: '{0!s}'".\
+      ec2.describe_volumes(VolumeIds=self.volumes)
+    except ec2.exceptions.ClientError as exception:
+      self.ModuleError('Error encountered describing volumes: {0!s}'.\
         format(exception), critical=True)
 
     snapshot_ids = []
@@ -64,15 +66,15 @@ class AWSVolumeSnapshotCollector(module.BaseModule):
       self.logger.info('Taking snapshots of volumes {0:s}'\
         .format(','.join(self.volumes)))
       for volume in self.volumes:
-        response = self.ec2.create_snapshot(VolumeId=volume)
+        response = ec2.create_snapshot(VolumeId=volume)
         snapshot_ids.append(response['SnapshotId'])
 
       self.logger.info('Waiting for snapshot completion')
-      self.ec2.get_waiter('snapshot_completed').wait(SnapshotIds=snapshot_ids)
+      ec2.get_waiter('snapshot_completed').wait(SnapshotIds=snapshot_ids)
       self.logger.info('Snapshots complete: {0:s}'\
         .format(','.join(snapshot_ids)))
-    except self.ec2.exceptions.ClientError as exception:
-      self.ModuleError("Error encountered snapshotting volumes: '{0!s}'".\
+    except ec2.exceptions.ClientError as exception:
+      self.ModuleError('Error encountered snapshotting volumes: {0!s}'.\
         format(exception), critical=True)
 
     # Set the state

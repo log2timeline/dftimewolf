@@ -29,7 +29,6 @@ MODULES = {
       'dftimewolf.lib.collectors.aws_snapshot_s3_copy',
   'AWSVolumeSnapshotCollector':
       'dftimewolf.lib.collectors.aws_volume_snapshot',
-  'TempCollector': 'dftimewolf.lib.collectors.temp_collector',
   'AzureCollector': 'dftimewolf.lib.collectors.azure',
   'FilesystemCollector': 'dftimewolf.lib.collectors.filesystem',
   'GCPLoggingTimesketch': 'dftimewolf.lib.processors.gcp_logging_timesketch',
