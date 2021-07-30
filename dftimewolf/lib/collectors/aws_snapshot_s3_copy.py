@@ -94,7 +94,7 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
     self.logger.info('Snapshot copy complete: {0:s}'\
       .format(','.join(self.state.GetContainers(\
         aws_containers.AWSAttributeContainer)[0].s3_paths)))
-    
+
 
   def _PerformCopyThread(self, snapshot_id, zone):
     """Perform the copy operation. Designed to be called as a new thread from

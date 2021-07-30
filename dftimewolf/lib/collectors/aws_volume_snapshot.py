@@ -14,6 +14,7 @@ class AWSVolumeSnapshotCollector(module.BaseModule):
 
   Attributes:
     volumes: The volumes to copy.
+    region: The region the volumes exist in.
   """
 
   def __init__(self, state, name=None, critical=False):
