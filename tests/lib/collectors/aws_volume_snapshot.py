@@ -22,6 +22,7 @@ with mock.patch('boto3.session.Session._setup_loader') as mock_session:
   FAKE_AWS_ACCOUNT = aws_account.AWSAccount(
       default_availability_zone=FAKE_AZ)
 
+# Mirrors the responses from AWS APIs (minus unecessary fields)
 FAKE_VOLUME_1 = {
   'AvailabilityZone': FAKE_AZ,
   'VolumeId': 'vol-01234567',
@@ -44,6 +45,9 @@ FAKE_DESCRIBE_SNAPSHOTS_RESPONSE = {
   }]
 }
 
+# pylint: disable=protected-access
+orig = botocore.client.BaseClient._make_api_call
+
 def MockMakeAPICall(self, operation_name, kwarg):
   """Mock the boto3 api calls for specified client methods.
 
@@ -57,8 +61,7 @@ def MockMakeAPICall(self, operation_name, kwarg):
     return FAKE_CREATE_SNAPSHOT_RESPONSE
   if operation_name == "DescribeSnapshots":
     return FAKE_DESCRIBE_SNAPSHOTS_RESPONSE
-  # pylint: disable=protected-access
-  return botocore.client.BaseClient._make_api_call(self, operation_name, kwarg)
+  return orig(self, operation_name, kwarg)
 
 
 class AWSVolumeSnapshotCollectorTest(unittest.TestCase):
@@ -105,7 +108,7 @@ class AWSVolumeSnapshotCollectorTest(unittest.TestCase):
 
   @mock.patch('boto3.session.Session._setup_loader')
   def testProcessFromState(self, mock_loader):
-    """Tests the process method, when the volumes were provided via SetUp."""
+    """Tests the process method, when the volumes were provided via state."""
     mock_loader.return_value = None
 
     container = aws_containers.AWSAttributeContainer()
@@ -115,8 +118,7 @@ class AWSVolumeSnapshotCollectorTest(unittest.TestCase):
     test_state.StoreContainer(container)
 
     collector = aws_volume_snapshot.AWSVolumeSnapshotCollector(test_state)
-    collector.SetUp(','.join([volume['VolumeId']\
-        for volume in FAKE_VOLUME_LIST['Volumes']]), FAKE_REGION)
+    collector.SetUp(None, FAKE_REGION)
 
     with mock.patch('botocore.client.BaseClient._make_api_call',
         new=MockMakeAPICall):

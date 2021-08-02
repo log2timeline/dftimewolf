@@ -28,7 +28,9 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
     self.bucket = None
     self.region = None
     self.subnet = None
+    self.ec2 = None
     self._lock = threading.Lock()
+    self.thread_error = None
 
   # pylint: disable=arguments-differ
   def SetUp(self,
@@ -51,6 +53,7 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
     self.bucket = bucket
     self.region = region
     self.subnet = subnet
+    self.ec2 = boto3.client('ec2', region_name=self.region)
 
   def Process(self):
     """Images the volumes into S3."""
@@ -65,11 +68,10 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
     else:
       self.ModuleError('No snapshot IDs specified', critical=True)
 
-    ec2 = boto3.client('ec2', region_name=self.region)
     try:
-      ec2.describe_snapshots(SnapshotIds=self.snapshots)
-      zone = self._PickAvailabilityZone(ec2, self.subnet)
-    except ec2.exceptions.ClientError as exception:
+      self.ec2.describe_snapshots(SnapshotIds=self.snapshots)
+      zone = self._PickAvailabilityZone(self.subnet)
+    except self.ec2.exceptions.ClientError as exception:
       self.ModuleError('Error encountered describing snapshots: {0!s}'.\
         format(exception), critical=True)
 
@@ -91,10 +93,13 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
     for thread in threads:
       thread.join()
 
+    if self.thread_error:
+      self.ModuleError('Exception during copy operation: {0!s}'\
+        .format(self.thread_error), critical=True)
+
     self.logger.info('Snapshot copy complete: {0:s}'\
       .format(','.join(self.state.GetContainers(\
         aws_containers.AWSAttributeContainer)[0].s3_paths)))
-
 
   def _PerformCopyThread(self, snapshot_id, zone):
     """Perform the copy operation. Designed to be called as a new thread from
@@ -104,14 +109,18 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
     Args:
       snapshot_id (str): The snapshot ID.
       zone (str): The AWS availability zone."""
-    forensics.CopyEBSSnapshotToS3(
-      self.bucket,
-      snapshot_id,
-      'ebsCopy',
-      zone,
-      subnet_id=self.subnet)
+    try:
+      forensics.CopyEBSSnapshotToS3(
+        self.bucket,
+        snapshot_id,
+        'ebsCopy',
+        zone,
+        subnet_id=self.subnet)
+    except Exception as e: # pylint: disable=broad-except
+      self.logger.critical('{0!s}'.format(e))
+      self.thread_error = e
 
-    # Copy operation puts the image in bucket/snapshot
+    # Copy operation puts the output files in "s3://bucket/snapshot/"
     files = ['image.bin', 'log.txt', 'hlog.txt', 'mlog.txt']
     output = ['s3://{0:s}/{1:s}/{2:s}'.format(self.bucket, snapshot_id, file)
       for file in files]
@@ -128,7 +137,7 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
         self.state.StoreContainer(container)
 
   # pylint: disable=inconsistent-return-statements
-  def _PickAvailabilityZone(self, ec2, subnet=None) -> str:
+  def _PickAvailabilityZone(self, subnet=None) -> str:
     """Given a region + subnet, pick an availability zone. If the subnet is
     provided, it's AZ is returned. Otherwise, one is picked from those
     available in the region.
@@ -141,11 +150,11 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
       A string representing the AZ."""
     # If we received a subnet ID, return the AZ for it
     if subnet:
-      return str(ec2.describe_subnets(SubnetIds=[subnet])\
+      return str(self.ec2.describe_subnets(SubnetIds=[subnet])\
         ['Subnets'][0]['AvailabilityZone'])
 
     # Otherwise, pick one.
-    response = ec2.describe_availability_zones(
+    response = self.ec2.describe_availability_zones(
       Filters=[{'Name': 'region-name','Values': [self.region]}])
     for zone in response['AvailabilityZones']:
       if zone['State'] == 'available':
