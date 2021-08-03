@@ -17,6 +17,7 @@ from dftimewolf import config
 
 from dftimewolf.lib import errors
 from dftimewolf.lib import utils
+from dftimewolf.lib.recipes import manager
 
 if TYPE_CHECKING:
   from dftimewolf.lib import state as dftw_state
@@ -281,6 +282,10 @@ class DFTimewolfTool(object):
   def CleanUpPreflights(self) -> None:
     """Calls the preflight's CleanUp functions."""
     self._state.CleanUpPreflights()
+
+  def RecipeManager(self) -> manager.RecipesManager:
+    """Returns the recipes manager."""
+    return self._recipes_manager
 
 def SignalHandler(*unused_argvs: Any) -> None:
   """Catches Ctrl + C to exit cleanly."""
