@@ -57,6 +57,10 @@ To monitor a running recipe:
 
 `show output output_id`: Display the current output of the recipe run.
 
+`show recipes`: Show DFTimewolf available recipes.
+
+`show recipe recipe_name`: Show details about a particular recipe.
+
 ![metawolf_run](./_static/metawolf_run.png)
 
 ### Other features
@@ -66,6 +70,8 @@ To monitor a running recipe:
 `clean`: Clean the current recipe run data.
 
 `clear`: Clean the current settables values.
+
+`reload`: Reload the recipe's default arguments' values.
 
 Metawolf uses `cmd2`, so features of `cmd2` are available, such as `help` or history of inputs.
 
