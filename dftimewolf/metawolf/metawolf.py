@@ -362,8 +362,12 @@ class Metawolf(cmd2.Cmd):
                 metawolf_process.Status(),
                 metawolf_process.timestamp_readable or ''
             )  # latest status of recipe run
+        session_iter = self.metawolf_output.Color(s_id, output.GREEN)
+        if self.session_id in session_iter:
+          session_iter = '{0:s}{1:s}'.format(
+              session_iter, self.metawolf_output.Color(' <--', output.YELLOW))
         t.add_row(
-            [self.metawolf_output.Color(s_id, output.GREEN),
+            [session_iter,
              '\n'.join(active_recipes),
              '\n'.join([s for s, _ in statuses.values()]),
              '\n'.join([t for _, t in statuses.values()])])
