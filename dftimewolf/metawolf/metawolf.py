@@ -690,6 +690,7 @@ class Metawolf(cmd2.Cmd):
 
     # Recipes just reloaded, so we can turn this off.
     self.reload_settables = False
+    self.reload_default = False
     self.copy_over = False
 
   def AddSessionSettable(self, settable: session.SessionSettable) -> None:
