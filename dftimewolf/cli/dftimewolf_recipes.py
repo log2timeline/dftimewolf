@@ -287,6 +287,7 @@ class DFTimewolfTool(object):
     """Returns the recipes manager."""
     return self._recipes_manager
 
+
 def SignalHandler(*unused_argvs: Any) -> None:
   """Catches Ctrl + C to exit cleanly."""
   sys.stderr.write("\nCtrl^C caught, bailing...\n")
