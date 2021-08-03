@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, List, Optional, Dict, Any
 
 # pylint: disable=wrong-import-position
 from dftimewolf import config
-from dftimewolf.lib.recipes import manager
+
 from dftimewolf.lib import errors
 from dftimewolf.lib import utils
 
@@ -281,11 +281,6 @@ class DFTimewolfTool(object):
   def CleanUpPreflights(self) -> None:
     """Calls the preflight's CleanUp functions."""
     self._state.CleanUpPreflights()
-
-  def RecipeManager(self) -> manager.RecipesManager:
-    """Returns the recipes manager."""
-    return self._recipes_manager
-
 
 def SignalHandler(*unused_argvs: Any) -> None:
   """Catches Ctrl + C to exit cleanly."""
