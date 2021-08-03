@@ -63,6 +63,10 @@ To monitor a running recipe:
 
 `quit`: Quit Metawolf.
 
+`clean`: Clean the current recipe run data.
+
+`clear`: Clean the current settables values.
+
 Metawolf uses `cmd2`, so features of `cmd2` are available, such as `help` or history of inputs.
 
 ## Metawolf's sessions
