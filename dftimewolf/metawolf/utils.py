@@ -18,7 +18,6 @@ from dftimewolf.lib import resources
 if TYPE_CHECKING:
   from dftimewolf.metawolf import output  # pylint: disable=cyclic-import
 
-METAWOLF_PATH = '~/.metawolf'
 DFTIMEWOLF = 'dftimewolf'
 
 LAST_ACTIVE_SESSION = 'last_active_session'
@@ -34,7 +33,14 @@ class MetawolfUtils:
     recipe_manager (RecipeManager): A DFTimewolf RecipeManager object.
   """
 
-  def __init__(self) -> None:
+  def __init__(self, session_path: str = '') -> None:
+    """Initialize Metawolf utilities.
+
+    Args:
+      session_path (str): Optional. The path to the file in which session
+          information should be stored.
+    """
+    self.session_path = session_path
     self.recipe_manager = self.GetDFTool().RecipeManager()
 
   @staticmethod
@@ -219,10 +225,10 @@ class MetawolfUtils:
     # pylint: disable=line-too-long
     loaded_sessions = {}  # type: Dict[str, Dict[str, Dict[str, Union[str, session.SessionSettable]]]]
     # pylint: enable=line-too-long
-    if not os.path.exists(os.path.expanduser(METAWOLF_PATH)):
+    if not os.path.exists(os.path.expanduser(self.session_path)):
       return loaded_sessions
 
-    with open(os.path.expanduser(METAWOLF_PATH), 'r') as f:
+    with open(os.path.expanduser(self.session_path), 'r') as f:
       if f.read(1):
         f.seek(0)
         sessions = json.loads(f.read())

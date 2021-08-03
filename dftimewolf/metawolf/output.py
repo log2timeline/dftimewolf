@@ -26,17 +26,21 @@ CRITICAL_ERROR = 'Critical error found. Aborting.'
 class MetawolfOutput:
   """MetawolfOutput handles formatting of strings to display in Metawolf."""
 
-  def Welcome(self) -> None:
-    """Print Metawolf welcome message."""
+  def Welcome(self) -> str:
+    """Print Metawolf welcome message.
+
+    Returns:
+      str: The welcome message.
+    """
     # pylint: disable=anomalous-backslash-in-string
-    print(self.Color('''
+    return self.Color('''
      _____            __           __      __        .__    _____ 
     /     \    ____ _/  |_ _____  /  \    /  \ ____  |  | _/ ____\\
    /  \ /  \ _/ __ \\\\   __\\\\__  \ \   \/\/   //  _ \ |  | \   __\ 
   /    Y    \\\\  ___/ |  |   / __ \_\        /(  <_> )|  |__|  |   
   \____|__  / \___  >|__|  (____  / \__/\  /  \____/ |____/|__|   
           \/      \/            \/       \/                      
-      ''', PURPLE))
+      ''', PURPLE)
     # pylint: enable=anomalous-backslash-in-string
 
   @staticmethod
@@ -234,15 +238,20 @@ class MetawolfProcess:
             'files, type `clean`'.format(self.outfile_path), RED))
     return ''
 
-  def Terminate(self) -> None:
-    """Terminate a process and close its IO file."""
+  def Terminate(self) -> str:
+    """Terminate a process and close its IO file.
+
+    Returns:
+      str: An output (e.g. informational message), if any.
+    """
+    out = ''
     if self.Poll() is None and self.process:
       self.process.terminate()
-      print(MetawolfOutput.Color(
-          'Killed: {0:s}'.format(self.cmd_id), YELLOW))
+      out = MetawolfOutput.Color(
+          'Killed: {0:s}'.format(self.cmd_id), YELLOW)
       self.interrupted = True
     else:
-      print('{0:s} has already terminated'.format(self.cmd_id))
+      out = '{0:s} has already terminated'.format(self.cmd_id)
     if self.stdout:
       # This is always set if the process was not recovered from a previous
       # session
@@ -250,6 +259,7 @@ class MetawolfProcess:
         self.stdout.close()
       except IOError:
         pass
+    return out
 
   def Marshal(self) -> Dict[str, Any]:
     """Marshal part of the object into a JSON dictionary."""
