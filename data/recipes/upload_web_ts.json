@@ -16,20 +16,20 @@
             "token_password": "@token_password",
             "sketch_id": "@sketch_id",
             "wait_for_timelines": "@wait_for_timelines",
-	        "analyzers": "browser_search,browser_timeframe,account_finder,phishy_domains,evtx_gap,login,win_crash,safebrowsing,chain,"
+            "analyzers": "browser_search,browser_timeframe,account_finder,phishy_domains,evtx_gap,login,win_crash,safebrowsing,chain,"
         }
     }, {
         "wants": ["TimesketchExporter"],
         "name": "TimesketchEnhancer",
         "args": {
-	        "wait_for_analyzers": "@wait_for_analyzers",
+            "wait_for_analyzers": "@wait_for_analyzers",
             "searches_to_skip": "@searches_to_skip",
             "aggregations_to_skip": "@aggregations_to_skip",
             "include_stories": "@timesketch_include_stories",
             "token_password": "@token_password",
-	        "max_checks": "@analyzer_max_checks",
-	        "formatter": "html"
-	}
+            "max_checks": "@analyzer_max_checks",
+            "formatter": "html"
+    }
     }],
     "args": [
         ["files", "Comma-separated list of paths to CSV files or Plaso storage files", null],
