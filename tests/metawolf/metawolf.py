@@ -84,7 +84,7 @@ class MetawolfTest(unittest.TestCase):
   @mock.patch('builtins.input')
   @typing.no_type_check
   def testPrepareProcessThenRun(self, mock_input) -> None:
-    """Test the `show running` command once recipe/parameters have been set."""
+    """Test the `run` command once recipe/parameters have been set."""
     # These values will be sent to input() when looping on `set all`. The last
     # input ('y') confirms the run.
     mock_input.side_effect = [
