@@ -22,7 +22,8 @@
         "wants": ["GRRFileCollector"],
         "name": "LocalFilesystemCopy",
         "args": {
-            "target_directory": "@directory"
+            "target_directory": "@directory",
+            "compress": false
         }
     }],
     "args": [

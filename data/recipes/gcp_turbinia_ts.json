@@ -13,6 +13,7 @@
         "wants": [],
         "name": "TurbiniaGCPProcessor",
         "args": {
+            "turbinia_config_file": null,
             "disk_name": "@disk_name",
             "project": "@analysis_project_name",
             "turbinia_zone": "@turbinia_zone",
@@ -26,6 +27,7 @@
             "incident_id": "@incident_id",
             "token_password": "@token_password",
             "sketch_id": "@sketch_id",
+            "analyzers": null,
             "wait_for_timelines": "@wait_for_timelines"
         }
     }],
