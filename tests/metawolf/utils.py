@@ -136,7 +136,8 @@ class MetawolfUtilsTest(unittest.TestCase):
     s = utils.MetawolfUtils(
         session_path=session_path).ReadSessionFromFile(unmarshal=False)
     self.assertIn('session_test', s)
-    with open('metawolf-session-settable.json') as settable:
+    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                           'metawolf-session-settable.json')) as settable:
       for k, v in json.loads(settable.read()).items():
         self.assertEqual(
             s['session_test']['recipe_test'][
