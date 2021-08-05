@@ -44,17 +44,17 @@ class MetawolfOutput:
     # pylint: enable=anomalous-backslash-in-string
 
   @staticmethod
-  def Color(string: str, color: str) -> str:
+  def Color(value: Any, color: str) -> str:
     """Return a colored output for stdout.
 
     Args:
-      string (str): The string to format.
+      value (str): The value to format.
       color (str): The color to format the string with.
 
     Returns:
       str: The formatted string.
     """
-    return '{0:s}{1!s}{2:s}'.format(color, string, ENDC)
+    return '{0:s}{1!s}{2:s}'.format(color, value, ENDC)
 
 
 class MetawolfProcess:
@@ -131,7 +131,7 @@ class MetawolfProcess:
     self.cmd = cmd
     if self.cmd:  # Always true here, but needed by Mypy.
       self.cmd_readable = cmd_readable or ' '.join(self.cmd)
-    self.output_id = utils.MetawolfUtils().CastToType(
+    self.output_id = utils.CastToType(
         from_dict.get('output_id', str(output_id)), int)
 
     self.cmd_id = from_dict.get('cmd_id')
@@ -205,13 +205,13 @@ class MetawolfProcess:
       str: The status of the running recipe.
     """
 
-    err = self.Poll()
+    return_code = self.Poll()
 
-    if err is None:
+    if return_code is None:
       return MetawolfOutput.Color('Running', YELLOW)
 
     # Process can be in 3 states: interrupted, failed, or completed.
-    if err == -1 or self.interrupted:
+    if return_code == -1 or self.interrupted:
       return MetawolfOutput.Color('Interrupted', RED)
 
     # Else, dftimewolf completed and we need to look into the output file to
@@ -222,11 +222,11 @@ class MetawolfProcess:
 
     return MetawolfOutput.Color('Completed', GREEN)
 
-  def Read(self) -> Any:
+  def Read(self) -> str:
     """Read the output of the process.
 
     Returns:
-      Any: The stdout of the process written to file.
+      str: The stdout of the process written to file.
     """
     if self.outfile_path:
       try:

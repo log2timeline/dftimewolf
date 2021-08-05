@@ -34,7 +34,7 @@ LAST_ACTIVE_SESSION = 'last_active_session'
 LAST_ACTIVE_RECIPE = 'last_active_recipe'
 LAST_ACTIVE_PROCESSES = 'last_active_processes'
 
-METAWOLF_PATH = '~/.metawolf'
+DEFAULT_METAWOLF_STORAGE_PATH = '~/.metawolf'
 
 
 class Metawolf(cmd2.Cmd):
@@ -67,7 +67,7 @@ class Metawolf(cmd2.Cmd):
   # pylint: disable=invalid-name
   def __init__(
       self,
-      session_path: str = METAWOLF_PATH,
+      session_path: str = DEFAULT_METAWOLF_STORAGE_PATH,
       transcript_files: Optional[List[str]] = None
   ) -> None:
     """Initialize Metawolf.
@@ -125,12 +125,12 @@ class Metawolf(cmd2.Cmd):
 
   @property
   def recipe(self) -> Any:
-    """Return recipe settable's value."""
+    """Return recipe_settable's value."""
     return self.recipe_settable.GetValue()
 
   @property
   def session_id(self) -> Any:
-    """Return session settable's value."""
+    """Return session_settable's value."""
     return self.session_id_settable.GetValue()
 
   def postcmd(self, stop: bool, statement: Union[cmd2.Statement, str]) -> bool:
@@ -166,7 +166,7 @@ class Metawolf(cmd2.Cmd):
     Args:
       _ (Statement): Unused.
     """
-    session_id = self.metawolf_utils.CreateNewSessionID()
+    session_id = utils.CreateNewSessionID()
     self.recipe_settable.SetValue(None)
     self.reload_settables = False
     self.copy_over = False
@@ -205,24 +205,34 @@ class Metawolf(cmd2.Cmd):
       return
 
     if what[0] == SET_ALL:
-      if self.session_id and self.recipe:
-        for _, settable in self.session_settables.items():
-          if settable.recipe == RECIPE_NAME_IGNORED:
-            # Session and recipe settables are not in scope.
-            continue
-          value = input('Value for parameter {0:s} ({1:s}: {2:s}. Press '
+      if not self.recipe:
+        self.poutput('Please set a recipe first: `{0:s}`'.format(
+            self.metawolf_output.Color(
+                'set recipe recipe_name', output.YELLOW)))
+        return
+      for settable in self.session_settables.values():
+        if settable.recipe == RECIPE_NAME_IGNORED:
+          # Session and recipe settables are not in scope.
+          continue
+        value = input('Set value for parameter {0:s} ({1:s}: {2:s}. Press '
+                      '"enter" to skip.): '.format(
+            settable.name,
+            self.metawolf_output.Color('Current value', output.YELLOW),
+            self.metawolf_output.Color(settable.GetValue(), output.GREEN)))
+        value = str(value).strip()
+        if not value:
+          continue
+        updated = self.UpdateSessionSettable(value, settable=settable)
+        while not updated:
+          value = input('Set value for parameter {0:s} ({1:s}: {2:s}. Press '
                         '"enter" to skip.): '.format(
               settable.name,
               self.metawolf_output.Color('Current value', output.YELLOW),
               self.metawolf_output.Color(settable.GetValue(), output.GREEN)))
           value = str(value).strip()
           if not value:
-            continue
+            break
           updated = self.UpdateSessionSettable(value, settable=settable)
-          while not updated:
-            value = input('Value for parameter {0:s}: '.format(settable.name))
-            value = str(value).strip()
-            updated = self.UpdateSessionSettable(value, settable=settable)
       return
 
     if what[0] == SESSION_ID_SETTABLE:
@@ -254,10 +264,10 @@ class Metawolf(cmd2.Cmd):
         value = input('Would you like to copy over previous recipe ({0:s}) '
                       'arguments to the new recipe ({1:s}): [yN]? '.format(
             self.recipe, recipe)) or 'n'
-        copy_over = self.metawolf_utils.Str2Bool(str(value))
+        copy_over = utils.Str2Bool(str(value))
         while copy_over not in [False, True]:
           value = input('[yN]? ') or 'n'
-          copy_over = self.metawolf_utils.Str2Bool(str(value))
+          copy_over = utils.Str2Bool(str(value))
         self.copy_over = copy_over
 
       if self.recipe != recipe:
@@ -308,10 +318,10 @@ class Metawolf(cmd2.Cmd):
 
     value = input('Confirm running: {0:s} [yN]? '.format(
         self.metawolf_output.Color(' '.join(cmd), output.YELLOW))) or 'n'
-    ans = self.metawolf_utils.Str2Bool(str(value))
+    ans = utils.Str2Bool(str(value))
     while ans not in [False, True]:
       value = input('[yN]? ') or 'n'
-      ans = self.metawolf_utils.Str2Bool(str(value))
+      ans = utils.Str2Bool(str(value))
     if not ans:
       return
 
@@ -357,7 +367,7 @@ class Metawolf(cmd2.Cmd):
       self.poutput(t)
       return
 
-    if st.args == SHOW_SESSIONS and self.sessions:
+    if st.args == SHOW_SESSIONS:
       t = PrettyTable(
           ['Session ID (`{0:s}` or `{1:s}`)'.format(
               self.metawolf_output.Color('new', output.YELLOW),
@@ -428,7 +438,7 @@ class Metawolf(cmd2.Cmd):
     action, value = user_input
 
     if action == SHOW_RECIPE:
-      df_recipe = self.metawolf_utils.GetRecipe(value)
+      df_recipe = self.metawolf_utils.recipe_manager.Recipes().get(value)
       if not df_recipe:
         self.poutput(self.metawolf_output.Color(
             'Recipe {0!s} does not exist.'.format(value), output.RED))
@@ -532,7 +542,7 @@ class Metawolf(cmd2.Cmd):
     Returns:
       Optional[bool]: True if the shell should be stopped.
     """
-    if not self.metawolf_utils.RunInBackground(self.processes):
+    if not utils.RunInBackground(self.processes):
       # Close any open files / terminate running processes
       for metawolf_process in self.processes:
         termination_msg = metawolf_process.Terminate()
@@ -549,7 +559,7 @@ class Metawolf(cmd2.Cmd):
     """
 
     if signum == signal.SIGINT:
-      if not self.metawolf_utils.RunInBackground(self.processes):
+      if not utils.RunInBackground(self.processes):
         # Close any open files / terminate running processes
         for metawolf_process in self.processes:
           termination_msg = metawolf_process.Terminate()
@@ -577,7 +587,7 @@ class Metawolf(cmd2.Cmd):
       session_id = last_session
     else:
       # No sessions found, create a new one
-      session_id = self.metawolf_utils.CreateNewSessionID()
+      session_id = utils.CreateNewSessionID()
       loaded_sessions[session_id] = {}
 
     last_recipe = loaded_sessions[session_id].get(LAST_ACTIVE_RECIPE)
@@ -632,7 +642,7 @@ class Metawolf(cmd2.Cmd):
             self.session_id, self.recipe, settable.name)
         if settable_id == s_id:
           # pylint: disable=line-too-long
-          current_sessions[self.session_id][self.recipe][settable_id] = self.metawolf_utils.Marshal(settable)
+          current_sessions[self.session_id][self.recipe][settable_id] = utils.Marshal(settable)
           # pylint: enable=line-too-long
 
     # If we cleared processes
@@ -689,7 +699,7 @@ class Metawolf(cmd2.Cmd):
     self.ClearSessionSettables()
 
     # Add current recipe's settables
-    recipes = self.metawolf_utils.Recipes()
+    recipes = self.metawolf_utils.recipe_manager.Recipes()
     for name, desc, default_value in recipes[self.recipe].args:
       t = type(default_value) if default_value is not None else str
       is_optional = name.startswith('--')
@@ -756,7 +766,7 @@ class Metawolf(cmd2.Cmd):
       updated_value (Any): The value to update the settable with.
       s_id (str): Optional. The settable ID. If not provided, settable must be.
       settable (SessionSettable): The settable to update. If not provided,
-          settable must be.
+          s_id must be.
 
     Returns:
       bool: True if the settable was correctly updated, False otherwise.
@@ -769,9 +779,9 @@ class Metawolf(cmd2.Cmd):
       return False
 
     prev_value = settable.GetValue()
-    value = self.metawolf_utils.CastToType(updated_value, settable.type)
+    value = utils.CastToType(updated_value, settable.type)
     if not value:
-      input_type = self.metawolf_utils.GetType(updated_value)
+      input_type = utils.GetType(updated_value)
       self.poutput(self.metawolf_output.Color(
           'Cannot use: {0:s} (of type {1!s}) for recipe argument: {2:s} '
           '(of type {3!s})'.format(

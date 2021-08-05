@@ -13,7 +13,6 @@ from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 from dftimewolf.lib import errors
 from dftimewolf.cli import dftimewolf_recipes
 from dftimewolf.metawolf import session
-from dftimewolf.lib import resources
 
 if TYPE_CHECKING:
   from dftimewolf.metawolf import output  # pylint: disable=cyclic-import
@@ -26,10 +25,210 @@ LAST_ACTIVE_PROCESSES = 'last_active_processes'
 SESSION_ID_SETTABLE = 'session_id'
 
 
+def GetDFTool() -> dftimewolf_recipes.DFTimewolfTool:
+  """Get a DFTimewolfTool object."""
+  tool = dftimewolf_recipes.DFTimewolfTool()
+  tool.LoadConfiguration()
+  try:
+    tool.ReadRecipes()
+  except KeyError:
+    # Recipe already loaded
+    pass
+  except (errors.RecipeParseError,
+          errors.CriticalError) as exception:
+    print(exception)
+    sys.exit(1)
+  return tool
+
+
+def CreateNewSessionID() -> str:
+  """Create a new session ID.
+
+  Returns:
+    str: The session ID.
+  """
+  return uuid.uuid4().hex[:6]
+
+
+def IsInt(value: str) -> bool:
+  """Check if a string can be safely casted to an int.
+
+  Args:
+    value (str): The string to check.
+
+  Returns:
+    bool: True if the string can be casted to an int.
+  """
+  try:
+    _ = int(value)
+  except ValueError:
+    return False
+  return True
+
+
+def IsFloat(value: str) -> bool:
+  """Check if a string can be safely casted to a float.
+
+  Args:
+    value (str): The string to check.
+
+  Returns:
+    bool: True if the string can be casted to a float.
+  """
+  try:
+    _ = float(value)
+  except ValueError:
+    return False
+  return True
+
+
+def Str2Bool(value: str) -> Optional[bool]:
+  """Convert a string to its boolean representation.
+
+  Args:
+    value (str): The value to convert to a boolean.
+
+  Returns:
+    Optional[bool]: True/False if the string can be associated to a boolean,
+        None otherwise.
+  """
+  if not isinstance(value, str):
+    return None
+  true_set = {'yes', 'true', 't', 'y'}
+  false_set = {'no', 'false', 'f', 'n'}
+  if value.lower() in true_set:
+    return True
+  if value.lower() in false_set:
+    return False
+  return None
+
+
+def GetType(value: str) -> Any:
+  """Infer the type of a string's representation.
+
+  Default to str if the underlying string is neither of: [bool, int, float].
+
+  Args:
+    value (str): The string to infer the type from.
+
+  Returns:
+    Any: The type for the string.
+  """
+  if Str2Bool(value) in [False, True]:
+    return bool
+
+  if IsInt(value):
+    return int
+
+  if IsFloat(value):
+    return float
+
+  return str
+
+
+def CastToType(value: str, value_type: Any) -> Any:
+  """Cast a string to the desired type.
+
+  Returns None if the string cannot be cast to the desired type.
+
+  Args:
+    value (str): The string to cast.
+    value_type (Any): The type to cast the string to.
+  """
+  if value_type == int:
+    if not IsInt(value):
+      return None
+    return int(float(value))
+
+  if value_type == float:
+    if not IsFloat(value):
+      return None
+    return float(value)
+
+  if value_type == bool:
+    if Str2Bool(value) is None:
+      return None
+    return Str2Bool(value)
+
+  return value
+
+
+def Marshal(st: session.SessionSettable) -> Dict[str, Any]:
+  """Marshal a SessionSettable object to a JSON dictionary.
+
+  Args:
+    st (SessionSettable): The settable to marshal.
+
+  Returns:
+    Dict[str, Any]: A JSON dictionary representation of the settable.
+  """
+  return {
+      'session_id': st.session_id,
+      'recipe': st.recipe,
+      'name': st.name,
+      'description': st.description,
+      'value': st.GetValue(),
+      'type': st.type.__name__,
+      'optional': st.IsOptional()
+  }
+
+
+def Unmarshal(st: Dict[str, Any]) -> session.SessionSettable:
+  """Unmarshal a JSON dictionary to a SessionSettable object.
+
+  Args:
+    st (Dict[str, Any]): The JSON dictionary representation of the settable.
+
+  Returns:
+    SessionSettable: A SessionSettable object.
+  """
+  s = session.SessionSettable(
+      st['session_id'],
+      st['recipe'],
+      st['name'],
+      st['description'],
+      locate(st['type']),
+      optional=st['optional']
+  )
+  s.SetValue(st['value'])
+  return s
+
+
+def RunInBackground(processes: List['output.MetawolfProcess']) -> bool:
+  """Guard executed before `quit` or SIGINT.
+
+  If processes are still running, ask the user if they want to let them run
+  in the background.
+
+  Args:
+    processes (List[output.MetawolfProcess]): The processes associated to
+        Metawolf's session.
+
+  Returns:
+    bool: True if the processes should keep running in the background.
+  """
+  still_running = False
+  for metawolf_process in processes:
+    if metawolf_process.Poll() is None:
+      still_running = True
+      break
+  if still_running:
+    value = input('Metawolf still has running processes. Would you like to '
+                  'keep them running in the background [Yn]? ') or 'y'
+    q = Str2Bool(str(value))
+    while q not in [False, True]:
+      value = input('[Yn]? ') or 'y'
+      q = Str2Bool(str(value))
+    return q
+  return True
+
+
 class MetawolfUtils:
   """MetawolfUtils holds a set of utility methods for Metawolf.
 
   Attributes:
+    session_path (str): The path to the file in which session information is
+        stored.
     recipe_manager (RecipeManager): A DFTimewolf RecipeManager object.
   """
 
@@ -41,174 +240,7 @@ class MetawolfUtils:
           information should be stored.
     """
     self.session_path = session_path
-    self.recipe_manager = self.GetDFTool().RecipeManager()
-
-  @staticmethod
-  def GetDFTool() -> dftimewolf_recipes.DFTimewolfTool:
-    """Get a DFTimewolfTool object."""
-    tool = dftimewolf_recipes.DFTimewolfTool()
-    tool.LoadConfiguration()
-    try:
-      tool.ReadRecipes()
-    except KeyError:
-      # Recipe already loaded
-      pass
-    except (errors.RecipeParseError,
-            errors.CriticalError) as exception:
-      print(exception)
-      sys.exit(1)
-    return tool
-
-  @staticmethod
-  def CreateNewSessionID() -> str:
-    """Create a new session ID.
-
-    Returns:
-      str: The session ID.
-    """
-    return uuid.uuid4().hex[:6]
-
-  @staticmethod
-  def IsInt(value: str) -> bool:
-    """Check if a string can be safely casted to an int.
-
-    Args:
-      value (str): The string to check.
-
-    Returns:
-      bool: True if the string can be casted to an int.
-    """
-    try:
-      _ = int(value)
-    except ValueError:
-      return False
-    return True
-
-  @staticmethod
-  def IsFloat(value: str) -> bool:
-    """Check if a string can be safely casted to a float.
-
-    Args:
-      value (str): The string to check.
-
-    Returns:
-      bool: True if the string can be casted to a float.
-    """
-    try:
-      _ = float(value)
-    except ValueError:
-      return False
-    return True
-
-  @staticmethod
-  def Str2Bool(value: str) -> Optional[bool]:
-    """Convert a string to its boolean representation.
-
-    Args:
-      value (str): The value to convert to a boolean.
-
-    Returns:
-      Optional[bool]: True/False if the string can be associated to a boolean,
-          None otherwise.
-    """
-    if not isinstance(value, str):
-      return None
-    true_set = {'yes', 'true', 't', 'y'}
-    false_set = {'no', 'false', 'f', 'n'}
-    if value.lower() in true_set:
-      return True
-    if value.lower() in false_set:
-      return False
-    return None
-
-  def GetType(self, value: str) -> Any:
-    """Infer the type of a string's representation.
-
-    Default to str if the underlying string is neither of: [bool, int, float].
-
-    Args:
-      value (str): The string to infer the type from.
-
-    Returns:
-      Any: The type for the string.
-    """
-    if self.Str2Bool(value) in [False, True]:
-      return bool
-
-    if self.IsInt(value):
-      return int
-
-    if self.IsFloat(value):
-      return float
-
-    return str
-
-  def CastToType(self, value: str, value_type: Any) -> Any:
-    """Cast a string to the desired type.
-
-    Returns None if the string cannot be cast to the desired type.
-
-    Args:
-      value (str): The string to cast.
-      value_type (Any): The type to cast the string to.
-    """
-    if value_type == int:
-      if not self.IsInt(value):
-        return None
-      return int(float(value))
-
-    if value_type == float:
-      if not self.IsFloat(value):
-        return None
-      return float(value)
-
-    if value_type == bool:
-      if self.Str2Bool(value) is None:
-        return None
-      return self.Str2Bool(value)
-
-    return value
-
-  @staticmethod
-  def Marshal(st: session.SessionSettable) -> Dict[str, Any]:
-    """Marshal a SessionSettable object to a JSON dictionary.
-
-    Args:
-      st (SessionSettable): The settable to marshal.
-
-    Returns:
-      Dict[str, Any]: A JSON dictionary representation of the settable.
-    """
-    return {
-        'session_id': st.session_id,
-        'recipe': st.recipe,
-        'name': st.name,
-        'description': st.description,
-        'value': st.GetValue(),
-        'type': st.type.__name__,
-        'optional': st.IsOptional()
-    }
-
-  @staticmethod
-  def Unmarshal(st: Dict[str, Any]) -> session.SessionSettable:
-    """Unmarshal a JSON dictionary to a SessionSettable object.
-
-    Args:
-      st (Dict[str, Any]): The JSON dictionary representation of the settable.
-
-    Returns:
-      SessionSettable: A SessionSettable object.
-    """
-    s = session.SessionSettable(
-        st['session_id'],
-        st['recipe'],
-        st['name'],
-        st['description'],
-        locate(st['type']),
-        optional=st['optional']
-    )
-    s.SetValue(st['value'])
-    return s
+    self.recipe_manager = GetDFTool().RecipesManager()
 
   def ReadSessionFromFile(self, unmarshal: bool = True) -> Dict[str, Any]:
     """Read Metawolf's sessions from file.
@@ -229,10 +261,9 @@ class MetawolfUtils:
       return loaded_sessions
 
     with open(os.path.expanduser(self.session_path), 'r') as f:
-      if f.read(1):
-        f.seek(0)
+      try:
         sessions = json.loads(f.read())
-      else:
+      except ValueError:
         return loaded_sessions
 
     for session_id, value in sessions.items():
@@ -255,41 +286,10 @@ class MetawolfUtils:
           continue
         loaded_sessions[session_id][recipe] = {}
         for settable_id, settable in settables.items():
-          loaded_sessions[session_id][recipe][settable_id] = self.Unmarshal(
+          loaded_sessions[session_id][recipe][settable_id] = Unmarshal(
               settable) if unmarshal else settable
 
     return loaded_sessions
-
-  def RunInBackground(
-      self,
-      processes: List['output.MetawolfProcess']
-  ) -> bool:
-    """Guard executed before `quit` or SIGINT.
-
-    If processes are still running, ask the user if they want to let them run
-    in the background.
-
-    Args:
-      processes (List[output.MetawolfProcess]): The processes associated to
-          Metawolf's session.
-
-    Returns:
-      bool: True if the processes should keep running in the background.
-    """
-    still_running = False
-    for metawolf_process in processes:
-      if metawolf_process.Poll() is None:
-        still_running = True
-        break
-    if still_running:
-      value = input('Metawolf still has running processes. Would you like to '
-                    'keep them running in the background [Yn]? ') or 'y'
-      q = self.Str2Bool(str(value))
-      while q not in [False, True]:
-        value = input('[Yn]? ') or 'y'
-        q = self.Str2Bool(str(value))
-      return q
-    return True
 
   def PrepareDFTimewolfCommand(
       self,
@@ -344,18 +344,3 @@ class MetawolfUtils:
       short_desc = short_desc.replace(recipe.name, '').strip()
       recipes[recipe.name] = short_desc
     return recipes
-
-  def GetRecipe(self, recipe_name: str) -> Optional[resources.Recipe]:
-    """Return a DFTimewolf Recipe object.
-
-    Args:
-      recipe_name (str): The name of the recipe to return.
-
-    Returns:
-      Recipe: The recipe object if recipe_name was found, or None.
-    """
-    return self.Recipes().get(recipe_name)
-
-  def Recipes(self) -> Dict[str, resources.Recipe]:
-    """Return a dictionary that maps recipe names to Recipe objects."""
-    return self.recipe_manager.Recipes()

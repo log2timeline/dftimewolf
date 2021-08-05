@@ -83,44 +83,44 @@ class MetawolfUtilsTest(unittest.TestCase):
 
   def testIsInt(self) -> None:
     """That whether or not a string is an int."""
-    self.assertTrue(utils.MetawolfUtils().IsInt('1'))
-    self.assertFalse(utils.MetawolfUtils().IsInt('1.4'))
-    self.assertFalse(utils.MetawolfUtils().IsInt('string'))
+    self.assertTrue(utils.IsInt('1'))
+    self.assertFalse(utils.IsInt('1.4'))
+    self.assertFalse(utils.IsInt('string'))
 
   def testIsFloat(self) -> None:
     """That whether or not a string is a float."""
-    self.assertTrue(utils.MetawolfUtils().IsFloat('1'))
-    self.assertTrue(utils.MetawolfUtils().IsFloat('1.4'))
-    self.assertFalse(utils.MetawolfUtils().IsFloat('string'))
+    self.assertTrue(utils.IsFloat('1'))
+    self.assertTrue(utils.IsFloat('1.4'))
+    self.assertFalse(utils.IsFloat('string'))
 
   def testStr2Bool(self) -> None:
     """That whether or not a string can be represented as a boolean."""
     for s in ['YeS', 'tRue', 'T', 'y']:
-      self.assertTrue(utils.MetawolfUtils().Str2Bool(s))
+      self.assertTrue(utils.Str2Bool(s))
     for s in ['nO', 'fAlsE', 'f', 'N']:
-      self.assertFalse(utils.MetawolfUtils().Str2Bool(s))
-    self.assertIsNone(utils.MetawolfUtils().Str2Bool('foo'))
+      self.assertFalse(utils.Str2Bool(s))
+    self.assertIsNone(utils.Str2Bool('foo'))
 
   def testGetType(self) -> None:
     """Test that the type of a string is inferred correctly."""
-    self.assertEqual(bool, utils.MetawolfUtils().GetType('y'))
-    self.assertEqual(int, utils.MetawolfUtils().GetType('0'))
-    self.assertEqual(float, utils.MetawolfUtils().GetType('1.'))
+    self.assertEqual(bool, utils.GetType('y'))
+    self.assertEqual(int, utils.GetType('0'))
+    self.assertEqual(float, utils.GetType('1.'))
 
   def testCastToType(self) -> None:
     """Test that a string can be cast to the desired type."""
-    self.assertTrue(utils.MetawolfUtils().CastToType('y', bool))
-    self.assertEqual(0, utils.MetawolfUtils().CastToType('0', int))
-    self.assertEqual(1., utils.MetawolfUtils().CastToType('1.', float))
+    self.assertTrue(utils.CastToType('y', bool))
+    self.assertEqual(0, utils.CastToType('0', int))
+    self.assertEqual(1., utils.CastToType('1.', float))
 
   def testMarshal(self) -> None:
     """Test that a session settable object marshals correctly."""
     self.assertEqual(MOCK_SESSION_SETTABLE_JSON,
-                     utils.MetawolfUtils().Marshal(MOCK_SESSION_SETTABLE))
+                     utils.Marshal(MOCK_SESSION_SETTABLE))
 
   def testUnmarshal(self) -> None:
     """Test that a JSON dict of a session settable unmarshalls correctly."""
-    unmarshalled = utils.MetawolfUtils().Unmarshal(MOCK_SESSION_SETTABLE_JSON)
+    unmarshalled = utils.Unmarshal(MOCK_SESSION_SETTABLE_JSON)
     self.assertEqual(
         MOCK_SESSION_SETTABLE.session_id,
         unmarshalled.session_id)
