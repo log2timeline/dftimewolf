@@ -32,19 +32,22 @@ class MetawolfTest(unittest.TestCase):
   @typing.no_type_check
   def setUp(self) -> None:
     """Setup test cases."""
-    self.session_file = 'metawolf-transcript-session.json'
+    self.session_file = os.path.join(os.path.dirname(
+        os.path.realpath(__file__)), 'metawolf-transcript-session.json')
     self.tmp_file = '/tmp/metawolf-test'
 
   @typing.no_type_check
   def testSet(self) -> None:
     """Test the `set` command."""
-    return_code = self.RunTranscript('./transcripts/set.txt')
+    return_code = self.RunTranscript(os.path.join(os.path.dirname(
+        os.path.realpath(__file__)), './transcripts/set.txt'))
     self.assertEqual(0, return_code)
 
   @typing.no_type_check
   def testSetOnce(self) -> None:
     """Test the `set param value` command."""
-    return_code = self.RunTranscript('./transcripts/setOnce.txt')
+    return_code = self.RunTranscript(os.path.join(os.path.dirname(
+        os.path.realpath(__file__)), './transcripts/setOnce.txt'))
     self.assertEqual(0, return_code)
 
   @mock.patch('builtins.input')
@@ -54,31 +57,37 @@ class MetawolfTest(unittest.TestCase):
     # These values will be sent to input() when looping on `set all`
     mock_input.side_effect = [
         'value_1', 'value_2', 'value_3', '', '', '', '', '', '']
-    return_code = self.RunTranscript('./transcripts/setAll.txt')
+    return_code = self.RunTranscript(os.path.join(os.path.dirname(
+        os.path.realpath(__file__)), './transcripts/setAll.txt'))
     self.assertEqual(0, return_code)
 
   @typing.no_type_check
   def testShow(self) -> None:
     """Test the `show` command."""
-    return_code = self.RunTranscript('./transcripts/show.txt')
+    return_code = self.RunTranscript(os.path.join(os.path.dirname(
+        os.path.realpath(__file__)), './transcripts/show.txt'))
     self.assertEqual(0, return_code)
 
   @typing.no_type_check
   def testShowRecipe(self) -> None:
     """Test the `show recipe recipe_name` command."""
-    return_code = self.RunTranscript('./transcripts/showRecipe.txt')
+    return_code = self.RunTranscript(os.path.join(os.path.dirname(
+        os.path.realpath(__file__)), './transcripts/showRecipe.txt'))
     self.assertEqual(0, return_code)
 
   @typing.no_type_check
   def testShowRunning(self) -> None:
     """Test the `show running` command when there are no running processes."""
-    return_code = self.RunTranscript('./transcripts/showRunningEmpty.txt')
+    return_code = self.RunTranscript(os.path.join(os.path.dirname(
+        os.path.realpath(__file__)), './transcripts/showRunningEmpty.txt'))
     self.assertEqual(0, return_code)
 
   @typing.no_type_check
   def testPrepareSessionThenShow(self) -> None:
     """Test the `show sessions` command once a recipe has been set."""
-    return_code = self.RunTranscript('./transcripts/prepareSessionThenShow.txt')
+    return_code = self.RunTranscript(os.path.join(os.path.dirname(
+        os.path.realpath(
+            __file__)), './transcripts/prepareSessionThenShow.txt'))
     self.assertEqual(0, return_code)
 
   @mock.patch('builtins.input')
@@ -89,7 +98,8 @@ class MetawolfTest(unittest.TestCase):
     # input ('y') confirms the run.
     mock_input.side_effect = [
         'value_1', 'value_2', 'value_3', '', '', '', '', '', '', 'y']
-    return_code = self.RunTranscript('./transcripts/prepareProcessThenRun.txt')
+    return_code = self.RunTranscript(os.path.join(os.path.dirname(
+        os.path.realpath(__file__)), './transcripts/prepareProcessThenRun.txt'))
     self.assertEqual(0, return_code)
 
   @mock.patch('builtins.input')
@@ -100,7 +110,9 @@ class MetawolfTest(unittest.TestCase):
     # inputs ('N') deny the copy over option.
     mock_input.side_effect = [
         'value_1', 'value_2', 'value_3', '', '', '', '', '', '', 'N', 'N']
-    return_code = self.RunTranscript('./transcripts/switchRecipeNoCopyOver.txt')
+    return_code = self.RunTranscript(os.path.join(os.path.dirname(
+        os.path.realpath(
+            __file__)), './transcripts/switchRecipeNoCopyOver.txt'))
     self.assertEqual(0, return_code)
 
   @mock.patch('builtins.input')
@@ -111,7 +123,8 @@ class MetawolfTest(unittest.TestCase):
     # inputs ('y') accept the copy over option.
     mock_input.side_effect = [
         'value_1', 'value_2', 'value_3', '', '', '', '', '', '', 'y', 'y']
-    return_code = self.RunTranscript('./transcripts/switchRecipeCopyOver.txt')
+    return_code = self.RunTranscript(os.path.join(os.path.dirname(
+        os.path.realpath(__file__)), './transcripts/switchRecipeCopyOver.txt'))
     self.assertEqual(0, return_code)
 
   @mock.patch('builtins.input')
@@ -121,7 +134,8 @@ class MetawolfTest(unittest.TestCase):
     # These values will be sent to input() when looping on `set all`
     mock_input.side_effect = [
         'value_1', 'value_2', 'value_3', '', '', '', '', '', '']
-    return_code = self.RunTranscript('./transcripts/clearThenReload.txt')
+    return_code = self.RunTranscript(os.path.join(os.path.dirname(
+        os.path.realpath(__file__)), './transcripts/clearThenReload.txt'))
     self.assertEqual(0, return_code)
 
   @typing.no_type_check
