@@ -139,22 +139,21 @@ class MetawolfUtilsTest(unittest.TestCase):
             s['session_test']['recipe_test'][
                 'session_test-recipe_test-param_name'][k], v)
 
-  @mock.patch('dftimewolf.lib.recipes.manager.RecipesManager.Recipes')
-  @typing.no_type_check
-  def testPrepareDFTimewolfCommand(self, mock_recipes) -> None:
+  def testPrepareDFTimewolfCommand(self) -> None:
     """Test that the DFTimewolf command is constructed correctly."""
-    # If a non-optional settable has no value, the command should be empty
+    sessions = utils.MetawolfUtils(
+        session_path='metawolf-full-session.json').ReadSessionFromFile()
+    session_settables = sessions.get(sessions.get(
+        'last_active_session')).get('aws_forensics')
     cmd = utils.MetawolfUtils().PrepareDFTimewolfCommand(
-        'recipe_test', MOCK_SESSION_SETTABLES)
-    self.assertEqual([], cmd)
-
-    # Mock DFTimewolf's recipe call
-    mock_recipes.return_value = MOCK_DFTIMEWOLF_RECIPE
-    # Assign values to non-optional settables
-    MOCK_NO_VALUE_SETTABLE.SetValue('non_optional_param_value')
-    # Prepare the command
-    cmd = utils.MetawolfUtils().PrepareDFTimewolfCommand(
-        'recipe_test', MOCK_SESSION_SETTABLES)
+        'aws_forensics', session_settables)
     self.assertEqual(
-        ['dftimewolf', 'recipe_test', 'non_optional_param_value',
-         '--argument_2_test=1'], cmd)
+        ['dftimewolf', 'aws_forensics', 'value_1', 'value_2', 'value_3',
+         '--boot_volume_size=50'], cmd)
+
+    # If a non-optional settable has no value, the command should be empty
+    session_settables.get(
+        'b6b30f-aws_forensics-remote_profile_name').SetValue(None)
+    cmd = utils.MetawolfUtils().PrepareDFTimewolfCommand(
+        'aws_forensics', MOCK_SESSION_SETTABLES)
+    self.assertEqual([], cmd)
