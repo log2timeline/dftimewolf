@@ -138,6 +138,7 @@ class MetawolfUtilsTest(unittest.TestCase):
             s['session_test']['recipe_test'][
                 'session_test-recipe_test-param_name'][k], v)
 
+  @typing.no_type_check
   def testPrepareDFTimewolfCommand(self) -> None:
     """Test that the DFTimewolf command is constructed correctly."""
     sessions = utils.MetawolfUtils(
