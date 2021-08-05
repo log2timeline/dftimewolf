@@ -340,7 +340,6 @@ class MetawolfUtils:
     """
     recipes = {}
     for recipe in self.recipe_manager.GetRecipes():
-      short_desc = ' '.join(recipe.GetHelpString().split())
-      short_desc = short_desc.replace(recipe.name, '').strip()
-      recipes[recipe.name] = short_desc
+      recipes[recipe.name] = recipe.contents.get(
+          'short_description', 'No description.')
     return recipes
