@@ -3,7 +3,6 @@
 """Tests for Metawolf output utilities."""
 import json
 import unittest
-from unittest import mock
 
 import typing
 
