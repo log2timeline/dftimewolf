@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Tests for Metawolf output utilities."""
-
+import json
 import unittest
 from unittest import mock
-from unittest.mock import mock_open
 
 import typing
 
@@ -46,26 +45,6 @@ MOCK_SESSION_SETTABLES = {
     'settable_1': MOCK_SESSION_SETTABLE,
     'settable_2': MOCK_OPTIONAL_SETTABLE,
     'settable_3': MOCK_NO_VALUE_SETTABLE
-}
-
-MOCK_SESSION_SETTABLE_JSON = {
-    'session_id': 'session_test',
-    'recipe': 'recipe_test',
-    'name': 'name_test',
-    'description': 'I am a mock!',
-    'value': 'value_test',
-    'type': 'str',
-    'optional': False
-}
-
-MOCK_SESSION_JSON = {
-    'last_active_session': 'session_test',
-    'session_test': {
-        'last_active_recipe': 'recipe_test',
-        'recipe_test': {
-            'session_test-recipe_test-param_name': MOCK_SESSION_SETTABLE_JSON
-        }
-    }
 }
 
 MOCK_DFTIMEWOLF_RECIPE = {
@@ -115,32 +94,30 @@ class MetawolfUtilsTest(unittest.TestCase):
 
   def testMarshal(self) -> None:
     """Test that a session settable object marshals correctly."""
-    self.assertEqual(MOCK_SESSION_SETTABLE_JSON,
-                     utils.Marshal(MOCK_SESSION_SETTABLE))
+    marshalled = utils.Marshal(MOCK_SESSION_SETTABLE)
+    with open('metawolf-session-settable.json') as settable:
+      for k, v in json.loads(settable.read()).items():
+        self.assertEqual(marshalled[k], v)
 
   def testUnmarshal(self) -> None:
     """Test that a JSON dict of a session settable unmarshalls correctly."""
-    unmarshalled = utils.Unmarshal(MOCK_SESSION_SETTABLE_JSON)
-    self.assertEqual(
-        MOCK_SESSION_SETTABLE.session_id,
-        unmarshalled.session_id)
-    self.assertEqual(
-        MOCK_SESSION_SETTABLE.description,
-        unmarshalled.description)
-    self.assertEqual(
-        MOCK_SESSION_SETTABLE.GetValue(),
-        unmarshalled.GetValue())
+    with open('metawolf-session-settable.json') as settable:
+      unmarshalled = utils.Unmarshal(json.loads(settable.read()))
+      self.assertEqual(
+          MOCK_SESSION_SETTABLE.session_id,
+          unmarshalled.session_id)
+      self.assertEqual(
+          MOCK_SESSION_SETTABLE.description,
+          unmarshalled.description)
+      self.assertEqual(
+          MOCK_SESSION_SETTABLE.GetValue(),
+          unmarshalled.GetValue())
 
-  @mock.patch('json.loads')
-  @mock.patch(
-      'builtins.open', new_callable=mock_open, read_data=str(MOCK_SESSION_JSON))
-  @mock.patch('os.path.exists')
   @typing.no_type_check
-  def testReadSessionFromFile(self, mock_exists, m_open, mock_json) -> None:
+  def testReadSessionFromFile(self) -> None:
     """Test that the session file is read correctly."""
-    mock_exists.return_value = True
-    mock_json.return_value = MOCK_SESSION_JSON
-    s = utils.MetawolfUtils().ReadSessionFromFile()
+    s = utils.MetawolfUtils(
+        session_path='metawolf-session.json').ReadSessionFromFile()
     self.assertIn('session_test', s)
     json_session_settable = s['session_test']['recipe_test'][
       'session_test-recipe_test-param_name']
@@ -152,11 +129,15 @@ class MetawolfUtilsTest(unittest.TestCase):
     self.assertEqual(MOCK_SESSION_SETTABLE.GetValue(),
                      json_session_settable.GetValue())
 
-    s = utils.MetawolfUtils().ReadSessionFromFile(unmarshal=False)
+    s = utils.MetawolfUtils(
+        session_path='metawolf-session.json').ReadSessionFromFile(
+            unmarshal=False)
     self.assertIn('session_test', s)
-    self.assertEqual(
-        MOCK_SESSION_SETTABLE_JSON,
-        s['session_test']['recipe_test']['session_test-recipe_test-param_name'])
+    with open('metawolf-session-settable.json') as settable:
+      for k, v in json.loads(settable.read()).items():
+        self.assertEqual(
+            s['session_test']['recipe_test'][
+                'session_test-recipe_test-param_name'][k], v)
 
   @mock.patch('dftimewolf.lib.recipes.manager.RecipesManager.Recipes')
   @typing.no_type_check

@@ -32,7 +32,7 @@ class MetawolfTest(unittest.TestCase):
   @typing.no_type_check
   def setUp(self) -> None:
     """Setup test cases."""
-    self.session_file = './metawolf-test-session.json'
+    self.session_file = 'metawolf-transcript-session.json'
     self.tmp_file = '/tmp/metawolf-test'
 
   @typing.no_type_check
