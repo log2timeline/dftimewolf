@@ -31,7 +31,7 @@ class WorkspaceAuditCollector(module.BaseModule):
   _CLIENT_SECRET_FILENAME = '.dftimewolf_workspace_client_secret.json'
 
   def __init__(self,
-               state: state.DFTimewolfState,
+               state: 'state.DFTimewolfState',
                name: Optional[str]=None,
                critical: bool=False):
     """Initializes a Workspace Audit Log collector."""

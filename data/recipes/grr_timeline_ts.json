@@ -14,6 +14,7 @@
       "grr_server_url": "@grr_server_url",
       "grr_username": "@grr_username",
       "grr_password": "@grr_password",
+      "verify": true,
       "skip_offline_clients": "@skip_offline_clients",
       "approvers": "@approvers"
     }
@@ -30,12 +31,20 @@
       "incident_id": "@reason",
       "token_password": "@token_password",
       "sketch_id": "@sketch_id",
+      "analyzers": null,
       "wait_for_timelines": "@wait_for_timelines"
     }
   }, {
     "wants": ["TimesketchExporter"],
     "name": "TimesketchEnhancer",
     "args": {
+      "wait_for_analyzers": true,
+      "searches_to_skip": null,
+      "aggregations_to_skip": null,
+      "include_stories": false,
+      "token_password": "@token_password",
+      "max_checks": 0,
+      "formatter": "html"
     }
   }],
   "args": [
