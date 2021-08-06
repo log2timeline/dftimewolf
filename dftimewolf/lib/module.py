@@ -48,11 +48,11 @@ class BaseModule(object):
     self.name = name if name else self.__class__.__name__
     self.critical = critical
     self.state = state
+    self.logger = logging.getLogger(name=self.name)
     self.SetupLogging()
 
   def SetupLogging(self) -> None:
     """Sets up stream and file logging for a specific module."""
-    self.logger = logging.getLogger(name=self.name)
     self.logger.setLevel(logging.DEBUG)
 
     file_handler = handlers.RotatingFileHandler(
