@@ -114,9 +114,6 @@ class SCPExporter(module.BaseModule):
       cmd.extend(self._paths)
       cmd.extend(self._PrefixRemotePaths([self._destination]))
     else:
-      # We can use (faster)
-      # scp user@host:"/path1 /path2"
-      # or (slower)
       # scp user@host:/path1 user@host:/path2 /destination
       cmd.extend(self._PrefixRemotePaths(self._paths))
       cmd.extend([self._destination])
@@ -141,20 +138,16 @@ class SCPExporter(module.BaseModule):
 
       self.state.StoreContainer(fspath)
 
-  def _PrefixRemotePaths(self, paths: List[str], group: bool=True) -> List[str]:
+  def _PrefixRemotePaths(self, paths: List[str]) -> List[str]:
     """Prefixes a list of paths with remote SSH access information.
 
     Args:
       paths (list[str]): List of strings representing paths to prefix.
-      group (bool): Whether to group all remote filepaths in a single command.
 
     Returns:
       list[str]: A list of strings with the prefixed paths.
     """
     prefix = self._GenerateRemotePrefix()
-    if group:
-      prefixed_paths = ['{0:s}:{1:s}'.format(prefix, ' '.join(paths))]
-      return prefixed_paths
     prefixed_paths = ['{0:s}:{1:s}'.format(prefix, path) for path in paths]
     return prefixed_paths
 
