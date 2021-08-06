@@ -36,6 +36,7 @@ class SCPExporter(module.BaseModule):
     self._hostname = str()
     self._destination = str()
     self._id_file = str()
+    self._extra_ssh_options = []
     self._upload = False
     self._multiplexing = False
 
@@ -45,6 +46,7 @@ class SCPExporter(module.BaseModule):
             user: str,
             hostname: str,
             id_file: str,
+            extra_ssh_options: List[str],
             direction: str,
             multiplexing: bool,
             check_ssh: bool) -> None:
@@ -56,6 +58,8 @@ class SCPExporter(module.BaseModule):
       hostname (str): Hostname of destination.
       destination (str): Path to destination on host.
       id_file (str): Identity file to use.
+      extra_ssh_options (List[str]): Extra -o options to be passed on to the
+          SSH command.
       direction (str): 'upload' or 'download', depending on which directions
           the files should be SCP'd.
       multiplexing (boolean): Whether the module should attempt to use a
@@ -72,6 +76,7 @@ class SCPExporter(module.BaseModule):
       self._paths = []
     self._user = user
     self._multiplexing = multiplexing
+    self._extra_ssh_options = extra_ssh_options
 
     if direction not in ['upload', 'download']:
       self.ModuleError(
@@ -107,6 +112,9 @@ class SCPExporter(module.BaseModule):
         '-o', 'ControlMaster=auto',
         '-o', 'ControlPath=~/.ssh/ctrl-%C',
       ])
+    if self._extra_ssh_options:
+      cmd.extend(self._extra_ssh_options)
+
     if self._id_file:
       cmd.extend(['-i', self._id_file])
     if self._upload:
