@@ -1,0 +1,43 @@
+{
+  "name": "vt_pcap_ts",
+  "description": "Fetches pcap for a specific hash and puts it to Timesketch.",
+  "short_description": "Fetches pcap for a specific hash  for upload to TS.",
+  "modules": [
+    {
+      "wants": [],
+      "name": "VTCollector",
+      "args": {
+        "hashes": "@hashes",
+        "vt_api_key": "@vt_api_key",
+        "type": "pcap",
+        "action": "@action"
+      }
+    },
+    {
+      "wants": ["VTCollector"],
+      "name": "LocalFilesystemCopy",
+      "args": {
+        "target_directory": "@directory"
+      }
+    },
+    {
+      "wants": ["LocalFilesystemCopy"],
+      "name": "TimesketchExporter",
+      "args": {
+        "sketch_id": "@sketch_id"
+      },
+      "analyzers": ""
+    }
+  ],
+  "args": [
+    ["hashes", "Comma-separated list of hashes to process", null],
+    ["directory", "Directory in which to export files.", null],
+    [
+      "--action",
+      "String denoting action (download/hash/stat) to take",
+      "download"
+    ],
+    ["--vt_api_key", "Virustotal API key", "admin"],
+    ["--sketch_id", "Sketch to which the timeline should be added", null]
+  ]
+}

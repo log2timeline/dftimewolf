@@ -18,9 +18,9 @@ $ dftimewolf -h
 [2020-10-06 14:29:42,111] [dftimewolf          ] INFO     Logging to stdout and /tmp/dftimewolf.log
 [2020-10-06 14:29:42,111] [dftimewolf          ] DEBUG    Recipe data path: /Users/tomchop/code/dftimewolf/data
 [2020-10-06 14:29:42,112] [dftimewolf          ] DEBUG    Configuration loaded from: /Users/tomchop/code/dftimewolf/data/config.json
-usage: dftimewolf_recipes.py [-h]
-                             {aws_forensics,gce_disk_export,gcp_forensics,gcp_logging_cloudaudit_ts,gcp_logging_cloudsql_ts,gcp_logging_collect,gcp_logging_gce_instance_ts,gcp_logging_gce_ts,gcp_turbinia_disk_copy_ts,gcp_turbinia_ts,grr_artifact_grep,grr_artifact_ts,grr_files_collect,grr_flow_collect,grr_hunt_artifacts,grr_hunt_file,grr_huntresults_ts,plaso_ts,upload_ts}
-                             ...
+usage: dftimewolf [-h]
+                  {aws_forensics,gce_disk_export,gcp_forensics,gcp_logging_cloudaudit_ts,gcp_logging_cloudsql_ts,gcp_logging_collect,gcp_logging_gce_instance_ts,gcp_logging_gce_ts,gcp_turbinia_disk_copy_ts,gcp_turbinia_ts,grr_artifact_grep,grr_artifact_ts,grr_files_collect,grr_flow_collect,grr_hunt_artifacts,grr_hunt_file,grr_huntresults_ts,plaso_ts,upload_ts,upload_turbinia,upload_web_ts,vt_pcap_ts}
+                  ...
 
 Available recipes:
 
@@ -45,9 +45,12 @@ Download a GRR flow's results to the local filesystem.
  grr_huntresults_ts                 Fetches the findings of a GRR hunt, processes them with plaso, and sends the results to Timesketch.
  plaso_ts                           Processes a list of file paths using plaso and sends results to Timesketch.
  upload_ts                          Uploads a CSV or Plaso file to Timesketch.
+ upload_turbinia                    Uploads arbitrary files to Turbinia.
+ upload_web_ts                      Uploads a CSV/JSONL or Plaso file to Timesketch.
+ vt_pcap_ts                         Fetches pcap for a specific hash  for upload to TS.
 
 positional arguments:
-  {aws_forensics,gce_disk_export,gcp_forensics,gcp_logging_cloudaudit_ts,gcp_logging_cloudsql_ts,gcp_logging_collect,gcp_logging_gce_instance_ts,gcp_logging_gce_ts,gcp_turbinia_disk_copy_ts,gcp_turbinia_ts,grr_artifact_grep,grr_artifact_ts,grr_files_collect,grr_flow_collect,grr_hunt_artifacts,grr_hunt_file,grr_huntresults_ts,plaso_ts,upload_ts}
+  {aws_forensics,gce_disk_export,gcp_forensics,gcp_logging_cloudaudit_ts,gcp_logging_cloudsql_ts,gcp_logging_collect,gcp_logging_gce_instance_ts,gcp_logging_gce_ts,gcp_turbinia_disk_copy_ts,gcp_turbinia_ts,grr_artifact_grep,grr_artifact_ts,grr_files_collect,grr_flow_collect,grr_hunt_artifacts,grr_hunt_file,grr_huntresults_ts,plaso_ts,upload_ts,upload_turbinia,upload_web_ts,vt_pcap_ts}
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -88,6 +91,16 @@ optional arguments:
                         Optional custom password to decrypt Timesketch
                         credential file with (default: )
 ```
+
+### vt_pcap_ts
+
+This recipe will take a list of hashes (md5, sha256...) and check if they are known to Virustotal.
+If a hash is known to Virustotal, the recipe will check if there is one or more pcaps available for that hash from a sandbox run.
+Each available pcap will be downloaded and parsed. After the parsing, the data will be passed to Timesketch.
+
+Be careful, large pcap files might take a long time to process.
+
+To use this recipe, the user needs to provide an [Virustotal Premium API key](https://developers.virustotal.com/v3.0/reference#public-vs-premium-api) either via argument or in `~/.dftimewolfrc` as `vt_api_key` Each parsed pcap will generate a new timeline in Timesketch in a given sketch.
 
 ## Running a recipe
 
