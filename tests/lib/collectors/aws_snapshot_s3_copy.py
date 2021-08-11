@@ -104,9 +104,9 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
     self.assertIsNotNone(collector)
 
   def testSetUp(self):
-    """Tests that the collector can be initialised."""
+    """Tests SetUp of the collector."""
     test_state = state.DFTimewolfState(config.Config)
-    snapshots = 'snap-01234567,snap-12345678'
+    snapshots_expected = 'snap-01234567,snap-12345678'
 
     # Subnet is optional - test with it.
     collector = aws_snapshot_s3_copy.AWSSnapshotS3CopyCollector(test_state)
@@ -116,7 +116,7 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
         FAKE_REGION,
         FAKE_SUBNET)
 
-    self.assertEqual(snapshots, collector.snapshots)
+    self.assertEqual(snapshots_expected, collector.snapshots)
     self.assertEqual(FAKE_REGION, collector.region)
     self.assertEqual(FAKE_BUCKET, collector.bucket)
     self.assertEqual(FAKE_SUBNET, collector.subnet)
@@ -128,7 +128,7 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
         FAKE_BUCKET,
         FAKE_REGION)
 
-    self.assertEqual(snapshots, collector.snapshots)
+    self.assertEqual(snapshots_expected, collector.snapshots)
     self.assertEqual(FAKE_REGION, collector.region)
     self.assertEqual(FAKE_BUCKET, collector.bucket)
     self.assertEqual(None, collector.subnet)

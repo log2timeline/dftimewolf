@@ -3,7 +3,6 @@
 
 from time import sleep
 
-from googleapiclient.errors import HttpError
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk
 
@@ -12,9 +11,12 @@ from dftimewolf.lib.containers import containers, aws_containers
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 from libcloudforensics.errors import ResourceCreationError
+from libcloudforensics.providers.gcp.internal import common
+from libcloudforensics.providers.utils.storage_utils import SplitStoragePath
+
+from google.cloud.storage.client import Client as storage_client
 
 import threading
-
 
 class S3ToGCSCopy(module.BaseModule):
   """AWS S3 objects to GCP GCS.
@@ -24,7 +26,7 @@ class S3ToGCSCopy(module.BaseModule):
     dest_project (gcp_project.GoogleCloudProject): Destination project with the
       destination GCS bucket.
     dest_project_name (str): Name of the destination project. used to create
-      the dest_project. 
+      the dest_project.
     dest_bucket (str): Destination bucket in the GCP project.
     s3_objects (List[str]): Objects to be copied.
   """
@@ -92,7 +94,10 @@ class S3ToGCSCopy(module.BaseModule):
         [bucket['id'] for bucket in self.dest_project.storage.ListBuckets()]:
       self.logger.info('Creating GCS bucket {0:s}'.format(self.dest_bucket))
       self.dest_project.storage.CreateBucket(self.dest_bucket)
-      # TODO - Give the service account permissions on the bucket
+
+    # Set the permissions on the bucket
+    self.logger.info('Applying permissions to bucket')
+    self._SetBucketServiceAccountPermissions()
 
     threads = []
     self.logger.info(
@@ -101,7 +106,7 @@ class S3ToGCSCopy(module.BaseModule):
     for s3_object in self.s3_objects:
       try:
         thread = threading.Thread(
-          target=self._PerformCopyThread, args=(s3_object, self.aws_region + 'a', 'gs://' + self.dest_bucket))
+          target=self._PerformCopyThread, args=((s3_object,)))
         thread.start()
         threads.append(thread)
         sleep(2) # Offest each thread start slightly
@@ -116,17 +121,52 @@ class S3ToGCSCopy(module.BaseModule):
       self.ModuleError('Exception during transfer operation: {0!s}'\
         .format(self.thread_error), critical=True)
 
-  def _PerformCopyThread(self, s3_object, zone, dest_bucket) -> None:
+  def _PerformCopyThread(self, s3_object) -> None:
     try:
       # We must create a new client for each thread, rather than use the class
       # member self.dest_project due to an underlying thread safety issue in
       # httplib2: https://github.com/googleapis/google-cloud-python/issues/3501
       client = gcp_project.GoogleCloudProject(self.dest_project_name)
-      result = client.storagetransfer.S3ToGCS(s3_object, self.aws_region + 'a', 'gs://' + self.dest_bucket)
+      client.storagetransfer.S3ToGCS(s3_object, self.aws_region + 'a', 'gs://' + self.dest_bucket)
+      _, s3_path = SplitStoragePath(s3_object)
+      output = self.dest_bucket + '/' + s3_path
+
+      with self._lock:
+        if len(self.state.GetContainers(containers.GCSObjectList)):
+          self.state.GetContainers(containers.GCSObjectList)[0]\
+              .append(output)
+        else:
+          container = containers.GCSObjectList()
+          container.append(output)
+          self.state.StoreContainer(container)
+
     except Exception as e: # pylint: disable=broad-except
       self.logger.critical('{0!s}'.format(e))
       self.thread_error = e
 
+  def _SetBucketServiceAccountPermissions(self):
+    """Grant access to the storage transfer service account to use the bucket.
+    See https://cloud.google.com/storage-transfer/docs/configure-access#sink"""
+
+    request = self.dest_project.storagetransfer.GcstApi().\
+        googleServiceAccounts().get(projectId=self.dest_project_name)
+    service_account = request.execute()['accountEmail']
+
+    client = storage_client(project=self.dest_project_name)
+    bucket = client.get_bucket(self.dest_bucket)
+    policy = bucket.get_iam_policy(requested_policy_version=3)
+    policy.version = 3
+
+    policy.bindings.append({
+        'role': 'roles/storage.legacyBucketWriter',
+        'members': ['serviceAccount:' + service_account],
+    })
+    policy.bindings.append({
+        'role': 'roles/storage.objectViewer',
+        'members': ['serviceAccount:' + service_account],
+    })
+
+    bucket.set_iam_policy(policy)
 
 
 modules_manager.ModulesManager.RegisterModule(S3ToGCSCopy)

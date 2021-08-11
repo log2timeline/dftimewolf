@@ -90,7 +90,8 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
     # Perform the prep stage
     instance_profile_name = 'ebsCopy'
     aws_account = account.AWSAccount(zone)
-    iam_details = forensics.CopyEBSSnapshotToS3SetUp(aws_account, instance_profile_name)
+    iam_details = forensics.CopyEBSSnapshotToS3SetUp(
+        aws_account, instance_profile_name)
     if iam_details['profile']['created']: # Propagation delay
       sleep(20)
 
@@ -114,7 +115,8 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
     for thread in threads:
       thread.join()
 
-    forensics.CopyEBSSnapshotToS3TearDown(aws_account, instance_profile_name, iam_details)
+    forensics.CopyEBSSnapshotToS3TearDown(
+        aws_account, instance_profile_name, iam_details)
 
     if self.thread_error:
       self.ModuleError('Exception during copy operation: {0!s}'\
@@ -137,14 +139,12 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
       snapshot_id (str): The snapshot ID.
       zone (str): The AWS availability zone."""
     try:
-      outputs = forensics.CopyEBSSnapshotToS3Process(aws_account,
+      result = forensics.CopyEBSSnapshotToS3Process(aws_account,
           self.bucket,
           snapshot_id,
           instance_profile_arn,
           subnet_id=self.subnet)
-      
-      base_path = '{0:s}/{1:s}/'.format(self.bucket, snapshot_id)
-      output = aws_containers.S3Image(outputs['image'], outputs['hashes'])
+      output = aws_containers.S3Image(result['image'], result['hashes'])
 
       with self._lock:
         if len(self.state.GetContainers(aws_containers.AWSAttributeContainer)):
@@ -181,5 +181,6 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
     for zone in response['AvailabilityZones']:
       if zone['State'] == 'available':
         return str(zone['ZoneName'])
+    # TODO return an error if no suitable zone can be found - quite unlikely
 
 modules_manager.ModulesManager.RegisterModule(AWSSnapshotS3CopyCollector)

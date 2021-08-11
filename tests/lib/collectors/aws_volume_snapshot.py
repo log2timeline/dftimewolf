@@ -74,15 +74,15 @@ class AWSVolumeSnapshotCollectorTest(unittest.TestCase):
     self.assertIsNotNone(collector)
 
   def testSetUp(self):
-    """Tests that the collector can be initialised."""
+    """Tests SetUp of the collector."""
     test_state = state.DFTimewolfState(config.Config)
-    volumes = 'vol-01234567,vol-12345678'
+    volumes_expected = 'vol-01234567,vol-12345678'
 
     collector = aws_volume_snapshot.AWSVolumeSnapshotCollector(test_state)
     collector.SetUp(','.join([volume['VolumeId']\
         for volume in FAKE_VOLUME_LIST['Volumes']]), FAKE_REGION)
 
-    self.assertEqual(volumes, collector.volumes)
+    self.assertEqual(volumes_expected, collector.volumes)
     self.assertEqual(FAKE_REGION, collector.region)
 
   @mock.patch('boto3.session.Session._setup_loader')

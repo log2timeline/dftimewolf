@@ -325,3 +325,31 @@ class WorkspaceLogs(interface.AttributeContainer):
     self.filter_expression = filter_expression
     self.path = path
     self.application_name = application_name
+
+class GCSObjectList(interface.AttributeContainer):
+  """GCS Objects List container.
+
+  Attributes:
+    object_list (List[str]): List of GCS object paths.
+  """
+  CONTAINER_TYPE = 'gcs_object_list'
+
+  def __init__(self, object_list: List[str]=[]):
+    """Initializes the GCS object list container.
+
+    Args:
+      object_list (List[str]): List of GCS object paths.
+    """
+    super(GCSObjectList, self).__init__()
+    self.object_list = []
+    for path in object_list:
+      self.append(path)
+
+  def append(self, object_path: str):
+    """Append an object path to the object list.
+
+    Args:
+      object_path (str): The object path to append.
+    """
+    self.object_list.append(object_path if object_path.startswith('gs://')
+        else 'gs://' + object_path)

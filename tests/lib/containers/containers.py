@@ -64,6 +64,26 @@ class RemoteFSPathDataTest(unittest.TestCase):
 
     self.assertEqual(attribute_names, expected_attribute_names)
 
+class GCSObjectListTest(unittest.TestCase):
+  """Tests for the GCSObjectList container."""
+
+  def testGCSObjectListSetAndGet(self):
+    """Tests the setting and retrival of attributes."""
+    paths_without_prefix = [
+      'fake-bucket/object-1',
+      'fake-bucket/object-2',
+      'fake-bucket/object-3',
+    ]
+    paths_with_prefix = ['gs://' + path for path in paths_without_prefix]
+
+    container = containers.GCSObjectList()
+    self.assertEqual(['object_list'], sorted(container.GetAttributeNames()))
+
+    container = containers.GCSObjectList(paths_with_prefix)
+    self.assertEqual(sorted(paths_with_prefix), sorted(container.object_list))
+
+    container = containers.GCSObjectList(paths_without_prefix)
+    self.assertEqual(sorted(paths_with_prefix), sorted(container.object_list))
 
 
 if __name__ == '__main__':

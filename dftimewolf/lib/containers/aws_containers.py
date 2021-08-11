@@ -67,5 +67,4 @@ class AWSAttributeContainer(interface.AttributeContainer):
     Args:
       s3_image (S3Image): The S3 path to append.
     """
-    print('Appending image: {0:s}'.format(s3_image.image_path))
     self.s3_images.append(s3_image)
