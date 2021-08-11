@@ -59,11 +59,13 @@ class S3ToGCSCopyTest(unittest.TestCase):
     self.assertEqual(FAKE_GCS_BUCKET, exporter.dest_bucket)
     self.assertEqual(FAKE_S3_OBJECTS, exporter.s3_objects)
 
+  # pylint: disable=line-too-long
   @mock.patch('libcloudforensics.providers.gcp.internal.project.GoogleCloudProject')
   @mock.patch('libcloudforensics.providers.gcp.internal.storage.GoogleCloudStorage.ListBuckets')
   @mock.patch('libcloudforensics.providers.gcp.internal.storage.GoogleCloudStorage.CreateBucket')
   @mock.patch('dftimewolf.lib.exporters.s3_to_gcs.S3ToGCSCopy._SetBucketServiceAccountPermissions')
   @mock.patch('libcloudforensics.providers.gcp.internal.storagetransfer.GoogleCloudStorageTransfer.S3ToGCS')
+  # pylint: enable=line-too-long
   def testProcessFromParams(self,
       mock_s3_to_gcs,
       mock_set_bucket_perms,
@@ -75,6 +77,8 @@ class S3ToGCSCopyTest(unittest.TestCase):
     mock_gcp_project.return_value = FAKE_GCP_PROJECT
     mock_gcp_list_buckets.return_value = FAKE_GCP_LIST_BUCKETS_RESPONSE
     mock_gcp_create_bucket.return_value = FAKE_GCP_CREATE_BUCKET_RESPONSE
+    mock_set_bucket_perms.return_value = None
+    mock_s3_to_gcs.return_value = None
 
     test_state = state.DFTimewolfState(config.Config)
 
@@ -90,11 +94,13 @@ class S3ToGCSCopyTest(unittest.TestCase):
       self.assertIn(output, exporter.state.GetContainers(
           containers.GCSObjectList)[0].object_list)
 
+  # pylint: disable=line-too-long
   @mock.patch('libcloudforensics.providers.gcp.internal.project.GoogleCloudProject')
   @mock.patch('libcloudforensics.providers.gcp.internal.storage.GoogleCloudStorage.ListBuckets')
   @mock.patch('libcloudforensics.providers.gcp.internal.storage.GoogleCloudStorage.CreateBucket')
   @mock.patch('dftimewolf.lib.exporters.s3_to_gcs.S3ToGCSCopy._SetBucketServiceAccountPermissions')
   @mock.patch('libcloudforensics.providers.gcp.internal.storagetransfer.GoogleCloudStorageTransfer.S3ToGCS')
+  # pylint: enable=line-too-long
   def testProcessFromState(self,
       mock_s3_to_gcs,
       mock_set_bucket_perms,
@@ -106,10 +112,12 @@ class S3ToGCSCopyTest(unittest.TestCase):
     mock_gcp_project.return_value = FAKE_GCP_PROJECT
     mock_gcp_list_buckets.return_value = FAKE_GCP_LIST_BUCKETS_RESPONSE
     mock_gcp_create_bucket.return_value = FAKE_GCP_CREATE_BUCKET_RESPONSE
+    mock_set_bucket_perms.return_value = None
+    mock_s3_to_gcs.return_value = None
 
     container = aws_containers.AWSAttributeContainer()
     for s3image in FAKE_STATE_S3_IMAGE_LIST:
-      container.AppendS3Image(s3image) 
+      container.AppendS3Image(s3image)
     test_state = state.DFTimewolfState(config.Config)
     test_state.StoreContainer(container)
 

@@ -2,21 +2,17 @@
 """Export objects from AWS S3 to a GCP GCS bucket."""
 
 from time import sleep
+import threading
 
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk
-
+from libcloudforensics.errors import ResourceCreationError
+from libcloudforensics.providers.utils.storage_utils import SplitStoragePath
+from google.cloud.storage.client import Client as storage_client
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers, aws_containers
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.state import DFTimewolfState
-from libcloudforensics.errors import ResourceCreationError
-from libcloudforensics.providers.gcp.internal import common
-from libcloudforensics.providers.utils.storage_utils import SplitStoragePath
 
-from google.cloud.storage.client import Client as storage_client
-
-import threading
 
 class S3ToGCSCopy(module.BaseModule):
   """AWS S3 objects to GCP GCS.
@@ -127,7 +123,8 @@ class S3ToGCSCopy(module.BaseModule):
       # member self.dest_project due to an underlying thread safety issue in
       # httplib2: https://github.com/googleapis/google-cloud-python/issues/3501
       client = gcp_project.GoogleCloudProject(self.dest_project_name)
-      client.storagetransfer.S3ToGCS(s3_object, self.aws_region + 'a', 'gs://' + self.dest_bucket)
+      client.storagetransfer.S3ToGCS(
+          s3_object, self.aws_region + 'a', 'gs://' + self.dest_bucket)
       _, s3_path = SplitStoragePath(s3_object)
       output = self.dest_bucket + '/' + s3_path
 
@@ -137,7 +134,7 @@ class S3ToGCSCopy(module.BaseModule):
               .append(output)
         else:
           container = containers.GCSObjectList()
-          container.append(output)
+          container.Append(output)
           self.state.StoreContainer(container)
 
     except Exception as e: # pylint: disable=broad-except
