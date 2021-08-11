@@ -6,6 +6,7 @@ from time import sleep
 import boto3
 
 from libcloudforensics.providers.aws import forensics
+from libcloudforensics.providers.aws.internal import account
 from libcloudforensics.errors import ResourceCreationError
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import aws_containers
@@ -68,6 +69,17 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
     else:
       self.ModuleError('No snapshot IDs specified', critical=True)
 
+    # Validate the bucket exists. If not, create it.
+    s3 = boto3.client('s3', region_name=self.region)
+
+    if self.bucket not in \
+        [bucket['Name'] for bucket in s3.list_buckets()['Buckets']]:
+      self.logger.info('Creating AWS bucket {0:s}'.format(self.bucket))
+      s3.create_bucket(
+        Bucket=self.bucket,
+        CreateBucketConfiguration={'LocationConstraint': self.region})
+
+    # Check the snapshots exist
     try:
       self.ec2.describe_snapshots(SnapshotIds=self.snapshots)
       zone = self._PickAvailabilityZone(self.subnet)
@@ -75,6 +87,14 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
       self.ModuleError('Error encountered describing snapshots: {0!s}'.\
         format(exception), critical=True)
 
+    # Perform the prep stage
+    instance_profile_name = 'ebsCopy'
+    aws_account = account.AWSAccount(zone)
+    iam_details = forensics.CopyEBSSnapshotToS3SetUp(aws_account, instance_profile_name)
+    if iam_details['profile']['created']: # Propagation delay
+      sleep(20)
+
+    # Kick off a thread for each snapshot to perform the copy.
     threads = []
     self.logger.info(
       'Starting {0:d} copy threads, expect log messages from each'\
@@ -82,7 +102,8 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
     for snapshot in self.snapshots:
       try:
         thread = threading.Thread(
-          target=self._PerformCopyThread, args=(snapshot, zone))
+            target=self._PerformCopyThread, args=(
+                snapshot, aws_account, iam_details['profile']['arn']))
         thread.start()
         threads.append(thread)
         sleep(2) # Offest each thread start slightly
@@ -93,15 +114,21 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
     for thread in threads:
       thread.join()
 
+    forensics.CopyEBSSnapshotToS3TearDown(aws_account, instance_profile_name, iam_details)
+
     if self.thread_error:
       self.ModuleError('Exception during copy operation: {0!s}'\
         .format(self.thread_error), critical=True)
 
-    self.logger.info('Snapshot copy complete: {0:s}'\
-      .format(','.join(self.state.GetContainers(\
-        aws_containers.AWSAttributeContainer)[0].s3_paths)))
+    self.logger.info('Snapshot copy complete! results:')
+    for image in self.state.GetContainers(
+        aws_containers.AWSAttributeContainer)[0].s3_images:
+      self.logger.info('Image: {0:s} - Hashes: {1:s}'.format(
+        image.image_path,
+        ','.join(image.hash_paths)
+      ))
 
-  def _PerformCopyThread(self, snapshot_id, zone):
+  def _PerformCopyThread(self, snapshot_id, aws_account, instance_profile_arn):
     """Perform the copy operation. Designed to be called as a new thread from
     Process(). Will place the output file paths into the state container,
     (creating it if it doesn't exist already.)
@@ -110,31 +137,26 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
       snapshot_id (str): The snapshot ID.
       zone (str): The AWS availability zone."""
     try:
-      forensics.CopyEBSSnapshotToS3(
-        self.bucket,
-        snapshot_id,
-        'ebsCopy',
-        zone,
-        subnet_id=self.subnet)
+      outputs = forensics.CopyEBSSnapshotToS3Process(aws_account,
+          self.bucket,
+          snapshot_id,
+          instance_profile_arn,
+          subnet_id=self.subnet)
+      
+      base_path = '{0:s}/{1:s}/'.format(self.bucket, snapshot_id)
+      output = aws_containers.S3Image(outputs['image'], outputs['hashes'])
+
+      with self._lock:
+        if len(self.state.GetContainers(aws_containers.AWSAttributeContainer)):
+          self.state.GetContainers(aws_containers.AWSAttributeContainer)[0]\
+              .AppendS3Image(output)
+        else:
+          container = aws_containers.AWSAttributeContainer()
+          container.AppendS3Image(output)
+          self.state.StoreContainer(container)
     except Exception as e: # pylint: disable=broad-except
       self.logger.critical('{0!s}'.format(e))
       self.thread_error = e
-
-    # Copy operation puts the output files in "s3://bucket/snapshot/"
-    files = ['image.bin', 'log.txt', 'hlog.txt', 'mlog.txt']
-    output = ['s3://{0:s}/{1:s}/{2:s}'.format(self.bucket, snapshot_id, file)
-      for file in files]
-
-    with self._lock:
-      if len(self.state.GetContainers(aws_containers.AWSAttributeContainer)):
-        for path in output:
-          self.state.GetContainers(aws_containers.AWSAttributeContainer)[0]\
-            .AppendS3Path(path)
-      else:
-        container = aws_containers.AWSAttributeContainer()
-        for path in output:
-          container.AppendS3Path(path)
-        self.state.StoreContainer(container)
 
   # pylint: disable=inconsistent-return-statements
   def _PickAvailabilityZone(self, subnet=None) -> str:

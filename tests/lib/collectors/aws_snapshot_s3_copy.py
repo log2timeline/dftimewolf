@@ -63,6 +63,14 @@ FAKE_DESCRIBE_SUBNETS = {
     }
   ]
 }
+FAKE_LIST_BUCKETS_RESPONSE = {
+  'Buckets': [
+    {
+      'Name': 'bucket-1'
+    }
+  ]
+}
+FAKE_CREATE_BUCKET_RESPONSE = None
 
 # pylint: disable=protected-access
 orig = botocore.client.BaseClient._make_api_call
@@ -80,6 +88,10 @@ def MockMakeAPICall(self, operation_name, kwarg):
     return FAKE_DESCRIBE_AVAILABILITY_ZONES
   if operation_name == 'DescribeSubnets':
     return FAKE_DESCRIBE_SUBNETS
+  if operation_name == 'ListBuckets':
+    return FAKE_LIST_BUCKETS_RESPONSE
+  if operation_name == 'CreateBucket':
+    return FAKE_CREATE_BUCKET_RESPONSE
   return orig(self, operation_name, kwarg)
 
 class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
@@ -164,14 +176,19 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
         new=MockMakeAPICall):
       collector.Process()
 
-    files = ['image.bin', 'log.txt', 'hlog.txt', 'mlog.txt']
-    base_str = 's3://{0:s}/{1:s}/{2:s}'
-    outputs = [base_str.format(FAKE_BUCKET, snapshot['SnapshotId'], file)
-      for file in files
-      for snapshot in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']]
-    for output in outputs:
-      self.assertIn(output, collector.state.GetContainers(
-          aws_containers.AWSAttributeContainer)[0].s3_paths)
+    base_str = 's3://{0:s}/{1:s}'
+    images = [aws_containers.S3Image(base_str.format(
+        FAKE_BUCKET, snapshot['SnapshotId']) + '/image.bin',
+      [
+        base_str.format(FAKE_BUCKET, snapshot['SnapshotId']) + '/log.txt',
+        base_str.format(FAKE_BUCKET, snapshot['SnapshotId']) + '/hlog.txt',
+        base_str.format(FAKE_BUCKET, snapshot['SnapshotId']) + '/mlog.txt',
+      ]
+    ) for snapshot in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']]
+
+    for image in images:
+      self.assertIn(image, collector.state.GetContainers(
+          aws_containers.AWSAttributeContainer)[0].s3_images)
 
   @mock.patch('boto3.session.Session._setup_loader')
   @mock.patch('libcloudforensics.providers.aws.forensics.CopyEBSSnapshotToS3')
@@ -193,14 +210,19 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
         new=MockMakeAPICall):
       collector.Process()
 
-    files = ['image.bin', 'log.txt', 'hlog.txt', 'mlog.txt']
-    base_str = 's3://{0:s}/{1:s}/{2:s}'
-    outputs = [base_str.format(FAKE_BUCKET, snapshot['SnapshotId'], file)
-      for file in files
-      for snapshot in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']]
-    for output in outputs:
-      self.assertIn(output, collector.state.GetContainers(
-          aws_containers.AWSAttributeContainer)[0].s3_paths)
+    base_str = 's3://{0:s}/{1:s}'
+    images = [aws_containers.S3Image(base_str.format(
+        FAKE_BUCKET, snapshot['SnapshotId']) + '/image.bin',
+      [
+        base_str.format(FAKE_BUCKET, snapshot['SnapshotId']) + '/log.txt',
+        base_str.format(FAKE_BUCKET, snapshot['SnapshotId']) + '/hlog.txt',
+        base_str.format(FAKE_BUCKET, snapshot['SnapshotId']) + '/mlog.txt',
+      ]
+    ) for snapshot in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']]
+
+    for image in images:
+      self.assertIn(image, collector.state.GetContainers(
+          aws_containers.AWSAttributeContainer)[0].s3_images)
 
 
 if __name__ == '__main__':

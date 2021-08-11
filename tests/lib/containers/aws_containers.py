@@ -26,15 +26,31 @@ class AWSAttributeContainerTest(unittest.TestCase):
 
     self.assertEqual(snapshots, container.snapshots)
 
-  def testAppendS3Path(self):
+  def testAppendS3Image(self):
     """Tests the AppendS3Path function."""
     container = aws_containers.AWSAttributeContainer()
-    paths=['s3://bucket/path/one', 's3://bucket/path/two']
+    image_path = 's3://bucket/path/image.bin'
+    hash_paths=[
+      's3://bucket/path/log.txt',
+      's3://bucket/path/hlog.txt',
+      's3://bucket/path/mlog.txt']
 
-    for path in paths:
-      container.AppendS3Path(path)
+    image_path_no_prefix = 'bucket/path/image.bin'
+    hash_paths_no_prefix = [
+      'bucket/path/log.txt',
+      'bucket/path/hlog.txt',
+      'bucket/path/mlog.txt']
 
-    self.assertEqual(paths, container.s3_paths)
+    container.AppendS3Image(aws_containers.S3Image(image_path, hash_paths))
+    self.assertEqual(aws_containers.S3Image(image_path, hash_paths),
+        container.s3_images[0])
+
+    container = aws_containers.AWSAttributeContainer()
+    container.AppendS3Image(aws_containers.S3Image(
+        image_path_no_prefix, hash_paths_no_prefix))
+    self.assertEqual(aws_containers.S3Image(image_path, hash_paths),
+        container.s3_images[0])
+
 
 if __name__ == '__main__':
   unittest.main()

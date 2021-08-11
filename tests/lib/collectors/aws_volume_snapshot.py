@@ -59,7 +59,7 @@ def MockMakeAPICall(self, operation_name, kwarg):
     return FAKE_VOLUME_LIST
   if operation_name == 'CreateSnapshot':
     return FAKE_CREATE_SNAPSHOT_RESPONSE
-  if operation_name == "DescribeSnapshots":
+  if operation_name == 'DescribeSnapshots':
     return FAKE_DESCRIBE_SNAPSHOTS_RESPONSE
   return orig(self, operation_name, kwarg)
 
