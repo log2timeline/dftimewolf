@@ -126,6 +126,7 @@ types-filelock==0.1.4
 types-futures==0.1.6
 types-protobuf==3.17.4
 types-pyyaml==5.4.3
+types-pytz==2021.1.2
 typing-extensions==3.10.0.0
 typing-inspect==0.7.1
 uritemplate==3.0.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'

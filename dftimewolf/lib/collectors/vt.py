@@ -43,7 +43,7 @@ class VTCollector(module.BaseModule):
         print("Not implemented")
 
     # pylint: disable=arguments-differ,too-many-arguments
-    def SetUp(self, hashes: typing.List[str], vt_api_key: str, type: str = 'pcap', action: str = 'download', output_path: typing.Optional[str] = None) -> None:
+    def SetUp(self, hashes: list[str], vt_api_key: str, type: str = 'pcap', action: str = 'download', output_path: typing.Optional[str] = None) -> None:
         """Sets up an Virustotal (VT) collector.
 
         Args:
@@ -155,7 +155,9 @@ class VTCollector(module.BaseModule):
         else:
             return tempfile.mkdtemp()
 
-    def _isHashKnownToVT(self, vt_hash) -> bool:
+        return output_path
+
+    def _isHashKnownToVT(self, vt_hash: str) -> bool:
         """Checks if a hash is known to VT.
 
         Args:
