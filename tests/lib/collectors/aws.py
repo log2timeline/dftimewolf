@@ -37,6 +37,7 @@ FAKE_VOLUME = ebs.AWSVolume(
     FAKE_AWS_ACCOUNT,
     'fake-zone-2',
     'fake-zone-2b',
+    'fake-vpc-id',
     False)
 FAKE_BOOT_VOLUME = ebs.AWSVolume(
     'fake-boot-volume-id',
@@ -51,6 +52,7 @@ FAKE_VOLUME_COPY = ebs.AWSVolume(
     FAKE_AWS_ACCOUNT,
     'fake-zone-2',
     'fake-zone-2b',
+    'fake-vpc-id',
     False)
 
 

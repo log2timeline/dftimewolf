@@ -40,11 +40,15 @@ class AzureCollector(module.BaseModule):
   _ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME = 'Analysis VM'
   _ANALYSIS_VM_CONTAINER_ATTRIBUTE_TYPE = 'text'
 
-  def __init__(self, state: DFTimewolfState, critical: bool=False) -> None:
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str]=None,
+               critical: bool=False) -> None:
     """Initializes a Microsoft Azure collector.
 
     Args:
       state (DFTimewolfState): recipe state.
+      name (Optional[str]): The module's runtime name.
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """

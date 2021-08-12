@@ -123,3 +123,7 @@ class RecipesManager(object):
     """
     for recipe in recipes:
       self.RegisterRecipe(recipe)
+
+  def Recipes(self) -> Dict[str, resources.Recipe]:
+    """Returns recipes object."""
+    return self._recipes

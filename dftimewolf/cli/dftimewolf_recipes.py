@@ -42,7 +42,7 @@ MODULES = {
   'GRRFileCollector': 'dftimewolf.lib.collectors.grr_hosts',
   'GRRFlowCollector': 'dftimewolf.lib.collectors.grr_hosts',
   'GRRHuntArtifactCollector': 'dftimewolf.lib.collectors.grr_hunt',
-  'GRRHuntDownloader,': 'dftimewolf.lib.collectors.grr_hunt',
+  'GRRHuntDownloader': 'dftimewolf.lib.collectors.grr_hunt',
   'GRRHuntFileCollector': 'dftimewolf.lib.collectors.grr_hunt',
   'GRRTimelineCollector': 'dftimewolf.lib.collectors.grr_hosts',
   'LocalFilesystemCopy': 'dftimewolf.lib.exporters.local_filesystem',
@@ -51,7 +51,7 @@ MODULES = {
   'SanityChecks': 'dftimewolf.lib.preflights.sanity_checks',
   'SCPExporter': 'dftimewolf.lib.exporters.scp_ex',
   'SSHMultiplexer': 'dftimewolf.lib.preflights.ssh_multiplexer',
-  'TimesketchEnchancer': 'dftimewolf.lib.enhancers.timesketch',
+  'TimesketchEnhancer': 'dftimewolf.lib.enhancers.timesketch',
   'TimesketchExporter': 'dftimewolf.lib.exporters.timesketch',
   'TurbiniaArtifactProcessor': 'dftimewolf.lib.processors.turbinia_artifact',
   'TurbiniaGCPProcessor': 'dftimewolf.lib.processors.turbinia_gcp',
@@ -286,6 +286,11 @@ class DFTimewolfTool(object):
   def CleanUpPreflights(self) -> None:
     """Calls the preflight's CleanUp functions."""
     self._state.CleanUpPreflights()
+
+  def RecipesManager(self) -> recipes_manager.RecipesManager:
+    """Returns the recipes manager."""
+    return self._recipes_manager
+
 
 def SignalHandler(*unused_argvs: Any) -> None:
   """Catches Ctrl + C to exit cleanly."""

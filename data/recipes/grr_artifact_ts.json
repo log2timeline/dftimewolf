@@ -31,6 +31,7 @@
             "incident_id": "@reason",
             "token_password": "@token_password",
             "sketch_id": "@sketch_id",
+            "analyzers": null,
             "wait_for_timelines": "@wait_for_timelines"
         }
     }],

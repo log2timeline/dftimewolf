@@ -15,20 +15,21 @@
             "incident_id": "@incident_id",
             "token_password": "@token_password",
             "sketch_id": "@sketch_id",
-	      "analyzers": "browser_search,browser_timeframe,account_finder,phishy_domains,evtx_gap,login,win_crash,safebrowsing,chain,"
+            "wait_for_timelines": "@wait_for_timelines",
+            "analyzers": "browser_search,browser_timeframe,account_finder,phishy_domains,evtx_gap,login,win_crash,safebrowsing,chain,"
         }
     }, {
         "wants": ["TimesketchExporter"],
         "name": "TimesketchEnhancer",
         "args": {
-	    "wait_for_analyzers": "@wait_for_analyzers",
+            "wait_for_analyzers": "@wait_for_analyzers",
             "searches_to_skip": "@searches_to_skip",
             "aggregations_to_skip": "@aggregations_to_skip",
             "include_stories": "@timesketch_include_stories",
             "token_password": "@token_password",
-	      "max_checks": "@analyzer_max_checks",
-	      "formatter": "html"
-	}
+            "max_checks": "@analyzer_max_checks",
+            "formatter": "html"
+    }
     }],
     "args": [
         ["files", "Comma-separated list of paths to CSV files or Plaso storage files", null],
@@ -36,10 +37,10 @@
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
         ["--incident_id", "Incident ID (used for Timesketch description)", null],
         ["--wait_for_analyzers", "Wait for analyzers until they complete their run, if set to False the TS enhancer will be skipped", true],
+        ["--wait_for_timelines", "Whether to wait for timelines to finish processing.", true],
         ["--timesketch_include_stories", "Include story dumps in reports", false],
         ["--searches_to_skip", "A comma separated list of saved searches that should not be uploaded.", null],
         ["--analyzer_max_checks", "Number of wait cycles (per cycle is 3 seconds) before terminating wait for analyzers to complete.", 0],
         ["--aggregations_to_skip", "A comma separated list of aggregation names that should not be uploaded.", null]
     ]
 }
-
