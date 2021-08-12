@@ -1,0 +1,44 @@
+{
+  "name": "workspace_meet_ts",
+  "description": "Collects Google Workspace audit records for a Google Meet and adds them to Timesketch.",
+  "short_description": "Collects Meet records and adds to Timesketch",
+  "preflights": [],
+  "modules": [
+    {
+      "wants": [],
+      "name": "WorkspaceAuditCollector",
+      "args": {
+        "application_name": "meet",
+        "user_key": "all",
+        "filter_expression": "meeting_code==@meeting_id",
+        "start_time": "@start_time",
+        "end_time": "@end_time"
+      }
+    },
+    {
+      "wants": ["WorkspaceAuditCollector"],
+      "name": "WorkspaceAuditTimesketch",
+      "args": {}
+    },
+    {
+      "wants": ["WorkspaceAuditTimesketch"],
+      "name": "TimesketchExporter",
+      "args": {
+        "incident_id": "@incident_id",
+        "token_password": "@token_password",
+        "sketch_id": "@sketch_id",
+        "analyzers": null,
+        "wait_for_timelines": "@wait_for_timelines"
+      }
+    }
+  ],
+  "args": [
+    ["meeting_id", "ID for the Meeting to look up", null],
+    ["--start_time", "Start time (yyyy-mm-ddTHH:MM:SSZ)", null],
+    ["--end_time", "End time (yyyy-mm-ddTHH:MM:SSZ)", null],
+    ["--incident_id", "Incident ID (used for Timesketch description)", null],
+    ["--sketch_id", "Sketch to which the timeline should be added", null],
+    ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
+    ["--wait_for_timelines", "Whether to wait for timelines to finish processing.", true]
+  ]
+}

@@ -1,7 +1,16 @@
 # -*- coding: utf-8 -*-
 """Attribute container definitions."""
 
+from datetime import datetime
+from typing import Optional, Union, List, TYPE_CHECKING, Dict, Any
+
 from dftimewolf.lib.containers import interface
+
+if TYPE_CHECKING:
+  from libcloudforensics.providers.aws.internal.ebs import AWSVolume
+  from libcloudforensics.providers.azure.internal.compute import AZComputeDisk
+  from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk
+  import pandas
 
 
 class FSPath(interface.AttributeContainer):
@@ -12,7 +21,7 @@ class FSPath(interface.AttributeContainer):
   """
   CONTAINER_TYPE = 'fspath'
 
-  def __init__(self, path=None):
+  def __init__(self, path: str) -> None:
     """Initializes the FSPath object.
 
     Args:
@@ -31,7 +40,9 @@ class RemoteFSPath(FSPath):
   """
   CONTAINER_TYPE = 'remotefspath'
 
-  def __init__(self, path=None, hostname=None):
+  def __init__(self,
+               path: str,
+               hostname: str) -> None:
     """Initializes the FSPath object.
 
     Args:
@@ -43,7 +54,7 @@ class RemoteFSPath(FSPath):
 
 
 class Report(interface.AttributeContainer):
-  """Analysis report attribute container.
+  """Report attribute container.
 
   Attributes:
     module_name (str): name of the module that generated the report.
@@ -56,12 +67,15 @@ class Report(interface.AttributeContainer):
   CONTAINER_TYPE = 'report'
 
   def __init__(
-      self, module_name, text, text_format='plaintext', attributes=None):
+      self,
+      module_name: str,
+      text: str,
+      text_format: str='plaintext',
+      attributes: Optional[List[Dict[str, Any]]]=None) -> None:
     """Initializes the analysis report.
 
     Args:
-      module_name (str): name of the analysis plugin that generated
-          the report.
+      module_name (str): name of the module that generated the report.
       text (str): report text.
       text_format (str): format of text in the report. Must be either
         'plaintext' or 'markdown'.
@@ -89,8 +103,8 @@ class GCPLogs(interface.AttributeContainer):
   """
   CONTAINER_TYPE = 'gcp_logs'
 
-  def __init__(self, path, filter_expression, project_name):
-    """Initializes the analysis report.
+  def __init__(self, path: str, filter_expression: str, project_name: str):
+    """Initializes the GCP logs container.
 
     Args:
       filter_expression (str): GCP advanced logs filter expression
@@ -104,6 +118,43 @@ class GCPLogs(interface.AttributeContainer):
     self.project_name = project_name
 
 
+class AWSLogs(interface.AttributeContainer):
+  """AWS logs container.
+
+  Attributes:
+      path (str): path to a AWS log file.
+      profile_name (str): the profile used to collect logs.
+      query_filter (str): the query filter used in the log query.
+      start_time (str): the start time used in the log query in format
+        'YYYY-MM-DD HH:MM:SS.US'.
+      end_time (str): the end time used in the log query in format
+        'YYYY-MM-DD HH:MM:SS.US'.
+  """
+  CONTAINER_TYPE = 'aws_logs'
+
+  def __init__(self,
+               path: str,
+               profile_name: Optional[str],
+               query_filter: Optional[str],
+               start_time: Optional[datetime],
+               end_time: Optional[datetime]) -> None:
+    """Initializes the AWS logs container.
+
+    Args:
+      path (str): path to a AWS log file.
+      profile_name (str): the profile used to collect logs.
+      query_filter (str): the query filter used in the log query.
+      start_time (datetime): the start time used in the log query.
+      end_time (datetime): the end time used in the log query.
+    """
+    super(AWSLogs, self).__init__()
+    self.path = path
+    self.profile_name = profile_name
+    self.query_filter = query_filter
+    self.start_time = str(start_time)
+    self.end_time = str(end_time)
+
+
 class ThreatIntelligence(interface.AttributeContainer):
   """Threat Intelligence attribute container.
 
@@ -114,7 +165,7 @@ class ThreatIntelligence(interface.AttributeContainer):
   """
   CONTAINER_TYPE = 'threat_intelligence'
 
-  def __init__(self, name, indicator, path):
+  def __init__(self, name: str, indicator: Optional[str], path: str) -> None:
     """Initializes the Threat Intelligence container.
 
     Args:
@@ -137,7 +188,7 @@ class TicketAttribute(interface.AttributeContainer):
   """
   CONTAINER_TYPE = 'ticketattribute'
 
-  def __init__(self, type_, name, value):
+  def __init__(self, type_: str, name: str, value: str) -> None:
     """Initializes the attribute.
 
     Args:
@@ -161,7 +212,10 @@ class File(interface.AttributeContainer):
   """
   CONTAINER_TYPE = 'file'
 
-  def __init__(self, name, path, description=None):
+  def __init__(self,
+               name: str,
+               path: str,
+               description: Optional[str]=None) -> None:
     """Initializes the attribute.
 
     Args:
@@ -187,7 +241,12 @@ class ForensicsVM(interface.AttributeContainer):
   """
   CONTAINER_TYPE = 'forensics_vm'
 
-  def __init__(self, name, evidence_disk, platform):
+  def __init__(self,
+               name: str,
+               evidence_disk: Union["GoogleComputeDisk",
+                                    "AWSVolume",
+                                    "AZComputeDisk"],
+               platform: str) -> None:
     super(ForensicsVM, self).__init__()
     self.name = name
     self.evidence_disk = evidence_disk
@@ -202,7 +261,7 @@ class URL(interface.AttributeContainer):
   """
   CONTAINER_TYPE = 'url'
 
-  def __init__(self, path):
+  def __init__(self, path: str) -> None:
     super(URL, self).__init__()
     self.path = path
 
@@ -218,8 +277,51 @@ class DataFrame(interface.AttributeContainer):
 
   CONTAINER_TYPE = 'data_frame'
 
-  def __init__(self, data_frame, description, name):
+  def __init__(
+      self, data_frame: "pandas.DataFrame", description: str, name: str):
     super(DataFrame, self).__init__()
     self.data_frame = data_frame
     self.description = description
     self.name = name
+
+
+class Host(interface.AttributeContainer):
+  """Attribute container definition for a host.
+
+  Attributes:
+    hostname (str): The host's hostname.
+    platform (str): The host's platform. One of {win, linux, macos, unknown}.
+  """
+
+  CONTAINER_TYPE = 'host'
+
+  def __init__(self, hostname: str, platform: str='unknown') -> None:
+    super(Host, self).__init__()
+    self.hostname = hostname
+    self.platform = platform
+
+
+class WorkspaceLogs(interface.AttributeContainer):
+  """Google Workspace logs container.
+
+  Attributes:
+    application_name (str): Name of the application the audit records are for
+    filter_expression (str): Workspace audit logs filter expression
+          used to generate the results.
+    path (str): path to a Workspace log file.
+  """
+  CONTAINER_TYPE = 'workspace_logs'
+
+  def __init__(self, application_name: str, path: str, filter_expression: str):
+    """Initializes the Workspace logs container.
+
+    Args:
+      application_name (str): Name of the application the audit records are for
+      filter_expression (str): Workspace audit logs filter expression
+          used to generate the results.
+      path (str): path to a Workspace log file.
+    """
+    super(WorkspaceLogs, self).__init__()
+    self.filter_expression = filter_expression
+    self.path = path
+    self.application_name = application_name

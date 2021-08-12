@@ -26,7 +26,8 @@
             "user": null,
             "id_file": null,
             "check_ssh": true,
-            "direction": "upload"
+            "direction": "upload",
+            "multiplexing": true
           }
     }, {
         "wants": ["SCP-Upload"],
@@ -50,7 +51,8 @@
             "user": null,
             "id_file": null,
             "check_ssh": true,
-            "direction": "download"
+            "direction": "download",
+            "multiplexing": true
           }
       }],
     "args": [

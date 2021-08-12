@@ -1,4 +1,5 @@
 """Generic error wrapper"""
+from typing import Optional
 
 class DFTimewolfError(Exception):
   """Class to represent a DFTimewolfError.
@@ -12,8 +13,12 @@ class DFTimewolfError(Exception):
     unexpected (Optional[bool]): Whether the error is unexpected.
   """
 
-  def __init__(self, message=None, name=None, stacktrace=None, critical=False,
-               unexpected=False):
+  def __init__(self,
+               message: Optional[str]=None,
+               name: Optional[str]=None,
+               stacktrace: Optional[str]=None,
+               critical: bool=False,
+               unexpected: bool=False) -> None:
     """Initializes the DFTimewolfError with provided or default message."""
     super(DFTimewolfError, self).__init__(message)
     self.message = message or 'An error occurred.'
@@ -33,3 +38,6 @@ class RecipeParseError(DFTimewolfError):
 
 class CommandLineParseError(DFTimewolfError):
   """Error when parsing the command-line arguments."""
+
+class CriticalError(DFTimewolfError):
+  """Critical error that should abort the whole workflow."""

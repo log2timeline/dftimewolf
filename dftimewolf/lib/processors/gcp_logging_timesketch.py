@@ -1,28 +1,37 @@
 # -*- coding: utf-8 -*-
 """Processes Google Cloud Platform (GCP) logs for loading into Timesketch."""
 
-import tempfile
 import json
+import tempfile
+from typing import Any, Dict, Optional, TYPE_CHECKING
 
-from dftimewolf.lib.module import BaseModule
 from dftimewolf.lib.containers import containers
-
+from dftimewolf.lib.module import BaseModule
 from dftimewolf.lib.modules import manager as modules_manager
+
+if TYPE_CHECKING:
+  from dftimewolf.lib import state
 
 
 class GCPLoggingTimesketch(BaseModule):
   """Transforms Google Cloud Platform logs for Timesketch."""
 
-  def SetUp(self, *args, **kwargs):
-    """Sets up necessary module configuration options."""
-    # No configuration required.
-
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+               state: "state.DFTimewolfState",
+               name: Optional[str]=None,
+               critical: bool=False) -> None:
     super(GCPLoggingTimesketch, self).__init__(
         state, name=name, critical=critical)
 
-  def _ProcessLogLine(self, log_line, query, project_name):
-    """Processes a single JSON formatted Google Clod Platform log line.
+  def SetUp(self, *args, **kwargs):  # type: ignore
+    """Sets up necessary module configuration options."""
+    # No configuration required.
+
+  def _ProcessLogLine(self,
+                      log_line: str,
+                      query: str,
+                      project_name: str) -> str:
+    """Processes a single JSON formatted Google Cloud Platform log line.
 
     Args:
       log_line (str): a JSON formatted GCP log entry.
@@ -75,7 +84,10 @@ class GCPLoggingTimesketch(BaseModule):
 
     return json.dumps(timesketch_record)
 
-  def _parse_proto_payload(self, proto_payload, timesketch_record):
+  def _parse_proto_payload(
+      self,
+      proto_payload: Dict[str, Any],
+      timesketch_record: Dict[str, str]) -> None:
     """Extracts information from a protoPayload field in a GCP log.
 
     protoPayload is set for all cloud audit events.
@@ -121,7 +133,10 @@ class GCPLoggingTimesketch(BaseModule):
                     bd.get('role', '')))
           timesketch_record['policyDelta'] = ', '.join(policy_deltas)
 
-  def _ParseProtoPayloadRequest(self, request, timesketch_record):
+  def _ParseProtoPayloadRequest(
+      self,
+      request: Dict[str, Any],
+      timesketch_record: Dict[str, Any]) -> None:
     """Extracts information from the request field of a protoPayload field.
 
     Args:
@@ -165,7 +180,9 @@ class GCPLoggingTimesketch(BaseModule):
       service_account_name = request['service_account'].get('display_name')
       timesketch_record['service_account_display_name'] = service_account_name
 
-  def _ParseJSONPayload(self, json_payload, timesketch_record):
+  def _ParseJSONPayload(self,
+      json_payload: Dict[str, Any],
+      timesketch_record: Dict[str, Any]) -> None:
     """Extracts information from a json_payload.
 
     Args:
@@ -173,23 +190,27 @@ class GCPLoggingTimesketch(BaseModule):
       timesketch_record (dict): a dictionary that will be serialized to JSON
         and uploaded to Timesketch.
     """
-    json_attributes = ['event_type', 'event_subtype']
+    json_attributes = [
+        'event_type', 'event_subtype', 'container', 'filename', 'message'
+    ]
     for attribute in json_attributes:
       if attribute in json_payload:
         timesketch_record[attribute] = json_payload[attribute]
 
-    actor = json_payload.get('actor', None)
+    actor = json_payload.get('actor', {})
     if actor:
       if 'user' in actor:
         timesketch_record['user'] = actor['user']
 
-  def _BuildMessageString(self, timesketch_record):
+  def _BuildMessageString(self, timesketch_record: Dict[str, Any]) -> None:
     """Builds a Timesketch message string from a Timesketch record.
 
     Args:
       timesketch_record (dict): a dictionary that will be serialized to JSON
         and uploaded to Timesketch.
     """
+    if 'message' in timesketch_record:
+      return
     user = ''
     action = ''
     resource = ''
@@ -222,7 +243,7 @@ class GCPLoggingTimesketch(BaseModule):
 
     timesketch_record['message'] = message
 
-  def _ProcessLogContainer(self, logs_container):
+  def _ProcessLogContainer(self, logs_container: containers.GCPLogs) -> None:
     """Processes a GCP logs container.
 
     Args:
@@ -250,7 +271,7 @@ class GCPLoggingTimesketch(BaseModule):
     container = containers.File(name=timeline_name, path=output_path)
     self.state.StoreContainer(container)
 
-  def Process(self):
+  def Process(self) -> None:
     """Processes GCP logs containers for insertion into Timesketch."""
     logs_containers = self.state.GetContainers(containers.GCPLogs)
     for logs_container in logs_containers:

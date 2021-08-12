@@ -30,6 +30,9 @@ client_proto1 = """
   last_clock: 1511174989272124
   age: 1510710503319681
   client_id: "C.0000000000000000"
+  users {{
+      username: "tomchop_username1"
+  }}
 """.format(int(
     (datetime.datetime.utcnow() - datetime.timedelta(20)).timestamp(
     )*1000000)
@@ -53,6 +56,9 @@ client_proto2 = """
   last_clock: 1511174989272124
   age: 1510710503319681
   client_id: "C.0000000000000001"
+  users {{
+      username: "tomchop_username2"
+  }}
 """.format(int(
     (datetime.datetime.utcnow() - datetime.timedelta(25)).timestamp(
     )*1000000)
@@ -94,4 +100,4 @@ hunt_pb = hunt_pb2.ApiHunt(
     state=1
 )
 
-MOCK_HUNT = hunt.Hunt(data=hunt_pb)
+MOCK_HUNT = hunt.Hunt(data=hunt_pb, context=None)

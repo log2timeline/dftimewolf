@@ -4,12 +4,17 @@
 import os
 import tempfile
 
+from typing import Optional, TYPE_CHECKING
+
 from turbinia import TurbiniaException, evidence
 from turbinia import config as turbinia_config
 
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.processors.turbinia_gcp import TurbiniaProcessorBase
+
+if TYPE_CHECKING:
+  from dftimewolf.lib import state
 
 # pylint: disable=no-member
 
@@ -20,7 +25,10 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase):
     directory_path (str): Name of the directory to process.
   """
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+               state: "state.DFTimewolfState",
+               name: Optional[str]=None,
+               critical: bool=False) -> None:
     """Initializes a Turbinia Artifacts disks processor.
 
     Args:
@@ -31,16 +39,16 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase):
     """
     super(TurbiniaArtifactProcessor, self).__init__(
         state, name=name, critical=critical)
-    self.directory_path = None
+    self.directory_path = ''
 
   # pylint: disable=arguments-differ
   def SetUp(self,
-            turbinia_config_file,
-            project,
-            turbinia_zone,
-            directory_path,
-            sketch_id,
-            run_all_jobs):
+            turbinia_config_file: str,
+            project: str,
+            turbinia_zone: str,
+            directory_path: str,
+            sketch_id: int,
+            run_all_jobs: bool) -> None:
     """Sets up the object attributes.
 
     Args:
@@ -63,12 +71,13 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase):
       self.ModuleError(str(exception), critical=True)
       return
 
-  def Process(self):
+  def Process(self) -> None:
     """Process files with Turbinia."""
     log_file_path = os.path.join(self._output_path, 'turbinia.log')
     self.logger.info('Turbinia log file: {0:s}'.format(log_file_path))
 
     fspaths = self.state.GetContainers(containers.RemoteFSPath, pop=True)
+    hostname = fspaths[0].hostname  # all paths are on the same host
 
     task_datas = []
     for fspath in fspaths:
@@ -91,7 +100,8 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase):
           # We're only interested in plaso files for the time being.
           if path.endswith('.plaso'):
             self.logger.info('  {0:s}: {1:s}'.format(task['name'], path))
-            container = containers.RemoteFSPath(path=path)
+            container = containers.RemoteFSPath(
+                path=path, hostname=hostname)
             self.state.StoreContainer(container)
 
 

@@ -10,10 +10,7 @@ from logging import handlers
 import os
 import signal
 import sys
-
-# Make dftimewolf faster by only importing modules if we're not actually
-# just asking for help
-_ASKING_FOR_HELP = '-h' in sys.argv or '--help' in sys.argv or len(sys.argv) < 2
+from typing import TYPE_CHECKING, List, Optional, Dict, Any
 
 # pylint: disable=wrong-import-position
 from dftimewolf import config
@@ -21,31 +18,43 @@ from dftimewolf import config
 from dftimewolf.lib import errors
 from dftimewolf.lib import utils
 
-if not _ASKING_FOR_HELP:
-  # Import the collector modules.
-  # These will be registered automatically upon import
-  # pylint: disable=unused-import
-  from dftimewolf.lib import collectors
-  from dftimewolf.lib.preflights import cloud_token
-  from dftimewolf.lib.preflights import ssh_multiplexer
-  from dftimewolf.lib.preflights import sanity_checks
-  from dftimewolf.lib.collectors import aws
-  from dftimewolf.lib.collectors import filesystem
-  from dftimewolf.lib.collectors import gcloud
-  from dftimewolf.lib.collectors import gcp_logging
-  from dftimewolf.lib.collectors import grr_hosts
-  from dftimewolf.lib.collectors import grr_hunt
-  from dftimewolf.lib.enhancers import timesketch as timesketch_enhancer
-  from dftimewolf.lib.exporters import gce_disk_export
-  from dftimewolf.lib.exporters import local_filesystem
-  from dftimewolf.lib.exporters import scp_ex
-  from dftimewolf.lib.exporters import timesketch
-  from dftimewolf.lib.processors import gcp_logging_timesketch
-  from dftimewolf.lib.processors import grepper
-  from dftimewolf.lib.processors import localplaso
-  from dftimewolf.lib.processors import turbinia_artifact
-  from dftimewolf.lib.processors import turbinia_gcp
-  from dftimewolf.lib.collectors import vt
+if TYPE_CHECKING:
+  from dftimewolf.lib import state as dftw_state
+
+
+MODULES = {
+  'AWSCollector': 'dftimewolf.lib.collectors.aws',
+  'AWSLogsCollector': 'dftimewolf.lib.collectors.aws_logging',
+  'AzureCollector': 'dftimewolf.lib.collectors.azure',
+  'FilesystemCollector': 'dftimewolf.lib.collectors.filesystem',
+  'GCPLoggingTimesketch': 'dftimewolf.lib.processors.gcp_logging_timesketch',
+  'GCPLogsCollector': 'dftimewolf.lib.collectors.gcp_logging',
+  'AWSAccountCheck': 'dftimewolf.lib.preflights.cloud_token',
+  'GCPTokenCheck': 'dftimewolf.lib.preflights.cloud_token',
+  'GoogleCloudCollector': 'dftimewolf.lib.collectors.gcloud',
+  'GoogleCloudDiskExport': 'dftimewolf.lib.exporters.gce_disk_export',
+  'GrepperSearch': 'dftimewolf.lib.processors.grepper',
+  'GRRArtifactCollector': 'dftimewolf.lib.collectors.grr_hosts',
+  'GRRFileCollector': 'dftimewolf.lib.collectors.grr_hosts',
+  'GRRFlowCollector': 'dftimewolf.lib.collectors.grr_hosts',
+  'GRRHuntArtifactCollector': 'dftimewolf.lib.collectors.grr_hunt',
+  'GRRHuntDownloader': 'dftimewolf.lib.collectors.grr_hunt',
+  'GRRHuntFileCollector': 'dftimewolf.lib.collectors.grr_hunt',
+  'GRRTimelineCollector': 'dftimewolf.lib.collectors.grr_hosts',
+  'LocalFilesystemCopy': 'dftimewolf.lib.exporters.local_filesystem',
+  'LocalPlasoProcessor': 'dftimewolf.lib.processors.localplaso',
+  'SanityChecks': 'dftimewolf.lib.preflights.sanity_checks',
+  'SCPExporter': 'dftimewolf.lib.exporters.scp_ex',
+  'SSHMultiplexer': 'dftimewolf.lib.preflights.ssh_multiplexer',
+  'TimesketchEnhancer': 'dftimewolf.lib.enhancers.timesketch',
+  'TimesketchExporter': 'dftimewolf.lib.exporters.timesketch',
+  'TurbiniaArtifactProcessor': 'dftimewolf.lib.processors.turbinia_artifact',
+  'TurbiniaGCPProcessor': 'dftimewolf.lib.processors.turbinia_gcp',
+  'WorkspaceAuditCollector': 'dftimewolf.lib.collectors.workspace_audit',
+  'WorkspaceAuditTimesketch':
+      'dftimewolf.lib.processors.workspace_audit_timesketch'
+}
+
 
 from dftimewolf.lib.recipes import manager as recipes_manager
 from dftimewolf.lib.state import DFTimewolfState
@@ -60,18 +69,23 @@ class DFTimewolfTool(object):
   _DEFAULT_DATA_FILES_PATH = os.path.join(
       os.sep, 'usr', 'local', 'share', 'dftimewolf')
 
-  def __init__(self):
+  def __init__(self) -> None:
     """Initializes a DFTimewolf tool."""
     super(DFTimewolfTool, self).__init__()
-    self._command_line_options = None
-    self._data_files_path = None
+    self._command_line_options: Optional[argparse.Namespace]
+    self._data_files_path = ''
     self._recipes_manager = recipes_manager.RecipesManager()
-    self._recipe = None
-    self._state = None
+    self._recipe = {}  # type: Dict[str, Any]
+    self._state: "dftw_state.DFTimewolfState"
 
     self._DetermineDataFilesPath()
 
-  def _AddRecipeOptions(self, argument_parser):
+  @property
+  def state(self) -> "dftw_state.DFTimewolfState":
+    """Returns the internal state object."""
+    return self._state
+
+  def _AddRecipeOptions(self, argument_parser: argparse.ArgumentParser) -> None:
     """Adds the recipe options to the argument group.
 
     Args:
@@ -97,35 +111,48 @@ class DFTimewolfTool(object):
       # so that they can in turn be overridden in the commandline
       subparser.set_defaults(**config.Config.GetExtra())
 
-  def _DetermineDataFilesPath(self):
-    """Determines the data files path."""
+  def _DetermineDataFilesPath(self) -> None:
+    """Determines the data files path.
 
-    # Figure out if the script is running out of a cloned repository
-    data_files_path = os.path.realpath(__file__)
-    data_files_path = os.path.dirname(data_files_path)
-    data_files_path = os.path.dirname(data_files_path)
-    data_files_path = os.path.dirname(data_files_path)
-    data_files_path = os.path.join(data_files_path, 'data')
+    Data path is specified in the DFTIMEWOLF_DATA environment variable. If the
+    variable is not specified, dfTimewolf checks if any of the following
+    locations are valid:
 
-    # Use local package data files (python setup.py install)
-    if not os.path.isdir(data_files_path):
+    * Cloned repository base
+    * Local package data files
+    * sys.prefix
+    * Hardcoded default /usr/local/share
+    """
+
+    data_files_path = os.environ.get('DFTIMEWOLF_DATA')
+
+    if not data_files_path or not os.path.isdir(data_files_path):
+      # Figure out if the script is running out of a cloned repository
+      data_files_path = os.path.realpath(__file__)
       data_files_path = os.path.dirname(data_files_path)
-      data_files_path = os.path.join(data_files_path, 'share', 'dftimewolf')
+      data_files_path = os.path.dirname(data_files_path)
+      data_files_path = os.path.dirname(data_files_path)
+      data_files_path = os.path.join(data_files_path, 'data')
 
-    # Use sys.prefix for user installs (e.g. pip install ...)
-    if not os.path.isdir(data_files_path):
-      data_files_path = os.path.join(sys.prefix, 'share', 'dftimewolf')
+      # Use local package data files (python setup.py install)
+      if not os.path.isdir(data_files_path):
+        data_files_path = os.path.dirname(data_files_path)
+        data_files_path = os.path.join(data_files_path, 'share', 'dftimewolf')
 
-    # If all else fails, fall back to hardcoded default
-    if not os.path.isdir(data_files_path):
-      logger.debug('{0:s} not found, defaulting to /usr/local/share'.format(
-          data_files_path))
-      data_files_path = self._DEFAULT_DATA_FILES_PATH
+      # Use sys.prefix for user installs (e.g. pip install ...)
+      if not os.path.isdir(data_files_path):
+        data_files_path = os.path.join(sys.prefix, 'share', 'dftimewolf')
+
+      # If all else fails, fall back to hardcoded default
+      if not os.path.isdir(data_files_path):
+        logger.debug('{0:s} not found, defaulting to /usr/local/share'.format(
+            data_files_path))
+        data_files_path = self._DEFAULT_DATA_FILES_PATH
 
     logger.debug("Recipe data path: {0:s}".format(data_files_path))
     self._data_files_path = data_files_path
 
-  def _GenerateHelpText(self):
+  def _GenerateHelpText(self) -> str:
     """Generates help text with alphabetically sorted recipes.
 
     Returns:
@@ -143,7 +170,7 @@ class DFTimewolfTool(object):
 
     return help_text
 
-  def _LoadConfigurationFromFile(self, configuration_file_path):
+  def _LoadConfigurationFromFile(self, configuration_file_path: str) -> None:
     """Loads a configuration from file.
 
     Args:
@@ -157,13 +184,19 @@ class DFTimewolfTool(object):
     except errors.BadConfigurationError as exception:
       logger.warning('{0!s}'.format(exception))
 
-  def LoadConfiguration(self):
-    """Loads the configuration."""
-    configuration_file_path = os.path.join(self._data_files_path, 'config.json')
-    self._LoadConfigurationFromFile(configuration_file_path)
+  def LoadConfiguration(self) -> None:
+    """Loads the configuration.
 
-    user_directory = os.path.expanduser('~')
-    configuration_file_path = os.path.join(user_directory, '.dftimewolfrc')
+    The following paths are tried. Values loaded last take precedence.
+
+    * <_data_files_path>/config.json
+    * /etc/dftimewolf.conf
+    * /usr/share/dftimewolf/dftimewolf.conf
+    * ~/.dftimewolfrc
+    * If set, wherever the DFTIMEWOLF_CONFIG environment variable points to.
+
+    """
+    configuration_file_path = os.path.join(self._data_files_path, 'config.json')
     self._LoadConfigurationFromFile(configuration_file_path)
 
     configuration_file_path = os.path.join('/', 'etc', 'dftimewolf.conf')
@@ -173,7 +206,15 @@ class DFTimewolfTool(object):
         '/', 'usr', 'share', 'dftimewolf', 'dftimewolf.conf')
     self._LoadConfigurationFromFile(configuration_file_path)
 
-  def ParseArguments(self, arguments):
+    user_directory = os.path.expanduser('~')
+    configuration_file_path = os.path.join(user_directory, '.dftimewolfrc')
+    self._LoadConfigurationFromFile(configuration_file_path)
+
+    env_config = os.environ.get('DFTIMEWOLF_CONFIG')
+    if env_config:
+      self._LoadConfigurationFromFile(env_config)
+
+  def ParseArguments(self, arguments: List[str]) -> None:
     """Parses the command line arguments.
 
     Args:
@@ -201,34 +242,35 @@ class DFTimewolfTool(object):
     self._state = DFTimewolfState(config.Config)
     logger.info('Loading recipe {0:s}...'.format(self._recipe['name']))
     # Raises errors.RecipeParseError on error.
-    self._state.LoadRecipe(self._recipe)
+    self._state.LoadRecipe(self._recipe, MODULES)
 
-    number_of_modules = len(self._recipe['modules'])
+    module_cnt = len(self._recipe.get('modules', [])) + \
+                 len(self._recipe.get('preflights', []))
     logger.info('Loaded recipe {0:s} with {1:d} modules'.format(
-        self._recipe['name'], number_of_modules))
+        self._recipe['name'], module_cnt))
 
     self._state.command_line_options = vars(self._command_line_options)
 
-  def RunPreflights(self):
+  def RunPreflights(self) -> None:
     """Runs preflight modules."""
     logger.info('Running preflights...')
     self._state.RunPreflights()
 
-  def ReadRecipes(self):
+  def ReadRecipes(self) -> None:
     """Reads the recipe files."""
     if os.path.isdir(self._data_files_path):
       recipes_path = os.path.join(self._data_files_path, 'recipes')
       if os.path.isdir(recipes_path):
         self._recipes_manager.ReadRecipesFromDirectory(recipes_path)
 
-  def RunModules(self):
+  def RunModules(self) -> None:
     """Runs the modules."""
     logger.info('Running modules...')
     self._state.RunModules()
     logger.info('Recipe {0:s} executed successfully!'.format(
         self._recipe['name']))
 
-  def SetupModules(self):
+  def SetupModules(self) -> None:
     """Sets up the modules."""
     # TODO: refactor to only load modules that are used by the recipe.
 
@@ -236,17 +278,22 @@ class DFTimewolfTool(object):
     self._state.SetupModules()
     logger.info('Modules successfully set up!')
 
-  def CleanUpPreflights(self):
+  def CleanUpPreflights(self) -> None:
     """Calls the preflight's CleanUp functions."""
     self._state.CleanUpPreflights()
 
-def SignalHandler(*unused_argvs):
+  def RecipesManager(self) -> recipes_manager.RecipesManager:
+    """Returns the recipes manager."""
+    return self._recipes_manager
+
+
+def SignalHandler(*unused_argvs: Any) -> None:
   """Catches Ctrl + C to exit cleanly."""
   sys.stderr.write("\nCtrl^C caught, bailing...\n")
   sys.exit(0)
 
 
-def SetupLogging():
+def SetupLogging() -> None:
   """Sets up a logging handler with dftimewolf's custom formatter."""
   # Clear root handlers (for dependencies that are setting them)
   root_log = logging.getLogger()
@@ -275,11 +322,11 @@ def SetupLogging():
   colorize = not bool(os.environ.get('DFTIMEWOLF_NO_RAINBOW'))
   console_handler.setFormatter(logging_utils.WolfFormatter(colorize=colorize))
   logger.addHandler(console_handler)
-  logger.info(
+  logger.debug(
       'Logging to stdout and {0:s}'.format(logging_utils.DEFAULT_LOG_FILE))
 
 
-def Main():
+def Main() -> bool:
   """Main function for DFTimewolf.
 
   Returns:
@@ -300,23 +347,33 @@ def Main():
 
   try:
     tool.ReadRecipes()
-  except (KeyError, errors.RecipeParseError) as exception:
-    logger.critical('{0!s}'.format(exception))
+  except (KeyError, errors.RecipeParseError, errors.CriticalError) as exception:
+    logger.critical(str(exception))
     return False
 
   try:
     tool.ParseArguments(sys.argv[1:])
-  except (errors.CommandLineParseError, errors.RecipeParseError) as exception:
-    sys.stderr.write('{0!s}'.format(exception))
+  except (errors.CommandLineParseError,
+          errors.RecipeParseError,
+          errors.CriticalError) as exception:
+    logger.critical(str(exception))
     return False
+
+  tool.state.LogExecutionPlan()
 
   tool.RunPreflights()
 
-  # TODO: log errors if this fails.
-  tool.SetupModules()
+  try:
+    tool.SetupModules()
+  except errors.CriticalError as exception:
+    logger.critical(str(exception))
+    return False
 
-  # TODO: log errors if this fails.
-  tool.RunModules()
+  try:
+    tool.RunModules()
+  except errors.CriticalError as exception:
+    logger.critical(str(exception))
+    return False
 
   tool.CleanUpPreflights()
 

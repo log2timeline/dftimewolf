@@ -15,9 +15,16 @@ def ParseRequirements(filename):
   Returns:
     List[str]: a list of requirements.
   """
+  reqs = []
   with open(filename) as requirements:
-    # Skipping -i https://pypi.org/simple
-    return requirements.readlines()[1:]
+
+    for line in requirements.readlines():
+      if line.startswith('#') or line.startswith('-i') or not line:
+        # Skip lines starting with '#' and '-i https://pypi.org/simple'
+        continue
+      reqs.append(line)
+  return reqs
+
 
 try:
   from setuptools import find_packages, setup
@@ -25,7 +32,8 @@ except ImportError:
   from distutils.core import find_packages, setup
 
 try:
-  from distutils.command.bdist_msi import bdist_msi
+  # bdist seems to raise a weird syntax error that pylint doesn't like
+  from distutils.command.bdist_msi import bdist_msi  # pylint: disable=syntax-error,line-too-long
 except ImportError:
   bdist_msi = None
 

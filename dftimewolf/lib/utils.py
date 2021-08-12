@@ -7,14 +7,14 @@ import re
 import tarfile
 import tempfile
 from time import time
+from typing import Any, Dict, Optional, Type
 
-import six
-
+from dftimewolf.config import Config
 
 TOKEN_REGEX = re.compile(r'\@([\w_]+)')
 
 
-def Compress(source_path, output_directory=None):
+def Compress(source_path: str, output_directory: Optional[str]=None) -> str:
   """Compresses files.
 
   Args:
@@ -46,7 +46,7 @@ def Compress(source_path, output_directory=None):
   except (IOError, tarfile.TarError) as exception:
     raise RuntimeError(
         'An error has while compressing directory {0:s}: {1!s}'.format(
-            source_path, exception), critial=True) from exception
+            source_path, exception)) from exception
 
   return output_file
 
@@ -60,7 +60,10 @@ class DFTimewolfFormatterClass(
   pass
 
 
-def ImportArgsFromDict(value, args, config):
+def ImportArgsFromDict(value: Any,
+                       args: Dict[str,
+                       Any],
+                       config: Type[Config]) -> Any:
   """Replaces some arguments by those specified by a key-value dictionary.
 
   This function will be recursively called on a dictionary looking for any
@@ -81,13 +84,13 @@ def ImportArgsFromDict(value, args, config):
     object: the first caller of the function will receive a dictionary in
         which strings starting with "@" are replaced by the parameters in args.
   """
-  if isinstance(value, six.string_types):
+  if isinstance(value, str):
     for match in TOKEN_REGEX.finditer(str(value)):
       token = match.group(1)
       if token in args:
         actual_param = args[token]
-        if isinstance(actual_param, six.string_types):
-          value = value.replace("@"+token, args[token])
+        if isinstance(actual_param, str):
+          value = value.replace("@"+token, actual_param)
         else:
           value = actual_param
   elif isinstance(value, list):
@@ -108,11 +111,11 @@ class FormatterInterface(object):
   # A text representation of the format.
   FORMAT = ''
 
-  def IndentStart(self):
+  def IndentStart(self) -> str:
     """Return formatted text for starting an indent."""
     pass
 
-  def IndentText(self, text, level=1):
+  def IndentText(self, text: str, level: int=1) -> str:
     """Return a formatted text that is indented.
 
     Args:
@@ -125,35 +128,35 @@ class FormatterInterface(object):
     """
     pass
 
-  def IndentEnd(self):
+  def IndentEnd(self) -> str:
     """Return a formatted text for ending an indent."""
     pass
 
-  def BoldText(self, text):
+  def BoldText(self, text: str) -> str:
     """Return a formatted text that will be bold."""
     pass
 
-  def Link(self, url, text):
+  def Link(self, url: str, text: str) -> str:
     """Return a formatted text that contains a link."""
     pass
 
-  def ItalicText(self, text):
+  def ItalicText(self, text: str) -> str:
     """Return a formatted text that will be italic."""
     pass
 
-  def UnderlineText(self, text):
+  def UnderlineText(self, text: str) -> str:
     """Return a formatted text that will be underlined."""
     pass
 
-  def Line(self):
+  def Line(self) -> str:
     """Return a formatted new line."""
     pass
 
-  def Heading(self, text, level=1):
+  def Heading(self, text: str, level: int=1) -> str:
     """Return a formatted heading."""
     pass
 
-  def Paragraph(self, text):
+  def Paragraph(self, text: str) -> str:
     """Return a formatted paragraph."""
     pass
 
@@ -164,11 +167,11 @@ class HTMLFormatter(FormatterInterface):
   # A text representation of the format.
   FORMAT = 'html'
 
-  def IndentStart(self):
+  def IndentStart(self) -> str:
     """Return formatted text for starting an indent."""
     return '<ul>'
 
-  def IndentText(self, text, level=1):
+  def IndentText(self, text: str, level: int=1) -> str:
     """Return a formatted text that is indented.
 
     Args:
@@ -181,35 +184,35 @@ class HTMLFormatter(FormatterInterface):
     """
     return '<li>{0:s}</li>'.format(text)
 
-  def IndentEnd(self):
+  def IndentEnd(self) -> str:
     """Return a formatted text for ending an indent."""
     return '</ul>'
 
-  def BoldText(self, text):
+  def BoldText(self, text: str) -> str:
     """Return a formatted text that will be bold."""
     return '<b>{0:s}</b>'.format(text)
 
-  def Link(self, url, text):
+  def Link(self, url: str, text: str) -> str:
     """Return a formatted text that contains a link."""
     return '<a href="{0:s}" target="_blank">{1:s}</a>'.format(url, text)
 
-  def ItalicText(self, text):
+  def ItalicText(self, text: str) -> str:
     """Return a formatted text that will be italic."""
     return '<i>{0:s}</i>'.format(text)
 
-  def UnderlineText(self, text):
+  def UnderlineText(self, text: str) -> str:
     """Return a formatted text that will be underlined."""
     return '<u>{0:s}</u>'.format(text)
 
-  def Line(self):
+  def Line(self) -> str:
     """Return a formatted new line."""
     return '<br/>'
 
-  def Heading(self, text, level=1):
+  def Heading(self, text: str, level: int=1) -> str:
     """Return a formatted heading."""
     return '<h{0:d}>{1:s}</h{0:d}>'.format(level, text)
 
-  def Paragraph(self, text):
+  def Paragraph(self, text: str) -> str:
     """Return a formatted paragraph."""
     return '<p>{0:s}</p>'.format(text)
 
@@ -220,7 +223,7 @@ class MarkdownFormatter(FormatterInterface):
   # A text representation of the format.
   FORMAT = 'markdown'
 
-  def IndentText(self, text, level=1):
+  def IndentText(self, text: str, level: int=1) -> str:
     """Return a formatted text that is indented.
 
     Args:
@@ -233,38 +236,38 @@ class MarkdownFormatter(FormatterInterface):
     """
     return '{0:s}+ {1:s}\n'.format(' '*(2 * level), text)
 
-  def BoldText(self, text):
+  def BoldText(self, text: str) -> str:
     """Return a formatted text that will be bold."""
     return '**{0:s}**'.format(text)
 
-  def Link(self, url, text):
+  def Link(self, url: str, text: str) -> str:
     """Return a formatted text that contains a link."""
     return '[{0:s}]({1:s})'.format(text, url)
 
-  def ItalicText(self, text):
+  def ItalicText(self, text: str) -> str:
     """Return a formatted text that will be italic."""
     return '*{0:s}*'.format(text)
 
-  def UnderlineText(self, text):
+  def UnderlineText(self, text: str) -> str:
     """Return a formatted text that will be underlined."""
     return '**_{0:s}_**'.format(text)
 
-  def Line(self):
+  def Line(self) -> str:
     """Return a formatted new line."""
     return '\n\n'
 
-  def Heading(self, text, level=1):
+  def Heading(self, text: str, level: int=1) -> str:
     """Return a formatted heading."""
     return '{0:s} {1:s}\n'.format('#'*level, text)
 
-  def Paragraph(self, text):
+  def Paragraph(self, text: str) -> str:
     """Return a formatted paragraph."""
     return '{0:s}\n'.format(text)
 
-  def IndentStart(self):
+  def IndentStart(self) -> str:
     """Return formatted text for starting an indent."""
     return ''
 
-  def IndentEnd(self):
+  def IndentEnd(self) -> str:
     """Return a formatted text for ending an indent."""
     return ''

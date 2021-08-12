@@ -9,8 +9,15 @@ from logging import handlers
 import traceback
 import sys
 
+from typing import Optional, TYPE_CHECKING
+
 from dftimewolf.lib import errors
 from dftimewolf.lib import logging_utils
+
+if TYPE_CHECKING:
+  # Import will only happen during type checking, disabling linter warning.
+  from dftimewolf.lib import state  # pylint: disable=cyclic-import
+
 
 class BaseModule(object):
   """Interface of a DFTimewolf module.
@@ -24,7 +31,10 @@ class BaseModule(object):
     state (DFTimewolfState): recipe state.
   """
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+               state: "state.DFTimewolfState",
+               name:Optional[str]=None,
+               critical: Optional[bool]=False):
     """Initialize a module.
 
     Args:
@@ -40,7 +50,7 @@ class BaseModule(object):
     self.state = state
     self.SetupLogging()
 
-  def SetupLogging(self):
+  def SetupLogging(self) -> None:
     """Sets up stream and file logging for a specific module."""
     self.logger = logging.getLogger(name=self.name)
     self.logger.setLevel(logging.DEBUG)
@@ -58,12 +68,12 @@ class BaseModule(object):
 
     self.logger.addHandler(console_handler)
 
-  def CleanUp(self):
+  def CleanUp(self) -> None:
     """Cleans up module output to prepare it for the next module."""
     # No clean up is required.
     return
 
-  def ModuleError(self, message, critical=False):
+  def ModuleError(self, message: str, critical: bool=False) -> None:
     """Declares a module error.
 
     Errors will be stored in a DFTimewolfError error object and passed on to the
@@ -91,7 +101,7 @@ class BaseModule(object):
     self.logger.error(error.message)
 
   @abc.abstractmethod
-  def Process(self):
+  def Process(self) -> None:
     """Processes input and builds the module's output attribute.
 
     Modules take input information and process it into output information,
@@ -99,7 +109,7 @@ class BaseModule(object):
     """
 
   @abc.abstractmethod
-  def SetUp(self, *args, **kwargs):
+  def SetUp(self, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
     """Sets up necessary module configuration options."""
 
 class PreflightModule(BaseModule):
@@ -111,7 +121,7 @@ class PreflightModule(BaseModule):
   """
 
   @abc.abstractmethod
-  def Process(self):
+  def Process(self) -> None:
     """Processes input and builds the module's output attribute.
 
     Modules take input information and process it into output information,
@@ -119,9 +129,9 @@ class PreflightModule(BaseModule):
     """
 
   @abc.abstractmethod
-  def SetUp(self, *args, **kwargs):
+  def SetUp(self, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
     """Sets up necessary module configuration options."""
 
   @abc.abstractmethod
-  def CleanUp(self):
+  def CleanUp(self) -> None:
     """Carries out optional cleanup actions at the end of the recipe run."""

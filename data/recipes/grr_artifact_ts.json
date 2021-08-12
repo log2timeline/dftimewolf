@@ -6,7 +6,7 @@
         "wants": [],
         "name": "GRRArtifactCollector",
         "args": {
-            "hosts": "@hosts",
+            "hostnames": "@hostnames",
             "reason": "@reason",
             "grr_server_url": "@grr_server_url",
             "grr_username": "@grr_username",
@@ -31,11 +31,12 @@
             "incident_id": "@reason",
             "token_password": "@token_password",
             "sketch_id": "@sketch_id",
+            "analyzers": null,
             "wait_for_timelines": "@wait_for_timelines"
         }
     }],
     "args": [
-        ["hosts", "Comma-separated list of hosts to process", null],
+        ["hostnames", "Comma-separated list of hostnames or GRR client IDs to process", null],
         ["reason", "Reason for collection", null],
         ["--artifacts", "Comma-separated list of artifacts to fetch (override default artifacts)", null],
         ["--extra_artifacts", "Comma-separated list of artifacts to append to the default artifact list", null],
