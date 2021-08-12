@@ -131,13 +131,10 @@ typing-inspect==0.7.1
 uritemplate==3.0.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 urllib3[secure]==1.26.6; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4'
 vine==1.3.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
-<<<<<<< HEAD
 vt-py==0.7.2
 websocket-client==0.57.0
-=======
 wcwidth==0.2.5
 websocket-client==1.1.0; python_version >= '3.6'
->>>>>>> b26ba55aef593a7e2170d6143825bac6a68d7794
 werkzeug==0.16.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 wrapt==1.12.1
 xlrd==2.0.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5'
