@@ -25,7 +25,37 @@ with mock.patch('boto3.session.Session._setup_loader') as mock_session:
   FAKE_AWS_ACCOUNT = aws_account.AWSAccount(
       default_availability_zone=FAKE_AZ_A)
 
-## Mirrors the responses from AWS APIs (minus unecessary fields)
+# libcloudforensics mock responses
+FAKE_PROFILE_NAME = 'ebsCopy'
+FAKE_EBS_COPY_SETUP_RESPONSE = {
+  'profile': {
+    'arn': 'arn:aws:iam::123456789012:instance-profile/ebsCopy-role',
+    'created': True },
+  'policy': {
+    'arn': 'arn:aws:iam::123456789012:policy/ebsCopy-policy',
+    'created': True },
+  'role': {
+    'name': 'ebsCopy-role',
+    'created': True }
+}
+FAKE_EBS_COPY_PROCESS_RESPONSE = [{
+    'image': 's3://fake-bucket/snap-01234567/image.bin',
+    'hashes': [
+      's3://fake-bucket/snap-01234567/log.txt',
+      's3://fake-bucket/snap-01234567/hlog.txt',
+      's3://fake-bucket/snap-01234567/mlog.txt'
+    ]
+  }, {
+    'image': 's3://fake-bucket/snap-12345678/image.bin',
+    'hashes': [
+      's3://fake-bucket/snap-12345678/log.txt',
+      's3://fake-bucket/snap-12345678/hlog.txt',
+      's3://fake-bucket/snap-12345678/mlog.txt'
+    ]
+  }
+]
+
+# Mirrors the responses from AWS APIs (minus unecessary fields)
 FAKE_SNAPSHOT_1 = {
   'SnapshotId': 'snap-01234567',
   'State': 'completed',
@@ -157,11 +187,21 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
       result = collector._PickAvailabilityZone(FAKE_SUBNET)
       self.assertEqual(result, FAKE_AZ_B)
 
+  # pylint: disable=line-too-long
   @mock.patch('boto3.session.Session._setup_loader')
-  @mock.patch('libcloudforensics.providers.aws.forensics.CopyEBSSnapshotToS3')
-  def testProcessFromParams(self, mock_copyebssnapshottos3, mock_loader):
+  @mock.patch('libcloudforensics.providers.aws.forensics.CopyEBSSnapshotToS3SetUp')
+  @mock.patch('libcloudforensics.providers.aws.forensics.CopyEBSSnapshotToS3Process')
+  @mock.patch('libcloudforensics.providers.aws.forensics.CopyEBSSnapshotToS3TearDown')
+  # pylint: enable=line-too-long
+  def testProcessFromParams(self,
+      mock_copyebssnapshottos3teardown,
+      mock_copyebssnapshottos3process,
+      mock_copyebssnapshottos3setup,
+      mock_loader):
     """Tests the process method, when the snapshots were provided via SetUp."""
-    mock_copyebssnapshottos3.return_value = None
+    mock_copyebssnapshottos3teardown.return_value = None
+    mock_copyebssnapshottos3process.side_effect = FAKE_EBS_COPY_PROCESS_RESPONSE
+    mock_copyebssnapshottos3setup.return_value = FAKE_EBS_COPY_SETUP_RESPONSE
     mock_loader.return_value = None
 
     test_state = state.DFTimewolfState(config.Config)
@@ -190,11 +230,21 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
       self.assertIn(image, collector.state.GetContainers(
           aws_containers.AWSAttributeContainer)[0].s3_images)
 
+  # pylint: disable=line-too-long
   @mock.patch('boto3.session.Session._setup_loader')
-  @mock.patch('libcloudforensics.providers.aws.forensics.CopyEBSSnapshotToS3')
-  def testProcessFromState(self, mock_copyebssnapshottos3, mock_loader):
+  @mock.patch('libcloudforensics.providers.aws.forensics.CopyEBSSnapshotToS3SetUp')
+  @mock.patch('libcloudforensics.providers.aws.forensics.CopyEBSSnapshotToS3Process')
+  @mock.patch('libcloudforensics.providers.aws.forensics.CopyEBSSnapshotToS3TearDown')
+  # pylint: enable=line-too-long
+  def testProcessFromState(self,
+      mock_copyebssnapshottos3teardown,
+      mock_copyebssnapshottos3process,
+      mock_copyebssnapshottos3setup,
+      mock_loader):
     """Tests the process method, when the snapshots were provided via State."""
-    mock_copyebssnapshottos3.return_value = None
+    mock_copyebssnapshottos3teardown.return_value = None
+    mock_copyebssnapshottos3process.side_effect = FAKE_EBS_COPY_PROCESS_RESPONSE
+    mock_copyebssnapshottos3setup.return_value = FAKE_EBS_COPY_SETUP_RESPONSE
     mock_loader.return_value = None
 
     container = aws_containers.AWSAttributeContainer()

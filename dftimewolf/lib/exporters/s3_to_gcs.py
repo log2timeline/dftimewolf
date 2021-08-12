@@ -131,7 +131,7 @@ class S3ToGCSCopy(module.BaseModule):
       with self._lock:
         if len(self.state.GetContainers(containers.GCSObjectList)):
           self.state.GetContainers(containers.GCSObjectList)[0]\
-              .append(output)
+              .Append(output)
         else:
           container = containers.GCSObjectList()
           container.Append(output)
