@@ -4,7 +4,7 @@
 import datetime
 import os
 import tempfile
-import typing
+from typing import List
 
 import numpy as np
 import pandas as pd
@@ -24,7 +24,7 @@ class VTCollector(module.BaseModule):
 
     """
 
-    def __init__(self, state, name=None, critical=False):
+    def __init__(self, state, name=None, critical=False) -> None:
         """Initializes an Virustotal (VT) collector.
 
         Args:
@@ -43,11 +43,11 @@ class VTCollector(module.BaseModule):
         print("Not implemented")
 
     # pylint: disable=arguments-differ,too-many-arguments
-    def SetUp(self, hashes: list[str], vt_api_key: str, type: str = 'pcap', action: str = 'download', output_path: typing.Optional[str] = None) -> None:
+    def SetUp(self, hashes: str, vt_api_key: str, type: str = 'pcap', action: str = 'download', output_path: typing.Optional[str] = None) -> None:
         """Sets up an Virustotal (VT) collector.
 
         Args:
-          hashes (list[str]): List of hashes to lookup.
+          hashes (str): Coma seperated strings of hashes
           vt_api_key (str): Virustotal Enterprise API Key
           type (str): One of [pcap] - can be extended if more filetypes can be downloaded
           action (str) : Which action to execute
@@ -161,7 +161,7 @@ class VTCollector(module.BaseModule):
         """Checks if a hash is known to VT.
 
         Args:
-            hash ([str]): A hash.
+            vt_hash ([str]): A hash.
 
         Returns:
             Bool: True if found on VT
@@ -175,7 +175,7 @@ class VTCollector(module.BaseModule):
 
         return True
 
-    def _get_pcap_download_links(self, vt_hash) -> typing.List[str]:
+    def _get_pcap_download_links(self, vt_hash: str) -> List[str]:
         """Checks if a hash has a PCAP file available and returns a list of the URLs for download.
         One hash can have multiple PCAPs available.
 
@@ -229,7 +229,7 @@ class VTCollector(module.BaseModule):
         for packet in packets[scapy_all.IP]:
             # Field array for each row of DataFrame
 
-            field_values = []
+            field_values: List[str] = []
             # Add all IP fields to dataframe
             for field in ip_fields:
                 if field == 'options':
