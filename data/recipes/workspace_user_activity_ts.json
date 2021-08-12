@@ -1,0 +1,190 @@
+{
+  "name": "workspace_user_activity_ts",
+  "description": "Collects records for a Workspace user and adds them to Timesketch.",
+  "short_description": "Collects records and adds to Timesketch",
+  "preflights": [],
+  "modules": [
+    {
+      "wants": [],
+      "name": "WorkspaceAuditCollector",
+      "runtime_name": "WorkspaceAuditCollector-Login",
+      "args": {
+        "application_name": "login",
+        "user_key": "@user",
+        "filter_expression": "@filter_expression",
+        "start_time": "@start_time",
+        "end_time": "@end_time"
+      }
+    },
+    {
+      "wants": [],
+      "name": "WorkspaceAuditCollector",
+      "runtime_name": "WorkspaceAuditCollector-Drive",
+      "args": {
+        "application_name": "drive",
+        "user_key": "@user",
+        "filter_expression": "@filter_expression",
+        "start_time": "@start_time",
+        "end_time": "@end_time"
+      }
+    },
+    {
+      "wants": [],
+      "name": "WorkspaceAuditCollector",
+      "runtime_name": "WorkspaceAuditCollector-Token",
+      "args": {
+        "application_name": "token",
+        "user_key": "@user",
+        "filter_expression": "@filter_expression",
+        "start_time": "@start_time",
+        "end_time": "@end_time"
+      }
+    },
+    {
+      "wants": [],
+      "name": "WorkspaceAuditCollector",
+      "runtime_name": "WorkspaceAuditCollector-Chrome",
+      "args": {
+        "application_name": "chrome",
+        "user_key": "@user",
+        "filter_expression": "@filter_expression",
+        "start_time": "@start_time",
+        "end_time": "@end_time"
+      }
+    },
+    {
+      "wants": [],
+      "name": "WorkspaceAuditCollector",
+      "runtime_name": "WorkspaceAuditCollector-CAA",
+      "args": {
+        "application_name": "context_aware_access",
+        "user_key": "@user",
+        "filter_expression": "@filter_expression",
+        "start_time": "@start_time",
+        "end_time": "@end_time"
+      }
+    },
+    {
+      "wants": [],
+      "name": "WorkspaceAuditCollector",
+      "runtime_name": "WorkspaceAuditCollector-DataStudio",
+      "args": {
+        "application_name": "data_studio",
+        "user_key": "@user",
+        "filter_expression": "@filter_expression",
+        "start_time": "@start_time",
+        "end_time": "@end_time"
+      }
+    },
+        {
+      "wants": [],
+      "name": "WorkspaceAuditCollector",
+      "runtime_name": "WorkspaceAuditCollector-GroupsEnterprise",
+      "args": {
+        "application_name": "groups_enterprise",
+        "user_key": "@user",
+        "filter_expression": "@filter_expression",
+        "start_time": "@start_time",
+        "end_time": "@end_time"
+      }
+    },
+    {
+      "wants": [],
+      "name": "WorkspaceAuditCollector",
+      "runtime_name": "WorkspaceAuditCollector-Calendar",
+      "args": {
+        "application_name": "calendar",
+        "user_key": "@user",
+        "filter_expression": "@filter_expression",
+        "start_time": "@start_time",
+        "end_time": "@end_time"
+      }
+    },
+    {
+      "wants": [],
+      "name": "WorkspaceAuditCollector",
+      "runtime_name": "WorkspaceAuditCollector-Chat",
+      "args": {
+        "application_name": "chat",
+        "user_key": "@user",
+        "filter_expression": "@filter_expression",
+        "start_time": "@start_time",
+        "end_time": "@end_time"
+      }
+    },
+    {
+      "wants": [],
+      "name": "WorkspaceAuditCollector",
+      "runtime_name": "WorkspaceAuditCollector-GCP",
+      "args": {
+        "application_name": "gcp",
+        "user_key": "@user",
+        "filter_expression": "@filter_expression",
+        "start_time": "@start_time",
+        "end_time": "@end_time"
+      }
+    },
+    {
+      "wants": [],
+      "name": "WorkspaceAuditCollector",
+      "runtime_name": "WorkspaceAuditCollector-Groups",
+      "args": {
+        "application_name": "groups",
+        "user_key": "@user",
+        "filter_expression": "@filter_expression",
+        "start_time": "@start_time",
+        "end_time": "@end_time"
+      }
+    },
+    {
+      "wants": [],
+      "name": "WorkspaceAuditCollector",
+      "runtime_name": "WorkspaceAuditCollector-Meet",
+      "args": {
+        "application_name": "meet",
+        "user_key": "@user",
+        "filter_expression": "@filter_expression",
+        "start_time": "@start_time",
+        "end_time": "@end_time"
+      }
+    },
+    {
+      "wants": [],
+      "name": "WorkspaceAuditCollector",
+      "runtime_name": "WorkspaceAuditCollector-UserAccounts",
+      "args": {
+        "application_name": "user_accounts",
+        "user_key": "@user",
+        "filter_expression": "@filter_expression",
+        "start_time": "@start_time",
+        "end_time": "@end_time"
+      }
+    },
+    {
+      "wants": ["WorkspaceAuditCollector-Login", "WorkspaceAuditCollector-Drive", "WorkspaceAuditCollector-Token", "WorkspaceAuditCollector-Chrome", "WorkspaceAuditCollector-CAA", "WorkspaceAuditCollector-GroupsEnterprise", "WorkspaceAuditCollector-Calendar", "WorkspaceAuditCollector-Chat", "WorkspaceAuditCollector-GCP", "WorkspaceAuditCollector-Groups", "WorkspaceAuditCollector-Meet", "WorkspaceAuditCollector-UserAccounts"],
+      "name": "WorkspaceAuditTimesketch",
+      "args": {}
+    },
+    {
+      "wants": ["WorkspaceAuditTimesketch"],
+      "name": "TimesketchExporter",
+      "args": {
+        "incident_id": "@incident_id",
+        "token_password": "@token_password",
+        "sketch_id": "@sketch_id",
+        "analyzers": null,
+        "wait_for_timelines": "@wait_for_timelines"
+      }
+    }
+  ],
+  "args": [
+    ["user", "email address of the user to query logs for",""],
+    ["--start_time", "Start time (yyyy-mm-ddTHH:MM:SSZ)", null],
+    ["--end_time", "End time (yyyy-mm-ddTHH:MM:SSZ)", null],
+    ["--filter_expression", "Filter expression to use to query Workspace logs. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list",""],
+    ["--incident_id", "Incident ID (used for Timesketch description)", null],
+    ["--sketch_id", "Sketch to which the timeline should be added", null],
+    ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
+    ["--wait_for_timelines", "Whether to wait for timelines to finish processing.", true]
+  ]
+}

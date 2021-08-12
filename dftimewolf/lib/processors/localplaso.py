@@ -4,10 +4,12 @@ import os
 import subprocess
 import tempfile
 import uuid
+from typing import Optional
 
 from dftimewolf.lib import module
-from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.containers import containers
+from dftimewolf.lib.modules import manager as modules_manager
+from dftimewolf.lib.state import DFTimewolfState
 
 
 class LocalPlasoProcessor(module.BaseModule):
@@ -17,14 +19,17 @@ class LocalPlasoProcessor(module.BaseModule):
   output: The path to the resulting Plaso storage file.
   """
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str]=None,
+               critical: bool=False) -> None:
     super(LocalPlasoProcessor, self).__init__(
         state, name=name, critical=critical)
-    self._timezone = None
-    self._output_path = None
-    self._plaso_path = None
+    self._timezone = None  # type: Optional[str]
+    self._output_path = str()
+    self._plaso_path = str()
 
-  def _DeterminePlasoPath(self):
+  def _DeterminePlasoPath(self) -> bool:
     """Checks if log2timeline is somewhere in the user's PATH."""
     for path in os.environ['PATH'].split(os.pathsep):
       full_path = os.path.join(path, 'log2timeline.py')
@@ -33,7 +38,7 @@ class LocalPlasoProcessor(module.BaseModule):
         return True
     return False
 
-  def SetUp(self, timezone=None):  # pylint: disable=arguments-differ
+  def SetUp(self, timezone: Optional[str]=None) -> None:  # pylint: disable=arguments-differ
     """Sets up the local time zone with Plaso (log2timeline) should use.
 
     Args:
@@ -46,8 +51,7 @@ class LocalPlasoProcessor(module.BaseModule):
                        '  apt install plaso-tools',
                        critical=True)
 
-
-  def Process(self):
+  def Process(self) -> None:
     """Executes log2timeline.py on the module input."""
     for file_container in self.state.GetContainers(containers.File, pop=True):
       description = file_container.name

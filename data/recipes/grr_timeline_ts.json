@@ -1,0 +1,62 @@
+{
+  "name": "grr_timeline_ts",
+  "description": "Runs a TimelineFlow on a set of GRR hosts, processes results with plaso, and sends the timeline to Timesketch",
+  "short_description": "Runs a TimelineFlow on a set of GRR hosts, processes results with plaso, and sends the timeline to Timesketch",
+  "preflights": [],
+  "modules": [{
+    "wants": [],
+    "name": "GRRTimelineCollector",
+    "args": {
+      "hostnames": "@hostnames",
+      "root_path": "@root_path",
+      "reason": "incident_id: @reason",
+      "timeline_format": "1",
+      "grr_server_url": "@grr_server_url",
+      "grr_username": "@grr_username",
+      "grr_password": "@grr_password",
+      "verify": true,
+      "skip_offline_clients": "@skip_offline_clients",
+      "approvers": "@approvers"
+    }
+  }, {
+    "wants": ["GRRTimelineCollector"],
+    "name": "LocalPlasoProcessor",
+    "args": {
+      "timezone": null
+    }
+  }, {
+    "wants": ["LocalPlasoProcessor"],
+    "name": "TimesketchExporter",
+    "args": {
+      "incident_id": "@reason",
+      "token_password": "@token_password",
+      "sketch_id": "@sketch_id",
+      "analyzers": null,
+      "wait_for_timelines": "@wait_for_timelines"
+    }
+  }, {
+    "wants": ["TimesketchExporter"],
+    "name": "TimesketchEnhancer",
+    "args": {
+      "wait_for_analyzers": true,
+      "searches_to_skip": null,
+      "aggregations_to_skip": null,
+      "include_stories": false,
+      "token_password": "@token_password",
+      "max_checks": 0,
+      "formatter": "html"
+    }
+  }],
+  "args": [
+    ["hostnames", "Comma-separated list of hostnames or GRR client IDs to process", null],
+    ["root_path", "Root path for timeline generation", "/"],
+    ["reason", "Reason for collection", null],
+    ["--skip_offline_clients", "Whether to skip clients that are offline", false],
+    ["--approvers", "Comma-separated list of usernames to ask for approval", null],
+    ["--sketch_id", "Sketch to which the timeline should be added", null],
+    ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
+    ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
+    ["--timesketch_quick", "Skip waiting for analyzers to complete their run", false],
+    ["--wait_for_timelines", "Whether to wait for timelines to finish processing.", true]
+  ]
+}

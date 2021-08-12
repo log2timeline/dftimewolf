@@ -14,7 +14,7 @@
         "name": "GCPLogsCollector",
         "args": {
             "project_name": "@project_name",
-            "filter_expression": "logName=projects/@project_name/logs/cloudaudit.googleapis.com%2Factivity operation.producer=\"compute.googleapis.com\" resource.instance_id=\"@instance_id\""
+            "filter_expression": "logName=projects/@project_name/logs/cloudaudit.googleapis.com%2Factivity operation.producer=\"compute.googleapis.com\" resource.labels.instance_id=\"@instance_id\""
         }
     }, {
         "wants": ["GCPLogsCollector"],
@@ -27,6 +27,7 @@
             "incident_id": "@incident_id",
             "token_password": "@token_password",
             "sketch_id": "@sketch_id",
+            "analyzers": null,
             "wait_for_timelines": "@wait_for_timelines"
         }
     }],

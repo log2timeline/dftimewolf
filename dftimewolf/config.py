@@ -3,16 +3,18 @@
 
 import json
 
+from typing import Dict, Any
+
 from dftimewolf.lib import errors
 
 
 class Config(object):
   """Class that handles DFTimewolf's configuration parameters."""
 
-  _extra_config = {}
+  _extra_config = {}  # type: Dict[str, Dict[str, Any]]
 
   @classmethod
-  def GetExtra(cls, name=None):
+  def GetExtra(cls, name: str='') -> Dict[str, Any]:
     """Retrieves extra configuration parameters.
 
     These parameters should be loaded through LoadExtra or LoadExtraData.
@@ -26,10 +28,10 @@ class Config(object):
     """
     if not name:
       return cls._extra_config
-    return cls._extra_config.get(name, None)
+    return cls._extra_config.get(name, {})
 
   @classmethod
-  def LoadExtra(cls, filename):
+  def LoadExtra(cls, filename: str) -> bool:
     """Loads extra configuration parameters from a JSON configuration file.
 
     Args:
@@ -48,11 +50,11 @@ class Config(object):
     return False
 
   @classmethod
-  def LoadExtraData(cls, json_string):
+  def LoadExtraData(cls, json_string: bytes) -> None:
     """Loads extra configuration parameters from a JSON string.
 
     Args:
-      json_string (str): JSON string that contains the configuration.
+      json_string (bytes): JSON string that contains the configuration.
 
     Raises:
       BadConfigurationError: if the JSON string cannot be read.
@@ -68,6 +70,6 @@ class Config(object):
 
   # Note that this method is only used by tests.
   @classmethod
-  def ClearExtra(cls):
+  def ClearExtra(cls) -> None:
     """Clears any extra arguments loaded from a config JSON blob."""
     cls._extra_config = {}

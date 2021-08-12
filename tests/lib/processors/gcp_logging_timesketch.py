@@ -471,3 +471,63 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
         gcs_creation, 'test_query', 'test_project')
     actual_timesketch_record = json.loads(actual_timesketch_record)
     self.assertDictEqual(expected_timesketch_record, actual_timesketch_record)
+
+  def testDataProcYarn(self):
+    """Tests that a Yarn dataproc log is transformed correctly."""
+    test_state = state.DFTimewolfState(config.Config)
+    processor = gcp_logging_timesketch.GCPLoggingTimesketch(test_state)
+
+    yarn_log = {
+        "logName":
+            "projects/test-project-name/logs/yarn-userlogs",
+        "resource": {
+            "type": "cloud_dataproc_cluster",
+            "labels": {
+                    "project_id": "metastore-playground",
+                    "cluster_name": "cluster-ca8b",
+                    "cluster_uuid": "44444-444444-444-4444-4444",
+                    "region": "us-central1"
+            }
+        },
+        "labels": {
+            "compute.googleapis.com/resource_id": "400",
+            "compute.googleapis.com/resource_name": "cluster-ca8b-w-0",
+            "compute.googleapis.com/zone": "us-central1-a"
+        },
+        "insertId": "j44cqu11aqckveeeo",
+        "timestamp": "2021-05-24T08:18:46.299359Z",
+        "jsonPayload": {
+            "container_logname": "prelaunch.err",
+            "message": "line 470: /etc/selinux/config: Permission denied",
+            "application": "application_000004_0005",
+            "container": "container_0004_0005_0006_000001",
+            "filename": "application_000004_0005.container_113_05_1833_01."
+                        "prelaunch.err"
+        }
+    }
+
+    yarn_log = json.dumps(yarn_log)
+
+    expected_timesketch_record = {
+        'container': 'container_0004_0005_0006_000001',
+        'datetime': '2021-05-24T08:18:46.299359Z',
+        'filename': 'application_000004_0005.container_113_05_1833_01.'
+                    'prelaunch.err',
+        'message': 'line 470: /etc/selinux/config: Permission denied',
+        'project_name': 'test_project',
+        'query': 'test_query',
+        'resource_label_cluster_name': 'cluster-ca8b',
+        'resource_label_cluster_uuid': '44444-444444-444-4444-4444',
+        'resource_label_project_id': 'metastore-playground',
+        'resource_label_region': 'us-central1',
+        'timestamp_desc': 'Event Recorded'}
+
+    # pylint: disable=protected-access
+    actual_timesketch_record = processor._ProcessLogLine(
+        yarn_log, 'test_query', 'test_project')
+    actual_timesketch_record = json.loads(actual_timesketch_record)
+    self.assertDictEqual(expected_timesketch_record, actual_timesketch_record)
+
+
+if __name__ == '__main__':
+  unittest.main()

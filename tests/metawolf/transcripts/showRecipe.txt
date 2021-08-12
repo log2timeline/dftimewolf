@@ -1,0 +1,19 @@
+$2cf413> show recipe aws_forensics
++----------------------------------------------------------------------------------------------------+
+| aws_forensics                                                                                      |
++----------------------------------------------------------------------------------------------------+
+| Copies a volume from an AWS account, creates an analysis VM, and attaches the copied volume to it. |
++----------------------------------------------------------------------------------------------------+
++-----------------------+---------------------------------------------------------------------------------------------+
+| Argument              | Description                                                                                 |
++-----------------------+---------------------------------------------------------------------------------------------+
+| remote_profile_name   | Name of the AWS profile pointing to the AWS account where the volume(s) exist(s).           |
+| remote_zone           | The AWS zone in which the source volume(s) exist(s).                                        |
+| incident_id           | Incident ID to label the VM with.                                                           |
+| instance_id           | [Optional]. Instance ID of the instance to analyze.                                         |
+| volume_ids            | [Optional]. Comma-separated list of volume IDs to copy.                                     |
+| all_volumes           | [Optional]. Copy all volumes in the designated instance. Overrides volume_ids if specified. |
+| boot_volume_size      | [Optional]. The size of the analysis VM boot volume (in GB).                                |
+| analysis_zone         | [Optional]. The AWS zone in which to create the VM.                                         |
+| analysis_profile_name | [Optional]. Name of the AWS profile to use when creating the analysis VM.                   |
++-----------------------+---------------------------------------------------------------------------------------------+

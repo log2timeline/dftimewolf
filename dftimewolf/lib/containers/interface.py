@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """The attribute container interface."""
+from typing import List
 
-class AttributeContainer(object):
+
+class AttributeContainer():
   """The attribute container interface.
 
   This is the base class for those object that exists primarily as
@@ -14,10 +16,10 @@ class AttributeContainer(object):
   Attributes are public class members of an serializable type. Protected
   and private class members are not to be serialized.
   """
-  CONTAINER_TYPE = None
+  CONTAINER_TYPE = None  # type: str
 
   # TODO: note that this method is only used by tests.
-  def GetAttributeNames(self):
+  def GetAttributeNames(self) -> List[str]:
     """Retrieves the names of all attributes.
 
     Returns:

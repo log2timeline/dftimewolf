@@ -5,8 +5,6 @@
 import os
 import unittest
 
-import six
-
 from dftimewolf.lib.recipes import manager as recipes_manager
 
 
@@ -49,7 +47,7 @@ class RecipeTests(unittest.TestCase):
 
         self.assertIsInstance(module['wants'], list, msg=error_msg)
         self.assertIsInstance(module['args'], dict, msg=error_msg)
-        self.assertIsInstance(module['name'], six.string_types, msg=error_msg)
+        self.assertIsInstance(module['name'], str, msg=error_msg)
 
   def testRecipeModulesAllPresent(self):
     """Tests that a recipe's modules depend only on modules present in the

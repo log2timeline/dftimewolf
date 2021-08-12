@@ -2,11 +2,16 @@
 import abc
 import tempfile
 import time
+from typing import Optional, Union, Callable, List, Any
 
 from grr_api_client import api as grr_api
 from grr_api_client import errors as grr_errors
+from grr_api_client.client import Client
+from grr_api_client.flow import Flow
+from grr_api_client.hunt import Hunt
 
 from dftimewolf.lib import module
+from dftimewolf.lib.state import DFTimewolfState
 
 
 class GRRBaseModule(module.BaseModule):
@@ -22,7 +27,10 @@ class GRRBaseModule(module.BaseModule):
 
   _CHECK_APPROVAL_INTERVAL_SEC = 10
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str]=None,
+               critical: bool=False) -> None:
     """Initializes a GRR hunt or flow module.
 
     Args:
@@ -32,16 +40,21 @@ class GRRBaseModule(module.BaseModule):
           the entire recipe to fail if the module encounters an error.
     """
     super(GRRBaseModule, self).__init__(state, name=name, critical=critical)
-    self.reason = None
-    self.grr_api = None
-    self.grr_url = None
-    self.approvers = None
-    self.output_path = None
+    self.reason = str()
+    self.grr_api = None  # type: grr_api.ApiClient
+    self.grr_url = str()
+    self.approvers = []  # type: List[str]
+    self.output_path = str()
 
   # pylint: disable=arguments-differ
   def SetUp(
-      self, reason, grr_server_url, grr_username, grr_password, approvers=None,
-      verify=True):
+      self,
+      reason: str,
+      grr_server_url: str,
+      grr_username: str,
+      grr_password: str,
+      approvers: Optional[str]=None,
+      verify: bool=True) -> None:
     """Initializes a GRR hunt result collector.
 
     Args:
@@ -54,7 +67,6 @@ class GRRBaseModule(module.BaseModule):
           should be verified.
     """
     grr_auth = (grr_username, grr_password)
-    self.approvers = []
     if approvers:
       self.approvers = [item.strip() for item in approvers.split(',')]
     self.grr_api = grr_api.InitHttp(api_endpoint=grr_server_url,
@@ -66,7 +78,12 @@ class GRRBaseModule(module.BaseModule):
 
   # TODO: change object to more specific GRR type information.
   def _WrapGRRRequestWithApproval(
-      self, grr_object, grr_function, *args, **kwargs):
+      self,
+      grr_object: Union[Hunt, Client],
+      grr_function: Callable,  # type: ignore[type-arg]
+      *args: Any,
+      **kwargs: Any
+  ) -> Union[Flow, Hunt]:
     """Wraps a GRR request with approval.
 
     This method will request the approval if not yet granted.
@@ -118,7 +135,7 @@ class GRRBaseModule(module.BaseModule):
                 grr_object, self.approvers, self.reason))
 
   @abc.abstractmethod
-  def Process(self):
+  def Process(self) -> None:
     """Processes input and builds the module's output attribute.
 
     Modules take input information and process it into output information,

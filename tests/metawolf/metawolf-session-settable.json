@@ -1,0 +1,9 @@
+{
+  "session_id": "session_test",
+  "recipe": "recipe_test",
+  "name": "name_test",
+  "description": "I am a mock!",
+  "value": "value_test",
+  "type": "str",
+  "optional": false
+}
