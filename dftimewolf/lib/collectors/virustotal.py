@@ -2,21 +2,21 @@
 """Downloads several items for a VT file."""
 
 import datetime
-from dftimewolf.lib.state import DFTimewolfState
 import os
 import tempfile
-from typing import List, Optional
 import typing
+from typing import List
+from typing import Optional
 
 import pandas as pd
 import pytz
-import scapy
 import vt
-#from scapy import all
+from scapy import all as scapy_all
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
+from dftimewolf.lib.state import DFTimewolfState
 
 
 class VTCollector(module.BaseModule):
@@ -42,6 +42,7 @@ class VTCollector(module.BaseModule):
     super(VTCollector, self).__init__(state, name=name, critical=critical)
     self.hashes_list: List[str] = []
     self.output_path: Optional[str] = None
+    self.client: Optional[vt.Client] = None
 
   def Process(self) -> None:
     """Not implemented yet"""
@@ -52,7 +53,6 @@ class VTCollector(module.BaseModule):
       self,
       hashes: str,
       vt_api_key: str,
-      file_type: str = "pcap",
       action: str = "download",
       output_path: str = tempfile.mkdtemp(),
   ) -> None:
@@ -61,7 +61,6 @@ class VTCollector(module.BaseModule):
     Args:
       hashes (str): Coma seperated strings of hashes
       vt_api_key (str): Virustotal Enterprise API Key
-      file_type (str): One of [pcap] can be extended for more filetypes
       action (str) : Which action to execute
       output_path [optional] (str) : Where to store the downloaded files to
     """
@@ -91,20 +90,15 @@ class VTCollector(module.BaseModule):
     for vt_hash in self.hashes_list:
       if not self._isHashKnownToVT(vt_hash):
         self.logger.info(
-            'Hash not found on VT removing element %s from list', vt_hash)
+            'Hash not found on VT removing element {0:s} from list'.format(
+                vt_hash))
         self.hashes_list.remove(vt_hash)
 
-    self.logger.info('Found the following files on VT: %s', self.hashes_list)
+    self.logger.info(
+        'Found the following files on VT: {0:s}'.format(*self.hashes_list))
 
-    if file_type == "pcap":
-      for vt_hash in self.hashes_list:
-        pcap_download_list = self._get_pcap_download_links(vt_hash)
-    else:
-      self.ModuleError(
-          f'file_type: {file_type} not implemented in Virustotal Module',
-          critical=True,
-      )
-      return
+    for vt_hash in self.hashes_list:
+      pcap_download_list = self._get_pcap_download_links(vt_hash)
 
     for download_link in pcap_download_list:
       self.logger.info(download_link)
@@ -134,7 +128,7 @@ class VTCollector(module.BaseModule):
 
       if frame is None:
         self.logger.error(
-            'Found empty Pandas for %s %s', vt_hash, download_link)
+            'Found empty Pandas for {0:s} {1:s}'.format(vt_hash, download_link))
         continue
       container = containers.DataFrame(
           data_frame=frame,
@@ -168,7 +162,7 @@ class VTCollector(module.BaseModule):
                 output_path, error),
             critical=True,
         )
-        """ 
+        """
         Below should never be reached, but Either all return statements in 
         a function should return an expression, or none of them should. 
         (inconsistent-return-statements)
@@ -191,7 +185,7 @@ class VTCollector(module.BaseModule):
               False: File not found on VT.
           """
     try:
-      self.logger.debug('Trying to find %s on Virustotal...', vt_hash)
+      self.logger.debug('Trying to find {0:s} on Virustotal...'.format(vt_hash))
       self.client.get_object(f"/files/{vt_hash}")
     except:  # pylint: disable=bare-except
       return False
@@ -215,7 +209,8 @@ class VTCollector(module.BaseModule):
       if analysis["attributes"]["has_pcap"]:
         analysis_link = analysis["links"]["self"]
         self.logger.info(
-            'Found PCAP for %s to be processed: %s', vt_hash, analysis_link)
+            'Found PCAP for {0:s} to be processed: {1:s}'.format(
+                vt_hash, analysis_link))
         return_list.append(analysis_link)
 
     return return_list
@@ -229,20 +224,20 @@ class VTCollector(module.BaseModule):
           Returns:
               Pandas Dataframe: Parsed Pandas Dateframe.
           """
-    packets = scapy.all.rdpcap(path)
+    packets = scapy_all.rdpcap(path)
 
     # Collect field names from IP/TCP/UDP
     # These will be columns in dataframe
-    ip_fields = [(field.name) for field in scapy.all.IP().fields_desc]
-    tcp_fields = [(field.name) for field in scapy.all.TCP().fields_desc]
+    ip_fields = [(field.name) for field in scapy_all.IP().fields_desc]
+    tcp_fields = [(field.name) for field in scapy_all.TCP().fields_desc]
     # TODO redo UDP, currently disabled
     #udp_fields = [(field.name) for field in scapy_all.UDP().fields_desc]
 
     ip_fields_new = [
-        ("ip_" + field.name) for field in scapy.all.IP().fields_desc
+        ("ip_" + field.name) for field in scapy_all.IP().fields_desc
     ]
     tcp_fields_new = [
-        ("tcp_" + field.name) for field in scapy.all.TCP().fields_desc
+        ("tcp_" + field.name) for field in scapy_all.TCP().fields_desc
     ]
     #udp_fields_new = [
     #    ("udp_" + field.name) for field in scapy_all.UDP().fields_desc
@@ -252,7 +247,7 @@ class VTCollector(module.BaseModule):
         ip_fields_new + ["time"] + tcp_fields_new +
         ["payload", "datetime", "raw"])
 
-    for packet in packets[scapy.all.IP]:
+    for packet in packets[scapy_all.IP]:
       # Field array for each row of DataFrame
 
       field_values: List[str] = []
@@ -260,12 +255,12 @@ class VTCollector(module.BaseModule):
       for field in ip_fields:
         if field == "options":
           # Retrieving number of options defined in IP Header
-          field_values.append(str(len(packet[scapy.all.IP].fields[field])))
+          field_values.append(str(len(packet[scapy_all.IP].fields[field])))
         else:
-          field_values.append(packet[scapy.all.IP].fields[field])
+          field_values.append(packet[scapy_all.IP].fields[field])
 
       field_values.append(packet.time)
-      layer_type = type(packet[scapy.all.IP].payload)
+      layer_type = type(packet[scapy_all.IP].payload)
       for field in tcp_fields:
         try:
           if field == "options":
