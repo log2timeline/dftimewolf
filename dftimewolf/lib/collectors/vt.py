@@ -2,16 +2,17 @@
 """Downloads several items for a VT file."""
 
 import datetime
+from dftimewolf.lib.state import DFTimewolfState
 import os
 import tempfile
-from typing import List
+from typing import List, Optional
 import typing
 
 import pandas as pd
 import pytz
 import scapy
 import vt
-from scapy import all
+#from scapy import all
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
@@ -25,7 +26,11 @@ class VTCollector(module.BaseModule):
 
   """
 
-  def __init__(self, state, name=None, critical=False) -> None:
+  def __init__(
+      self,
+      state: DFTimewolfState,
+      name: Optional[str],
+      critical: bool = False) -> None:
     """Initializes an Virustotal (VT) collector.
 
     Args:
@@ -35,9 +40,7 @@ class VTCollector(module.BaseModule):
           the entire recipe to fail if the module encounters an error.
     """
     super(VTCollector, self).__init__(state, name=name, critical=critical)
-    self.client = None
-    self.hashes = None
-    self.output_path = None
+    self.hashes_list: List[str] = []
 
   def Process(self) -> None:
     """Not implemented yet"""
@@ -50,7 +53,7 @@ class VTCollector(module.BaseModule):
       vt_api_key: str,
       file_type: str = "pcap",
       action: str = "download",
-      output_path: typing.Optional[str] = None,
+      output_path: str = tempfile.mkdtemp(),
   ) -> None:
     """Sets up an Virustotal (VT) collector.
 
@@ -73,7 +76,7 @@ class VTCollector(module.BaseModule):
           "You need to specify an action from: pcap", critical=True)
       return
 
-    self.hashes = [item.strip() for item in hashes.strip().split(",")]
+    self.hashes_list = [item.strip() for item in hashes.strip().split(",")]
 
     if not vt_api_key:
       self.ModuleError(
@@ -84,16 +87,16 @@ class VTCollector(module.BaseModule):
 
     self.client = vt.Client(vt_api_key)
 
-    for vt_hash in self.hashes:
+    for vt_hash in self.hashes_list:
       if not self._isHashKnownToVT(vt_hash):
         self.logger.info(
             'Hash not found on VT removing element %s from list', vt_hash)
-        self.hashes.remove(vt_hash)
+        self.hashes_list.remove(vt_hash)
 
-    self.logger.info('Found the following files on VT: %s', self.hashes)
+    self.logger.info('Found the following files on VT: %s', self.hashes_list)
 
     if file_type == "pcap":
-      for vt_hash in self.hashes:
+      for vt_hash in self.hashes_list:
         pcap_download_list = self._get_pcap_download_links(vt_hash)
     else:
       self.ModuleError(
@@ -108,6 +111,12 @@ class VTCollector(module.BaseModule):
       filepath = f'{download_link.rsplit("/", 1)[-1]}.pcap'
       file = open(filepath, "wb")
 
+      if self.client == None:
+        self.ModuleError(
+            f'Error creating Virustotal Client instance',
+            critical=True,
+        )
+        return
       download = self.client.get(real)
       if download.status == 200:
         file.write(download.content.read())
@@ -133,7 +142,7 @@ class VTCollector(module.BaseModule):
       )
       self.state.StoreContainer(container)
 
-  def _CheckOutputPath(self, output_path: typing.Optional[str] = None) -> str:
+  def _CheckOutputPath(self, output_path: str = tempfile.mkdtemp()) -> str:
     """Checks that the output path can be manipulated by the module.
 
           Args:
@@ -158,8 +167,15 @@ class VTCollector(module.BaseModule):
                 output_path, error),
             critical=True,
         )
+        """ 
+        Below should never be reached, but Either all return statements in 
+        a function should return an expression, or none of them should. 
+        (inconsistent-return-statements)
+        """
+        return tempfile.mkdtemp()
     elif not os.path.isdir(output_path):
       self.ModuleError(output_path + " is not a directory:", critical=True)
+      return tempfile.mkdtemp()
     else:
       return tempfile.mkdtemp()
 
