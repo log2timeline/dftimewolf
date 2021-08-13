@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """Export objects from AWS S3 to a GCP GCS bucket."""
 
-from time import sleep
+import time
 import threading
-from typing import Optional
+from typing import Any, Optional
 
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk
@@ -43,20 +43,20 @@ class S3ToGCSCopy(module.BaseModule):
     """
     super(S3ToGCSCopy, self).__init__(
         state, name=name, critical=critical)
-    self.aws_region = None
-    self.dest_project_name = None
-    self.dest_project = None
-    self.dest_bucket = None
-    self.s3_objects = None
+    self.aws_region: str = ''
+    self.dest_project_name: str = ''
+    self.dest_project: gcp_project.GoogleCloudProject = ''
+    self.dest_bucket: str = ''
+    self.s3_objects: Any = None
     self._lock = threading.Lock()
-    self.thread_error = None
+    self.thread_error: Any = None
 
   # pylint: disable=arguments-differ
   def SetUp(self,
             aws_region: str,
             dest_project: str,
             dest_bucket: str,
-            s3_objects: str=None) -> None:
+            s3_objects: str='') -> None:
     """Sets up a copy operation from AWS S3 to GCP GCS.
 
     AWS objects to copy are sourced from either the state, or passed in here.
@@ -110,7 +110,7 @@ class S3ToGCSCopy(module.BaseModule):
           target=self._PerformCopyThread, args=((s3_object,)))
         thread.start()
         threads.append(thread)
-        sleep(2) # Offest each thread start slightly
+        time.sleep(2) # Offest each thread start slightly
       except ResourceCreationError as exception:
         self.ModuleError('Exception during transfer operation: {0!s}'\
           .format(exception), critical=True)
@@ -122,7 +122,7 @@ class S3ToGCSCopy(module.BaseModule):
       self.ModuleError('Exception during transfer operation: {0!s}'\
         .format(self.thread_error), critical=True)
 
-  def _PerformCopyThread(self, s3_object) -> None:
+  def _PerformCopyThread(self, s3_object: str) -> None:
     try:
       # We must create a new client for each thread, rather than use the class
       # member self.dest_project due to an underlying thread safety issue in
@@ -146,7 +146,7 @@ class S3ToGCSCopy(module.BaseModule):
       self.logger.critical('{0!s}'.format(e))
       self.thread_error = e
 
-  def _SetBucketServiceAccountPermissions(self):
+  def _SetBucketServiceAccountPermissions(self) -> None:
     """Grant access to the storage transfer service account to use the bucket.
     See https://cloud.google.com/storage-transfer/docs/configure-access#sink"""
 

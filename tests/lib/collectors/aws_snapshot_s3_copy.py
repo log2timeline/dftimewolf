@@ -192,8 +192,10 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
   @mock.patch('libcloudforensics.providers.aws.forensics.CopyEBSSnapshotToS3SetUp')
   @mock.patch('libcloudforensics.providers.aws.forensics.CopyEBSSnapshotToS3Process')
   @mock.patch('libcloudforensics.providers.aws.forensics.CopyEBSSnapshotToS3TearDown')
+  @mock.patch('time.sleep', return_value=None)
   # pylint: enable=line-too-long
   def testProcessFromParams(self,
+      mock_sleep,
       mock_copyebssnapshottos3teardown,
       mock_copyebssnapshottos3process,
       mock_copyebssnapshottos3setup,
@@ -235,8 +237,10 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
   @mock.patch('libcloudforensics.providers.aws.forensics.CopyEBSSnapshotToS3SetUp')
   @mock.patch('libcloudforensics.providers.aws.forensics.CopyEBSSnapshotToS3Process')
   @mock.patch('libcloudforensics.providers.aws.forensics.CopyEBSSnapshotToS3TearDown')
+  @mock.patch('time.sleep', return_value=None)
   # pylint: enable=line-too-long
   def testProcessFromState(self,
+      mock_sleep,
       mock_copyebssnapshottos3teardown,
       mock_copyebssnapshottos3process,
       mock_copyebssnapshottos3setup,

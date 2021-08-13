@@ -2,7 +2,7 @@
 """Copies AWS EBS snapshots into AWS S3."""
 
 import threading
-from time import sleep
+import time
 import boto3
 from typing import Any, Optional
 
@@ -50,8 +50,8 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
     self.snapshots: Any = None
     self.bucket: str = ''
     self.region: str = ''
-    self.subnet: str = ''
-#    self.ec2 = None
+    self.subnet: Any = None
+    self.ec2: Any = None
     self._lock = threading.Lock()
     self.thread_error: Any = None
 
@@ -60,7 +60,7 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
             snapshots: str = '',
             bucket: str='',
             region: str='',
-            subnet: str='') -> None:
+            subnet: Any=None) -> None:
     """Sets up the AWSVolumeToS3 collector.
 
     Args:
@@ -118,7 +118,7 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
     iam_details = forensics.CopyEBSSnapshotToS3SetUp(
         aws_account, instance_profile_name)
     if iam_details['profile']['created']: # Propagation delay
-      sleep(20)
+      time.sleep(20)
 
     # Kick off a thread for each snapshot to perform the copy.
     threads = []
@@ -132,7 +132,7 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
                 snapshot, aws_account, iam_details['profile']['arn']))
         thread.start()
         threads.append(thread)
-        sleep(2) # Offest each thread start slightly
+        time.sleep(2) # Offest each thread start slightly
       except ResourceCreationError as exception:
         self.ModuleError('Exception during copy operation: {0!s}'\
           .format(exception), critical=True)

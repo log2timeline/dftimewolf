@@ -65,8 +65,10 @@ class S3ToGCSCopyTest(unittest.TestCase):
   @mock.patch('libcloudforensics.providers.gcp.internal.storage.GoogleCloudStorage.CreateBucket')
   @mock.patch('dftimewolf.lib.exporters.s3_to_gcs.S3ToGCSCopy._SetBucketServiceAccountPermissions')
   @mock.patch('libcloudforensics.providers.gcp.internal.storagetransfer.GoogleCloudStorageTransfer.S3ToGCS')
+  @mock.patch('time.sleep', return_value=None)
   # pylint: enable=line-too-long
   def testProcessFromParams(self,
+      mock_sleep,
       mock_s3_to_gcs,
       mock_set_bucket_perms,
       mock_gcp_create_bucket,
@@ -100,8 +102,10 @@ class S3ToGCSCopyTest(unittest.TestCase):
   @mock.patch('libcloudforensics.providers.gcp.internal.storage.GoogleCloudStorage.CreateBucket')
   @mock.patch('dftimewolf.lib.exporters.s3_to_gcs.S3ToGCSCopy._SetBucketServiceAccountPermissions')
   @mock.patch('libcloudforensics.providers.gcp.internal.storagetransfer.GoogleCloudStorageTransfer.S3ToGCS')
+  @mock.patch('time.sleep', return_value=None)
   # pylint: enable=line-too-long
   def testProcessFromState(self,
+      mock_sleep,
       mock_s3_to_gcs,
       mock_set_bucket_perms,
       mock_gcp_create_bucket,

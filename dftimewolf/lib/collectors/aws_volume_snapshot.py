@@ -22,7 +22,7 @@ class AWSVolumeSnapshotCollector(module.BaseModule):
 
   def __init__(self,
       state: DFTimewolfState,
-      name: str,
+      name: Optional[str]=None,
       critical: Optional[bool] = False) -> None:
     """Initializes a AWSVolumeToS3 collector."""
     super(AWSVolumeSnapshotCollector, self).__init__(

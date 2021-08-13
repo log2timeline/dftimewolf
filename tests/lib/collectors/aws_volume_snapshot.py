@@ -85,8 +85,9 @@ class AWSVolumeSnapshotCollectorTest(unittest.TestCase):
     self.assertEqual(volumes_expected, collector.volumes)
     self.assertEqual(FAKE_REGION, collector.region)
 
+  @mock.patch('time.sleep')
   @mock.patch('boto3.session.Session._setup_loader')
-  def testProcessFromParams(self, mock_loader):
+  def testProcessFromParams(self, mock_loader, mock_sleep):
     """Tests the process method, when the volumes were provided via SetUp."""
     mock_loader.return_value = None
 
@@ -106,8 +107,9 @@ class AWSVolumeSnapshotCollectorTest(unittest.TestCase):
         aws_containers.AWSAttributeContainer)[0].snapshots,
         ['snap-01234567', 'snap-01234567'])
 
+  @mock.patch('time.sleep')
   @mock.patch('boto3.session.Session._setup_loader')
-  def testProcessFromState(self, mock_loader):
+  def testProcessFromState(self, mock_loader, mock_sleep):
     """Tests the process method, when the volumes were provided via state."""
     mock_loader.return_value = None
 
