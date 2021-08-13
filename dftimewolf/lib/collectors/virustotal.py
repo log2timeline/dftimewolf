@@ -41,6 +41,7 @@ class VTCollector(module.BaseModule):
     """
     super(VTCollector, self).__init__(state, name=name, critical=critical)
     self.hashes_list: List[str] = []
+    self.output_path: Optional[str] = None
 
   def Process(self) -> None:
     """Not implemented yet"""
@@ -111,7 +112,7 @@ class VTCollector(module.BaseModule):
       filepath = f'{download_link.rsplit("/", 1)[-1]}.pcap'
       file = open(filepath, "wb")
 
-      if self.client == None:
+      if self.client is None:
         self.ModuleError(
             f'Error creating Virustotal Client instance',
             critical=True,
@@ -259,7 +260,7 @@ class VTCollector(module.BaseModule):
       for field in ip_fields:
         if field == "options":
           # Retrieving number of options defined in IP Header
-          field_values.append(len(packet[scapy.all.IP].fields[field]))
+          field_values.append(str(len(packet[scapy.all.IP].fields[field])))
         else:
           field_values.append(packet[scapy.all.IP].fields[field])
 
@@ -268,29 +269,38 @@ class VTCollector(module.BaseModule):
       for field in tcp_fields:
         try:
           if field == "options":
-            field_values.append(len(packet[layer_type].fields[field]))
+            field_values.append(str(len(packet[layer_type].fields[field])))
           else:
             field_values.append(packet[layer_type].fields[field])
         except Exception as e:  # pylint: disable=bare-except
           self.logger.exception(e)
-          field_values.append(None)
+          field_values.append("")
 
       # Append payload
-      field_values.append(len(packet[layer_type].payload))
+      field_values.append(str(len(packet[layer_type].payload)))
 
+      # Date of the event (packet)
       date_value = datetime.datetime.fromtimestamp(packet.time, tz=pytz.utc)
       field_values.append(date_value.isoformat())
       field_values.append(str(packet.show2))
 
       # Create a dict and upload it to timesketch.
-      packet_dict = dict(zip(dataframe_fields, field_values))
-      ip_flags: List[str] = packet_dict.get("ip_flags")
-      if not ip_flags is None:
+      assert dataframe_fields is not None
+      assert field_values is not None
+
+      packet_dict: typing.Dict[str,
+                               str] = dict(zip(dataframe_fields, field_values))
+
+      assert packet_dict is not None
+
+      if packet_dict.get("ip_flags") is not None:
+        # this type is currently wrong
+        ip_flags: List[str] = packet_dict.get("ip_flags")
         packet_dict["ip_flags"] = ip_flags.names
 
-      tcp_flags: List[str] = packet_dict.get("tcp_flags")
-      if not tcp_flags is None:
-        packet_dict["tcp_flags"] = tcp_flags.names
+      #tcp_flags: List[str] = packet_dict.get("tcp_flags")
+      if packet_dict.get("tcp_flags") is not None:
+        packet_dict["tcp_flags"] = packet_dict.get("tcp_flags").names
 
       del packet_dict["time"]
 
