@@ -32,6 +32,8 @@ google-cloud-error-reporting = "<1.2.0"  # While we wait for turbinia to bump th
 cmd2 = "*"
 psutil = "*"
 prettytable = "*"
+scapy = "*"
+vt-py = "*"
 
 [requires]
 python_version = "3.8"
