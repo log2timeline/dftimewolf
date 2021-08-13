@@ -334,19 +334,18 @@ class GCSObjectList(interface.AttributeContainer):
   """
   CONTAINER_TYPE = 'gcs_object_list'
 
-  def __init__(self, object_list: List[str]=None):
+  def __init__(self, object_list: List[str]=[]):
     """Initializes the GCS object list container.
 
     Args:
       object_list (List[str]): List of GCS object paths.
     """
     super(GCSObjectList, self).__init__()
-    self.object_list = []
-    if object_list:
-      for path in object_list:
-        self.Append(path)
+    self.object_list: List[str] = []
+    for path in object_list:
+      self.Append(path)
 
-  def Append(self, object_path: str):
+  def Append(self, object_path: str) -> None:
     """Append an object path to the object list.
 
     Args:

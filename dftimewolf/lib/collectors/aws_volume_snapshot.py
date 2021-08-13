@@ -3,9 +3,12 @@
 
 import boto3
 
+from typing import Optional, Any
+
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import aws_containers
 from dftimewolf.lib.modules import manager as modules_manager
+from dftimewolf.lib.state import DFTimewolfState
 
 
 class AWSVolumeSnapshotCollector(module.BaseModule):
@@ -17,17 +20,20 @@ class AWSVolumeSnapshotCollector(module.BaseModule):
     region: The region the volumes exist in.
   """
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+      state: DFTimewolfState,
+      name: str,
+      critical: Optional[bool] = False) -> None:
     """Initializes a AWSVolumeToS3 collector."""
     super(AWSVolumeSnapshotCollector, self).__init__(
         state, name=name, critical=critical)
-    self.volumes = None
-    self.region = None
+    self.volumes: Any = ''
+    self.region: Any = ''
 
   # pylint: disable=arguments-differ
   def SetUp(self,
-            volumes=None,
-            region=None):
+            volumes: str = '',
+            region: str = '') -> None:
     """Sets up the AWSVolumeToS3 collector.
 
     Args:
@@ -41,7 +47,7 @@ class AWSVolumeSnapshotCollector(module.BaseModule):
     self.volumes = volumes
     self.region = region
 
-  def Process(self):
+  def Process(self) -> None:
     """Images the volumes into S3."""
     # The list of volumes could have been set in SetUp, or it might come from a
     # container from a previous module. Check where they come from, and

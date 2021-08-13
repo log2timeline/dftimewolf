@@ -15,8 +15,8 @@ from dftimewolf.lib.containers import aws_containers
 from dftimewolf.lib.collectors import aws_snapshot_s3_copy
 
 
-FAKE_BUCKET = "fake-bucket"
-FAKE_SUBNET = "sub-01234567"
+FAKE_BUCKET = 'fake-bucket'
+FAKE_SUBNET = 'sub-01234567'
 FAKE_REGION = 'fake-region-1'
 FAKE_AZ_B = 'fake-region-1b'
 FAKE_AZ_A = 'fake-region-1a'

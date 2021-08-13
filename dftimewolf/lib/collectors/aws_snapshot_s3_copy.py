@@ -4,6 +4,7 @@
 import threading
 from time import sleep
 import boto3
+from typing import Any, Optional
 
 from libcloudforensics.providers.aws import forensics
 from libcloudforensics.providers.aws.internal import account
@@ -11,6 +12,24 @@ from libcloudforensics.errors import ResourceCreationError
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import aws_containers
 from dftimewolf.lib.modules import manager as modules_manager
+from dftimewolf.lib.state import DFTimewolfState
+
+
+class AWSSnapshotS3CopyException(Exception):
+  """Class to represent an exception in this collector.
+  Attributes:
+    message (str): The error message.
+  """
+
+  def __init__(self,
+               message: str) -> None:
+    """Initializes the Exception with provided message.
+    Args:
+      message (str): The error message.
+    """
+    super().__init__(message)
+    self.message = message
+
 
 class AWSSnapshotS3CopyCollector(module.BaseModule):
   """Copies AWS EBS snapshots into AWS S3. Snapshot list can be passed in via
@@ -21,24 +40,27 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
     bucket: The destination S3 bucket.
   """
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+      state: DFTimewolfState,
+      name: Optional[str]=None,
+      critical: Optional[bool]=False) -> None:
     """Initializes a AWSVolumeToS3 collector."""
     super(AWSSnapshotS3CopyCollector, self).__init__(
         state, name=name, critical=critical)
-    self.snapshots = None
-    self.bucket = None
-    self.region = None
-    self.subnet = None
-    self.ec2 = None
+    self.snapshots: Any = None
+    self.bucket: str = ''
+    self.region: str = ''
+    self.subnet: str = ''
+#    self.ec2 = None
     self._lock = threading.Lock()
-    self.thread_error = None
+    self.thread_error: Any = None
 
   # pylint: disable=arguments-differ
   def SetUp(self,
-            snapshots=None,
-            bucket=None,
-            region=None,
-            subnet=None):
+            snapshots: str = '',
+            bucket: str='',
+            region: str='',
+            subnet: str='') -> None:
     """Sets up the AWSVolumeToS3 collector.
 
     Args:
@@ -56,7 +78,7 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
     self.subnet = subnet
     self.ec2 = boto3.client('ec2', region_name=self.region)
 
-  def Process(self):
+  def Process(self) -> None:
     """Images the volumes into S3."""
     # The list of snapshots could have been set in SetUp, or it might come
     # from a container from a previous module. Check where they come from, and
@@ -85,6 +107,9 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
       zone = self._PickAvailabilityZone(self.subnet)
     except self.ec2.exceptions.ClientError as exception:
       self.ModuleError('Error encountered describing snapshots: {0!s}'.\
+        format(exception), critical=True)
+    except AWSSnapshotS3CopyException as exception:
+      self.ModuleError('Error encountered determining availability zone: {0!s}'.\
         format(exception), critical=True)
 
     # Perform the prep stage
@@ -130,14 +155,18 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
         ','.join(image.hash_paths)
       ))
 
-  def _PerformCopyThread(self, snapshot_id, aws_account, instance_profile_arn):
+  def _PerformCopyThread(self,
+      snapshot_id: str,
+      aws_account: account.AWSAccount,
+      instance_profile_arn: str) -> None:
     """Perform the copy operation. Designed to be called as a new thread from
     Process(). Will place the output file paths into the state container,
     (creating it if it doesn't exist already.)
 
     Args:
       snapshot_id (str): The snapshot ID.
-      zone (str): The AWS availability zone."""
+      aws_account (account.AWSAccount): The AWS account object.
+      """
     try:
       result = forensics.CopyEBSSnapshotToS3Process(aws_account,
           self.bucket,
@@ -159,7 +188,7 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
       self.thread_error = e
 
   # pylint: disable=inconsistent-return-statements
-  def _PickAvailabilityZone(self, subnet=None) -> str:
+  def _PickAvailabilityZone(self, subnet: str='') -> str:
     """Given a region + subnet, pick an availability zone. If the subnet is
     provided, it's AZ is returned. Otherwise, one is picked from those
     available in the region.
@@ -169,7 +198,10 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
       subnet (str): Optional. An EC2 subnet ID.
 
     Returns:
-      A string representing the AZ."""
+      A string representing the AZ.
+    
+    Raises:
+      AWSSnapshotS3CopyException: If no suitable AZ cvan be found."""
     # If we received a subnet ID, return the AZ for it
     if subnet:
       return str(self.ec2.describe_subnets(SubnetIds=[subnet])\
@@ -181,6 +213,9 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
     for zone in response['AvailabilityZones']:
       if zone['State'] == 'available':
         return str(zone['ZoneName'])
-    # TODO return an error if no suitable zone can be found - quite unlikely
+    
+    # If we reached here, we have a problem
+    raise AWSSnapshotS3CopyException('No suitable availability zone found')
+
 
 modules_manager.ModulesManager.RegisterModule(AWSSnapshotS3CopyCollector)

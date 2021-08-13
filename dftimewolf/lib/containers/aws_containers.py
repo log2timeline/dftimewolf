@@ -22,8 +22,12 @@ class S3Image:
     self.hash_paths = [path if path.startswith('s3://') else 's3://' + path \
         for path in hash_paths]
 
-  def __eq__(self, other):
-    """Comparison function. Needed for unit tests."""
+  def __eq__(self, other: S3Image) -> bool:
+    """Comparison function. Needed for unit tests.
+
+    Args:
+      other (S3Image): The operand to compare.
+    """
     return self.image_path == other.image_path and \
            sorted(self.hash_paths) == sorted(other.hash_paths)
 
@@ -38,12 +42,12 @@ class AWSAttributeContainer(interface.AttributeContainer):
   """
   CONTAINER_TYPE = 'awsattributecontainer'
 
-  def __init__(self):
+  def __init__(self) -> None:
     """Initializes the AWSAttributeContainer"""
     super(AWSAttributeContainer, self).__init__()
-    self.snapshots = []
-    self.volumes = []
-    self.s3_images = []
+    self.snapshots: List[str] = []
+    self.volumes: List[str] = []
+    self.s3_images: List[S3Image] = []
 
   def SetSnapshotIDs(self, snapshot_ids: List[str]) -> None:
     """Sets the snapshot ids list.
@@ -61,7 +65,7 @@ class AWSAttributeContainer(interface.AttributeContainer):
     """
     self.volumes = volume_ids
 
-  def AppendS3Image(self, s3_image: S3Image):
+  def AppendS3Image(self, s3_image: S3Image) -> None:
     """Append a value to a list of S3 paths.
 
     Args:

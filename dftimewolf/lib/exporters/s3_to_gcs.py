@@ -3,6 +3,7 @@
 
 from time import sleep
 import threading
+from typing import Optional
 
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk
@@ -12,6 +13,7 @@ from google.cloud.storage.client import Client as storage_client
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers, aws_containers
 from dftimewolf.lib.modules import manager as modules_manager
+from dftimewolf.lib.state import DFTimewolfState
 
 
 class S3ToGCSCopy(module.BaseModule):
@@ -27,7 +29,10 @@ class S3ToGCSCopy(module.BaseModule):
     s3_objects (List[str]): Objects to be copied.
   """
 
-  def __init__(self, state, name=None, critical=False):
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str]=None,
+               critical: bool=False) -> None:
     """Initializes a copy of objects from AWS S3 to a GCS bucket.
 
     Args:
@@ -48,10 +53,10 @@ class S3ToGCSCopy(module.BaseModule):
 
   # pylint: disable=arguments-differ
   def SetUp(self,
-            aws_region,
-            dest_project,
-            dest_bucket,
-            s3_objects=None):
+            aws_region: str,
+            dest_project: str,
+            dest_bucket: str,
+            s3_objects: str=None) -> None:
     """Sets up a copy operation from AWS S3 to GCP GCS.
 
     AWS objects to copy are sourced from either the state, or passed in here.
