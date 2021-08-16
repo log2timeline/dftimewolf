@@ -25,6 +25,10 @@ if TYPE_CHECKING:
 MODULES = {
   'AWSCollector': 'dftimewolf.lib.collectors.aws',
   'AWSLogsCollector': 'dftimewolf.lib.collectors.aws_logging',
+  'AWSSnapshotS3CopyCollector':
+      'dftimewolf.lib.collectors.aws_snapshot_s3_copy',
+  'AWSVolumeSnapshotCollector':
+      'dftimewolf.lib.collectors.aws_volume_snapshot',
   'AzureCollector': 'dftimewolf.lib.collectors.azure',
   'FilesystemCollector': 'dftimewolf.lib.collectors.filesystem',
   'GCPLoggingTimesketch': 'dftimewolf.lib.processors.gcp_logging_timesketch',
@@ -43,6 +47,7 @@ MODULES = {
   'GRRTimelineCollector': 'dftimewolf.lib.collectors.grr_hosts',
   'LocalFilesystemCopy': 'dftimewolf.lib.exporters.local_filesystem',
   'LocalPlasoProcessor': 'dftimewolf.lib.processors.localplaso',
+  'S3ToGCSCopy': 'dftimewolf.lib.exporters.s3_to_gcs',
   'SanityChecks': 'dftimewolf.lib.preflights.sanity_checks',
   'SCPExporter': 'dftimewolf.lib.exporters.scp_ex',
   'SSHMultiplexer': 'dftimewolf.lib.preflights.ssh_multiplexer',
