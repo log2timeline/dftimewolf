@@ -31,6 +31,7 @@ google-cloud-error-reporting = "<1.2.0"
 cmd2 = "*"
 psutil = "*"
 prettytable = "*"
+typing-extensions = "*"
 
 [requires]
 python_version = "3.8"
