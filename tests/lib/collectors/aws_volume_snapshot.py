@@ -90,6 +90,7 @@ class AWSVolumeSnapshotCollectorTest(unittest.TestCase):
   def testProcessFromParams(self, mock_loader, mock_sleep):
     """Tests the process method, when the volumes were provided via SetUp."""
     mock_loader.return_value = None
+    mock_sleep.return_value = None
 
     test_state = state.DFTimewolfState(config.Config)
 
@@ -112,6 +113,7 @@ class AWSVolumeSnapshotCollectorTest(unittest.TestCase):
   def testProcessFromState(self, mock_loader, mock_sleep):
     """Tests the process method, when the volumes were provided via state."""
     mock_loader.return_value = None
+    mock_sleep.return_value = None
 
     container = aws_containers.AWSAttributeContainer()
     container.SetVolumeIDs([volume['VolumeId']\

@@ -81,6 +81,7 @@ class S3ToGCSCopyTest(unittest.TestCase):
     mock_gcp_create_bucket.return_value = FAKE_GCP_CREATE_BUCKET_RESPONSE
     mock_set_bucket_perms.return_value = None
     mock_s3_to_gcs.return_value = None
+    mock_sleep.return_value = None
 
     test_state = state.DFTimewolfState(config.Config)
 
@@ -118,6 +119,7 @@ class S3ToGCSCopyTest(unittest.TestCase):
     mock_gcp_create_bucket.return_value = FAKE_GCP_CREATE_BUCKET_RESPONSE
     mock_set_bucket_perms.return_value = None
     mock_s3_to_gcs.return_value = None
+    mock_sleep.return_value = None
 
     container = aws_containers.AWSAttributeContainer()
     for s3image in FAKE_STATE_S3_IMAGE_LIST:

@@ -1,9 +1,8 @@
 # Lint as: python3
 """AWS Volume snapshot collector."""
 
-import boto3
-
 from typing import Optional, Any
+import boto3
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import aws_containers

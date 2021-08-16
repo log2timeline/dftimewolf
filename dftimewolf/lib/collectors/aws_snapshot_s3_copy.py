@@ -3,8 +3,8 @@
 
 import threading
 import time
-import boto3
 from typing import Any, Optional
+import boto3
 
 from libcloudforensics.providers.aws import forensics
 from libcloudforensics.providers.aws.internal import account
@@ -57,10 +57,10 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
 
   # pylint: disable=arguments-differ
   def SetUp(self,
-            snapshots: str = '',
+            snapshots: Optional[str] = '',
             bucket: str='',
             region: str='',
-            subnet: Any=None) -> None:
+            subnet: Optional[str]=None) -> None:
     """Sets up the AWSVolumeToS3 collector.
 
     Args:
@@ -109,8 +109,9 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
       self.ModuleError('Error encountered describing snapshots: {0!s}'.\
         format(exception), critical=True)
     except AWSSnapshotS3CopyException as exception:
-      self.ModuleError('Error encountered determining availability zone: {0!s}'.\
-        format(exception), critical=True)
+      self.ModuleError(
+          'Error encountered determining availability zone: {0!s}'.format(
+              exception), critical=True)
 
     # Perform the prep stage
     instance_profile_name = 'ebsCopy'
@@ -199,7 +200,7 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
 
     Returns:
       A string representing the AZ.
-    
+
     Raises:
       AWSSnapshotS3CopyException: If no suitable AZ cvan be found."""
     # If we received a subnet ID, return the AZ for it
@@ -213,7 +214,7 @@ class AWSSnapshotS3CopyCollector(module.BaseModule):
     for zone in response['AvailabilityZones']:
       if zone['State'] == 'available':
         return str(zone['ZoneName'])
-    
+
     # If we reached here, we have a problem
     raise AWSSnapshotS3CopyException('No suitable availability zone found')
 

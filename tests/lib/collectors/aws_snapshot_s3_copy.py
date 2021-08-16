@@ -205,6 +205,7 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
     mock_copyebssnapshottos3process.side_effect = FAKE_EBS_COPY_PROCESS_RESPONSE
     mock_copyebssnapshottos3setup.return_value = FAKE_EBS_COPY_SETUP_RESPONSE
     mock_loader.return_value = None
+    mock_sleep.return_value = None
 
     test_state = state.DFTimewolfState(config.Config)
 
@@ -250,6 +251,7 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
     mock_copyebssnapshottos3process.side_effect = FAKE_EBS_COPY_PROCESS_RESPONSE
     mock_copyebssnapshottos3setup.return_value = FAKE_EBS_COPY_SETUP_RESPONSE
     mock_loader.return_value = None
+    mock_sleep.return_value = None
 
     container = aws_containers.AWSAttributeContainer()
     container.SetSnapshotIDs([snapshot['SnapshotId']\
