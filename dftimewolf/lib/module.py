@@ -9,15 +9,15 @@ from logging import handlers
 import traceback
 import sys
 
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING, Type
 
 from dftimewolf.lib import errors
 from dftimewolf.lib import logging_utils
+from dftimewolf.lib.containers import interface
 
 if TYPE_CHECKING:
   # Import will only happen during type checking, disabling linter warning.
   from dftimewolf.lib import state  # pylint: disable=cyclic-import
-  from dftimewolf.lib.containers import interface
 
 
 class BaseModule(object):
@@ -173,5 +173,5 @@ class ThreadAwareModule(BaseModule):
 
   @staticmethod
   @abc.abstractmethod
-  def GetThreadOnContainerType():
+  def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
     """Returns the container type that this module should be threaded on."""
