@@ -34,6 +34,25 @@ contents_no_preflights = {
     }]
 }
 
+threaded_no_preflights = {
+    'name':
+        'dummy_threaded_recipe',
+    'short_description': 'Nothing to see here.',
+    'modules': [{
+        'wants': [],
+        'name': 'DummyModule1',
+        'args': {
+            'runtime_value': '1-1'
+        },
+    }, {
+        'wants': ['DummyModule1'],
+        'name': 'DummyThreadedModule',
+        'args': {
+            'runtime_value': '2-2'
+        },
+    }]
+}
+
 named_modules_contents = {
     'name':
         'dummy_recipe',

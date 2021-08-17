@@ -21,6 +21,7 @@ TEST_MODULES = {
   'DummyModule1': 'tests.test_modules.modules',
   'DummyModule2': 'tests.test_modules.modules',
   'DummyPreflightModule': 'tests.test_modules.modules',
+  'DummyThreadedModule': 'tests.test_modules.modules'
 }
 
 class StateTest(unittest.TestCase):
@@ -29,22 +30,30 @@ class StateTest(unittest.TestCase):
   def setUp(self):
     """Registers the dummy modules and recipe to be used in tests."""
     modules_manager.ModulesManager.RegisterModules([
-        modules.DummyModule1, modules.DummyModule2,
-        modules.DummyPreflightModule])
+        modules.DummyModule1,
+        modules.DummyModule2,
+        modules.DummyPreflightModule,
+        modules.DummyThreadedModule])
 
     self._recipe = resources.Recipe(
         test_recipe.__doc__, test_recipe.contents, test_recipe.args)
+    self._threaded_recipe = resources.Recipe(
+        test_recipe.__doc__, test_recipe.threaded_no_preflights, test_recipe.args)
     self._recipes_manager = recipes_manager.RecipesManager()
     self._recipes_manager.RegisterRecipe(self._recipe)
+    self._recipes_manager.RegisterRecipe(self._threaded_recipe)
 
   def tearDown(self):
     """Deregister the recipe used in tests."""
     self._recipes_manager.DeregisterRecipe(self._recipe)
+    self._recipes_manager.DeregisterRecipe(self._threaded_recipe)
 
     modules_manager.ModulesManager.DeregisterModule(modules.DummyModule1)
     modules_manager.ModulesManager.DeregisterModule(modules.DummyModule2)
     modules_manager.ModulesManager.DeregisterModule(
         modules.DummyPreflightModule)
+    modules_manager.ModulesManager.DeregisterModule(
+        modules.DummyThreadedModule)
 
   def testLoadRecipe(self):
     """Tests that a recipe can be loaded correctly."""
@@ -63,6 +72,15 @@ class StateTest(unittest.TestCase):
     # pylint: disable=protected-access
     self.assertIn('DummyModule1', test_state._module_pool)
     self.assertIn('DummyModule2', test_state._module_pool)
+    self.assertEqual(len(test_state._module_pool), 2)
+
+  def testLoadRecipeThreadedModule(self):
+    """Tests that a recipe can be loaded correctly."""
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.LoadRecipe(test_recipe.threaded_no_preflights, TEST_MODULES)
+    # pylint: disable=protected-access
+    self.assertIn('DummyModule1', test_state._module_pool)
+    self.assertIn('DummyThreadedModule', test_state._module_pool)
     self.assertEqual(len(test_state._module_pool), 2)
 
   def testLoadRecipeWithRuntimeNames(self):
@@ -153,6 +171,21 @@ class StateTest(unittest.TestCase):
       mock_setup2.call_args_list,
       [mock.call(runtime_value='2-1'), mock.call(runtime_value='2-2')])
 
+  @mock.patch('tests.test_modules.modules.DummyThreadedModule.SetUp')
+  @mock.patch('tests.test_modules.modules.DummyModule1.SetUp')
+  def testSetupThreadedModules(self, mock_dummy_setup, mock_threaded_setup):
+    """Tests that threaded module's setup functions are correctly called."""
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.command_line_options = {}
+    test_state.LoadRecipe(test_recipe.threaded_no_preflights, TEST_MODULES)
+    test_state.SetupModules()
+    self.assertEqual(
+      mock_dummy_setup.call_args_list,
+      [mock.call(runtime_value='1-1')])
+    self.assertEqual(
+      mock_threaded_setup.call_args_list,
+      [mock.call(runtime_value='2-2')])
+
   @mock.patch('tests.test_modules.modules.DummyModule2.Process')
   @mock.patch('tests.test_modules.modules.DummyModule1.Process')
   def testProcessModules(self, mock_process1, mock_process2):
@@ -181,6 +214,20 @@ class StateTest(unittest.TestCase):
     self.assertIn('DummyModule2-2', test_state._threading_event_per_module)
     self.assertEqual(mock_process1.call_count, 2)
     self.assertEqual(mock_process2.call_count, 2)
+
+  @mock.patch('tests.test_modules.modules.DummyThreadedModule.Process')
+  @mock.patch('tests.test_modules.modules.DummyModule1.Process')
+  def testProcessThreadedModule(self,
+      mock_dummy_process,
+      mock_threaded_process):
+    """Tests the ThreadedModules process functions are correctly called."""
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.command_line_options = {}
+    test_state.LoadRecipe(test_recipe.threaded_no_preflights, TEST_MODULES)
+    test_state.SetupModules()
+    test_state.RunModules()
+    mock_dummy_process.assert_called_with()
+    mock_threaded_process.assert_called_with()
 
   @mock.patch('tests.test_modules.modules.DummyModule2.Process')
   @mock.patch('tests.test_modules.modules.DummyModule1.Process')

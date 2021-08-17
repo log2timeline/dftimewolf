@@ -50,7 +50,7 @@ class DummyPreflightModule(module.PreflightModule):
 
   def SetUp(self, args):  # pylint: disable=arguments-differ
     """Dummy Process function."""
-    print(self.name + ' Process!')
+    print(self.name + ' SetUp!')
 
   def Process(self):
     """Dummy Process function."""
@@ -59,3 +59,23 @@ class DummyPreflightModule(module.PreflightModule):
   def CleanUp(self):
     """Dummy cleanup function."""
     print(self.name + 'CleanUp!')
+
+class DummyThreadedModule(module.ThreadedModule):
+  """Dummy threaded module."""
+  def __init__(self, state, name=None):
+    self.runtime_value = None
+    super(DummyThreadedModule, self).__init__(state, name)
+
+  @staticmethod
+  def StaticSetUp():
+    """Dummy Static Set Up method."""
+    print('DummyThreadedModule StaticSetUp!')
+
+  def SetUp(self, runtime_value=None):  # pylint: disable=arguments-differ
+    """Dummy Process function."""
+    self.runtime_value = runtime_value
+    print(self.name + ' SetUp!')
+
+  def Process(self):
+    """Dummy Process function."""
+    print(self.name + ' Process!')

@@ -135,3 +135,17 @@ class PreflightModule(BaseModule):
   @abc.abstractmethod
   def CleanUp(self) -> None:
     """Carries out optional cleanup actions at the end of the recipe run."""
+
+
+class ThreadedModule(BaseModule):
+  """Base class for ThreadedModules.
+
+  ThreadedModules are modules designed to to better handle being run in
+  parallel. In practice that means they have an extra StaticSetUp method that
+  gets run only once for N module instances."""
+
+  @staticmethod
+  @abc.abstractmethod
+  def StaticSetUp() -> None:
+    """Carries out optional SetUp actions that only need to be performed once,
+    regardless of the number of class instantiations."""
