@@ -315,13 +315,20 @@ class DFTimewolfState(object):
 
         containers = self.GetContainers(
             module.GetThreadOnContainerType(), True)
+        return_containers = []
 
         for container in containers:
           self.StoreContainer(container)
           module.Process()
-          self.GetContainers(module.GetThreadOnContainerType(), True)
+
+          for return_container in \
+              self.GetContainers(module.GetThreadOnContainerType(), True):
+            return_containers.append(return_container)
 
         module.StaticPostProcess()
+
+        for container in return_containers:
+          self.StoreContainer(container)
       else:
         module.Process()
     except errors.DFTimewolfError as exception:
