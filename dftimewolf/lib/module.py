@@ -17,6 +17,7 @@ from dftimewolf.lib import logging_utils
 if TYPE_CHECKING:
   # Import will only happen during type checking, disabling linter warning.
   from dftimewolf.lib import state  # pylint: disable=cyclic-import
+  from dftimewolf.lib.containers import interface
 
 
 class BaseModule(object):
@@ -137,15 +138,40 @@ class PreflightModule(BaseModule):
     """Carries out optional cleanup actions at the end of the recipe run."""
 
 
-class ThreadedModule(BaseModule):
-  """Base class for ThreadedModules.
+class ThreadAwareModule(BaseModule):
+  """Base class for ThreadAwareModules.
 
-  ThreadedModules are modules designed to to better handle being run in
+  ThreadAwareModule are modules designed to to better handle being run in
   parallel. In practice that means they have an extra StaticSetUp method that
   gets run only once for N module instances."""
 
   @staticmethod
   @abc.abstractmethod
-  def StaticSetUp() -> None:
+  def StaticPreSetUp() -> None:
     """Carries out optional SetUp actions that only need to be performed once,
-    regardless of the number of class instantiations."""
+    regardless of the number of class instantiations. Called before SetUp."""
+
+  @staticmethod
+  @abc.abstractmethod
+  def StaticPostSetUp() -> None:
+    """Carries out optional SetUp actions that only need to be performed once,
+    regardless of the number of class instantiations. Called after SetUp."""
+
+  @staticmethod
+  @abc.abstractmethod
+  def StaticPreProcess() -> None:
+    """Carries out optional Process actions that only need to be performed
+    once, regardless of the number of class instantiations. Called before
+    Process."""
+
+  @staticmethod
+  @abc.abstractmethod
+  def StaticPostProcess() -> None:
+    """Carries out optional Process actions that only need to be performed
+    once, regardless of the number of class instantiations. Called after
+    Process."""
+
+  @staticmethod
+  @abc.abstractmethod
+  def GetThreadOnContainerType():
+    """Returns the container type that this module should be threaded on."""

@@ -14,6 +14,7 @@ from dftimewolf.config import Config
 from dftimewolf.lib import errors, utils
 from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.modules import manager as modules_manager
+from dftimewolf.lib.module import ThreadAwareModule
 
 if TYPE_CHECKING:
   from dftimewolf.lib import module as dftw_module
@@ -247,7 +248,11 @@ class DFTimewolfState(object):
     module = self._module_pool[runtime_name]
 
     try:
+      if isinstance(module, ThreadAwareModule):
+        module.StaticPreSetUp()
       module.SetUp(**new_args)
+      if isinstance(module, ThreadAwareModule):
+        module.StaticPostSetUp()
     except errors.DFTimewolfError as exception:
       msg = "A critical error occurred in module {0:s}, aborting execution."
       logger.critical(msg.format(module.name))
@@ -305,7 +310,20 @@ class DFTimewolfState(object):
     logger.info('Running module: {0:s}'.format(runtime_name))
 
     try:
-      module.Process()
+      if isinstance(module, ThreadAwareModule):
+        module.StaticPreProcess()
+
+        containers = self.GetContainers(
+            module.GetThreadOnContainerType(), True)
+
+        for container in containers:
+          self.StoreContainer(container)
+          module.Process()
+          self.GetContainers(module.GetThreadOnContainerType(), True)
+
+        module.StaticPostProcess()
+      else:
+        module.Process()
     except errors.DFTimewolfError as exception:
       logger.critical(
           "Critical error in module {0:s}, aborting execution".format(

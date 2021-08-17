@@ -60,16 +60,35 @@ class DummyPreflightModule(module.PreflightModule):
     """Dummy cleanup function."""
     print(self.name + 'CleanUp!')
 
-class DummyThreadedModule(module.ThreadedModule):
-  """Dummy threaded module."""
+class DummyThreadAwareModule(module.ThreadAwareModule):
+  """Dummy thread aware module."""
   def __init__(self, state, name=None):
     self.runtime_value = None
-    super(DummyThreadedModule, self).__init__(state, name)
+    super(DummyThreadAwareModule, self).__init__(state, name)
 
   @staticmethod
-  def StaticSetUp():
-    """Dummy Static Set Up method."""
-    print('DummyThreadedModule StaticSetUp!')
+  def StaticPreSetUp():
+    """Dummy Static Pre Set Up method."""
+    print('DummyThreadAwareModule StaticPreSetUp!')
+
+  @staticmethod
+  def StaticPostSetUp():
+    """Dummy Static Post Set Up method."""
+    print('DummyThreadAwareModule StaticPostSetUp!')
+
+  @staticmethod
+  def StaticPreProcess():
+    """Dummy Static Pre Process method."""
+    print('DummyThreadAwareModule StaticPreProcess!')
+
+  @staticmethod
+  def StaticPostProcess():
+    """Dummy Static Post Process method."""
+    print('DummyThreadAwareModule StaticPostProcess!')
+
+  @staticmethod
+  def GetThreadOnContainerType():
+    return containers.URL
 
   def SetUp(self, runtime_value=None):  # pylint: disable=arguments-differ
     """Dummy Process function."""

@@ -325,3 +325,12 @@ class WorkspaceLogs(interface.AttributeContainer):
     self.filter_expression = filter_expression
     self.path = path
     self.application_name = application_name
+
+class TestContainer(interface.AttributeContainer):
+  """Test attribute container."""
+
+  CONTAINER_TYPE = 'test'
+
+  def __init__(self, value: str) -> None:
+    super(TestContainer, self).__init__()
+    self.value = value

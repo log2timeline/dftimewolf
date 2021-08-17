@@ -46,7 +46,7 @@ threaded_no_preflights = {
         },
     }, {
         'wants': ['DummyModule1'],
-        'name': 'DummyThreadedModule',
+        'name': 'DummyThreadAwareModule',
         'args': {
             'runtime_value': '2-2'
         },
