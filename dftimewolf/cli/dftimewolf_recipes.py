@@ -13,6 +13,7 @@ import sys
 from typing import TYPE_CHECKING, List, Optional, Dict, Any
 
 # pylint: disable=wrong-import-position
+from dftimewolf.lib import logging_utils
 from dftimewolf import config
 
 from dftimewolf.lib import errors
@@ -58,7 +59,6 @@ MODULES = {
 
 from dftimewolf.lib.recipes import manager as recipes_manager
 from dftimewolf.lib.state import DFTimewolfState
-from dftimewolf.lib import logging_utils
 
 logger = logging.getLogger('dftimewolf')
 
@@ -295,6 +295,9 @@ def SignalHandler(*unused_argvs: Any) -> None:
 
 def SetupLogging() -> None:
   """Sets up a logging handler with dftimewolf's custom formatter."""
+  # Add a custom level name
+  logging.addLevelName(logging_utils.SUCCESS, 'SUCCESS')
+
   # Clear root handlers (for dependencies that are setting them)
   root_log = logging.getLogger()
   root_log.handlers = []
@@ -324,6 +327,7 @@ def SetupLogging() -> None:
   logger.addHandler(console_handler)
   logger.debug(
       'Logging to stdout and {0:s}'.format(logging_utils.DEFAULT_LOG_FILE))
+  logger.success('Success!')
 
 
 def Main() -> bool:
