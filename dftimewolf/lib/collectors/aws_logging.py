@@ -77,7 +77,7 @@ class AWSLogsCollector(module.BaseModule):
     # Set the default serializer to str() to account for datetime objects.
     output_file.write(json.dumps(events, default=str))
     output_file.write('\n')
-    self.logger.info('Downloaded logs to {0:s}'.format(output_path))
+    self.logger.success('Downloaded logs to {0:s}'.format(output_path))
     output_file.close()
 
     logs_report = containers.AWSLogs(

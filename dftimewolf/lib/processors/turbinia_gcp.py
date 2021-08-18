@@ -124,7 +124,7 @@ class TurbiniaProcessorBase(module.BaseModule):
         # Don't add a critical error for now, until we start raising errors
         # instead of returning manually each
         self.ModuleError(str(exception), critical=False)
-      self.logger.info('Downloaded {0:s} to {1:s}'.format(path, local_path))
+      self.logger.success('Downloaded {0:s} to {1:s}'.format(path, local_path))
 
       if local_path:
         local_paths.append((timeline_label, local_path))
@@ -213,7 +213,7 @@ class TurbiniaProcessorBase(module.BaseModule):
 
     task_data = []  # type: List[Dict[str, str]]
     try:
-      self.logger.info(
+      self.logger.success(
           'Creating Turbinia request {0:s} with Evidence {1!s}'.format(
               request.request_id, evidence_.name))
       self.client.send_request(request)
@@ -329,15 +329,15 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase):
     container: Union[containers.File, containers.ThreatIntelligence]
     for description, path in all_local_paths:
       if path.endswith('BinaryExtractorTask.tar.gz'):
-        self.logger.info('Found BinaryExtractorTask result: {0:s}'.format(path))
+        self.logger.success('Found BinaryExtractorTask result: {0:s}'.format(path))
         container = containers.ThreatIntelligence(
             name='BinaryExtractorResults', indicator=None, path=path)
       if path.endswith('hashes.json'):
-        self.logger.info('Found hashes.json: {0:s}'.format(path))
+        self.logger.success('Found hashes.json: {0:s}'.format(path))
         container = containers.ThreatIntelligence(
             name='ImageExportHashes', indicator=None, path=path)
       if path.endswith('.plaso'):
-        self.logger.info('Found plaso result: {0:s}'.format(path))
+        self.logger.success('Found plaso result: {0:s}'.format(path))
         container = containers.File(name=description, path=path)
       self.state.StoreContainer(container)
 
