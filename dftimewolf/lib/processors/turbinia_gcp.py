@@ -329,7 +329,8 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase):
     container: Union[containers.File, containers.ThreatIntelligence]
     for description, path in all_local_paths:
       if path.endswith('BinaryExtractorTask.tar.gz'):
-        self.logger.success('Found BinaryExtractorTask result: {0:s}'.format(path))
+        self.logger.success(
+            'Found BinaryExtractorTask result: {0:s}'.format(path))
         container = containers.ThreatIntelligence(
             name='BinaryExtractorResults', indicator=None, path=path)
       if path.endswith('hashes.json'):
