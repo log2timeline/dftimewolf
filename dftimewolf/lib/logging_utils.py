@@ -56,7 +56,7 @@ LEVEL_COLOR_MAP = {
 class WolfLogger(logging.getLoggerClass()):
   """Custom logging Class with a `success` logging function."""
 
-  def success(self, *args, **kwargs):  # pylint: disable=invalid-name
+  def success(self, *args: Any, **kwargs: Any) -> None:  # pylint: disable=invalid-name
     """Logs a success message."""
     super(WolfLogger, self).log(SUCCESS, *args, **kwargs)
 
