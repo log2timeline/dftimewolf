@@ -9,6 +9,7 @@ from typing import Any, List
 DEFAULT_LOG_FILE = os.path.join(os.sep, 'tmp', 'dftimewolf.log')
 MAX_BYTES = 5 * 1024 * 1024
 BACKUP_COUNT = 3
+SUCCESS = 25  # 25 is right between INFO and WARNING
 
 
 def _GenerateColorSequences() -> List[str]:
@@ -33,6 +34,7 @@ RESET_SEQ = '\u001b[0m'
 # pylint: disable=unbalanced-tuple-unpacking
 BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = COLOR_SEQS[8:16]
 BG_RED = '\u001b[41m'  # Red background
+BG_GREEN = '\u001b[42m'  # Green background
 BOLD = '\u001b[1m'  # Bold / bright modifier
 
 # We'll get something like this:
@@ -43,11 +45,22 @@ LOG_FORMAT = (
 
 LEVEL_COLOR_MAP = {
     'WARNING': YELLOW,
+    'SUCCESS': BOLD + BG_GREEN + BLACK,
     'INFO': WHITE,
     'DEBUG': BLUE,
     'CRITICAL': BOLD + BG_RED + WHITE,
     'ERROR': RED
 }
+
+
+class WolfLogger(logging.getLoggerClass()):  # type: ignore
+  """Custom logging Class with a `success` logging function."""
+
+  def success(self, *args: Any, **kwargs: Any) -> None:  # pylint: disable=invalid-name
+    """Logs a success message."""
+    super(WolfLogger, self).log(SUCCESS, *args, **kwargs)
+
+logging.setLoggerClass(WolfLogger)
 
 
 class WolfFormatter(logging.Formatter):

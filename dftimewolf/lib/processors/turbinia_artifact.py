@@ -63,7 +63,7 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase):
     self.directory_path = directory_path
     if not self.directory_path:
       self.directory_path = tempfile.mkdtemp(prefix='turbinia-results')
-      self.logger.info('Turbinia results will be dumped to {0:s}'.format(
+      self.logger.success('Turbinia results will be dumped to {0:s}'.format(
           self.directory_path))
     try:
       self.TurbiniaSetUp(project, turbinia_zone, sketch_id, run_all_jobs)
@@ -74,7 +74,7 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase):
   def Process(self) -> None:
     """Process files with Turbinia."""
     log_file_path = os.path.join(self._output_path, 'turbinia.log')
-    self.logger.info('Turbinia log file: {0:s}'.format(log_file_path))
+    self.logger.success('Turbinia log file: {0:s}'.format(log_file_path))
 
     fspaths = self.state.GetContainers(containers.RemoteFSPath, pop=True)
     hostname = fspaths[0].hostname  # all paths are on the same host
@@ -99,7 +99,7 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase):
 
           # We're only interested in plaso files for the time being.
           if path.endswith('.plaso'):
-            self.logger.info('  {0:s}: {1:s}'.format(task['name'], path))
+            self.logger.success('  {0:s}: {1:s}'.format(task['name'], path))
             container = containers.RemoteFSPath(
                 path=path, hostname=hostname)
             self.state.StoreContainer(container)

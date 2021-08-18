@@ -137,11 +137,11 @@ class SCPExporter(module.BaseModule):
       file_name = os.path.basename(path_)
       full_path = os.path.join(self._destination, file_name)
       if self._upload:
-        self.logger.info('Remote filesystem path {0:s}'.format(full_path))
+        self.logger.success('Remote filesystem path {0:s}'.format(full_path))
         fspath = containers.RemoteFSPath(
             path=full_path, hostname=self._hostname)
       else:
-        self.logger.info('Local filesystem path {0:s}'.format(full_path))
+        self.logger.success('Local filesystem path {0:s}'.format(full_path))
         fspath = containers.File(name=file_name, path=full_path)
 
       self.state.StoreContainer(fspath)
