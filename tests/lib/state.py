@@ -252,6 +252,7 @@ class StateTest(unittest.TestCase):
         len(test_state.GetContainers(thread_aware_modules.TestContainer)))
 
   def testThreadAwareModuleContainerHandling(self):
+    """Tests that a ThreadAwareModule handles containers correctly."""
     test_state = state.DFTimewolfState(config.Config)
     test_state.command_line_options = {}
     test_state.LoadRecipe(test_recipe.threaded_no_preflights, TEST_MODULES)
