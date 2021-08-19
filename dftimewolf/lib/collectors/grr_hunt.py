@@ -48,7 +48,7 @@ class GRRHunt(grr_base.GRRBaseModule):  # pylint: disable=abstract-method
     runner_args.description = self.reason
     hunt = self.grr_api.CreateHunt(
         flow_name=name, flow_args=args, hunt_runner_args=runner_args)
-    self.logger.info('{0!s}: Hunt created'.format(hunt.hunt_id))
+    self.logger.success('{0!s}: Hunt created'.format(hunt.hunt_id))
     self._WrapGRRRequestWithApproval(hunt, hunt.Start)
     return hunt
 
@@ -283,7 +283,7 @@ class GRRHuntDownloader(GRRHunt):
         hunt, self._GetAndWriteArchive, hunt, output_file_path)
 
     results = self._ExtractHuntResults(output_file_path)
-    self.logger.info('Wrote results of {0:s} to {1:s}'.format(
+    self.logger.success('Wrote results of {0:s} to {1:s}'.format(
         hunt.hunt_id, output_file_path))
     return results
 
@@ -356,7 +356,7 @@ class GRRHuntDownloader(GRRHunt):
             try:
               archive.extract(f, self.output_path)
             except KeyError as exception:
-              self.logger.info('Extraction error: {0:s}'.format(exception))
+              self.logger.warning('Extraction error: {0:s}'.format(exception))
               return []
 
     except OSError as exception:
@@ -371,8 +371,9 @@ class GRRHuntDownloader(GRRHunt):
     try:
       os.remove(output_file_path)
     except OSError as exception:
-      self.logger.info('Output path {0:s} could not be removed: {1:s}'.format(
-          output_file_path, exception))
+      self.logger.warning(
+          'Output path {0:s} could not be removed: {1:s}'.format(
+              output_file_path, exception))
 
     # Translate GRR client IDs to FQDNs with the information retrieved
     # earlier

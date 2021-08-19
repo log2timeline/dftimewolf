@@ -26,7 +26,7 @@ class SSHMultiplexer(unittest.TestCase):
     mock_call.return_value = 0
     test_state = state.DFTimewolfState(config.Config)
     ssh_multi = ssh_multiplexer.SSHMultiplexer(test_state)
-    ssh_multi.SetUp('fakehost', 'fakeuser', None)
+    ssh_multi.SetUp('fakehost', 'fakeuser', None, ['-o', "ProxyCommand='test'"])
     ssh_multi.Process()
 
     mock_call.assert_called_with([
@@ -34,6 +34,7 @@ class SSHMultiplexer(unittest.TestCase):
       '-o', 'ControlMaster=auto',
       '-o', 'ControlPersist=yes',
       '-o', 'ControlPath=~/.ssh/ctrl-%C',
+      '-o', "ProxyCommand='test'",
       'fakehost', 'true',
     ])
 
@@ -43,7 +44,7 @@ class SSHMultiplexer(unittest.TestCase):
     mock_call.return_value = 0
     test_state = state.DFTimewolfState(config.Config)
     ssh_multi = ssh_multiplexer.SSHMultiplexer(test_state)
-    ssh_multi.SetUp('fakehost', 'fakeuser', None)
+    ssh_multi.SetUp('fakehost', 'fakeuser', None, [])
     ssh_multi.CleanUp()
 
     mock_call.assert_called_with([

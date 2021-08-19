@@ -75,7 +75,7 @@ class AzureCollector(module.BaseModule):
           src_profile=self.remote_profile_name,
           dst_profile=self.analysis_profile_name
       )
-      self.logger.info('Disk {0:s} successfully copied to {1:s}'.format(
+      self.logger.success('Disk {0:s} successfully copied to {1:s}'.format(
           disk.name, new_disk.name))
       self.analysis_vm.AttachDisk(new_disk)
       container = containers.ForensicsVM(

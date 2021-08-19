@@ -9,7 +9,7 @@ from logging import handlers
 import traceback
 import sys
 
-from typing import Optional, TYPE_CHECKING, Type
+from typing import Optional, TYPE_CHECKING, Type, cast
 
 from dftimewolf.lib import errors
 from dftimewolf.lib import logging_utils
@@ -49,11 +49,13 @@ class BaseModule(object):
     self.name = name if name else self.__class__.__name__
     self.critical = critical
     self.state = state
+    self.logger = cast(logging_utils.WolfLogger,
+                       logging.getLogger(name=self.name))
+
     self.SetupLogging()
 
   def SetupLogging(self) -> None:
     """Sets up stream and file logging for a specific module."""
-    self.logger = logging.getLogger(name=self.name)
     self.logger.setLevel(logging.DEBUG)
 
     file_handler = handlers.RotatingFileHandler(

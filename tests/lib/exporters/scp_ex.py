@@ -28,7 +28,7 @@ class SCPExporterTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     scp_exporter = scp_ex.SCPExporter(test_state)
     scp_exporter.SetUp('/path1,/path2', '/destination', 'fakeuser',
-                       'fakehost', 'fakeid', 'upload', False, True)
+                       'fakehost', 'fakeid', [], 'upload', False, True)
 
     mock_subprocess_call.assert_called_with(
         ['ssh', '-q', '-l', 'fakeuser', 'fakehost', 'true', '-i', 'fakeid'])
@@ -46,7 +46,7 @@ class SCPExporterTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     scp_exporter = scp_ex.SCPExporter(test_state)
     scp_exporter.SetUp('/path1,/path2', '/destination', 'fakeuser',
-                       'fakehost', 'fakeid', 'upload', False, True)
+                       'fakehost', 'fakeid', [], 'upload', False, True)
     scp_exporter.Process()
 
     mock_subprocess_call.assert_called_with(
@@ -60,12 +60,27 @@ class SCPExporterTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     scp_exporter = scp_ex.SCPExporter(test_state)
     scp_exporter.SetUp('/path1,/path2', '/destination', 'fakeuser',
-                       'fakehost', 'fakeid', 'download', False, True)
+                       'fakehost', 'fakeid', [], 'download', False, True)
     scp_exporter.Process()
 
     mock_subprocess_call.assert_called_with(
         ['scp', '-i', 'fakeid',
-        'fakeuser@fakehost:/path1 /path2', '/destination'])
+        'fakeuser@fakehost:/path1', 'fakeuser@fakehost:/path2', '/destination'])
+
+  @mock.patch('subprocess.call')
+  def testProcessDownloadExtraSSHOptions(self, mock_subprocess_call):
+    """Tests that extra SSH options are taking into account."""
+    mock_subprocess_call.return_value = 0
+    test_state = state.DFTimewolfState(config.Config)
+    scp_exporter = scp_ex.SCPExporter(test_state)
+    scp_exporter.SetUp('/path1,/path2', '/destination', 'fakeuser',
+                       'fakehost', 'fakeid', ['-o', 'foo=bar'],
+                       'download', False, True)
+    scp_exporter.Process()
+
+    mock_subprocess_call.assert_called_with(
+        ['scp', '-o', 'foo=bar', '-i', 'fakeid',
+        'fakeuser@fakehost:/path1', 'fakeuser@fakehost:/path2', '/destination'])
 
   @mock.patch('subprocess.call')
   def testProcessDownloadMultiplex(self, mock_subprocess_call):
@@ -74,7 +89,7 @@ class SCPExporterTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     scp_exporter = scp_ex.SCPExporter(test_state)
     scp_exporter.SetUp('/path1,/path2', '/destination', 'fakeuser',
-                       'fakehost', 'fakeid', 'download', True, True)
+                       'fakehost', 'fakeid', [], 'download', True, True)
     scp_exporter.Process()
 
     mock_subprocess_call.assert_called_with(
@@ -82,7 +97,7 @@ class SCPExporterTest(unittest.TestCase):
          '-o', 'ControlMaster=auto',
          '-o', 'ControlPath=~/.ssh/ctrl-%C',
          '-i', 'fakeid',
-        'fakeuser@fakehost:/path1 /path2', '/destination'])
+        'fakeuser@fakehost:/path1', 'fakeuser@fakehost:/path2', '/destination'])
 
   @mock.patch('subprocess.call')
   def testSetupError(self, mock_subprocess_call):
@@ -92,7 +107,7 @@ class SCPExporterTest(unittest.TestCase):
     scp_exporter = scp_ex.SCPExporter(test_state)
     with self.assertRaises(errors.DFTimewolfError) as error:
       scp_exporter.SetUp('/path1,/path2', '/destination', 'fakeuser',
-                         'fakehost', 'fakeid', 'upload', False, True)
+                         'fakehost', 'fakeid', [], 'upload', False, True)
 
     self.assertEqual(test_state.errors[0], error.exception)
     self.assertEqual(error.exception.message, 'Unable to connect to fakehost.')
@@ -107,7 +122,7 @@ class SCPExporterTest(unittest.TestCase):
     # pylint: disable=protected-access
     scp_exporter._CreateDestinationDirectory = mock.Mock()
     scp_exporter.SetUp('/path1,/path2', '/destination', 'fakeuser',
-                       'fakehost', 'fakeid', 'upload', False, True)
+                       'fakehost', 'fakeid', [], 'upload', False, True)
 
     mock_subprocess_call.return_value = -1
     with self.assertRaises(errors.DFTimewolfError) as error:
@@ -125,7 +140,7 @@ class SCPExporterTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     scp_exporter = scp_ex.SCPExporter(test_state)
     scp_exporter.SetUp('/path1,/path2', '/destination', 'fakeuser',
-                       'fakehost', 'fakeid', 'upload', False, False)
+                       'fakehost', 'fakeid', [], 'upload', False, False)
 
     # pylint: disable=protected-access
     scp_exporter._CreateDestinationDirectory(remote=True)

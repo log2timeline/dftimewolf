@@ -120,7 +120,7 @@ class GCPLogsCollector(module.BaseModule):
             'GCP resource not found. Maybe a typo in the project name?')
       self.ModuleError(str(exception), critical=True)
 
-    self.logger.info('Downloaded logs to {0:s}'.format(output_path))
+    self.logger.success('Downloaded logs to {0:s}'.format(output_path))
     output_file.close()
 
     logs_report = containers.GCPLogs(

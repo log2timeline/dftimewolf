@@ -176,6 +176,7 @@ class WorkspaceAuditCollector(module.BaseModule):
     logs_report = containers.WorkspaceLogs(
         application_name=self._application_name, path=output_path,
         filter_expression=self._filter_expression)
+    self.logger.success('Downloaded logs to {0:s}'.format(output_path))
     self.state.StoreContainer(logs_report)
 
 

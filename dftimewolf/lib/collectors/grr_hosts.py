@@ -226,7 +226,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
       return ''
 
     flow_id = flow.flow_id  # type: str
-    self.logger.info('{0:s}: Scheduled'.format(flow_id))
+    self.logger.success('{0:s}: Scheduled'.format(flow_id))
 
     if self.keepalive:
       keepalive_flow = client.CreateFlow(
@@ -487,7 +487,7 @@ class GRRArtifactCollector(GRRFlow):
     collected_flow_data = self._DownloadFiles(client, flow_id)
 
     if collected_flow_data:
-      self.logger.info(
+      self.logger.success(
           '{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
       container = containers.File(
           name=client.data.os_info.fqdn.lower(),
@@ -613,7 +613,7 @@ class GRRFileCollector(GRRFlow):
     self._AwaitFlow(client, flow_id)
     collected_flow_data = self._DownloadFiles(client, flow_id)
     if collected_flow_data:
-      self.logger.info(
+      self.logger.success(
           '{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
       container = containers.File(
           name=client.data.os_info.fqdn.lower(),
@@ -705,7 +705,7 @@ class GRRFlowCollector(GRRFlow):
     self._CheckSkippedFlows()
     collected_flow_data = self._DownloadFiles(client, self.flow_id)
     if collected_flow_data:
-      self.logger.info('{0:s}: Downloaded: {1:s}'.format(
+      self.logger.success('{0:s}: Downloaded: {1:s}'.format(
           self.flow_id, collected_flow_data))
       container = containers.File(
           name=client.data.os_info.fqdn.lower(),
@@ -799,7 +799,7 @@ class GRRTimelineCollector(GRRFlow):
     self._AwaitFlow(client, flow_id)
     collected_flow_data = self._DownloadTimeline(client, flow_id)
     if collected_flow_data:
-      self.logger.info(
+      self.logger.success(
           '{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
       container = containers.File(
           name=client.data.os_info.fqdn.lower(),

@@ -36,6 +36,7 @@ class SCPExporter(module.BaseModule):
     self._hostname = str()
     self._destination = str()
     self._id_file = str()
+    self._extra_ssh_options = []  # type: List[str]
     self._upload = False
     self._multiplexing = False
 
@@ -45,6 +46,7 @@ class SCPExporter(module.BaseModule):
             user: str,
             hostname: str,
             id_file: str,
+            extra_ssh_options: List[str],
             direction: str,
             multiplexing: bool,
             check_ssh: bool) -> None:
@@ -56,6 +58,8 @@ class SCPExporter(module.BaseModule):
       hostname (str): Hostname of destination.
       destination (str): Path to destination on host.
       id_file (str): Identity file to use.
+      extra_ssh_options (List[str]): Extra -o options to be passed on to the
+          SSH command.
       direction (str): 'upload' or 'download', depending on which directions
           the files should be SCP'd.
       multiplexing (boolean): Whether the module should attempt to use a
@@ -72,6 +76,7 @@ class SCPExporter(module.BaseModule):
       self._paths = []
     self._user = user
     self._multiplexing = multiplexing
+    self._extra_ssh_options = extra_ssh_options
 
     if direction not in ['upload', 'download']:
       self.ModuleError(
@@ -107,6 +112,9 @@ class SCPExporter(module.BaseModule):
         '-o', 'ControlMaster=auto',
         '-o', 'ControlPath=~/.ssh/ctrl-%C',
       ])
+    if self._extra_ssh_options:
+      cmd.extend(self._extra_ssh_options)
+
     if self._id_file:
       cmd.extend(['-i', self._id_file])
     if self._upload:
@@ -114,9 +122,6 @@ class SCPExporter(module.BaseModule):
       cmd.extend(self._paths)
       cmd.extend(self._PrefixRemotePaths([self._destination]))
     else:
-      # We can use (faster)
-      # scp user@host:"/path1 /path2"
-      # or (slower)
       # scp user@host:/path1 user@host:/path2 /destination
       cmd.extend(self._PrefixRemotePaths(self._paths))
       cmd.extend([self._destination])
@@ -132,29 +137,25 @@ class SCPExporter(module.BaseModule):
       file_name = os.path.basename(path_)
       full_path = os.path.join(self._destination, file_name)
       if self._upload:
-        self.logger.info('Remote filesystem path {0:s}'.format(full_path))
+        self.logger.success('Remote filesystem path {0:s}'.format(full_path))
         fspath = containers.RemoteFSPath(
             path=full_path, hostname=self._hostname)
       else:
-        self.logger.info('Local filesystem path {0:s}'.format(full_path))
+        self.logger.success('Local filesystem path {0:s}'.format(full_path))
         fspath = containers.File(name=file_name, path=full_path)
 
       self.state.StoreContainer(fspath)
 
-  def _PrefixRemotePaths(self, paths: List[str], group: bool=True) -> List[str]:
+  def _PrefixRemotePaths(self, paths: List[str]) -> List[str]:
     """Prefixes a list of paths with remote SSH access information.
 
     Args:
       paths (list[str]): List of strings representing paths to prefix.
-      group (bool): Whether to group all remote filepaths in a single command.
 
     Returns:
       list[str]: A list of strings with the prefixed paths.
     """
     prefix = self._GenerateRemotePrefix()
-    if group:
-      prefixed_paths = ['{0:s}:{1:s}'.format(prefix, ' '.join(paths))]
-      return prefixed_paths
     prefixed_paths = ['{0:s}:{1:s}'.format(prefix, path) for path in paths]
     return prefixed_paths
 

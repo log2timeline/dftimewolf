@@ -94,14 +94,17 @@ class DFTimewolfState(object):
     for module in self.recipe['modules'] + self.recipe.get('preflights', []):
       name = module['name']
       if name not in module_locations:
-        msg = f'Module {name} cannot be found. It may not have been declared.'
+        msg = (f'In {self.recipe["name"]}: module {name} cannot be found. '
+               'It may not have been declared.')
         raise errors.RecipeParseError(msg)
       logger.debug('Loading module {0:s} from {1:s}'.format(
           name, module_locations[name]))
+
+      location = module_locations[name]
       try:
-        importlib.import_module(module_locations[name])
+        importlib.import_module(location)
       except ModuleNotFoundError as exception:
-        msg = f'Cannot find Python module for {name}: {exception}'
+        msg = f'Cannot find Python module for {name} ({location}): {exception}'
         raise errors.RecipeParseError(msg)
 
   def LoadRecipe(self,
