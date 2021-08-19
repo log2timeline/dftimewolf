@@ -21,7 +21,7 @@ class ContainerGeneratorModule(module.BaseModule):
     self.list = []
     super(ContainerGeneratorModule, self).__init__(state, name)
 
-  def SetUp(self, runtime_value=None):  # pylint: disable=arguments-differ
+  def SetUp(self, runtime_value=None): # pylint: disable=arguments-differ
     """Dummy setup function."""
     print(self.name + ' Setup!')
     self.list = runtime_value.split(',')
@@ -34,10 +34,10 @@ class ContainerGeneratorModule(module.BaseModule):
       self.state.StoreContainer(container)
 
 class ThreadAwareConsumerModule(module.ThreadAwareModule):
-  """This is a dummy Thread Aware Module. Consumes from 
+  """This is a dummy Thread Aware Module. Consumes from
   ContainerGeneratorModule based on the number of containers generated."""
 
-  def SetUp(self, runtime_value=None) -> None:
+  def SetUp(self): # pylint: disable=arguments-differ
     """SetUp"""
     print(self.name + ' SetUp!')
 

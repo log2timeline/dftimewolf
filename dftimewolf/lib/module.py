@@ -10,7 +10,8 @@ import threading
 import traceback
 import sys
 
-from typing import Optional, TYPE_CHECKING, Type, cast, TypeVar, Sequence, List, Dict
+from typing import Optional, TYPE_CHECKING, Type, cast, TypeVar, Sequence, \
+    List, Dict
 
 from dftimewolf.lib import errors
 from dftimewolf.lib import logging_utils
@@ -199,7 +200,7 @@ class ThreadAwareModule(BaseModule):
   # The following two methods are copy/pasted from dftimewolf/lib/state.py
   # to better handle a move to parallel threading of modules. Any instance of
   # this module should use these methods to access containers, rather than
-  # the same methods in the state. 
+  # the same methods in the state.
   def StoreContainer(self, container: "interface.AttributeContainer") -> None:
     """Thread-safe method to store data in the state's store.
 

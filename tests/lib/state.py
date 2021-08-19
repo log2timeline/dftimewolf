@@ -178,8 +178,10 @@ class StateTest(unittest.TestCase):
       mock_setup2.call_args_list,
       [mock.call(runtime_value='2-1'), mock.call(runtime_value='2-2')])
 
+  # pylint: disable=line-too-long
   @mock.patch('tests.test_modules.thread_aware_modules.ContainerGeneratorModule.SetUp')
   @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.SetUp')
+  # pylint: enable=line-too-long
   def testSetupThreadModules(self, mock_threaded_setup, mock_dummy_setup):
     """Tests that threaded module's setup functions are correctly called."""
     test_state = state.DFTimewolfState(config.Config)
@@ -222,11 +224,13 @@ class StateTest(unittest.TestCase):
     self.assertEqual(mock_process1.call_count, 2)
     self.assertEqual(mock_process2.call_count, 2)
 
+  # pylint: disable=line-too-long
   @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.Process')
   @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.StaticPreSetUp')
   @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.StaticPostSetUp')
   @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.StaticPreProcess')
   @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.StaticPostProcess')
+  # pylint: enable=line-too-long
   def testProcessThreadAwareModule(self,
       mock_static_post_process,
       mock_static_pre_process,
@@ -244,7 +248,8 @@ class StateTest(unittest.TestCase):
     self.assertEqual(mock_static_pre_process.call_count, 1)
     self.assertEqual(mock_static_post_setup.call_count, 1)
     self.assertEqual(mock_static_pre_setup.call_count, 1)
-    self.assertEqual(3, len(test_state.GetContainers(thread_aware_modules.TestContainer)))
+    self.assertEqual(3,
+        len(test_state.GetContainers(thread_aware_modules.TestContainer)))
 
   @mock.patch('tests.test_modules.modules.DummyModule2.Process')
   @mock.patch('tests.test_modules.modules.DummyModule1.Process')
