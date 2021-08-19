@@ -251,6 +251,27 @@ class StateTest(unittest.TestCase):
     self.assertEqual(3,
         len(test_state.GetContainers(thread_aware_modules.TestContainer)))
 
+  def testThreadAwareModuleContainerHandling(self):
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.command_line_options = {}
+    test_state.LoadRecipe(test_recipe.threaded_no_preflights, TEST_MODULES)
+    test_state.SetupModules()
+    test_state.RunModules()
+
+    # With no mocks, the first module generates 3 TestContainers, and 1
+    # TestContainerTwo. The Test ThreadAwareConsumerModule is threaded on
+    # and modifies TestContainer, and modifies TestContainerTwo.
+    values = [container.value for container in test_state.GetContainers(
+        thread_aware_modules.TestContainer)]
+    expected_values = ['one appended', 'two appended', 'three appended']
+
+    self.assertEqual(sorted(values), sorted(expected_values))
+    self.assertEqual(
+        test_state.GetContainers(
+            thread_aware_modules.TestContainerTwo)[0].value,
+        'one,two,three appended appended appended'
+        )
+
   @mock.patch('tests.test_modules.modules.DummyModule2.Process')
   @mock.patch('tests.test_modules.modules.DummyModule1.Process')
   def testProcessErrors(self, mock_process1, mock_process2):

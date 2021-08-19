@@ -344,10 +344,6 @@ class DFTimewolfState(object):
         self.GetContainers(module.GetThreadOnContainerType(), True)
         for container in return_containers:
           self.StoreContainer(container)
-
-        # TODO - If the ThreadAwareModule makes changes to containers that it
-        # doesn't thread on, do we care? Do we need to feed *all* the modules
-        # containers back into the state's container store?
       else:
         module.Process()
     except errors.DFTimewolfError as exception:
