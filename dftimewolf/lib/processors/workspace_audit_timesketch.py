@@ -73,12 +73,12 @@ class WorkspaceAuditTimesketch(BaseModule):
     parameters_dict = {}
     for parameter in parameters:
       name = parameter.get('name')
-      name = name.lower()
       if not name:
         self.ModuleError(
             'Encountered a parameter with no name. '
             'Full parameter dictionary: {0:s}'.format(str(parameters)))
         continue
+      name = name.lower()
       value = parameter.get('value')  # type: Optional[str]
       if not value:
         multivalue = parameter.get('multiValue', '')  # type: str
