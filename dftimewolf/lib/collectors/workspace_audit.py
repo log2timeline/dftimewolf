@@ -2,7 +2,6 @@
 """Pulls audit logs from Google Workspace."""
 
 import os.path
-import filelock
 import json
 import tempfile
 
