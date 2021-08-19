@@ -13,7 +13,8 @@
     "create_managed_configuration": "Managed configuration with name {managed_configuration_name} is created for android application {mobile_app_package_id}.",
     "delete_managed_configuration": "Managed configuration with name {managed_configuration_name} is deleted for android application {mobile_app_package_id}.",
     "update_managed_configuration": "Managed configuration with name {managed_configuration_name} is updated for android application {mobile_app_package_id}.",
-    "flashlight_edu_non_featured_services_selected": "{flashlight_edu_non_featured_services_selection} selection was made for Non-Featured Services."
+    "flashlight_edu_non_featured_services_selected": "{flashlight_edu_non_featured_services_selection} selection was made for Non-Featured Services.",
+    "update_smart_features": "Smart features and personalization setting has been updated to {new_value}"
   },
   "admin-calendar-settings": {
     "create_building": "Building {new_value} created",
@@ -53,8 +54,11 @@
     "update_chrome_os_printer": "Printer {printer_name} updated from {old_value} to {new_value}.",
     "change_chrome_os_setting": "{setting_name} for Chrome OS devices in your organization changed from {old_value} to {new_value}",
     "change_chrome_os_user_setting": "{setting_name} for Chrome OS users in {org_unit_name} organization unit changed from {old_value} to {new_value}",
+    "delete_chrome_os_device": "Deleted ChromeOS device with serial number {device_serial_number}",
+    "delete_duplicate_chrome_os_device": "Deleted duplicate ChromeOS device with directory API ID {directory_api_id} and device serial number {device_serial_number}",
     "issue_device_command": "Issued command to {device_type} {device_serial_number}: {device_command_details}",
     "move_device_to_org_unit_detailed": "Moved {device_type} {device_serial_number} from {device_previous_org_unit} to {device_new_org_unit}",
+    "pre_provision_chrome_os_device": "Pre-provisioned ChromeOS device with serial number {device_serial_number}",
     "remove_chrome_os_application_settings": "Settings for Chrome app {app_id} removed",
     "update_device": "Updated {device_type} {device_serial_number}"
   },
@@ -74,7 +78,8 @@
   "admin-docs-settings": {
     "transfer_document_ownership": "Owner of documents changed from {user_email} to {new_value}",
     "drive_data_restore": "Drive data restoration initiated for {user_email}",
-    "change_docs_setting": "{setting_name} for Drive changed from {old_value} to {new_value}"
+    "change_docs_setting": "{setting_name} for Drive changed from {old_value} to {new_value}",
+    "move_shared_drive_to_org_unit": "Shared drive {shared_drive_id} moved from {org_unit_name} to {new_value}"
   },
   "admin-domain-settings": {
     "change_account_auto_renewal": "Account automatic renewal changed to {new_value} on {domain_name}",
@@ -175,6 +180,7 @@
     "release_from_quarantine": "A message with email message id of {email_log_search_msg_id} was released from the {quarantine_name} quarantine."
   },
   "admin-group-settings": {
+    "whitelisted_groups_updated": "Filtering groups updated to {whitelisted_groups}",
     "create_group": "Group {group_email} created",
     "delete_group": "Group {group_email} deleted",
     "change_group_description": "Description for group {group_email} changed",
@@ -187,10 +193,10 @@
     "group_member_bulk_upload": "A total of {group_member_bulk_upload_total_number} members selected for upload. {group_member_bulk_upload_failed_number} out of {group_member_bulk_upload_total_number} members failed to be uploaded",
     "group_members_download": "Group member list was downloaded as a CSV file",
     "change_group_name": "Name of group {group_email} changed to {new_value}",
-    "change_group_setting": "{setting_name} for group {group_email} changed from {old_value} to {new_value}",
-    "whitelisted_groups_updated": "Whitelisted groups updated to {whitelisted_groups}"
+    "change_group_setting": "{setting_name} for group {group_email} changed from {old_value} to {new_value}"
   },
   "admin-licenses-settings": {
+    "chrome_app_licenses_enabled": "App license policy for {application_name} at {distribution_entity_name} {distribution_entity_type} is now {chrome_licenses_enabled}",
     "org_users_license_assignment": "Licenses for {product_name} product and {new_value} sku were assigned to all unassigned users of {org_unit_name}",
     "org_all_users_license_assignment": "Licenses for {product_name} product and {new_value} sku were assigned to all users of {org_unit_name}",
     "user_license_assignment": "A license for {product_name} product and {new_value} sku was assigned to the user {user_email}",
@@ -198,12 +204,15 @@
     "user_license_reassignment": "A license for {product_name} product and {old_value} sku was reassigned for user {user_email} to new sku {new_value}",
     "org_license_revoke": "Licenses for {product_name} product and {old_value} sku were removed from assigned users of {org_unit_name}",
     "user_license_revoke": "A license for {product_name} product and {old_value} sku was revoked from user {user_email}",
-    "update_dynamic_license": "Auto Licensing settings for {product_name} product in {org_unit_name} organization changed from {old_value} to {new_value}"
+    "update_dynamic_license": "Auto Licensing settings for {product_name} product in {org_unit_name} organization changed from {old_value} to {new_value}",
+    "chrome_app_user_license_assigned": "License {app_license} is assigned to {user_email}",
+    "chrome_app_user_license_revoked": "License {app_license} is revoked for {user_email}"
   },
   "admin-mobile-settings": {
     "action_cancelled": "{action_type} with id {action_id} on device type {device_type} and id {device_id} was cancelled by user {user_email}",
     "action_requested": "{action_type} with id {action_id} on device type {device_type} and id {device_id} was requested by user {user_email}",
     "add_mobile_certificate": "Mobile certificate {mobile_certificate_common_name} added for mobile devices in your organization",
+    "apple_dep_token_setup_complete": "Apple Device Enrollment tokens updated by {user_email}",
     "company_devices_bulk_creation": "Details of {number_of_company_owned_devices} company owned device(s) were imported",
     "company_owned_device_blocked": "Company owned device {company_device_id} was blocked",
     "company_device_deletion": "Company owned device {company_device_id} was deleted",
@@ -253,11 +262,15 @@
     "toggle_service_enabled": "Service {service_name} changed to {new_value} for {org_unit_name} organizational unit in your organization"
   },
   "admin-security-settings": {
+    "block_all_third_party_api_access": "All third party API Access blocked",
+    "unblock_all_third_party_api_access": "All third party API Access unblocked",
     "allow_strong_authentication": "Allow 2-Step Verification has been set from {old_value} to {new_value} for {domain_name}",
     "allow_service_for_oauth2_access": "{OAUTH2_SERVICE_NAME} API Access is allowed for {org_unit_name}",
     "disallow_service_for_oauth2_access": "{OAUTH2_SERVICE_NAME} API Access is blocked for {org_unit_name}",
     "change_app_access_settings_collection_id": "App Access Settings Collection for the org unit {org_unit_name} has changed from {old_value} to {new_value}",
+    "add_to_blocked_oauth2_apps": "{OAUTH2_APP_NAME} added to Blocked list for {org_unit_name}",
     "add_to_trusted_oauth2_apps": "{OAUTH2_APP_NAME} added to Trusted whitelist for {org_unit_name}",
+    "remove_from_blocked_oauth2_apps": "{OAUTH2_APP_NAME} removed from Blocked list for {org_unit_name}",
     "remove_from_trusted_oauth2_apps": "{OAUTH2_APP_NAME} removed from Trusted whitelist for {org_unit_name}",
     "block_on_device_access": "Block on device {OAUTH2_SERVICE_NAME} access for {org_unit_name}",
     "change_two_step_verification_enrollment_period_duration": "2-step verification enrollment period duration for {org_unit_name} changed from {old_value} to {new_value}",
@@ -267,7 +280,7 @@
     "change_allowed_two_step_verification_methods": "2-step verification allowed 2-step verification methods for {org_unit_name} changed to {allowed_two_step_verification_method}",
     "toggle_caa_enablement": "Context Aware Access has been {new_value}.",
     "change_caa_error_message": "Error message has been changed to [{new_value}]. (OrgUnit Name: {org_unit_name})",
-    "change_caa_app_assignments": "Access Level assignments have been changed from [{caa_assignments_old}] to [{caa_assignments_new}].",
+    "change_caa_app_assignments": "Access Level assignments have been changed from [{caa_assignments_old}] enforced by [{caa_enforcement_endpoints_old}] to [{caa_assignments_new}] enforced by [{caa_enforcement_endpoints_new}].",
     "untrust_domain_owned_oauth2_apps": "Domain Owned Apps removed from trusted list",
     "trust_domain_owned_oauth2_apps": "Domain Owned Apps added to trusted list",
     "enable_non_admin_user_password_recovery": "Enable non-admin user password recovery setting in {org_unit_name} organization changed from {old_value} to {new_value}",
@@ -319,6 +332,7 @@
     "delete_account_info_dump": "Deleted account and login information dump for {user_email} and request ID {request_id}",
     "delete_email_monitor": "Deleted an email monitor for {user_email} to {email_monitor_dest_email}",
     "delete_mailbox_dump": "Deleted mailbox dump for {user_email} and request ID {request_id}",
+    "delete_profile_photo": "Profile photo of {user_email} has been deleted",
     "change_first_name": "First name of {user_email} changed from {old_value} to {new_value}",
     "gmail_reset_user": "Gmail account of {user_email} reset",
     "change_last_name": "Last name of {user_email} changed from {old_value} to {new_value}",
@@ -341,6 +355,9 @@
     "view_temp_password": "Temporary password for user {user_email} viewed by the admin",
     "turn_off_2_step_verification": "2-step verification has been turned off for the user {user_email}",
     "unblock_user_session": "User {user_email} unblocked by temporarily disabling login challenge",
+    "unmanaged_users_bulk_upload": "A total of {bulk_upload_total_users_number} unmanaged users selected for upload. {bulk_upload_fail_users_number} out of {bulk_upload_total_users_number} users failed to be uploaded.",
+    "download_unmanaged_users_list": "Unmanaged Users list was downloaded as a CSV file",
+    "update_profile_photo": "Profile photo of {user_email} has been updated",
     "unenroll_user_from_titanium": "User {user_email} unenrolled from Advanced Protection",
     "archive_user": "{user_email} archived",
     "update_birthdate": "The birth date for {user_email} changed to {birthdate}",
@@ -364,6 +381,7 @@
   "chrome": {
     "password_changed": "Password changed for {trigger_user}",
     "password_reuse": "Password reuse for {trigger_user}",
+    "content_transfer": "Content was transfered",
     "content_unscanned": "The transfered content was not scanned because of {event_reason_enum_type}",
     "malware_transfer": "Malware was detected in the tranferred content for {trigger_user}",
     "sensitive_data_transfer": "Sensitive data was detected in the transferred content for {trigger_user}",
@@ -395,10 +413,12 @@
     "add_info_setting": "{actor} added {info_setting} with value {value} in group {group_id} for the {namespace} namespace",
     "add_member": "{actor} added {member_type} {member_id} to group {group_id} with role {member_role}",
     "add_member_role": "{actor} added role(s) {member_role} for {member_type} {member_id} in group {group_id}",
+    "add_security_setting": "{actor} added {security_setting} with value {value} in group {group_id} for the {namespace} namespace",
     "add_service_account_permission": "{actor} added {member_role} permission to {member_type} {member_id} for the {namespace} namespace",
     "approve_join_request": "{actor} approved join request from {member_type} {member_id} to group {group_id}",
     "ban_member_with_moderation": "{actor} banned {member_type} {member_id} from group {group_id} during message moderation",
     "change_info_setting": "{actor} changed {info_setting} from {old_value} to {new_value} in group {group_id} for the {namespace} namespace",
+    "change_security_setting": "{actor} changed {security_setting} from {old_value} to {new_value} in group {group_id} for the {namespace} namespace",
     "create_group": "{actor} created group {group_id} for the {namespace} namespace",
     "create_namespace": "{actor} created a namespace {namespace}",
     "delete_group": "{actor} deleted group {group_id} for the {namespace} namespace",
@@ -415,6 +435,7 @@
     "remove_info_setting": "{actor} removed {info_setting} with value {value} in group {group_id} for the {namespace} namespace",
     "remove_member": "{actor} removed {member_type} {member_id} from group {group_id}",
     "remove_member_role": "{actor} removed role(s) {member_role} for {member_type} {member_id} in group {group_id}",
+    "remove_security_setting": "{actor} removed {security_setting} with value {value} in group {group_id} for the {namespace} namespace",
     "remove_service_account_permission": "{actor} removed {member_role} permission of {member_type} {member_id} for the {namespace} namespace",
     "request_to_join": "{actor} requested to join group {group_id}",
     "revoke_invitation": "{actor} revoked invitation to {member_type} {member_id} from group {group_id}",
@@ -479,7 +500,11 @@
     "add_to_folder": "{actor} added an item to {destination_folder_title}",
     "approval_canceled": "{actor} canceled an approval on an item",
     "approval_comment_added": "{actor} added a comment on an approval on an item",
+    "approval_completed": "An approval was completed",
+    "approval_decisions_reset": "Approval decisions were reset",
+    "approval_due_time_change": "{actor} requested a due time change on an approval",
     "approval_requested": "{actor} requested approval on an item",
+    "approval_reviewer_change": "{actor} requested a reviewer change on an approval",
     "approval_reviewer_responded": "{actor} reviewed an approval on an item",
     "copy": "{actor} created a copy of original document {old_value}",
     "create": "{actor} created an item",
@@ -561,6 +586,7 @@
     "edit_post": "{actor} edited a {post_visibility} post"
   },
   "meet": {
+    "abuse_report_submitted": "A participant submitted an abuse report in a meeting.",
     "call_ended": "The endpoint left a video meeting",
     "livestream_watched": "The viewer watched a livestream of a meeting on view page."
   },
@@ -614,6 +640,7 @@
   },
   "mobile": {
     "application_event": "{application_id} version {new_value} was {application_state} {actor}'s {device_model}",
+    "application_report_event": "{application_id} reported a status of severity:{application_report_severity} for application key:{application_report_key} with the message:'{application_message}' at {application_report_timestamp}",
     "device_register_unregister_event": "{actor}'s account {account_state} {device_model} {register_privilege}",
     "advanced_policy_sync_event": "{policy_sync_type} {policy_name} {new_value}{value} {device_type} policy {policy_sync_result} on {actor}'s {device_model} with serial id {serial_number}",
     "device_action_event": "{action_type} with id {action_id} on {actor}'s {device_model} was {action_execution_status}",
@@ -621,6 +648,7 @@
     "os_updated_event": "{os_property} updated on {actor}'s {device_model} from {old_value} to {new_value}",
     "device_ownership_change_event": "Ownership of {actor}'s {device_model} has changed to {device_ownership}, with new device id {new_device_id}",
     "device_settings_updated_event": "{device_setting} changed from {old_value} to {new_value} by {actor} on {device_model}",
+    "apple_dep_device_update_on_apple_portal_event": "Device with serial number {serial_number} {device_status_on_apple_portal} through Apple Device Enrollment",
     "device_sync_event": "{actor}'s account synced on {device_model}",
     "risk_signal_updated_event": "{risk_signal} updated on {actor}'s {device_model} from {old_value} to {new_value}",
     "android_work_profile_support_enabled_event": "Work profile is supported on {actor}'s {device_model}",
@@ -642,7 +670,7 @@
     "login_failure": "{actor} failed to login because of the following error: {failure_type}",
     "login_success": "{actor} logged in"
   },
-  "user_accounts": {
+  "user-accounts": {
     "2sv_disable": "{actor} has disabled 2-step verification",
     "2sv_enroll": "{actor} has enrolled for 2-step verification",
     "password_edit": "{actor} has changed Account password",
@@ -650,6 +678,7 @@
     "recovery_phone_edit": "{actor} has changed Account recovery phone",
     "recovery_secret_qa_edit": "{actor} has changed Account recovery secret question/answer",
     "titanium_enroll": "{actor} has enrolled for Advanced Protection",
-    "titanium_unenroll": "{actor} has disabled Advanced Protection"
+    "titanium_unenroll": "{actor} has disabled Advanced Protection",
+    "email_forwarding_out_of_domain": "{actor} has enabled out of domain email forwarding to {email_forwarding_destination_address}."
   }
 }
