@@ -73,6 +73,7 @@ class WorkspaceAuditTimesketch(BaseModule):
     parameters_dict = {}
     for parameter in parameters:
       name = parameter.get('name')
+      name = name.lower()
       if not name:
         self.ModuleError(
             'Encountered a parameter with no name. '
