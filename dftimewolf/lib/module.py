@@ -6,10 +6,11 @@ import logging
 # Some AttributeErrors occurred when trying to access logging.handlers, so
 # we import them separately
 from logging import handlers
+import threading
 import traceback
 import sys
 
-from typing import Optional, TYPE_CHECKING, Type, cast
+from typing import Optional, TYPE_CHECKING, Type, cast, TypeVar, Sequence, List, Dict
 
 from dftimewolf.lib import errors
 from dftimewolf.lib import logging_utils
@@ -18,6 +19,7 @@ from dftimewolf.lib.containers import interface
 if TYPE_CHECKING:
   # Import will only happen during type checking, disabling linter warning.
   from dftimewolf.lib import state  # pylint: disable=cyclic-import
+T = TypeVar("T", bound="interface.AttributeContainer")  # pylint: disable=invalid-name,line-too-long
 
 
 class BaseModule(object):
@@ -139,13 +141,29 @@ class PreflightModule(BaseModule):
   def CleanUp(self) -> None:
     """Carries out optional cleanup actions at the end of the recipe run."""
 
-
 class ThreadAwareModule(BaseModule):
   """Base class for ThreadAwareModules.
 
   ThreadAwareModule are modules designed to to better handle being run in
   parallel. In practice that means they have an extra StaticSetUp method that
   gets run only once for N module instances."""
+
+  def __init__(self,
+               state: "state.DFTimewolfState",
+               name: Optional[str]=None,
+               critical: bool=False) -> None:
+    """Initializes a ThreadAwareModule.
+
+    Args:
+      state (DFTimewolfState): recipe state.
+      name (Optional[str]): The module's runtime name.
+      critical (Optional[bool]): True if the module is critical, which causes
+          the entire recipe to fail if the module encounters an error.
+    """
+    super(ThreadAwareModule, self).__init__(
+        state, name=name, critical=critical)
+    self._thread_lock = threading.Lock()
+    self.store = {}  # type: Dict[str, List[interface.AttributeContainer]]
 
   @staticmethod
   @abc.abstractmethod
@@ -177,3 +195,37 @@ class ThreadAwareModule(BaseModule):
   @abc.abstractmethod
   def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
     """Returns the container type that this module should be threaded on."""
+
+  # The following two methods are copy/pasted from dftimewolf/lib/state.py
+  # to better handle a move to parallel threading of modules. Any instance of
+  # this module should use these methods to access containers, rather than
+  # the same methods in the state. 
+  def StoreContainer(self, container: "interface.AttributeContainer") -> None:
+    """Thread-safe method to store data in the state's store.
+
+    Args:
+      container (AttributeContainer): data to store.
+    """
+    with self._thread_lock:
+      self.store.setdefault(container.CONTAINER_TYPE, []).append(container)
+
+  def GetContainers(self,
+                    container_class: Type[T],
+                    pop: bool=False) -> Sequence[T]:
+    """Thread-safe method to retrieve data from the state's store.
+
+    Args:
+      container_class (type): AttributeContainer class used to filter data.
+      pop (Optional[bool]): Whether to remove the containers from the state when
+          they are retrieved.
+
+    Returns:
+      Collection[AttributeContainer]: attribute container objects provided in
+          the store that correspond to the container type.
+    """
+    with self._thread_lock:
+      container_objects = cast(
+          List[T], self.store.get(container_class.CONTAINER_TYPE, []))
+      if pop:
+        self.store[container_class.CONTAINER_TYPE] = []
+      return tuple(container_objects)

@@ -314,24 +314,40 @@ class DFTimewolfState(object):
 
     try:
       if isinstance(module, ThreadAwareModule):
+        # Thread aware modules should use their own container store. 
+        # Populate it from the state container store.
+        for key in self.store:
+          for container in self.store[key]:
+            module.StoreContainer(container)
+
         module.StaticPreProcess()
 
-        containers = self.GetContainers(
+        # Thread Aware Modules must have only one copy of the container that
+        # they thread based on. Pop them. 
+        thread_on_containers = module.GetContainers(
             module.GetThreadOnContainerType(), True)
         return_containers = []
 
-        for container in containers:
-          self.StoreContainer(container)
+        # Feed the Thread On containers back to the module one at a time for
+        # processing. In future, we want to run these in parallel.
+        for container in thread_on_containers:
+          module.StoreContainer(container)
           module.Process()
 
           for return_container in \
-              self.GetContainers(module.GetThreadOnContainerType(), True):
+              module.GetContainers(module.GetThreadOnContainerType(), True):
             return_containers.append(return_container)
 
         module.StaticPostProcess()
 
+        # Add the return containers back to the state - Clearing existing first.
+        self.GetContainers(module.GetThreadOnContainerType(), True)
         for container in return_containers:
           self.StoreContainer(container)
+
+        # TODO - If the ThreadAwareModule makes changes to containers that it
+        # doesn't thread on, do we care? Do we need to feed *all* the modules
+        # containers back into the state's container store?
       else:
         module.Process()
     except errors.DFTimewolfError as exception:

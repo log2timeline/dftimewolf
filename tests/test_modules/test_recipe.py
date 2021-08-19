@@ -40,16 +40,14 @@ threaded_no_preflights = {
     'short_description': 'Nothing to see here.',
     'modules': [{
         'wants': [],
-        'name': 'DummyModule1',
+        'name': 'ContainerGeneratorModule',
         'args': {
-            'runtime_value': '1-1'
+            'runtime_value': 'one,two,three'
         },
     }, {
-        'wants': ['DummyModule1'],
-        'name': 'DummyThreadAwareModule',
-        'args': {
-            'runtime_value': '2-2'
-        },
+        'wants': ['ContainerGeneratorModule'],
+        'name': 'ThreadAwareConsumerModule',
+        'args': {},
     }]
 }
 
