@@ -174,7 +174,7 @@ class ThreadAwareModule(BaseModule):
     deepcopy'd, but other containers are shallow copied - so all instances of
     the module can access and modify them by reference"""
     state = deepcopy(self.state, memo)
-    copy = ThreadAwareModule(state)
+    copy = ThreadAwareModule(state) # type: ignore
     copy._thread_lock = threading.Lock()
 
     # Deep copy the containers to thread on, shallow copy the rest.
