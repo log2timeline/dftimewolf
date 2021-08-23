@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """Contains dummy modules used in thread aware tests."""
 
+from typing import Dict, Any
+
 from dftimewolf.lib import module
 from dftimewolf.lib.containers.containers import interface
 

@@ -168,7 +168,6 @@ class ThreadAwareModule(BaseModule):
     self._thread_lock = threading.Lock()
     self.store = {}  # type: Dict[str, List[interface.AttributeContainer]]
 
-  @abc.abstractmethod
   def __deepcopy__(self, memo: Dict[Any, Any]) -> object:
     """Override of deepcopy. We cheat a little - The container to thread on is
     deepcopy'd, but other containers are shallow copied - so all instances of
@@ -183,7 +182,13 @@ class ThreadAwareModule(BaseModule):
         copy.store[key] = deepcopy(container_list)
       else:
         copy.store[key] = container_list
-    
+
+    # Copy any class attributes that a subclass may create
+    for key, value in self.__dict__.items():
+      if key not in \
+          ['name', 'critical', 'state', 'logger', '_thread_lock', 'store']:
+        copy.__dict__[key] = value
+
     return copy
 
   @staticmethod

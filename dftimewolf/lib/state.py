@@ -4,8 +4,6 @@
 Use it to track errors, abort on global failures, clean up after modules, etc.
 """
 
-import inspect
-
 from copy import deepcopy
 import importlib
 import logging
