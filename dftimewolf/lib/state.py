@@ -63,7 +63,9 @@ class DFTimewolfState(object):
     self._abort_execution = False
 
   def __deepcopy__(self, memo: Dict[Any, Any]) -> object:
-    """Deepcopy override."""
+    """Deepcopy override. This creates a new copy of the state object. This is
+    needed because we copy ThreadAwareModules for parallel processing, and they
+    have a reference to the state."""
     config = deepcopy(self.config, memo)
     copy = DFTimewolfState(config)
     copy._state_lock = self._state_lock
@@ -334,7 +336,7 @@ class DFTimewolfState(object):
 
     try:
       if isinstance(module, ThreadAwareModule):
-        # Thread aware modules should use their own container store.
+        # Thread Aware modules should use their own container store.
         # Populate it from the state container store.
         for _, container_list in self.store.items():
           for container in container_list:
