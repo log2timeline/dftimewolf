@@ -10,8 +10,10 @@ import threading
 import traceback
 import sys
 
+from copy import deepcopy
+
 from typing import Optional, TYPE_CHECKING, Type, cast, TypeVar, Sequence, \
-    List, Dict
+    List, Dict, Any
 
 from dftimewolf.lib import errors
 from dftimewolf.lib import logging_utils
@@ -165,6 +167,24 @@ class ThreadAwareModule(BaseModule):
         state, name=name, critical=critical)
     self._thread_lock = threading.Lock()
     self.store = {}  # type: Dict[str, List[interface.AttributeContainer]]
+
+  @abc.abstractmethod
+  def __deepcopy__(self, memo: Dict[Any, Any]) -> object:
+    """Override of deepcopy. We cheat a little - The container to thread on is
+    deepcopy'd, but other containers are shallow copied - so all instances of
+    the module can access and modify them by reference"""
+    state = deepcopy(self.state, memo)
+    copy = ThreadAwareModule(state)
+    copy._thread_lock = threading.Lock()
+
+    # Deep copy the containers to thread on, shallow copy the rest.
+    for key, container_list in self.store.items():
+      if key == self.GetThreadOnContainerType().CONTAINER_TYPE:
+        copy.store[key] = deepcopy(container_list)
+      else:
+        copy.store[key] = container_list
+    
+    return copy
 
   @staticmethod
   @abc.abstractmethod

@@ -4,6 +4,9 @@
 Use it to track errors, abort on global failures, clean up after modules, etc.
 """
 
+import inspect
+
+from copy import deepcopy
 import importlib
 import logging
 import threading
@@ -60,6 +63,25 @@ class DFTimewolfState(object):
     self.store = {}  # type: Dict[str, List[interface.AttributeContainer]]
     self.streaming_callbacks = {}  # type: Dict[Type[interface.AttributeContainer], List[Callable[[Any], Any]]]  # pylint: disable=line-too-long
     self._abort_execution = False
+
+  def __deepcopy__(self, memo: Dict[Any, Any]) -> object:
+    """Deepcopy override."""
+    config = deepcopy(self.config, memo)
+    copy = DFTimewolfState(config)
+    copy._state_lock = self._state_lock
+    copy._threading_event_per_module = self._threading_event_per_module
+
+    copy.command_line_options = deepcopy(self.command_line_options, memo)
+    copy._cache = deepcopy(self._cache, memo)
+    copy._module_pool = deepcopy(self._module_pool, memo)
+    copy.errors = deepcopy(self.errors, memo)
+    copy.global_errors = deepcopy(self.global_errors, memo)
+    copy.recipe = deepcopy(self.recipe, memo)
+    copy.store = deepcopy(self.store, memo)
+    copy.streaming_callbacks = deepcopy(self.streaming_callbacks, memo)
+    copy._abort_execution = deepcopy(self._abort_execution, memo)
+
+    return copy
 
   def _InvokeModulesInThreads(self, callback: Callable[[Any], Any]) -> None:
     """Invokes the callback function on all the modules in separate threads.
@@ -329,13 +351,27 @@ class DFTimewolfState(object):
         return_containers = []
 
         # Feed the Thread On containers back to the module one at a time for
-        # processing. In future, we want to run these in parallel.
+        # processing.
+        modules = []
+        threads = []
         for container in thread_on_containers:
-          module.StoreContainer(container)
-          module.Process()
+          m = deepcopy(module)
+          m.StoreContainer(container)
+          modules.append(m)
 
+        # Launch the threads
+        for m in modules:
+          m.__class__ = type(module)
+          thread = threading.Thread(target=m.Process)
+          thread.start()
+          threads.append(thread)
+        for thread in threads:
+          thread.join()
+
+        # Collect any output containers
+        for m in modules:
           for return_container in \
-              module.GetContainers(module.GetThreadOnContainerType(), True):
+              m.GetContainers(module.GetThreadOnContainerType(), True):
             return_containers.append(return_container)
 
         module.StaticPostProcess()
