@@ -200,6 +200,7 @@ class ThreadAwareModule(BaseModule):
     state = deepcopy(self.state, memo)
     copy = ThreadAwareModule(state) # type: ignore
     copy._thread_lock = threading.Lock()
+    copy.__class__ = type(self)
 
     # Deep copy the containers to thread on, shallow copy the rest.
     for key, container_list in self.store.items():
@@ -246,6 +247,11 @@ class ThreadAwareModule(BaseModule):
   @abc.abstractmethod
   def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
     """Returns the container type that this module should be threaded on."""
+
+  @staticmethod
+  @abc.abstractmethod
+  def GetThreadPoolSize() -> int:
+    """Returns the maximum number of threads for this module."""
 
   # The following two methods are copy/pasted from dftimewolf/lib/state.py
   # to better handle a move to parallel threading of modules. Any instance of

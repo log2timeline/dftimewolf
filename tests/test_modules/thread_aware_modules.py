@@ -2,6 +2,7 @@
 """Contains dummy modules used in thread aware tests."""
 
 from typing import Dict, Any
+import time
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers.containers import interface
@@ -58,12 +59,18 @@ class ThreadAwareConsumerModule(module.ThreadAwareModule):
     """Process"""
     print(self.name + ' Process!')
 
+    time.sleep(3)
+
     self.GetContainers(TestContainer)[0].value += ' appended'
     self.GetContainers(TestContainerTwo)[0].value += ' appended'
 
   @staticmethod
   def GetThreadOnContainerType():
     return TestContainer
+
+  @staticmethod
+  def GetThreadPoolSize():
+    return 2
 
   @staticmethod
   def StaticPreSetUp() -> None:

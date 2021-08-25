@@ -4,6 +4,7 @@
 Use it to track errors, abort on global failures, clean up after modules, etc.
 """
 
+from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 import importlib
 import logging
@@ -351,22 +352,20 @@ class DFTimewolfState(object):
         return_containers = []
 
         # Feed the Thread On containers back to the module one at a time for
-        # processing.
+        # processing and launch the threads
         modules = []
-        threads = []
-        for container in thread_on_containers:
-          m = deepcopy(module)
-          m.StoreContainer(container)
-          modules.append(m)
+        futures = []
+        with ThreadPoolExecutor(max_workers=module.GetThreadPoolSize()) \
+            as executor:
+          for container in thread_on_containers:
+            m = deepcopy(module)
+            m.StoreContainer(container)
+            futures.append(executor.submit(m.Process))
+            modules.append(m)
 
-        # Launch the threads
-        for m in modules:
-          m.__class__ = type(module)
-          thread = threading.Thread(target=m.Process)
-          thread.start()
-          threads.append(thread)
-        for thread in threads:
-          thread.join()
+        for fut in futures:
+          if fut.exception():
+            raise fut.exception()
 
         # Collect any output containers
         for m in modules:
