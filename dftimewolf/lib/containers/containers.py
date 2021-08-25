@@ -178,6 +178,7 @@ class ThreatIntelligence(interface.AttributeContainer):
     self.indicator = indicator
     self.path = path
 
+
 class TicketAttribute(interface.AttributeContainer):
   """Attribute container definition for generic ticketing system attributes.
 
@@ -307,21 +308,26 @@ class WorkspaceLogs(interface.AttributeContainer):
   Attributes:
     application_name (str): Name of the application the audit records are for
     filter_expression (str): Workspace audit logs filter expression
-          used to generate the results.
+        used to generate the results.
     path (str): path to a Workspace log file.
+    user_key (str): user key associated with the audit records.
   """
   CONTAINER_TYPE = 'workspace_logs'
 
-  def __init__(self, application_name: str, path: str, filter_expression: str):
+  def __init__(
+      self, application_name: str, path: str, filter_expression: str,
+      user_key: str='') -> None:
     """Initializes the Workspace logs container.
 
     Args:
       application_name (str): Name of the application the audit records are for
       filter_expression (str): Workspace audit logs filter expression
           used to generate the results.
+      user_key (str): user key associated with the audit records.
       path (str): path to a Workspace log file.
     """
     super(WorkspaceLogs, self).__init__()
     self.filter_expression = filter_expression
     self.path = path
     self.application_name = application_name
+    self.user_key = user_key
