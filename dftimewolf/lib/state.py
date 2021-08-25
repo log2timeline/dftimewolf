@@ -365,7 +365,7 @@ class DFTimewolfState(object):
 
         for fut in futures:
           if fut.exception():
-            raise fut.exception()
+            raise fut.exception() # type: ignore
 
         # Collect any output containers
         for m in modules:
