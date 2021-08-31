@@ -50,7 +50,9 @@ class MainToolTest(unittest.TestCase):
 
     for recipe in self.tool._recipes_manager.GetRecipes():
       self.tool._state.LoadRecipe(recipe.contents, dftimewolf_recipes.MODULES)
-      for module in recipe.contents['modules']:
+      modules = recipe.contents['modules']
+      preflights = recipe.contents.get('preflights', [])
+      for module in modules + preflights:
         runtime_name = module.get('runtime_name', module['name'])
         setup_func = self.tool.state._module_pool[runtime_name].SetUp
         expected_args = set(inspect.getfullargspec(setup_func).args)
