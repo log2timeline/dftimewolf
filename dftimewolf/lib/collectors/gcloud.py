@@ -170,7 +170,7 @@ class GoogleCloudCollector(module.BaseModule):
     try:
       if self.remote_instance_name:
         self.remote_project.compute.GetInstance(self.remote_instance_name)
-    except ResourceNotFoundError as exception:
+    except ResourceNotFoundError:
       self.ModuleError(
         message='Instance "{0:s}" not found or insufficient permissions'.format(
           self.remote_instance_name),
