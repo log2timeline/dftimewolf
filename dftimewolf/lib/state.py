@@ -279,7 +279,7 @@ class DFTimewolfState(object):
       module.SetUp(**new_args)
       if isinstance(module, ThreadAwareModule):
         module.StaticPostSetUp()
-    except errors.DFTimewolfError as exception:
+    except errors.DFTimewolfError:
       msg = "A critical error occurred in module {0:s}, aborting execution."
       logger.critical(msg.format(module.name))
     except Exception as exception:  # pylint: disable=broad-except
@@ -381,7 +381,7 @@ class DFTimewolfState(object):
           self.StoreContainer(container)
       else:
         module.Process()
-    except errors.DFTimewolfError as exception:
+    except errors.DFTimewolfError:
       logger.critical(
           "Critical error in module {0:s}, aborting execution".format(
               module.name))
