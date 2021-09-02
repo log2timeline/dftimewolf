@@ -191,9 +191,9 @@ class TurbiniaProcessorBase(module.BaseModule):
     request = TurbiniaRequest(requester=getpass.getuser())
     request.evidence.append(evidence_)
     if self.sketch_id:
-      request.recipe['sketch_id'] = self.sketch_id
+      request.recipe['globals']['sketch_id'] = self.sketch_id
     if not self.run_all_jobs:
-      request.recipe['jobs_denylist'] = [
+      request.recipe['globals']['jobs_denylist'] = [
           'StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob']
 
     threatintel = self.state.GetContainers(containers.ThreatIntelligence)
@@ -202,7 +202,7 @@ class TurbiniaProcessorBase(module.BaseModule):
           'Sending {0:d} threatintel to Turbinia GrepWorkers...'.format(
               len(threatintel)))
       indicators = [item.indicator for item in threatintel]
-      request.recipe['filter_patterns'] = indicators
+      request.recipe['globals']['filter_patterns'] = indicators
 
     request_dict = {
         'instance': self.instance,
