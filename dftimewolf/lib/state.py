@@ -5,7 +5,6 @@ Use it to track errors, abort on global failures, clean up after modules, etc.
 """
 
 from concurrent.futures import ThreadPoolExecutor
-from copy import deepcopy
 import importlib
 import logging
 import threading
@@ -62,27 +61,6 @@ class DFTimewolfState(object):
     self.store = {}  # type: Dict[str, List[interface.AttributeContainer]]
     self.streaming_callbacks = {}  # type: Dict[Type[interface.AttributeContainer], List[Callable[[Any], Any]]]  # pylint: disable=line-too-long
     self._abort_execution = False
-
-  def __deepcopy__(self, memo: Dict[Any, Any]) -> object:
-    """Deepcopy override. This creates a new copy of the state object. This is
-    needed because we copy ThreadAwareModules for parallel processing, and they
-    have a reference to the state."""
-    config = deepcopy(self.config, memo)
-    copy = DFTimewolfState(config)
-    copy._state_lock = self._state_lock
-    copy._threading_event_per_module = self._threading_event_per_module
-
-    copy.command_line_options = deepcopy(self.command_line_options, memo)
-    copy._cache = deepcopy(self._cache, memo)
-    copy._module_pool = deepcopy(self._module_pool, memo)
-    copy.errors = deepcopy(self.errors, memo)
-    copy.global_errors = deepcopy(self.global_errors, memo)
-    copy.recipe = deepcopy(self.recipe, memo)
-    copy.store = deepcopy(self.store, memo)
-    copy.streaming_callbacks = deepcopy(self.streaming_callbacks, memo)
-    copy._abort_execution = deepcopy(self._abort_execution, memo)
-
-    return copy
 
   def _InvokeModulesInThreads(self, callback: Callable[[Any], Any]) -> None:
     """Invokes the callback function on all the modules in separate threads.
@@ -337,52 +315,21 @@ class DFTimewolfState(object):
 
     try:
       if isinstance(module, ThreadAwareModule):
-        # Thread Aware modules should use their own container store.
-        # Populate it from the state container store. Skip the ThreadOn
-        # container type - We'll get to that later
-        for _, container_list in self.store.items():
-          for container in container_list:
-            if not isinstance(container, module.GetThreadOnContainerType()):
-              module.StoreContainer(container)
-
         module.PreProcess()
 
-        # Feed the Thread On containers back to the module one at a time for
-        # processing and launch the threads
-        modules = []
         futures = []
-        return_containers = []
         with ThreadPoolExecutor(max_workers=module.GetThreadPoolSize()) \
             as executor:
           for container in \
               self.GetContainers(module.GetThreadOnContainerType()):
-            m = deepcopy(module)
-            m.StoreContainer(container)
-            futures.append(executor.submit(m.Process))
-            modules.append(m)
+            futures.append(
+                executor.submit(module.Process, container))
 
         for fut in futures:
           if fut.exception():
             raise fut.exception() # type: ignore
 
-        # Collect any output containers
-        for m in modules:
-          # First the ThreadOn type
-          for return_container in \
-              m.GetContainers(module.GetThreadOnContainerType(), True):
-            return_containers.append(return_container)
-          # Then any containers of a new type we didn't already have
-          for container_name, container_list in m.store.items():
-            if container_name not in self.store.keys():
-              for container in container_list:
-                return_containers.append(container)
-
         module.PostProcess()
-
-        # Add the return containers back to the state - Clearing existing first.
-        self.GetContainers(module.GetThreadOnContainerType(), True)
-        for container in return_containers:
-          self.StoreContainer(container)
       else:
         module.Process()
     except errors.DFTimewolfError:

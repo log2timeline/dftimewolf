@@ -8,8 +8,6 @@ import time
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import interface
 
-output_values = ['one', 'two', 'three']
-output_lock = threading.Lock()
 
 class TestContainer(interface.AttributeContainer):
   """Test attribute container."""
@@ -64,23 +62,27 @@ class ThreadAwareConsumerModule(module.ThreadAwareModule):
   """This is a dummy Thread Aware Module. Consumes from
   ContainerGeneratorModule based on the number of containers generated."""
 
+  def __init__(self, state, name=None):
+    super(ThreadAwareConsumerModule, self).__init__(state, name)
+    self.output_values = ['one', 'two', 'three']
+    self.output_lock = threading.Lock()
+
   def SetUp(self): # pylint: disable=arguments-differ
     """SetUp"""
     print(self.name + ' SetUp!')
 
-  def Process(self) -> None:
+  def Process(self, container) -> None:
     """Process"""
     print(self.name + ' Process!')
 
     time.sleep(1)
 
-    for container in self.GetContainers(TestContainer):
-      container.value += ' appended'
-    self.GetContainers(TestContainerTwo)[0].value += ' appended'
+    container.value += ' appended'
+    self.state.GetContainers(TestContainerTwo)[0].value += ' appended'
 
-    with output_lock:
-      container = TestContainerThree('output ' + output_values.pop())
-    self.StoreContainer(container)
+    with self.output_lock:
+      new_container = TestContainerThree('output ' + self.output_values.pop())
+    self.state.StoreContainer(new_container)
 
   @staticmethod
   def GetThreadOnContainerType():
