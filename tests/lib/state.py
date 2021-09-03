@@ -15,12 +15,15 @@ from dftimewolf.lib.recipes import manager as recipes_manager
 from dftimewolf.lib import errors
 
 from tests.test_modules import modules
+from tests.test_modules import thread_aware_modules
 from tests.test_modules import test_recipe
 
 TEST_MODULES = {
   'DummyModule1': 'tests.test_modules.modules',
   'DummyModule2': 'tests.test_modules.modules',
   'DummyPreflightModule': 'tests.test_modules.modules',
+  'ContainerGeneratorModule': 'tests.test_modules.thread_aware_modules',
+  'ThreadAwareConsumerModule': 'tests.test_modules.thread_aware_modules'
 }
 
 class StateTest(unittest.TestCase):
@@ -29,22 +32,35 @@ class StateTest(unittest.TestCase):
   def setUp(self):
     """Registers the dummy modules and recipe to be used in tests."""
     modules_manager.ModulesManager.RegisterModules([
-        modules.DummyModule1, modules.DummyModule2,
-        modules.DummyPreflightModule])
+        modules.DummyModule1,
+        modules.DummyModule2,
+        modules.DummyPreflightModule,
+        thread_aware_modules.ContainerGeneratorModule,
+        thread_aware_modules.ThreadAwareConsumerModule])
 
     self._recipe = resources.Recipe(
         test_recipe.__doc__, test_recipe.contents, test_recipe.args)
+    self._threaded_recipe = resources.Recipe(
+        test_recipe.__doc__,
+        test_recipe.threaded_no_preflights,
+        test_recipe.args)
     self._recipes_manager = recipes_manager.RecipesManager()
     self._recipes_manager.RegisterRecipe(self._recipe)
+    self._recipes_manager.RegisterRecipe(self._threaded_recipe)
 
   def tearDown(self):
     """Deregister the recipe used in tests."""
     self._recipes_manager.DeregisterRecipe(self._recipe)
+    self._recipes_manager.DeregisterRecipe(self._threaded_recipe)
 
     modules_manager.ModulesManager.DeregisterModule(modules.DummyModule1)
     modules_manager.ModulesManager.DeregisterModule(modules.DummyModule2)
     modules_manager.ModulesManager.DeregisterModule(
         modules.DummyPreflightModule)
+    modules_manager.ModulesManager.DeregisterModule(
+        thread_aware_modules.ContainerGeneratorModule)
+    modules_manager.ModulesManager.DeregisterModule(
+        thread_aware_modules.ThreadAwareConsumerModule)
 
   def testLoadRecipe(self):
     """Tests that a recipe can be loaded correctly."""
@@ -63,6 +79,15 @@ class StateTest(unittest.TestCase):
     # pylint: disable=protected-access
     self.assertIn('DummyModule1', test_state._module_pool)
     self.assertIn('DummyModule2', test_state._module_pool)
+    self.assertEqual(len(test_state._module_pool), 2)
+
+  def testLoadRecipeThreadAwareModule(self):
+    """Tests that a recipe can be loaded correctly."""
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.LoadRecipe(test_recipe.threaded_no_preflights, TEST_MODULES)
+    # pylint: disable=protected-access
+    self.assertIn('ContainerGeneratorModule', test_state._module_pool)
+    self.assertIn('ThreadAwareConsumerModule', test_state._module_pool)
     self.assertEqual(len(test_state._module_pool), 2)
 
   def testLoadRecipeWithRuntimeNames(self):
@@ -153,6 +178,23 @@ class StateTest(unittest.TestCase):
       mock_setup2.call_args_list,
       [mock.call(runtime_value='2-1'), mock.call(runtime_value='2-2')])
 
+  # pylint: disable=line-too-long
+  @mock.patch('tests.test_modules.thread_aware_modules.ContainerGeneratorModule.SetUp')
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.SetUp')
+  # pylint: enable=line-too-long
+  def testSetupThreadModules(self, mock_threaded_setup, mock_dummy_setup):
+    """Tests that threaded module's setup functions are correctly called."""
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.command_line_options = {}
+    test_state.LoadRecipe(test_recipe.threaded_no_preflights, TEST_MODULES)
+    test_state.SetupModules()
+    self.assertEqual(
+      mock_dummy_setup.call_args_list,
+      [mock.call(runtime_value='one,two,three')])
+    self.assertEqual(
+      mock_threaded_setup.call_args_list,
+      [mock.call()])
+
   @mock.patch('tests.test_modules.modules.DummyModule2.Process')
   @mock.patch('tests.test_modules.modules.DummyModule1.Process')
   def testProcessModules(self, mock_process1, mock_process2):
@@ -181,6 +223,62 @@ class StateTest(unittest.TestCase):
     self.assertIn('DummyModule2-2', test_state._threading_event_per_module)
     self.assertEqual(mock_process1.call_count, 2)
     self.assertEqual(mock_process2.call_count, 2)
+
+  # pylint: disable=line-too-long
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.Process')
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PreSetUp')
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PostSetUp')
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PreProcess')
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PostProcess')
+  # pylint: enable=line-too-long
+  def testProcessThreadAwareModule(self,
+      mock_post_process,
+      mock_pre_process,
+      mock_post_setup,
+      mock_pre_setup,
+      mock_threaded_process):
+    """Tests the ThreadAwareModules process functions are correctly called."""
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.command_line_options = {}
+    test_state.LoadRecipe(test_recipe.threaded_no_preflights, TEST_MODULES)
+    test_state.SetupModules()
+    test_state.RunModules()
+    self.assertEqual(mock_threaded_process.call_count, 3)
+    self.assertEqual(mock_post_process.call_count, 1)
+    self.assertEqual(mock_pre_process.call_count, 1)
+    self.assertEqual(mock_post_setup.call_count, 1)
+    self.assertEqual(mock_pre_setup.call_count, 1)
+    self.assertEqual(3,
+        len(test_state.GetContainers(thread_aware_modules.TestContainer)))
+
+  def testThreadAwareModuleContainerHandling(self):
+    """Tests that a ThreadAwareModule handles containers correctly."""
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.command_line_options = {}
+    test_state.LoadRecipe(test_recipe.threaded_no_preflights, TEST_MODULES)
+    test_state.SetupModules()
+    test_state.RunModules()
+
+    # With no mocks, the first module generates 3 TestContainers, and 1
+    # TestContainerTwo. The Test ThreadAwareConsumerModule is threaded on
+    # and modifies TestContainer, modifies TestContainerTwo, and generates
+    # a TestContainerThree each.
+    values = [container.value for container in test_state.GetContainers(
+        thread_aware_modules.TestContainer)]
+    expected_values = ['one appended', 'two appended', 'three appended']
+
+    self.assertEqual(sorted(values), sorted(expected_values))
+    self.assertEqual(
+        test_state.GetContainers(
+            thread_aware_modules.TestContainerTwo)[0].value,
+        'one,two,three appended appended appended'
+        )
+
+    values = [container.value for container in test_state.GetContainers(
+        thread_aware_modules.TestContainerThree)]
+    expected_values = ['output one', 'output two', 'output three']
+
+    self.assertEqual(sorted(values), sorted(expected_values))
 
   @mock.patch('tests.test_modules.modules.DummyModule2.Process')
   @mock.patch('tests.test_modules.modules.DummyModule1.Process')

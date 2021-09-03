@@ -4,6 +4,7 @@
 Use it to track errors, abort on global failures, clean up after modules, etc.
 """
 
+from concurrent.futures import ThreadPoolExecutor
 import importlib
 import logging
 import threading
@@ -14,6 +15,7 @@ from dftimewolf.config import Config
 from dftimewolf.lib import errors, utils
 from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.modules import manager as modules_manager
+from dftimewolf.lib.module import ThreadAwareModule
 
 if TYPE_CHECKING:
   from dftimewolf.lib import module as dftw_module
@@ -250,7 +252,11 @@ class DFTimewolfState(object):
     module = self._module_pool[runtime_name]
 
     try:
+      if isinstance(module, ThreadAwareModule):
+        module.PreSetUp()
       module.SetUp(**new_args)
+      if isinstance(module, ThreadAwareModule):
+        module.PostSetUp()
     except errors.DFTimewolfError:
       msg = "A critical error occurred in module {0:s}, aborting execution."
       logger.critical(msg.format(module.name))
@@ -308,7 +314,27 @@ class DFTimewolfState(object):
     logger.info('Running module: {0:s}'.format(runtime_name))
 
     try:
-      module.Process()
+      if isinstance(module, ThreadAwareModule):
+        module.PreProcess()
+
+        futures = []
+        with ThreadPoolExecutor(max_workers=module.GetThreadPoolSize()) \
+            as executor:
+          for container in \
+              self.GetContainers(module.GetThreadOnContainerType()):
+            futures.append(
+                executor.submit(module.Process, container))
+
+        for fut in futures:
+          if fut.exception():
+            raise fut.exception() # type: ignore
+
+        if not module.KeepThreadedContainersInState():
+          self.GetContainers(module.GetThreadOnContainerType(), True)
+
+        module.PostProcess()
+      else:
+        module.Process()
     except errors.DFTimewolfError:
       logger.critical(
           "Critical error in module {0:s}, aborting execution".format(
