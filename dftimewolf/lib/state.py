@@ -338,26 +338,24 @@ class DFTimewolfState(object):
     try:
       if isinstance(module, ThreadAwareModule):
         # Thread Aware modules should use their own container store.
-        # Populate it from the state container store.
+        # Populate it from the state container store. Skip the ThreadOn
+        # container type - We'll get to that later
         for _, container_list in self.store.items():
           for container in container_list:
-            module.StoreContainer(container)
+            if not isinstance(container, module.GetThreadOnContainerType()):
+              module.StoreContainer(container)
 
         module.StaticPreProcess()
-
-        # Thread Aware Modules must have only one copy of the container that
-        # they thread based on. Pop them.
-        thread_on_containers = module.GetContainers(
-            module.GetThreadOnContainerType(), True)
-        return_containers = []
 
         # Feed the Thread On containers back to the module one at a time for
         # processing and launch the threads
         modules = []
         futures = []
+        return_containers = []
         with ThreadPoolExecutor(max_workers=module.GetThreadPoolSize()) \
             as executor:
-          for container in thread_on_containers:
+          for container in \
+              self.GetContainers(module.GetThreadOnContainerType()):
             m = deepcopy(module)
             m.StoreContainer(container)
             futures.append(executor.submit(m.Process))

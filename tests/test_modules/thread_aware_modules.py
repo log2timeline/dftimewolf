@@ -5,7 +5,7 @@ from typing import Dict, Any
 import time
 
 from dftimewolf.lib import module
-from dftimewolf.lib.containers.containers import interface
+from dftimewolf.lib.containers import interface
 
 class TestContainer(interface.AttributeContainer):
   """Test attribute container."""
@@ -59,9 +59,10 @@ class ThreadAwareConsumerModule(module.ThreadAwareModule):
     """Process"""
     print(self.name + ' Process!')
 
-    time.sleep(3)
+    time.sleep(1)
 
-    self.GetContainers(TestContainer)[0].value += ' appended'
+    for container in self.GetContainers(TestContainer):
+      container.value += ' appended'
     self.GetContainers(TestContainerTwo)[0].value += ' appended'
 
   @staticmethod

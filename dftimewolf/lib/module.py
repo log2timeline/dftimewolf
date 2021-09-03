@@ -150,7 +150,7 @@ class PreflightModule(BaseModule):
 class ThreadAwareModule(BaseModule):
   """Base class for ThreadAwareModules.
 
-  ThreadAwareModule are modules designed to to better handle being run in
+  ThreadAwareModule are modules designed to better handle being run in
   parallel.
 
   How to implement this class:
@@ -198,9 +198,7 @@ class ThreadAwareModule(BaseModule):
     deepcopy'd, but other containers are shallow copied - so all instances of
     the module can access and modify them by reference"""
     state = deepcopy(self.state, memo)
-    copy = ThreadAwareModule(state) # type: ignore
-    copy._thread_lock = threading.Lock()
-    copy.__class__ = type(self)
+    copy = type(self)(state)
 
     # Deep copy the containers to thread on, shallow copy the rest.
     for key, container_list in self.store.items():
@@ -219,26 +217,26 @@ class ThreadAwareModule(BaseModule):
 
   @staticmethod
   @abc.abstractmethod
-  def StaticPreSetUp() -> None:
+  def PreSetUp() -> None:
     """Carries out optional SetUp actions that only need to be performed once,
     regardless of the number of class instantiations. Called before SetUp."""
 
   @staticmethod
   @abc.abstractmethod
-  def StaticPostSetUp() -> None:
+  def PostSetUp() -> None:
     """Carries out optional SetUp actions that only need to be performed once,
     regardless of the number of class instantiations. Called after SetUp."""
 
   @staticmethod
   @abc.abstractmethod
-  def StaticPreProcess() -> None:
+  def PreProcess() -> None:
     """Carries out optional Process actions that only need to be performed
     once, regardless of the number of class instantiations. Called before
     Process."""
 
   @staticmethod
   @abc.abstractmethod
-  def StaticPostProcess() -> None:
+  def PostProcess() -> None:
     """Carries out optional Process actions that only need to be performed
     once, regardless of the number of class instantiations. Called after
     Process."""
