@@ -79,8 +79,8 @@ class ThreadAwareConsumerModule(module.ThreadAwareModule):
 
     container.value += ' appended'
 
-    for container in self.state.GetContainers(TestContainerTwo):
-      container.value += ' appended'
+    for c in self.state.GetContainers(TestContainerTwo):
+      c.value += ' appended'
 
     with self.output_lock:
       new_container = TestContainerThree('output ' + self.output_values.pop())
