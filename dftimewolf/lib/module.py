@@ -6,7 +6,6 @@ import logging
 # Some AttributeErrors occurred when trying to access logging.handlers, so
 # we import them separately
 from logging import handlers
-import threading
 import traceback
 import sys
 
@@ -177,8 +176,6 @@ class ThreadAwareModule(BaseModule):
     """
     super(ThreadAwareModule, self).__init__(
         state, name=name, critical=critical)
-    self._thread_lock = threading.Lock()
-    self.store = {}  # type: Dict[str, List[interface.AttributeContainer]]
 
   @staticmethod
   @abc.abstractmethod
@@ -224,3 +221,10 @@ class ThreadAwareModule(BaseModule):
   @abc.abstractmethod
   def GetThreadPoolSize() -> int:
     """Returns the maximum number of threads for this module."""
+
+  @staticmethod
+  def KeepThreadedContainersInState() -> bool:
+    """Whether to keep the containers that are used to thread on in the state,
+    or pop them. Default behaviour is to keep the containers. Override this
+    mthod to return false to pop them from the state."""
+    return True

@@ -329,6 +329,9 @@ class DFTimewolfState(object):
           if fut.exception():
             raise fut.exception() # type: ignore
 
+        if not module.KeepThreadedContainersInState():
+          self.GetContainers(module.GetThreadOnContainerType(), True)
+
         module.PostProcess()
       else:
         module.Process()
