@@ -275,10 +275,10 @@ class DFTimewolfState(object):
 
     try:
       if isinstance(module, ThreadAwareModule):
-        module.StaticPreSetUp()
+        module.PreSetUp()
       module.SetUp(**new_args)
       if isinstance(module, ThreadAwareModule):
-        module.StaticPostSetUp()
+        module.PostSetUp()
     except errors.DFTimewolfError:
       msg = "A critical error occurred in module {0:s}, aborting execution."
       logger.critical(msg.format(module.name))
@@ -345,7 +345,7 @@ class DFTimewolfState(object):
             if not isinstance(container, module.GetThreadOnContainerType()):
               module.StoreContainer(container)
 
-        module.StaticPreProcess()
+        module.PreProcess()
 
         # Feed the Thread On containers back to the module one at a time for
         # processing and launch the threads
@@ -367,11 +367,17 @@ class DFTimewolfState(object):
 
         # Collect any output containers
         for m in modules:
+          # First the ThreadOn type
           for return_container in \
               m.GetContainers(module.GetThreadOnContainerType(), True):
             return_containers.append(return_container)
+          # Then any containers of a new type we didn't already have
+          for container_name, container_list in m.store.items():
+            if container_name not in self.store.keys():
+              for container in container_list:
+                return_containers.append(container)
 
-        module.StaticPostProcess()
+        module.PostProcess()
 
         # Add the return containers back to the state - Clearing existing first.
         self.GetContainers(module.GetThreadOnContainerType(), True)

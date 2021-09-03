@@ -2,10 +2,14 @@
 """Contains dummy modules used in thread aware tests."""
 
 from typing import Dict, Any
+import threading
 import time
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import interface
+
+output_values = ['one', 'two', 'three']
+output_lock = threading.Lock()
 
 class TestContainer(interface.AttributeContainer):
   """Test attribute container."""
@@ -23,6 +27,15 @@ class TestContainerTwo(interface.AttributeContainer):
 
   def __init__(self, value: str) -> None:
     super(TestContainerTwo, self).__init__()
+    self.value = value
+
+class TestContainerThree(interface.AttributeContainer):
+  """Test attribute container."""
+
+  CONTAINER_TYPE = 'test_container_three'
+
+  def __init__(self, value: str) -> None:
+    super(TestContainerThree, self).__init__()
     self.value = value
 
 
@@ -65,6 +78,10 @@ class ThreadAwareConsumerModule(module.ThreadAwareModule):
       container.value += ' appended'
     self.GetContainers(TestContainerTwo)[0].value += ' appended'
 
+    with output_lock:
+      container = TestContainerThree('output ' + output_values.pop())
+    self.StoreContainer(container)
+
   @staticmethod
   def GetThreadOnContainerType():
     return TestContainer
@@ -74,17 +91,17 @@ class ThreadAwareConsumerModule(module.ThreadAwareModule):
     return 2
 
   @staticmethod
-  def StaticPreSetUp() -> None:
+  def PreSetUp() -> None:
     print("ThreadAwareConsumerModule Static Pre Set Up")
 
   @staticmethod
-  def StaticPostSetUp() -> None:
+  def PostSetUp() -> None:
     print("ThreadAwareConsumerModule Static Post Set Up")
 
   @staticmethod
-  def StaticPreProcess() -> None:
+  def PreProcess() -> None:
     print("ThreadAwareConsumerModule Static Pre Process")
 
   @staticmethod
-  def StaticPostProcess() -> None:
+  def PostProcess() -> None:
     print("ThreadAwareConsumerModule Static Post Process")

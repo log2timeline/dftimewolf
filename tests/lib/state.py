@@ -226,16 +226,16 @@ class StateTest(unittest.TestCase):
 
   # pylint: disable=line-too-long
   @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.Process')
-  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.StaticPreSetUp')
-  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.StaticPostSetUp')
-  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.StaticPreProcess')
-  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.StaticPostProcess')
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PreSetUp')
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PostSetUp')
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PreProcess')
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PostProcess')
   # pylint: enable=line-too-long
   def testProcessThreadAwareModule(self,
-      mock_static_post_process,
-      mock_static_pre_process,
-      mock_static_post_setup,
-      mock_static_pre_setup,
+      mock_post_process,
+      mock_pre_process,
+      mock_post_setup,
+      mock_pre_setup,
       mock_threaded_process):
     """Tests the ThreadAwareModules process functions are correctly called."""
     test_state = state.DFTimewolfState(config.Config)
@@ -244,10 +244,10 @@ class StateTest(unittest.TestCase):
     test_state.SetupModules()
     test_state.RunModules()
     self.assertEqual(mock_threaded_process.call_count, 3)
-    self.assertEqual(mock_static_post_process.call_count, 1)
-    self.assertEqual(mock_static_pre_process.call_count, 1)
-    self.assertEqual(mock_static_post_setup.call_count, 1)
-    self.assertEqual(mock_static_pre_setup.call_count, 1)
+    self.assertEqual(mock_post_process.call_count, 1)
+    self.assertEqual(mock_pre_process.call_count, 1)
+    self.assertEqual(mock_post_setup.call_count, 1)
+    self.assertEqual(mock_pre_setup.call_count, 1)
     self.assertEqual(3,
         len(test_state.GetContainers(thread_aware_modules.TestContainer)))
 
@@ -261,7 +261,8 @@ class StateTest(unittest.TestCase):
 
     # With no mocks, the first module generates 3 TestContainers, and 1
     # TestContainerTwo. The Test ThreadAwareConsumerModule is threaded on
-    # and modifies TestContainer, and modifies TestContainerTwo.
+    # and modifies TestContainer, modifies TestContainerTwo, and generates
+    # a TestContainerThree each.
     values = [container.value for container in test_state.GetContainers(
         thread_aware_modules.TestContainer)]
     expected_values = ['one appended', 'two appended', 'three appended']
@@ -272,6 +273,12 @@ class StateTest(unittest.TestCase):
             thread_aware_modules.TestContainerTwo)[0].value,
         'one,two,three appended appended appended'
         )
+
+    values = [container.value for container in test_state.GetContainers(
+        thread_aware_modules.TestContainerThree)]
+    expected_values = ['output one', 'output two', 'output three']
+
+    self.assertEqual(sorted(values), sorted(expected_values))
 
   @mock.patch('tests.test_modules.modules.DummyModule2.Process')
   @mock.patch('tests.test_modules.modules.DummyModule1.Process')
