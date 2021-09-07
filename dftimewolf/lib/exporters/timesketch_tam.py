@@ -165,7 +165,7 @@ class TimesketchExporterThreaded(module.ThreadAwareModule):
       name = name if name else container.name
       name = name.replace(' ', '_').replace('-', '_')
       timeline_name = '{0:s}_{1:s}'.format(
-          recipe_name, '_'.join(name))
+          recipe_name, name)
     else:
       timeline_name = recipe_name
 
