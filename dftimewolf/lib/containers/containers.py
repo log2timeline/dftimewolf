@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """Attribute container definitions."""
 
+from __future__ import annotations
+
 from datetime import datetime
 from typing import Optional, Union, List, TYPE_CHECKING, Dict, Any
 
@@ -331,3 +333,68 @@ class WorkspaceLogs(interface.AttributeContainer):
     self.path = path
     self.application_name = application_name
     self.user_key = user_key
+
+
+class GCSObject(interface.AttributeContainer):
+  """GCS Objects container.
+
+  Attributes:
+    path (str): GCS object path.
+  """
+  CONTAINER_TYPE = 'gcs_object'
+
+  def __init__(self, path: str):
+    """Initializes the GCS object container.
+
+    Args:
+      path (str): GCS object paths.
+    """
+    super(GCSObject, self).__init__()
+    self.path = path if path.startswith('gs://') \
+        else 'gs://' + path
+
+
+class AWSS3Object(interface.AttributeContainer):
+  """S3 Object container.
+
+  Attributes:
+    path (str): S3 Object path.
+  """
+
+  CONTAINER_TYPE = 'aws_s3_object'
+
+  def __init__(self, path: str):
+    """Initialise an S3Image object.
+
+    Args:
+      path (str): S3 object path.
+    """
+    super(AWSS3Object, self).__init__()
+    self.path = path if path.startswith('s3://') else \
+        's3://' + path
+
+
+class AWSVolume(interface.AttributeContainer):
+  """Attribute container for an AWS Volume.
+
+  Attributes:
+    vol_id (str): The volume id (vol-xxxxxxxx)."""
+
+  CONTAINER_TYPE = 'awsvolume'
+
+  def __init__(self, vol_id: str) -> None:
+    super(AWSVolume, self).__init__()
+    self.vol_id = vol_id
+
+
+class AWSSnapshot(interface.AttributeContainer):
+  """Attribute container for an AWS Volume.
+
+  Attributes:
+    snap_id (str): The volume id (snap-xxxxxxxx)."""
+
+  CONTAINER_TYPE = 'awssnapshot'
+
+  def __init__(self, snap_id: str) -> None:
+    super(AWSSnapshot, self).__init__()
+    self.snap_id = snap_id

@@ -64,7 +64,26 @@ class RemoteFSPathDataTest(unittest.TestCase):
 
     self.assertEqual(attribute_names, expected_attribute_names)
 
+class S3VolumeImageContainerTest(unittest.TestCase):
+  """Tests for the attribute container interface."""
 
+  def testAppendS3Image(self):
+    """Tests the AppendS3Path function."""
+    image_path = 's3://bucket/path/image.bin'
+    hash_paths=[
+      's3://bucket/path/log.txt',
+      's3://bucket/path/hlog.txt',
+      's3://bucket/path/mlog.txt']
+    container = containers.S3VolumeImage(image_path, hash_paths)
+
+    image_path_no_prefix = 'bucket/path/image.bin'
+    hash_paths_no_prefix = [
+      'bucket/path/log.txt',
+      'bucket/path/hlog.txt',
+      'bucket/path/mlog.txt']
+    no_prefix_container = containers.S3VolumeImage(image_path, hash_paths)
+
+    self.assertEqual(no_prefix_container, container)
 
 if __name__ == '__main__':
   unittest.main()
