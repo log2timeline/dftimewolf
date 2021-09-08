@@ -9,22 +9,27 @@
       "args": {
         "hashes": "@hashes",
         "vt_api_key": "@vt_api_key",
-        "type": "pcap",
-        "action": "@action"
+        "action": "@action",
+        "output_path": "@directory"
       }
     },
     {
       "wants": ["VTCollector"],
       "name": "LocalFilesystemCopy",
       "args": {
-        "target_directory": "@directory"
+        "target_directory": "@directory",
+        "compress": false
       }
     },
     {
       "wants": ["LocalFilesystemCopy"],
       "name": "TimesketchExporter",
       "args": {
-        "sketch_id": "@sketch_id"
+        "incident_id": "@incident_id",
+        "token_password": "@token_password",
+        "sketch_id": "@sketch_id",
+        "analyzers": null,
+        "wait_for_timelines": "@wait_for_timelines"
       },
       "analyzers": ""
     }
@@ -37,7 +42,18 @@
       "String denoting action (download/hash/stat) to take",
       "download"
     ],
-    ["--vt_api_key", "Virustotal API key", "admin"],
-    ["--sketch_id", "Sketch to which the timeline should be added", null]
+    ["--incident_id", "Incident ID (used for Timesketch description)", null],
+    ["--sketch_id", "Sketch to which the timeline should be added", null],
+    [
+      "--token_password",
+      "Optional custom password to decrypt Timesketch credential file with",
+      ""
+    ],
+    [
+      "--wait_for_timelines",
+      "Whether to wait for timelines to finish processing.",
+      true
+    ],
+    ["--vt_api_key", "Virustotal API key", "admin"]
   ]
 }
