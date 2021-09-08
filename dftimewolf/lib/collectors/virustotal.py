@@ -108,7 +108,7 @@ class VTCollector(module.BaseModule):
 
       if self.client is None:
         self.ModuleError(
-            f'Error creating Virustotal Client instance',
+            'Error creating Virustotal Client instance',
             critical=True,
         )
         return
@@ -162,9 +162,8 @@ class VTCollector(module.BaseModule):
                 output_path, error),
             critical=True,
         )
-        """
-        Below should never be reached, but Either all return statements in 
-        a function should return an expression, or none of them should. 
+        """Below should never be reached, but Either all return statements in
+        a function should return an expression, or none of them should.
         (inconsistent-return-statements)
         """
         return tempfile.mkdtemp()
@@ -267,7 +266,7 @@ class VTCollector(module.BaseModule):
             field_values.append(str(len(packet[layer_type].fields[field])))
           else:
             field_values.append(packet[layer_type].fields[field])
-        except Exception as e:  # pylint: disable=bare-except
+        except Exception as e:  #pylint: disable=bare-except
           self.logger.exception(e)
           field_values.append("")
 
