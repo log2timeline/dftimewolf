@@ -19,14 +19,15 @@ from dftimewolf.lib.state import DFTimewolfState
 
 # Monkey patching the ProtobufEntry because of various issues, notably
 # https://github.com/googleapis/google-cloud-python/issues/7918
+
 def _CustomToAPIRepr(self: entries.ProtobufEntry) -> Dict[str, Any]:
   """API repr (JSON format) for entry."""
-  info = super(entries.ProtobufEntry, self).to_api_repr()  # type: Dict[str, Any]  # pylint: disable=line-too-long
-  info['protoPayload'] = self.payload
-  return info
+  info = super(entries.ProtobufEntry, self).to_api_repr()  # type: ignore
+  info['protoPayload'] = self.payload  # type: ignore
+  return info  # type: ignore
 
 
-entries.ProtobufEntry.to_api_repr = _CustomToAPIRepr
+entries.ProtobufEntry.to_api_repr = _CustomToAPIRepr  # type: ignore
 
 
 class GCPLogsCollector(module.BaseModule):
@@ -62,12 +63,12 @@ class GCPLogsCollector(module.BaseModule):
 
     try:
       if self._project_name:
-        logging_client = logging.Client(_use_grpc=False,
+        logging_client = logging.Client(_use_grpc=False,  # type: ignore
                                         project=self._project_name)
       else:
-        logging_client = logging.Client(_use_grpc=False)
+        logging_client = logging.Client(_use_grpc=False)  # type: ignore
 
-      results = logging_client.list_entries(
+      results = logging_client.list_entries(  # type: ignore
           order_by=logging.DESCENDING,
           filter_=self._filter_expression,
           page_size=1000)
@@ -120,7 +121,7 @@ class GCPLogsCollector(module.BaseModule):
             'GCP resource not found. Maybe a typo in the project name?')
       self.ModuleError(str(exception), critical=True)
 
-    self.logger.info('Downloaded logs to {0:s}'.format(output_path))
+    self.logger.success('Downloaded logs to {0:s}'.format(output_path))
     output_file.close()
 
     logs_report = containers.GCPLogs(

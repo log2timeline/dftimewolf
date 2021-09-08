@@ -71,7 +71,7 @@ class GoogleCloudCollector(module.BaseModule):
           self.analysis_project.project_id,
           self.analysis_project.default_zone,
           disk_name=disk.name)
-      self.logger.info('Disk {0:s} successfully copied to {1:s}'.format(
+      self.logger.success('Disk {0:s} successfully copied to {1:s}'.format(
           disk.name, new_disk.name))
       if self._gcp_label:
         new_disk.AddLabels(self._gcp_label)
@@ -170,7 +170,7 @@ class GoogleCloudCollector(module.BaseModule):
     try:
       if self.remote_instance_name:
         self.remote_project.compute.GetInstance(self.remote_instance_name)
-    except ResourceNotFoundError as exception:
+    except ResourceNotFoundError:
       self.ModuleError(
         message='Instance "{0:s}" not found or insufficient permissions'.format(
           self.remote_instance_name),
@@ -185,7 +185,7 @@ class GoogleCloudCollector(module.BaseModule):
             'gcp-forensics-vm',
             common.COMPUTE_NAME_LIMIT)
 
-      self.logger.info('Your analysis VM will be: {0:s}'.format(
+      self.logger.success('Your analysis VM will be: {0:s}'.format(
           analysis_vm_name))
       self.logger.info('Complimentary gcloud command:')
       self.logger.info(

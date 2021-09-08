@@ -25,6 +25,7 @@
             "hostname": "@hostname",
             "user": null,
             "id_file": null,
+            "extra_ssh_options": [],
             "check_ssh": true,
             "direction": "upload",
             "multiplexing": true
@@ -50,6 +51,7 @@
             "hostname": "@hostname",
             "user": null,
             "id_file": null,
+            "extra_ssh_options": [],
             "check_ssh": true,
             "direction": "download",
             "multiplexing": true

@@ -78,6 +78,7 @@ class WorkspaceAuditTimesketch(BaseModule):
             'Encountered a parameter with no name. '
             'Full parameter dictionary: {0:s}'.format(str(parameters)))
         continue
+      name = name.lower()
       value = parameter.get('value')  # type: Optional[str]
       if not value:
         multivalue = parameter.get('multiValue', '')  # type: str
@@ -95,7 +96,7 @@ class WorkspaceAuditTimesketch(BaseModule):
     """
     application_name = timesketch_record.get('applicationName')
     format_strings = self._all_application_format_strings.get(application_name)
-    event_name = timesketch_record.get('_event_name')
+    event_name = timesketch_record.get('_event_name', '').lower()
     format_string = format_strings.get(event_name)
 
     message = ''
@@ -178,8 +179,9 @@ class WorkspaceAuditTimesketch(BaseModule):
           output_file.write('\n')
     output_file.close()
 
-    timeline_name = 'Workspace {0:s} logs {1:s}"'.format(
-        logs_container.application_name, logs_container.filter_expression)
+    timeline_name = 'Workspace {0:s} logs {1:s} {2:s}"'.format(
+        logs_container.application_name, logs_container.user_key,
+        logs_container.filter_expression)
 
     container = containers.File(name=timeline_name, path=output_path)
     self.state.StoreContainer(container)

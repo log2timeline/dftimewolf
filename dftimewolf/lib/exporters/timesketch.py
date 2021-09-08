@@ -200,7 +200,7 @@ class TimesketchExporter(module.BaseModule):
     host_url = api_root.partition('api/v1')[0]
     sketch_url = '{0:s}sketches/{1:d}/'.format(host_url, sketch.id)
     message = 'Your Timesketch URL is: {0:s}'.format(sketch_url)
-    self.logger.info(message)
+    self.logger.success(message)
     container = containers.Report(
         module_name='TimesketchExporter',
         text=message,

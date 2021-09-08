@@ -1,7 +1,7 @@
 """Opens an SSH connection to a server using ControlMaster directives."""
 
 import subprocess
-from typing import Optional
+from typing import Optional, List
 
 from dftimewolf.lib import module
 from dftimewolf.lib.modules import manager as modules_manager
@@ -26,21 +26,26 @@ class SSHMultiplexer(module.PreflightModule):
     self.hostname = str()
     self.user = None # type: Optional[str]
     self.id_file = None  # type: Optional[str]
+    self.extra_ssh_options = [] # type: Optional[List[str]]
 
   def SetUp(self,  # pylint: disable=arguments-differ
             hostname: str,
-            user: Optional[str]=None,
-            id_file: Optional[str]=None) -> None:
+            user: Optional[str],
+            id_file: Optional[str],
+            extra_ssh_options: Optional[List[str]]) -> None:
     """Sets up the SSH multiplexer module's attributes.
 
     Args:
       hostname (str): The hostname we want to multiplex connections to.
       user (str): The username to connect as.
       id_file (str): SSH private key to use.
+      extra_ssh_options (List[str]): Extra -o options to be passed on to the
+          SSH command.
     """
     self.hostname = hostname
     self.user = user
     self.id_file = id_file
+    self.extra_ssh_options = extra_ssh_options
 
   def Process(self) -> None:
     """Open a shared SSH connection."""
@@ -54,6 +59,8 @@ class SSHMultiplexer(module.PreflightModule):
        '-o', 'ControlPersist=yes',
        '-o', 'ControlPath=~/.ssh/ctrl-%C',
     ])
+    if self.extra_ssh_options:
+      command.extend(self.extra_ssh_options)
     command.extend([self.hostname, 'true'])  # execute `true` and return
     self.logger.debug(
         'Opening shared SSH connection to: {0:s}'.format(' '.join(command)))

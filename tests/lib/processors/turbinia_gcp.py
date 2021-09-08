@@ -178,9 +178,9 @@ class TurbiniaProcessorTest(unittest.TestCase):
     # pylint: disable=no-member
     turbinia_processor.client.send_request.assert_called()
     request = turbinia_processor.client.send_request.call_args[0][0]
-    self.assertEqual(request.recipe['sketch_id'], 4567)
+    self.assertEqual(request.recipe['globals']['sketch_id'], 4567)
     self.assertListEqual(
-        request.recipe['jobs_denylist'],
+        request.recipe['globals']['jobs_denylist'],
         ['StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob'])
     turbinia_processor.client.get_task_data.assert_called()
     # pylint: disable=protected-access

@@ -4,6 +4,7 @@
 Use it to track errors, abort on global failures, clean up after modules, etc.
 """
 
+from concurrent.futures import ThreadPoolExecutor
 import importlib
 import logging
 import threading
@@ -14,6 +15,7 @@ from dftimewolf.config import Config
 from dftimewolf.lib import errors, utils
 from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.modules import manager as modules_manager
+from dftimewolf.lib.module import ThreadAwareModule
 
 if TYPE_CHECKING:
   from dftimewolf.lib import module as dftw_module
@@ -93,14 +95,17 @@ class DFTimewolfState(object):
     for module in self.recipe['modules'] + self.recipe.get('preflights', []):
       name = module['name']
       if name not in module_locations:
-        msg = f'Module {name} cannot be found. It may not have been declared.'
+        msg = (f'In {self.recipe["name"]}: module {name} cannot be found. '
+               'It may not have been declared.')
         raise errors.RecipeParseError(msg)
       logger.debug('Loading module {0:s} from {1:s}'.format(
           name, module_locations[name]))
+
+      location = module_locations[name]
       try:
-        importlib.import_module(module_locations[name])
+        importlib.import_module(location)
       except ModuleNotFoundError as exception:
-        msg = f'Cannot find Python module for {name}: {exception}'
+        msg = f'Cannot find Python module for {name} ({location}): {exception}'
         raise errors.RecipeParseError(msg)
 
   def LoadRecipe(self,
@@ -247,8 +252,12 @@ class DFTimewolfState(object):
     module = self._module_pool[runtime_name]
 
     try:
+      if isinstance(module, ThreadAwareModule):
+        module.PreSetUp()
       module.SetUp(**new_args)
-    except errors.DFTimewolfError as exception:
+      if isinstance(module, ThreadAwareModule):
+        module.PostSetUp()
+    except errors.DFTimewolfError:
       msg = "A critical error occurred in module {0:s}, aborting execution."
       logger.critical(msg.format(module.name))
     except Exception as exception:  # pylint: disable=broad-except
@@ -305,8 +314,28 @@ class DFTimewolfState(object):
     logger.info('Running module: {0:s}'.format(runtime_name))
 
     try:
-      module.Process()
-    except errors.DFTimewolfError as exception:
+      if isinstance(module, ThreadAwareModule):
+        module.PreProcess()
+
+        futures = []
+        with ThreadPoolExecutor(max_workers=module.GetThreadPoolSize()) \
+            as executor:
+          for container in \
+              self.GetContainers(module.GetThreadOnContainerType()):
+            futures.append(
+                executor.submit(module.Process, container))
+
+        for fut in futures:
+          if fut.exception():
+            raise fut.exception() # type: ignore
+
+        if not module.KeepThreadedContainersInState():
+          self.GetContainers(module.GetThreadOnContainerType(), True)
+
+        module.PostProcess()
+      else:
+        module.Process()
+    except errors.DFTimewolfError:
       logger.critical(
           "Critical error in module {0:s}, aborting execution".format(
               module.name))
