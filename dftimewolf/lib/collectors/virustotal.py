@@ -11,7 +11,7 @@ from typing import Optional
 import pandas as pd
 import pytz
 import vt
-from scapy import all as scapy_all
+from scapy.all import IP, TCP
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
@@ -170,8 +170,8 @@ class VTCollector(module.BaseModule):
     elif not os.path.isdir(output_path):
       self.ModuleError(output_path + " is not a directory:", critical=True)
       return tempfile.mkdtemp()
-    else:
-      return tempfile.mkdtemp()
+    
+    return tempfile.mkdtemp()
 
   def _isHashKnownToVT(self, vt_hash: str) -> bool:
     """Checks if a hash is known to VT.
@@ -223,30 +223,30 @@ class VTCollector(module.BaseModule):
           Returns:
               Pandas Dataframe: Parsed Pandas Dateframe.
           """
-    packets = scapy_all.rdpcap(path)
+    packets = scapy.all.rdpcap(path)
 
     # Collect field names from IP/TCP/UDP
     # These will be columns in dataframe
-    ip_fields = [(field.name) for field in scapy_all.IP().fields_desc]
-    tcp_fields = [(field.name) for field in scapy_all.TCP().fields_desc]
+    ip_fields = [(field.name) for field in scapy.all.IP().fields_desc]
+    tcp_fields = [(field.name) for field in scapy.all.TCP().fields_desc]
     # TODO redo UDP, currently disabled
-    #udp_fields = [(field.name) for field in scapy_all.UDP().fields_desc]
+    #udp_fields = [(field.name) for field in scapy.all.UDP().fields_desc]
 
     ip_fields_new = [
-        ("ip_" + field.name) for field in scapy_all.IP().fields_desc
+        ("ip_" + field.name) for field in scapy.all.IP().fields_desc
     ]
     tcp_fields_new = [
-        ("tcp_" + field.name) for field in scapy_all.TCP().fields_desc
+        ("tcp_" + field.name) for field in scapy.all.TCP().fields_desc
     ]
     #udp_fields_new = [
-    #    ("udp_" + field.name) for field in scapy_all.UDP().fields_desc
+    #    ("udp_" + field.name) for field in scapy.all.UDP().fields_desc
     #]
 
     dataframe_fields = (
         ip_fields_new + ["time"] + tcp_fields_new +
         ["payload", "datetime", "raw"])
 
-    for packet in packets[scapy_all.IP]:
+    for packet in packets[scapy.all.IP]:
       # Field array for each row of DataFrame
 
       field_values: List[str] = []
@@ -254,19 +254,19 @@ class VTCollector(module.BaseModule):
       for field in ip_fields:
         if field == "options":
           # Retrieving number of options defined in IP Header
-          field_values.append(str(len(packet[scapy_all.IP].fields[field])))
+          field_values.append(str(len(packet[scapy.all.IP].fields[field])))
         else:
-          field_values.append(packet[scapy_all.IP].fields[field])
+          field_values.append(packet[scapy.all.IP].fields[field])
 
       field_values.append(packet.time)
-      layer_type = type(packet[scapy_all.IP].payload)
+      layer_type = type(packet[scapy.all.IP].payload)
       for field in tcp_fields:
         try:
           if field == "options":
             field_values.append(str(len(packet[layer_type].fields[field])))
           else:
             field_values.append(packet[layer_type].fields[field])
-        except Exception as e:  #pylint: disable=bare-except
+        except Exception as e:  # pylint: disable=broad-except
           self.logger.exception(e)
           field_values.append("")
 
