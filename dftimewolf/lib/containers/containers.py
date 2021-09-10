@@ -401,9 +401,9 @@ class WorkspaceLogs(interface.AttributeContainer):
       application_name: str,
       path: str,
       filter_expression: str,
-      user_key: str = '',
-      start_time: str='',
-      end_time: str='') -> None:
+      user_key: Optional[str ]= '',
+      start_time: Optional[str]='',
+      end_time: Optional[str]='') -> None:
     """Initializes the Workspace logs container.
 
     Args:
