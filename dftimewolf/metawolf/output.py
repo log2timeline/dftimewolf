@@ -61,6 +61,7 @@ class MetawolfProcess:
   """MetawolfProcess captures all information about metawolf processes.
 
   Attributes:
+    metawolf_utils (MetawolfUtils): Metawolf utilities.
     process (Any): A subprocess.Popen or psutil.Process object, representing
         metawolf's process.
     session_id (str): The session ID this process belongs to.
@@ -81,7 +82,8 @@ class MetawolfProcess:
       session_id: Optional[str] = None,
       cmd: Optional[List[str]] = None,
       output_id: Optional[int] = None,
-      from_dict: Optional[Dict[str, str]] = None
+      from_dict: Optional[Dict[str, str]] = None,
+      metawolf_utils: Optional[utils.MetawolfUtils] = None
   ) -> None:
     """Initialize MetawolfProcess.
 
@@ -91,14 +93,19 @@ class MetawolfProcess:
           should be of the form [dftimewolf, recipe_name, recipe_arguments...].
       output_id (int): Optional. The output ID that this process corresponds to.
       from_dict (Dict[str, str]): Optional. A json-like dictionary that
-        contains the attributes of this object.
+          contains the attributes of this object.
+      metawolf_utils (MetawolfUtils): Optional. Metawolf utilities. If not
+          provided, a default utility object is created.
 
     Raises:
       ValueError: If the cmd does not match a valid dftimewolf invocation.
     """
+    # pylint: disable=line-too-long
+    self.metawolf_utils = metawolf_utils if metawolf_utils else utils.MetawolfUtils()
+    # pylint: enable=line-too-long
     process = None
     recipe = ''
-    if cmd and cmd[1] in utils.MetawolfUtils().GetRecipes():
+    if cmd and cmd[1] in self.metawolf_utils.GetRecipes():
       recipe = cmd[1]
 
     if not from_dict:
