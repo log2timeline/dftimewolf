@@ -179,7 +179,7 @@ class WorkspaceAuditTimesketch(BaseModule):
           output_file.write('\n')
     output_file.close()
 
-    timeline_name = 'Workspace {0:s} logs {1:s} {2:s}"'.format(
+    timeline_name = 'Workspace {0:s} logs {1:s} {2:s}'.format(
         logs_container.application_name, logs_container.user_key,
         logs_container.filter_expression)
 
