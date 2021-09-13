@@ -1,5 +1,3 @@
-    for c in test_state.GetContainers(containers.GCSObject):
-      print(c.path)
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Tests the GoogleCloudCollector."""

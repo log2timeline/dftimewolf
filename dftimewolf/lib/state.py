@@ -318,6 +318,13 @@ class DFTimewolfState(object):
         module.PreProcess()
 
         futures = []
+        logger.info(
+            'Running {0:d} threads, max {1:d} simultaneous for module {2:s}'\
+            .format(
+                len(self.GetContainers(module.GetThreadOnContainerType())),
+                module.GetThreadPoolSize(),
+                runtime_name))
+
         with ThreadPoolExecutor(max_workers=module.GetThreadPoolSize()) \
             as executor:
           for container in \

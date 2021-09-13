@@ -171,7 +171,7 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
 
   @staticmethod
   def GetThreadOnContainerType():
-    return containers.AWSVolume
+    return containers.AWSSnapshot
 
   def GetThreadPoolSize(self):
     return 10

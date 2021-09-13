@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Export objects from AWS S3 to a GCP GCS bucket."""
 
+import re
 import time
 import threading
 from typing import Any, Optional
@@ -96,6 +97,11 @@ class S3ToGCSCopy(module.ThreadAwareModule):
 
   def Process(self, container: containers.AWSS3Object) -> None:
     """Creates and exports disk image to the output bucket."""
+    if self.filter:
+      if not re.compile(self.filter).match(container.path):
+        logger.info('{0:s} does not match filter. Skipping.')
+        return
+
     # We must create a new client for each thread, rather than use the class
     # member self.dest_project due to an underlying thread safety issue in
     # httplib2: https://github.com/googleapis/google-cloud-python/issues/3501

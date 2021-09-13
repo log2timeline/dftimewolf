@@ -15,7 +15,6 @@ class AWSVolumeSnapshotCollector(module.BaseModule):
   SetUp args, or via AWSVolume containers from a previous module.
 
   Attributes:
-    volumes: The volumes to copy, comma separated.
     region: The region the volumes exist in.
   """
 
@@ -26,7 +25,6 @@ class AWSVolumeSnapshotCollector(module.BaseModule):
     """Initializes a AWSVolumeToS3 collector."""
     super(AWSVolumeSnapshotCollector, self).__init__(
         state, name=name, critical=critical)
-    self.volumes: Any = ''
     self.region: Any = ''
 
   # pylint: disable=arguments-differ
@@ -36,7 +34,6 @@ class AWSVolumeSnapshotCollector(module.BaseModule):
     """Sets up the AWSVolumeToS3 collector.
 
     Args:
-      volumes (str): Comma seperated list of volume IDs.
       region (str): AWS region of the volumes.
     """
     self.region = region
@@ -54,7 +51,7 @@ class AWSVolumeSnapshotCollector(module.BaseModule):
 
     ec2 = boto3.client('ec2', region_name=self.region)
     try:
-      ec2.describe_volumes(VolumeIds=self.volumes)
+      ec2.describe_volumes(VolumeIds=volumes)
     except ec2.exceptions.ClientError as exception:
       self.ModuleError('Error encountered describing volumes: {0!s}'.\
         format(exception), critical=True)
