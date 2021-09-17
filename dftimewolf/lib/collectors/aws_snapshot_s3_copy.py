@@ -3,14 +3,14 @@
 
 import threading
 import time
-from typing import Any, Optional
+from typing import Any, Optional, Type
 import boto3
 
 from libcloudforensics.providers.aws import forensics
 from libcloudforensics.providers.aws.internal import account
 from libcloudforensics.errors import ResourceCreationError
 from dftimewolf.lib import module
-from dftimewolf.lib.containers import containers
+from dftimewolf.lib.containers import containers, interface
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 
@@ -54,6 +54,8 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
     self.region: str = ''
     self.subnet: Any = None
     self.ec2: Any = None
+    self.iam_details: Any = None
+    self.aws_account = None
 
   # pylint: disable=arguments-differ
   def SetUp(self,
@@ -74,13 +76,10 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
     self.region = region
     self.subnet = subnet
     self.ec2 = boto3.client('ec2', region_name=self.region)
-    self.iam_details = None
 
     if snapshots:
       for snap in snapshots.split(','):
         self.state.StoreContainer(containers.AWSSnapshot(snap))
-
-    self.aws_account = None
 
   def PreProcess(self) -> None:
     """Set up for the snapshot copy operation."""
@@ -95,7 +94,7 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
       s3.create_bucket(
         Bucket=self.bucket,
         CreateBucketConfiguration={'LocationConstraint': self.region})
-    
+
     # Check the snapshots exist
     try:
       self.ec2.describe_snapshots(
@@ -170,10 +169,10 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
     raise AWSSnapshotS3CopyException('No suitable availability zone found')
 
   @staticmethod
-  def GetThreadOnContainerType():
+  def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
     return containers.AWSSnapshot
 
-  def GetThreadPoolSize(self):
+  def GetThreadPoolSize(self) -> int:
     return 10
 
   def PreSetUp(self) -> None:

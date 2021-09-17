@@ -165,7 +165,7 @@ class ThreadAwareModule(BaseModule):
   def __init__(self,
                state: "state.DFTimewolfState",
                name: Optional[str]=None,
-               critical: bool=False) -> None:
+               critical: Optional[bool]=False) -> None:
     """Initializes a ThreadAwareModule.
 
     Args:

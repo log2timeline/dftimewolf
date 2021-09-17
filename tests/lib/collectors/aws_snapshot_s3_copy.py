@@ -270,7 +270,7 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     for snapshot in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']:
       test_state.StoreContainer(containers.AWSSnapshot(
-          snapshot['SnapshotId']))  
+          snapshot['SnapshotId']))
 
     collector = aws_snapshot_s3_copy.AWSSnapshotS3CopyCollector(test_state)
     collector.SetUp(None, FAKE_BUCKET, FAKE_REGION)

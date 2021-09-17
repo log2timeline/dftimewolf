@@ -121,7 +121,7 @@ class AWSVolumeSnapshotCollectorTest(unittest.TestCase):
 
     test_state = state.DFTimewolfState(config.Config)
     for volume in FAKE_VOLUME_LIST['Volumes']:
-      test_state.StoreContainer(containers.AWSVolume(volume['VolumeId']))
+      test_state.StoreContainer(containers.AWSVol(volume['VolumeId']))
 
     collector = aws_volume_snapshot.AWSVolumeSnapshotCollector(test_state)
     collector.SetUp(None, FAKE_REGION)

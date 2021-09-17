@@ -54,10 +54,14 @@ class S3ToGCSCopyTest(unittest.TestCase):
         FAKE_GCS_BUCKET,
         FAKE_S3_OBJECTS)
 
+    expected_objects = FAKE_S3_OBJECTS.split(',')
+    actual_objects = [c.path for \
+        c in test_state.GetContainers(containers.AWSS3Object)]
+
     self.assertEqual(FAKE_AWS_REGION, exporter.aws_region)
     self.assertEqual(FAKE_GCP_PROJECT_NAME, exporter.dest_project_name)
     self.assertEqual(FAKE_GCS_BUCKET, exporter.dest_bucket)
-    self.assertEqual(FAKE_S3_OBJECTS, exporter.s3_objects)
+    self.assertEqual(sorted(expected_objects), sorted(actual_objects))
 
   # pylint: disable=line-too-long
   @mock.patch('libcloudforensics.providers.gcp.internal.project.GoogleCloudProject')
@@ -126,7 +130,7 @@ class S3ToGCSCopyTest(unittest.TestCase):
 
     test_state = state.DFTimewolfState(config.Config)
     for c in FAKE_STATE_S3_OBJECT_LIST:
-      test_state.StoreContainer(c)      
+      test_state.StoreContainer(c)
 
     exporter = s3_to_gcs.S3ToGCSCopy(test_state)
     exporter.SetUp(FAKE_AWS_REGION,

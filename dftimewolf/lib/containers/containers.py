@@ -374,7 +374,7 @@ class AWSS3Object(interface.AttributeContainer):
         's3://' + path
 
 
-class AWSVolume(interface.AttributeContainer):
+class AWSVol(interface.AttributeContainer):
   """Attribute container for an AWS Volume.
 
   Attributes:
@@ -383,7 +383,7 @@ class AWSVolume(interface.AttributeContainer):
   CONTAINER_TYPE = 'awsvolume'
 
   def __init__(self, vol_id: str) -> None:
-    super(AWSVolume, self).__init__()
+    super(AWSVol, self).__init__()
     self.vol_id = vol_id
 
 
@@ -398,3 +398,15 @@ class AWSSnapshot(interface.AttributeContainer):
   def __init__(self, snap_id: str) -> None:
     super(AWSSnapshot, self).__init__()
     self.snap_id = snap_id
+
+
+class GCEDisk(interface.AttributeContainer):
+  """Attribute container definition for a GCE Disk object.
+  Attributes:
+    name (str): The disk name.
+  """
+  CONTAINER_TYPE = 'gcedisk'
+
+  def __init__(self, name: str) -> None:
+    super(GCEDisk, self).__init__()
+    self.name = name

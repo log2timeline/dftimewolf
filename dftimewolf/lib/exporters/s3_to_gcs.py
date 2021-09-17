@@ -2,17 +2,13 @@
 """Export objects from AWS S3 to a GCP GCS bucket."""
 
 import re
-import time
-import threading
-from typing import Any, Optional
+from typing import Any, Optional, Type
 
 from libcloudforensics.providers.gcp.internal import project as gcp_project
-from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk
-from libcloudforensics.errors import ResourceCreationError
 from libcloudforensics.providers.utils.storage_utils import SplitStoragePath
 from google.cloud.storage.client import Client as storage_client
 from dftimewolf.lib import module
-from dftimewolf.lib.containers import containers
+from dftimewolf.lib.containers import containers, interface
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 
@@ -50,7 +46,7 @@ class S3ToGCSCopy(module.ThreadAwareModule):
     self.dest_project_name: str = ''
     self.dest_project: gcp_project.GoogleCloudProject = ''
     self.dest_bucket: str = ''
-    self.filter = None
+    self.filter: Any = None
 
   # pylint: disable=arguments-differ
   def SetUp(self,
@@ -58,7 +54,7 @@ class S3ToGCSCopy(module.ThreadAwareModule):
             dest_project: str,
             dest_bucket: str,
             s3_objects: str='',
-            filter: str='') -> None:
+            object_filter: str='') -> None:
     """Sets up a copy operation from AWS S3 to GCP GCS.
 
     AWS objects to copy are sourced from either the state, or passed in here.
@@ -75,10 +71,10 @@ class S3ToGCSCopy(module.ThreadAwareModule):
     self.dest_project_name = dest_project
     self.dest_bucket = dest_bucket
     self.dest_project = gcp_project.GoogleCloudProject(self.dest_project_name)
-    self.s3_objects = s3_objects
+    self.filter = object_filter
 
-    if self.s3_objects:
-      for obj in self.s3_objects.split(','):
+    if s3_objects:
+      for obj in s3_objects.split(','):
         self.state.StoreContainer(containers.AWSS3Object(obj))
 
   def PreProcess(self) -> None:
@@ -98,8 +94,9 @@ class S3ToGCSCopy(module.ThreadAwareModule):
   def Process(self, container: containers.AWSS3Object) -> None:
     """Creates and exports disk image to the output bucket."""
     if self.filter:
-      if not re.compile(self.filter).match(container.path):
-        logger.info('{0:s} does not match filter. Skipping.')
+      if not re.match(self.filter, container.path):
+        self.logger.info('{0:s} does not match filter. Skipping.'\
+            .format(container.path))
         return
 
     # We must create a new client for each thread, rather than use the class
@@ -137,10 +134,10 @@ class S3ToGCSCopy(module.ThreadAwareModule):
     bucket.set_iam_policy(policy)
 
   @staticmethod
-  def GetThreadOnContainerType():
+  def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
     return containers.AWSS3Object
 
-  def GetThreadPoolSize(self):
+  def GetThreadPoolSize(self) -> int:
     return 10
 
   def PreSetUp(self) -> None:
@@ -149,7 +146,7 @@ class S3ToGCSCopy(module.ThreadAwareModule):
   def PostSetUp(self) -> None:
     pass
 
-  def PostProcess(self):
+  def PostProcess(self) -> None:
     pass
 
 

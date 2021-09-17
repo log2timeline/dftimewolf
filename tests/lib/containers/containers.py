@@ -63,3 +63,8 @@ class RemoteFSPathDataTest(unittest.TestCase):
     attribute_names = sorted(attribute_container.GetAttributeNames())
 
     self.assertEqual(attribute_names, expected_attribute_names)
+
+
+
+if __name__ == '__main__':
+  unittest.main()
