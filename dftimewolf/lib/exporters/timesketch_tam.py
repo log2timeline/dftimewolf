@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""Export processing results to Timesketch."""
+"""Export processing results to Timesketch.
+Threaded version of existing Timesketch module."""
 
 import re
 import time
@@ -16,7 +17,8 @@ from dftimewolf.lib.state import DFTimewolfState
 
 
 class TimesketchExporterThreaded(module.ThreadAwareModule):
-  """Exports a given set of plaso or CSV files to Timesketch.
+  """Exports a given set of plaso or CSV files to Timesketch. This is a
+  threaded version of an equivalent module.
 
   input: A list of paths to plaso or CSV files.
   output: A URL to the generated timeline.

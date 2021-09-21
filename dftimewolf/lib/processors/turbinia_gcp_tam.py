@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""Processes GCP cloud disks using Turbinia."""
+"""Processes GCP cloud disks using Turbinia.
+Threaded version of existing Turbinia module."""
 
 import getpass
 import os
@@ -22,7 +23,8 @@ if TYPE_CHECKING:
 
 # pylint: disable=abstract-method,no-member
 class TurbiniaProcessorThreadedBase(module.ThreadAwareModule):
-  """Base class for processing with Turbinia.
+  """Base class for processing with Turbinia. This is a threaded version of an
+  equivalent module.
 
   Attributes:
     turbinia_config_file (str): Full path to the Turbinia config file to use.
@@ -239,7 +241,8 @@ class TurbiniaProcessorThreadedBase(module.ThreadAwareModule):
 
 
 class TurbiniaGCPProcessorThreaded(TurbiniaProcessorThreadedBase):
-  """Processes Google Cloud (GCP) disks with Turbinia."""
+  """Processes Google Cloud (GCP) disks with Turbinia. This is a threaded
+  version of an equivalent module."""
 
   def __init__(self,
                state: "state.DFTimewolfState",
