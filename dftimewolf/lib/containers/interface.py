@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """The attribute container interface."""
-from typing import List
+from typing import List # pylint: disable=unused-import
 
 
 class AttributeContainer():
