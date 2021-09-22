@@ -26,9 +26,7 @@ class TimesketchExporterThreadedTest(unittest.TestCase):
   @mock.patch('dftimewolf.lib.timesketch_utils.GetApiClient')
   def testSetupWithSketchId(self, mock_GetApiClient):
     """Tests the SetUp function."""
-    mock_sketch = mock.Mock()
-    mock_sketch.id = 1234
-    mock_sketch.my_acl = ['write']
+    mock_sketch = mock.Mock(id=1234, my_acl=['write'])
     mock_api_client = mock.Mock()
     mock_api_client.get_sketch.return_value = mock_sketch
     mock_GetApiClient.return_value = mock_api_client
@@ -46,9 +44,7 @@ class TimesketchExporterThreadedTest(unittest.TestCase):
   @mock.patch('dftimewolf.lib.timesketch_utils.GetApiClient')
   def testSetupWithReadonlySketchId(self, mock_GetApiClient):
     """Tests the SetUp function."""
-    mock_sketch = mock.Mock()
-    mock_sketch.id = 1234
-    mock_sketch.my_acl = ['read']
+    mock_sketch = mock.Mock(id=1234, my_acl=['read'])
     mock_api_client = mock.Mock()
     mock_api_client.get_sketch.return_value = mock_sketch
     mock_GetApiClient.return_value = mock_api_client
@@ -69,9 +65,7 @@ class TimesketchExporterThreadedTest(unittest.TestCase):
   @mock.patch('dftimewolf.lib.timesketch_utils.GetApiClient')
   def testNewSketchCreation(self, mock_GetApiClient, _):
     """Tests the SetUp function."""
-    mock_sketch = mock.Mock()
-    mock_sketch.id = 1234
-    mock_sketch.my_acl = ['write']
+    mock_sketch = mock.Mock(id=1234, my_acl=['write'])
     mock_sketch.api.api_root = 'timesketch.com/api/v1'
     mock_api_client = mock.Mock()
     mock_api_client.get_sketch.return_value = None
@@ -106,9 +100,7 @@ class TimesketchExporterThreadedTest(unittest.TestCase):
   def testWaitForTimeline(
         self, mock_GetApiClient, unused_streamer, unused_sleep):
     """Tests the SetUp function."""
-    mock_sketch = mock.Mock()
-    mock_sketch.id = 1234
-    mock_sketch.my_acl = ['write']
+    mock_sketch = mock.Mock(id=1234, my_acl=['write'])
     mock_sketch.api.api_root = 'timesketch.com/api/v1'
 
     mock_api_client = mock.Mock()

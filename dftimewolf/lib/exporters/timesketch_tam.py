@@ -69,7 +69,7 @@ class TimesketchExporterThreaded(module.ThreadAwareModule):
       wait_for_timelines (bool): Whether to wait until timelines are processed
           in the Timesketch server or not.
     """
-    self.wait_for_timelines = bool(wait_for_timelines)
+    self.wait_for_timelines = wait_for_timelines
 
     self.timesketch_api = timesketch_utils.GetApiClient(
         self.state, token_password=token_password)
@@ -78,7 +78,7 @@ class TimesketchExporterThreaded(module.ThreadAwareModule):
           'Unable to get a Timesketch API client, try deleting the files '
           '~/.timesketchrc and ~/.timesketch.token', critical=True)
     self.incident_id = incident_id
-    self.sketch_id = int(sketch_id) if sketch_id else 0
+    self.sketch_id = sketch_id if sketch_id else 0
     self.sketch = None
 
     # Check that we have a timesketch session.
@@ -105,7 +105,7 @@ class TimesketchExporterThreaded(module.ThreadAwareModule):
     if analyzers and isinstance(analyzers, (tuple, list)):
       self._analyzers = analyzers
 
-  def _CreateSketch(self, incident_id: None=None) -> ts_sketch.Sketch:
+  def _CreateSketch(self, incident_id: Optional[str]=None) -> ts_sketch.Sketch:
     """Creates a new Timesketch sketch.
 
     Args:
@@ -157,14 +157,17 @@ class TimesketchExporterThreaded(module.ThreadAwareModule):
     return 0
 
   def Process(self, container: containers.File) -> None:
-    """Executes a Timesketch export."""
+    """Executes a Timesketch export.
+
+    Args:
+      container (containers.File): A container holding a File to import."""
 
     recipe_name = self.state.recipe.get('name', 'no_recipe')
 
     description = container.name
     if description:
       name = description.rpartition('.')[0]
-      name = name if name else container.name
+      name = name if name else description
       name = name.replace(' ', '_').replace('-', '_')
       timeline_name = '{0:s}_{1:s}'.format(
           recipe_name, name)

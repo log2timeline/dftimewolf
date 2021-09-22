@@ -83,7 +83,7 @@ class TurbiniaProcessorThreadedBase(module.ThreadAwareModule):
     gs_paths = []
     for task in task_data:
       # saved_paths may be set to None
-      saved_paths = task.get('saved_paths') or []
+      saved_paths = task.get('saved_paths', [])
       for path in saved_paths:
 
         if path.endswith('.plaso') or \
@@ -108,10 +108,8 @@ class TurbiniaProcessorThreadedBase(module.ThreadAwareModule):
           from GS.
 
     Returns:
-      list:
-        tuple: containing:
-          str: The timeline label for this path.
-          str: A local path where GS files have been copied to.
+      list[tuple[str, str]]: A List of tuples containing the timeline label for
+        this path, and a local path where GS files have been copied to.
     """
     # TODO: Externalize fetching files from GCS buckets to a different module.
 
@@ -157,7 +155,7 @@ class TurbiniaProcessorThreadedBase(module.ThreadAwareModule):
     if not self.turbinia_zone:
       self.turbinia_zone = turbinia_config.TURBINIA_ZONE
 
-    if self.project is None or self.turbinia_zone is None:
+    if not self.project or not self.turbinia_zone:
       self.ModuleError(
           'project or turbinia_zone are not all specified, bailing out',
           critical=True)
@@ -180,7 +178,7 @@ class TurbiniaProcessorThreadedBase(module.ThreadAwareModule):
     """Creates and sends a Turbinia processing request.
 
     Args:
-      evidence_(turbinia.evidence.Evidence): The evience to process
+      evidence_(turbinia.evidence.Evidence): The evidence to process
 
     Returns:
       list[dict]: The Turbinia task data
@@ -292,7 +290,10 @@ class TurbiniaGCPProcessorThreaded(TurbiniaProcessorThreadedBase):
 
   # pylint: disable=arguments-renamed
   def Process(self, disk_container: containers.GCEDisk) -> None:
-    """Process a disk with Turbinia."""
+    """Process a disk with Turbinia.
+
+    Args:
+      disk_container: Container referencing a GCE Disk."""
     log_file_path = os.path.join(self._output_path, 'turbinia-{0:s}.log'\
         .format(disk_container.name))
     print('Turbinia log file: {0:s}'.format(log_file_path))
