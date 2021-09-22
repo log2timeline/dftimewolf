@@ -2,6 +2,7 @@
 """Export objects from AWS S3 to a GCP GCS bucket."""
 
 import re
+import time
 from typing import Any, Optional, Type
 
 from libcloudforensics.providers.gcp.internal import project as gcp_project
@@ -40,14 +41,12 @@ class GCSToGCEDisk(module.ThreadAwareModule):
         state, name=name, critical=critical)
     self.dest_project_name: str = ''
     self.dest_project: gcp_project.GoogleCloudProject = ''
-    self.dest_region: str = ''
     self.iam_service: Any = None
     self.role_name = ''
 
   # pylint: disable=arguments-differ
   def SetUp(self,
       dest_project: str,
-      dest_region: str,
       source_objects: str = '') -> None:
     """SetUp for creating disks in GCE from images in GCS.
 
@@ -58,9 +57,8 @@ class GCSToGCEDisk(module.ThreadAwareModule):
         should be of the form 'gs://bucket-name/path/to/image.bin'
     """
     self.dest_project_name = dest_project
-    self.dest_region = dest_region
     self.dest_project = gcp_project.GoogleCloudProject(
-        self.dest_project_name, self.dest_region)
+        self.dest_project_name)
     self.iam_service = common.CreateService('iam', 'v1')
     self.role_name = ''
 
@@ -69,8 +67,6 @@ class GCSToGCEDisk(module.ThreadAwareModule):
         self.state.StoreContainer(containers.GCSObject(obj))
 
   def PreProcess(self) -> None:
-    # Cloud build service account needs 'compute.networks.get' permissions
-    
     # Look for the role. If it exists, check if it is in a deleted state.
     role = self._GetRoleInfo()
     if role is None:
@@ -78,26 +74,38 @@ class GCSToGCEDisk(module.ThreadAwareModule):
       self.logger.info('Creating IAM role {0:s}'.format(DISK_BUILD_ROLE_NAME))
       self.role_name = self._CreateRoleForCloudBuild()
     elif 'deleted' in role and role['deleted']:
+      # Undelete
       self.logger.info('Undeleting existing IAM role {0:s}'.format(DISK_BUILD_ROLE_NAME))
       self.role_name = self._UndeleteRole()
     else:
+      # Use existing
       self.logger.info('Using existing IAM role {0:s}'.format(DISK_BUILD_ROLE_NAME))
       self.role_name = role['name']
 
+    self.logger.info('Applying permissions for role {0:s}'.format(DISK_BUILD_ROLE_NAME))
+
+    # Apply the permissions
+    self._UpdateRolePermissions(self.role_name)
+
     # Assign role to cloudbuild account
-    self._AssignRoleToCloudBuild(self.role_name)
+    self._AssignRolesToCloudBuild(self.role_name)
+
+    self.logger.info("Pausing to allow permissions to propagate")
+    time.sleep(30) # Leave some time for permissions to propagate
 
   def Process(self, container: containers.GCSObject) -> None:
-    return
-    """Creates a GCE disk from an image in GCS."""
-    compute = self.dest_project.compute
+    """Creates a GCE image from an image in GCS."""
+    name = container.path[5:]
+    name = re.sub(r'^.+?/', '', name)
+    name = re.sub(r'[^-a-z0-9]', '-', name)
 
-    disk = compute.ImportImageFromStorage(
+    image = self.dest_project.compute.ImportImageFromStorage(
         container.path,
         bootable = False,
-        guest_environment = False)
+        guest_environment = False,
+        image_name = name)
 
-    print(disk)
+    # TODO - Add output to a container
 
   def PostProcess(self) -> None:
     self._DeleteRole(self.role_name)
@@ -126,13 +134,55 @@ class GCSToGCEDisk(module.ThreadAwareModule):
             'role': {
                 'title': DISK_BUILD_ROLE_NAME,
                 'description': DISK_BUILD_ROLE_NAME,
-                'includedPermissions': [
-                  'compute.networks.get'
-                ]
+                'includedPermissions': []
             }
         }).execute()
 
     return str(role['name'])
+
+  def _UpdateRolePermissions(self, role_name: str) -> None:
+    requiredPerms = [
+      'compute.disks.create',
+      'compute.disks.delete',
+      'compute.disks.get',
+      'compute.disks.list',
+      'compute.disks.use',
+      'compute.disks.use',
+      'compute.disks.use',
+      'compute.disks.useReadOnly',
+      'compute.globalOperations.get',
+      'compute.images.create',
+      'compute.images.get',
+      'compute.images.setLabels',
+      'compute.instances.create',
+      'compute.instances.delete',
+      'compute.instances.get',
+      'compute.instances.getSerialPortOutput',
+      'compute.instances.list',
+      'compute.instances.setMetadata',
+      'compute.instances.setServiceAccount',
+      'compute.machineTypes.list',
+      'compute.networks.get',
+      'compute.networks.list',
+      'compute.projects.get',
+      'compute.subnetworks.use',
+      'compute.subnetworks.useExternalIp',
+      'compute.zoneOperations.get',
+      'compute.zones.list']
+
+    role = self.iam_service.projects().roles().get(name = role_name).execute()
+
+    perms = role['includedPermissions']
+    for p in requiredPerms:
+      perms.append(p)
+
+    role = self.iam_service.projects().roles().patch(
+        name = role_name,
+        body={
+            'title': role['title'],
+            'description': role['description'],
+            'includedPermissions': perms,
+        }).execute()
 
   def _UndeleteRole(self) -> str:
     """Undelete the role."""
@@ -141,27 +191,42 @@ class GCSToGCEDisk(module.ThreadAwareModule):
        ).execute()
     return str(role['name'])
 
-  def _AssignRoleToCloudBuild(self, role_name: str) -> None:
+  def _AssignRolesToCloudBuild(self, role_name: str) -> None:
     # Find the account
     crm = common.CreateService('cloudresourcemanager', 'v1')
     response = crm.projects().get(projectId=self.dest_project_name).execute()
-    account = 'serviceAccount:{0:s}@cloudbuild.gserviceaccount.com'.format(response['projectNumber'])
 
     # Get the existing IAM bindings
-    request = crm.projects().getIamPolicy(resource=self.dest_project_name)
-    policy = request.execute()
+    policy = crm.projects().getIamPolicy(resource=self.dest_project_name).execute()
 
-    # Add in the new binding
+    # Cloudbuild needs our custom role and 'roles/iam.serviceAccountUser'
+    cloudbuild_account = 'serviceAccount:{0:s}@cloudbuild.gserviceaccount.com'.format(response['projectNumber'])
+    for role in ['roles/iam.serviceAccountUser', role_name]:
+      found = False
+      for binding in policy['bindings']:
+        if binding['role'] == role:
+          found = True
+          binding['members'].append(cloudbuild_account)
+          break
+      if not found:
+        policy['bindings'].append({
+          'role': role,
+          'members': cloudbuild_account
+        })
+    
+    # Compute default service account needs 'roles/storage.objectViewer'
+    compute_account = 'serviceAccount:{0:s}-compute@developer.gserviceaccount.com'.format(response['projectNumber'])
+    role = 'roles/storage.objectViewer'
     found = False
     for binding in policy['bindings']:
-      if binding['role'] == role_name:
-        if not account in binding['members']:
-          binding['members'].append(account)
+      if binding['role'] == role:
         found = True
+        binding['members'].append(compute_account)
+        break
     if not found:
       policy['bindings'].append({
-        'role': role_name,
-        'members': [account]
+        'role': role,
+        'members': compute_account
       })
 
     crm.projects().setIamPolicy(resource=self.dest_project_name, body={'policy': {'bindings': policy['bindings']}}).execute()
@@ -176,14 +241,12 @@ class GCSToGCEDisk(module.ThreadAwareModule):
     return containers.GCSObject
 
   def GetThreadPoolSize(self) -> int:
-    return 1
+    return 5
 
   def PreSetUp(self) -> None:
     pass
 
   def PostSetUp(self) -> None:
     pass
-
-
 
 modules_manager.ModulesManager.RegisterModule(GCSToGCEDisk)
