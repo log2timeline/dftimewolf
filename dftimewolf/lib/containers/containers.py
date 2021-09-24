@@ -380,7 +380,7 @@ class AWSVol(interface.AttributeContainer):
   Attributes:
     vol_id (str): The volume id (vol-xxxxxxxx)."""
 
-  CONTAINER_TYPE = 'awsvolume'
+  CONTAINER_TYPE = 'awsvol'
 
   def __init__(self, vol_id: str) -> None:
     super(AWSVol, self).__init__()
@@ -409,4 +409,16 @@ class GCEDisk(interface.AttributeContainer):
 
   def __init__(self, name: str) -> None:
     super(GCEDisk, self).__init__()
+    self.name = name
+
+
+class GCEImage(interface.AttributeContainer):
+  """Attribute container definition for a GCE Image object.
+  Attributes:
+    name (str): The image name.
+  """
+  CONTAINER_TYPE = 'gceimage'
+
+  def __init__(self, name: str) -> None:
+    super(GCEImage, self).__init__()
     self.name = name

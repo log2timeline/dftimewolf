@@ -6,22 +6,16 @@ import time
 from typing import Any, Optional, Type
 
 from libcloudforensics.providers.gcp.internal import project as gcp_project
-from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk
 from libcloudforensics.providers.gcp.internal import common
-from libcloudforensics.errors import ResourceCreationError
-from libcloudforensics.providers.utils.storage_utils import SplitStoragePath
-from google.cloud.storage.client import Client as storage_client
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers, interface
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 
-import json
-import pprint
 
-DISK_BUILD_ROLE_NAME = 'disk_build_role'
+IMAGE_BUILD_ROLE_NAME = 'disk_build_role'
 
-class GCSToGCEDisk(module.ThreadAwareModule):
+class GCSToGCEImage(module.ThreadAwareModule):
   """Initialises creating disks in GCE from images in GCS.
   """
 
@@ -37,7 +31,7 @@ class GCSToGCEDisk(module.ThreadAwareModule):
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    super(GCSToGCEDisk, self).__init__(
+    super(GCSToGCEImage, self).__init__(
         state, name=name, critical=critical)
     self.dest_project_name: str = ''
     self.dest_project: gcp_project.GoogleCloudProject = ''
@@ -71,18 +65,21 @@ class GCSToGCEDisk(module.ThreadAwareModule):
     role = self._GetRoleInfo()
     if role is None:
       # Create role
-      self.logger.info('Creating IAM role {0:s}'.format(DISK_BUILD_ROLE_NAME))
+      self.logger.info('Creating IAM role {0:s}'.format(IMAGE_BUILD_ROLE_NAME))
       self.role_name = self._CreateRoleForCloudBuild()
     elif 'deleted' in role and role['deleted']:
       # Undelete
-      self.logger.info('Undeleting existing IAM role {0:s}'.format(DISK_BUILD_ROLE_NAME))
+      self.logger.info(
+          'Undeleting existing IAM role {0:s}'.format(IMAGE_BUILD_ROLE_NAME))
       self.role_name = self._UndeleteRole()
     else:
       # Use existing
-      self.logger.info('Using existing IAM role {0:s}'.format(DISK_BUILD_ROLE_NAME))
+      self.logger.info(
+          'Using existing IAM role {0:s}'.format(IMAGE_BUILD_ROLE_NAME))
       self.role_name = role['name']
 
-    self.logger.info('Applying permissions for role {0:s}'.format(DISK_BUILD_ROLE_NAME))
+    self.logger.info(
+        'Applying permissions for role {0:s}'.format(IMAGE_BUILD_ROLE_NAME))
 
     # Apply the permissions
     self._UpdateRolePermissions(self.role_name)
@@ -105,20 +102,25 @@ class GCSToGCEDisk(module.ThreadAwareModule):
         guest_environment = False,
         image_name = name)
 
-    # TODO - Add output to a container
+    self.state.StoreContainer(containers.GCEImage(image.name))
 
   def PostProcess(self) -> None:
     self._DeleteRole(self.role_name)
 
   def _GetRoleInfo(self) -> Any:
-    request = self.iam_service.roles().list(parent='projects/' + self.dest_project_name, showDeleted=True, view='FULL')
+    request = self.iam_service.roles().list( #pylint: disable=no-member
+        parent='projects/' + self.dest_project_name,
+        showDeleted=True)
     while True:
       response = request.execute()
       for role in response.get('roles', []):
-        if role['name'] == 'projects/' + self.dest_project_name + '/roles/' + DISK_BUILD_ROLE_NAME:
+        if role['name'] == 'projects/{0:s}/roles/{1:s}'.format(
+            self.dest_project_name, IMAGE_BUILD_ROLE_NAME):
           return role
 
-      request = self.iam_service.roles().list_next(previous_request=request, previous_response=response)
+      request = self.iam_service.roles().list_next( #pylint: disable=no-member
+          previous_request=request,
+          previous_response=response)
       if request is None:
         break
 
@@ -127,13 +129,13 @@ class GCSToGCEDisk(module.ThreadAwareModule):
   def _CreateRoleForCloudBuild(self) -> str:
     """Creates a role for CloudBuild, with the perms necessary for this module.
     """
-    role = self.iam_service.projects().roles().create(
+    role = self.iam_service.projects().roles().create(#pylint: disable=no-member
         parent='projects/' + self.dest_project_name,
         body={
-            'roleId': DISK_BUILD_ROLE_NAME,
+            'roleId': IMAGE_BUILD_ROLE_NAME,
             'role': {
-                'title': DISK_BUILD_ROLE_NAME,
-                'description': DISK_BUILD_ROLE_NAME,
+                'title': IMAGE_BUILD_ROLE_NAME,
+                'description': IMAGE_BUILD_ROLE_NAME,
                 'includedPermissions': []
             }
         }).execute()
@@ -141,7 +143,7 @@ class GCSToGCEDisk(module.ThreadAwareModule):
     return str(role['name'])
 
   def _UpdateRolePermissions(self, role_name: str) -> None:
-    requiredPerms = [
+    required_perms = [
       'compute.disks.create',
       'compute.disks.delete',
       'compute.disks.get',
@@ -170,13 +172,13 @@ class GCSToGCEDisk(module.ThreadAwareModule):
       'compute.zoneOperations.get',
       'compute.zones.list']
 
-    role = self.iam_service.projects().roles().get(name = role_name).execute()
+    role = self.iam_service.projects().roles().get(name = role_name).execute() #pylint: disable=no-member
 
     perms = role['includedPermissions']
-    for p in requiredPerms:
+    for p in required_perms:
       perms.append(p)
 
-    role = self.iam_service.projects().roles().patch(
+    role = self.iam_service.projects().roles().patch( #pylint: disable=no-member
         name = role_name,
         body={
             'title': role['title'],
@@ -186,21 +188,26 @@ class GCSToGCEDisk(module.ThreadAwareModule):
 
   def _UndeleteRole(self) -> str:
     """Undelete the role."""
-    role = self.iam_service.projects().roles().undelete(
-       name='projects/' + self.dest_project_name + '/roles/' + DISK_BUILD_ROLE_NAME
+    role = self.iam_service.projects().roles().undelete( #pylint: disable=no-member
+       name='projects/{0:s}/roles/{1:s}'.format(
+          self.dest_project_name, IMAGE_BUILD_ROLE_NAME)
        ).execute()
     return str(role['name'])
 
   def _AssignRolesToCloudBuild(self, role_name: str) -> None:
     # Find the account
     crm = common.CreateService('cloudresourcemanager', 'v1')
-    response = crm.projects().get(projectId=self.dest_project_name).execute()
+    response = crm.projects().get(projectId=self.dest_project_name).execute() #pylint: disable=no-member
 
     # Get the existing IAM bindings
-    policy = crm.projects().getIamPolicy(resource=self.dest_project_name).execute()
+    policy = crm.projects().getIamPolicy( #pylint: disable=no-member
+        resource=self.dest_project_name
+    ).execute()
 
     # Cloudbuild needs our custom role and 'roles/iam.serviceAccountUser'
-    cloudbuild_account = 'serviceAccount:{0:s}@cloudbuild.gserviceaccount.com'.format(response['projectNumber'])
+    cloudbuild_account = \
+        'serviceAccount:{0:s}@cloudbuild.gserviceaccount.com'.format(
+            response['projectNumber'])
     for role in ['roles/iam.serviceAccountUser', role_name]:
       found = False
       for binding in policy['bindings']:
@@ -213,9 +220,11 @@ class GCSToGCEDisk(module.ThreadAwareModule):
           'role': role,
           'members': cloudbuild_account
         })
-    
+
     # Compute default service account needs 'roles/storage.objectViewer'
-    compute_account = 'serviceAccount:{0:s}-compute@developer.gserviceaccount.com'.format(response['projectNumber'])
+    compute_account = \
+        'serviceAccount:{0:s}-compute@developer.gserviceaccount.com'.format(
+            response['projectNumber'])
     role = 'roles/storage.objectViewer'
     found = False
     for binding in policy['bindings']:
@@ -229,11 +238,14 @@ class GCSToGCEDisk(module.ThreadAwareModule):
         'members': compute_account
       })
 
-    crm.projects().setIamPolicy(resource=self.dest_project_name, body={'policy': {'bindings': policy['bindings']}}).execute()
+    crm.projects().setIamPolicy( #pylint: disable=no-member
+        resource=self.dest_project_name,
+        body={'policy': {'bindings': policy['bindings']}}
+    ).execute()
 
   def _DeleteRole(self, role_name: str) -> None:
-    self.logger.info('Deleting IAM role {0:s}'.format(DISK_BUILD_ROLE_NAME))
-    self.iam_service.projects().roles().delete(
+    self.logger.info('Deleting IAM role {0:s}'.format(IMAGE_BUILD_ROLE_NAME))
+    self.iam_service.projects().roles().delete( #pylint: disable=no-member
         name = role_name).execute()
 
   @staticmethod
@@ -249,4 +261,5 @@ class GCSToGCEDisk(module.ThreadAwareModule):
   def PostSetUp(self) -> None:
     pass
 
-modules_manager.ModulesManager.RegisterModule(GCSToGCEDisk)
+
+modules_manager.ModulesManager.RegisterModule(GCSToGCEImage)

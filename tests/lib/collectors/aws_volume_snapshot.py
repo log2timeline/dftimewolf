@@ -83,7 +83,7 @@ class AWSVolumeSnapshotCollectorTest(unittest.TestCase):
         for volume in FAKE_VOLUME_LIST['Volumes']]), FAKE_REGION)
 
     volumes_in_state = [container.vol_id for container in \
-        test_state.GetContainers(containers.AWSVolume)]
+        test_state.GetContainers(containers.AWSVol)]
 
     self.assertEqual(volumes_expected, volumes_in_state)
     self.assertEqual(FAKE_REGION, collector.region)
