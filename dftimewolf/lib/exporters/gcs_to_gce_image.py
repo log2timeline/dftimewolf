@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Export objects from AWS S3 to a GCP GCS bucket."""
+"""Create images in GCE from image files in GCS."""
 
 import re
 import time
@@ -13,17 +13,16 @@ from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 
 
-IMAGE_BUILD_ROLE_NAME = 'disk_build_role'
+IMAGE_BUILD_ROLE_NAME = 'image_build_role'
 
 class GCSToGCEImage(module.ThreadAwareModule):
-  """Initialises creating disks in GCE from images in GCS.
-  """
+  """Initialises creating images in GCE from image files in GCS."""
 
   def __init__(self,
                state: DFTimewolfState,
                name: Optional[str]=None,
                critical: bool=False) -> None:
-    """Initialises creating disks in GCE from images in GCS.
+    """Initialises creating images in GCE from image files in GCS.
 
     Args:
       state (DFTimewolfState): recipe state.
@@ -42,7 +41,7 @@ class GCSToGCEImage(module.ThreadAwareModule):
   def SetUp(self,
       dest_project: str,
       source_objects: str = '') -> None:
-    """SetUp for creating disks in GCE from images in GCS.
+    """SetUp for creating images in GCE from image files in GCS.
 
     GCS objects to use are sourced from either the state, or passed in here.
     Args:
@@ -253,7 +252,7 @@ class GCSToGCEImage(module.ThreadAwareModule):
     return containers.GCSObject
 
   def GetThreadPoolSize(self) -> int:
-    return 5
+    return 10
 
   def PreSetUp(self) -> None:
     pass
