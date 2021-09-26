@@ -53,7 +53,10 @@ MODULES = {
   'TurbiniaGCPProcessor': 'dftimewolf.lib.processors.turbinia_gcp',
   'WorkspaceAuditCollector': 'dftimewolf.lib.collectors.workspace_audit',
   'WorkspaceAuditTimesketch':
-      'dftimewolf.lib.processors.workspace_audit_timesketch'
+      'dftimewolf.lib.processors.workspace_audit_timesketch',
+  'TimesketchExporterThreaded':
+      'dftimewolf.lib.exporters.timesketch_tam',
+  'TurbiniaGCPProcessorThreaded': 'dftimewolf.lib.processors.turbinia_gcp_tam',
 }
 
 

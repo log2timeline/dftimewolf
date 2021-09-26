@@ -280,6 +280,98 @@ class StateTest(unittest.TestCase):
 
     self.assertEqual(sorted(values), sorted(expected_values))
 
+  # pylint: disable=line-too-long
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PreSetUp')
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.SetUp')
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PostSetUp')
+  # pylint: enable=line-too-long
+  def testThreadAwareModulePreSetUpFailure(self,
+      mock_post_setup,
+      mock_setup,
+      mock_pre_setup):
+    """Tests that if PreSetUp exceptions, SetUp and PostSetUp are not
+    called."""
+    mock_pre_setup.side_effect = \
+        errors.DFTimewolfError('Exception thrown', critical=False)
+
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.command_line_options = {}
+    test_state.LoadRecipe(test_recipe.threaded_no_preflights, TEST_MODULES)
+    test_state.SetupModules()
+
+    self.assertEqual(mock_pre_setup.call_count, 1)
+    self.assertEqual(mock_setup.call_count, 0)
+    self.assertEqual(mock_post_setup.call_count, 0)
+
+  # pylint: disable=line-too-long
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PreSetUp')
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.SetUp')
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PostSetUp')
+  # pylint: enable=line-too-long
+  def testThreadAwareModuleSetUpFailure(self,
+      mock_post_setup,
+      mock_setup,
+      mock_pre_setup):
+    """Tests that if SetUp exceptions, PostSetUp is not called."""
+    mock_setup.side_effect = \
+        errors.DFTimewolfError('Exception thrown', critical=False)
+
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.command_line_options = {}
+    test_state.LoadRecipe(test_recipe.threaded_no_preflights, TEST_MODULES)
+    test_state.SetupModules()
+
+    self.assertEqual(mock_pre_setup.call_count, 1)
+    self.assertEqual(mock_setup.call_count, 1)
+    self.assertEqual(mock_post_setup.call_count, 0)
+
+  # pylint: disable=line-too-long
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PreProcess')
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.Process')
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PostProcess')
+  # pylint: enable=line-too-long
+  def testThreadAwareModulePreProcessFailure(self,
+      mock_post_process,
+      mock_process,
+      mock_pre_process):
+    """Tests that if PreProcess exceptions, Process and PostProcess are not
+    called."""
+    mock_pre_process.side_effect = \
+        errors.DFTimewolfError('Exception thrown', critical=False)
+
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.command_line_options = {}
+    test_state.LoadRecipe(test_recipe.threaded_no_preflights, TEST_MODULES)
+    test_state.SetupModules()
+    test_state.RunModules()
+
+    self.assertEqual(mock_pre_process.call_count, 1)
+    self.assertEqual(mock_process.call_count, 0)
+    self.assertEqual(mock_post_process.call_count, 0)
+
+  # pylint: disable=line-too-long
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PreProcess')
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.Process')
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PostProcess')
+  # pylint: enable=line-too-long
+  def testThreadAwareModuleProcessFailure(self,
+      mock_post_process,
+      mock_process,
+      mock_pre_process):
+    """Tests that if process exceptions, PostProcess is still called."""
+    mock_process.side_effect = \
+        errors.DFTimewolfError('Exception thrown', critical=False)
+
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.command_line_options = {}
+    test_state.LoadRecipe(test_recipe.threaded_no_preflights, TEST_MODULES)
+    test_state.SetupModules()
+    test_state.RunModules()
+
+    self.assertEqual(mock_pre_process.call_count, 1)
+    self.assertEqual(mock_process.call_count, 3)
+    self.assertEqual(mock_post_process.call_count, 1)
+
   @mock.patch('tests.test_modules.modules.DummyModule2.Process')
   @mock.patch('tests.test_modules.modules.DummyModule1.Process')
   def testProcessErrors(self, mock_process1, mock_process2):

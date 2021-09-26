@@ -176,21 +176,18 @@ class ThreadAwareModule(BaseModule):
     super(ThreadAwareModule, self).__init__(
         state, name=name, critical=critical)
 
-  @staticmethod
   @abc.abstractmethod
-  def PreSetUp() -> None:
+  def PreSetUp(self) -> None:
     """Carries out optional SetUp actions that only need to be performed once,
     regardless of the number of class instantiations. Called before SetUp."""
 
-  @staticmethod
   @abc.abstractmethod
-  def PostSetUp() -> None:
+  def PostSetUp(self) -> None:
     """Carries out optional SetUp actions that only need to be performed once,
     regardless of the number of class instantiations. Called after SetUp."""
 
-  @staticmethod
   @abc.abstractmethod
-  def PreProcess() -> None:
+  def PreProcess(self) -> None:
     """Carries out optional Process actions that only need to be performed
     once, regardless of the number of class instantiations. Called before
     Process."""
@@ -204,9 +201,8 @@ class ThreadAwareModule(BaseModule):
     simultaneous threads."""
   # pylint: enable=arguments-differ
 
-  @staticmethod
   @abc.abstractmethod
-  def PostProcess() -> None:
+  def PostProcess(self) -> None:
     """Carries out optional Process actions that only need to be performed
     once, regardless of the number of class instantiations. Called after
     Process."""
@@ -216,9 +212,8 @@ class ThreadAwareModule(BaseModule):
   def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
     """Returns the container type that this module should be threaded on."""
 
-  @staticmethod
   @abc.abstractmethod
-  def GetThreadPoolSize() -> int:
+  def GetThreadPoolSize(self) -> int:
     """Returns the maximum number of threads for this module."""
 
   @staticmethod
