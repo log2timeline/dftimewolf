@@ -231,6 +231,7 @@ class File(interface.AttributeContainer):
     self.path = path
     self.description = description
 
+
 class ForensicsVM(interface.AttributeContainer):
   """Attribute container definition for a forensics virtual machine.
 
@@ -267,6 +268,19 @@ class URL(interface.AttributeContainer):
   def __init__(self, path: str) -> None:
     super(URL, self).__init__()
     self.path = path
+
+
+class GCEDisk(interface.AttributeContainer):
+  """Attribute container definition for a GCE Disk object.
+
+  Attributes:
+    name (str): The disk name.
+  """
+  CONTAINER_TYPE = 'gcedisk'
+
+  def __init__(self, name: str) -> None:
+    super(GCEDisk, self).__init__()
+    self.name = name
 
 
 class DataFrame(interface.AttributeContainer):
