@@ -173,6 +173,9 @@ class GCSToGCEImage(module.ThreadAwareModule):
 
     role = self.iam_service.projects().roles().get(name = role_name).execute() #pylint: disable=no-member
 
+    if not 'includedPermissions' in role:
+      role['includedPermissions'] = []
+
     perms = role['includedPermissions']
     for p in required_perms:
       perms.append(p)

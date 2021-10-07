@@ -1,0 +1,98 @@
+{
+  "name": "aws_turbinia_ts",
+  "short_description": "Copies EBS volumes from within AWS, transfers them to GCP, analyses with turbinia and outputs the results to timesketch.",
+  "description": "Copies EBS volumes from within AWS, transfers them to GCP, analyses with turbinia and outputs the results to timesketch.",
+  "preflights": [
+    {
+      "wants": [],
+      "name": "AWSAccountCheck",
+      "args": {
+        "profile_name": "@aws_profile"
+      }
+    },{
+      "wants": [],
+      "name": "GCPTokenCheck",
+      "args": {
+        "project_name": "@gcp_project"
+      }
+    }
+  ],
+  "modules": [
+    {
+      "wants": [],
+      "name": "AWSVolumeSnapshotCollector",
+      "args": {
+        "volumes": "@volumes",
+        "region": "@aws_region"
+      }
+    },{
+      "wants": ["AWSVolumeSnapshotCollector"],
+      "name": "AWSSnapshotS3CopyCollector",
+      "args": {
+        "snapshots": "",
+        "bucket": "@aws_bucket",
+        "region": "@aws_region",
+        "subnet": "@subnet"
+      }
+    },{
+      "wants": ["AWSSnapshotS3CopyCollector"],
+      "name": "S3ToGCSCopy",
+      "args": {
+        "s3_objects": "",
+        "aws_region": "@aws_region",
+        "dest_project": "@gcp_project",
+        "dest_bucket": "@gcp_bucket",
+        "object_filter": ".+/image.bin$"
+      }
+    }, {
+      "wants": ["S3ToGCSCopy"],
+      "name": "GCSToGCEImage",
+      "args": {
+        "source_objects": "",
+        "dest_project": "@gcp_project"
+      }
+    }, {
+      "wants": ["GCSToGCEImage"],
+      "name": "GCEDiskFromImage",
+      "args": {
+        "dest_project": "@gcp_project",
+        "dest_zone": "us-central1-f"
+      }
+    }, {
+      "wants": ["GCEDiskFromImage"],
+      "name": "TurbiniaGCPProcessorThreaded",
+      "args": {
+        "turbinia_config_file": null,
+        "disks": "",
+        "project": "@gcp_project",
+        "turbinia_zone": "@turbinia_zone",
+        "run_all_jobs": "@run_all_jobs",
+        "sketch_id": "@sketch_id"
+      }
+    }, {
+      "wants": ["TurbiniaGCPProcessorThreaded"],
+      "name": "TimesketchExporterThreaded",
+      "args": {
+        "incident_id": "@incident_id",
+        "token_password": "@token_password",
+        "sketch_id": "@sketch_id",
+        "analyzers": null,
+        "wait_for_timelines": "@wait_for_timelines"
+      }
+    }
+  ],
+  "args": [
+    ["aws_region", "AWS region with the EBS volumes", null],
+    ["volumes", "Comma separated list of ebs volume ids (vol-xxxxxxxx)", null],
+    ["aws_bucket", "AWS bucket for image storage", null],
+    ["gcp_bucket", "GCP bucket for image storage", null],
+    ["--subnet", "AWS subnet for copy instances, required if there is no default subnet in the volume region.", null],
+    ["--gcp_project", "Destination GCP project", null],
+    ["--aws_profile", "Source AWS profile", null],
+    ["--incident_id", "Incident ID (used for Timesketch description)", null],
+    ["--run_all_jobs", "Run all Turbinia processing jobs instead of a faster subset", false],
+    ["--sketch_id", "Sketch to which the timeline should be added", null],
+    ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
+    ["--wait_for_timelines", "Whether to wait for timelines to finish processing.", true]
+  ]
+}

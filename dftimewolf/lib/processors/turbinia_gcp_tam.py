@@ -278,9 +278,11 @@ class TurbiniaGCPProcessorThreaded(TurbiniaProcessorThreadedBase):
 
     self.turbinia_config_file = turbinia_config_file
 
-    for disk in disks.split(','):
-      container = containers.GCEDisk(disk)
-      self.state.StoreContainer(container)
+    if disks is not None:
+      for disk in disks.split(','):
+        if not disk == "":
+          container = containers.GCEDisk(disk)
+          self.state.StoreContainer(container)
 
     try:
       self.TurbiniaSetUp(project, turbinia_zone, sketch_id, run_all_jobs)
