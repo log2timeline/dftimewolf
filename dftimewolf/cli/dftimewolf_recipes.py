@@ -34,6 +34,8 @@ MODULES = {
   'GCPTokenCheck': 'dftimewolf.lib.preflights.cloud_token',
   'GoogleCloudCollector': 'dftimewolf.lib.collectors.gcloud',
   'GoogleCloudDiskExport': 'dftimewolf.lib.exporters.gce_disk_export',
+  'GCEDiskCopier': 'dftimewolf.lib.collectors.gcp_disks',
+  'GCEDiskCollector': 'dftimewolf.lib.collectors.gcp_disks',
   'GrepperSearch': 'dftimewolf.lib.processors.grepper',
   'GRRArtifactCollector': 'dftimewolf.lib.collectors.grr_hosts',
   'GRRFileCollector': 'dftimewolf.lib.collectors.grr_hosts',
