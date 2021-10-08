@@ -341,4 +341,5 @@ class GCEDiskCollector(module.BaseModule):
     return disks_to_copy
 
 
+modules_manager.ModulesManager.RegisterModule(GCEDiskCopier)
 modules_manager.ModulesManager.RegisterModule(GCEDiskCollector)

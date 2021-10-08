@@ -18,18 +18,26 @@
         "project_name": "@remote_project_name"
     }
   }],
-  "modules": [{
+  "modules": [
+    {
       "wants": [],
-      "name": "GoogleCloudCollector",
+      "name": "GCEDiskCollector",
+      "args": {
+        "remote_project_name": "@remote_project_name",
+        "remote_instance_name": "@instance",
+        "disk_names": "@disks",
+        "all_disks": "@all_disks"
+      }
+    },
+    {
+      "wants": ["GCEDiskCollector"],
+      "name": "GCEDiskCopier",
       "args": {
           "analysis_project_name": "@analysis_project_name",
           "remote_project_name": "@remote_project_name",
-          "remote_instance_name": "@instance",
           "incident_id": "@incident_id",
           "zone": "@zone",
           "create_analysis_vm": "@create_analysis_vm",
-          "disk_names": "@disks",
-          "all_disks": "@all_disks",
           "boot_disk_size": "@boot_disk_size",
           "boot_disk_type": "@boot_disk_type",
           "cpu_cores": "@cpu_cores",
