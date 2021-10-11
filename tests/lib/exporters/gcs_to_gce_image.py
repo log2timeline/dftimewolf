@@ -13,6 +13,8 @@ from dftimewolf.lib import state
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.exporters import gcs_to_gce_image
 
+from googleapiclient.discovery import Resource
+
 
 FAKE_GCS_OBJECTS = 'gs://fake-gcs-bucket/one,gs://fake-gcs-bucket/two'
 FAKE_GCP_PROJECT_NAME = 'fake-project'
@@ -55,7 +57,8 @@ class GCSToGCEImageTest(unittest.TestCase):
     exporter = gcs_to_gce_image.GCSToGCEImage(test_state)
     self.assertIsNotNone(exporter)
 
-  def testSetUp(self):
+  @mock.patch('google.auth.default', return_value = None)
+  def testSetUp(self, mock_auth_default):
     """Tests SetUp of the exporter."""
     test_state = state.DFTimewolfState(config.Config)
 
@@ -72,12 +75,14 @@ class GCSToGCEImageTest(unittest.TestCase):
   # pylint: disable=line-too-long,unused-argument
   @mock.patch('libcloudforensics.providers.gcp.internal.project.GoogleCloudProject', return_value = FAKE_GCP_PROJECT)
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.ImportImageFromStorage')
+  @mock.patch('google.auth.default', return_value = None)
   @mock.patch('googleapiclient.discovery.Resource')
   @mock.patch('time.sleep', return_value=None)
   # pylint: enable=line-too-long
   def testProcessFromParams(self,
       mock_sleep,
       mock_gcp_service,
+      mock_auth_default,
       mock_lcf_import_image_from_storage,
       mock_gcp_project):
     """Tests the exporter's Process() function when the list comes from
@@ -106,12 +111,14 @@ class GCSToGCEImageTest(unittest.TestCase):
   # pylint: disable=line-too-long
   @mock.patch('libcloudforensics.providers.gcp.internal.project.GoogleCloudProject', return_value = FAKE_GCP_PROJECT)
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.ImportImageFromStorage')
+  @mock.patch('google.auth.default', return_value = None)
   @mock.patch('googleapiclient.discovery.Resource')
   @mock.patch('time.sleep', return_value=None)
   # pylint: enable=line-too-long
   def testProcessFromState(self,
       mock_sleep,
       mock_gcp_service,
+      mock_auth_default,
       mock_lcf_import_image_from_storage,
       mock_gcp_project):
     """Tests the exporter's Process() function when the list comes from
