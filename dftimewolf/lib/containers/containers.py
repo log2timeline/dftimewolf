@@ -283,6 +283,18 @@ class GCEDisk(interface.AttributeContainer):
     self.name = name
 
 
+class GCEImage(interface.AttributeContainer):
+  """Attribute container definition for a GCE Image object.
+  Attributes:
+    name (str): The image name.
+  """
+  CONTAINER_TYPE = 'gceimage'
+
+  def __init__(self, name: str) -> None:
+    super(GCEImage, self).__init__()
+    self.name = name
+
+
 class DataFrame(interface.AttributeContainer):
   """Attribute container definition for a Pandas DataFrame.
 
@@ -412,27 +424,3 @@ class AWSSnapshot(interface.AttributeContainer):
   def __init__(self, snap_id: str) -> None:
     super(AWSSnapshot, self).__init__()
     self.snap_id = snap_id
-
-
-class GCEDisk(interface.AttributeContainer):
-  """Attribute container definition for a GCE Disk object.
-  Attributes:
-    name (str): The disk name.
-  """
-  CONTAINER_TYPE = 'gcedisk'
-
-  def __init__(self, name: str) -> None:
-    super(GCEDisk, self).__init__()
-    self.name = name
-
-
-class GCEImage(interface.AttributeContainer):
-  """Attribute container definition for a GCE Image object.
-  Attributes:
-    name (str): The image name.
-  """
-  CONTAINER_TYPE = 'gceimage'
-
-  def __init__(self, name: str) -> None:
-    super(GCEImage, self).__init__()
-    self.name = name

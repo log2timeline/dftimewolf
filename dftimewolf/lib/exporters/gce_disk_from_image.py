@@ -51,7 +51,9 @@ class GCEDiskFromImage(module.ThreadAwareModule):
 
     if source_images:
       for obj in source_images.split(','):
-        self.state.StoreContainer(containers.GCEImage(obj))
+        if not obj == "":
+          self.state.StoreContainer(containers.GCEImage(obj))
+
 
   def Process(self, container: containers.GCEImage) -> None:
     """Creates a GCE disk from an image."""

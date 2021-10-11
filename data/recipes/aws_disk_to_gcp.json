@@ -1,7 +1,7 @@
 {
-  "name": "aws_turbinia_ts",
-  "short_description": "Copies EBS volumes from within AWS, transfers them to GCP, analyses with turbinia and outputs the results to timesketch.",
-  "description": "Copies EBS volumes from within AWS, transfers them to GCP, analyses with turbinia and outputs the results to timesketch.",
+  "name": "aws_disk_to_gcp",
+  "short_description": "Copies EBS volumes from within AWS, and transfers them to GCP.",
+  "description": "Copies EBS volumes from within AWS, and transfers them to GCP.",
   "preflights": [
     {
       "wants": [],
@@ -58,27 +58,6 @@
         "source_images": "",
         "dest_project": "@gcp_project",
         "dest_zone": "@gcp_zone"
-      }
-    }, {
-      "wants": ["GCEDiskFromImage"],
-      "name": "TurbiniaGCPProcessorThreaded",
-      "args": {
-        "turbinia_config_file": null,
-        "disks": "",
-        "project": "@gcp_project",
-        "turbinia_zone": "@turbinia_zone",
-        "run_all_jobs": "@run_all_jobs",
-        "sketch_id": "@sketch_id"
-      }
-    }, {
-      "wants": ["TurbiniaGCPProcessorThreaded"],
-      "name": "TimesketchExporterThreaded",
-      "args": {
-        "incident_id": "@incident_id",
-        "token_password": "@token_password",
-        "sketch_id": "@sketch_id",
-        "analyzers": null,
-        "wait_for_timelines": "@wait_for_timelines"
       }
     }
   ],
