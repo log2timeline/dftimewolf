@@ -14,6 +14,35 @@ from dftimewolf.lib.state import DFTimewolfState
 
 
 IMAGE_BUILD_ROLE_NAME = 'image_build_role'
+REQUIRED_PERMS = [
+  'compute.disks.create',
+  'compute.disks.delete',
+  'compute.disks.get',
+  'compute.disks.list',
+  'compute.disks.use',
+  'compute.disks.use',
+  'compute.disks.use',
+  'compute.disks.useReadOnly',
+  'compute.globalOperations.get',
+  'compute.images.create',
+  'compute.images.get',
+  'compute.images.setLabels',
+  'compute.instances.create',
+  'compute.instances.delete',
+  'compute.instances.get',
+  'compute.instances.getSerialPortOutput',
+  'compute.instances.list',
+  'compute.instances.setMetadata',
+  'compute.instances.setServiceAccount',
+  'compute.machineTypes.list',
+  'compute.networks.get',
+  'compute.networks.list',
+  'compute.projects.get',
+  'compute.subnetworks.use',
+  'compute.subnetworks.useExternalIp',
+  'compute.zoneOperations.get',
+  'compute.zones.list']
+
 
 class GCSToGCEImage(module.ThreadAwareModule):
   """Initialises creating images in GCE from image files in GCS."""
@@ -126,8 +155,7 @@ class GCSToGCEImage(module.ThreadAwareModule):
     return None
 
   def _CreateRoleForCloudBuild(self) -> str:
-    """Creates a role for CloudBuild, with the perms necessary for this module.
-    """
+    """Creates a role for CloudBuild."""
     role = self.iam_service.projects().roles().create(#pylint: disable=no-member
         parent='projects/' + self.dest_project_name,
         body={
@@ -142,42 +170,14 @@ class GCSToGCEImage(module.ThreadAwareModule):
     return str(role['name'])
 
   def _UpdateRolePermissions(self, role_name: str) -> None:
-    required_perms = [
-      'compute.disks.create',
-      'compute.disks.delete',
-      'compute.disks.get',
-      'compute.disks.list',
-      'compute.disks.use',
-      'compute.disks.use',
-      'compute.disks.use',
-      'compute.disks.useReadOnly',
-      'compute.globalOperations.get',
-      'compute.images.create',
-      'compute.images.get',
-      'compute.images.setLabels',
-      'compute.instances.create',
-      'compute.instances.delete',
-      'compute.instances.get',
-      'compute.instances.getSerialPortOutput',
-      'compute.instances.list',
-      'compute.instances.setMetadata',
-      'compute.instances.setServiceAccount',
-      'compute.machineTypes.list',
-      'compute.networks.get',
-      'compute.networks.list',
-      'compute.projects.get',
-      'compute.subnetworks.use',
-      'compute.subnetworks.useExternalIp',
-      'compute.zoneOperations.get',
-      'compute.zones.list']
-
+    """Assign required permissions to the role."""
     role = self.iam_service.projects().roles().get(name = role_name).execute() #pylint: disable=no-member
 
     if not 'includedPermissions' in role:
       role['includedPermissions'] = []
 
     perms = role['includedPermissions']
-    for p in required_perms:
+    for p in REQUIRED_PERMS:
       perms.append(p)
 
     role = self.iam_service.projects().roles().patch( #pylint: disable=no-member
@@ -217,11 +217,11 @@ class GCSToGCEImage(module.ThreadAwareModule):
           found = True
           binding['members'].append(cloudbuild_account)
           break
-      if not found:
-        policy['bindings'].append({
-          'role': role,
-          'members': cloudbuild_account
-        })
+    if not found:
+      policy['bindings'].append({
+        'role': role,
+        'members': cloudbuild_account
+      })
 
     # Compute default service account needs 'roles/storage.objectViewer'
     compute_account = \

@@ -84,9 +84,14 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
   def PreProcess(self) -> None:
     """Set up for the snapshot copy operation."""
     # Validate the bucket exists. If not, create it.
-    self.aws_account = \
-        account.AWSAccount(self._PickAvailabilityZone(self.subnet))
-    s3 = boto3.client('s3', region_name=self.region)
+    try:
+      self.aws_account = \
+          account.AWSAccount(self._PickAvailabilityZone(self.subnet))
+      s3 = boto3.client('s3', region_name=self.region)
+    except AWSSnapshotS3CopyException as exception:
+      self.ModuleError(
+          'Error encountered determining availability zone: {0!s}'.format(
+              exception), critical=True)
 
     if self.bucket not in \
         [bucket['Name'] for bucket in s3.list_buckets()['Buckets']]:
@@ -103,16 +108,12 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
     except self.ec2.exceptions.ClientError as exception:
       self.ModuleError('Error encountered describing snapshots: {0!s}'.\
         format(exception), critical=True)
-    except AWSSnapshotS3CopyException as exception:
-      self.ModuleError(
-          'Error encountered determining availability zone: {0!s}'.format(
-              exception), critical=True)
 
     # Create the IAM pieces
     self.iam_details = forensics.CopyEBSSnapshotToS3SetUp(
         self.aws_account, INSTANCE_PROFILE_NAME)
-    if self.iam_details['profile']['created']: # Propagation delay
-      time.sleep(20)
+    if self.iam_details['profile']['created']:
+      time.sleep(20) # Propagation delay
 
   def Process(self, container: containers.AWSSnapshot) -> None:
     """Perform the copy of the snapshot to S3."""

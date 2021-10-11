@@ -64,8 +64,8 @@ class S3ToGCSCopy(module.ThreadAwareModule):
       dest_bucket (str): The destination GCP bucket.
       s3_objects (str): Comma separated list of objects to copy from S3. Each
         should be of the form 's3://bucket-name/path/to/object'
-      filter (str): regex filter for objects to copy - Useful when the files are
-        from a previous module.
+      object_filter (str): regex filter for objects to copy - Useful when the
+        files are from a previous module but not all should be transferred.
     """
     self.aws_region = aws_region
     self.dest_project_name = dest_project
@@ -138,7 +138,9 @@ class S3ToGCSCopy(module.ThreadAwareModule):
     return containers.AWSS3Object
 
   def GetThreadPoolSize(self) -> int:
-    return 10
+    # https://cloud.google.com/storage-transfer/quotas
+    # limit is 100 per 100 seconds, or 1000/day.
+    return 30
 
   def PreSetUp(self) -> None:
     pass

@@ -226,7 +226,6 @@ class TurbiniaProcessorThreadedBase(module.ThreadAwareModule):
       while not finished:
         try:
           self.client.wait_for_request(**request_dict)
-
           task_data = self.client.get_task_data(**request_dict)
 
           message = self.client.format_task_status(
@@ -301,7 +300,6 @@ class TurbiniaGCPProcessorThreaded(TurbiniaProcessorThreadedBase):
         if not disk == "":
           container = containers.GCEDisk(disk)
           self.state.StoreContainer(container)
-
     try:
       self.TurbiniaSetUp(project, turbinia_zone, sketch_id, run_all_jobs)
     except TurbiniaException as exception:
