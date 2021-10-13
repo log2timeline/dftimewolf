@@ -551,6 +551,17 @@ class Metawolf(cmd2.Cmd):
           self.poutput(termination_msg)
     return super(Metawolf, self).do_quit(_)  # type: ignore
 
+  def do_exit(self, _: argparse.Namespace) -> Optional[bool]:
+    """Exit Metawolf.
+
+    Args:
+      _ (argparse.Namespace): Unused.
+
+    Returns:
+      Optional[bool]: True if the shell should be stopped.
+    """
+    return self.do_quit(_)
+
   def sigint_handler(self, signum: int, _: FrameType) -> None:
     """Handle SIGINT.
 
