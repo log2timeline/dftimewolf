@@ -21,6 +21,9 @@ class GCPTokenCheck(module.PreflightModule):
       project_name (str): the project we want to connect to.
     """
 
+    if not project_name:
+      return
+
     gcloud_path = shutil.which('gcloud')
     if gcloud_path is None:
       self.ModuleError(

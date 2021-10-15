@@ -54,7 +54,10 @@ MODULES = {
   'VTCollector' : 'dftimewolf.lib.collectors.virustotal',
   'WorkspaceAuditCollector': 'dftimewolf.lib.collectors.workspace_audit',
   'WorkspaceAuditTimesketch':
-      'dftimewolf.lib.processors.workspace_audit_timesketch'
+      'dftimewolf.lib.processors.workspace_audit_timesketch',
+  'TimesketchExporterThreaded':
+      'dftimewolf.lib.exporters.timesketch_tam',
+  'TurbiniaGCPProcessorThreaded': 'dftimewolf.lib.processors.turbinia_gcp_tam',
 }
 
 
@@ -304,7 +307,7 @@ def SetupLogging() -> None:
 
   # Add a silent default stream handler, this is automatically set
   # when other libraries call logging.info() or similar methods.
-  root_handler = logging.StreamHandler()
+  root_handler = logging.StreamHandler(stream=sys.stdout)
   root_handler.addFilter(lambda x: False)
   root_log.addHandler(root_handler)
 
@@ -321,7 +324,7 @@ def SetupLogging() -> None:
   file_handler.setFormatter(logging_utils.WolfFormatter(colorize=False))
   logger.addHandler(file_handler)
 
-  console_handler = logging.StreamHandler()
+  console_handler = logging.StreamHandler(stream=sys.stdout)
   colorize = not bool(os.environ.get('DFTIMEWOLF_NO_RAINBOW'))
   console_handler.setFormatter(logging_utils.WolfFormatter(colorize=colorize))
   logger.addHandler(console_handler)

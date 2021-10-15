@@ -61,6 +61,7 @@ class MetawolfProcess:
   """MetawolfProcess captures all information about metawolf processes.
 
   Attributes:
+    metawolf_utils (MetawolfUtils): Metawolf utilities.
     process (Any): A subprocess.Popen or psutil.Process object, representing
         metawolf's process.
     session_id (str): The session ID this process belongs to.
@@ -81,7 +82,8 @@ class MetawolfProcess:
       session_id: Optional[str] = None,
       cmd: Optional[List[str]] = None,
       output_id: Optional[int] = None,
-      from_dict: Optional[Dict[str, str]] = None
+      from_dict: Optional[Dict[str, str]] = None,
+      metawolf_utils: Optional[utils.MetawolfUtils] = None
   ) -> None:
     """Initialize MetawolfProcess.
 
@@ -91,14 +93,19 @@ class MetawolfProcess:
           should be of the form [dftimewolf, recipe_name, recipe_arguments...].
       output_id (int): Optional. The output ID that this process corresponds to.
       from_dict (Dict[str, str]): Optional. A json-like dictionary that
-        contains the attributes of this object.
+          contains the attributes of this object.
+      metawolf_utils (MetawolfUtils): Optional. Metawolf utilities. If not
+          provided, a default utility object is created.
 
     Raises:
       ValueError: If the cmd does not match a valid dftimewolf invocation.
     """
+    # pylint: disable=line-too-long
+    self.metawolf_utils = metawolf_utils if metawolf_utils else utils.MetawolfUtils()
+    # pylint: enable=line-too-long
     process = None
     recipe = ''
-    if cmd and cmd[1] in utils.MetawolfUtils().GetRecipes():
+    if cmd and cmd[1] in self.metawolf_utils.GetRecipes():
       recipe = cmd[1]
 
     if not from_dict:
@@ -217,13 +224,17 @@ class MetawolfProcess:
     # Else, dftimewolf completed and we need to look into the output file to
     # check whether or not the recipe executed successfully.
 
-    if CRITICAL_ERROR in self.Read():
+    if CRITICAL_ERROR in self.Read(show_warning=False):
       return MetawolfOutput.Color('Failed', RED)
 
     return MetawolfOutput.Color('Completed', GREEN)
 
-  def Read(self) -> str:
+  def Read(self, show_warning: bool = True) -> str:
     """Read the output of the process.
+
+    Args:
+    show_warning (bool): Optional. Whether or not to print a warning if the file
+        we're trying to read was not found.
 
     Returns:
       str: The stdout of the process written to file.
@@ -233,9 +244,10 @@ class MetawolfProcess:
         with open(self.outfile_path, 'r') as f:
           return f.read()
       except FileNotFoundError:
-        print(MetawolfOutput.Color(
-            'Output file {0:s} does not exist anymore. To clear old output '
-            'files, type `clean`'.format(self.outfile_path), RED))
+        if show_warning:
+          print(MetawolfOutput.Color(
+              'Output file {0:s} does not exist anymore. To clear old output '
+              'files, type `clean`'.format(self.outfile_path), RED))
     return ''
 
   def Terminate(self) -> str:

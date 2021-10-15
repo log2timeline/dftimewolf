@@ -94,22 +94,17 @@ class ThreadAwareConsumerModule(module.ThreadAwareModule):
   def GetThreadOnContainerType():
     return TestContainer
 
-  @staticmethod
-  def GetThreadPoolSize():
+  def GetThreadPoolSize(self):
     return 2
 
-  @staticmethod
-  def PreSetUp() -> None:
+  def PreSetUp(self) -> None:
     print("ThreadAwareConsumerModule Static Pre Set Up")
 
-  @staticmethod
-  def PostSetUp() -> None:
+  def PostSetUp(self) -> None:
     print("ThreadAwareConsumerModule Static Post Set Up")
 
-  @staticmethod
-  def PreProcess() -> None:
+  def PreProcess(self) -> None:
     print("ThreadAwareConsumerModule Static Pre Process")
 
-  @staticmethod
-  def PostProcess() -> None:
+  def PostProcess(self) -> None:
     print("ThreadAwareConsumerModule Static Post Process")

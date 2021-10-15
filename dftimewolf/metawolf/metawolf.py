@@ -331,7 +331,8 @@ class Metawolf(cmd2.Cmd):
     metawolf_process = output.MetawolfProcess(
         session_id=self.session_id,
         cmd=cmd,
-        output_id=self.nb_running_processes)
+        output_id=self.nb_running_processes,
+        metawolf_utils=self.metawolf_utils)
     metawolf_process.Run()
 
     self.processes.append(metawolf_process)
@@ -602,7 +603,8 @@ class Metawolf(cmd2.Cmd):
       if recipe == LAST_ACTIVE_PROCESSES:
         # Restore self.processes
         for _, metawolf_process in settables.items():
-          proc = output.MetawolfProcess(from_dict=metawolf_process)
+          proc = output.MetawolfProcess(
+              from_dict=metawolf_process, metawolf_utils=self.metawolf_utils)
           self.processes.append(proc)
         continue
       for settable_id, settable in settables.items():
