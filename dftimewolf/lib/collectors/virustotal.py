@@ -63,7 +63,7 @@ class VTCollector(module.BaseModule):
     assert self.client is not None
 
     for download_link in pcap_download_list:
-      self.logger.info('Download link {urllib.parse.quote(download_link)}')
+      self.logger.info(f'Download link {urllib.parse.quote(download_link)}')
       filename = f'{vt_hash}.{self.vt_type}'
       file = open(os.path.join(self.directory, filename), "wb")
 
@@ -98,6 +98,7 @@ class VTCollector(module.BaseModule):
         container = containers.Directory(
             name=vt_hash, path=os.path.abspath(extract_output_dir))
         self.state.StoreContainer(container)
+
         self.logger.info(f'Finished writing EVTX to {extract_output_dir}')
 
   # pylint: disable=arguments-differ,too-many-arguments

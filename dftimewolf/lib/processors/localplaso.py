@@ -55,8 +55,10 @@ class LocalPlasoProcessor(module.BaseModule):
 
   def Process(self) -> None:
     """Executes log2timeline.py on the module input."""
-    # TODO: Add Directory Type here
-    for file_container in [self.state.GetContainers(containers.File, pop=True)]:
+    file_containers = self.state.GetContainers(containers.File)
+    directory_containers = self.state.GetContainers(containers.Directory)
+
+    for file_container in (file_containers + directory_containers):
       description = file_container.name
       path = file_container.path
       log_file_path = os.path.join(self._output_path, 'plaso.log')
