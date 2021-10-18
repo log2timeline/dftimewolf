@@ -1,17 +1,14 @@
 # -*- coding: utf-8 -*-
 """Downloads several items for a VT file."""
 
-import datetime
 import os
 import tempfile
-import typing
+import zipfile
+
 from typing import List
 from typing import Optional
 
-import pandas as pd
-import pytz
 import vt
-from scapy.all import IP, TCP
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
@@ -43,49 +40,10 @@ class VTCollector(module.BaseModule):
     self.hashes_list: List[str] = []
     self.output_path: Optional[str] = None
     self.client: Optional[vt.Client] = None
+    self.vt_type = None
 
   def Process(self) -> None:
     """Not implemented yet"""
-    print("Not implemented")
-
-  # pylint: disable=arguments-differ,too-many-arguments
-  def SetUp(
-      self,
-      hashes: str,
-      vt_api_key: str,
-      action: str = "download",
-      output_path: str = tempfile.mkdtemp(),
-  ) -> None:
-    """Sets up an Virustotal (VT) collector.
-
-    Args:
-      hashes (str): Coma seperated strings of hashes
-      vt_api_key (str): Virustotal Enterprise API Key
-      action (str) : Which action to execute
-      output_path [optional] (str) : Where to store the downloaded files to
-    """
-
-    self.output_path = self._CheckOutputPath(output_path)
-
-    if not hashes:
-      self.ModuleError("You need to specify at least one hash", critical=True)
-      return
-
-    if not action:
-      self.ModuleError(
-          "You need to specify an action from: pcap", critical=True)
-      return
-
-    self.hashes_list = [item.strip() for item in hashes.strip().split(",")]
-
-    if not vt_api_key:
-      self.ModuleError(
-          "You need to specify a Virustotal Enterprise API key",
-          critical=True,
-      )
-      return
-
-    self.client = vt.Client(vt_api_key)
 
     for vt_hash in self.hashes_list:
       if not self._isHashKnownToVT(vt_hash):
@@ -98,17 +56,20 @@ class VTCollector(module.BaseModule):
         'Found the following files on VT: {0:s}'.format(*self.hashes_list))
 
     for vt_hash in self.hashes_list:
-      pcap_download_list = self._get_pcap_download_links(vt_hash)
+      if self.vt_type == 'pcap':
+        pcap_download_list = self._get_pcap_download_links(vt_hash)
+      elif self.vt_type == 'evtx':
+        pcap_download_list = self._get_evtx_download_links(vt_hash)
 
     for download_link in pcap_download_list:
       self.logger.info(download_link)
-      real = f"{download_link}/pcap"
-      filepath = f'{download_link.rsplit("/", 1)[-1]}.pcap'
+      real = f"{download_link}/{self.vt_type}"
+      filepath = f'{download_link.rsplit("/", 1)[-1]}.{self.vt_type}'
       file = open(filepath, "wb")
 
       if self.client is None:
         self.ModuleError(
-            'Error creating Virustotal Client instance',
+            f'Error creating Virustotal Client instance',
             critical=True,
         )
         return
@@ -124,18 +85,92 @@ class VTCollector(module.BaseModule):
       else:
         self.ModuleError(f"File not found {real}", critical=False)
 
-      frame = self._pcap_to_pandas(filepath)
+      if self.vt_type == 'pcap':
+        self.logger.info('Writing pcap to file')
 
-      if frame is None:
-        self.logger.error(
-            'Found empty Pandas for {0:s} {1:s}'.format(vt_hash, download_link))
-        continue
-      container = containers.DataFrame(
-          data_frame=frame,
-          description=f'PCAP2Pandas for hash {vt_hash} {download_link}',
-          name=f'PCAP_{vt_hash}',
+        container = containers.File(
+            name=vt_hash, path=os.path.abspath(filepath))
+        self.state.StoreContainer(container)
+        self.logger.info('Finished writing evtx to file')
+
+      if self.vt_type == 'evtx':
+        self.logger.info('Writing evtx to file')
+
+        # Unzip the file so that plaso can go over evtx part in the archive
+        client_output_file = os.path.join(self.output_path, vt_hash)
+        if not os.path.isdir(client_output_file):
+          os.makedirs(client_output_file)
+
+        with zipfile.ZipFile(filepath) as archive:
+          archive.extractall(path=client_output_file)
+          self.logger.debug(
+              'Downloaded file extracted to {0:s}'.format(client_output_file))
+
+        container = containers.File(
+            name=vt_hash, path=os.path.abspath(client_output_file))
+        self.state.StoreContainer(container)
+        self.logger.info('Finished writing evtx to file')
+
+  # pylint: disable=arguments-differ,too-many-arguments
+  def SetUp(
+      self,
+      hashes: str,
+      vt_api_key: str,
+      vt_type: str,
+      output_path: str = tempfile.mkdtemp(),
+  ) -> None:
+    """Sets up an Virustotal (VT) collector.
+
+    Args:
+      hashes (str): Coma seperated strings of hashes
+      vt_api_key (str): Virustotal Enterprise API Key
+      vt_type (str) : Which file to fetch
+      output_path [optional] (str) : Where to store the downloaded files to
+    """
+
+    self.output_path = self._CheckOutputPath(output_path)
+
+    if not hashes:
+      self.ModuleError("You need to specify at least one hash", critical=True)
+      return
+
+    if not vt_type:
+      self.ModuleError(
+          "You need to specify an vt_type from: pcap, evtx", critical=True)
+      return
+
+    self.vt_type = vt_type
+
+    self.hashes_list = [item.strip() for item in hashes.strip().split(",")]
+
+    if not vt_api_key:
+      self.ModuleError(
+          "You need to specify a Virustotal Enterprise API key",
+          critical=True,
       )
-      self.state.StoreContainer(container)
+      return
+
+    self.client = vt.Client(vt_api_key)
+
+  def _Store_filepath_to_pandas(
+      self, filepath: str, vt_hash: str,
+      download_link: str) -> containers.DataFrame:
+    """ Returns a pandas container """
+    """
+    frame = self._pcap_to_pandas(filepath)
+
+    if frame is None:
+      self.logger.error(
+          'Found empty Pandas for {0:s} {1:s}'.format(vt_hash, download_link))
+      return None  # we do not want to kill the whole loop
+    container = containers.DataFrame(
+        data_frame=frame,
+        description=f'PCAP2Pandas for hash {vt_hash} {download_link}',
+        name=f'PCAP_{vt_hash}',
+    )
+    return container
+    """
+    raise NotImplementedError
 
   def _CheckOutputPath(self, output_path: str = tempfile.mkdtemp()) -> str:
     """Checks that the output path can be manipulated by the module.
@@ -162,16 +197,16 @@ class VTCollector(module.BaseModule):
                 output_path, error),
             critical=True,
         )
-        """Below should never be reached, but Either all return statements in
-        a function should return an expression, or none of them should.
+        """Below should never be reached, but Either all return statements in 
+        a function should return an expression, or none of them should. 
         (inconsistent-return-statements)
         """
         return tempfile.mkdtemp()
     elif not os.path.isdir(output_path):
       self.ModuleError(output_path + " is not a directory:", critical=True)
       return tempfile.mkdtemp()
-    
-    return tempfile.mkdtemp()
+    else:
+      return tempfile.mkdtemp()
 
   def _isHashKnownToVT(self, vt_hash: str) -> bool:
     """Checks if a hash is known to VT.
@@ -214,91 +249,28 @@ class VTCollector(module.BaseModule):
 
     return return_list
 
-  def _pcap_to_pandas(self, path: str) -> pd.DataFrame:
-    """Reads a PCAP from path and converts it to a Pandas Dataframe.
+  def _get_evtx_download_links(self, vt_hash: str) -> List[str]:
+    """Checks if a hash has a EVTX file available.
+          Returns a list of the URLs for download.
+          One hash can have multiple EVTX available.
 
           Args:
-              path ([str]): Path to pcap file to read.
+              vt_hash ([str]): A hash.
 
           Returns:
-              Pandas Dataframe: Parsed Pandas Dateframe.
+              list[str]: List of strings with URLs to the PCAP files.
           """
-    packets = scapy.all.rdpcap(path)
+    vt_data = self.client.get_data(f"/files/{vt_hash}/behaviours")
+    return_list = []
+    for analysis in vt_data:
+      if analysis["attributes"]["has_evtx"]:
+        analysis_link = analysis["links"]["self"]
+        self.logger.info(
+            'Found EVTX for {0:s} to be processed: {1:s}'.format(
+                vt_hash, analysis_link))
+        return_list.append(analysis_link)
 
-    # Collect field names from IP/TCP/UDP
-    # These will be columns in dataframe
-    ip_fields = [(field.name) for field in scapy.all.IP().fields_desc]
-    tcp_fields = [(field.name) for field in scapy.all.TCP().fields_desc]
-    # TODO redo UDP, currently disabled
-    #udp_fields = [(field.name) for field in scapy.all.UDP().fields_desc]
-
-    ip_fields_new = [
-        ("ip_" + field.name) for field in scapy.all.IP().fields_desc
-    ]
-    tcp_fields_new = [
-        ("tcp_" + field.name) for field in scapy.all.TCP().fields_desc
-    ]
-    #udp_fields_new = [
-    #    ("udp_" + field.name) for field in scapy.all.UDP().fields_desc
-    #]
-
-    dataframe_fields = (
-        ip_fields_new + ["time"] + tcp_fields_new +
-        ["payload", "datetime", "raw"])
-
-    for packet in packets[scapy.all.IP]:
-      # Field array for each row of DataFrame
-
-      field_values: List[str] = []
-      # Add all IP fields to dataframe
-      for field in ip_fields:
-        if field == "options":
-          # Retrieving number of options defined in IP Header
-          field_values.append(str(len(packet[scapy.all.IP].fields[field])))
-        else:
-          field_values.append(packet[scapy.all.IP].fields[field])
-
-      field_values.append(packet.time)
-      layer_type = type(packet[scapy.all.IP].payload)
-      for field in tcp_fields:
-        try:
-          if field == "options":
-            field_values.append(str(len(packet[layer_type].fields[field])))
-          else:
-            field_values.append(packet[layer_type].fields[field])
-        except Exception as e:  # pylint: disable=broad-except
-          self.logger.exception(e)
-          field_values.append("")
-
-      # Append payload
-      field_values.append(str(len(packet[layer_type].payload)))
-
-      # Date of the event (packet)
-      date_value = datetime.datetime.fromtimestamp(packet.time, tz=pytz.utc)
-      field_values.append(date_value.isoformat())
-      field_values.append(str(packet.show2))
-
-      # Create a dict and upload it to timesketch.
-      assert dataframe_fields is not None
-      assert field_values is not None
-
-      packet_dict: typing.Dict[str,
-                               str] = dict(zip(dataframe_fields, field_values))
-
-      assert packet_dict is not None
-
-      if packet_dict.get("ip_flags") is not None:
-        # this type is currently wrong
-        ip_flags: List[str] = packet_dict.get("ip_flags")
-        packet_dict["ip_flags"] = ip_flags.names
-
-      #tcp_flags: List[str] = packet_dict.get("tcp_flags")
-      if packet_dict.get("tcp_flags") is not None:
-        packet_dict["tcp_flags"] = packet_dict.get("tcp_flags").names
-
-      del packet_dict["time"]
-
-      return pd.DataFrame.from_dict(packet_dict)
+    return return_list
 
 
 modules_manager.ModulesManager.RegisterModule(VTCollector)
