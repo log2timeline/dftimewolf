@@ -181,7 +181,7 @@ class VTCollector(module.BaseModule):
     try:
       self.logger.debug(f'Trying to find {vt_hash} on VirusTotal...')
       self.client.get_object(f"/files/{vt_hash}")
-    except:  # pylint: disable=bare-except
+    except vt.error.APIError:
       return False
 
     return True
