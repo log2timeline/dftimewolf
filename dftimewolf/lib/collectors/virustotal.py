@@ -17,7 +17,7 @@ from dftimewolf.lib.state import DFTimewolfState
 
 
 class VTCollector(module.BaseModule):
-  """Virustotal (VT) Collector.
+  """VirusTotal (VT) Collector.
 
   Attributes:
     - hashes_list List[hashes_list]: List of hashes passed ot the module
@@ -30,10 +30,10 @@ class VTCollector(module.BaseModule):
       state: DFTimewolfState,
       name: Optional[str],
       critical: bool = False) -> None:
-    """Initializes an Virustotal (VT) collector.
+    """Initializes an VirusTotal (VT) collector.
 
     Args:
-      state (DFTimewolfState): recipe state.
+      state: recipe state.
       name (Optional): The module's runtime name.
       critical (Optional): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
@@ -45,7 +45,7 @@ class VTCollector(module.BaseModule):
     self.vt_type = None
 
   def Process(self) -> None:
-    """Not implemented yet"""
+    """Process of the VirusTotal collector after setup"""
 
     for vt_hash in self.hashes_list:
       if not self._isHashKnownToVT(vt_hash):
@@ -110,11 +110,11 @@ class VTCollector(module.BaseModule):
       vt_type: str,
       output_path: str = tempfile.mkdtemp(),
   ) -> None:
-    """Sets up an Virustotal (VT) collector.
+    """Sets up an VirusTotal (VT) collector.
 
     Args:
       hashes: Coma seperated strings of hashes
-      vt_api_key: Virustotal Enterprise API Key
+      vt_api_key: VirusTotal Enterprise API Key
       vt_type: Which file to fetch
       output_path [optional]: Where to store the downloaded files to
     """
@@ -136,7 +136,7 @@ class VTCollector(module.BaseModule):
 
     if not vt_api_key:
       self.ModuleError(
-          "You need to specify a Virustotal Enterprise API key",
+          "You need to specify a VirusTotal Enterprise API key",
           critical=True,
       )
       return
@@ -145,7 +145,7 @@ class VTCollector(module.BaseModule):
 
     if self.client is None:
         self.ModuleError(
-            f'Error creating Virustotal Client instance',
+            f'Error creating VirusTotal Client instance',
             critical=True,
         )
         return
@@ -189,22 +189,22 @@ class VTCollector(module.BaseModule):
   def _isHashKnownToVT(self, vt_hash: str) -> bool:
     """Checks if a hash is known to VT.
 
-          Args:
-              vt_hash ([str]): A hash.
+    Args:
+        vt_hash: A hash.
 
-          Returns:
-              Bool: True if found on VT
-              False: File not found on VT.
-          """
+    Returns:
+        Bool: True if found on VT
+        False: File not found on VT.
+    """
     try:
-      self.logger.debug(f'Trying to find {vt_hash} on Virustotal...')
+      self.logger.debug(f'Trying to find {vt_hash} on VirusTotal...')
       self.client.get_object(f"/files/{vt_hash}")
     except:  # pylint: disable=bare-except
       return False
 
     return True
 
-  def _getDownloadLinks(self, vt_hash: str, ) -> List[str]:
+  def _getDownloadLinks(self, vt_hash: str) -> List[str]:
     """Checks if a hash has a PCAP file available.
     Returns a list of the URLs for download.
     One hash can have multiple PCAPs available.
