@@ -20,8 +20,8 @@ class VTCollector(module.BaseModule):
   """VirusTotal (VT) Collector.
 
   Attributes:
-    - hashes_list List[hashes_list]: List of hashes passed ot the module
-    - vt_type: pcap or evtx depending on the file type requested
+    hashes_list List[hashes_list]: List of hashes passed ot the module
+    vt_type: pcap or evtx depending on the file type requested
 
   """
 
@@ -40,7 +40,7 @@ class VTCollector(module.BaseModule):
     """
     super(VTCollector, self).__init__(state, name=name, critical=critical)
     self.hashes_list: List[str] = []
-    self.output_path: Optional[str] = None
+    self.directory: Optional[str] = None
     self.client: Optional[vt.Client] = None
     self.vt_type = None
 
@@ -53,16 +53,15 @@ class VTCollector(module.BaseModule):
             f'Hash not found on VT removing element {vt_hash} from list')
         self.hashes_list.remove(vt_hash)
 
-    self.logger.info(
-        f'Found the following files on VT: {*self.hashes_list}')
+    self.logger.info(f'Found the following files on VT: {*self.hashes_list,}')
 
     for vt_hash in self.hashes_list:
       pcap_download_list = self._getDownloadLinks(vt_hash)
 
     for download_link in pcap_download_list:
       self.logger.info(download_link)
-      filename = f'{download_link.rsplit("/", 1)[-1]}.{self.vt_type}'
-      file = open(self.output_path + filename, "wb")
+      filename = f'{vt_hash}.{self.vt_type}'
+      file = open(os.path.join(self.directory, filename), "wb")
 
       download = self.client.get(download_link)
       if download.status == 200:
@@ -70,7 +69,7 @@ class VTCollector(module.BaseModule):
 
         if len(file_content) == 0:
           continue
-        
+
         file.write(file_content)
 
       else:
@@ -79,27 +78,26 @@ class VTCollector(module.BaseModule):
       if self.vt_type == 'pcap':
         self.logger.info('Writing pcap to file')
 
-        container = containers.File(
-            name=vt_hash, path=os.path.abspath(filename))
+        container = containers.File(name=vt_hash, path=file.name)
         self.state.StoreContainer(container)
 
       if self.vt_type == 'evtx':
         self.logger.info('Writing EVTX to file')
 
         # Unzip the file so that plaso can go over EVTX part in the archive
-        client_output_file = os.path.join(self.output_path, vt_hash)
-        if not os.path.isdir(client_output_file):
-          os.makedirs(client_output_file)
+        extract_output_dir = f'{file.name}_extract'
+        if not os.path.isdir(extract_output_dir):
+          os.makedirs(extract_output_dir)
 
-        with zipfile.ZipFile(filename) as archive:
-          archive.extractall(path=client_output_file)
+        with zipfile.ZipFile(file.name) as archive:
+          archive.extractall(path=extract_output_dir)
           self.logger.debug(
-              f'Downloaded file extracted to {client_output_file}')
+              f'Downloaded file extracted to {extract_output_dir}')
 
         container = containers.File(
-            name=vt_hash, path=os.path.abspath(client_output_file))
+            name=vt_hash, path=os.path.abspath(extract_output_dir))
         self.state.StoreContainer(container)
-        self.logger.info('Finished writing EVTX to file')
+        self.logger.info(f'Finished writing EVTX to {extract_output_dir}')
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(
@@ -107,7 +105,7 @@ class VTCollector(module.BaseModule):
       hashes: str,
       vt_api_key: str,
       vt_type: str,
-      output_path: str,
+      directory: str,
   ) -> None:
     """Sets up an VirusTotal (VT) collector.
 
@@ -115,10 +113,10 @@ class VTCollector(module.BaseModule):
       hashes: Coma seperated strings of hashes
       vt_api_key: VirusTotal Enterprise API Key
       vt_type: Which file to fetch
-      output_path [optional]: Where to store the downloaded files to
+      directory [optional]: Where to store the downloaded files to
     """
 
-    self.output_path = self._CheckOutputPath(output_path)
+    self.directory = self._CheckOutputPath(directory)
 
     if not hashes:
       self.ModuleError('You need to specify at least one hash', critical=True)
@@ -143,37 +141,36 @@ class VTCollector(module.BaseModule):
     self.client = vt.Client(vt_api_key)
 
     if self.client is None:
-        self.ModuleError(
-            f'Error creating VirusTotal Client instance',
-            critical=True,
-        )
-        return
+      self.ModuleError(
+          f'Error creating VirusTotal Client instance',
+          critical=True,
+      )
+      return
 
-  def _CheckOutputPath(self, output_path: str) -> str:
+  def _CheckOutputPath(self, directory: str) -> str:
     """Checks that the output path can be manipulated by the module.
 
     Args:
-      output_path: Full path to the output directory where files will be
+      directory: Full path to the output directory where files will be
           dumped.
 
     Returns:
       The full path to the directory where files will be dumped.
     """
     # Check that the output path can be manipulated
-    if not output_path:
+    if not directory:
       return tempfile.mkdtemp()
-    if os.path.exists(output_path):
-      return output_path
-    
+    if os.path.exists(directory):
+      return directory
+
     try:
-      os.makedirs(output_path)
-      return output_path
+      os.makedirs(directory)
+      return directory
     except OSError as error:
       self.ModuleError(
-          f'{output_path} error while creating the output directory: {error}',
+          f'{directory} error while creating the output directory: {error}',
           critical=True,
       )
-
 
   def _isHashKnownToVT(self, vt_hash: str) -> bool:
     """Checks if a hash is known to VT.
@@ -206,12 +203,13 @@ class VTCollector(module.BaseModule):
     """
     vt_data = self.client.get_data(f'/files/{vt_hash}/behaviours')
     return_list = []
-  
+
     for analysis in vt_data:
       if analysis['attributes'][f'has_{self.vt_type}']:
-        analysis_link = f'{analysis['links']['self']}/{self.vt_type}'
+        analysis_link = f'{analysis["links"]["self"]}/{self.vt_type}'
         self.logger.info(
-            f'Found {self.vt_type} for {vt_hash} to be processed: {analysis_link}'))
+            f'Found {self.vt_type} for {vt_hash} to be processed: {analysis_link}'
+        )
         return_list.append(analysis_link)
 
     return return_list
