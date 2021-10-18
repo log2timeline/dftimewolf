@@ -1,7 +1,7 @@
 {
   "name": "vt_evtx",
   "description": "Fetches the EVTX for a specific hash, processes it with Plaso.",
-  "short_description": "Fetches the EVTX from Virustotal sandbox run for a specific hash  for upload to TS.",
+  "short_description": "Fetches the EVTX from VirusTotal sandbox run for a specific hash.",
   "modules": [
     {
       "wants": [],

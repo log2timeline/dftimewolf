@@ -35,8 +35,8 @@ class VTCollector(module.BaseModule):
 
     Args:
       state: recipe state.
-      name (Optional): The module's runtime name.
-      critical (Optional): True if the module is critical, which causes
+      name: The module's runtime name.
+      critical: True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
     super(VTCollector, self).__init__(state, name=name, critical=critical)
@@ -110,7 +110,7 @@ class VTCollector(module.BaseModule):
       hashes: Coma seperated strings of hashes
       vt_api_key: VirusTotal Enterprise API Key
       vt_type: Which file to fetch
-      directory [optional]: Where to store the downloaded files to
+      directory: Where to store the downloaded files to
     """
 
     self.directory = self._CheckOutputPath(directory)
@@ -196,7 +196,7 @@ class VTCollector(module.BaseModule):
       vt_hash: A hash.
 
     Returns:
-      list[str]: List of strings with URLs to the requested files.
+      list: List of strings with URLs to the requested files.
     """
     vt_data = self.client.get_data(f'/files/{vt_hash}/behaviours')
     return_list = []
