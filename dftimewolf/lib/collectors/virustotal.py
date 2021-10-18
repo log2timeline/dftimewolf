@@ -84,9 +84,9 @@ class VTCollector(module.BaseModule):
         self.state.StoreContainer(container)
 
       if self.vt_type == 'evtx':
-        self.logger.info('Writing evtx to file')
+        self.logger.info('Writing EVTX to file')
 
-        # Unzip the file so that plaso can go over evtx part in the archive
+        # Unzip the file so that plaso can go over EVTX part in the archive
         client_output_file = os.path.join(self.output_path, vt_hash)
         if not os.path.isdir(client_output_file):
           os.makedirs(client_output_file)
@@ -99,7 +99,7 @@ class VTCollector(module.BaseModule):
         container = containers.File(
             name=vt_hash, path=os.path.abspath(client_output_file))
         self.state.StoreContainer(container)
-        self.logger.info('Finished writing evtx to file')
+        self.logger.info('Finished writing EVTX to file')
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(
@@ -107,7 +107,7 @@ class VTCollector(module.BaseModule):
       hashes: str,
       vt_api_key: str,
       vt_type: str,
-      output_path: str = tempfile.mkdtemp(),
+      output_path: str,
   ) -> None:
     """Sets up an VirusTotal (VT) collector.
 
@@ -149,12 +149,12 @@ class VTCollector(module.BaseModule):
         )
         return
 
-  def _CheckOutputPath(self, output_path: str = tempfile.mkdtemp()) -> str:
+  def _CheckOutputPath(self, output_path: str) -> str:
     """Checks that the output path can be manipulated by the module.
 
     Args:
-    output_path: Full path to the output directory where files will be
-        dumped.
+      output_path: Full path to the output directory where files will be
+          dumped.
 
     Returns:
       The full path to the directory where files will be dumped.
@@ -162,26 +162,21 @@ class VTCollector(module.BaseModule):
     # Check that the output path can be manipulated
     if not output_path:
       return tempfile.mkdtemp()
-    elif os.path.exists(output_path):
+    if os.path.exists(output_path):
       return output_path
-    elif not os.path.exists(output_path):
-      try:
-        os.makedirs(output_path)
-        return output_path
-      except OSError as error:
-        self.ModuleError(
-            f'{output_path} error while creating the output directory: {error}',
-            critical=True,
-        )
-        """Below should never be reached, but Either all return statements in 
-        a function should return an expression, or none of them should. 
-        (inconsistent-return-statements)
-        """
-        return tempfile.mkdtemp()
-    elif not os.path.isdir(output_path):
-      self.ModuleError(output_path + " is not a directory:", critical=True)
-      return tempfile.mkdtemp()
-    else:
+    
+    try:
+      os.makedirs(output_path)
+      return output_path
+    except OSError as error:
+      self.ModuleError(
+          f'{output_path} error while creating the output directory: {error}',
+          critical=True,
+      )
+      """Below should never be reached, but Either all return statements in 
+      a function should return an expression, or none of them should. 
+      (inconsistent-return-statements)
+      """
       return tempfile.mkdtemp()
 
   def _isHashKnownToVT(self, vt_hash: str) -> bool:
