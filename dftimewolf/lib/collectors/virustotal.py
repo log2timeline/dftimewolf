@@ -42,7 +42,7 @@ class VTCollector(module.BaseModule):
     super(VTCollector, self).__init__(state, name=name, critical=critical)
     self.hashes_list: List[str] = []
     self.directory: Optional[str] = None
-    self.client: Optional[vt.Client] = None
+    self.client = None
     self.vt_type = None
 
   def Process(self) -> None:
@@ -145,6 +145,8 @@ class VTCollector(module.BaseModule):
           critical=True,
       )
       return
+
+    return
 
   def _CheckOutputPath(self, directory: str) -> str:
     """Checks that the output path can be manipulated by the module.
