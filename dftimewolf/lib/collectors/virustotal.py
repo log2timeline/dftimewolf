@@ -61,17 +61,17 @@ class VTCollector(module.BaseModule):
 
     for download_link in pcap_download_list:
       self.logger.info(download_link)
-      filepath = f'{download_link.rsplit("/", 1)[-1]}.{self.vt_type}'
-      file = open(filepath, "wb")
+      filename = f'{download_link.rsplit("/", 1)[-1]}.{self.vt_type}'
+      file = open(self.output_path + filename, "wb")
 
       download = self.client.get(download_link)
       if download.status == 200:
         file.write(download.content.read())
 
         # In case the provided PCAP is size 0, delete the file and move on
-        if os.stat(filepath).st_size == 0:
-          if os.path.exists(filepath):
-            os.remove(filepath)
+        if os.stat(filename).st_size == 0:
+          if os.path.exists(filename):
+            os.remove(filename)
             continue
       else:
         self.ModuleError(f"File not found {download_link}", critical=False)
@@ -80,7 +80,7 @@ class VTCollector(module.BaseModule):
         self.logger.info('Writing pcap to file')
 
         container = containers.File(
-            name=vt_hash, path=os.path.abspath(filepath))
+            name=vt_hash, path=os.path.abspath(filename))
         self.state.StoreContainer(container)
         self.logger.info('Finished writing evtx to file')
 
@@ -92,7 +92,7 @@ class VTCollector(module.BaseModule):
         if not os.path.isdir(client_output_file):
           os.makedirs(client_output_file)
 
-        with zipfile.ZipFile(filepath) as archive:
+        with zipfile.ZipFile(filename) as archive:
           archive.extractall(path=client_output_file)
           self.logger.debug(
               f'Downloaded file extracted to {client_output_file}')
