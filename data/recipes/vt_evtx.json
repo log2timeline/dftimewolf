@@ -1,29 +1,29 @@
 {
-    "name": "vt_evtx",
-    "description": "Fetches the EVTX for a specific hash, processes it with Plaso.",
-    "short_description": "Fetches the EVTX from Virustotal sandbox run for a specific hash  for upload to TS.",
-    "modules": [
-      {
-        "wants": [],
-        "name": "VTCollector",
-        "args": {
-          "hashes": "@hashes",
-          "vt_api_key": "@vt_api_key",
-          "vt_type": "evtx"
-        }
-      },
-      {
-        "wants": ["VTCollector"],
-        "name": "LocalPlasoProcessor",
-        "args": {
-          "timezone": null
-        }
+  "name": "vt_evtx",
+  "description": "Fetches the EVTX for a specific hash, processes it with Plaso.",
+  "short_description": "Fetches the EVTX from Virustotal sandbox run for a specific hash  for upload to TS.",
+  "modules": [
+    {
+      "wants": [],
+      "name": "VTCollector",
+      "args": {
+        "hashes": "@hashes",
+        "vt_api_key": "@vt_api_key",
+        "vt_type": "evtx",
+        "directory": "@directory"
       }
-    ],
-    "args": [
-      ["hashes", "Comma-separated list of hashes to process", null],
-      ["directory", "Directory in which to export files.", null],
-      ["--vt_api_key", "Virustotal API key", "admin"]
-    ]
-  }
-  
+    },
+    {
+      "wants": ["VTCollector"],
+      "name": "LocalPlasoProcessor",
+      "args": {
+        "timezone": null
+      }
+    }
+  ],
+  "args": [
+    ["hashes", "Comma-separated list of hashes to process", null],
+    ["directory", "Directory in which to export files.", null],
+    ["--vt_api_key", "Virustotal API key", "admin"]
+  ]
+}

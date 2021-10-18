@@ -9,7 +9,8 @@
       "args": {
         "hashes": "@hashes",
         "vt_api_key": "@vt_api_key",
-        "vt_type": "pcap"
+        "vt_type": "pcap",
+        "directory": "@directory"
       }
     },
     {
