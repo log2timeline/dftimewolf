@@ -20,6 +20,8 @@ class VTCollector(module.BaseModule):
   """Virustotal (VT) Collector.
 
   Attributes:
+    - hashes_list List[hashes_list]: List of hashes passed ot the module
+    - vt_type: pcap or evtx depending on the file type requested
 
   """
 
@@ -67,12 +69,6 @@ class VTCollector(module.BaseModule):
       filepath = f'{download_link.rsplit("/", 1)[-1]}.{self.vt_type}'
       file = open(filepath, "wb")
 
-      if self.client is None:
-        self.ModuleError(
-            f'Error creating Virustotal Client instance',
-            critical=True,
-        )
-        return
       download = self.client.get(real)
       if download.status == 200:
         file.write(download.content.read())
@@ -151,6 +147,13 @@ class VTCollector(module.BaseModule):
       return
 
     self.client = vt.Client(vt_api_key)
+    
+    if self.client is None:
+        self.ModuleError(
+            f'Error creating Virustotal Client instance',
+            critical=True,
+        )
+        return
 
   def _Store_filepath_to_pandas(
       self, filepath: str, vt_hash: str,
