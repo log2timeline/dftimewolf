@@ -47,7 +47,7 @@ class VTCollector(module.BaseModule):
   def Process(self) -> None:
     """Process of the VirusTotal collector after setup"""
 
-    for vt_hash in self.hashes_list:
+    for vt_hash in list(self.hashes_list):
       if not self._isHashKnownToVT(vt_hash):
         self.logger.info(
             f'Hash not found on VT removing element {vt_hash} from list')
@@ -66,13 +66,13 @@ class VTCollector(module.BaseModule):
 
       download = self.client.get(download_link)
       if download.status == 200:
-        file.write(download.content.read())
+        file_content = download.content.read()
 
-        # In case the provided PCAP is size 0, delete the file and move on
-        if os.stat(filename).st_size == 0:
-          if os.path.exists(filename):
-            os.remove(filename)
-            continue
+        if len(file_content) == 0:
+          continue
+        
+        file.write(file_content)
+
       else:
         self.ModuleError(f"File not found {download_link}", critical=False)
 
