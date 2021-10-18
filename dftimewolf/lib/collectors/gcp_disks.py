@@ -384,30 +384,31 @@ class GKEDiskCollector(module.BaseModule):
       workload_name (str): The name of the Kubernetes workload to consider.
       workload_namespace (str): The namespace of the Kubernetes workload.
     """
-    # TODO: Remove .GetK8sCluster when new LCF version
     project = gcp_project.GoogleCloudProject(project_name)
-    cluster = gke.GkeCluster(project_name, cluster_zone, cluster_name).GetK8sCluster()
+    cluster = gke.GkeCluster(project_name, cluster_zone, cluster_name)
 
     if workload_name and workload_namespace:
-      # TODO: Change to .FindWorkload when new LCF version
-      workload = cluster.GetDeployment(workload_name, workload_namespace)
-      # TODO: Change to .GetCoveredNodes when new LCF version
-      node_names = {
-        pod.GetNode().name
-        for pod in workload.GetCoveredPods()
-      }
+      # Workload name and namespace was specified, select nodes from the
+      # cluster's workload
+      workload = cluster.FindWorkload(workload_name, workload_namespace)
+      if not workload:
+        self.ModuleError('Workload not found.', critical=True)
+        return
+      nodes = workload.GetCoveredNodes()
     elif workload_name or workload_namespace:
       # Either workload name or workload namespace was given
-      self.ModuleError('Both the workload name and namespace must be supplied.',
-                       critical=True)
+      self.ModuleError(
+          'Both the workload name and namespace must be supplied.',
+           critical=True)
       return
     else:
       # Nothing about a workload was specified, handle the whole cluster
-      node_names = {node.name for node in cluster.ListNodes()}
+      nodes = cluster.ListNodes()
 
-    for node_name in node_names:
-      self.instances.append(project.compute.GetInstance(node_name))
+    for node in nodes:
+      self.instances.append(project.compute.GetInstance(node.name))
 
 
 modules_manager.ModulesManager.RegisterModule(GCEDiskCopier)
 modules_manager.ModulesManager.RegisterModule(GCEDiskCollector)
+modules_manager.ModulesManager.RegisterModule(GKEDiskCollector)
