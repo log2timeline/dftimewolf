@@ -34,8 +34,8 @@ class VTCollector(module.BaseModule):
 
     Args:
       state (DFTimewolfState): recipe state.
-      name (Optional[str]): The module's runtime name.
-      critical (Optional[bool]): True if the module is critical, which causes
+      name (Optional): The module's runtime name.
+      critical (Optional): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
     super(VTCollector, self).__init__(state, name=name, critical=critical)
@@ -58,10 +58,7 @@ class VTCollector(module.BaseModule):
         'Found the following files on VT: {0:s}'.format(*self.hashes_list))
 
     for vt_hash in self.hashes_list:
-      if self.vt_type == 'pcap':
-        pcap_download_list = self._get_pcap_download_links(vt_hash)
-      elif self.vt_type == 'evtx':
-        pcap_download_list = self._get_evtx_download_links(vt_hash)
+      pcap_download_list = self._get_download_links(vt_hash)
 
     for download_link in pcap_download_list:
       self.logger.info(download_link)
@@ -118,10 +115,10 @@ class VTCollector(module.BaseModule):
     """Sets up an Virustotal (VT) collector.
 
     Args:
-      hashes (str): Coma seperated strings of hashes
-      vt_api_key (str): Virustotal Enterprise API Key
-      vt_type (str) : Which file to fetch
-      output_path [optional] (str) : Where to store the downloaded files to
+      hashes: Coma seperated strings of hashes
+      vt_api_key: Virustotal Enterprise API Key
+      vt_type: Which file to fetch
+      output_path [optional]: Where to store the downloaded files to
     """
 
     self.output_path = self._CheckOutputPath(output_path)
@@ -147,7 +144,7 @@ class VTCollector(module.BaseModule):
       return
 
     self.client = vt.Client(vt_api_key)
-    
+
     if self.client is None:
         self.ModuleError(
             f'Error creating Virustotal Client instance',
@@ -178,13 +175,13 @@ class VTCollector(module.BaseModule):
   def _CheckOutputPath(self, output_path: str = tempfile.mkdtemp()) -> str:
     """Checks that the output path can be manipulated by the module.
 
-          Args:
-          output_path: Full path to the output directory where files will be
-              dumped.
+    Args:
+    output_path: Full path to the output directory where files will be
+        dumped.
 
-          Returns:
-              str: The full path to the directory where files will be dumped.
-          """
+    Returns:
+        The full path to the directory where files will be dumped.
+    """
     # Check that the output path can be manipulated
     if not output_path:
       return tempfile.mkdtemp()
@@ -222,54 +219,32 @@ class VTCollector(module.BaseModule):
               False: File not found on VT.
           """
     try:
-      self.logger.debug('Trying to find {0:s} on Virustotal...'.format(vt_hash))
+      self.logger.debug(f'Trying to find {vt_hash} on Virustotal...')
       self.client.get_object(f"/files/{vt_hash}")
     except:  # pylint: disable=bare-except
       return False
 
     return True
 
-  def _get_pcap_download_links(self, vt_hash: str) -> List[str]:
+  def _get_download_links(self, vt_hash: str, ) -> List[str]:
     """Checks if a hash has a PCAP file available.
-          Returns a list of the URLs for download.
-          One hash can have multiple PCAPs available.
+    Returns a list of the URLs for download.
+    One hash can have multiple PCAPs available.
 
-          Args:
-              vt_hash ([str]): A hash.
+    Args:
+        vt_hash: A hash.
 
-          Returns:
-              list[str]: List of strings with URLs to the PCAP files.
-          """
+    Returns:
+        list[str]: List of strings with URLs to the PCAP files.
+    """
     vt_data = self.client.get_data(f"/files/{vt_hash}/behaviours")
     return_list = []
+  
     for analysis in vt_data:
-      if analysis["attributes"]["has_pcap"]:
+      if analysis["attributes"][f'has_{self.vt_type}']:
         analysis_link = analysis["links"]["self"]
         self.logger.info(
             'Found PCAP for {0:s} to be processed: {1:s}'.format(
-                vt_hash, analysis_link))
-        return_list.append(analysis_link)
-
-    return return_list
-
-  def _get_evtx_download_links(self, vt_hash: str) -> List[str]:
-    """Checks if a hash has a EVTX file available.
-          Returns a list of the URLs for download.
-          One hash can have multiple EVTX available.
-
-          Args:
-              vt_hash ([str]): A hash.
-
-          Returns:
-              list[str]: List of strings with URLs to the PCAP files.
-          """
-    vt_data = self.client.get_data(f"/files/{vt_hash}/behaviours")
-    return_list = []
-    for analysis in vt_data:
-      if analysis["attributes"]["has_evtx"]:
-        analysis_link = analysis["links"]["self"]
-        self.logger.info(
-            'Found EVTX for {0:s} to be processed: {1:s}'.format(
                 vt_hash, analysis_link))
         return_list.append(analysis_link)
 
