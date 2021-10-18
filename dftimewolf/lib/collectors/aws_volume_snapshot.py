@@ -11,8 +11,10 @@ from dftimewolf.lib.state import DFTimewolfState
 
 
 class AWSVolumeSnapshotCollector(module.BaseModule):
-  """Takes snapshots of AWS EBS volumes. Volume ID list can be passed in via
-  SetUp args, or via AWSVolume containers from a previous module.
+  """Takes snapshots of AWS EBS volumes.
+
+  Volume ID list can be passed in via SetUp args, or via AWSVolume containers
+  from a previous module.
 
   Attributes:
     region: The region the volumes exist in.

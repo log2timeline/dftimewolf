@@ -35,8 +35,10 @@ class AWSSnapshotS3CopyException(Exception):
 
 
 class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
-  """Copies AWS EBS snapshots into AWS S3. Snapshot list can be passed in via
-  SetUp parameters, or from a AWSAttributeContainer from a previous module.
+  """Copies AWS EBS snapshots into AWS S3.
+
+  Snapshot list can be passed in via SetUp parameters, or from an
+  AWSAttributeContainer from a previous module.
 
   Attributes:
     snapshots: The snapshots to copy.
@@ -85,16 +87,16 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
     """Set up for the snapshot copy operation."""
     # Validate the bucket exists. If not, create it.
     try:
-      self.aws_account = \
-          account.AWSAccount(self._PickAvailabilityZone(self.subnet))
+      self.aws_account = account.AWSAccount(
+          self._PickAvailabilityZone(self.subnet))
       s3 = boto3.client('s3', region_name=self.region)
     except AWSSnapshotS3CopyException as exception:
       self.ModuleError(
           'Error encountered determining availability zone: {0!s}'.format(
               exception), critical=True)
 
-    if self.bucket not in \
-        [bucket['Name'] for bucket in s3.list_buckets()['Buckets']]:
+    if self.bucket not in [bucket['Name']
+        for bucket in s3.list_buckets()['Buckets']]:
       self.logger.info('Creating AWS bucket {0:s}'.format(self.bucket))
       s3.create_bucket(
         Bucket=self.bucket,
@@ -102,12 +104,12 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
 
     # Check the snapshots exist
     try:
-      self.ec2.describe_snapshots(
-          SnapshotIds=[snap.snap_id for snap in \
-              self.state.GetContainers(containers.AWSSnapshot)])
+      cont_list = self.state.GetContainers(containers.AWSSnapshot)
+      snaps = [snap.snap_id for snap in cont_list]
+      self.ec2.describe_snapshots(SnapshotIds=snaps)
     except self.ec2.exceptions.ClientError as exception:
-      self.ModuleError('Error encountered describing snapshots: {0!s}'.\
-        format(exception), critical=True)
+      self.ModuleError('Error encountered describing snapshots: {0!s}'.
+          format(exception), critical=True)
 
     # Create the IAM pieces
     self.iam_details = forensics.CopyEBSSnapshotToS3SetUp(
@@ -131,8 +133,8 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
       for h in result['hashes']:
         self.state.StoreContainer(containers.AWSS3Object(h))
     except ResourceCreationError as exception:
-      self.ModuleError('Exception during copy operation: {0!s}'\
-        .format(exception), critical=True)
+      self.ModuleError('Exception during copy operation: {0!s}'.
+          format(exception), critical=True)
 
   def PostProcess(self) -> None:
     """Clean up afterwards."""
@@ -141,12 +143,12 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
 
   # pylint: disable=inconsistent-return-statements
   def _PickAvailabilityZone(self, subnet: str='') -> str:
-    """Given a region + subnet, pick an availability zone. If the subnet is
-    provided, it's AZ is returned. Otherwise, one is picked from those
-    available in the region.
+    """Given a region + subnet, pick an availability zone.
+
+    If the subnet is provided, it's AZ is returned. Otherwise, one is picked
+    from those available in the region.
 
     Args:
-      ec2 (boto3.client): EC2 client.
       subnet (str): Optional. An EC2 subnet ID.
 
     Returns:
@@ -156,8 +158,8 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
       AWSSnapshotS3CopyException: If no suitable AZ can be found."""
     # If we received a subnet ID, return the AZ for it
     if subnet:
-      return str(self.ec2.describe_subnets(SubnetIds=[subnet])\
-        ['Subnets'][0]['AvailabilityZone'])
+      subnets = self.ec2.describe_subnets(SubnetIds=[subnet])
+      return str(subnets['Subnets'][0]['AvailabilityZone'])
 
     # Otherwise, pick one.
     response = self.ec2.describe_availability_zones(

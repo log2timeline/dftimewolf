@@ -285,6 +285,7 @@ class GCEDisk(interface.AttributeContainer):
 
 class GCEImage(interface.AttributeContainer):
   """Attribute container definition for a GCE Image object.
+
   Attributes:
     name (str): The image name.
   """
@@ -376,8 +377,10 @@ class GCSObject(interface.AttributeContainer):
       path (str): GCS object paths.
     """
     super(GCSObject, self).__init__()
-    self.path = path if path.startswith('gs://') \
-        else 'gs://' + path
+    if path.startswith('gs://'):
+      self.path = path
+    else:
+      self.path = 'gs://' + path
 
 
 class AWSS3Object(interface.AttributeContainer):
@@ -396,8 +399,10 @@ class AWSS3Object(interface.AttributeContainer):
       path (str): S3 object path.
     """
     super(AWSS3Object, self).__init__()
-    self.path = path if path.startswith('s3://') else \
-        's3://' + path
+    if path.startswith('s3://'):
+      self.path = path
+    else:
+      self.path = 's3://' + path
 
 
 class AWSVol(interface.AttributeContainer):

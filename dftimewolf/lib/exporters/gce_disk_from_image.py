@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Export objects from AWS S3 to a GCP GCS bucket."""
+"""Create disks in GCE from disk images."""
 
 from typing import Any, Optional, Type
 
@@ -11,16 +11,14 @@ from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 
 
-IMAGE_BUILD_ROLE_NAME = 'disk_build_role'
-
 class GCEDiskFromImage(module.ThreadAwareModule):
-  """Initialises creating disks in GCE from images in GCS."""
+  """Create disks in GCE from disk images."""
 
   def __init__(self,
                state: DFTimewolfState,
                name: Optional[str]=None,
                critical: bool=False) -> None:
-    """Initialises creating disks in GCE from images in GCS.
+    """Initialises creating disks in GCE from disk images.
 
     Args:
       state (DFTimewolfState): recipe state.
@@ -56,7 +54,10 @@ class GCEDiskFromImage(module.ThreadAwareModule):
 
 
   def Process(self, container: containers.GCEImage) -> None:
-    """Creates a GCE disk from an image."""
+    """Creates a GCE disk from an image.
+    
+    Args:
+      container (containers.GCEImage): The conatiner to process."""
     self.logger.info('Creating disk from image {0:s}'.format(container.name))
 
     image = GoogleComputeImage(
@@ -68,7 +69,7 @@ class GCEDiskFromImage(module.ThreadAwareModule):
     # member self.dest_project due to an underlying thread safety issue in
     # httplib2: https://github.com/googleapis/google-cloud-python/issues/3501
     project = gcp_project.GoogleCloudProject(self.dest_project_name)
-    disk = project.compute.CreateDiskFromImage( #GoogleComputeDisk
+    disk = project.compute.CreateDiskFromImage(
       src_image = image,
       zone = self.dest_zone)
     self.state.StoreContainer(containers.GCEDisk(disk.name))

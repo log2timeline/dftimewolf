@@ -17,7 +17,7 @@ class S3ToGCSCopy(module.ThreadAwareModule):
   """AWS S3 objects to GCP GCS.
 
   Attributes:
-    aws_region (srt): AWS region (for account.AWSAccount creation).
+    aws_region (str): AWS region (for account.AWSAccount creation).
     dest_project (gcp_project.GoogleCloudProject): Destination project with the
       destination GCS bucket.
     dest_project_name (str): Name of the destination project. used to create
@@ -82,8 +82,8 @@ class S3ToGCSCopy(module.ThreadAwareModule):
     # Check if the destination bucket exists. If not, create it.
     if not self.dest_bucket:
       self.ModuleError('No destination GCP bucket specified', critical=True)
-    if self.dest_bucket not in \
-        [bucket['id'] for bucket in self.dest_project.storage.ListBuckets()]:
+    buckets = [b['id'] for b in self.dest_project.storage.ListBuckets()]
+    if self.dest_bucket not in buckets:
       self.logger.info('Creating GCS bucket {0:s}'.format(self.dest_bucket))
       self.dest_project.storage.CreateBucket(self.dest_bucket)
 

@@ -89,6 +89,10 @@ class GCSToGCEImage(module.ThreadAwareModule):
         self.state.StoreContainer(containers.GCSObject(obj))
 
   def PreProcess(self) -> None:
+    """PreProcessing for the module.
+
+    In this case, create or update the required role for image creation."""
+
     # Look for the role. If it exists, check if it is in a deleted state.
     role = self._GetRoleInfo()
     if role is None:
@@ -119,7 +123,10 @@ class GCSToGCEImage(module.ThreadAwareModule):
     time.sleep(30) # Leave some time for permissions to propagate
 
   def Process(self, container: containers.GCSObject) -> None:
-    """Creates a GCE image from an image in GCS."""
+    """Creates a GCE image from an image in GCS.
+
+    Args:
+      container (containers.GCSObject): The conatiner to process."""
     name = container.path[5:]
     name = re.sub(r'^.+?/', '', name)
     name = re.sub(r'[^-a-z0-9]', '-', name)
@@ -155,7 +162,10 @@ class GCSToGCEImage(module.ThreadAwareModule):
     return None
 
   def _CreateRoleForCloudBuild(self) -> str:
-    """Creates a role for CloudBuild."""
+    """Creates a role for CloudBuild.
+    
+    ImportImageFromStorage uses CloudBuild, which creates an image from the disk
+    image in GCS."""
     role = self.iam_service.projects().roles().create(#pylint: disable=no-member
         parent='projects/' + self.dest_project_name,
         body={
@@ -199,7 +209,7 @@ class GCSToGCEImage(module.ThreadAwareModule):
   def _AssignRolesToCloudBuild(self, role_name: str) -> None:
     # Find the account
     crm = common.CreateService('cloudresourcemanager', 'v1')
-    response = crm.projects().get(projectId=self.dest_project_name).execute() #pylint: disable=no-member
+    project = crm.projects().get(projectId=self.dest_project_name).execute() #pylint: disable=no-member
 
     # Get the existing IAM bindings
     policy = crm.projects().getIamPolicy( #pylint: disable=no-member
@@ -209,7 +219,7 @@ class GCSToGCEImage(module.ThreadAwareModule):
     # Cloudbuild needs our custom role and 'roles/iam.serviceAccountUser'
     cloudbuild_account = \
         'serviceAccount:{0:s}@cloudbuild.gserviceaccount.com'.format(
-            response['projectNumber'])
+            project['projectNumber'])
     for role in ['roles/iam.serviceAccountUser', role_name]:
       found = False
       for binding in policy['bindings']:
@@ -217,16 +227,16 @@ class GCSToGCEImage(module.ThreadAwareModule):
           found = True
           binding['members'].append(cloudbuild_account)
           break
-    if not found:
-      policy['bindings'].append({
-        'role': role,
-        'members': cloudbuild_account
-      })
+      if not found:
+        policy['bindings'].append({
+          'role': role,
+          'members': cloudbuild_account
+        })
 
     # Compute default service account needs 'roles/storage.objectViewer'
     compute_account = \
         'serviceAccount:{0:s}-compute@developer.gserviceaccount.com'.format(
-            response['projectNumber'])
+            project['projectNumber'])
     role = 'roles/storage.objectViewer'
     found = False
     for binding in policy['bindings']:
