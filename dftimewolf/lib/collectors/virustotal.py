@@ -3,6 +3,7 @@
 
 import os
 import tempfile
+import urllib.parse
 import zipfile
 
 from typing import List
@@ -59,7 +60,7 @@ class VTCollector(module.BaseModule):
       pcap_download_list = self._getDownloadLinks(vt_hash)
 
     for download_link in pcap_download_list:
-      self.logger.info(download_link)
+      self.logger.info(urllib.parse.quote(download_link))
       filename = f'{vt_hash}.{self.vt_type}'
       file = open(os.path.join(self.directory, filename), "wb")
 
@@ -73,7 +74,7 @@ class VTCollector(module.BaseModule):
         file.write(file_content)
 
       else:
-        self.logger.info(f'File not found {download_link}')
+        self.logger.info(f'File not found {urllib.parse.quote(download_link)}')
 
       if self.vt_type == 'pcap':
         container = containers.File(name=vt_hash, path=file.name)
@@ -204,7 +205,7 @@ class VTCollector(module.BaseModule):
       if analysis['attributes'][f'has_{self.vt_type}']:
         analysis_link = f'{analysis["links"]["self"]}/{self.vt_type}'
         self.logger.info(
-            f'Found {self.vt_type} for {vt_hash} to be processed: {analysis_link}'
+            f'{self.vt_type} for {vt_hash}: {urllib.parse.quote(analysis_link)}'
         )
         return_list.append(analysis_link)
 
