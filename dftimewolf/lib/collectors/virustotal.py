@@ -54,13 +54,14 @@ class VTCollector(module.BaseModule):
             f'Hash not found on VT removing element {vt_hash} from list')
         self.hashes_list.remove(vt_hash)
 
-    self.logger.info(f'Found the following files on VT: {*self.hashes_list,}')
+    self.logger.info(
+        f'Found the following files on VT: {str(self.hashes_list)}')
 
     for vt_hash in self.hashes_list:
       pcap_download_list = self._getDownloadLinks(vt_hash)
 
     for download_link in pcap_download_list:
-      self.logger.info(urllib.parse.quote(download_link))
+      self.logger.info('Download link {urllib.parse.quote(download_link)}')
       filename = f'{vt_hash}.{self.vt_type}'
       file = open(os.path.join(self.directory, filename), "wb")
 
@@ -74,7 +75,8 @@ class VTCollector(module.BaseModule):
         file.write(file_content)
 
       else:
-        self.logger.info(f'File not found {urllib.parse.quote(download_link)}')
+        self.logger.warning(
+            f'File not found {urllib.parse.quote(download_link)}')
 
       if self.vt_type == 'pcap':
         container = containers.File(name=vt_hash, path=file.name)
@@ -89,7 +91,7 @@ class VTCollector(module.BaseModule):
         with zipfile.ZipFile(file.name) as archive:
           archive.extractall(path=extract_output_dir)
           self.logger.debug(
-              f'Downloaded file extracted to {extract_output_dir}')
+              f'{file.name} file extracted to {extract_output_dir}')
 
         container = containers.File(
             name=vt_hash, path=os.path.abspath(extract_output_dir))
@@ -121,12 +123,12 @@ class VTCollector(module.BaseModule):
 
     if not vt_type:
       self.ModuleError(
-          "You need to specify an vt_type from: pcap, evtx", critical=True)
+          "You need to specify a vt_type from: pcap, evtx", critical=True)
       return
 
     self.vt_type = vt_type
 
-    self.hashes_list = [item.strip() for item in hashes.strip().split(",")]
+    self.hashes_list = [item.strip() for item in hashes.strip().split(',')]
 
     if not vt_api_key:
       self.ModuleError(

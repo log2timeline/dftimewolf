@@ -1,6 +1,6 @@
 {
   "name": "vt_pcap",
-  "description": "Fetches the PCAP for a specific hash.",
+  "description": "Fetches the PCAP from VirusTotalfor a specific hash.",
   "short_description": "Fetches the PCAP from VirusTotal sandbox run for a specific hash",
   "modules": [
     {
