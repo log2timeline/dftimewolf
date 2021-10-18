@@ -173,11 +173,7 @@ class VTCollector(module.BaseModule):
           f'{output_path} error while creating the output directory: {error}',
           critical=True,
       )
-      """Below should never be reached, but Either all return statements in 
-      a function should return an expression, or none of them should. 
-      (inconsistent-return-statements)
-      """
-      return tempfile.mkdtemp()
+
 
   def _isHashKnownToVT(self, vt_hash: str) -> bool:
     """Checks if a hash is known to VT.
