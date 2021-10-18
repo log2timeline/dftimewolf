@@ -62,11 +62,10 @@ class VTCollector(module.BaseModule):
 
     for download_link in pcap_download_list:
       self.logger.info(download_link)
-      real = f"{download_link}/{self.vt_type}"
       filepath = f'{download_link.rsplit("/", 1)[-1]}.{self.vt_type}'
       file = open(filepath, "wb")
 
-      download = self.client.get(real)
+      download = self.client.get(download_link)
       if download.status == 200:
         file.write(download.content.read())
 
@@ -76,7 +75,7 @@ class VTCollector(module.BaseModule):
             os.remove(filepath)
             continue
       else:
-        self.ModuleError(f"File not found {real}", critical=False)
+        self.ModuleError(f"File not found {download_link}", critical=False)
 
       if self.vt_type == 'pcap':
         self.logger.info('Writing pcap to file')
@@ -235,17 +234,16 @@ class VTCollector(module.BaseModule):
         vt_hash: A hash.
 
     Returns:
-        list[str]: List of strings with URLs to the PCAP files.
+        list[str]: List of strings with URLs to the requested files.
     """
     vt_data = self.client.get_data(f"/files/{vt_hash}/behaviours")
     return_list = []
   
     for analysis in vt_data:
       if analysis["attributes"][f'has_{self.vt_type}']:
-        analysis_link = analysis["links"]["self"]
+        analysis_link = f'{analysis["links"]["self"]}/{self.vt_type}'
         self.logger.info(
-            'Found PCAP for {0:s} to be processed: {1:s}'.format(
-                vt_hash, analysis_link))
+            f'Found {self.vt_type} for {vt_hash} to be processed: {analysis_link}'))
         return_list.append(analysis_link)
 
     return return_list
