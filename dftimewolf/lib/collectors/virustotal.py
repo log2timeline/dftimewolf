@@ -76,14 +76,10 @@ class VTCollector(module.BaseModule):
         self.logger.info(f'File not found {download_link}')
 
       if self.vt_type == 'pcap':
-        self.logger.info('Writing pcap to file')
-
         container = containers.File(name=vt_hash, path=file.name)
         self.state.StoreContainer(container)
 
       if self.vt_type == 'evtx':
-        self.logger.info('Writing EVTX to file')
-
         # Unzip the file so that plaso can go over EVTX part in the archive
         extract_output_dir = f'{file.name}_extract'
         if not os.path.isdir(extract_output_dir):
