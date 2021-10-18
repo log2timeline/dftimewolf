@@ -95,7 +95,7 @@ class VTCollector(module.BaseModule):
           self.logger.debug(
               f'{file.name} file extracted to {extract_output_dir}')
 
-        container = containers.File(
+        container = containers.Directory(
             name=vt_hash, path=os.path.abspath(extract_output_dir))
         self.state.StoreContainer(container)
         self.logger.info(f'Finished writing EVTX to {extract_output_dir}')

@@ -19,10 +19,11 @@ class LocalPlasoProcessor(module.BaseModule):
   output: The path to the resulting Plaso storage file.
   """
 
-  def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str]=None,
-               critical: bool=False) -> None:
+  def __init__(
+      self,
+      state: DFTimewolfState,
+      name: Optional[str] = None,
+      critical: bool = False) -> None:
     super(LocalPlasoProcessor, self).__init__(
         state, name=name, critical=critical)
     self._timezone = None  # type: Optional[str]
@@ -38,7 +39,7 @@ class LocalPlasoProcessor(module.BaseModule):
         return True
     return False
 
-  def SetUp(self, timezone: Optional[str]=None) -> None:  # pylint: disable=arguments-differ
+  def SetUp(self, timezone: Optional[str] = None) -> None:  # pylint: disable=arguments-differ
     """Sets up the local time zone with Plaso (log2timeline) should use.
 
     Args:
@@ -47,13 +48,15 @@ class LocalPlasoProcessor(module.BaseModule):
     self._timezone = timezone
     self._output_path = tempfile.mkdtemp()
     if not self._DeterminePlasoPath():
-      self.ModuleError('log2timeline.py was not found in your PATH. To fix: \n'
-                       '  apt install plaso-tools',
-                       critical=True)
+      self.ModuleError(
+          'log2timeline.py was not found in your PATH. To fix: \n'
+          '  apt install plaso-tools',
+          critical=True)
 
   def Process(self) -> None:
     """Executes log2timeline.py on the module input."""
-    for file_container in self.state.GetContainers(containers.File, pop=True):
+    # TODO: Add Directory Type here
+    for file_container in [self.state.GetContainers(containers.File, pop=True)]:
       description = file_container.name
       path = file_container.path
       log_file_path = os.path.join(self._output_path, 'plaso.log')
@@ -91,8 +94,9 @@ class LocalPlasoProcessor(module.BaseModule):
         self.ModuleError(str(exception), critical=True)
 
       if l2t_status:
-        message = ('The log2timeline command {0:s} failed: {1!s}.'
-                   ' Check log file for details.').format(full_cmd, error)
+        message = (
+            'The log2timeline command {0:s} failed: {1!s}.'
+            ' Check log file for details.').format(full_cmd, error)
         self.ModuleError(message, critical=True)
 
       container = containers.File(description, plaso_storage_file_path)
