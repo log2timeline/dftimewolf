@@ -21,7 +21,7 @@ class VTCollector(module.BaseModule):
   """VirusTotal (VT) Collector.
 
   Attributes:
-    hashes_list List[hashes_list]: List of hashes passed ot the module
+    hashes_list: List of hashes passed ot the module
     vt_type: pcap or evtx depending on the file type requested
 
   """
