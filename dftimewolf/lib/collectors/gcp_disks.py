@@ -2,12 +2,14 @@
 """Classes for storing GCP disks into containers."""
 
 from typing import List, Optional, Dict
+from typing import Set
 
 from google.auth.exceptions import DefaultCredentialsError, RefreshError
 from googleapiclient.errors import HttpError
 from libcloudforensics.errors import ResourceNotFoundError
 from libcloudforensics.providers.gcp import forensics as gcp_forensics
 from libcloudforensics.providers.gcp.internal import common
+from libcloudforensics.providers.gcp.internal import gke
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal import compute
 
@@ -339,6 +341,72 @@ class GCEDiskCollector(module.BaseModule):
         'Could not find any disks to copy', critical=True)
 
     return disks_to_copy
+
+class GKEDiskCollector(module.BaseModule):
+
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str] = None,
+               critical: Optional[bool] = False):
+    """Initializes a GKE disk collector.
+
+    Args:
+      state (DFTimewolfState): Recipe state.
+      name (Optional[str]): The module's runtime name.
+      critical (Optional[bool]): True if the module is critical, which causes
+          the entire recipe to fail if the module encounters an error.
+    """
+    super(GKEDiskCollector, self).__init__(state, name=name, critical=critical)
+    self.instances = []  # type: List[compute.GoogleComputeInstance]
+
+  def Process(self) -> None:
+    """Stores the queued instance disks into this object's state."""
+    for instance in self.instances:
+      disk = instance.GetBootDisk()
+      self.state.StoreContainer(containers.GCEDisk(disk.name))
+
+  def SetUp(self,
+            project_name: str,
+            cluster_name: str,
+            cluster_zone: str,
+            workload_name: Optional[str],
+            workload_namespace: Optional[str]) -> None:
+    """Sets up the GKE disk collector.
+
+    This method adds instances whose disks to copy to this object's empty
+    instance list. If workload details have been supplied, only the nodes
+    covered by that workload will be queued.
+
+    Args:
+      project_name (str): The project ID where the cluster is to be found.
+      cluster_name (str): The name of the cluster.
+      cluster_zone (str): The zone of the cluster (control plane zone).
+      workload_name (str): The name of the Kubernetes workload to consider.
+      workload_namespace (str): The namespace of the Kubernetes workload.
+    """
+    # TODO: Remove .GetK8sCluster when new LCF version
+    project = gcp_project.GoogleCloudProject(project_name)
+    cluster = gke.GkeCluster(project_name, cluster_zone, cluster_name).GetK8sCluster()
+
+    if workload_name and workload_namespace:
+      # TODO: Change to .FindWorkload when new LCF version
+      workload = cluster.GetDeployment(workload_name, workload_namespace)
+      # TODO: Change to .GetCoveredNodes when new LCF version
+      node_names = {
+        pod.GetNode().name
+        for pod in workload.GetCoveredPods()
+      }
+    elif workload_name or workload_namespace:
+      # Either workload name or workload namespace was given
+      self.ModuleError('Both the workload name and namespace must be supplied.',
+                       critical=True)
+      return
+    else:
+      # Nothing about a workload was specified, handle the whole cluster
+      node_names = {node.name for node in cluster.ListNodes()}
+
+    for node_name in node_names:
+      self.instances.append(project.compute.GetInstance(node_name))
 
 
 modules_manager.ModulesManager.RegisterModule(GCEDiskCopier)
