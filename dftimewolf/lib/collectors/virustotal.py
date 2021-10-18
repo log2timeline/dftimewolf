@@ -53,14 +53,15 @@ class VTCollector(module.BaseModule):
             f'Hash not found on VT removing element {vt_hash} from list')
         self.hashes_list.remove(vt_hash)
 
-    self.logger.info(f'Found the following files on VT: {*self.hashes_list,}')
+    self.logger.info(
+        f'Found the following files on VT: {*self.hashes_list}')
 
     for vt_hash in self.hashes_list:
       pcap_download_list = self._getDownloadLinks(vt_hash)
 
     for download_link in pcap_download_list:
       self.logger.info(download_link)
-      filename = f'{vt_hash}.{self.vt_type}'
+      filename = f'{download_link.rsplit("/", 1)[-1]}.{self.vt_type}'
       file = open(self.output_path + filename, "wb")
 
       download = self.client.get(download_link)
@@ -69,7 +70,7 @@ class VTCollector(module.BaseModule):
 
         if len(file_content) == 0:
           continue
-
+        
         file.write(file_content)
 
       else:
@@ -79,23 +80,25 @@ class VTCollector(module.BaseModule):
         self.logger.info('Writing pcap to file')
 
         container = containers.File(
-            name=vt_hash, path=os.path.abspath(file.name))
+            name=vt_hash, path=os.path.abspath(filename))
         self.state.StoreContainer(container)
-        self.logger.info(f'Finished writing evtx to file {file.name}')
+        self.logger.info('Finished writing evtx to file')
 
       if self.vt_type == 'evtx':
+        self.logger.info('Writing evtx to file')
+
         # Unzip the file so that plaso can go over evtx part in the archive
+        client_output_file = os.path.join(self.output_path, vt_hash)
+        if not os.path.isdir(client_output_file):
+          os.makedirs(client_output_file)
 
-        unzip_full_path = f'{file.name}_extract'
-        if not os.path.isdir(unzip_full_path):
-          os.makedirs(unzip_full_path)
-
-        with zipfile.ZipFile(file.name) as archive:
-          archive.extractall(path=unzip_full_path)
-          self.logger.debug(f'Downloaded file extracted to {unzip_full_path}')
+        with zipfile.ZipFile(filename) as archive:
+          archive.extractall(path=client_output_file)
+          self.logger.debug(
+              f'Downloaded file extracted to {client_output_file}')
 
         container = containers.File(
-            name=vt_hash, path=os.path.abspath(unzip_full_path))
+            name=vt_hash, path=os.path.abspath(client_output_file))
         self.state.StoreContainer(container)
         self.logger.info('Finished writing evtx to file')
 
@@ -119,7 +122,7 @@ class VTCollector(module.BaseModule):
     self.output_path = self._CheckOutputPath(output_path)
 
     if not hashes:
-      self.ModuleError("You need to specify at least one hash", critical=True)
+      self.ModuleError('You need to specify at least one hash', critical=True)
       return
 
     if not vt_type:
@@ -133,7 +136,7 @@ class VTCollector(module.BaseModule):
 
     if not vt_api_key:
       self.ModuleError(
-          "You need to specify a VirusTotal Enterprise API key",
+          'You need to specify a VirusTotal Enterprise API key',
           critical=True,
       )
       return
@@ -141,11 +144,11 @@ class VTCollector(module.BaseModule):
     self.client = vt.Client(vt_api_key)
 
     if self.client is None:
-      self.ModuleError(
-          f'Error creating VirusTotal Client instance',
-          critical=True,
-      )
-      return
+        self.ModuleError(
+            f'Error creating VirusTotal Client instance',
+            critical=True,
+        )
+        return
 
   def _CheckOutputPath(self, output_path: str = tempfile.mkdtemp()) -> str:
     """Checks that the output path can be manipulated by the module.
@@ -155,7 +158,7 @@ class VTCollector(module.BaseModule):
         dumped.
 
     Returns:
-        The full path to the directory where files will be dumped.
+      The full path to the directory where files will be dumped.
     """
     # Check that the output path can be manipulated
     if not output_path:
@@ -168,8 +171,7 @@ class VTCollector(module.BaseModule):
         return output_path
       except OSError as error:
         self.ModuleError(
-            "{0:s} error while creating the output directory: {1!s}".format(
-                output_path, error),
+            f'{output_path} error while creating the output directory: {error}',
             critical=True,
         )
         """Below should never be reached, but Either all return statements in 
@@ -187,16 +189,16 @@ class VTCollector(module.BaseModule):
     """Checks if a hash is known to VT.
 
     Args:
-        vt_hash: A hash.
+      vt_hash: A hash.
 
     Returns:
-        Bool: True if found on VT
-        False: File not found on VT.
+      Bool: True if found on VT
+      False: File not found on VT.
     """
     try:
       self.logger.debug(f'Trying to find {vt_hash} on VirusTotal...')
       self.client.get_object(f"/files/{vt_hash}")
-    except vt.error.APIError:
+    except:  # pylint: disable=bare-except
       return False
 
     return True
@@ -207,20 +209,19 @@ class VTCollector(module.BaseModule):
     One hash can have multiple PCAPs available.
 
     Args:
-        vt_hash: A hash.
+      vt_hash: A hash.
 
     Returns:
-        list[str]: List of strings with URLs to the requested files.
+      list[str]: List of strings with URLs to the requested files.
     """
-    vt_data = self.client.get_data(f"/files/{vt_hash}/behaviours")
+    vt_data = self.client.get_data(f'/files/{vt_hash}/behaviours')
     return_list = []
-
+  
     for analysis in vt_data:
-      if analysis["attributes"][f'has_{self.vt_type}']:
-        analysis_link = f'{analysis["links"]["self"]}/{self.vt_type}'
+      if analysis['attributes'][f'has_{self.vt_type}']:
+        analysis_link = f'{analysis['links']['self']}/{self.vt_type}'
         self.logger.info(
-            f'Found {self.vt_type} for {vt_hash} to be processed: {analysis_link}'
-        )
+            f'Found {self.vt_type} for {vt_hash} to be processed: {analysis_link}'))
         return_list.append(analysis_link)
 
     return return_list
