@@ -41,9 +41,9 @@ class VTCollector(module.BaseModule):
     """
     super(VTCollector, self).__init__(state, name=name, critical=critical)
     self.hashes_list: List[str] = []
-    self.directory: Optional[str] = None
+    self.directory = ''
     self.client = None
-    self.vt_type = None
+    self.vt_type = ''
 
   def Process(self) -> None:
     """Process of the VirusTotal collector after setup"""
@@ -59,6 +59,8 @@ class VTCollector(module.BaseModule):
 
     for vt_hash in self.hashes_list:
       pcap_download_list = self._getDownloadLinks(vt_hash)
+
+    assert self.client is not None
 
     for download_link in pcap_download_list:
       self.logger.info('Download link {urllib.parse.quote(download_link)}')
@@ -119,12 +121,12 @@ class VTCollector(module.BaseModule):
 
     if not hashes:
       self.ModuleError('You need to specify at least one hash', critical=True)
-      return
 
     if not vt_type:
       self.ModuleError(
           "You need to specify a vt_type from: pcap, evtx", critical=True)
-      return
+
+    assert vt_type is not None
 
     self.vt_type = vt_type
 
@@ -135,7 +137,6 @@ class VTCollector(module.BaseModule):
           'You need to specify a VirusTotal Enterprise API key',
           critical=True,
       )
-      return
 
     self.client = vt.Client(vt_api_key)
 
@@ -144,7 +145,6 @@ class VTCollector(module.BaseModule):
           f'Error creating VirusTotal Client instance',
           critical=True,
       )
-      return
 
     return
 
@@ -172,6 +172,7 @@ class VTCollector(module.BaseModule):
           f'{directory} error while creating the output directory: {error}',
           critical=True,
       )
+      return tempfile.mkdtemp()
 
   def _isHashKnownToVT(self, vt_hash: str) -> bool:
     """Checks if a hash is known to VT.
@@ -183,6 +184,8 @@ class VTCollector(module.BaseModule):
       Bool: True if found on VT
       False: File not found on VT.
     """
+    assert self.client is not None
+
     try:
       self.logger.debug(f'Trying to find {vt_hash} on VirusTotal...')
       self.client.get_object(f"/files/{vt_hash}")
@@ -202,6 +205,8 @@ class VTCollector(module.BaseModule):
     Returns:
       list: List of strings with URLs to the requested files.
     """
+    assert self.client is not None
+
     vt_data = self.client.get_data(f'/files/{vt_hash}/behaviours')
     return_list = []
 
