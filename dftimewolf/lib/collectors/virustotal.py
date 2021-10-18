@@ -74,7 +74,7 @@ class VTCollector(module.BaseModule):
         file.write(file_content)
 
       else:
-        self.ModuleError(f"File not found {download_link}", critical=False)
+        self.ModuleError(f'File not found {download_link}', critical=False)
 
       if self.vt_type == 'pcap':
         self.logger.info('Writing pcap to file')
@@ -82,7 +82,6 @@ class VTCollector(module.BaseModule):
         container = containers.File(
             name=vt_hash, path=os.path.abspath(filename))
         self.state.StoreContainer(container)
-        self.logger.info('Finished writing evtx to file')
 
       if self.vt_type == 'evtx':
         self.logger.info('Writing evtx to file')
