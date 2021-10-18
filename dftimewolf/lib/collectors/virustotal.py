@@ -57,7 +57,7 @@ class VTCollector(module.BaseModule):
         f'Found the following files on VT: {*self.hashes_list}')
 
     for vt_hash in self.hashes_list:
-      pcap_download_list = self._get_download_links(vt_hash)
+      pcap_download_list = self._getDownloadLinks(vt_hash)
 
     for download_link in pcap_download_list:
       self.logger.info(download_link)
@@ -204,7 +204,7 @@ class VTCollector(module.BaseModule):
 
     return True
 
-  def _get_download_links(self, vt_hash: str, ) -> List[str]:
+  def _getDownloadLinks(self, vt_hash: str, ) -> List[str]:
     """Checks if a hash has a PCAP file available.
     Returns a list of the URLs for download.
     One hash can have multiple PCAPs available.
