@@ -54,7 +54,7 @@ Details on recipe keys are given [here](architecture.md#recipes).
 
 ### Recipe location
 
-A new recipe needs to be added to `data/recipes` as a json file.
+A new recipe needs to be added to `data/recipes` as a JSON file.
 
 ### Recipe arguments
 
