@@ -21,14 +21,15 @@ Then:
 
 ```bash
 pip install pipenv
-pipenv install -r requirements.txt
-pipenv install -e .
+pipenv install --dev
 ```
 
 Now you are ready to run dfTimewolf in your local envirenment:
 
 ```bash
 /home/user/dev/dftimewolf/venv/bin/dftimewolf -h
+or
+python -m dftimewolf.cli.dftimewolf_recipes -h # if you installed with pipenv
 ```
 
 ## Codereview
