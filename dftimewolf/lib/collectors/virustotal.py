@@ -50,12 +50,11 @@ class VTCollector(module.BaseModule):
     for vt_hash in self.hashes_list:
       if not self._isHashKnownToVT(vt_hash):
         self.logger.info(
-            'Hash not found on VT removing element {0:s} from list'.format(
-                vt_hash))
+            f'Hash not found on VT removing element {vt_hash} from list')
         self.hashes_list.remove(vt_hash)
 
     self.logger.info(
-        'Found the following files on VT: {0:s}'.format(*self.hashes_list))
+        f'Found the following files on VT: {*self.hashes_list}')
 
     for vt_hash in self.hashes_list:
       pcap_download_list = self._get_download_links(vt_hash)
@@ -96,7 +95,7 @@ class VTCollector(module.BaseModule):
         with zipfile.ZipFile(filepath) as archive:
           archive.extractall(path=client_output_file)
           self.logger.debug(
-              'Downloaded file extracted to {0:s}'.format(client_output_file))
+              f'Downloaded file extracted to {client_output_file}')
 
         container = containers.File(
             name=vt_hash, path=os.path.abspath(client_output_file))
@@ -150,26 +149,6 @@ class VTCollector(module.BaseModule):
             critical=True,
         )
         return
-
-  def _Store_filepath_to_pandas(
-      self, filepath: str, vt_hash: str,
-      download_link: str) -> containers.DataFrame:
-    """ Returns a pandas container """
-    """
-    frame = self._pcap_to_pandas(filepath)
-
-    if frame is None:
-      self.logger.error(
-          'Found empty Pandas for {0:s} {1:s}'.format(vt_hash, download_link))
-      return None  # we do not want to kill the whole loop
-    container = containers.DataFrame(
-        data_frame=frame,
-        description=f'PCAP2Pandas for hash {vt_hash} {download_link}',
-        name=f'PCAP_{vt_hash}',
-    )
-    return container
-    """
-    raise NotImplementedError
 
   def _CheckOutputPath(self, output_path: str = tempfile.mkdtemp()) -> str:
     """Checks that the output path can be manipulated by the module.
