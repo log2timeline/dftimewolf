@@ -106,3 +106,13 @@ There are two locations to register new modules:
 
 - registering it at the end of the module file
 - adding it to the big dict where in the main entry point script `dftimewolf_recipes.py`
+
+## Run tests
+
+It is recommended to run tests locallty to discover issues early in the development lifecycle.
+
+````python
+pip install pipenv
+pipenv install -d
+python -m unittest discover -s tests -p '*.py'
+```
