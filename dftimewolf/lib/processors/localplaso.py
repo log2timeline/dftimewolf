@@ -6,6 +6,7 @@ import tempfile
 import uuid
 from typing import Optional
 from typing import Union
+from typing import List
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
@@ -55,15 +56,14 @@ class LocalPlasoProcessor(module.BaseModule):
           critical=True)
 
   def _processContainer(
-      self, file_container: Union[containers.File,
-                                  containers.Directory]) -> None:
+      self, container: Union[containers.File, containers.Directory]) -> None:
     """ Processes a given container either File or Directory
 
     Args:
       container: Container to be processed.
     """
-    description = file_container.name
-    path = file_container.path
+    description = container.name
+    path = container.path
     log_file_path = os.path.join(self._output_path, 'plaso.log')
     self.logger.info('Log file: {0:s}'.format(log_file_path))
 
@@ -104,18 +104,23 @@ class LocalPlasoProcessor(module.BaseModule):
           ' Check log file for details.').format(full_cmd, error)
       self.ModuleError(message, critical=True)
 
-    container = containers.File(description, plaso_storage_file_path)
-    self.state.StoreContainer(container)
+    new_container = containers.File(description, plaso_storage_file_path)
+    self.state.StoreContainer(new_container)
 
   def Process(self) -> None:
     """Executes log2timeline.py on the module input."""
 
+    combined_list = [
+    ]  # type: List[Union[containers.File, containers.Directory]]
     for file_container in self.state.GetContainers(containers.File, pop=True):
-      self._processContainer(file_container)
+      combined_list.append(file_container)
 
     for directory_container in self.state.GetContainers(containers.Directory,
                                                         pop=True):
-      self._processContainer(directory_container)
+      combined_list.append(directory_container)
+
+    for item in combined_list:
+      self._processContainer(item)
 
 
 modules_manager.ModulesManager.RegisterModule(LocalPlasoProcessor)
