@@ -66,11 +66,20 @@ class GoogleCloudCollector(module.BaseModule):
     """Copies a disk to the analysis project."""
     for disk in self._FindDisksToCopy():
       self.logger.info('Disk copy of {0:s} started...'.format(disk.name))
-      new_disk = gcp_forensics.CreateDiskCopy(
-          self.remote_project.project_id,
-          self.analysis_project.project_id,
-          self.analysis_project.default_zone,
-          disk_name=disk.name)
+
+      try:
+        new_disk = gcp_forensics.CreateDiskCopy(
+            self.remote_project.project_id,
+            self.analysis_project.project_id,
+            self.analysis_project.default_zone,
+            disk_name=disk.name)
+      except HttpError as exception:
+        if exception.status_code == 409:
+          self.logger.warning('Disk {0:s} already exists in destination '
+                              'project, skipping.'.format(new_disk.name))
+        else:
+          raise exception
+
       self.logger.success('Disk {0:s} successfully copied to {1:s}'.format(
           disk.name, new_disk.name))
       if self._gcp_label:
