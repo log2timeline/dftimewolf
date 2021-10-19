@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 """Reads logs from a GCP cloud project."""
+import abc
 import json
 import tempfile
 import time
-from typing import Optional, Dict, Any
+from typing import Iterable, Optional, Dict, Any
 
 from google.api_core import exceptions as google_api_exceptions
 from google.auth import exceptions as google_auth_exceptions
 from google.cloud import logging
 from google.cloud.logging_v2 import entries
 from googleapiclient.errors import HttpError
+from libcloudforensics.providers.gcp.internal import gke
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
@@ -30,8 +32,8 @@ def _CustomToAPIRepr(self: entries.ProtobufEntry) -> Dict[str, Any]:
 entries.ProtobufEntry.to_api_repr = _CustomToAPIRepr  # type: ignore
 
 
-class GCPLogsCollector(module.BaseModule):
-  """Collector for Google Cloud Platform logs."""
+class GCPLogsCollector(module.BaseModule, metaclass=abc.ABCMeta):
+  """Abstract class for collecting Google Cloud Platform logs."""
 
   def __init__(self,
                state: DFTimewolfState,
@@ -39,19 +41,22 @@ class GCPLogsCollector(module.BaseModule):
                critical: bool=False) -> None:
     """Initializes a GCP logs collector."""
     super(GCPLogsCollector, self).__init__(state, name=name, critical=critical)
-    self._filter_expression = ''
     self._project_name = ''
+    self._filter_expressions = []
+
+  @abc.abstractmethod
+  def _SetUpFilterExpressions(self, *args, **kwargs):
+    """Sets up the _filter_expressions attribute of this collector."""
 
   # pylint: disable=arguments-differ
-  def SetUp(self, project_name: str, filter_expression: str) -> None:
+  def SetUp(self, project_name: str, *args, **kwargs) -> None:
     """Sets up a a GCP logs collector.
 
     Args:
       project_name (str): name of the project to fetch logs from.
-      filter_expression (str): GCP advanced logs filter expression.
     """
     self._project_name = project_name
-    self._filter_expression = filter_expression
+    self._SetUpFilterExpressions(*args, **kwargs)
 
   def Process(self) -> None:
     """Copies logs from a cloud project."""
@@ -68,9 +73,18 @@ class GCPLogsCollector(module.BaseModule):
       else:
         logging_client = logging.Client(_use_grpc=False)  # type: ignore
 
+      # Collect filter expressions
+      if len(self._filter_expressions) == 1:
+        filter_expression = self._filter_expressions[0]
+      else:
+        filter_expression = ' OR '.join(
+            map('( {0:s} )'.format, self._filter_expressions))
+
+      self.logger.info('For filter expression {0!r}'.format(filter_expression))
+
       results = logging_client.list_entries(  # type: ignore
           order_by=logging.DESCENDING,
-          filter_=self._filter_expression,
+          filter_=filter_expression,
           page_size=1000)
 
       pages = results.pages
@@ -100,7 +114,7 @@ class GCPLogsCollector(module.BaseModule):
     except google_api_exceptions.InvalidArgument as exception:
       self.ModuleError(
           'Unable to parse filter {0:s} with error {1:s}'.format(
-              self._filter_expression, exception), critical=True)
+              filter_expression, exception), critical=True)
 
     except (google_auth_exceptions.DefaultCredentialsError,
             google_auth_exceptions.RefreshError) as exception:
@@ -125,9 +139,59 @@ class GCPLogsCollector(module.BaseModule):
     output_file.close()
 
     logs_report = containers.GCPLogs(
-        path=output_path, filter_expression=self._filter_expression,
+        path=output_path, filter_expression=filter_expression,
         project_name=self._project_name)
     self.state.StoreContainer(logs_report)
 
 
-modules_manager.ModulesManager.RegisterModule(GCPLogsCollector)
+class GCPLogsCollectorSingle(GCPLogsCollector):
+  """Class for collecting logs from a given filter expressions."""
+
+  def _SetUpFilterExpressions(self, filter_expression: str) -> None:
+    """Override of abstract method.
+
+    Sets up the filter expressions by appending the given filter_expression to
+    this collector's _filter_expressions.
+
+    Args:
+      filter_expression: The filter expression to add to this collector.
+    """
+    self._filter_expressions.append(filter_expression)
+
+
+class GCPLogsCollectorGKEWorkload(GCPLogsCollector):
+  """Class for collecting logs from a GKE cluster."""
+
+  def _SetUpFilterExpressions(self,
+                              cluster_name: str,
+                              cluster_zone: str,
+                              workload_name: str,
+                              workload_namespace: str) -> None:
+    """Override of abstract method.
+
+    Args:
+      cluster_name (str): The name of the cluster.
+      cluster_zone (str): The zone of the cluster (control plane zone).
+      workload_name (str): The name of the Kubernetes workload to consider.
+      workload_namespace (str): The namespace of the Kubernetes workload.
+    """
+    cluster = gke.GkeCluster(self._project_name, cluster_zone, cluster_name)
+
+    workload = None
+    if workload_name and workload_namespace:
+      workload = cluster.FindWorkload(workload_name, workload_namespace)
+      if not workload:
+        self.ModuleError(
+            'Workload not found.', critical=True)
+    elif workload_name or workload_namespace:
+      self.ModuleError(
+          'Workload name requires a namespace and vice-versa.', critical=True)
+
+    self._filter_expressions.extend([
+        cluster.ContainerLogsQuery(workload=workload),
+        cluster.ClusterLogsQuery(workload=workload),
+    ])
+
+
+modules_manager.ModulesManager.RegisterModule(GCPLogsCollectorSingle)
+modules_manager.ModulesManager.RegisterModule(GCPLogsCollectorGKEWorkload)

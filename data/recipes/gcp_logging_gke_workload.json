@@ -1,0 +1,30 @@
+{
+    "name": "gcp_logging_gke_workload",
+    "description": "Loads GCP Cloud Audit Logs for a GCE instance into Timesketch.",
+    "short_description": "GCP Instance Cloud Audit to Timesketch",
+    "preflights": [{
+      "wants": [],
+      "name": "GCPTokenCheck",
+      "args": {
+          "project_name": "@project_name"
+      }
+    }],
+    "modules": [{
+        "wants": [],
+        "name": "GCPLogsCollectorGKEWorkload",
+        "args": {
+            "project_name": "@project_name",
+            "cluster_name": "@cluster_name",
+            "cluster_zone": "@cluster_zone",
+            "workload_name": "@workload_name",
+            "workload_namespace": "@workload_namespace"
+        }
+    }],
+    "args": [
+        ["project_name", "Name of GCP project to collect logs from", null],
+        ["cluster_name", "Name of the GKE cluster to collect logs from", null],
+        ["cluster_zone", "Zone of the GKE cluster to collect logs from", null],
+        ["--workload_name", "The name of the workload to collect logs from", null],
+        ["--workload_namespace", "The namespace of the workload to collect logs from", null]
+    ]
+}
