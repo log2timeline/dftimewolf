@@ -65,7 +65,6 @@ class VTCollector(module.BaseModule):
     for download_link in pcap_download_list:
       self.logger.info(f'Download link {urllib.parse.quote(download_link)}')
       filename = f'{vt_hash}.{self.vt_type}'
-      file = open(os.path.join(self.directory, filename), "wb")
 
       download = self.client.get(download_link)
       if download.status == 200:
@@ -73,6 +72,7 @@ class VTCollector(module.BaseModule):
 
         if len(file_content) == 0:
           continue
+        file = open(os.path.join(self.directory, filename), "wb")
 
         file.write(file_content)
 
