@@ -46,8 +46,7 @@ class AWSVolumeSnapshotCollector(module.BaseModule):
   def Process(self) -> None:
     """Images the volumes into S3."""
 
-    volumes = [c.vol_id for c in \
-        self.state.GetContainers(containers.AWSVol)]
+    volumes = [c.vol_id for c in self.state.GetContainers(containers.AWSVol)]
     if len(volumes) == 0:
       self.ModuleError('No volume IDs specified', critical=True)
 
@@ -55,24 +54,24 @@ class AWSVolumeSnapshotCollector(module.BaseModule):
     try:
       ec2.describe_volumes(VolumeIds=volumes)
     except ec2.exceptions.ClientError as exception:
-      self.ModuleError('Error encountered describing volumes: {0!s}'.\
+      self.ModuleError('Error encountered describing volumes: {0!s}'.
         format(exception), critical=True)
 
     snapshot_ids = []
     try:
       # Snapshot taking is an asynchronous call, no need for threading
-      self.logger.info('Taking snapshots of volumes {0:s}'\
-        .format(','.join(volumes)))
+      self.logger.info('Taking snapshots of volumes {0:s}'.
+        format(','.join(volumes)))
       for volume in volumes:
         response = ec2.create_snapshot(VolumeId=volume)
         snapshot_ids.append(response['SnapshotId'])
 
       self.logger.info('Waiting for snapshot completion')
       ec2.get_waiter('snapshot_completed').wait(SnapshotIds=snapshot_ids)
-      self.logger.info('Snapshots complete: {0:s}'\
-        .format(','.join(snapshot_ids)))
+      self.logger.info('Snapshots complete: {0:s}'.
+        format(','.join(snapshot_ids)))
     except ec2.exceptions.ClientError as exception:
-      self.ModuleError('Error encountered snapshotting volumes: {0!s}'.\
+      self.ModuleError('Error encountered snapshotting volumes: {0!s}'.
         format(exception), critical=True)
 
     for snap_id in snapshot_ids:

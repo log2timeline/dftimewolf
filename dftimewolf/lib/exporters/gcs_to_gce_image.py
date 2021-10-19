@@ -1,19 +1,23 @@
 # -*- coding: utf-8 -*-
 """Create images in GCE from image files in GCS."""
 
+import random
 import re
 import time
 from typing import Any, Optional, Type
 
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal import common
+from googleapiclient.errors import HttpError
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers, interface
+from dftimewolf.lib import errors
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 
 
-IMAGE_BUILD_ROLE_NAME = 'image_build_role'
+IMAGE_BUILD_ROLE_NAME = 'image_build_role_{0:d}'.format(
+    random.randint(10**(4),(10**5)-1))
 REQUIRED_PERMS = [
   'compute.disks.create',
   'compute.disks.delete',
@@ -91,36 +95,44 @@ class GCSToGCEImage(module.ThreadAwareModule):
   def PreProcess(self) -> None:
     """PreProcessing for the module.
 
-    In this case, create or update the required role for image creation."""
+    In this case, create or update the required role for image creation.
 
-    # Look for the role. If it exists, check if it is in a deleted state.
-    role = self._GetRoleInfo()
-    if role is None:
-      # Create role
-      self.logger.info('Creating IAM role {0:s}'.format(IMAGE_BUILD_ROLE_NAME))
-      self.role_name = self._CreateRoleForCloudBuild()
-    elif 'deleted' in role and role['deleted']:
-      # Undelete
+    Raises:
+      errors.DFTimewolfError: For any failures calling the IAM APIs.
+    """
+    try:
+      # Look for the role. If it exists, check if it is in a deleted state.
+      role = self._GetRoleInfo()
+      if role is None:
+        # Create role
+        self.logger.info(
+            'Creating IAM role {0:s}'.format(IMAGE_BUILD_ROLE_NAME))
+        self.role_name = self._CreateRoleForCloudBuild()
+      elif 'deleted' in role and role['deleted']:
+        # Undelete
+        self.logger.info(
+            'Undeleting existing IAM role {0:s}'.format(IMAGE_BUILD_ROLE_NAME))
+        self.role_name = self._UndeleteRole()
+      else:
+        # Use existing
+        self.logger.info(
+            'Using existing IAM role {0:s}'.format(IMAGE_BUILD_ROLE_NAME))
+        self.role_name = role['name']
+
       self.logger.info(
-          'Undeleting existing IAM role {0:s}'.format(IMAGE_BUILD_ROLE_NAME))
-      self.role_name = self._UndeleteRole()
-    else:
-      # Use existing
-      self.logger.info(
-          'Using existing IAM role {0:s}'.format(IMAGE_BUILD_ROLE_NAME))
-      self.role_name = role['name']
+          'Applying permissions for role {0:s}'.format(IMAGE_BUILD_ROLE_NAME))
 
-    self.logger.info(
-        'Applying permissions for role {0:s}'.format(IMAGE_BUILD_ROLE_NAME))
+      # Apply the permissions
+      self._UpdateRolePermissions(self.role_name)
 
-    # Apply the permissions
-    self._UpdateRolePermissions(self.role_name)
+      # Assign role to cloudbuild account
+      self._AssignRolesToCloudBuild(self.role_name)
 
-    # Assign role to cloudbuild account
-    self._AssignRolesToCloudBuild(self.role_name)
-
-    self.logger.info("Pausing to allow permissions to propagate")
-    time.sleep(30) # Leave some time for permissions to propagate
+      self.logger.info("Pausing to allow permissions to propagate")
+      time.sleep(30) # Leave some time for permissions to propagate
+    except HttpError as e: # IAM service raises googleapiclient.errors.HttpError
+      self.logger.critical(str(e))
+      raise errors.DFTimewolfError(str(e))
 
   def Process(self, container: containers.GCSObject) -> None:
     """Creates a GCE image from an image in GCS.
@@ -140,9 +152,22 @@ class GCSToGCEImage(module.ThreadAwareModule):
     self.state.StoreContainer(containers.GCEImage(image.name))
 
   def PostProcess(self) -> None:
-    self._DeleteRole(self.role_name)
+    """Cleanup IAM after the fact.
+
+    Raises:
+      errors.DFTimewolfError: For any failures calling the IAM APIs.
+    """
+    try:
+      self._DeleteRole(self.role_name)
+    except HttpError as e: # IAM service raises googleapiclient.errors.HttpError
+      self.logger.critical(str(e))
+      raise errors.DFTimewolfError(str(e))
 
   def _GetRoleInfo(self) -> Any:
+    """Retrieve some role information for the account.
+
+    Raises:
+      googleapiclient.errors.HttpError: On IAM API errors."""
     request = self.iam_service.roles().list( #pylint: disable=no-member
         parent='projects/' + self.dest_project_name,
         showDeleted=True)
@@ -163,9 +188,12 @@ class GCSToGCEImage(module.ThreadAwareModule):
 
   def _CreateRoleForCloudBuild(self) -> str:
     """Creates a role for CloudBuild.
-    
+
     ImportImageFromStorage uses CloudBuild, which creates an image from the disk
-    image in GCS."""
+    image in GCS.
+
+    Raises:
+      googleapiclient.errors.HttpError: On IAM API errors."""
     role = self.iam_service.projects().roles().create(#pylint: disable=no-member
         parent='projects/' + self.dest_project_name,
         body={
@@ -180,7 +208,13 @@ class GCSToGCEImage(module.ThreadAwareModule):
     return str(role['name'])
 
   def _UpdateRolePermissions(self, role_name: str) -> None:
-    """Assign required permissions to the role."""
+    """Assign required permissions to the role.
+
+    Args:
+      role_name (str): The role name.
+
+    Raises:
+      googleapiclient.errors.HttpError: On IAM API errors."""
     role = self.iam_service.projects().roles().get(name = role_name).execute() #pylint: disable=no-member
 
     if not 'includedPermissions' in role:
@@ -199,7 +233,10 @@ class GCSToGCEImage(module.ThreadAwareModule):
         }).execute()
 
   def _UndeleteRole(self) -> str:
-    """Undelete the role."""
+    """Undelete the role.
+
+    Raises:
+      googleapiclient.errors.HttpError: On IAM API errors."""
     role = self.iam_service.projects().roles().undelete( #pylint: disable=no-member
        name='projects/{0:s}/roles/{1:s}'.format(
           self.dest_project_name, IMAGE_BUILD_ROLE_NAME)
@@ -207,6 +244,15 @@ class GCSToGCEImage(module.ThreadAwareModule):
     return str(role['name'])
 
   def _AssignRolesToCloudBuild(self, role_name: str) -> None:
+    """Assigns the roles required to CloudBuild.
+
+    CloudBuild requires the permissions in REQUIRED_PERMS to be able to create
+    a disk image from an image file in GCS.
+
+    Args:
+      role_name (str): The name fo the role.
+    Raises:
+      googleapiclient.errors.HttpError: On IAM API errors."""
     # Find the account
     crm = common.CreateService('cloudresourcemanager', 'v1')
     project = crm.projects().get(projectId=self.dest_project_name).execute() #pylint: disable=no-member
@@ -217,9 +263,8 @@ class GCSToGCEImage(module.ThreadAwareModule):
     ).execute()
 
     # Cloudbuild needs our custom role and 'roles/iam.serviceAccountUser'
-    cloudbuild_account = \
-        'serviceAccount:{0:s}@cloudbuild.gserviceaccount.com'.format(
-            project['projectNumber'])
+    cloudbuild_account = 'serviceAccount:{0:s}@cloudbuild.gserviceaccount.com'.\
+        format(project['projectNumber'])
     for role in ['roles/iam.serviceAccountUser', role_name]:
       found = False
       for binding in policy['bindings']:
@@ -234,20 +279,19 @@ class GCSToGCEImage(module.ThreadAwareModule):
         })
 
     # Compute default service account needs 'roles/storage.objectViewer'
-    compute_account = \
-        'serviceAccount:{0:s}-compute@developer.gserviceaccount.com'.format(
-            project['projectNumber'])
+    compute_acc = 'serviceAccount:{0:s}-compute@developer.gserviceaccount.com'.\
+        format(project['projectNumber'])
     role = 'roles/storage.objectViewer'
     found = False
     for binding in policy['bindings']:
       if binding['role'] == role:
         found = True
-        binding['members'].append(compute_account)
+        binding['members'].append(compute_acc)
         break
     if not found:
       policy['bindings'].append({
         'role': role,
-        'members': compute_account
+        'members': compute_acc
       })
 
     crm.projects().setIamPolicy( #pylint: disable=no-member
@@ -256,6 +300,12 @@ class GCSToGCEImage(module.ThreadAwareModule):
     ).execute()
 
   def _DeleteRole(self, role_name: str) -> None:
+    """Delete the role after use.
+
+    Args:
+      role_name (str): The role to delete.
+    Raises:
+      googleapiclient.errors.HttpError: On IAM API errors."""
     self.logger.info('Deleting IAM role {0:s}'.format(IMAGE_BUILD_ROLE_NAME))
     self.iam_service.projects().roles().delete( #pylint: disable=no-member
         name = role_name).execute()

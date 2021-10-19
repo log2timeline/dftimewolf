@@ -95,6 +95,7 @@
     ["--run_all_jobs", "Run all Turbinia processing jobs instead of a faster subset", false],
     ["--sketch_id", "Sketch to which the timeline should be added", null],
     ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
+    ["--turbinia_zone", "Zone turbiunia is located in", "us-central1-f"],
     ["--wait_for_timelines", "Whether to wait for timelines to finish processing.", true]
   ]
 }

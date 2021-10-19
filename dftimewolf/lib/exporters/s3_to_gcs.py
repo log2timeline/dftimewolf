@@ -6,8 +6,10 @@ from typing import Any, Optional, Type
 
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.utils.storage_utils import SplitStoragePath
+from libcloudforensics.errors import ResourceCreationError
 from google.cloud.storage.client import Client as storage_client
 from dftimewolf.lib import module
+from dftimewolf.lib import errors
 from dftimewolf.lib.containers import containers, interface
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
@@ -85,18 +87,26 @@ class S3ToGCSCopy(module.ThreadAwareModule):
     buckets = [b['id'] for b in self.dest_project.storage.ListBuckets()]
     if self.dest_bucket not in buckets:
       self.logger.info('Creating GCS bucket {0:s}'.format(self.dest_bucket))
-      self.dest_project.storage.CreateBucket(self.dest_bucket)
+      try:
+        self.dest_project.storage.CreateBucket(self.dest_bucket)
+      except ResourceCreationError as e:
+        self.logger.critical(str(e))
+        raise errors.DFTimewolfError(str(e))
 
     # Set the permissions on the bucket
     self.logger.info('Applying permissions to bucket')
-    self._SetBucketServiceAccountPermissions()
+    try:
+      self._SetBucketServiceAccountPermissions()
+    except Exception as e: # pylint: disable=broad-except
+      self.logger.critical(str(e))
+      raise errors.DFTimewolfError(str(e))
 
   def Process(self, container: containers.AWSS3Object) -> None:
     """Creates and exports disk image to the output bucket."""
     if self.filter:
       if not re.match(self.filter, container.path):
-        self.logger.info('{0:s} does not match filter. Skipping.'\
-            .format(container.path))
+        self.logger.info('{0:s} does not match filter. Skipping.'.
+            format(container.path))
         return
 
     # We must create a new client for each thread, rather than use the class
@@ -111,8 +121,8 @@ class S3ToGCSCopy(module.ThreadAwareModule):
 
   def _SetBucketServiceAccountPermissions(self) -> None:
     """Grant access to the storage transfer service account to use the bucket.
-    See https://cloud.google.com/storage-transfer/docs/configure-access#sink"""
 
+    See https://cloud.google.com/storage-transfer/docs/configure-access#sink"""
     request = self.dest_project.storagetransfer.GcstApi().\
         googleServiceAccounts().get(projectId=self.dest_project_name)
     service_account = request.execute()['accountEmail']

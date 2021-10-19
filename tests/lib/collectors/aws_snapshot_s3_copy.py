@@ -172,7 +172,7 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
 
   @mock.patch('boto3.session.Session._setup_loader')
   def testPickAvailabilityZone(self, mock_loader):
-    """Test the utility funciton that picks an anailability zone in the
+    """Test the utility funciton that picks an availability zone in the
     region to use."""
     mock_loader.return_value = None
 
@@ -180,12 +180,13 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
     collector = aws_snapshot_s3_copy.AWSSnapshotS3CopyCollector(test_state)
 
     with mock.patch('botocore.client.BaseClient._make_api_call',
-      new=MockMakeAPICall):
+        new=MockMakeAPICall):
 
-      collector.SetUp(','.join([snapshot['SnapshotId']\
-          for snapshot in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']]),
-        FAKE_BUCKET,
-        FAKE_REGION)
+      snaps_str = ','.join(
+          [s['SnapshotId'] for s in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']])
+      collector.SetUp(snaps_str,
+          FAKE_BUCKET,
+          FAKE_REGION)
 
       # Test without a subnet ID
       result = collector._PickAvailabilityZone()
@@ -218,8 +219,9 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
 
     collector = aws_snapshot_s3_copy.AWSSnapshotS3CopyCollector(test_state)
-    collector.SetUp(','.join([snapshot['SnapshotId']\
-          for snapshot in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']]),
+    snaps_str = ','.join(
+        [s['SnapshotId'] for s in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']])
+    collector.SetUp(snaps_str,
         FAKE_BUCKET,
         FAKE_REGION)
 

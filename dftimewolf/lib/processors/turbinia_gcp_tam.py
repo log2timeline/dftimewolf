@@ -209,7 +209,7 @@ class TurbiniaProcessorThreadedBase(module.ThreadAwareModule):
         'instance': self.instance,
         'project': self.project,
         'region': self.turbinia_region,
-        'request_id': request.request_id
+        'request_id': request.request_id,
     }
 
     task_data = []  # type: List[Dict[str, str]]
@@ -241,7 +241,7 @@ class TurbiniaProcessorThreadedBase(module.ThreadAwareModule):
           self.state.StoreContainer(report)
 
           finished = True
-        except Exception as exception: # pylint: disable=broad-except
+        except RuntimeError as exception:
           if 'Cloud function [gettasks] call failed' not in str(exception) and \
               'RATE_LIMIT_EXCEEDED' not in str(exception):
             raise exception
