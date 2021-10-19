@@ -5,6 +5,7 @@ import subprocess
 import tempfile
 import uuid
 from typing import Optional
+from typing import Union
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
@@ -53,56 +54,68 @@ class LocalPlasoProcessor(module.BaseModule):
           '  apt install plaso-tools',
           critical=True)
 
+  def _processContainer(
+      self, file_container: Union[containers.File,
+                                  containers.Directory]) -> None:
+    """ Processes a given container either File or Directory
+
+    Args:
+      container: Container to be processed.
+    """
+    description = file_container.name
+    path = file_container.path
+    log_file_path = os.path.join(self._output_path, 'plaso.log')
+    self.logger.info('Log file: {0:s}'.format(log_file_path))
+
+    # Build the plaso command line.
+    cmd = [self._plaso_path]
+    # Since we might be running alongside another Module, always disable
+    # the status view.
+    cmd.extend(['-q', '--status_view', 'none'])
+    if self._timezone:
+      cmd.extend(['-z', self._timezone])
+
+    # Analyze all available partitions.
+    cmd.extend(['--partition', 'all'])
+
+    # Setup logging.
+    cmd.extend(['--logfile', log_file_path])
+
+    # And now, the crux of the command.
+    # Generate a new storage file for each plaso run
+    plaso_storage_file_path = os.path.join(
+        self._output_path, '{0:s}.plaso'.format(uuid.uuid4().hex))
+    cmd.extend([plaso_storage_file_path, path])
+
+    # Run the l2t command
+    full_cmd = ' '.join(cmd)
+    self.logger.info('Running external command: "{0:s}"'.format(full_cmd))
+    try:
+      l2t_proc = subprocess.Popen(
+          cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+      _, error = l2t_proc.communicate()
+      l2t_status = l2t_proc.wait()
+    except OSError as exception:
+      self.ModuleError(str(exception), critical=True)
+
+    if l2t_status:
+      message = (
+          'The log2timeline command {0:s} failed: {1!s}.'
+          ' Check log file for details.').format(full_cmd, error)
+      self.ModuleError(message, critical=True)
+
+    container = containers.File(description, plaso_storage_file_path)
+    self.state.StoreContainer(container)
+
   def Process(self) -> None:
     """Executes log2timeline.py on the module input."""
-    file_containers = self.state.GetContainers(containers.File)
-    directory_containers = self.state.GetContainers(containers.Directory)
 
-    for file_container in (file_containers + directory_containers):
-      description = file_container.name
-      path = file_container.path
-      log_file_path = os.path.join(self._output_path, 'plaso.log')
-      self.logger.info('Log file: {0:s}'.format(log_file_path))
+    for file_container in self.state.GetContainers(containers.File, pop=True):
+      self._processContainer(file_container)
 
-      # Build the plaso command line.
-      cmd = [self._plaso_path]
-      # Since we might be running alongside another Module, always disable
-      # the status view.
-      cmd.extend(['-q', '--status_view', 'none'])
-      if self._timezone:
-        cmd.extend(['-z', self._timezone])
-
-      # Analyze all available partitions.
-      cmd.extend(['--partition', 'all'])
-
-      # Setup logging.
-      cmd.extend(['--logfile', log_file_path])
-
-      # And now, the crux of the command.
-      # Generate a new storage file for each plaso run
-      plaso_storage_file_path = os.path.join(
-          self._output_path, '{0:s}.plaso'.format(uuid.uuid4().hex))
-      cmd.extend([plaso_storage_file_path, path])
-
-      # Run the l2t command
-      full_cmd = ' '.join(cmd)
-      self.logger.info('Running external command: "{0:s}"'.format(full_cmd))
-      try:
-        l2t_proc = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        _, error = l2t_proc.communicate()
-        l2t_status = l2t_proc.wait()
-      except OSError as exception:
-        self.ModuleError(str(exception), critical=True)
-
-      if l2t_status:
-        message = (
-            'The log2timeline command {0:s} failed: {1!s}.'
-            ' Check log file for details.').format(full_cmd, error)
-        self.ModuleError(message, critical=True)
-
-      container = containers.File(description, plaso_storage_file_path)
-      self.state.StoreContainer(container)
+    for directory_container in self.state.GetContainers(containers.Directory,
+                                                        pop=True):
+      self._processContainer(directory_container)
 
 
 modules_manager.ModulesManager.RegisterModule(LocalPlasoProcessor)
