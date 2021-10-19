@@ -159,7 +159,7 @@ class GCPLogsCollectorSingle(GCPLogsCollector):
     self._filter_expressions.append(filter_expression)
 
 
-class GCPLogsCollectorGKEWorkload(GCPLogsCollector):
+class GCPLogsCollectorGKECluster(GCPLogsCollector):
   """Class for collecting logs from a GKE cluster."""
 
   def _SetUpFilterExpressions(self,
@@ -194,4 +194,4 @@ class GCPLogsCollectorGKEWorkload(GCPLogsCollector):
 
 
 modules_manager.ModulesManager.RegisterModule(GCPLogsCollectorSingle)
-modules_manager.ModulesManager.RegisterModule(GCPLogsCollectorGKEWorkload)
+modules_manager.ModulesManager.RegisterModule(GCPLogsCollectorGKECluster)

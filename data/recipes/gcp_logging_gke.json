@@ -1,7 +1,7 @@
 {
-    "name": "gcp_logging_gke_workload",
-    "description": "Loads GCP Cloud Audit Logs for a GCE instance into Timesketch.",
-    "short_description": "GCP Instance Cloud Audit to Timesketch",
+    "name": "gcp_logging_gke",
+    "description": "Downloads Kubernetes logs for a GKE cluster (container/cluster logs specifically). A workload may be specified, logs will be adjusted to select logs relevant to that workload only.",
+    "short_description": "Downloads GCP logs for a GKE cluster.",
     "preflights": [{
       "wants": [],
       "name": "GCPTokenCheck",
@@ -11,7 +11,7 @@
     }],
     "modules": [{
         "wants": [],
-        "name": "GCPLogsCollectorGKEWorkload",
+        "name": "GCPLogsCollectorGKECluster",
         "args": {
             "project_name": "@project_name",
             "cluster_name": "@cluster_name",

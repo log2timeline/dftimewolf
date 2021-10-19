@@ -31,7 +31,7 @@ MODULES = {
   'GCPLoggingTimesketch': 'dftimewolf.lib.processors.gcp_logging_timesketch',
   'GCPLogsCollector': 'dftimewolf.lib.collectors.gcp_logging',
   'GCPLogsCollectorSingle': 'dftimewolf.lib.collectors.gcp_logging',
-  'GCPLogsCollectorGKEWorkload': 'dftimewolf.lib.collectors.gcp_logging',
+  'GCPLogsCollectorGKECluster': 'dftimewolf.lib.collectors.gcp_logging',
   'AWSAccountCheck': 'dftimewolf.lib.preflights.cloud_token',
   'GCPTokenCheck': 'dftimewolf.lib.preflights.cloud_token',
   'GoogleCloudCollector': 'dftimewolf.lib.collectors.gcloud',
