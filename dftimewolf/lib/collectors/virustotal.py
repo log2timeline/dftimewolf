@@ -73,8 +73,8 @@ class VTCollector(module.BaseModule):
         if len(file_content) == 0:
           continue
         file = open(os.path.join(self.directory, filename), "wb")
-
         file.write(file_content)
+        file.close()
 
       else:
         self.logger.warning(
