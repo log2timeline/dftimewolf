@@ -11,7 +11,7 @@
     }],
     "modules": [{
         "wants": [],
-        "name": "GCPLogsCollector",
+        "name": "GCPLogsCollectorSingle",
         "args": {
             "project_name": "@project_name",
             "filter_expression": "@filter_expression"
