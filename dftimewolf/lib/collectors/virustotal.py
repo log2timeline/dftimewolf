@@ -143,11 +143,9 @@ class VTCollector(module.BaseModule):
 
     if self.client is None:
       self.ModuleError(
-          f'Error creating VirusTotal Client instance',
+          'Error creating VirusTotal Client instance',
           critical=True,
       )
-
-    return
 
   def _CheckOutputPath(self, directory: str) -> str:
     """Checks that the output path can be manipulated by the module.
