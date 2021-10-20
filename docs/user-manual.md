@@ -25,6 +25,8 @@ usage: dftimewolf [-h]
 Available recipes:
 
  aws_forensics                      Copies a volume from an AWS account to an analysis VM.
+ aws_logging_collect                Collects logs from an AWS account and dumps on the filesystem.
+ azure_forensics                    Copies a disk from an Azure account to an analysis VM.
  gce_disk_export                    Export disk image from a GCP project to Google Cloud Storage.
  gcp_forensics                      Copies disk from a GCP project to an analysis VM.
  gcp_logging_cloudaudit_ts          Collects GCP logs from a project and exports them to Timesketch.
@@ -34,20 +36,27 @@ Available recipes:
  gcp_logging_gce_ts                 Loads GCP Cloud Audit Logs for GCE into Timesketch
  gcp_turbinia_disk_copy_ts          Imports a remote GCP persistent disk, processes it with Turbinia and sends results to Timesketch.
  gcp_turbinia_ts                    Processes an existing GCP persistent disk in the Turbinia project and sends results to Timesketch.
+ gcp_turbinia_ts_threaded           Processes existing GCP persistent disks in the Turbinia project and sends results to Timesketch.
  grr_artifact_grep                  Fetches ForensicArtifacts from GRR hosts and runs grep with a list of keywords on them.
  grr_artifact_ts                    Fetches default artifacts from a list of GRR hosts, processes them with plaso, and sends the results to Timesketch.
  grr_files_collect                  Fetches specific files from one or more GRR hosts.
- grr_flow_collect                   Download GRR flows.
-
-Download a GRR flow's results to the local filesystem.
+ grr_flow_collect                   Download GRR flows. Download a GRR flow's results to the local filesystem.
  grr_hunt_artifacts                 Starts a GRR hunt for the default set of artifacts.
  grr_hunt_file                      Starts a GRR hunt for a list of files.
  grr_huntresults_ts                 Fetches the findings of a GRR hunt, processes them with plaso, and sends the results to Timesketch.
+ grr_timeline_ts                    Runs a TimelineFlow on a set of GRR hosts, processes results with plaso, and sends the timeline to Timesketch
  plaso_ts                           Processes a list of file paths using plaso and sends results to Timesketch.
  upload_ts                          Uploads a CSV or Plaso file to Timesketch.
  upload_turbinia                    Uploads arbitrary files to Turbinia.
  upload_web_ts                      Uploads a CSV/JSONL or Plaso file to Timesketch.
- vt_pcap_ts                         Fetches pcap for a specific hash  for upload to TS.
+ vt_evtx                            Fetches the EVTX from VirusTotal sandbox run for a specific hash.
+ vt_evtx_ts                         Fetches the EVTX from VirusTotal sandbox run for a specific hash and upload it to Timesketch.
+ vt_pcap                            Fetches the PCAP from VirusTotal sandbox run for a specific hash
+ workspace_logging_collect          Collects Workspace Audit logs and dumps them on the filesystem.
+ workspace_meet_ts                  Collects Meet records and adds to Timesketch
+ workspace_user_activity_ts         Collects records and adds to Timesketch
+ workspace_user_drive_ts            Collects Drive records and adds to Timesketch
+ workspace_user_login_ts            Collects login records and adds to Timesketch
 
 positional arguments:
   {aws_forensics,gce_disk_export,gcp_forensics,gcp_logging_cloudaudit_ts,gcp_logging_cloudsql_ts,gcp_logging_collect,gcp_logging_gce_instance_ts,gcp_logging_gce_ts,gcp_turbinia_disk_copy_ts,gcp_turbinia_ts,grr_artifact_grep,grr_artifact_ts,grr_files_collect,grr_flow_collect,grr_hunt_artifacts,grr_hunt_file,grr_huntresults_ts,plaso_ts,upload_ts,upload_turbinia,upload_web_ts,vt_pcap_ts}
