@@ -27,11 +27,44 @@ idea here is to detect working conditions and "fail early" if the module can't
 run correctly.
 
 `Process` is where all the magic happens - here is where you'll want to
-parallelize things as much as possible (copying a disk, running plaso, etc.).
-You'll be reading from containers pushed by previous modules (e.g. processed
-plaso files) and adding your own for future modules to process. Accessing
-containers is done through the `GetContainers` and `StoreContainer` functions of
-the `state` object.
+parallelize (see also [Thread Aware Modules](#thread-aware-modules)) things as
+much as possible (copying a disk, running plaso, etc.). You'll be reading from
+containers pushed by previous modules (e.g. processed plaso files) and adding
+your own for future modules to process. Accessing containers is done through the
+`GetContainers` and `StoreContainer` functions of the `state` object.
+
+Tip: If you want your module to be able to take inputs from both recipe
+arguments or the state, consider including something like the following in your
+`SetUp`:
+
+```
+  for p in param.split(','):
+    self.state.StoreContainer(containers.MyContainer(p))
+```
+
+This way, any recipe arguments (in this example, comma separated) are available
+in `Process` via `self.state.GetContainers()`, in addition to any containers
+from previous modules.
+
+### Thread Aware Modules
+
+If your module takes multiple inputs you can take advantage of the
+`ThreadAwareModule` base class to have your inputs processed in parallel
+threads. The following are the differences from implementing `BaseModule`:
+
+* Process takes a single container argument. You process this single container,
+rather than sourcing containers to process from `self.state.GetContainers()`.
+* Required method overrides:
+  * `GetThreadOnContainerType()` - The type of container that is to be used as
+  input to the parallel threads. 
+  * `GetThreadPoolSize()` - Determine the maximum number of simultaneous threads.
+* Optional method overrides:
+  * `PreProcess()` & `PostProcess()` - Work that needs to be done prior to, or
+  after `Process(container)`, that only occurs once regardless of the number of
+  inputs.
+  * `KeepThreadedContainersInState()` - Used to determine whether the containers
+  passed to `Process(container)` should be removed from the state after
+  processing.
 
 ### Logging
 
