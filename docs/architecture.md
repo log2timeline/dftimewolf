@@ -55,8 +55,8 @@ threads. The following are the differences from implementing `BaseModule`:
 * Process takes a single container argument. You process this single container,
 rather than sourcing a container to process from `self.state.GetContainers()`.
 * Required method overrides:
-  * `GetThreadOnContainerType()` - Which container's content can be processed in
-  parallel.
+  * `GetThreadOnContainerType()` - The type of container that is to be used as
+  inputs to the parallel threads. 
   * `GetThreadPoolSize()` - Determine the maximum number of simultaneous threads.
 * Optional method overrides:
   * `PreProcess()` & `PostProcess()` - Work that needs to be done prior to, or
