@@ -209,7 +209,7 @@ class TurbiniaProcessorThreadedBase(module.ThreadAwareModule):
         'instance': self.instance,
         'project': self.project,
         'region': self.turbinia_region,
-        'request_id': request.request_id,
+        'request_id': request.request_id
     }
 
     task_data = []  # type: List[Dict[str, str]]
