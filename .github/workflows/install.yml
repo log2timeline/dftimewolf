@@ -22,7 +22,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
-        pip install -e .
+        pip install .
     - name: Test dftimewolf shortcut
       run: |
         dftimewolf -h
@@ -43,7 +43,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install pipenv
-        pipenv install
+        pipenv install .
     - name: Test dftimewolf shortcut
       run: |
         dftimewolf -h
