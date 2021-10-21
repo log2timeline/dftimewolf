@@ -57,6 +57,8 @@
     ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
     ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
     ["--timesketch_quick", "Skip waiting for analyzers to complete their run", false],
-    ["--wait_for_timelines", "Whether to wait for timelines to finish processing.", true]
+    ["--wait_for_timelines", "Whether to wait for timelines to finish processing.", true],
+    ["--grr_username", "GRR username", "admin"],
+    ["--grr_password", "GRR password", "admin"]
   ]
 }

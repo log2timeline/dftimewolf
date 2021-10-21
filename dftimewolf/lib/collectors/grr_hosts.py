@@ -23,7 +23,7 @@ from dftimewolf.lib.state import DFTimewolfState
 
 # TODO: GRRFlow should be extended by classes that actually implement
 # the Process() method.
-class GRRFlow(GRRBaseModule, module.BaseModule):  # pylint: disable=abstract-method
+class GRRFlow(GRRBaseModule, module.ThreadAwareModule):  # pylint: disable=abstract-method
   """Launches and collects GRR flows.
 
   Modules that use GRR flows or interact with hosts should extend this class.
@@ -180,7 +180,6 @@ class GRRFlow(GRRBaseModule, module.BaseModule):  # pylint: disable=abstract-met
         datetime.datetime.utcnow() - last_seen_datetime).total_seconds()
     last_seen_minutes = int(round(last_seen_seconds / 60))
 
-    self.logger.info('{0:s}: Found active client'.format(client.client_id))
     self.logger.info('Found active client: {0:s}'.format(client.client_id))
     self.logger.info('Client last seen: {0:s} ({1:d} minutes ago)'.format(
         last_seen_datetime.strftime('%Y-%m-%dT%H:%M:%S+0000'),
@@ -580,8 +579,7 @@ class GRRFileCollector(GRRFlow):
     for item in hostnames.strip().split(','):
       hostname = item.strip()
       if hostname:
-        host = containers.Host(hostname=hostname)
-        self.hosts.append(host)
+        self.state.StoreContainer(containers.Host(hostname=hostname))
 
     self.use_tsk = use_tsk
 
@@ -591,55 +589,51 @@ class GRRFileCollector(GRRFlow):
       self.ModuleError("Invalid action {0!s}".format(action),
                        critical=True)
 
-  # TODO: change object to more specific GRR type information.
-  def _ProcessThread(self, client: Client) -> None:
-    """Processes a single client.
-
-    This function is used as a callback for the processing thread.
-
-    Args:
-      client (object): GRR client object to act on.
-    """
-    file_list = self.files
-    if not file_list:
-      return
-    self.logger.info('Filefinder to collect {0:d} items'.format(len(file_list)))
-
-    flow_action = flows_pb2.FileFinderAction(
-        action_type=self.action)
-    flow_args = flows_pb2.FileFinderArgs(
-        paths=file_list,
-        action=flow_action,)
-    flow_id = self._LaunchFlow(client, 'FileFinder', flow_args)
-    self._AwaitFlow(client, flow_id)
-    collected_flow_data = self._DownloadFiles(client, flow_id)
-    if collected_flow_data:
-      self.logger.success(
-          '{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
-      container = containers.File(
-          name=client.data.os_info.fqdn.lower(),
-          path=collected_flow_data
-      )
-      self.state.StoreContainer(container)
-
-  def Process(self) -> None:
+  def Process(self, container) -> None:
     """Collects files from a host with GRR.
 
     Raises:
       DFTimewolfError: if no files specified.
     """
-    self.hosts.extend(self.state.GetContainers(containers.Host))
+    for client in self._FindClients([container.hostname]):
+      flow_action = flows_pb2.FileFinderAction(action_type=self.action)
+      flow_args = flows_pb2.FileFinderArgs(
+          paths=self.files,
+          action=flow_action)
+      flow_id = self._LaunchFlow(client, 'FileFinder', flow_args)
+      self._AwaitFlow(client, flow_id)
+      collected_flow_data = self._DownloadFiles(client, flow_id)
+      if collected_flow_data:
+        self.logger.success(
+            '{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
+        container = containers.File(
+            name=client.data.os_info.fqdn.lower(),
+            path=collected_flow_data
+        )
+        self.state.StoreContainer(container)
 
-    threads = []
-    for client in self._FindClients([host.hostname for host in self.hosts]):
-      thread = threading.Thread(target=self._ProcessThread, args=(client, ))
-      threads.append(thread)
-      thread.start()
+  def PreSetup(self):
+    pass
+  
+  def PostSetup(self):
+    pass
+  
+  def PreProcess(self):
+    if not self.files:
+      message = 'Would fetch 0 files - bailing out instead.'
+      self.logger.critical(message)
+      raise DFTimewolfError(message, critical=False)
+    self.logger.info('Filefinder to collect {0:d} items on each host'.format(
+        len(self.files)))
 
-    for thread in threads:
-      thread.join()
-
+  def PostProcess(self):
     self._CheckSkippedFlows()
+
+  def GetThreadOnContainerType(self):
+    return containers.Host
+  
+  def GetThreadPoolSize(self):
+    return 10
 
 class GRRFlowCollector(GRRFlow):
   """Flow collector.
