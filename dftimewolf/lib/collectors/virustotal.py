@@ -124,6 +124,7 @@ class VTCollector(module.BaseModule):
     """
     self.logger.info(f'Download link {urllib.parse.quote(download_link)}')
 
+    assert self.client is not None
     download = self.client.get(download_link)
     if download.status == 200:
       file_content = download.content.read()
@@ -146,9 +147,10 @@ class VTCollector(module.BaseModule):
       vt_hash: Hash of the sample.
       file: BufferedWriter of the written file that will be in the container.
     """
+
     if self.vt_type == 'pcap':
-      container = containers.File(name=vt_hash, path=file.name)
-      self.state.StoreContainer(container)
+      file_container = containers.File(name=vt_hash, path=file.name)
+      self.state.StoreContainer(file_container)
 
     if self.vt_type == 'evtx':
       # Unzip the file so that plaso can go over EVTX part in the archive
@@ -160,9 +162,9 @@ class VTCollector(module.BaseModule):
         archive.extractall(path=extract_output_dir)
         self.logger.debug(f'{file.name} file extracted to {extract_output_dir}')
 
-      container = containers.Directory(
+      dir_container = containers.Directory(
           name=vt_hash, path=os.path.abspath(extract_output_dir))
-      self.state.StoreContainer(container)
+      self.state.StoreContainer(dir_container)
 
   def _CheckOutputPath(self, directory: str) -> str:
     """Checks that the output path can be manipulated by the module.
