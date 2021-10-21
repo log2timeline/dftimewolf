@@ -45,8 +45,6 @@ class VTCollector(module.BaseModule):
     self.client = None
     self.vt_type = ''
 
-  
-
   def Process(self) -> None:
     """Process of the VirusTotal collector after setup"""
 
@@ -117,16 +115,15 @@ class VTCollector(module.BaseModule):
           critical=True,
       )
 
-def _downloadFile(self, download_link: str, filename: str) -> BufferedWriter:
+  def _downloadFile(self, download_link: str, filename: str) -> BufferedWriter:
     """Downloads a file to a given filename.
 
     Args:
       download_link: URL to be downloaded.
       filename: Filename the output will be written to.
-     
+
     Returns:
       BufferedWriter of the written file
-      None if file not found
     """
     self.logger.info(f'Download link {urllib.parse.quote(download_link)}')
 
@@ -139,7 +136,8 @@ def _downloadFile(self, download_link: str, filename: str) -> BufferedWriter:
       file = open(os.path.join(self.directory, filename), "wb")
       file.write(file_content)
       file.close()
-      return file
+
+    return file
 
   def _createContainer(self, vt_hash: str, file: BufferedWriter) -> None:
     """Creates the container for the next steps.
