@@ -5,7 +5,7 @@ import os
 import tempfile
 import urllib.parse
 import zipfile
-
+from io import BufferedWriter
 from typing import List
 from typing import Optional
 
@@ -45,6 +45,8 @@ class VTCollector(module.BaseModule):
     self.client = None
     self.vt_type = ''
 
+  
+
   def Process(self) -> None:
     """Process of the VirusTotal collector after setup"""
 
@@ -52,49 +54,22 @@ class VTCollector(module.BaseModule):
       try:
         download_link_list = self._getDownloadLinks(vt_hash)
       except vt.error.APIError:
-        self.logger.info(
-            f'Hash not found on VT removing element {vt_hash} from list')
+        self.logger.info(f'Hash not found on VT: {vt_hash}')
 
       assert self.client is not None
 
       for download_link in download_link_list:
-        self.logger.info(f'Download link {urllib.parse.quote(download_link)}')
         filename = f'{vt_hash}.{self.vt_type}'
 
-        download = self.client.get(download_link)
-        if download.status == 200:
-          file_content = download.content.read()
+        file = self._downloadFile(
+            download_link=download_link, filename=filename)
 
-          if len(file_content) == 0:
-            continue
-          file = open(os.path.join(self.directory, filename), "wb")
-          file.write(file_content)
-          file.close()
-
-        else:
+        if file is None:
           self.logger.warning(
               f'File not found {urllib.parse.quote(download_link)}')
+          continue
 
-        if self.vt_type == 'pcap':
-          container = containers.File(name=vt_hash, path=file.name)
-          self.state.StoreContainer(container)
-
-        if self.vt_type == 'evtx':
-          # Unzip the file so that plaso can go over EVTX part in the archive
-          extract_output_dir = f'{file.name}_extract'
-          if not os.path.isdir(extract_output_dir):
-            os.makedirs(extract_output_dir)
-
-          with zipfile.ZipFile(file.name) as archive:
-            archive.extractall(path=extract_output_dir)
-            self.logger.debug(
-                f'{file.name} file extracted to {extract_output_dir}')
-
-          container = containers.Directory(
-              name=vt_hash, path=os.path.abspath(extract_output_dir))
-          self.state.StoreContainer(container)
-
-          self.logger.info(f'Finished writing EVTX to {extract_output_dir}')
+        self._createContainer(vt_hash=vt_hash, file=file)
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(
@@ -141,6 +116,57 @@ class VTCollector(module.BaseModule):
           'Error creating VirusTotal Client instance',
           critical=True,
       )
+
+def _downloadFile(self, download_link: str, filename: str) -> BufferedWriter:
+    """Downloads a file to a given filename.
+
+    Args:
+      download_link: URL to be downloaded.
+      filename: Filename the output will be written to.
+     
+    Returns:
+      BufferedWriter of the written file
+      None if file not found
+    """
+    self.logger.info(f'Download link {urllib.parse.quote(download_link)}')
+
+    download = self.client.get(download_link)
+    if download.status == 200:
+      file_content = download.content.read()
+
+      if len(file_content) == 0:
+        return None
+      file = open(os.path.join(self.directory, filename), "wb")
+      file.write(file_content)
+      file.close()
+      return file
+
+  def _createContainer(self, vt_hash: str, file: BufferedWriter) -> None:
+    """Creates the container for the next steps.
+
+    Args:
+      vt_hash: Hash of the sample.
+      file: BufferedWriter of the written file that will be in the container.
+    """
+    if self.vt_type == 'pcap':
+      container = containers.File(name=vt_hash, path=file.name)
+      self.state.StoreContainer(container)
+
+    if self.vt_type == 'evtx':
+      # Unzip the file so that plaso can go over EVTX part in the archive
+      extract_output_dir = f'{file.name}_extract'
+      if not os.path.isdir(extract_output_dir):
+        os.makedirs(extract_output_dir)
+
+      with zipfile.ZipFile(file.name) as archive:
+        archive.extractall(path=extract_output_dir)
+        self.logger.debug(f'{file.name} file extracted to {extract_output_dir}')
+
+      container = containers.Directory(
+          name=vt_hash, path=os.path.abspath(extract_output_dir))
+      self.state.StoreContainer(container)
+
+      self.logger.info(f'Finished writing EVTX to {extract_output_dir}')
 
   def _CheckOutputPath(self, directory: str) -> str:
     """Checks that the output path can be manipulated by the module.
