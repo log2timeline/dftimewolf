@@ -58,6 +58,7 @@ confidence=
 disable=
     assignment-from-none,
     bad-inline-option,
+    consider-using-f-string,
     consider-using-with,
     deprecated-pragma,
     duplicate-code,
@@ -67,6 +68,7 @@ disable=
     locally-disabled,
     locally-enabled,
     logging-format-interpolation,
+    logging-fstring-interpolation,
     metaclass-assignment,
     missing-param-doc,
     no-absolute-import,

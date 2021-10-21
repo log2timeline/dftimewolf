@@ -34,6 +34,7 @@ cmd2 = "*"
 psutil = "*"
 prettytable = "*"
 pyarrow = "*"
+vt-py = "*"
 
 [requires]
 python_version = "3.8"
