@@ -10,8 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        python-version: [3.8, 3.9]
+        os: [ubuntu-latest]
+        python-version: [3.9]
 
     steps:
     - uses: actions/checkout@v2
@@ -31,8 +31,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        python-version: [3.8, 3.9]
+        os: [ubuntu-latest]
+        python-version: [3.9]
 
     steps:
     - uses: actions/checkout@v2
@@ -52,8 +52,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        python-version: [3.8, 3.9]
+        os: [ubuntu-latest]
+        python-version: [3.9]
 
     steps:
     - uses: actions/checkout@v2
