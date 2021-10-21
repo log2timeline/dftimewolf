@@ -5,7 +5,7 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  build:
+  mypy:
 
     runs-on: ubuntu-latest
     strategy:
