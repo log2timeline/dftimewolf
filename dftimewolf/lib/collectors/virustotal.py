@@ -54,13 +54,10 @@ class VTCollector(module.BaseModule):
       except vt.error.APIError:
         self.logger.info(f'Hash not found on VT: {vt_hash}')
 
-      assert self.client is not None
-
       for download_link in download_link_list:
         filename = f'{vt_hash}.{self.vt_type}'
 
-        file = self._downloadFile(
-            download_link=download_link, filename=filename)
+        file = self._downloadFile(download_link, filename)
 
         if file is None:
           self.logger.warning(
@@ -133,7 +130,10 @@ class VTCollector(module.BaseModule):
 
       if len(file_content) == 0:
         return None
-      file = open(os.path.join(self.directory, filename), "wb")
+      download_file_path = os.path.join(self.directory, filename)
+      self.logger.info(
+          f'Downloaded file will be written to: {download_file_path}')
+      file = open(download_file_path, "wb")
       file.write(file_content)
       file.close()
 
@@ -163,8 +163,6 @@ class VTCollector(module.BaseModule):
       container = containers.Directory(
           name=vt_hash, path=os.path.abspath(extract_output_dir))
       self.state.StoreContainer(container)
-
-      self.logger.info(f'Finished writing EVTX to {extract_output_dir}')
 
   def _CheckOutputPath(self, directory: str) -> str:
     """Checks that the output path can be manipulated by the module.
