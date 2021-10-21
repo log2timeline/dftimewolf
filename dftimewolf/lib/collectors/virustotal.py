@@ -54,7 +54,6 @@ class VTCollector(module.BaseModule):
       except vt.error.APIError:
         self.logger.info(
             f'Hash not found on VT removing element {vt_hash} from list')
-        self.hashes_list.remove(vt_hash)
 
       assert self.client is not None
 
