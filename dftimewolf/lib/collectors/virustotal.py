@@ -48,58 +48,54 @@ class VTCollector(module.BaseModule):
   def Process(self) -> None:
     """Process of the VirusTotal collector after setup"""
 
-    for vt_hash in list(self.hashes_list):
-      if not self._isHashKnownToVT(vt_hash):
+    for vt_hash in self.hashes_list:
+      try:
+        download_link_list = self._getDownloadLinks(vt_hash)
+      except vt.error.APIError:
         self.logger.info(
             f'Hash not found on VT removing element {vt_hash} from list')
         self.hashes_list.remove(vt_hash)
 
-    self.logger.info(
-        f'Found the following files on VT: {str(self.hashes_list)}')
+      assert self.client is not None
 
-    for vt_hash in self.hashes_list:
-      pcap_download_list = self._getDownloadLinks(vt_hash)
+      for download_link in download_link_list:
+        self.logger.info(f'Download link {urllib.parse.quote(download_link)}')
+        filename = f'{vt_hash}.{self.vt_type}'
 
-    assert self.client is not None
+        download = self.client.get(download_link)
+        if download.status == 200:
+          file_content = download.content.read()
 
-    for download_link in pcap_download_list:
-      self.logger.info(f'Download link {urllib.parse.quote(download_link)}')
-      filename = f'{vt_hash}.{self.vt_type}'
+          if len(file_content) == 0:
+            continue
+          file = open(os.path.join(self.directory, filename), "wb")
+          file.write(file_content)
+          file.close()
 
-      download = self.client.get(download_link)
-      if download.status == 200:
-        file_content = download.content.read()
+        else:
+          self.logger.warning(
+              f'File not found {urllib.parse.quote(download_link)}')
 
-        if len(file_content) == 0:
-          continue
-        file = open(os.path.join(self.directory, filename), "wb")
-        file.write(file_content)
-        file.close()
+        if self.vt_type == 'pcap':
+          container = containers.File(name=vt_hash, path=file.name)
+          self.state.StoreContainer(container)
 
-      else:
-        self.logger.warning(
-            f'File not found {urllib.parse.quote(download_link)}')
+        if self.vt_type == 'evtx':
+          # Unzip the file so that plaso can go over EVTX part in the archive
+          extract_output_dir = f'{file.name}_extract'
+          if not os.path.isdir(extract_output_dir):
+            os.makedirs(extract_output_dir)
 
-      if self.vt_type == 'pcap':
-        container = containers.File(name=vt_hash, path=file.name)
-        self.state.StoreContainer(container)
+          with zipfile.ZipFile(file.name) as archive:
+            archive.extractall(path=extract_output_dir)
+            self.logger.debug(
+                f'{file.name} file extracted to {extract_output_dir}')
 
-      if self.vt_type == 'evtx':
-        # Unzip the file so that plaso can go over EVTX part in the archive
-        extract_output_dir = f'{file.name}_extract'
-        if not os.path.isdir(extract_output_dir):
-          os.makedirs(extract_output_dir)
+          container = containers.Directory(
+              name=vt_hash, path=os.path.abspath(extract_output_dir))
+          self.state.StoreContainer(container)
 
-        with zipfile.ZipFile(file.name) as archive:
-          archive.extractall(path=extract_output_dir)
-          self.logger.debug(
-              f'{file.name} file extracted to {extract_output_dir}')
-
-        container = containers.Directory(
-            name=vt_hash, path=os.path.abspath(extract_output_dir))
-        self.state.StoreContainer(container)
-
-        self.logger.info(f'Finished writing EVTX to {extract_output_dir}')
+          self.logger.info(f'Finished writing EVTX to {extract_output_dir}')
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(
@@ -173,30 +169,10 @@ class VTCollector(module.BaseModule):
       )
       return tempfile.mkdtemp()
 
-  def _isHashKnownToVT(self, vt_hash: str) -> bool:
-    """Checks if a hash is known to VT.
-
-    Args:
-      vt_hash: A hash.
-
-    Returns:
-      Bool: True if found on VT
-      False: File not found on VT.
-    """
-    assert self.client is not None
-
-    try:
-      self.logger.debug(f'Trying to find {vt_hash} on VirusTotal...')
-      self.client.get_object(f"/files/{vt_hash}")
-    except vt.error.APIError:
-      return False
-
-    return True
-
   def _getDownloadLinks(self, vt_hash: str) -> List[str]:
-    """Checks if a hash has a PCAP file available.
+    """Checks if a hash has a Pcap or Evtx file available.
     Returns a list of the URLs for download.
-    One hash can have multiple PCAPs available.
+    One hash can have multiple Pcaps / Evtx available.
 
     Args:
       vt_hash: A hash.
