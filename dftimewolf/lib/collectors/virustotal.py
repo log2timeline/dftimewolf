@@ -8,6 +8,8 @@ import zipfile
 from io import BufferedWriter
 from typing import List
 from typing import Optional
+from typing import Union
+from typing import BinaryIO
 
 import vt
 
@@ -42,7 +44,7 @@ class VTCollector(module.BaseModule):
     super(VTCollector, self).__init__(state, name=name, critical=critical)
     self.hashes_list: List[str] = []
     self.directory = ''
-    self.client = None
+    self.client = None  # type: vt.Client
     self.vt_type = ''
 
   def Process(self) -> None:
@@ -112,7 +114,8 @@ class VTCollector(module.BaseModule):
           critical=True,
       )
 
-  def _downloadFile(self, download_link: str, filename: str) -> BufferedWriter:
+  def _downloadFile(self, download_link: str,
+                    filename: str) -> Union[BufferedWriter, None]:
     """Downloads a file to a given filename.
 
     Args:
@@ -121,10 +124,10 @@ class VTCollector(module.BaseModule):
 
     Returns:
       BufferedWriter of the written file
+      None: if nothing is found
     """
     self.logger.info(f'Download link {urllib.parse.quote(download_link)}')
 
-    assert self.client is not None
     download = self.client.get(download_link)
     if download.status == 200:
       file_content = download.content.read()
@@ -137,6 +140,8 @@ class VTCollector(module.BaseModule):
       file = open(download_file_path, "wb")
       file.write(file_content)
       file.close()
+
+    assert isinstance(file, BufferedWriter)
 
     return file
 
