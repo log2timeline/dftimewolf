@@ -14,7 +14,7 @@ from dftimewolf.lib import module
 from dftimewolf.lib.state import DFTimewolfState
 
 
-class GRRBaseModule(module.BaseModule):
+class GRRBaseModule(object):
   """Base module for GRR hunt and flow modules.
 
   Attributes:
@@ -27,10 +27,7 @@ class GRRBaseModule(module.BaseModule):
 
   _CHECK_APPROVAL_INTERVAL_SEC = 10
 
-  def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str]=None,
-               critical: bool=False) -> None:
+  def __init__(self) -> None:
     """Initializes a GRR hunt or flow module.
 
     Args:
@@ -39,7 +36,6 @@ class GRRBaseModule(module.BaseModule):
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    super(GRRBaseModule, self).__init__(state, name=name, critical=critical)
     self.reason = str()
     self.grr_api = None  # type: grr_api.ApiClient
     self.grr_url = str()
@@ -47,7 +43,7 @@ class GRRBaseModule(module.BaseModule):
     self.output_path = str()
 
   # pylint: disable=arguments-differ
-  def SetUp(
+  def GrrSetUp(
       self,
       reason: str,
       grr_server_url: str,
@@ -133,11 +129,3 @@ class GRRBaseModule(module.BaseModule):
         self.logger.info(
             '{0!s}: approval request sent to: {1!s} (reason: {2:s})'.format(
                 grr_object, self.approvers, self.reason))
-
-  @abc.abstractmethod
-  def Process(self) -> None:
-    """Processes input and builds the module's output attribute.
-
-    Modules take input information and process it into output information,
-    which can in turn be ingested as input information by other modules.
-    """

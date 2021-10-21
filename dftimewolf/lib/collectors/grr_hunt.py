@@ -12,6 +12,7 @@ from grr_response_proto.flows_pb2 import ArtifactCollectorFlowArgs
 from grr_response_proto.flows_pb2 import FileFinderArgs
 import yaml
 
+from dftimewolf.lib import module
 from dftimewolf.lib.collectors import grr_base
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
@@ -20,11 +21,17 @@ from dftimewolf.lib.state import DFTimewolfState
 
 # TODO: GRRHunt should be extended by classes that actually implement
 # the Process() method.
-class GRRHunt(grr_base.GRRBaseModule):  # pylint: disable=abstract-method
+class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abstract-method
   """This class groups functions generic to all GRR Hunt modules.
 
   Should be extended by the modules that interact with GRR hunts.
   """
+
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str]=None,
+               critical: bool=False) -> None:
+    module.BaseModule.__init__(self, state, name=name, critical=critical)
 
   # TODO: change object to more specific GRR type information.
   def _CreateHunt(
@@ -106,8 +113,7 @@ class GRRHuntArtifactCollector(GRRHunt):
       verify (Optional[bool]): True to indicate GRR server's x509 certificate
           should be verified.
     """
-    super(GRRHuntArtifactCollector, self).SetUp(
-        reason, grr_server_url, grr_username, grr_password,
+    self.GrrSetUp(reason, grr_server_url, grr_username, grr_password,
         approvers=approvers, verify=verify)
 
     self.artifacts = [item.strip() for item in artifacts.strip().split(',')]
@@ -176,7 +182,7 @@ class GRRHuntFileCollector(GRRHunt):
       verify (Optional[bool]): True to indicate GRR server's x509 certificate
           should be verified.
     """
-    super(GRRHuntFileCollector, self).SetUp(
+    self.GrrSetUp(
         reason, grr_server_url, grr_username, grr_password,
         approvers=approvers, verify=verify)
     self.file_path_list = [item.strip() for item
@@ -247,7 +253,7 @@ class GRRHuntDownloader(GRRHunt):
       verify (Optional[bool]): True to indicate GRR server's x509 certificate
           should be verified.
     """
-    super(GRRHuntDownloader, self).SetUp(
+    self.GrrSetUp(
         reason, grr_server_url, grr_username, grr_password,
         approvers=approvers, verify=verify)
     self.hunt_id = hunt_id

@@ -13,6 +13,7 @@ from grr_api_client import errors as grr_errors
 from grr_api_client.client import Client
 from grr_response_proto import flows_pb2, timeline_pb2
 
+from dftimewolf.lib import module
 from dftimewolf.lib.collectors.grr_base import GRRBaseModule
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.errors import DFTimewolfError
@@ -22,7 +23,7 @@ from dftimewolf.lib.state import DFTimewolfState
 
 # TODO: GRRFlow should be extended by classes that actually implement
 # the Process() method.
-class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
+class GRRFlow(GRRBaseModule, module.BaseModule):  # pylint: disable=abstract-method
   """Launches and collects GRR flows.
 
   Modules that use GRR flows or interact with hosts should extend this class.
@@ -48,7 +49,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    super(GRRFlow, self).__init__(state, name=name, critical=critical)
+    module.BaseModule.__init__(self, state, name=name, critical=critical)
     self.keepalive = False
     self._skipped_flows = []  # type: List[Tuple[str, str]]
     self.skip_offline_clients = False
@@ -77,7 +78,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
           to complete on clients that have been offline for more than an hour.
     """
     self.skip_offline_clients = skip_offline_clients
-    super(GRRFlow, self).SetUp(
+    self.GrrSetUp(
         reason, grr_server_url, grr_username, grr_password,
         approvers=approvers, verify=verify)
 
