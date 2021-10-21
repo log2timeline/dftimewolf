@@ -44,6 +44,7 @@ jobs:
       run: |
         pip install pipenv
         pipenv install
+        pipenv install . --skip-lock
     - name: Test dftimewolf shortcut
       run: |
         pipenv run dftimewolf
