@@ -388,7 +388,7 @@ class GRRArtifactCollector(GRRFlow):
     self.extra_artifacts = [] # type: List[str]
     self.hosts = [] # type: List[containers.Host]
     self.use_tsk = False
-    self.max_file_size = 2*1024*1024*1024  # 2 GB
+    self.max_file_size = 5*1024*1024*1024  # 5 GB
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
@@ -543,7 +543,7 @@ class GRRFileCollector(GRRFlow):
     self.hosts = []  # type: List[containers.Host]
     self.use_tsk = False
     self.action = None
-    self.max_file_size = 2*1024*1024*1024  # 2 GB
+    self.max_file_size = 5*1024*1024*1024  # 5 GB
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
@@ -616,14 +616,13 @@ class GRRFileCollector(GRRFlow):
     self.logger.info('Filefinder to collect {0:d} items'.format(len(file_list)))
 
     flow_action = flows_pb2.FileFinderAction(
-        action_type=self.action)
-    flow_size_condition = flows_pb2.FileFinderCondition(
-        size=flows_pb2.FileFinderSizeCondition(
-            max_file_size=self.max_file_size))
+        action_type=self.action,
+        download=flows_pb2.FileFinderDownloadActionOptions(
+            max_size=self.max_file_size
+        ))
     flow_args = flows_pb2.FileFinderArgs(
         paths=file_list,
-        action=flow_action,
-        conditions=[flow_size_condition])
+        action=flow_action)
 
     flow_id = self._LaunchFlow(client, 'FileFinder', flow_args)
     self._AwaitFlow(client, flow_id)

@@ -81,7 +81,7 @@ class GRRHuntArtifactCollector(GRRHunt):
     self.artifacts = []  # type: List[str]
     self.use_tsk = False
     self.hunt = None  # type: Hunt
-    self.max_file_size = 2*1024*1024*1024  # 2 GB
+    self.max_file_size = 5*1024*1024*1024  # 5 GB
 
   # pylint: disable=arguments-differ
   def SetUp(self,
@@ -159,7 +159,7 @@ class GRRHuntFileCollector(GRRHunt):
     super(GRRHuntFileCollector, self).__init__(
         state, name=name, critical=critical)
     self.file_path_list = []  # type: List[str]
-    self.max_file_size = 2*1024*1024*1024  # 2 GB
+    self.max_file_size = 5*1024*1024*1024  # 5 GB
 
   # pylint: disable=arguments-differ
   def SetUp(self,
@@ -192,7 +192,7 @@ class GRRHuntFileCollector(GRRHunt):
     if not file_path_list:
       self.ModuleError('Files must be specified for hunts', critical=True)
     if max_file_size:
-      self.max_file_size = max_file_size
+      self.max_file_size = int(max_file_size)
 
   # TODO: this method does not raise itself, indicate what function call does.
   def Process(self) -> None:
@@ -206,14 +206,13 @@ class GRRHuntFileCollector(GRRHunt):
     self.logger.info(
         'Files to be collected: {0!s}'.format(self.file_path_list))
     hunt_action = grr_flows.FileFinderAction(
-        action_type=grr_flows.FileFinderAction.DOWNLOAD)
-    flow_size_condition = grr_flows.FileFinderCondition(
-        size=grr_flows.FileFinderSizeCondition(
-            max_file_size=self.max_file_size))
+        action_type=grr_flows.FileFinderAction.DOWNLOAD,
+        download=grr_flows.FileFinderDownloadActionOptions(
+            max_size=self.max_file_size)
+        )
     hunt_args = grr_flows.FileFinderArgs(
         paths=self.file_path_list,
-        action=hunt_action,
-        conditions=[flow_size_condition])
+        action=hunt_action)
     self._CreateHunt('FileFinder', hunt_args)
 
 

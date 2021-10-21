@@ -297,7 +297,8 @@ class GRRArtifactCollectorTest(unittest.TestCase):
         grr_password='password',
         approvers='approver1,approver2',
         verify=False,
-        skip_offline_clients=False
+        skip_offline_clients=False,
+        max_file_size=1234,
     )
     self.test_state.StoreContainer(containers.Host(hostname='container.host'))
 
@@ -352,10 +353,10 @@ class GRRFileCollectorTest(unittest.TestCase):
         flows_pb2.FileFinderArgs(
             paths=['/etc/passwd'],
             action=flows_pb2.FileFinderAction(
-                action_type=flows_pb2.FileFinderAction.STAT),
-            conditions=[flows_pb2.FileFinderCondition(
-                size=flows_pb2.FileFinderSizeCondition(
-                    max_file_size=1234))]
+                action_type=flows_pb2.FileFinderAction.STAT,
+                download=flows_pb2.FileFinderDownloadActionOptions(
+                    max_size=1234)
+            )
         )
     )
     results = self.test_state.GetContainers(containers.File)
