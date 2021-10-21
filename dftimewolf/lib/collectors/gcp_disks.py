@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
-"""Creates an analysis VM and copies GCP disks to it for analysis."""
+"""Classes for storing GCP disks into containers."""
 
 from typing import List, Optional, Dict
+from typing import Set
 
 from google.auth.exceptions import DefaultCredentialsError, RefreshError
 from googleapiclient.errors import HttpError
 from libcloudforensics.errors import ResourceNotFoundError
 from libcloudforensics.providers.gcp import forensics as gcp_forensics
 from libcloudforensics.providers.gcp.internal import common
+from libcloudforensics.providers.gcp.internal import gke
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal import compute
 
@@ -17,8 +19,8 @@ from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 
 
-class GoogleCloudCollector(module.BaseModule):
-  """Google Cloud Platform (GCP) Collector.
+class GCEDiskCopier(module.BaseModule):
+  """Google Cloud Platform (GCP) disk copier.
 
   Attributes:
     analysis_project (gcp.GoogleCloudProject): Project that
@@ -28,12 +30,8 @@ class GoogleCloudCollector(module.BaseModule):
     incident_id (str): Incident identifier used to name the analysis VM.
     remote_project (gcp.GoogleCloudProject): Source project
         containing the VM to copy.
-    remote_instance_name (str): Instance that needs forensicating.
-    disk_names (list[str]): Comma-separated list of disk names to copy.
     incident_id (str): Incident identifier on which the name of the analysis
         VM will be based.
-    all_disks (bool): True if all disks attached to the source
-        instance should be copied.
   """
 
   _ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME = 'Analysis VM'
@@ -51,20 +49,17 @@ class GoogleCloudCollector(module.BaseModule):
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    super(GoogleCloudCollector, self).__init__(
+    super(GCEDiskCopier, self).__init__(
         state, name=name, critical=critical)
     self.analysis_project = None  # type: gcp_project.GoogleCloudProject
     self.analysis_vm = None  # type: compute.GoogleComputeInstance
     self.incident_id = str()
     self.remote_project = None  # type: gcp_project.GoogleCloudProject
-    self.remote_instance_name = None  # type: Optional[str]
-    self.disk_names = []  # type: List[str]
-    self.all_disks = False
     self._gcp_label = {}  # type: Dict[str, str]
 
   def Process(self) -> None:
     """Copies a disk to the analysis project."""
-    for disk in self._FindDisksToCopy():
+    for disk in self.state.GetContainers(containers.GCEDisk):
       self.logger.info('Disk copy of {0:s} started...'.format(disk.name))
       new_disk = gcp_forensics.CreateDiskCopy(
           self.remote_project.project_id,
@@ -93,9 +88,6 @@ class GoogleCloudCollector(module.BaseModule):
             boot_disk_size: float=50,
             boot_disk_type: str='pd-standard',
             cpu_cores: int=4,
-            remote_instance_name: Optional[str]=None,
-            disk_names: Optional[str]=None,
-            all_disks: bool=False,
             image_project: str='ubuntu-os-cloud',
             image_family: str='ubuntu-1804-lts') -> None:
     """Sets up a Google Cloud Platform(GCP) collector.
@@ -136,22 +128,11 @@ class GoogleCloudCollector(module.BaseModule):
           Default is pd-standard.
       cpu_cores (Optional[int]): Optional. Number of CPU cores to
           create the VM with. Default is 4.
-      remote_instance_name (Optional[str]): Optional. Name of the instance in
-          the remote project containing the disks to be copied.
-      disk_names (Optional[str]): Optional. Comma separated disk names to copy.
-      all_disks (Optional[bool]): Optional. True if all disks attached to the
-          source instance should be copied.
       image_project (Optional[str]): Optional. Name of the project where the
           analysis VM image is hosted.
       image_family (Optional[str]): Optional. Name of the image to use to
           create the analysis VM.
     """
-    if not (remote_instance_name or disk_names):
-      self.ModuleError(
-          'You need to specify at least an instance name or disks to copy',
-          critical=True)
-      return
-
     self.remote_project = gcp_project.GoogleCloudProject(
         remote_project_name, default_zone=zone)
     if analysis_project_name:
@@ -160,22 +141,9 @@ class GoogleCloudCollector(module.BaseModule):
     else:
       self.analysis_project = self.remote_project
 
-    self.remote_instance_name = remote_instance_name
-    self.disk_names = disk_names.split(',') if disk_names else []
-    self.all_disks = all_disks
     if incident_id:
       self.incident_id = incident_id
       self._gcp_label = {'incident_id': self.incident_id}
-
-    try:
-      if self.remote_instance_name:
-        self.remote_project.compute.GetInstance(self.remote_instance_name)
-    except ResourceNotFoundError:
-      self.ModuleError(
-        message='Instance "{0:s}" not found or insufficient permissions'.format(
-          self.remote_instance_name),
-        critical=True)
-      return
 
     if create_analysis_vm:
       if self.incident_id:
@@ -222,6 +190,71 @@ class GoogleCloudCollector(module.BaseModule):
         msg += str(exception)
         self.ModuleError(msg, critical=True)
 
+class GCEDiskCollector(module.BaseModule):
+
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str] = None,
+               critical: Optional[bool] = False):
+    """Initializes a GCE disk collector.
+
+    Args:
+      state (DFTimewolfState): recipe state.
+      name (Optional[str]): The module's runtime name.
+      critical (Optional[bool]): True if the module is critical, which causes
+          the entire recipe to fail if the module encounters an error.
+    """
+    super(GCEDiskCollector, self).__init__(state, name=name, critical=critical)
+    self.remote_project = None  # type: gcp_project.GoogleCloudProject
+    self.remote_instance_name = None  # type: Optional[str]
+    self.disk_names = []  # type: List[str]
+    self.all_disks = False
+
+  def Process(self) -> None:
+    """Stores disks in a container for the next module."""
+    for disk in self._FindDisksToCopy():
+      self.state.StoreContainer(containers.GCEDisk(disk.name))
+
+  def SetUp(self,
+            remote_project_name: str,
+            remote_instance_name: Optional[str] = None,
+            disk_names: Optional[str] = None,
+            all_disks: bool = False) -> None:
+    """Sets up a GCE disk collector.
+
+    This method initializes this object's attributes and checks whether the
+    specified instance exists.
+
+    Args:
+      remote_project_name (str): name of the remote project where the disks
+          must be copied from.
+      remote_instance_name (Optional[str]): Optional. Name of the instance in
+          the remote project containing the disks to be copied.
+      disk_names (Optional[str]): Optional. Comma separated disk names to copy.
+      all_disks (Optional[bool]): Optional. True if all disks attached to the
+          source instance should be copied.
+    """
+    if not (remote_instance_name or disk_names):
+      self.ModuleError(
+        'You need to specify at least an instance name or disks to copy',
+        critical=True)
+      return
+
+    self.remote_project = gcp_project.GoogleCloudProject(remote_project_name)
+    self.remote_instance_name = remote_instance_name
+    self.disk_names = disk_names.split(',') if disk_names else []
+    self.all_disks = all_disks
+
+    try:
+      if self.remote_instance_name:
+        self.remote_project.compute.GetInstance(self.remote_instance_name)
+    except ResourceNotFoundError:
+      self.ModuleError(
+        message='Instance "{0:s}" not found or insufficient permissions'.format(
+          self.remote_instance_name),
+        critical=True)
+      return
+
   def _GetDisksFromNames(
       self, disk_names: List[str]) -> List[compute.GoogleComputeDisk]:
     """Gets disks from a project by disk name.
@@ -239,9 +272,9 @@ class GoogleCloudCollector(module.BaseModule):
         disks.append(self.remote_project.compute.GetDisk(name))
       except RuntimeError:
         self.ModuleError(
-            'Disk "{0:s}" was not found in project {1:s}'.format(
-                name, self.remote_project.project_id),
-            critical=True)
+          'Disk "{0:s}" was not found in project {1:s}'.format(
+            name, self.remote_project.project_id),
+          critical=True)
     return disks
 
   def _GetDisksFromInstance(
@@ -277,8 +310,8 @@ class GoogleCloudCollector(module.BaseModule):
     """
     if not (self.remote_instance_name or self.disk_names):
       self.ModuleError(
-          'You need to specify at least an instance name or disks to copy',
-          critical=True)
+        'You need to specify at least an instance name or disks to copy',
+        critical=True)
 
     disks_to_copy = []
 
@@ -294,19 +327,88 @@ class GoogleCloudCollector(module.BaseModule):
     except HttpError as exception:
       if exception.resp.status == 403:
         self.ModuleError(
-            '403 response. Do you have appropriate permissions on the project?',
-            critical=True)
+          '403 response. Do you have appropriate permissions on the project?',
+          critical=True)
       if exception.resp.status == 404:
         self.ModuleError(
-            'GCP resource not found. Maybe a typo in the project / instance / '
-            'disk name?',
-            critical=True)
+          'GCP resource not found. Maybe a typo in the project / instance / '
+          'disk name?',
+          critical=True)
       self.ModuleError(str(exception), critical=True)
 
     if not disks_to_copy:
       self.ModuleError(
-          'Could not find any disks to copy', critical=True)
+        'Could not find any disks to copy', critical=True)
 
     return disks_to_copy
 
-modules_manager.ModulesManager.RegisterModule(GoogleCloudCollector)
+class GKEDiskCollector(module.BaseModule):
+
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str] = None,
+               critical: Optional[bool] = False):
+    """Initializes a GKE disk collector.
+
+    Args:
+      state (DFTimewolfState): Recipe state.
+      name (Optional[str]): The module's runtime name.
+      critical (Optional[bool]): True if the module is critical, which causes
+          the entire recipe to fail if the module encounters an error.
+    """
+    super(GKEDiskCollector, self).__init__(state, name=name, critical=critical)
+    self.instances = []  # type: List[compute.GoogleComputeInstance]
+
+  def Process(self) -> None:
+    """Stores the queued instance disks into this object's state."""
+    for instance in self.instances:
+      disk = instance.GetBootDisk()
+      self.state.StoreContainer(containers.GCEDisk(disk.name))
+
+  def SetUp(self,
+            project_name: str,
+            cluster_name: str,
+            cluster_zone: str,
+            workload_name: Optional[str],
+            workload_namespace: Optional[str]) -> None:
+    """Sets up the GKE disk collector.
+
+    This method adds instances whose disks to copy to this object's empty
+    instance list. If workload details have been supplied, only the nodes
+    covered by that workload will be queued.
+
+    Args:
+      project_name (str): The project ID where the cluster is to be found.
+      cluster_name (str): The name of the cluster.
+      cluster_zone (str): The zone of the cluster (control plane zone).
+      workload_name (str): The name of the Kubernetes workload to consider.
+      workload_namespace (str): The namespace of the Kubernetes workload.
+    """
+    project = gcp_project.GoogleCloudProject(project_name)
+    cluster = gke.GkeCluster(project_name, cluster_zone, cluster_name)
+
+    if workload_name and workload_namespace:
+      # Workload name and namespace was specified, select nodes from the
+      # cluster's workload
+      workload = cluster.FindWorkload(workload_name, workload_namespace)
+      if not workload:
+        self.ModuleError('Workload not found.', critical=True)
+        return
+      nodes = workload.GetCoveredNodes()
+    elif workload_name or workload_namespace:
+      # Either workload name or workload namespace was given
+      self.ModuleError(
+          'Both the workload name and namespace must be supplied.',
+           critical=True)
+      return
+    else:
+      # Nothing about a workload was specified, handle the whole cluster
+      nodes = cluster.ListNodes()
+
+    for node in nodes:
+      self.instances.append(project.compute.GetInstance(node.name))
+
+
+modules_manager.ModulesManager.RegisterModule(GCEDiskCopier)
+modules_manager.ModulesManager.RegisterModule(GCEDiskCollector)
+modules_manager.ModulesManager.RegisterModule(GKEDiskCollector)
