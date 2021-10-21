@@ -40,9 +40,7 @@ class RemoteFSPath(FSPath):
   """
   CONTAINER_TYPE = 'remotefspath'
 
-  def __init__(self,
-               path: str,
-               hostname: str) -> None:
+  def __init__(self, path: str, hostname: str) -> None:
     """Initializes the FSPath object.
 
     Args:
@@ -70,8 +68,8 @@ class Report(interface.AttributeContainer):
       self,
       module_name: str,
       text: str,
-      text_format: str='plaintext',
-      attributes: Optional[List[Dict[str, Any]]]=None) -> None:
+      text_format: str = 'plaintext',
+      attributes: Optional[List[Dict[str, Any]]] = None) -> None:
     """Initializes the analysis report.
 
     Args:
@@ -132,12 +130,9 @@ class AWSLogs(interface.AttributeContainer):
   """
   CONTAINER_TYPE = 'aws_logs'
 
-  def __init__(self,
-               path: str,
-               profile_name: Optional[str],
-               query_filter: Optional[str],
-               start_time: Optional[datetime],
-               end_time: Optional[datetime]) -> None:
+  def __init__(
+      self, path: str, profile_name: Optional[str], query_filter: Optional[str],
+      start_time: Optional[datetime], end_time: Optional[datetime]) -> None:
     """Initializes the AWS logs container.
 
     Args:
@@ -213,10 +208,8 @@ class File(interface.AttributeContainer):
   """
   CONTAINER_TYPE = 'file'
 
-  def __init__(self,
-               name: str,
-               path: str,
-               description: Optional[str]=None) -> None:
+  def __init__(
+      self, name: str, path: str, description: Optional[str] = None) -> None:
     """Initializes the attribute.
 
     Args:
@@ -225,6 +218,31 @@ class File(interface.AttributeContainer):
       description (Optional[str]): Longer description of the file.
     """
     super(File, self).__init__()
+    self.name = name
+    self.path = path
+    self.description = description
+
+
+class Directory(interface.AttributeContainer):
+  """Attribute container definition for generic directories.
+
+  Attributes:
+    name (str): Human-friendly name or short description of the directory.
+    path (str): Full path to the directory.
+    description (str): Longer description of the directory.
+  """
+  CONTAINER_TYPE = 'directory'
+
+  def __init__(
+      self, name: str, path: str, description: Optional[str] = None) -> None:
+    """Initializes the attribute.
+
+    Args:
+      name (str): Human-friendly name or short description of the file.
+      path (str): Full path to the file.
+      description (Optional[str]): Longer description of the file.
+    """
+    super(Directory, self).__init__()
     self.name = name
     self.path = path
     self.description = description
@@ -243,12 +261,10 @@ class ForensicsVM(interface.AttributeContainer):
   """
   CONTAINER_TYPE = 'forensics_vm'
 
-  def __init__(self,
-               name: str,
-               evidence_disk: Union["GoogleComputeDisk",
-                                    "AWSVolume",
-                                    "AZComputeDisk"],
-               platform: str) -> None:
+  def __init__(
+      self, name: str, evidence_disk: Union["GoogleComputeDisk", "AWSVolume",
+                                            "AZComputeDisk"],
+      platform: str) -> None:
     super(ForensicsVM, self).__init__()
     self.name = name
     self.evidence_disk = evidence_disk
@@ -310,7 +326,7 @@ class Host(interface.AttributeContainer):
 
   CONTAINER_TYPE = 'host'
 
-  def __init__(self, hostname: str, platform: str='unknown') -> None:
+  def __init__(self, hostname: str, platform: str = 'unknown') -> None:
     super(Host, self).__init__()
     self.hostname = hostname
     self.platform = platform
@@ -329,8 +345,11 @@ class WorkspaceLogs(interface.AttributeContainer):
   CONTAINER_TYPE = 'workspace_logs'
 
   def __init__(
-      self, application_name: str, path: str, filter_expression: str,
-      user_key: str='') -> None:
+      self,
+      application_name: str,
+      path: str,
+      filter_expression: str,
+      user_key: str = '') -> None:
     """Initializes the Workspace logs container.
 
     Args:
