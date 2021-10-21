@@ -6,10 +6,7 @@ import tempfile
 import urllib.parse
 import zipfile
 from io import BufferedWriter
-from typing import List
-from typing import Optional
-from typing import Union
-from typing import BinaryIO
+from typing import List, Optional, Union
 
 import vt
 
