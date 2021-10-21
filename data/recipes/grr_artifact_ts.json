@@ -52,6 +52,6 @@
         ["--skip_offline_clients", "Whether to skip clients that are offline", false],
         ["--grr_username", "GRR username", "admin"],
         ["--grr_password", "GRR password", "admin"],
-        ["--max_file_size", "Maximum size of files to collect (in bytes)", null]
+        ["--max_file_size", "Maximum size of files to collect (in bytes)", 5368709120]
     ]
 }
