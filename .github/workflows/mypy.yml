@@ -1,4 +1,4 @@
-name: mypy
+name: mypy checks
 
 on:
   pull_request:

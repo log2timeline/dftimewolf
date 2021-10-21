@@ -1,4 +1,4 @@
-name: Unittests (pipenv / pip)
+name: Unit tests
 
 on:
   pull_request:

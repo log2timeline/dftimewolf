@@ -1,4 +1,4 @@
-name: pylint
+name: pylint checks
 
 on:
   pull_request:

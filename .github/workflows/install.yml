@@ -1,4 +1,4 @@
-name: Install package (pip / pipenv / setup)
+name: Install package
 
 on:
   pull_request:
@@ -43,10 +43,10 @@ jobs:
     - name: Install dependencies
       run: |
         pip install pipenv
-        pipenv install .
+        pipenv install
     - name: Test dftimewolf shortcut
       run: |
-        dftimewolf -h
+        pipenv run dftimewolf
 
   setuppy:
     runs-on: ubuntu-latest
