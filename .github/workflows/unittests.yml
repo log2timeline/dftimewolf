@@ -1,4 +1,4 @@
-name: pipenv unittests
+name: Unittests (pipenv / pip)
 
 on:
   pull_request:
