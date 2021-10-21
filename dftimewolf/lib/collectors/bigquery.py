@@ -4,7 +4,7 @@ import tempfile
 from typing import Optional
 
 from google.auth import exceptions as google_auth_exceptions
-from google.cloud import bigquery
+import google.cloud.bigquery as bigquery
 import google.cloud.exceptions
 
 from dftimewolf.lib import module
@@ -44,7 +44,7 @@ class BigQueryCollector(module.BaseModule):
     output_file = tempfile.NamedTemporaryFile(
         mode="w", delete=False, encoding="utf-8", suffix=".jsonl")
     output_path = output_file.name
-    self.logger.info(f"Downloading results to {output_path}")
+    self.logger.info("Downloading results to {0:s}".format(output_path))
 
     try:
       if self._project_name:
