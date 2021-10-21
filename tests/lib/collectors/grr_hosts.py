@@ -328,9 +328,12 @@ class GRRFileCollectorTest(unittest.TestCase):
 
   def testInitialization(self):
     """Tests that the collector can be initialized."""
+    actual_hosts = [h.hostname for h in \
+        self.grr_file_collector.state.GetContainers(
+            self.grr_file_collector.GetThreadOnContainerType())]
+
     self.assertIsNotNone(self.grr_file_collector)
-    self.assertEqual(self.grr_file_collector.hosts[0].hostname,
-                     'C.0000000000000001')
+    self.assertEqual(['C.0000000000000001'], actual_hosts)
     self.assertEqual(self.grr_file_collector.files, ['/etc/passwd'])
 
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow')
@@ -341,7 +344,14 @@ class GRRFileCollectorTest(unittest.TestCase):
     self.mock_grr_api.SearchClients.return_value = \
         mock_grr_hosts.MOCK_CLIENT_LIST
     mock_DownloadFiles.return_value = '/tmp/something'
-    self.grr_file_collector.Process()
+
+    self.grr_file_collector.PreProcess()
+    in_containers = self.test_state.GetContainers(
+        self.grr_file_collector.GetThreadOnContainerType())
+    for c in in_containers:
+      self.grr_file_collector.Process(c)
+    self.grr_file_collector.PostProcess()
+    
     mock_LaunchFlow.assert_called_with(
         mock_grr_hosts.MOCK_CLIENT_RECENT,
         'FileFinder',
@@ -386,7 +396,13 @@ class GRRFileCollectorTest(unittest.TestCase):
     )
     self.test_state.StoreContainer(containers.Host(hostname='container.host'))
 
-    self.grr_file_collector.Process()
+    self.grr_file_collector.PreProcess()
+    in_containers = self.test_state.GetContainers(
+        self.grr_file_collector.GetThreadOnContainerType())
+    for c in in_containers:
+      self.grr_file_collector.Process(c)
+    self.grr_file_collector.PostProcess()
+
     mock_FindClients.assert_called_with(['container.host'])
 
 
