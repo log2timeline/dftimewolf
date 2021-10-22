@@ -107,6 +107,7 @@ requests-oauthlib==1.3.0
 requests==2.25.1
 rsa==4.7.2; python_version >= '3.6'
 s3transfer==0.5.0; python_version >= '3.6'
+scapy==2.4.5
 six==1.16.0
 soupsieve==2.2.1; python_version >= '3.6'
 sshpubkeys==3.3.1; python_version >= '3'
@@ -115,9 +116,11 @@ timesketch-import-client==20210602
 toolz==0.11.1; python_version >= '3.5'
 typing-extensions==3.10.0.0
 typing-inspect==0.7.1
+types-pytz==2021.1.2
 uritemplate==3.0.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 urllib3[secure]==1.26.6; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4'
 vine==1.3.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+vt-py==0.7.2
 wcwidth==0.2.5
 websocket-client==1.2.1; python_version >= '3.6'
 werkzeug==0.16.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
