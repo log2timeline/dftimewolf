@@ -53,12 +53,16 @@ class GoogleCloudCollector(module.BaseModule, metaclass=abc.ABCMeta):
     self._gcp_label = {}  # type: Dict[str, str]
     self.__disks_to_copy = []  # type: List[compute.GoogleComputeDisk]
 
-  def _QueueDiskToCopy(self, disk: compute.GoogleComputeDisk):
-    """"""
+  def _QueueDiskToCopy(self, disk: compute.GoogleComputeDisk) -> None:
+    """Queues a GCE disk to be copied to the analysis VM on Process().
+
+    Args:
+      disk (compute.GoogleComputeDisk): The disk to be queued.
+    """
     self.__disks_to_copy.append(disk)
 
   def Process(self) -> None:
-    """Copies a disk to the analysis project."""
+    """Copies queued disks to the analysis project."""
     for disk in self.__disks_to_copy:
       self.logger.info('Disk copy of {0:s} started...'.format(disk.name))
       new_disk = gcp_forensics.CreateDiskCopy(
@@ -78,11 +82,20 @@ class GoogleCloudCollector(module.BaseModule, metaclass=abc.ABCMeta):
           platform='gcp')
       self.state.StoreContainer(container)
 
-  def _SetUpProjects(self,
-                            analysis_project_name: str,
-                            remote_project_name: str,
-                            zone: str = 'us-central1-f'):
-    """"""
+  def _SetUpProjects(self, analysis_project_name: str, remote_project_name: str,
+                     zone: str) -> None:
+    """Initializes the project fields for this collector.
+
+    If analysis_project_name is empty, self.analysis_project will be same
+    as remote_project.
+
+    Args:
+      analysis_project_name (str): Name of the project that will be used for
+          creating an analysis VM.
+      remote_project_name (str): Name of the remote project where the disks
+          must be copied from.
+      zone (str): GCP zone in which new resources should be created.
+    """
     self.remote_project = gcp_project.GoogleCloudProject(
       remote_project_name, default_zone=zone)
     if analysis_project_name:
@@ -92,14 +105,28 @@ class GoogleCloudCollector(module.BaseModule, metaclass=abc.ABCMeta):
       self.analysis_project = self.remote_project
 
   def _SetUpAnalysisVm(self,
-                       incident_id: Optional[str] = None,
-                       create_analysis_vm: bool = True,
-                       boot_disk_size: float = 50,
-                       boot_disk_type: str = 'pd-standard',
-                       cpu_cores: int = 4,
-                       image_project: str = 'ubuntu-os-cloud',
-                       image_family: str = 'ubuntu-1804-lts'):
-    """Creates and starts an analysis VM in the analysis project"""
+                       incident_id: Optional[str],
+                       create_analysis_vm: bool,
+                       boot_disk_size: float,
+                       boot_disk_type: str,
+                       cpu_cores: int,
+                       image_project: str,
+                       image_family: str) -> None:
+    """Creates and starts an analysis VM in the analysis project.
+
+    Args:
+      incident_id (Optional[str]): Incident identifier on which the
+          name of the analysis VM will be based. Specifying None means
+          add no label and format VM name as
+          "gcp-forensics-vm-{TIMESTAMP('%Y%m%d%H%M%S')}".
+      create_analysis_vm (bool): Create analysis VM in the analysis project.
+      boot_disk_size (float): Size of the analysis VM boot disk (in GB).
+      boot_disk_type (str): Disk type to use.
+      cpu_cores (int): Number of CPU cores to create the VM with.
+      image_project (str): Name of the project where the analysis VM image is
+          hosted.
+      image_family (str): Name of the image to use to create the analysis VM.
+    """
     if incident_id:
       self._gcp_label = {'incident_id': incident_id}
 
@@ -237,7 +264,8 @@ class GCEDiskCopier(GoogleCloudCollector):
 
     disk_names = disk_names.split(',') if disk_names else []
 
-    for disk in self._FindDisksToCopy(remote_instance_name, disk_names, all_disks):
+    for disk in self._FindDisksToCopy(remote_instance_name, disk_names,
+                                      all_disks):
       self._QueueDiskToCopy(disk)
 
   def _GetDisksFromNames(
@@ -337,8 +365,8 @@ class GKEDiskCopier(GoogleCloudCollector):
             remote_project_name: str,
             remote_cluster_name: str,
             remote_cluster_zone: str,
-            workload_name: Optional[str] = None,
-            workload_namespace: Optional[str] = None,
+            workload_name: Optional[str]=None,
+            workload_namespace: Optional[str]=None,
             incident_id: Optional[str]=None,
             zone: str='us-central1-f',
             create_analysis_vm: bool=True,
@@ -389,12 +417,15 @@ class GKEDiskCopier(GoogleCloudCollector):
       image_family (Optional[str]): Optional. Name of the image to use to
           create the analysis VM.
     """
+    # Check GKE cluster
+    cluster = gke.GkeCluster(remote_project_name, remote_cluster_zone,
+                             remote_cluster_name)
+
+    # Initialize fields and set up analysis VM
     self._SetUpProjects(analysis_project_name, remote_project_name, zone)
     self._SetUpAnalysisVm(incident_id, create_analysis_vm, boot_disk_size,
                           boot_disk_type, cpu_cores, image_project,
                           image_family)
-
-    cluster = gke.GkeCluster(remote_project_name, remote_cluster_zone, remote_cluster_name)
 
     if workload_name and workload_namespace:
       # Both workload name and namespace were specified, select nodes from the
@@ -413,6 +444,7 @@ class GKEDiskCopier(GoogleCloudCollector):
       # Nothing about a workload was specified, handle the whole cluster
       nodes = cluster.ListNodes()
 
+    # Queue selected node's boot disks
     for node in nodes:
       disk = self.remote_project.compute.GetInstance(node.name).GetBootDisk()
       self._QueueDiskToCopy(disk)
