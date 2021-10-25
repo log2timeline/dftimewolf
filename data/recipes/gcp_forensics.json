@@ -21,20 +21,13 @@
   "modules": [
     {
       "wants": [],
-      "name": "GCEDiskCollector",
-      "args": {
-        "remote_project_name": "@remote_project_name",
-        "remote_instance_name": "@instance",
-        "disk_names": "@disks",
-        "all_disks": "@all_disks"
-      }
-    },
-    {
-      "wants": ["GCEDiskCollector"],
       "name": "GCEDiskCopier",
       "args": {
           "analysis_project_name": "@analysis_project_name",
           "remote_project_name": "@remote_project_name",
+          "remote_instance_name": "@instance",
+          "disk_names": "@disks",
+          "all_disks": "@all_disks",
           "incident_id": "@incident_id",
           "zone": "@zone",
           "create_analysis_vm": "@create_analysis_vm",

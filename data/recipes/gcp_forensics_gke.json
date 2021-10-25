@@ -21,21 +21,14 @@
   "modules": [
     {
       "wants": [],
-      "name": "GKEDiskCollector",
-      "args": {
-        "project_name": "@remote_project_name",
-        "cluster_name": "@remote_cluster_name",
-        "cluster_zone": "@remote_cluster_zone",
-        "workload_name": "@workload_name",
-        "workload_namespace": "@workload_namespace"
-      }
-    },
-    {
-      "wants": ["GKEDiskCollector"],
-      "name": "GCEDiskCopier",
+      "name": "GKEDiskCopier",
       "args": {
           "analysis_project_name": "@analysis_project_name",
           "remote_project_name": "@remote_project_name",
+          "remote_cluster_name": "@remote_cluster_name",
+          "remote_cluster_zone": "@remote_cluster_zone",
+          "workload_name": "@workload_name",
+          "workload_namespace": "@workload_namespace",
           "incident_id": "@incident_id",
           "zone": "@zone",
           "create_analysis_vm": "@create_analysis_vm",

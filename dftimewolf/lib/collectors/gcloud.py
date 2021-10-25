@@ -8,6 +8,7 @@ from googleapiclient.errors import HttpError
 from libcloudforensics.errors import ResourceNotFoundError
 from libcloudforensics.providers.gcp import forensics as gcp_forensics
 from libcloudforensics.providers.gcp.internal import common
+from libcloudforensics.providers.gcp.internal import gke
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal import compute
 
@@ -329,4 +330,92 @@ class GCEDiskCopier(GoogleCloudCollector):
 
     return disks_to_copy
 
-modules_manager.ModulesManager.RegisterModule(GoogleCloudCollector)
+class GKEDiskCopier(GoogleCloudCollector):
+
+  def SetUp(self,
+            analysis_project_name: str,
+            remote_project_name: str,
+            remote_cluster_name: str,
+            remote_cluster_zone: str,
+            workload_name: Optional[str] = None,
+            workload_namespace: Optional[str] = None,
+            incident_id: Optional[str]=None,
+            zone: str='us-central1-f',
+            create_analysis_vm: bool=True,
+            boot_disk_size: float=50,
+            boot_disk_type: str='pd-standard',
+            cpu_cores: int=4,
+            image_project: str='ubuntu-os-cloud',
+            image_family: str='ubuntu-1804-lts') -> None:
+    """Sets up a GKE disk collector.
+
+    This method creates and starts an analysis VM in the analysis project and
+    selects nodes whose boot disks will be copied from the remote cluster.
+
+    If both the workload_name and workload_namespace are specified, only the
+    nodes supporting the workload's pods will be copied. If they are not
+    specified, all the nodes' disks will be copied to the analysis VM.
+
+    If analysis_project_name is not specified, analysis_project will be same
+    as remote_project.
+
+    Args:
+      analysis_project_name (str): Optional. name of the project that contains
+          the analysis VM. Default is None.
+      remote_project_name (str): name of the remote project where the disks
+          must be copied from.
+      remote_cluster_name (str): The name of the cluster to copy disks from.
+      remote_cluster_zone (str): The zone of the cluster to copy disks from.
+      workload_name (Optional[str]): Optional. The name of Kubernetes workload
+          whose node disks to copy.
+      workload_namespace (Optional[str]): Optional. The namespace of the
+          Kubernetes workload whose node disks to copy.
+      incident_id (Optional[str]): Optional. Incident identifier on which the
+          name of the analysis VM will be based. Default is None, which means
+          add no label and format VM name as
+          "gcp-forensics-vm-{TIMESTAMP('%Y%m%d%H%M%S')}".
+      zone (Optional[str]): Optional. GCP zone in which new resources should
+          be created. Default is us-central1-f.
+      create_analysis_vm (Optional[bool]): Optional. Create analysis VM in
+          the analysis project. Default is True.
+      boot_disk_size (Optional[float]): Optional. Size of the analysis VM boot
+          disk (in GB). Default is 50.
+      boot_disk_type (Optional[str]): Optional. Disk type to use.
+          Default is pd-standard.
+      cpu_cores (Optional[int]): Optional. Number of CPU cores to
+          create the VM with. Default is 4.
+      image_project (Optional[str]): Optional. Name of the project where the
+          analysis VM image is hosted.
+      image_family (Optional[str]): Optional. Name of the image to use to
+          create the analysis VM.
+    """
+    self._SetUpProjects(analysis_project_name, remote_project_name, zone)
+    self._SetUpAnalysisVm(incident_id, create_analysis_vm, boot_disk_size,
+                          boot_disk_type, cpu_cores, image_project,
+                          image_family)
+
+    cluster = gke.GkeCluster(remote_project_name, remote_cluster_zone, remote_cluster_name)
+
+    if workload_name and workload_namespace:
+      # Both workload name and namespace were specified, select nodes from the
+      # cluster's workload
+      workload = cluster.FindWorkload(workload_name, workload_namespace)
+      if not workload:
+        self.ModuleError('Workload not found.', critical=True)
+      nodes = workload.GetCoveredNodes()
+    elif workload_name or workload_namespace:
+      # Either workload name or workload namespace was given, but not both
+      self.ModuleError(
+          'Both the workload name and namespace must be supplied.',
+           critical=True)
+      return
+    else:
+      # Nothing about a workload was specified, handle the whole cluster
+      nodes = cluster.ListNodes()
+
+    for node in nodes:
+      disk = self.remote_project.compute.GetInstance(node.name).GetBootDisk()
+      self._QueueDiskToCopy(disk)
+
+modules_manager.ModulesManager.RegisterModule(GCEDiskCopier)
+modules_manager.ModulesManager.RegisterModule(GKEDiskCopier)
