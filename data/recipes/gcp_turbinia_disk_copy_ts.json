@@ -20,7 +20,7 @@
     }],
     "modules": [{
         "wants": [],
-        "name": "GoogleCloudCollector",
+        "name": "GCEDiskCopier",
         "args": {
             "analysis_project_name": "@analysis_project_name",
             "remote_project_name": "@remote_project_name",
@@ -37,7 +37,7 @@
             "image_family": "@image_family"
         }
     }, {
-        "wants": ["GoogleCloudCollector"],
+        "wants": ["GCEDiskCopier"],
         "name": "TurbiniaGCPProcessor",
         "args": {
             "turbinia_config_file": null,
