@@ -5,7 +5,7 @@ from typing import List, Optional, Dict
 
 from google.auth.exceptions import DefaultCredentialsError, RefreshError
 from googleapiclient.errors import HttpError
-from libcloudforensics.errors import ResourceNotFoundError
+from libcloudforensics import errors as lcf_errors
 from libcloudforensics.providers.gcp import forensics as gcp_forensics
 from libcloudforensics.providers.gcp.internal import common
 from libcloudforensics.providers.gcp.internal import project as gcp_project
@@ -66,11 +66,17 @@ class GoogleCloudCollector(module.BaseModule):
     """Copies a disk to the analysis project."""
     for disk in self._FindDisksToCopy():
       self.logger.info('Disk copy of {0:s} started...'.format(disk.name))
-      new_disk = gcp_forensics.CreateDiskCopy(
-          self.remote_project.project_id,
-          self.analysis_project.project_id,
-          self.analysis_project.default_zone,
-          disk_name=disk.name)
+
+      try:
+        new_disk = gcp_forensics.CreateDiskCopy(
+            self.remote_project.project_id,
+            self.analysis_project.project_id,
+            self.analysis_project.default_zone,
+            disk_name=disk.name)
+      except lcf_errors.ResourceCreationError as exception:
+        self.logger.warning('Could not create disk: {0!s}'.format(exception))
+        continue
+
       self.logger.success('Disk {0:s} successfully copied to {1:s}'.format(
           disk.name, new_disk.name))
       if self._gcp_label:
@@ -170,7 +176,7 @@ class GoogleCloudCollector(module.BaseModule):
     try:
       if self.remote_instance_name:
         self.remote_project.compute.GetInstance(self.remote_instance_name)
-    except ResourceNotFoundError:
+    except lcf_errors.ResourceNotFoundError:
       self.ModuleError(
         message='Instance "{0:s}" not found or insufficient permissions'.format(
           self.remote_instance_name),

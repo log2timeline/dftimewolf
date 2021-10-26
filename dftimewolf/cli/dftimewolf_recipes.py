@@ -31,6 +31,7 @@ MODULES = {
   'AWSVolumeSnapshotCollector':
       'dftimewolf.lib.collectors.aws_volume_snapshot',
   'AzureCollector': 'dftimewolf.lib.collectors.azure',
+  'BigQueryCollector': 'dftimewolf.lib.collectors.bigquery',
   'FilesystemCollector': 'dftimewolf.lib.collectors.filesystem',
   'GCPLoggingTimesketch': 'dftimewolf.lib.processors.gcp_logging_timesketch',
   'GCPLogsCollector': 'dftimewolf.lib.collectors.gcp_logging',
@@ -58,6 +59,7 @@ MODULES = {
   'TimesketchExporter': 'dftimewolf.lib.exporters.timesketch',
   'TurbiniaArtifactProcessor': 'dftimewolf.lib.processors.turbinia_artifact',
   'TurbiniaGCPProcessor': 'dftimewolf.lib.processors.turbinia_gcp',
+  'VTCollector' : 'dftimewolf.lib.collectors.virustotal',
   'WorkspaceAuditCollector': 'dftimewolf.lib.collectors.workspace_audit',
   'WorkspaceAuditTimesketch':
       'dftimewolf.lib.processors.workspace_audit_timesketch',
