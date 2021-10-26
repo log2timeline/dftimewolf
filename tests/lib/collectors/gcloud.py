@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Tests the GoogleCloudCollector."""
+"""Tests the GoogleCloudCollector subclasses."""
 
 import unittest
 
@@ -41,13 +41,13 @@ FAKE_DISK_COPY = compute.GoogleComputeDisk(
     'disk1-copy')
 
 
-class GoogleCloudCollectorTest(unittest.TestCase):
+class GCEDiskCopierTest(unittest.TestCase):
   """Tests for the GCloud collector."""
 
   def testInitialization(self):
     """Tests that the collector can be initialized."""
     test_state = state.DFTimewolfState(config.Config)
-    gcloud_collector = gcloud.GoogleCloudCollector(test_state)
+    gcloud_collector = gcloud.GCEDiskCopier(test_state)
     self.assertIsNotNone(gcloud_collector)
 
   # pylint: disable=invalid-name,line-too-long
@@ -55,7 +55,9 @@ class GoogleCloudCollectorTest(unittest.TestCase):
   @mock.patch('libcloudforensics.providers.gcp.internal.compute_base_resource.GoogleComputeBaseResource.AddLabels')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute_base_resource.GoogleComputeBaseResource')
   @mock.patch('libcloudforensics.providers.gcp.forensics.StartAnalysisVm')
+  @mock.patch('dftimewolf.lib.collectors.gcloud.GCEDiskCopier._FindDisksToCopy')
   def testSetUp(self,
+                mock_FindDisksToCopy,
                 mock_StartAnalysisVm,
                 mock_GoogleComputeBaseResource,
                 mock_AddLabels,
@@ -64,8 +66,9 @@ class GoogleCloudCollectorTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     mock_StartAnalysisVm.return_value = (mock_GoogleComputeBaseResource, None)
     mock_GetInstance.return_value = FAKE_INSTANCE
+    mock_FindDisksToCopy.return_value = []
 
-    gcloud_collector = gcloud.GoogleCloudCollector(test_state)
+    gcloud_collector = gcloud.GCEDiskCopier(test_state)
     gcloud_collector.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
@@ -78,14 +81,10 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         remote_instance_name='my-owned-instance'
     )
     self.assertEqual(test_state.errors, [])
-    self.assertEqual(gcloud_collector.disk_names, [])
     self.assertEqual(gcloud_collector.analysis_project.project_id,
                      'test-analysis-project-name')
     self.assertEqual(gcloud_collector.remote_project.project_id,
                      'test-target-project-name')
-    self.assertEqual(gcloud_collector.remote_instance_name,
-                     'my-owned-instance')
-    self.assertEqual(gcloud_collector.all_disks, False)
 
     mock_StartAnalysisVm.assert_called_with(
         'test-analysis-project-name',
@@ -106,7 +105,7 @@ class GoogleCloudCollectorTest(unittest.TestCase):
   @mock.patch('libcloudforensics.providers.gcp.internal.compute_base_resource.GoogleComputeBaseResource.AddLabels')
   @mock.patch('libcloudforensics.providers.gcp.forensics.StartAnalysisVm')
   @mock.patch('libcloudforensics.providers.gcp.forensics.CreateDiskCopy')
-  @mock.patch('dftimewolf.lib.collectors.gcloud.GoogleCloudCollector._FindDisksToCopy')
+  @mock.patch('dftimewolf.lib.collectors.gcloud.GoogleCloudCollector.disks_to_copy', new_callable=mock.PropertyMock)
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.AttachDisk')
   def testProcess(self,
                   unused_MockAttachDisk,
@@ -126,7 +125,7 @@ class GoogleCloudCollectorTest(unittest.TestCase):
     FAKE_DISK_COPY.AddLabels = mock_AddLabels
 
     test_state = state.DFTimewolfState(config.Config)
-    gcloud_collector = gcloud.GoogleCloudCollector(test_state)
+    gcloud_collector = gcloud.GCEDiskCopier(test_state)
     gcloud_collector.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
@@ -169,7 +168,6 @@ class GoogleCloudCollectorTest(unittest.TestCase):
                           mock_GoogleComputeBaseResource):
     """Tests the _FindDisksToCopy function with different SetUp() calls."""
     test_state = state.DFTimewolfState(config.Config)
-    gcloud_collector = gcloud.GoogleCloudCollector(test_state)
     mock_StartAnalysisVm.return_value = (mock_GoogleComputeBaseResource, None)
     mock_list_disks.return_value = {
         'bootdisk': FAKE_BOOT_DISK,
@@ -179,8 +177,9 @@ class GoogleCloudCollectorTest(unittest.TestCase):
     mock_get_instance.return_value = FAKE_INSTANCE
     mock_GetBootDisk.return_value = FAKE_BOOT_DISK
 
-    # Nothing is specified, GoogleCloudCollector should collect the instance's
+    # Nothing is specified, GCEDiskCopier should collect the instance's
     # boot disk
+    gcloud_collector = gcloud.GCEDiskCopier(test_state)
     gcloud_collector.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
@@ -192,13 +191,14 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         16,
         remote_instance_name='my-owned-instance'
     )
-    disks = gcloud_collector._FindDisksToCopy()
+    disks = gcloud_collector.disks_to_copy
     self.assertEqual(len(disks), 1)
     self.assertEqual(disks[0].name, 'bootdisk')
     mock_GetBootDisk.assert_called_once()
 
     # Specifying all_disks should return all disks for the instance
     # (see mock_list_disks return value)
+    gcloud_collector = gcloud.GCEDiskCopier(test_state)
     gcloud_collector.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
@@ -211,12 +211,13 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         remote_instance_name='my-owned-instance',
         all_disks=True
     )
-    disks = gcloud_collector._FindDisksToCopy()
+    disks = gcloud_collector.disks_to_copy
     self.assertEqual(len(disks), 2)
     self.assertEqual(disks[0].name, 'bootdisk')
     self.assertEqual(disks[1].name, 'disk1')
 
     # If a list of disks is passed, that disk only should be returned
+    gcloud_collector = gcloud.GCEDiskCopier(test_state)
     gcloud_collector.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
@@ -229,7 +230,7 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         remote_instance_name='my-owned-instance',
         disk_names='disk1'
     )
-    disks = gcloud_collector._FindDisksToCopy()
+    disks = gcloud_collector.disks_to_copy
     self.assertEqual(len(disks), 1)
     self.assertEqual(disks[0].name, 'disk1')
 

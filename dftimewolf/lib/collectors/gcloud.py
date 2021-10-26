@@ -28,6 +28,8 @@ class GoogleCloudCollector(module.BaseModule, metaclass=abc.ABCMeta):
          which the disk copy will be attached.
     remote_project (gcp.GoogleCloudProject): Source project
         containing the VM to copy.
+    disks_to_copy (List[compute.GoogleComputeDisk]): The currently queued
+        disks to be copied to the analysis VM on Process().
   """
 
   _ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME = 'Analysis VM'
@@ -61,12 +63,17 @@ class GoogleCloudCollector(module.BaseModule, metaclass=abc.ABCMeta):
     """
     self.__disks_to_copy.append(disk)
 
+  @property
+  def disks_to_copy(self) -> List[compute.GoogleComputeDisk]:
+    """The queued disks that will be copied on Process()."""
+    return self.__disks_to_copy[:]
+
   def Process(self) -> None:
     """Copies queued disks to the analysis project."""
     self.logger.info(
-      'Copying {0:d} disks to {1:s}...'.format(len(self.__disks_to_copy),
+      'Copying {0:d} disks to {1:s}...'.format(len(self.disks_to_copy),
                                                self.analysis_vm.name))
-    for disk in self.__disks_to_copy:
+    for disk in self.disks_to_copy:
       self.logger.info('Disk copy of {0:s} started...'.format(disk.name))
 
       try:
