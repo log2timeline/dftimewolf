@@ -32,7 +32,7 @@ log = logging.getLogger(__name__)
 
 
 class EndToEndTest(unittest.TestCase):
-  """End to end test on GCP for the gcloud.py GCE collector.
+  """End to end test on GCP for the gcloud.py collector.
 
   This end-to-end test runs directly on GCP and tests that:
     1. The gcloud.py collector connects to the target instance and makes a
@@ -77,13 +77,7 @@ class EndToEndTest(unittest.TestCase):
       raise unittest.SkipTest(self.error_msg)
     self.incident_id = 'fake-incident-id'
     self.test_state = state.DFTimewolfState(config.Config)
-    self.gcloud_collectors = []
-
-  def MakeCollector(self):
-    new_collector = gcloud.GCEDiskCopier(self.test_state)
-    self.gcloud_collectors.append(new_collector)
-    return new_collector
-
+    self.gcloud_collector = gcloud.GCEDiskCopier(self.test_state)
 
   def test_end_to_end_boot_disk(self):
     """End to end test on GCP for the gcloud.py collector.
@@ -98,8 +92,7 @@ class EndToEndTest(unittest.TestCase):
     """
 
     # Setting up the collector to make a copy of the boot disk only
-    gcloud_collector = self.MakeCollector()
-    gcloud_collector.SetUp(
+    self.gcloud_collector.SetUp(
         self.project_id,
         self.project_id,
         self.incident_id,
@@ -113,7 +106,7 @@ class EndToEndTest(unittest.TestCase):
     )
 
     # Attach the boot disk copy to the analysis VM
-    gcloud_collector.Process()
+    self.gcloud_collector.Process()
 
     # The forensic instance should be live in the analysis GCP project and
     # the disk should be attached
@@ -151,8 +144,7 @@ class EndToEndTest(unittest.TestCase):
     """
 
     # This should make a copy of the disk specified in 'disk-names'
-    gcloud_collector = self.MakeCollector()
-    gcloud_collector.SetUp(
+    self.gcloud_collector.SetUp(
         self.project_id,
         self.project_id,
         self.incident_id,
@@ -166,7 +158,7 @@ class EndToEndTest(unittest.TestCase):
     )
 
     # Attach the disk_to_forensic copy to the analysis VM
-    gcloud_collector.Process()
+    self.gcloud_collector.Process()
 
     # The forensic instance should be live in the analysis GCP project and
     # the disk should be attached
@@ -191,8 +183,7 @@ class EndToEndTest(unittest.TestCase):
     ))
 
   def tearDown(self):
-    for gcloud_collector in self.gcloud_collectors:
-      CleanUp(self.project_id, self.zone, gcloud_collector.analysis_vm.name)
+    CleanUp(self.project_id, self.zone, self.gcloud_collector.analysis_vm.name)
 
 
 def ReadProjectInfo():
