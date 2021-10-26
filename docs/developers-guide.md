@@ -4,6 +4,34 @@ This page gives a few hints on how to develop new recipes and modules for
 dftimewolf. Start with the [architecture](architecture.md) page if you haven't
 read it already.
 
+## Installation
+
+To be able to develop you need a local installation of dfTimewolf. To install it locally, a venv is recommended.
+
+```bash
+git clone https://github.com/log2timeline/dftimewolf/
+git checkout -b "featurename"
+python3 -m venv venv
+source /home/user/dev/dftimewolf/venv/bin/activate
+```
+
+Remove the first line in the requirements.txt file containing something something simple.
+
+Then:
+
+```bash
+pip install pipenv
+pipenv install --dev
+```
+
+Now you are ready to run dfTimewolf in your local envirenment:
+
+```bash
+/home/user/dev/dftimewolf/venv/bin/dftimewolf -h
+or
+python -m dftimewolf.cli.dftimewolf_recipes -h # if you installed with pipenv
+```
+
 ## Codereview
 
 As for other Log2Timeline projects, all contributions to dfTimewolf undergo code
@@ -23,6 +51,10 @@ that are passed to some of the recipes, then you can create your own. See
 for simple examples like
 [local_plaso](https://github.com/log2timeline/dftimewolf/blob/main/dftimewolf/cli/recipes/local_plaso.py).
 Details on recipe keys are given [here](architecture.md#recipes).
+
+### Recipe location
+
+A new recipe needs to be added to `data/recipes` as a JSON file.
 
 ### Recipe arguments
 
@@ -67,3 +99,20 @@ Check out the [Module architecture](architecture#modules) and read up on simple
 existing modules such as the
 [LocalPlasoProcessor](https://github.com/log2timeline/dftimewolf/blob/main/dftimewolf/lib/processors/localplaso.py)
 module for an example of simple Module.
+
+### Register a new module
+
+There are two locations to register new modules:
+
+- registering it at the end of the module file
+- adding it to the big dict where in the main entry point script `dftimewolf_recipes.py`
+
+## Run tests
+
+It is recommended to run tests locallty to discover issues early in the development lifecycle.
+
+````python
+pip install pipenv
+pipenv install -d
+python -m unittest discover -s tests -p '*.py'
+```

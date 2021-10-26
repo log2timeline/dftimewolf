@@ -1,0 +1,52 @@
+{
+  "name": "vt_evtx_ts",
+  "description": "Fetches the EVTX from VirusTotal for a specific hash, processes it with Plaso and upload it to Timesketch",
+  "short_description": "Fetches the EVTX from VirusTotal sandbox run for a specific hash and upload it to Timesketch.",
+  "modules": [
+    {
+      "wants": [],
+      "name": "VTCollector",
+      "args": {
+        "hashes": "@hashes",
+        "vt_api_key": "@vt_api_key",
+        "vt_type": "evtx",
+        "directory": "@directory"
+      }
+    },
+    {
+      "wants": ["VTCollector"],
+      "name": "LocalPlasoProcessor",
+      "args": {
+        "timezone": null
+      }
+    },
+    {
+      "wants": ["LocalPlasoProcessor"],
+      "name": "TimesketchExporter",
+      "args": {
+        "incident_id": "@incident_id",
+        "token_password": "@token_password",
+        "sketch_id": "@sketch_id",
+        "analyzers": null,
+        "wait_for_timelines": "@wait_for_timelines"
+      }
+    }
+  ],
+  "args": [
+    ["hashes", "Comma-separated list of hashes to process", null],
+    ["directory", "Directory in which to export files.", null],
+    ["--vt_api_key", "Virustotal API key", "admin"],
+    ["--incident_id", "Incident ID (used for Timesketch description)", null],
+    ["--sketch_id", "Sketch to which the timeline should be added", null],
+    [
+      "--token_password",
+      "Optional custom password to decrypt Timesketch credential file with",
+      ""
+    ],
+    [
+      "--wait_for_timelines",
+      "Whether to wait for timelines to finish processing.",
+      true
+    ]
+  ]
+}
