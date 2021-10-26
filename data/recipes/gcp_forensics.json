@@ -20,7 +20,7 @@
   }],
   "modules": [{
       "wants": [],
-      "name": "GoogleCloudCollector",
+      "name": "GCEDiskCopier",
       "args": {
           "analysis_project_name": "@analysis_project_name",
           "remote_project_name": "@remote_project_name",
