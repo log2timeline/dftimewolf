@@ -63,6 +63,9 @@ class GoogleCloudCollector(module.BaseModule, metaclass=abc.ABCMeta):
 
   def Process(self) -> None:
     """Copies queued disks to the analysis project."""
+    self.logger.info(
+      'Copying {0:d} disks to {1:s}...'.format(len(self.__disks_to_copy),
+                                               self.analysis_vm.name))
     for disk in self.__disks_to_copy:
       self.logger.info('Disk copy of {0:s} started...'.format(disk.name))
 
@@ -426,12 +429,6 @@ class GKEDiskCopier(GoogleCloudCollector):
     cluster = gke.GkeCluster(remote_project_name, remote_cluster_zone,
                              remote_cluster_name)
 
-    # Initialize fields and set up analysis VM
-    self._SetUpProjects(analysis_project_name, remote_project_name, zone)
-    self._SetUpAnalysisVm(incident_id, create_analysis_vm, boot_disk_size,
-                          boot_disk_type, cpu_cores, image_project,
-                          image_family)
-
     if workload_name and workload_namespace:
       # Both workload name and namespace were specified, select nodes from the
       # cluster's workload
@@ -448,6 +445,12 @@ class GKEDiskCopier(GoogleCloudCollector):
     else:
       # Nothing about a workload was specified, handle the whole cluster
       nodes = cluster.ListNodes()
+
+    # Initialize fields and set up analysis VM
+    self._SetUpProjects(analysis_project_name, remote_project_name, zone)
+    self._SetUpAnalysisVm(incident_id, create_analysis_vm, boot_disk_size,
+                          boot_disk_type, cpu_cores, image_project,
+                          image_family)
 
     # Queue selected node's boot disks
     for node in nodes:
