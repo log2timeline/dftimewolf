@@ -75,6 +75,7 @@ class GoogleCloudCollector(module.BaseModule):
             disk_name=disk.name)
       except lcf_errors.ResourceCreationError as exception:
         self.logger.warning('Could not create disk: {0!s}'.format(exception))
+        continue
 
       self.logger.success('Disk {0:s} successfully copied to {1:s}'.format(
           disk.name, new_disk.name))
