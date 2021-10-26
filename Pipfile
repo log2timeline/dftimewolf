@@ -17,6 +17,7 @@ types-PyYAML = "*"
 [packages]
 beautifulsoup4 = "*"
 google-cloud-logging = ">=2.0"
+google-cloud-bigquery = "*"
 pyOpenSSL = "<20.0.0"  # GRR uses an older version of cryptography
 grr_api_client = "*"
 libcloudforensics = "*"

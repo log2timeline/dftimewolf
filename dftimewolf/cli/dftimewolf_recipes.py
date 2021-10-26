@@ -27,6 +27,7 @@ MODULES = {
   'AWSCollector': 'dftimewolf.lib.collectors.aws',
   'AWSLogsCollector': 'dftimewolf.lib.collectors.aws_logging',
   'AzureCollector': 'dftimewolf.lib.collectors.azure',
+  'BigQueryCollector': 'dftimewolf.lib.collectors.bigquery',
   'FilesystemCollector': 'dftimewolf.lib.collectors.filesystem',
   'GCPLoggingTimesketch': 'dftimewolf.lib.processors.gcp_logging_timesketch',
   'GCPLogsCollector': 'dftimewolf.lib.collectors.gcp_logging',
