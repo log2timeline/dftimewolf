@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Creates an analysis VM and copies GCP disks to it for analysis."""
-
+import abc
 from typing import List, Optional, Dict
 
 from google.auth.exceptions import DefaultCredentialsError, RefreshError
@@ -8,6 +8,7 @@ from googleapiclient.errors import HttpError
 from libcloudforensics import errors as lcf_errors
 from libcloudforensics.providers.gcp import forensics as gcp_forensics
 from libcloudforensics.providers.gcp.internal import common
+from libcloudforensics.providers.gcp.internal import gke
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal import compute
 
@@ -17,7 +18,7 @@ from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 
 
-class GoogleCloudCollector(module.BaseModule):
+class GoogleCloudCollector(module.BaseModule, metaclass=abc.ABCMeta):
   """Google Cloud Platform (GCP) Collector.
 
   Attributes:
@@ -25,15 +26,8 @@ class GoogleCloudCollector(module.BaseModule):
         contains the analysis VM.
     analysis_vm (gcp.GoogleComputeInstance): Analysis VM on
          which the disk copy will be attached.
-    incident_id (str): Incident identifier used to name the analysis VM.
     remote_project (gcp.GoogleCloudProject): Source project
         containing the VM to copy.
-    remote_instance_name (str): Instance that needs forensicating.
-    disk_names (list[str]): Comma-separated list of disk names to copy.
-    incident_id (str): Incident identifier on which the name of the analysis
-        VM will be based.
-    all_disks (bool): True if all disks attached to the source
-        instance should be copied.
   """
 
   _ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME = 'Analysis VM'
@@ -55,16 +49,24 @@ class GoogleCloudCollector(module.BaseModule):
         state, name=name, critical=critical)
     self.analysis_project = None  # type: gcp_project.GoogleCloudProject
     self.analysis_vm = None  # type: compute.GoogleComputeInstance
-    self.incident_id = str()
     self.remote_project = None  # type: gcp_project.GoogleCloudProject
-    self.remote_instance_name = None  # type: Optional[str]
-    self.disk_names = []  # type: List[str]
-    self.all_disks = False
     self._gcp_label = {}  # type: Dict[str, str]
+    self.__disks_to_copy = []  # type: List[compute.GoogleComputeDisk]
+
+  def _QueueDiskToCopy(self, disk: compute.GoogleComputeDisk) -> None:
+    """Queues a GCE disk to be copied to the analysis VM on Process().
+
+    Args:
+      disk (compute.GoogleComputeDisk): The disk to be queued.
+    """
+    self.__disks_to_copy.append(disk)
 
   def Process(self) -> None:
-    """Copies a disk to the analysis project."""
-    for disk in self._FindDisksToCopy():
+    """Copies queued disks to the analysis project."""
+    self.logger.info(
+      'Copying {0:d} disks to {1:s}...'.format(len(self.__disks_to_copy),
+                                               self.analysis_vm.name))
+    for disk in self.__disks_to_copy:
       self.logger.info('Disk copy of {0:s} started...'.format(disk.name))
 
       try:
@@ -88,7 +90,102 @@ class GoogleCloudCollector(module.BaseModule):
           platform='gcp')
       self.state.StoreContainer(container)
 
-  # pylint: disable=arguments-differ,too-many-arguments
+  def _SetUpProjects(self, analysis_project_name: str, remote_project_name: str,
+                     zone: str) -> None:
+    """Initializes the project fields for this collector.
+
+    If analysis_project_name is empty, self.analysis_project will be same
+    as remote_project.
+
+    Args:
+      analysis_project_name (str): Name of the project that will be used for
+          creating an analysis VM.
+      remote_project_name (str): Name of the remote project where the disks
+          must be copied from.
+      zone (str): GCP zone in which new resources should be created.
+    """
+    self.remote_project = gcp_project.GoogleCloudProject(
+      remote_project_name, default_zone=zone)
+    if analysis_project_name:
+      self.analysis_project = gcp_project.GoogleCloudProject(
+        analysis_project_name, default_zone=zone)
+    else:
+      self.analysis_project = self.remote_project
+
+  def _SetUpAnalysisVm(self,
+                       incident_id: Optional[str],
+                       create_analysis_vm: bool,
+                       boot_disk_size: float,
+                       boot_disk_type: str,
+                       cpu_cores: int,
+                       image_project: str,
+                       image_family: str) -> None:
+    """Creates and starts an analysis VM in the analysis project.
+
+    Args:
+      incident_id (Optional[str]): Incident identifier on which the
+          name of the analysis VM will be based. Specifying None means
+          add no label and format VM name as
+          "gcp-forensics-vm-{TIMESTAMP('%Y%m%d%H%M%S')}".
+      create_analysis_vm (bool): Create analysis VM in the analysis project.
+      boot_disk_size (float): Size of the analysis VM boot disk (in GB).
+      boot_disk_type (str): Disk type to use.
+      cpu_cores (int): Number of CPU cores to create the VM with.
+      image_project (str): Name of the project where the analysis VM image is
+          hosted.
+      image_family (str): Name of the image to use to create the analysis VM.
+    """
+    if incident_id:
+      self._gcp_label = {'incident_id': incident_id}
+
+    if create_analysis_vm:
+      if incident_id:
+        analysis_vm_name = 'gcp-forensics-vm-{0:s}'.format(incident_id)
+      else:
+        analysis_vm_name = common.GenerateUniqueInstanceName(
+            'gcp-forensics-vm',
+            common.COMPUTE_NAME_LIMIT)
+
+      self.logger.success('Your analysis VM will be: {0:s}'.format(
+          analysis_vm_name))
+      self.logger.info('Complimentary gcloud command:')
+      self.logger.info(
+          'gcloud compute ssh --project {0:s} {1:s} --zone {2:s}'.format(
+              self.analysis_project.project_id,
+              analysis_vm_name,
+              self.analysis_project.default_zone))
+
+      self.state.StoreContainer(
+          containers.TicketAttribute(
+              name=self._ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME,
+              type_=self._ANALYSIS_VM_CONTAINER_ATTRIBUTE_TYPE,
+              value=analysis_vm_name))
+
+      try:
+        # pylint: disable=too-many-function-args
+        # pylint: disable=redundant-keyword-arg
+        self.analysis_vm, _ = gcp_forensics.StartAnalysisVm(
+            self.analysis_project.project_id,
+            analysis_vm_name,
+            self.analysis_project.default_zone,
+            boot_disk_size,
+            boot_disk_type,
+            int(cpu_cores),
+            image_project=image_project,
+            image_family=image_family)
+        if self._gcp_label:
+          self.analysis_vm.AddLabels(self._gcp_label)
+          self.analysis_vm.GetBootDisk().AddLabels(self._gcp_label)
+
+      except (RefreshError, DefaultCredentialsError) as exception:
+        msg = ('Something is wrong with your Application Default Credentials. '
+               'Try running:\n  $ gcloud auth application-default login\n')
+        msg += str(exception)
+        self.ModuleError(msg, critical=True)
+
+
+class GCEDiskCopier(GoogleCloudCollector):
+
   def SetUp(self,
             analysis_project_name: str,
             remote_project_name: str,
@@ -157,75 +254,27 @@ class GoogleCloudCollector(module.BaseModule):
           critical=True)
       return
 
-    self.remote_project = gcp_project.GoogleCloudProject(
-        remote_project_name, default_zone=zone)
-    if analysis_project_name:
-      self.analysis_project = gcp_project.GoogleCloudProject(
-          analysis_project_name, default_zone=zone)
-    else:
-      self.analysis_project = self.remote_project
-
-    self.remote_instance_name = remote_instance_name
-    self.disk_names = disk_names.split(',') if disk_names else []
-    self.all_disks = all_disks
-    if incident_id:
-      self.incident_id = incident_id
-      self._gcp_label = {'incident_id': self.incident_id}
+    self._SetUpProjects(analysis_project_name, remote_project_name, zone)
 
     try:
-      if self.remote_instance_name:
-        self.remote_project.compute.GetInstance(self.remote_instance_name)
+      if remote_instance_name:
+        self.remote_project.compute.GetInstance(remote_instance_name)
     except lcf_errors.ResourceNotFoundError:
       self.ModuleError(
         message='Instance "{0:s}" not found or insufficient permissions'.format(
-          self.remote_instance_name),
+            remote_instance_name),
         critical=True)
       return
 
-    if create_analysis_vm:
-      if self.incident_id:
-        analysis_vm_name = 'gcp-forensics-vm-{0:s}'.format(self.incident_id)
-      else:
-        analysis_vm_name = common.GenerateUniqueInstanceName(
-            'gcp-forensics-vm',
-            common.COMPUTE_NAME_LIMIT)
+    self._SetUpAnalysisVm(incident_id, create_analysis_vm, boot_disk_size,
+                          boot_disk_type, cpu_cores, image_project,
+                          image_family)
 
-      self.logger.success('Your analysis VM will be: {0:s}'.format(
-          analysis_vm_name))
-      self.logger.info('Complimentary gcloud command:')
-      self.logger.info(
-          'gcloud compute ssh --project {0:s} {1:s} --zone {2:s}'.format(
-              self.analysis_project.project_id,
-              analysis_vm_name,
-              self.analysis_project.default_zone))
+    disk_names = disk_names.split(',') if disk_names else []
 
-      self.state.StoreContainer(
-          containers.TicketAttribute(
-              name=self._ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME,
-              type_=self._ANALYSIS_VM_CONTAINER_ATTRIBUTE_TYPE,
-              value=analysis_vm_name))
-
-      try:
-        # pylint: disable=too-many-function-args
-        # pylint: disable=redundant-keyword-arg
-        self.analysis_vm, _ = gcp_forensics.StartAnalysisVm(
-            self.analysis_project.project_id,
-            analysis_vm_name,
-            self.analysis_project.default_zone,
-            boot_disk_size,
-            boot_disk_type,
-            int(cpu_cores),
-            image_project=image_project,
-            image_family=image_family)
-        if self._gcp_label:
-          self.analysis_vm.AddLabels(self._gcp_label)
-          self.analysis_vm.GetBootDisk().AddLabels(self._gcp_label)
-
-      except (RefreshError, DefaultCredentialsError) as exception:
-        msg = ('Something is wrong with your Application Default Credentials. '
-               'Try running:\n  $ gcloud auth application-default login\n')
-        msg += str(exception)
-        self.ModuleError(msg, critical=True)
+    for disk in self._FindDisksToCopy(remote_instance_name, disk_names,
+                                      all_disks):
+      self._QueueDiskToCopy(disk)
 
   def _GetDisksFromNames(
       self, disk_names: List[str]) -> List[compute.GoogleComputeDisk]:
@@ -273,14 +322,17 @@ class GoogleCloudCollector(module.BaseModule):
       return list(remote_instance.ListDisks().values())
     return [remote_instance.GetBootDisk()]
 
-  def _FindDisksToCopy(self) -> List[compute.GoogleComputeDisk]:
+  def _FindDisksToCopy(self,
+                       remote_instance_name: str,
+                       disk_names: List[str],
+                       all_disks: bool) -> List[compute.GoogleComputeDisk]:
     """Determines which disks to copy depending on object attributes.
 
     Returns:
       list[compute.GoogleComputeDisk]: the disks to copy to the
           analysis project.
     """
-    if not (self.remote_instance_name or self.disk_names):
+    if not (remote_instance_name or disk_names):
       self.ModuleError(
           'You need to specify at least an instance name or disks to copy',
           critical=True)
@@ -289,12 +341,12 @@ class GoogleCloudCollector(module.BaseModule):
 
     try:
 
-      if self.disk_names:
-        disks_to_copy = self._GetDisksFromNames(self.disk_names)
+      if disk_names:
+        disks_to_copy = self._GetDisksFromNames(disk_names)
 
-      elif self.remote_instance_name:
-        disks_to_copy = self._GetDisksFromInstance(self.remote_instance_name,
-                                                   self.all_disks)
+      elif remote_instance_name:
+        disks_to_copy = self._GetDisksFromInstance(remote_instance_name,
+                                                   all_disks)
 
     except HttpError as exception:
       if exception.resp.status == 403:
@@ -314,4 +366,96 @@ class GoogleCloudCollector(module.BaseModule):
 
     return disks_to_copy
 
-modules_manager.ModulesManager.RegisterModule(GoogleCloudCollector)
+class GKEDiskCopier(GoogleCloudCollector):
+
+  def SetUp(self,
+            analysis_project_name: str,
+            remote_project_name: str,
+            remote_cluster_name: str,
+            remote_cluster_zone: str,
+            workload_name: Optional[str]=None,
+            workload_namespace: Optional[str]=None,
+            incident_id: Optional[str]=None,
+            zone: str='us-central1-f',
+            create_analysis_vm: bool=True,
+            boot_disk_size: float=50,
+            boot_disk_type: str='pd-standard',
+            cpu_cores: int=4,
+            image_project: str='ubuntu-os-cloud',
+            image_family: str='ubuntu-1804-lts') -> None:
+    """Sets up a GKE disk collector.
+
+    This method creates and starts an analysis VM in the analysis project and
+    selects nodes whose boot disks will be copied from the remote cluster.
+
+    If both the workload_name and workload_namespace are specified, only the
+    nodes supporting the workload's pods will be copied. If they are not
+    specified, all the nodes' disks will be copied to the analysis VM.
+
+    If analysis_project_name is not specified, analysis_project will be same
+    as remote_project.
+
+    Args:
+      analysis_project_name (str): Optional. name of the project that contains
+          the analysis VM. Default is None.
+      remote_project_name (str): name of the remote project where the disks
+          must be copied from.
+      remote_cluster_name (str): The name of the cluster to copy disks from.
+      remote_cluster_zone (str): The zone of the cluster to copy disks from.
+      workload_name (Optional[str]): Optional. The name of Kubernetes workload
+          whose node disks to copy.
+      workload_namespace (Optional[str]): Optional. The namespace of the
+          Kubernetes workload whose node disks to copy.
+      incident_id (Optional[str]): Optional. Incident identifier on which the
+          name of the analysis VM will be based. Default is None, which means
+          add no label and format VM name as
+          "gcp-forensics-vm-{TIMESTAMP('%Y%m%d%H%M%S')}".
+      zone (Optional[str]): Optional. GCP zone in which new resources should
+          be created. Default is us-central1-f.
+      create_analysis_vm (Optional[bool]): Optional. Create analysis VM in
+          the analysis project. Default is True.
+      boot_disk_size (Optional[float]): Optional. Size of the analysis VM boot
+          disk (in GB). Default is 50.
+      boot_disk_type (Optional[str]): Optional. Disk type to use.
+          Default is pd-standard.
+      cpu_cores (Optional[int]): Optional. Number of CPU cores to
+          create the VM with. Default is 4.
+      image_project (Optional[str]): Optional. Name of the project where the
+          analysis VM image is hosted.
+      image_family (Optional[str]): Optional. Name of the image to use to
+          create the analysis VM.
+    """
+    # Check GKE cluster
+    cluster = gke.GkeCluster(remote_project_name, remote_cluster_zone,
+                             remote_cluster_name)
+
+    if workload_name and workload_namespace:
+      # Both workload name and namespace were specified, select nodes from the
+      # cluster's workload
+      workload = cluster.FindWorkload(workload_name, workload_namespace)
+      if not workload:
+        self.ModuleError('Workload not found.', critical=True)
+      nodes = workload.GetCoveredNodes()
+    elif workload_name or workload_namespace:
+      # Either workload name or workload namespace was given, but not both
+      self.ModuleError(
+          'Both the workload name and namespace must be supplied.',
+           critical=True)
+      return
+    else:
+      # Nothing about a workload was specified, handle the whole cluster
+      nodes = cluster.ListNodes()
+
+    # Initialize fields and set up analysis VM
+    self._SetUpProjects(analysis_project_name, remote_project_name, zone)
+    self._SetUpAnalysisVm(incident_id, create_analysis_vm, boot_disk_size,
+                          boot_disk_type, cpu_cores, image_project,
+                          image_family)
+
+    # Queue selected node's boot disks
+    for node in nodes:
+      disk = self.remote_project.compute.GetInstance(node.name).GetBootDisk()
+      self._QueueDiskToCopy(disk)
+
+modules_manager.ModulesManager.RegisterModule(GCEDiskCopier)
+modules_manager.ModulesManager.RegisterModule(GKEDiskCopier)
