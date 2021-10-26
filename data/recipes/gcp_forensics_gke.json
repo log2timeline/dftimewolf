@@ -1,0 +1,56 @@
+{
+  "name": "gcp_forensics_gke",
+  "short_description": "Copies a GKE cluster’s disks to an analysis VM.",
+  "description": "Copies a GKE cluster’s node disks to an analysis project, creates an analysis VM, and attaches the cluster’s node disks. A workload can be specified in addition to the cluster, to only copy disks of the nodes supporting the workload and not of all nodes in the cluster.",
+  "preflights": [{
+    "wants": [],
+    "name": "GCPTokenCheck",
+    "runtime_name": "GCPTokenCheck-analysis",
+    "args": {
+        "project_name": "@analysis_project_name"
+    }
+  },
+  {
+    "wants": [],
+    "name": "GCPTokenCheck",
+    "runtime_name": "GCPTokenCheck-remote",
+    "args": {
+        "project_name": "@remote_project_name"
+    }
+  }],
+  "modules": [
+    {
+      "wants": [],
+      "name": "GKEDiskCopier",
+      "args": {
+          "analysis_project_name": "@analysis_project_name",
+          "remote_project_name": "@remote_project_name",
+          "remote_cluster_name": "@remote_cluster_name",
+          "remote_cluster_zone": "@remote_cluster_zone",
+          "workload_name": "@workload_name",
+          "workload_namespace": "@workload_namespace",
+          "incident_id": "@incident_id",
+          "zone": "@zone",
+          "create_analysis_vm": "@create_analysis_vm",
+          "boot_disk_size": "@boot_disk_size",
+          "boot_disk_type": "@boot_disk_type",
+          "cpu_cores": "@cpu_cores",
+          "image_project": "ubuntu-os-cloud",
+          "image_family": "ubuntu-1804-lts"
+      }
+  }],
+  "args": [
+      ["remote_project_name", "Name of the project containing the cluster to copy ", null],
+      ["remote_cluster_name", "Name of the cluster whose disks to copy ", null],
+      ["remote_cluster_zone", "Zone of the cluster whose disks to copy ", null],
+      ["--analysis_project_name", "Name of the project where the analysis VM will be created", null],
+      ["--incident_id", "Incident ID to label the VM with.", null],
+      ["--workload_name", "Name of the workload whose disks to copy.", null],
+      ["--workload_namespace", "Namespace of the workload whose disks to copy.", null],
+      ["--create_analysis_vm", "Create an analysis VM.", true],
+      ["--cpu_cores", "Number of CPU cores of the analysis VM", 4],
+      ["--boot_disk_size", "The size of the analysis VM boot disk (in GB)", 50.0],
+      ["--boot_disk_type", "Disk type to use [pd-standard, pd-ssd]", "pd-standard"],
+      ["--zone", "The GCP zone where the Analysis VM and copied disks will be created", "us-central1-f"]
+  ]
+}
