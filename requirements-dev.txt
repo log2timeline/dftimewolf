@@ -45,9 +45,8 @@ docker==5.0.3; python_version >= '3.6'
 ecdsa==0.17.0; python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'
 entrypoints==0.3; python_version >= '2.7'
 filelock==3.3.1; python_version >= '3.6'
-git+https://github.com/google/turbinia.git@c400befab1ba3467dc24ad19859f2ad3e05f39ce#egg=turbinia
 google-api-core[grpc]==1.31.3; python_version >= '3.6'
-google-api-python-client==2.27.0; python_version >= '3.6'
+google-api-python-client==2.28.0; python_version >= '3.6'
 google-auth-httplib2==0.1.0
 google-auth-oauthlib==0.4.6; python_version >= '3.6'
 google-auth==1.35.0; python_version >= '3.6'
@@ -102,6 +101,7 @@ proto-plus==1.19.6; python_version >= '3.6'
 protobuf==3.12.2; python_version >= '3.6'
 psq==0.8.0
 psutil==5.8.0
+pyarrow==5.0.0
 pyasn1-modules==0.2.8
 pyasn1==0.4.8
 pycparser==2.20; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
@@ -109,7 +109,7 @@ pycryptodome==3.11.0; python_version >= '2.7' and python_version not in '3.0, 3.
 pyjwt[crypto]==1.7.1
 pylint==2.11.1
 pyopenssl==19.1.0
-pyparsing==2.4.7; python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2'
+pyparsing==2.4.7; python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'
 pypdf2==1.26.0
 pyperclip==1.8.2
 pyrsistent==0.18.0; python_version >= '3.6'
@@ -126,9 +126,9 @@ soupsieve==2.2.1; python_version >= '3.6'
 sshpubkeys==3.3.1; python_version >= '3'
 timesketch-api-client==20210602
 timesketch-import-client==20210602
-toml==0.10.2; python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2'
+toml==0.10.2; python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'
 toolz==0.11.1; python_version >= '3.5'
-typed-ast==1.4.3; python_version < '3.8' and implementation_name == 'cpython'
+turbinia==20211018
 types-filelock==3.2.1
 types-futures==3.3.1
 types-protobuf==3.18.0
@@ -146,4 +146,3 @@ wrapt==1.13.2; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2,
 xlrd==2.0.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5'
 yapf==0.31.0
 yarl==1.7.0; python_version >= '3.6'
-zipp==3.6.0; python_version >= '3.6'
