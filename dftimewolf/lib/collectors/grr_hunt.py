@@ -367,6 +367,7 @@ class GRRHuntDownloader(GRRHunt):
       msg = 'Bad zipfile {0:s}: {1!s}'.format(
           output_file_path, exception)
       self.ModuleError(msg, critical=True)
+      return
 
     try:
       os.remove(output_file_path)
