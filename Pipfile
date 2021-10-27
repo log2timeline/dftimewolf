@@ -34,6 +34,7 @@ cmd2 = "*"
 psutil = "*"
 prettytable = "*"
 vt-py = "*"
+typing-extensions = "*"
 
 [requires]
 python_version = "3.8"
