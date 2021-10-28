@@ -8,11 +8,8 @@ import mock
 
 from grr_api_client import errors as grr_errors
 
-from dftimewolf.lib import state
 from dftimewolf.lib import errors
 from dftimewolf.lib.collectors import grr_base
-
-from dftimewolf import config
 
 
 ACCESS_FORBIDDEN_MAX = 3

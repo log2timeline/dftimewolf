@@ -1,5 +1,5 @@
 """Base GRR module class. GRR modules should extend it."""
-import abc
+
 import logging
 import tempfile
 import time
@@ -11,8 +11,6 @@ from grr_api_client.client import Client
 from grr_api_client.flow import Flow
 from grr_api_client.hunt import Hunt
 
-from dftimewolf.lib import module
-from dftimewolf.lib.state import DFTimewolfState
 from dftimewolf.lib.errors import GrrError
 
 
@@ -119,7 +117,7 @@ class GRRBaseModule(object):
         if not self.approvers:
           message = ('GRR needs approval but no approvers specified '
                      '(hint: use --approvers)')
-          raise GrrError(message, critical=True)
+          raise GrrError(message, critical=True) from exception
 
         # Otherwise, send a request for approval
         approval = grr_object.CreateApproval(

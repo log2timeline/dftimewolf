@@ -32,6 +32,7 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
                name: Optional[str]=None,
                critical: bool=False) -> None:
     module.BaseModule.__init__(self, state, name=name, critical=critical)
+    grr_base.GRRBaseModule.__init__(self)
 
   # TODO: change object to more specific GRR type information.
   def _CreateHunt(

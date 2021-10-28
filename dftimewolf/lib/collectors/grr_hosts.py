@@ -21,9 +21,12 @@ from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 
 
+GRR_THREAD_POOL_SIZE = 10 # Arbitrary
+
 # TODO: GRRFlow should be extended by classes that actually implement
 # the Process() method.
-class GRRFlow(GRRBaseModule, module.ThreadAwareModule):  # pylint: disable=abstract-method
+# pylint: disable=abstract-method
+class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
   """Launches and collects GRR flows.
 
   Modules that use GRR flows or interact with hosts should extend this class.
@@ -49,7 +52,8 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):  # pylint: disable=abstr
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    module.BaseModule.__init__(self, state, name=name, critical=critical)
+    module.ThreadAwareModule.__init__(self, state, name=name, critical=critical)
+    GRRBaseModule.__init__(self)
     self.keepalive = False
     self._skipped_flows = []  # type: List[Tuple[str, str]]
     self.skip_offline_clients = False
@@ -339,6 +343,10 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):  # pylint: disable=abstr
 
     return client_output_file
 
+  def GetThreadPoolSize(self) -> int:
+    """Thread pool size."""
+    return GRR_THREAD_POOL_SIZE
+
 
 class GRRArtifactCollector(GRRFlow):
   """Artifact collector for GRR flows.
@@ -494,22 +502,20 @@ class GRRArtifactCollector(GRRFlow):
         self.state.StoreContainer(cont)
 
   def PreSetup(self) -> None:
-    pass
+    """Not implemented."""
 
   def PostSetup(self) -> None:
-    pass
+    """Not implemented."""
 
   def PreProcess(self) -> None:
-    pass
+    """Not implemented."""
 
   def PostProcess(self) -> None:
-    pass
+    """Not implemented."""
 
   def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
+    """This module operates on Host containers."""
     return containers.Host
-
-  def GetThreadPoolSize(self) -> int:
-    return 10
 
 
 class GRRFileCollector(GRRFlow):
@@ -612,12 +618,13 @@ class GRRFileCollector(GRRFlow):
         self.state.StoreContainer(cont)
 
   def PreSetup(self) -> None:
-    pass
+    """Not implemented."""
 
   def PostSetup(self) -> None:
-    pass
+    """Not implemented."""
 
   def PreProcess(self) -> None:
+    """Check that we're actually doing something, and it's not a no-op."""
     if not self.files:
       message = 'Would fetch 0 files - bailing out instead.'
       self.logger.critical(message)
@@ -626,13 +633,12 @@ class GRRFileCollector(GRRFlow):
         len(self.files)))
 
   def PostProcess(self) -> None:
+    """Check if we're skipping any offline clients."""
     self._CheckSkippedFlows()
 
   def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
+    """This module works on host containers."""
     return containers.Host
-
-  def GetThreadPoolSize(self) -> int:
-    return 10
 
 
 class GRRFlowCollector(GRRFlow):
@@ -775,7 +781,7 @@ class GRRTimelineCollector(GRRFlow):
       self.ModuleError('Timeline format must be 1 (BODY) or 2 (RAW).',
                        critical=True)
 
-  def Process(self, container) -> None:
+  def Process(self, container: containers.Host) -> None:
     """Collects a timeline from a host with GRR.
 
     Raises:
@@ -795,11 +801,11 @@ class GRRTimelineCollector(GRRFlow):
       if collected_flow_data:
         self.logger.success(
             '{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
-        container = containers.File(
+        cont = containers.File(
             name=client.data.os_info.fqdn.lower(),
             path=collected_flow_data
         )
-        self.state.StoreContainer(container)
+        self.state.StoreContainer(cont)
 
   def _DownloadTimeline(self, client: Client, flow_id: str) -> Optional[str]:
     """Download a timeline in BODY format from the specified flow.
@@ -832,22 +838,21 @@ class GRRTimelineCollector(GRRFlow):
     return output_file_path
 
   def PreSetup(self) -> None:
-    pass
+    """Not implemented."""
 
   def PostSetup(self) -> None:
-    pass
+    """Not implemented."""
 
   def PreProcess(self) -> None:
-    pass
+    """Not implemented."""
 
   def PostProcess(self) -> None:
+    """Check if we're skipping any offline clients."""
     self._CheckSkippedFlows()
 
   def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
+    """This module works on host containers."""
     return containers.Host
-
-  def GetThreadPoolSize(self) -> int:
-    return 10
 
 
 modules_manager.ModulesManager.RegisterModules([

@@ -373,7 +373,7 @@ class GRRFileCollectorTest(unittest.TestCase):
     for c in in_containers:
       self.grr_file_collector.Process(c)
     self.grr_file_collector.PostProcess()
-    
+
     mock_LaunchFlow.assert_called_with(
         mock_grr_hosts.MOCK_CLIENT_RECENT,
         'FileFinder',
