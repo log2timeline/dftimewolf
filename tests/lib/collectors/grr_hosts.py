@@ -428,7 +428,7 @@ class GRRFileCollectorTest(unittest.TestCase):
     mock_FindClients.assert_called_with(['container.host'])
 
 
-class GRRFlowCollector(unittest.TestCase):
+class GRRFlowCollectorTest(unittest.TestCase):
   """Tests for the GRR flow collector."""
 
   @mock.patch('grr_api_client.api.InitHttp')
@@ -465,7 +465,7 @@ class GRRFlowCollector(unittest.TestCase):
     self.assertEqual(result.path, '/tmp/something')
 
 
-class GRRTimelineCollector(unittest.TestCase):
+class GRRTimelineCollectorTest(unittest.TestCase):
   """Tests for the GRR flow collector."""
 
   @mock.patch('grr_api_client.api.InitHttp')
@@ -489,9 +489,12 @@ class GRRTimelineCollector(unittest.TestCase):
 
   def testInitialization(self):
     """Tests that the collector can be initialized."""
+    actual_hosts = [h.hostname for h in \
+        self.grr_timeline_collector.state.GetContainers(
+            self.grr_timeline_collector.GetThreadOnContainerType())]
+
     self.assertIsNotNone(self.grr_timeline_collector)
-    self.assertEqual(self.grr_timeline_collector.hosts[0].hostname,
-                     'C.0000000000000001')
+    self.assertEqual(['C.0000000000000001'], actual_hosts)
     self.assertEqual(self.grr_timeline_collector.root_path, b'/')
     self.assertEqual(self.grr_timeline_collector._timeline_format, 1)
 
@@ -508,7 +511,14 @@ class GRRTimelineCollector(unittest.TestCase):
         mock_grr_hosts.MOCK_CLIENT_LIST
     mock_DownloadTimeline.return_value = '/tmp/something'
     mock_Get.return_value = mock_grr_hosts.MOCK_FLOW
-    self.grr_timeline_collector.Process()
+
+    self.grr_timeline_collector.PreProcess()
+    in_containers = self.test_state.GetContainers(
+        self.grr_timeline_collector.GetThreadOnContainerType())
+    for c in in_containers:
+      self.grr_timeline_collector.Process(c)
+    self.grr_timeline_collector.PostProcess()
+
     mock_DownloadTimeline.assert_called_once_with(
         mock_grr_hosts.MOCK_CLIENT_RECENT, 'F:12345')
     results = self.test_state.GetContainers(containers.File)
@@ -545,7 +555,13 @@ class GRRTimelineCollector(unittest.TestCase):
     )
     self.test_state.StoreContainer(containers.Host(hostname='container.host'))
 
-    self.grr_timeline_collector.Process()
+    self.grr_timeline_collector.PreProcess()
+    in_containers = self.test_state.GetContainers(
+        self.grr_timeline_collector.GetThreadOnContainerType())
+    for c in in_containers:
+      self.grr_timeline_collector.Process(c)
+    self.grr_timeline_collector.PostProcess()
+
     mock_FindClients.assert_called_with(['container.host'])
 
 

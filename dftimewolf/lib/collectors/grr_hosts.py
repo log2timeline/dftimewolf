@@ -768,56 +768,38 @@ class GRRTimelineCollector(GRRFlow):
     for item in hostnames.strip().split(','):
       hostname = item.strip()
       if hostname:
-        host = containers.Host(hostname=hostname)
-        self.hosts.append(host)
+        self.state.StoreContainer(containers.Host(hostname=hostname))
 
     self._timeline_format = int(timeline_format)
     if self._timeline_format not in [1, 2]:
       self.ModuleError('Timeline format must be 1 (BODY) or 2 (RAW).',
                        critical=True)
 
-  # TODO: change object to more specific GRR type information.
-  def _ProcessThread(self, client: Client) -> None:
-    """Processes a single client.
-    This function is used as a callback for the processing thread.
-    Args:
-      client (object): GRR client object to act on.
-    """
-    root_path = self.root_path
-    if not root_path:
-      return
-    self.logger.info(
-        'Timeline to start from "{0:s}" items'.format(root_path.decode()))
-
-    timeline_args = timeline_pb2.TimelineArgs(root=root_path,)
-    flow_id = self._LaunchFlow(client, 'TimelineFlow', timeline_args)
-    self._AwaitFlow(client, flow_id)
-    collected_flow_data = self._DownloadTimeline(client, flow_id)
-    if collected_flow_data:
-      self.logger.success(
-          '{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
-      container = containers.File(
-          name=client.data.os_info.fqdn.lower(),
-          path=collected_flow_data
-      )
-      self.state.StoreContainer(container)
-
-  def Process(self) -> None:
+  def Process(self, container) -> None:
     """Collects a timeline from a host with GRR.
+
     Raises:
       DFTimewolfError: if no files specified.
     """
-    self.hosts.extend(self.state.GetContainers(containers.Host))
+    for client in self._FindClients([container.hostname]):
+      root_path = self.root_path
+      if not root_path:
+        return
+      self.logger.info(
+          'Timeline to start from "{0:s}" items'.format(root_path.decode()))
 
-    threads = []
-    for client in self._FindClients([host.hostname for host in self.hosts]):
-      thread = threading.Thread(target=self._ProcessThread, args=(client, ))
-      threads.append(thread)
-      thread.start()
-
-    for thread in threads:
-      thread.join()
-    self._CheckSkippedFlows()
+      timeline_args = timeline_pb2.TimelineArgs(root=root_path,)
+      flow_id = self._LaunchFlow(client, 'TimelineFlow', timeline_args)
+      self._AwaitFlow(client, flow_id)
+      collected_flow_data = self._DownloadTimeline(client, flow_id)
+      if collected_flow_data:
+        self.logger.success(
+            '{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
+        container = containers.File(
+            name=client.data.os_info.fqdn.lower(),
+            path=collected_flow_data
+        )
+        self.state.StoreContainer(container)
 
   def _DownloadTimeline(self, client: Client, flow_id: str) -> Optional[str]:
     """Download a timeline in BODY format from the specified flow.
@@ -848,6 +830,24 @@ class GRRTimelineCollector(GRRFlow):
     timeline.WriteToFile(output_file_path)
 
     return output_file_path
+
+  def PreSetup(self) -> None:
+    pass
+
+  def PostSetup(self) -> None:
+    pass
+
+  def PreProcess(self) -> None:
+    pass
+
+  def PostProcess(self) -> None:
+    self._CheckSkippedFlows()
+
+  def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
+    return containers.Host
+
+  def GetThreadPoolSize(self) -> int:
+    return 10
 
 
 modules_manager.ModulesManager.RegisterModules([
