@@ -56,7 +56,7 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
     hunt = self.grr_api.CreateHunt(
         flow_name=name, flow_args=args, hunt_runner_args=runner_args)
     self.logger.success('{0!s}: Hunt created'.format(hunt.hunt_id))
-    self._WrapGRRRequestWithApproval(hunt, hunt.Start)
+    self._WrapGRRRequestWithApproval(hunt, hunt.Start, self.logger)
     return hunt
 
 
@@ -286,7 +286,7 @@ class GRRHuntDownloader(GRRHunt):
       return []
 
     self._WrapGRRRequestWithApproval(
-        hunt, self._GetAndWriteArchive, hunt, output_file_path)
+        hunt, self._GetAndWriteArchive, self.logger, hunt, output_file_path)
 
     results = self._ExtractHuntResults(output_file_path)
     self.logger.success('Wrote results of {0:s} to {1:s}'.format(

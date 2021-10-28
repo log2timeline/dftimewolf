@@ -7,7 +7,7 @@ import re
 import threading
 import time
 import zipfile
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Type
 
 from grr_api_client import errors as grr_errors
 from grr_api_client.client import Client
@@ -15,7 +15,7 @@ from grr_response_proto import flows_pb2, timeline_pb2
 
 from dftimewolf.lib import module
 from dftimewolf.lib.collectors.grr_base import GRRBaseModule
-from dftimewolf.lib.containers import containers
+from dftimewolf.lib.containers import containers, interface
 from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
@@ -221,7 +221,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):  # pylint: disable=abstr
     """
     # Start the flow and get the flow ID
     flow = self._WrapGRRRequestWithApproval(
-        client, client.CreateFlow, name=name, args=args)
+        client, client.CreateFlow, self.logger, name=name, args=args)
     if not flow:
       return ''
 
@@ -434,83 +434,82 @@ class GRRArtifactCollector(GRRFlow):
     for item in hostnames.strip().split(','):
       hostname = item.strip()
       if hostname:
-        host = containers.Host(hostname=hostname)
-        self.hosts.append(host)
+        self.state.StoreContainer(containers.Host(hostname=hostname))
 
     self.use_tsk = use_tsk
 
-  # TODO: change object to more specific GRR type information.
-  def _ProcessThread(self, client: Client) -> None:
-    """Processes a single GRR client.
-
-    This function is used as a callback for the processing thread.
-
-    Args:
-      client (object): a GRR client object.
-    """
-    system_type = client.data.os_info.system
-    self.logger.info('System type: {0:s}'.format(system_type))
-
-    # If the list is supplied by the user via a flag, honor that.
-    artifact_list = []
-    if self.artifacts:
-      self.logger.info(
-          'Artifacts to be collected: {0!s}'.format(self.artifacts))
-      artifact_list = self.artifacts
-    else:
-      default_artifacts = self.artifact_registry.get(system_type, None)
-      if default_artifacts:
-        self.logger.info('Collecting default artifacts for {0:s}: {1:s}'.format(
-            system_type, ', '.join(default_artifacts)))
-        artifact_list.extend(default_artifacts)
-
-    if self.extra_artifacts:
-      self.logger.info(
-          'Throwing in an extra {0!s}'.format(self.extra_artifacts))
-      artifact_list.extend(self.extra_artifacts)
-      artifact_list = list(set(artifact_list))
-
-    if not artifact_list:
-      return
-
-    flow_args = flows_pb2.ArtifactCollectorFlowArgs(
-        artifact_list=artifact_list,
-        use_tsk=self.use_tsk,
-        ignore_interpolation_errors=True,
-        apply_parsers=False)
-    flow_id = self._LaunchFlow(client, 'ArtifactCollectorFlow', flow_args)
-    if not flow_id:
-      msg = 'Flow could not be launched on {0:s}.'.format(client.client_id)
-      msg += '\nArtifactCollectorFlow args: {0!s}'.format(flow_args)
-      self.ModuleError(msg, critical=True)
-    self._AwaitFlow(client, flow_id)
-    collected_flow_data = self._DownloadFiles(client, flow_id)
-
-    if collected_flow_data:
-      self.logger.success(
-          '{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
-      container = containers.File(
-          name=client.data.os_info.fqdn.lower(),
-          path=collected_flow_data
-      )
-      self.state.StoreContainer(container)
-
-  def Process(self) -> None:
+  def Process(self, container: containers.Host) -> None:
     """Collects artifacts from a host with GRR.
 
     Raises:
       DFTimewolfError: if no artifacts specified nor resolved by platform.
     """
-    self.hosts.extend(self.state.GetContainers(containers.Host))
+    for client in self._FindClients([container.hostname]):
+      system_type = client.data.os_info.system
+      self.logger.info('System type: {0:s}'.format(system_type))
 
-    threads = []
-    for client in self._FindClients([host.hostname for host in self.hosts]):
-      thread = threading.Thread(target=self._ProcessThread, args=(client, ))
-      threads.append(thread)
-      thread.start()
+      # If the list is supplied by the user via a flag, honor that.
+      artifact_list = []
+      if self.artifacts:
+        self.logger.info(
+            'Artifacts to be collected: {0!s}'.format(self.artifacts))
+        artifact_list = self.artifacts
+      else:
+        default_artifacts = self.artifact_registry.get(system_type, None)
+        if default_artifacts:
+          self.logger.info(
+              'Collecting default artifacts for {0:s}: {1:s}'.format(
+                  system_type, ', '.join(default_artifacts)))
+          artifact_list.extend(default_artifacts)
 
-    for thread in threads:
-      thread.join()
+      if self.extra_artifacts:
+        self.logger.info(
+            'Throwing in an extra {0!s}'.format(self.extra_artifacts))
+        artifact_list.extend(self.extra_artifacts)
+        artifact_list = list(set(artifact_list))
+
+      if not artifact_list:
+        return
+
+      flow_args = flows_pb2.ArtifactCollectorFlowArgs(
+          artifact_list=artifact_list,
+          use_tsk=self.use_tsk,
+          ignore_interpolation_errors=True,
+          apply_parsers=False)
+      flow_id = self._LaunchFlow(client, 'ArtifactCollectorFlow', flow_args)
+      if not flow_id:
+        msg = 'Flow could not be launched on {0:s}.'.format(client.client_id)
+        msg += '\nArtifactCollectorFlow args: {0!s}'.format(flow_args)
+        self.ModuleError(msg, critical=True)
+      self._AwaitFlow(client, flow_id)
+      collected_flow_data = self._DownloadFiles(client, flow_id)
+
+      if collected_flow_data:
+        self.logger.success(
+            '{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
+        cont = containers.File(
+            name=client.data.os_info.fqdn.lower(),
+            path=collected_flow_data
+        )
+        self.state.StoreContainer(cont)
+
+  def PreSetup(self) -> None:
+    pass
+
+  def PostSetup(self) -> None:
+    pass
+
+  def PreProcess(self) -> None:
+    pass
+
+  def PostProcess(self) -> None:
+    pass
+
+  def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
+    return containers.Host
+
+  def GetThreadPoolSize(self) -> int:
+    return 10
 
 
 class GRRFileCollector(GRRFlow):
@@ -589,7 +588,7 @@ class GRRFileCollector(GRRFlow):
       self.ModuleError("Invalid action {0!s}".format(action),
                        critical=True)
 
-  def Process(self, container) -> None:
+  def Process(self, container: containers.Host) -> None:
     """Collects files from a host with GRR.
 
     Raises:
@@ -606,19 +605,19 @@ class GRRFileCollector(GRRFlow):
       if collected_flow_data:
         self.logger.success(
             '{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
-        container = containers.File(
+        cont = containers.File(
             name=client.data.os_info.fqdn.lower(),
             path=collected_flow_data
         )
-        self.state.StoreContainer(container)
+        self.state.StoreContainer(cont)
 
-  def PreSetup(self):
+  def PreSetup(self) -> None:
     pass
-  
-  def PostSetup(self):
+
+  def PostSetup(self) -> None:
     pass
-  
-  def PreProcess(self):
+
+  def PreProcess(self) -> None:
     if not self.files:
       message = 'Would fetch 0 files - bailing out instead.'
       self.logger.critical(message)
@@ -626,14 +625,15 @@ class GRRFileCollector(GRRFlow):
     self.logger.info('Filefinder to collect {0:d} items on each host'.format(
         len(self.files)))
 
-  def PostProcess(self):
+  def PostProcess(self) -> None:
     self._CheckSkippedFlows()
 
-  def GetThreadOnContainerType(self):
+  def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
     return containers.Host
-  
-  def GetThreadPoolSize(self):
+
+  def GetThreadPoolSize(self) -> int:
     return 10
+
 
 class GRRFlowCollector(GRRFlow):
   """Flow collector.
@@ -851,7 +851,7 @@ class GRRTimelineCollector(GRRFlow):
 
 
 modules_manager.ModulesManager.RegisterModules([
-    GRRArtifactCollector,
-    GRRFileCollector,
-    GRRFlowCollector,
-    GRRTimelineCollector])
+    GRRArtifactCollector, # type: ignore
+    GRRFileCollector, # type: ignore
+    GRRFlowCollector, # type: ignore
+    GRRTimelineCollector]) # type: ignore

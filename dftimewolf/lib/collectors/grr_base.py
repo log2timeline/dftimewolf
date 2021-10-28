@@ -1,5 +1,6 @@
 """Base GRR module class. GRR modules should extend it."""
 import abc
+import logging
 import tempfile
 import time
 from typing import Optional, Union, Callable, List, Any
@@ -12,6 +13,7 @@ from grr_api_client.hunt import Hunt
 
 from dftimewolf.lib import module
 from dftimewolf.lib.state import DFTimewolfState
+from dftimewolf.lib.errors import GrrError
 
 
 class GRRBaseModule(object):
@@ -77,6 +79,7 @@ class GRRBaseModule(object):
       self,
       grr_object: Union[Hunt, Client],
       grr_function: Callable,  # type: ignore[type-arg]
+      logger: logging.Logger,
       *args: Any,
       **kwargs: Any
   ) -> Union[Flow, Hunt]:
@@ -103,12 +106,12 @@ class GRRBaseModule(object):
         return grr_function(*args, **kwargs)
 
       except grr_errors.AccessForbiddenError as exception:
-        self.logger.info('No valid approval found: {0!s}'.format(exception))
+        logger.info('No valid approval found: {0!s}'.format(exception))
         # If approval was already sent, just wait a bit more.
         if approval_sent:
-          self.logger.info('Approval not yet granted, waiting {0:d}s'.format(
+          logger.info('Approval not yet granted, waiting {0:d}s'.format(
               self._CHECK_APPROVAL_INTERVAL_SEC))
-          self.logger.success(approval_url)
+          logger.success(approval_url) # type: ignore
           time.sleep(self._CHECK_APPROVAL_INTERVAL_SEC)
           continue
 
@@ -116,7 +119,7 @@ class GRRBaseModule(object):
         if not self.approvers:
           message = ('GRR needs approval but no approvers specified '
                      '(hint: use --approvers)')
-          self.ModuleError(message, critical=True)
+          raise GrrError(message, critical=True)
 
         # Otherwise, send a request for approval
         approval = grr_object.CreateApproval(
@@ -126,6 +129,6 @@ class GRRBaseModule(object):
                         format(self.grr_url, approval.username,
                                approval.client_id,
                                approval.approval_id))
-        self.logger.info(
+        logger.info(
             '{0!s}: approval request sent to: {1!s} (reason: {2:s})'.format(
                 grr_object, self.approvers, self.reason))
