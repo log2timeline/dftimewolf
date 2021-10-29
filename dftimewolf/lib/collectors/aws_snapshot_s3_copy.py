@@ -3,7 +3,7 @@
 
 import threading
 import time
-from typing import Any, Optional, Type
+from typing import Any, Optional, Type, List
 import boto3
 
 from libcloudforensics.providers.aws import forensics
@@ -56,8 +56,10 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
     self.region: str = ''
     self.subnet: Any = None
     self.ec2: Any = None
+    self.s3: Any = None
     self.iam_details: Any = None
     self.aws_account = None
+    self.bucket_exists: bool = False
 
   # pylint: disable=arguments-differ
   def SetUp(self,
@@ -78,38 +80,32 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
     self.region = region
     self.subnet = subnet
     self.ec2 = boto3.client('ec2', region_name=self.region)
+    self.s3 = boto3.client('s3', region_name=self.region)
+    self.aws_account = account.AWSAccount(
+          self._PickAvailabilityZone(self.subnet))
 
     if snapshots:
       for snap in snapshots.split(','):
         self.state.StoreContainer(containers.AWSSnapshot(snap))
 
+    # Check the bucket exists
+    self.bucket_exists = self._CheckBucketExists(self.bucket)
+
   def PreProcess(self) -> None:
     """Set up for the snapshot copy operation."""
-    # Validate the bucket exists. If not, create it.
-    try:
-      self.aws_account = account.AWSAccount(
-          self._PickAvailabilityZone(self.subnet))
-      s3 = boto3.client('s3', region_name=self.region)
-    except AWSSnapshotS3CopyException as exception:
-      self.ModuleError(
-          'Error encountered determining availability zone: {0!s}'.format(
-              exception), critical=True)
-
-    if self.bucket not in [bucket['Name']
-        for bucket in s3.list_buckets()['Buckets']]:
+    if not self.bucket_exists:
       self.logger.info('Creating AWS bucket {0:s}'.format(self.bucket))
-      s3.create_bucket(
+      self.s3.create_bucket(
         Bucket=self.bucket,
         CreateBucketConfiguration={'LocationConstraint': self.region})
 
     # Check the snapshots exist
-    try:
-      cont_list = self.state.GetContainers(containers.AWSSnapshot)
-      snaps = [snap.snap_id for snap in cont_list]
-      self.ec2.describe_snapshots(SnapshotIds=snaps)
-    except self.ec2.exceptions.ClientError as exception:
-      self.ModuleError('Error encountered describing snapshots: {0!s}'.
-          format(exception), critical=True)
+    snap_ids = [snap.id for snap in \
+        self.state.GetContainers(containers.AWSSnapshot)]
+    if not self._CheckSnapshotsExist(snap_ids):
+      self.ModuleError(
+          'Could not find the snapshots ids to copy.',
+          critical=True)
 
     # Create the IAM pieces
     self.iam_details = forensics.CopyEBSSnapshotToS3SetUp(
@@ -125,7 +121,7 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
     try:
       result = forensics.CopyEBSSnapshotToS3Process(aws_account,
           self.bucket,
-          container.snap_id,
+          container.id,
           self.iam_details['profile']['arn'],
           subnet_id=self.subnet)
 
@@ -142,7 +138,7 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
         self.aws_account, INSTANCE_PROFILE_NAME, self.iam_details)
 
   # pylint: disable=inconsistent-return-statements
-  def _PickAvailabilityZone(self, subnet: str='') -> str:
+  def _PickAvailabilityZone(self, subnet: Optional[str]='') -> str:
     """Given a region + subnet, pick an availability zone.
 
     If the subnet is provided, it's AZ is returned. Otherwise, one is picked
@@ -155,7 +151,8 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
       A string representing the AZ.
 
     Raises:
-      AWSSnapshotS3CopyException: If no suitable AZ can be found."""
+      AWSSnapshotS3CopyException: If no suitable AZ can be found.
+    """
     # If we received a subnet ID, return the AZ for it
     if subnet:
       subnets = self.ec2.describe_subnets(SubnetIds=[subnet])
@@ -170,6 +167,33 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
 
     # If we reached here, we have a problem
     raise AWSSnapshotS3CopyException('No suitable availability zone found')
+
+  def _CheckSnapshotsExist(self, snap_ids: List[str]) -> bool:
+    """Check the snapshots that we want to copy exist.
+
+    Args:
+      snap_ids (List[str]): A list of snapshot IDs to look for.
+    Returns:
+      True if the snapshots all exist and we have permissions to list them,
+          False otherwise.
+    """
+    try:
+      self.ec2.describe_snapshots(SnapshotIds=snap_ids)
+    except self.ec2.exceptions.ClientError:
+      return False
+    return True
+
+  def _CheckBucketExists(self, bucket_name: str) -> bool:
+    """Checks whether a bucket exists in the configured AWS account.
+
+    Args:
+      bucket_name (str): The bucket name to look for.
+    Returns:
+      True if the bucket exists and we have permissions to confirm that, False
+          otherwise.
+    """
+    buckets = [bucket['Name'] for bucket in self.s3.list_buckets()['Buckets']]
+    return bucket_name in buckets
 
   @staticmethod
   def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:

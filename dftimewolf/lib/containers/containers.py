@@ -9,7 +9,7 @@ from typing import Optional, Union, List, TYPE_CHECKING, Dict, Any
 from dftimewolf.lib.containers import interface
 
 if TYPE_CHECKING:
-  from libcloudforensics.providers.aws.internal.ebs import AWSVolume
+  from libcloudforensics.providers.aws.internal.ebs import AWSVolume as AWSVol
   from libcloudforensics.providers.azure.internal.compute import AZComputeDisk
   from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk
   import pandas
@@ -264,7 +264,7 @@ class ForensicsVM(interface.AttributeContainer):
   CONTAINER_TYPE = 'forensics_vm'
 
   def __init__(
-      self, name: str, evidence_disk: Union["GoogleComputeDisk", "AWSVolume",
+      self, name: str, evidence_disk: Union["GoogleComputeDisk", "AWSVol",
                                             "AZComputeDisk"],
       platform: str) -> None:
     super(ForensicsVM, self).__init__()
@@ -424,27 +424,27 @@ class AWSS3Object(interface.AttributeContainer):
       self.path = 's3://' + path
 
 
-class AWSVol(interface.AttributeContainer):
+class AWSVolume(interface.AttributeContainer):
   """Attribute container for an AWS Volume.
 
   Attributes:
     vol_id (str): The volume id (vol-xxxxxxxx)."""
 
-  CONTAINER_TYPE = 'awsvol'
+  CONTAINER_TYPE = 'aws_volume'
 
   def __init__(self, vol_id: str) -> None:
-    super(AWSVol, self).__init__()
-    self.vol_id = vol_id
+    super(AWSVolume, self).__init__()
+    self.id = vol_id
 
 
 class AWSSnapshot(interface.AttributeContainer):
-  """Attribute container for an AWS Volume.
+  """Attribute container for an AWS Snapshot.
 
   Attributes:
-    snap_id (str): The volume id (snap-xxxxxxxx)."""
+    snap_id (str): The snapshot id (snap-xxxxxxxx)."""
 
-  CONTAINER_TYPE = 'awssnapshot'
+  CONTAINER_TYPE = 'aws_snapshot'
 
   def __init__(self, snap_id: str) -> None:
     super(AWSSnapshot, self).__init__()
-    self.snap_id = snap_id
+    self.id = snap_id

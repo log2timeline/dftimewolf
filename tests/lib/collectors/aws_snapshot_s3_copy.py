@@ -140,13 +140,17 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
 
     # Subnet is optional - test with it.
     collector = aws_snapshot_s3_copy.AWSSnapshotS3CopyCollector(test_state)
-    collector.SetUp(','.join([snapshot['SnapshotId']\
-          for snapshot in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']]),
-        FAKE_BUCKET,
-        FAKE_REGION,
-        FAKE_SUBNET)
 
-    state_snaps = [snap.snap_id for snap in \
+    with mock.patch('botocore.client.BaseClient._make_api_call',
+        new=MockMakeAPICall):
+
+      collector.SetUp(','.join([snapshot['SnapshotId']\
+            for snapshot in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']]),
+          FAKE_BUCKET,
+          FAKE_REGION,
+          FAKE_SUBNET)
+
+    state_snaps = [snap.id for snap in \
         test_state.GetContainers(containers.AWSSnapshot)]
 
     self.assertEqual(snapshots_expected,state_snaps)
@@ -157,12 +161,15 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
     # Subnet is optional - test without it.
     test_state = state.DFTimewolfState(config.Config)
     collector = aws_snapshot_s3_copy.AWSSnapshotS3CopyCollector(test_state)
-    collector.SetUp(','.join([snapshot['SnapshotId']\
-          for snapshot in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']]),
-        FAKE_BUCKET,
-        FAKE_REGION)
 
-    state_snaps = [snap.snap_id for snap in \
+    with mock.patch('botocore.client.BaseClient._make_api_call',
+        new=MockMakeAPICall):
+      collector.SetUp(','.join([snapshot['SnapshotId']\
+            for snapshot in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']]),
+          FAKE_BUCKET,
+          FAKE_REGION)
+
+    state_snaps = [snap.id for snap in \
         test_state.GetContainers(containers.AWSSnapshot)]
 
     self.assertEqual(snapshots_expected, state_snaps)
@@ -221,12 +228,13 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
     collector = aws_snapshot_s3_copy.AWSSnapshotS3CopyCollector(test_state)
     snaps_str = ','.join(
         [s['SnapshotId'] for s in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']])
-    collector.SetUp(snaps_str,
-        FAKE_BUCKET,
-        FAKE_REGION)
 
     with mock.patch('botocore.client.BaseClient._make_api_call',
         new=MockMakeAPICall):
+      collector.SetUp(snaps_str,
+          FAKE_BUCKET,
+          FAKE_REGION)
+
       collector.PreProcess()
       for c in test_state.GetContainers(containers.AWSSnapshot):
         collector.Process(c)
@@ -275,10 +283,11 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
           snapshot['SnapshotId']))
 
     collector = aws_snapshot_s3_copy.AWSSnapshotS3CopyCollector(test_state)
-    collector.SetUp(None, FAKE_BUCKET, FAKE_REGION)
 
     with mock.patch('botocore.client.BaseClient._make_api_call',
         new=MockMakeAPICall):
+      collector.SetUp(None, FAKE_BUCKET, FAKE_REGION)
+
       collector.PreProcess()
       for c in test_state.GetContainers(containers.AWSSnapshot):
         collector.Process(c)

@@ -44,8 +44,13 @@ class S3ToGCSCopyTest(unittest.TestCase):
     exporter = s3_to_gcs.S3ToGCSCopy(test_state)
     self.assertIsNotNone(exporter)
 
-  def testSetUp(self):
+  # pylint: disable=line-too-long
+  @mock.patch('libcloudforensics.providers.gcp.internal.storage.GoogleCloudStorage.ListBuckets')
+  # pylint: enable=line-too-long
+  def testSetUp(self, mock_gcp_list_buckets):
     """Tests SetUp of the exporter."""
+    mock_gcp_list_buckets.return_value = FAKE_GCP_LIST_BUCKETS_RESPONSE
+
     test_state = state.DFTimewolfState(config.Config)
 
     exporter = s3_to_gcs.S3ToGCSCopy(test_state)

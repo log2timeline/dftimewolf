@@ -9,7 +9,6 @@ from libcloudforensics.providers.utils.storage_utils import SplitStoragePath
 from libcloudforensics.errors import ResourceCreationError
 from google.cloud.storage.client import Client as storage_client
 from dftimewolf.lib import module
-from dftimewolf.lib import errors
 from dftimewolf.lib.containers import containers, interface
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
@@ -49,6 +48,7 @@ class S3ToGCSCopy(module.ThreadAwareModule):
     self.dest_project: gcp_project.GoogleCloudProject = ''
     self.dest_bucket: str = ''
     self.filter: Any = None
+    self.bucket_exists = False
 
   # pylint: disable=arguments-differ
   def SetUp(self,
@@ -73,7 +73,13 @@ class S3ToGCSCopy(module.ThreadAwareModule):
     self.dest_project_name = dest_project
     self.dest_bucket = dest_bucket
     self.dest_project = gcp_project.GoogleCloudProject(self.dest_project_name)
-    self.filter = object_filter
+    self.bucket_exists = self._CheckBucketExists(self.dest_bucket)
+
+    if not self.dest_bucket:
+      self.ModuleError('No destination GCP bucket specified', critical=True)
+
+    if object_filter and object_filter != '':
+      self.filter = re.compile(object_filter)
 
     if s3_objects:
       for obj in s3_objects.split(','):
@@ -82,32 +88,27 @@ class S3ToGCSCopy(module.ThreadAwareModule):
   def PreProcess(self) -> None:
     """Prep work for copying objects from S3 to GCS - Bucket creation."""
     # Check if the destination bucket exists. If not, create it.
-    if not self.dest_bucket:
-      self.ModuleError('No destination GCP bucket specified', critical=True)
-    buckets = [b['id'] for b in self.dest_project.storage.ListBuckets()]
-    if self.dest_bucket not in buckets:
-      self.logger.info('Creating GCS bucket {0:s}'.format(self.dest_bucket))
+    if not self.bucket_exists:
       try:
         self.dest_project.storage.CreateBucket(self.dest_bucket)
-      except ResourceCreationError as e:
-        self.logger.critical(str(e))
-        raise errors.DFTimewolfError(str(e))
+      except ResourceCreationError as exception:
+        self.logger.critical(str(exception))
+        self.ModuleError(str(exception), critical=True)
 
     # Set the permissions on the bucket
     self.logger.info('Applying permissions to bucket')
     try:
       self._SetBucketServiceAccountPermissions()
-    except Exception as e: # pylint: disable=broad-except
-      self.logger.critical(str(e))
-      raise errors.DFTimewolfError(str(e))
+    except Exception as exception: # pylint: disable=broad-except
+      self.logger.critical(str(exception))
+      self.ModuleError(str(exception), critical=True)
 
   def Process(self, container: containers.AWSS3Object) -> None:
     """Creates and exports disk image to the output bucket."""
-    if self.filter:
-      if not re.match(self.filter, container.path):
-        self.logger.info('{0:s} does not match filter. Skipping.'.
-            format(container.path))
-        return
+    if self.filter and not self.filter.match(container.path):
+      self.logger.info('{0:s} does not match filter. Skipping.'.
+          format(container.path))
+      return
 
     # We must create a new client for each thread, rather than use the class
     # member self.dest_project due to an underlying thread safety issue in
@@ -142,6 +143,17 @@ class S3ToGCSCopy(module.ThreadAwareModule):
     })
 
     bucket.set_iam_policy(policy)
+
+  def _CheckBucketExists(self, bucket_name: str) -> bool:
+    """Check that the GCS bucket exists.
+
+    Args:
+      bucket_name (str): The GCS buncket name to check for.
+    Returns:
+      True if we have perms to list the bucket, and it exists, false otherwise.
+    """
+    buckets = [b['id'] for b in self.dest_project.storage.ListBuckets()]
+    return bucket_name in buckets
 
   @staticmethod
   def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:

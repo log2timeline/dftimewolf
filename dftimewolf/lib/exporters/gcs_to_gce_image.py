@@ -11,7 +11,6 @@ from libcloudforensics.providers.gcp.internal import common
 from googleapiclient.errors import HttpError
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers, interface
-from dftimewolf.lib import errors
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 
@@ -108,7 +107,7 @@ class GCSToGCEImage(module.ThreadAwareModule):
         self.logger.info(
             'Creating IAM role {0:s}'.format(IMAGE_BUILD_ROLE_NAME))
         self.role_name = self._CreateRoleForCloudBuild()
-      elif 'deleted' in role and role['deleted']:
+      elif role.get('deleted'):
         # Undelete
         self.logger.info(
             'Undeleting existing IAM role {0:s}'.format(IMAGE_BUILD_ROLE_NAME))
@@ -128,17 +127,19 @@ class GCSToGCEImage(module.ThreadAwareModule):
       # Assign role to cloudbuild account
       self._AssignRolesToCloudBuild(self.role_name)
 
-      self.logger.info("Pausing to allow permissions to propagate")
+      self.logger.info("Pausing 30 seconds to allow permissions to propagate")
       time.sleep(30) # Leave some time for permissions to propagate
-    except HttpError as e: # IAM service raises googleapiclient.errors.HttpError
-      self.logger.critical(str(e))
-      raise errors.DFTimewolfError(str(e))
+    except HttpError as exception:
+      # IAM service raises googleapiclient.errors.HttpError
+      self.logger.critical(str(exception))
+      self.ModuleError(str(exception), critical=True)
 
   def Process(self, container: containers.GCSObject) -> None:
     """Creates a GCE image from an image in GCS.
 
     Args:
-      container (containers.GCSObject): The conatiner to process."""
+      container (containers.GCSObject): The conatiner to process.
+    """
     name = container.path[5:]
     name = re.sub(r'^.+?/', '', name)
     name = re.sub(r'[^-a-z0-9]', '-', name)
@@ -159,9 +160,10 @@ class GCSToGCEImage(module.ThreadAwareModule):
     """
     try:
       self._DeleteRole(self.role_name)
-    except HttpError as e: # IAM service raises googleapiclient.errors.HttpError
-      self.logger.critical(str(e))
-      raise errors.DFTimewolfError(str(e))
+    except HttpError as exception:
+      # IAM service raises googleapiclient.errors.HttpError
+      self.logger.critical(str(exception))
+      self.ModuleError(str(exception), critical=True)
 
   def _GetRoleInfo(self) -> Any:
     """Retrieve some role information for the account.
@@ -192,6 +194,8 @@ class GCSToGCEImage(module.ThreadAwareModule):
     ImportImageFromStorage uses CloudBuild, which creates an image from the disk
     image in GCS.
 
+    Returns (str):
+      The name of the role.
     Raises:
       googleapiclient.errors.HttpError: On IAM API errors."""
     role = self.iam_service.projects().roles().create(#pylint: disable=no-member
@@ -207,6 +211,7 @@ class GCSToGCEImage(module.ThreadAwareModule):
 
     return str(role['name'])
 
+  # TODO(ramoj) - Make sure this gets tested?
   def _UpdateRolePermissions(self, role_name: str) -> None:
     """Assign required permissions to the role.
 
@@ -217,12 +222,7 @@ class GCSToGCEImage(module.ThreadAwareModule):
       googleapiclient.errors.HttpError: On IAM API errors."""
     role = self.iam_service.projects().roles().get(name = role_name).execute() #pylint: disable=no-member
 
-    if not 'includedPermissions' in role:
-      role['includedPermissions'] = []
-
-    perms = role['includedPermissions']
-    for p in REQUIRED_PERMS:
-      perms.append(p)
+    perms = REQUIRED_PERMS + role.get('includedPermissions', [])
 
     role = self.iam_service.projects().roles().patch( #pylint: disable=no-member
         name = role_name,
@@ -251,8 +251,10 @@ class GCSToGCEImage(module.ThreadAwareModule):
 
     Args:
       role_name (str): The name fo the role.
+
     Raises:
-      googleapiclient.errors.HttpError: On IAM API errors."""
+      googleapiclient.errors.HttpError: On IAM API errors.
+    """
     # Find the account
     crm = common.CreateService('cloudresourcemanager', 'v1')
     project = crm.projects().get(projectId=self.dest_project_name).execute() #pylint: disable=no-member

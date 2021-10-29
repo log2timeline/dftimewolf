@@ -82,8 +82,8 @@ class AWSVolumeSnapshotCollectorTest(unittest.TestCase):
     collector.SetUp(','.join([volume['VolumeId']\
         for volume in FAKE_VOLUME_LIST['Volumes']]), FAKE_REGION)
 
-    volumes_in_state = [container.vol_id for container in \
-        test_state.GetContainers(containers.AWSVol)]
+    volumes_in_state = [container.id for container in \
+        test_state.GetContainers(containers.AWSVolume)]
 
     self.assertEqual(volumes_expected, volumes_in_state)
     self.assertEqual(FAKE_REGION, collector.region)
@@ -107,7 +107,7 @@ class AWSVolumeSnapshotCollectorTest(unittest.TestCase):
 
     self.assertEqual(len(test_state.GetContainers(
         containers.AWSSnapshot)), 2)
-    state_snaps = [c.snap_id for c in test_state.GetContainers(
+    state_snaps = [c.id for c in test_state.GetContainers(
         containers.AWSSnapshot)]
     self.assertEqual(state_snaps,
         ['snap-01234567', 'snap-01234567'])
@@ -121,7 +121,7 @@ class AWSVolumeSnapshotCollectorTest(unittest.TestCase):
 
     test_state = state.DFTimewolfState(config.Config)
     for volume in FAKE_VOLUME_LIST['Volumes']:
-      test_state.StoreContainer(containers.AWSVol(volume['VolumeId']))
+      test_state.StoreContainer(containers.AWSVolume(volume['VolumeId']))
 
     collector = aws_volume_snapshot.AWSVolumeSnapshotCollector(test_state)
     collector.SetUp(None, FAKE_REGION)
@@ -132,7 +132,7 @@ class AWSVolumeSnapshotCollectorTest(unittest.TestCase):
 
     self.assertEqual(len(test_state.GetContainers(
         containers.AWSSnapshot)), 2)
-    state_snaps = [c.snap_id for c in test_state.GetContainers(
+    state_snaps = [c.id for c in test_state.GetContainers(
         containers.AWSSnapshot)]
     self.assertEqual(state_snaps,
         ['snap-01234567', 'snap-01234567'])

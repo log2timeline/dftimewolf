@@ -228,18 +228,6 @@ class TurbiniaProcessorThreadedBase(module.ThreadAwareModule):
           self.client.wait_for_request(**request_dict)
           task_data = self.client.get_task_data(**request_dict)
 
-          message = self.client.format_task_status(
-              full_report=True, **request_dict)
-          short_message = self.client.format_task_status(**request_dict)
-          self.logger.info(short_message)
-
-          # Store the message for consumption by any reporting modules.
-          report = containers.Report(
-              module_name='TurbiniaProcessor',
-              text=message,
-              text_format='markdown')
-          self.state.StoreContainer(report)
-
           finished = True
         except RuntimeError as exception:
           if 'Cloud function [gettasks] call failed' not in str(exception) and \
@@ -251,6 +239,17 @@ class TurbiniaProcessorThreadedBase(module.ThreadAwareModule):
       # TODO: determine if exception should be converted into a string as
       # elsewhere in the codebase.
       self.ModuleError(str(exception), critical=True)
+      return task_data
+
+    message = self.client.format_task_status(full_report=True, **request_dict)
+    short_message = self.client.format_task_status(**request_dict)
+    self.logger.info(short_message)
+    # Store the message for consumption by any reporting modules.
+    report = containers.Report(
+        module_name='TurbiniaProcessor',
+        text=message,
+        text_format='markdown')
+    self.state.StoreContainer(report)
 
     return task_data
 
@@ -297,9 +296,8 @@ class TurbiniaGCPProcessorThreaded(TurbiniaProcessorThreadedBase):
 
     if disks is not None:
       for disk in disks.split(','):
-        if not disk == "":
-          container = containers.GCEDisk(disk)
-          self.state.StoreContainer(container)
+        if disk:
+          self.state.StoreContainer(containers.GCEDisk(disk))
     try:
       self.TurbiniaSetUp(project, turbinia_zone, sketch_id, run_all_jobs)
     except TurbiniaException as exception:
@@ -326,8 +324,7 @@ class TurbiniaGCPProcessorThreaded(TurbiniaProcessorThreadedBase):
     local_paths, gs_paths = self._DeterminePaths(task_data)
 
     if not local_paths and not gs_paths:
-      self.ModuleError(
-          'No interesting files found in Turbinia output.', critical=False)
+      self.logger.warning('No interesting files found in Turbinia output.')
 
     timeline_label = '{0:s}-{1:s}'.format(self.project, disk_container.name)
     # Any local files that exist we can add immediately to the output
