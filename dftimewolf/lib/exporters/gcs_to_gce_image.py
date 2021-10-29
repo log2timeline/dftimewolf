@@ -140,6 +140,8 @@ class GCSToGCEImage(module.ThreadAwareModule):
     Args:
       container (containers.GCSObject): The conatiner to process.
     """
+    # Because this comes from a GCSObject container,
+    # it should always be prefixed by gs:// - remove that.
     name = container.path[5:]
     name = re.sub(r'^.+?/', '', name)
     name = re.sub(r'[^-a-z0-9]', '-', name)
@@ -168,6 +170,8 @@ class GCSToGCEImage(module.ThreadAwareModule):
   def _GetRoleInfo(self) -> Any:
     """Retrieve some role information for the account.
 
+    Returns:
+      A Dict containing the role information.
     Raises:
       googleapiclient.errors.HttpError: On IAM API errors."""
     request = self.iam_service.roles().list( #pylint: disable=no-member

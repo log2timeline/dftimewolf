@@ -52,6 +52,7 @@ class AWSVolumeSnapshotCollector(module.BaseModule):
 
     ec2 = boto3.client('ec2', region_name=self.region)
     try:
+      # Describing volumes throws an exception if they don't exist.
       ec2.describe_volumes(VolumeIds=volumes)
     except ec2.exceptions.ClientError as exception:
       self.ModuleError('Error encountered describing volumes: {0!s}'.

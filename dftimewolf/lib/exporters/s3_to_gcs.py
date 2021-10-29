@@ -110,12 +110,16 @@ class S3ToGCSCopy(module.ThreadAwareModule):
           format(container.path))
       return
 
+    # Grab the first AWS Availability Zone in the region. AWS availability zones
+    # are named for the region, appended with a, b, c...
+    az = self.aws_region + 'a'
+
     # We must create a new client for each thread, rather than use the class
     # member self.dest_project due to an underlying thread safety issue in
     # httplib2: https://github.com/googleapis/google-cloud-python/issues/3501
     client = gcp_project.GoogleCloudProject(self.dest_project_name)
     client.storagetransfer.S3ToGCS(
-        container.path, self.aws_region + 'a', 'gs://' + self.dest_bucket)
+        container.path, az, 'gs://' + self.dest_bucket)
     _, s3_path = SplitStoragePath(container.path)
     output = self.dest_bucket + '/' + s3_path
     self.state.StoreContainer(containers.GCSObject(output))
