@@ -136,7 +136,6 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
   def testSetUp(self):
     """Tests SetUp of the collector."""
     test_state = state.DFTimewolfState(config.Config)
-    snapshots_expected = ['snap-01234567', 'snap-12345678']
 
     # Subnet is optional - test with it.
     collector = aws_snapshot_s3_copy.AWSSnapshotS3CopyCollector(test_state)
@@ -153,7 +152,7 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
     state_snaps = [snap.id for snap in \
         test_state.GetContainers(containers.AWSSnapshot)]
 
-    self.assertEqual(snapshots_expected,state_snaps)
+    self.assertEqual(['snap-01234567', 'snap-12345678'], state_snaps)
     self.assertEqual(FAKE_REGION, collector.region)
     self.assertEqual(FAKE_BUCKET, collector.bucket)
     self.assertEqual(FAKE_SUBNET, collector.subnet)
@@ -172,7 +171,7 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
     state_snaps = [snap.id for snap in \
         test_state.GetContainers(containers.AWSSnapshot)]
 
-    self.assertEqual(snapshots_expected, state_snaps)
+    self.assertEqual(['snap-01234567', 'snap-12345678'], state_snaps)
     self.assertEqual(FAKE_REGION, collector.region)
     self.assertEqual(FAKE_BUCKET, collector.bucket)
     self.assertEqual(None, collector.subnet)
@@ -240,22 +239,18 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
         collector.Process(c)
       collector.PostProcess()
 
-    base_str = 's3://{0:s}/{1:s}'
-    expected_output = []
-    for snapshot in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']:
-      expected_output.append(base_str.format(
-          FAKE_BUCKET, snapshot['SnapshotId']) + '/image.bin')
-      expected_output.append(base_str.format(
-          FAKE_BUCKET, snapshot['SnapshotId']) + '/log.txt')
-      expected_output.append(base_str.format(
-          FAKE_BUCKET, snapshot['SnapshotId']) + '/hlog.txt')
-      expected_output.append(base_str.format(
-          FAKE_BUCKET, snapshot['SnapshotId']) + '/mlog.txt')
-
     actual_output = [c.path for c in \
         test_state.GetContainers(containers.AWSS3Object)]
 
-    self.assertEqual(sorted(expected_output), sorted(actual_output))
+    self.assertEqual(sorted(actual_output), sorted([
+          's3://fake-bucket/snap-01234567/image.bin',
+          's3://fake-bucket/snap-01234567/log.txt',
+          's3://fake-bucket/snap-01234567/hlog.txt',
+          's3://fake-bucket/snap-01234567/mlog.txt',
+          's3://fake-bucket/snap-12345678/image.bin',
+          's3://fake-bucket/snap-12345678/log.txt',
+          's3://fake-bucket/snap-12345678/hlog.txt',
+          's3://fake-bucket/snap-12345678/mlog.txt']))
 
   # pylint: disable=line-too-long
   @mock.patch('boto3.session.Session._setup_loader')
@@ -293,22 +288,18 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
         collector.Process(c)
       collector.PostProcess()
 
-    base_str = 's3://{0:s}/{1:s}'
-    expected_output = []
-    for snapshot in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']:
-      expected_output.append(base_str.format(
-          FAKE_BUCKET, snapshot['SnapshotId']) + '/image.bin')
-      expected_output.append(base_str.format(
-          FAKE_BUCKET, snapshot['SnapshotId']) + '/log.txt')
-      expected_output.append(base_str.format(
-          FAKE_BUCKET, snapshot['SnapshotId']) + '/hlog.txt')
-      expected_output.append(base_str.format(
-          FAKE_BUCKET, snapshot['SnapshotId']) + '/mlog.txt')
-
     actual_output = [c.path for c in \
         test_state.GetContainers(containers.AWSS3Object)]
 
-    self.assertEqual(sorted(expected_output), sorted(actual_output))
+    self.assertEqual(sorted(actual_output), sorted([
+          's3://fake-bucket/snap-01234567/image.bin',
+          's3://fake-bucket/snap-01234567/log.txt',
+          's3://fake-bucket/snap-01234567/hlog.txt',
+          's3://fake-bucket/snap-01234567/mlog.txt',
+          's3://fake-bucket/snap-12345678/image.bin',
+          's3://fake-bucket/snap-12345678/log.txt',
+          's3://fake-bucket/snap-12345678/hlog.txt',
+          's3://fake-bucket/snap-12345678/mlog.txt']))
 
 
 if __name__ == '__main__':

@@ -65,12 +65,13 @@ class GCSToGCEImageTest(unittest.TestCase):
     exporter = gcs_to_gce_image.GCSToGCEImage(test_state)
     exporter.SetUp(FAKE_GCP_PROJECT_NAME, FAKE_GCS_OBJECTS)
 
-    expected_objects = FAKE_GCS_OBJECTS.split(',')
     actual_objects = [c.path for \
         c in test_state.GetContainers(containers.GCSObject)]
 
     self.assertEqual(FAKE_GCP_PROJECT_NAME, exporter.dest_project_name)
-    self.assertEqual(sorted(expected_objects), sorted(actual_objects))
+    self.assertEqual(sorted(actual_objects), sorted([
+        'gs://fake-gcs-bucket/one',
+        'gs://fake-gcs-bucket/two']))
 
   # pylint: disable=line-too-long,unused-argument
   @mock.patch('libcloudforensics.providers.gcp.internal.project.GoogleCloudProject', return_value = FAKE_GCP_PROJECT)
@@ -102,11 +103,12 @@ class GCSToGCEImageTest(unittest.TestCase):
       exporter.Process(c)
     exporter.PostProcess()
 
-    expected_output = ['fake-gcs-bucket-one', 'fake-gcs-bucket-two']
     actual_output = [c.name for \
         c in test_state.GetContainers(containers.GCEImage)]
 
-    self.assertEqual(sorted(expected_output), sorted(actual_output))
+    self.assertEqual(sorted(actual_output), sorted([
+        'fake-gcs-bucket-one',
+        'fake-gcs-bucket-two']))
 
   # pylint: disable=line-too-long
   @mock.patch('libcloudforensics.providers.gcp.internal.project.GoogleCloudProject', return_value = FAKE_GCP_PROJECT)
@@ -140,11 +142,12 @@ class GCSToGCEImageTest(unittest.TestCase):
       exporter.Process(c)
     exporter.PostProcess()
 
-    expected_output = ['fake-gcs-bucket-one', 'fake-gcs-bucket-two']
     actual_output = [c.name for \
         c in test_state.GetContainers(containers.GCEImage)]
 
-    self.assertEqual(sorted(expected_output), sorted(actual_output))
+    self.assertEqual(sorted(actual_output), sorted([
+        'fake-gcs-bucket-one',
+        'fake-gcs-bucket-two']))
 
 
 if __name__ == '__main__':

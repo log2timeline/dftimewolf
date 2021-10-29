@@ -51,13 +51,14 @@ class GCEDiskFromImageTest(unittest.TestCase):
     exporter = gce_disk_from_image.GCEDiskFromImage(test_state)
     exporter.SetUp(FAKE_GCP_PROJECT_NAME, FAKE_ZONE, FAKE_IMAGES)
 
-    expected_objects = FAKE_IMAGES.split(',')
     actual_objects = [c.name for \
         c in test_state.GetContainers(containers.GCEImage)]
 
     self.assertEqual(FAKE_GCP_PROJECT_NAME, exporter.dest_project_name)
     self.assertEqual(FAKE_ZONE, exporter.dest_zone)
-    self.assertEqual(sorted(expected_objects), sorted(actual_objects))
+    self.assertEqual(sorted(actual_objects), sorted([
+        'fake-image-one',
+        'fake-image-two']))
 
   # pylint: disable=line-too-long,unused-argument
   @mock.patch('googleapiclient.discovery.Resource', return_value = FAKE_GCP_PROJECT)
@@ -80,11 +81,12 @@ class GCEDiskFromImageTest(unittest.TestCase):
       exporter.Process(c)
     exporter.PostProcess()
 
-    expected_output = ['fake-disk-one', 'fake-disk-two']
     actual_output = [c.name for \
         c in test_state.GetContainers(containers.GCEDisk)]
 
-    self.assertEqual(sorted(expected_output), sorted(actual_output))
+    self.assertEqual(sorted(actual_output), sorted([
+      'fake-disk-one',
+      'fake-disk-two']))
 
   # pylint: disable=line-too-long
   @mock.patch('libcloudforensics.providers.gcp.internal.project.GoogleCloudProject', return_value = FAKE_GCP_PROJECT)
@@ -109,11 +111,12 @@ class GCEDiskFromImageTest(unittest.TestCase):
       exporter.Process(c)
     exporter.PostProcess()
 
-    expected_output = ['fake-disk-one', 'fake-disk-two']
     actual_output = [c.name for \
         c in test_state.GetContainers(containers.GCEDisk)]
 
-    self.assertEqual(sorted(expected_output), sorted(actual_output))
+    self.assertEqual(sorted(actual_output), sorted([
+      'fake-disk-one',
+      'fake-disk-two']))
 
 
 if __name__ == '__main__':

@@ -34,6 +34,9 @@ FAKE_VOLUME_2 = {
 FAKE_VOLUME_LIST = {
   'Volumes': [FAKE_VOLUME_1, FAKE_VOLUME_2]
 }
+FAKE_VOLUME_LIST_STR = '{0:s},{1:s}'.format(
+    FAKE_VOLUME_1['VolumeId'],
+    FAKE_VOLUME_2['VolumeId'])
 FAKE_CREATE_SNAPSHOT_RESPONSE = {
   'SnapshotId': 'snap-01234567',
   'State': 'pending'
@@ -76,16 +79,14 @@ class AWSVolumeSnapshotCollectorTest(unittest.TestCase):
   def testSetUp(self):
     """Tests SetUp of the collector."""
     test_state = state.DFTimewolfState(config.Config)
-    volumes_expected = ['vol-01234567', 'vol-12345678']
 
     collector = aws_volume_snapshot.AWSVolumeSnapshotCollector(test_state)
-    collector.SetUp(','.join([volume['VolumeId']\
-        for volume in FAKE_VOLUME_LIST['Volumes']]), FAKE_REGION)
+    collector.SetUp(FAKE_VOLUME_LIST_STR, FAKE_REGION)
 
     volumes_in_state = [container.id for container in \
         test_state.GetContainers(containers.AWSVolume)]
 
-    self.assertEqual(volumes_expected, volumes_in_state)
+    self.assertEqual(['vol-01234567', 'vol-12345678'], volumes_in_state)
     self.assertEqual(FAKE_REGION, collector.region)
 
   @mock.patch('time.sleep')
@@ -98,19 +99,17 @@ class AWSVolumeSnapshotCollectorTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
 
     collector = aws_volume_snapshot.AWSVolumeSnapshotCollector(test_state)
-    collector.SetUp(','.join([volume['VolumeId']\
-        for volume in FAKE_VOLUME_LIST['Volumes']]), FAKE_REGION)
+    collector.SetUp(FAKE_VOLUME_LIST_STR, FAKE_REGION)
 
     with mock.patch('botocore.client.BaseClient._make_api_call',
         new=MockMakeAPICall):
       collector.Process()
 
-    self.assertEqual(len(test_state.GetContainers(
-        containers.AWSSnapshot)), 2)
+    self.assertEqual(2, len(test_state.GetContainers(
+        containers.AWSSnapshot)))
     state_snaps = [c.id for c in test_state.GetContainers(
         containers.AWSSnapshot)]
-    self.assertEqual(state_snaps,
-        ['snap-01234567', 'snap-01234567'])
+    self.assertEqual(state_snaps, ['snap-01234567', 'snap-01234567'])
 
   @mock.patch('time.sleep')
   @mock.patch('boto3.session.Session._setup_loader')
@@ -130,12 +129,11 @@ class AWSVolumeSnapshotCollectorTest(unittest.TestCase):
         new=MockMakeAPICall):
       collector.Process()
 
-    self.assertEqual(len(test_state.GetContainers(
-        containers.AWSSnapshot)), 2)
+    self.assertEqual(2, len(test_state.GetContainers(
+        containers.AWSSnapshot)))
     state_snaps = [c.id for c in test_state.GetContainers(
         containers.AWSSnapshot)]
-    self.assertEqual(state_snaps,
-        ['snap-01234567', 'snap-01234567'])
+    self.assertEqual(state_snaps, ['snap-01234567', 'snap-01234567'])
 
 
 if __name__ == '__main__':
