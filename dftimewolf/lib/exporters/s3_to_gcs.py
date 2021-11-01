@@ -78,7 +78,7 @@ class S3ToGCSCopy(module.ThreadAwareModule):
     if not self.dest_bucket:
       self.ModuleError('No destination GCP bucket specified', critical=True)
 
-    if object_filter and object_filter != '':
+    if object_filter:
       self.filter = re.compile(object_filter)
 
     if s3_objects:
@@ -92,7 +92,6 @@ class S3ToGCSCopy(module.ThreadAwareModule):
       try:
         self.dest_project.storage.CreateBucket(self.dest_bucket)
       except ResourceCreationError as exception:
-        self.logger.critical(str(exception))
         self.ModuleError(str(exception), critical=True)
 
     # Set the permissions on the bucket
@@ -100,7 +99,6 @@ class S3ToGCSCopy(module.ThreadAwareModule):
     try:
       self._SetBucketServiceAccountPermissions()
     except Exception as exception: # pylint: disable=broad-except
-      self.logger.critical(str(exception))
       self.ModuleError(str(exception), critical=True)
 
   def Process(self, container: containers.AWSS3Object) -> None:

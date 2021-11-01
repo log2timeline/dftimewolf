@@ -239,7 +239,6 @@ class TurbiniaProcessorThreadedBase(module.ThreadAwareModule):
       # TODO: determine if exception should be converted into a string as
       # elsewhere in the codebase.
       self.ModuleError(str(exception), critical=True)
-      return task_data
 
     message = self.client.format_task_status(full_report=True, **request_dict)
     short_message = self.client.format_task_status(**request_dict)

@@ -131,7 +131,6 @@ class GCSToGCEImage(module.ThreadAwareModule):
       time.sleep(30) # Leave some time for permissions to propagate
     except HttpError as exception:
       # IAM service raises googleapiclient.errors.HttpError
-      self.logger.critical(str(exception))
       self.ModuleError(str(exception), critical=True)
 
   def Process(self, container: containers.GCSObject) -> None:
@@ -164,14 +163,14 @@ class GCSToGCEImage(module.ThreadAwareModule):
       self._DeleteRole(self.role_name)
     except HttpError as exception:
       # IAM service raises googleapiclient.errors.HttpError
-      self.logger.critical(str(exception))
       self.ModuleError(str(exception), critical=True)
 
   def _GetRoleInfo(self) -> Any:
-    """Retrieve some role information for the account.
+    """Retrieve role information from the account for the image builder role.
 
     Returns:
-      A Dict containing the role information.
+      A Dict containing the role information, or None if the role does not
+        exist.
     Raises:
       googleapiclient.errors.HttpError: On IAM API errors."""
     request = self.iam_service.roles().list( #pylint: disable=no-member
