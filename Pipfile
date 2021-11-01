@@ -35,6 +35,7 @@ psutil = "*"
 prettytable = "*"
 vt-py = "*"
 typing-extensions = "*"
+proto-plus = "<=1.19.6"  # Pipenv will try to install 1.19.7 which uses an incompatible version of protobuf
 
 [requires]
 python_version = "3.8"
