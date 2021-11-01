@@ -332,6 +332,22 @@ class Host(interface.AttributeContainer):
     self.platform = platform
 
 
+class GrrHostFlowPair(interface.AttributeContainer):
+  """Attribute container definition for a host.
+
+  Attributes:
+    hostname (str): The host's hostname.
+    flow_id (str): A hexadecimal flow ID.
+  """
+
+  CONTAINER_TYPE = 'grr_host_flow_pair'
+
+  def __init__(self, hostname: str, flow: str) -> None:
+    super(GrrHostFlowPair, self).__init__()
+    self.hostname = hostname
+    self.flow_id = flow
+
+
 class WorkspaceLogs(interface.AttributeContainer):
   """Google Workspace logs container.
 

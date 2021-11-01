@@ -661,8 +661,8 @@ class GRRFlowCollector(GRRFlow):
 
   # pylint: disable=arguments-differ
   def SetUp(self,
-            hostname: str,
-            flow_id: str,
+            hostnames: str,
+            flow_ids: str,
             reason: str,
             grr_server_url: str,
             grr_username: str,
@@ -673,8 +673,8 @@ class GRRFlowCollector(GRRFlow):
     """Initializes a GRR flow collector.
 
     Args:
-      hostname (str): Hostname to gather the flow from.
-      flow_id (str): GRR identifier of the flow to retrieve.
+      hostnames (str): Hostnames to gather the flows from.
+      flow_ids (str): GRR identifier of the flows to retrieve.
       reason (str): justification for GRR access.
       grr_server_url (str): GRR server URL.
       grr_username (str): GRR username.
@@ -690,10 +690,20 @@ class GRRFlowCollector(GRRFlow):
         approvers=approvers, verify=verify,
         skip_offline_clients=skip_offline_clients)
 
-    self.flow_id = flow_id
-    self.host = containers.Host(hostname=hostname)
+    flows = flow_ids.strip().split(',')
 
-  def Process(self) -> None:
+    # For each host specified, list their flows
+    for item in hostnames.strip().split(','):
+      host = item.strip()
+      if host:
+        client = self._GetClientBySelector(host)
+        client_flows = [f.flow_id for f in client.ListFlows()]
+        # If the client has a requested flow, queue it up (via the state)
+        for f in flows:
+          if f in client_flows:
+            self.state.StoreContainer(containers.GrrHostFlowPair(host, f))
+
+  def Process(self, container: containers.GrrHostFlowPair) -> None:
     """Downloads the results of a GRR collection flow.
 
     Raises:
@@ -701,18 +711,36 @@ class GRRFlowCollector(GRRFlow):
     """
     # TODO (tomchop): Change the host attribute into something more appropriate
     # like 'selectors', and the corresponding recipes.
-    client = self._GetClientBySelector(self.host.hostname)
-    self._AwaitFlow(client, self.flow_id)
+    client = self._GetClientBySelector(container.hostname)
+    self._AwaitFlow(client, container.flow_id)
     self._CheckSkippedFlows()
-    collected_flow_data = self._DownloadFiles(client, self.flow_id)
+    collected_flow_data = self._DownloadFiles(client, container.flow_id)
     if collected_flow_data:
       self.logger.success('{0:s}: Downloaded: {1:s}'.format(
           self.flow_id, collected_flow_data))
-      container = containers.File(
+      cont = containers.File(
           name=client.data.os_info.fqdn.lower(),
           path=collected_flow_data
       )
-      self.state.StoreContainer(container)
+      self.state.StoreContainer(cont)
+
+  def PreSetup(self) -> None:
+    """Not implemented."""
+
+  def PostSetup(self) -> None:
+    """Not implemented."""
+
+  def PreProcess(self) -> None:
+    """Not implemented."""
+
+  def PostProcess(self) -> None:
+    # TODO(ramoj) check if this should be per client in process
+    """Check if we're skipping any offline clients."""
+    self._CheckSkippedFlows()
+
+  def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
+    """This module works on host containers."""
+    return containers.GrrHostFlowPair
 
 
 class GRRTimelineCollector(GRRFlow):

@@ -431,15 +431,19 @@ class GRRFileCollectorTest(unittest.TestCase):
 class GRRFlowCollectorTest(unittest.TestCase):
   """Tests for the GRR flow collector."""
 
+  @mock.patch('grr_api_client.client.Client.ListFlows')
   @mock.patch('grr_api_client.api.InitHttp')
-  def setUp(self, mock_InitHttp):
+  def setUp(self, mock_InitHttp, mock_list_flows):
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
+    self.mock_grr_api.SearchClients.return_value = \
+        mock_grr_hosts.MOCK_CLIENT_LIST
+    mock_list_flows.return_value = [mock_grr_hosts.flow_pb_terminated]
     self.test_state = state.DFTimewolfState(config.Config)
     self.grr_flow_collector = grr_hosts.GRRFlowCollector(self.test_state)
     self.grr_flow_collector.SetUp(
-        hostname='C.0000000000000001',
-        flow_id='F:12345',
+        hostnames='C.0000000000000001',
+        flow_ids='F:12345',
         reason='random reason',
         grr_server_url='http://fake/endpoint',
         grr_username='admin',
@@ -455,7 +459,14 @@ class GRRFlowCollectorTest(unittest.TestCase):
     self.mock_grr_api.SearchClients.return_value = \
         mock_grr_hosts.MOCK_CLIENT_LIST
     mock_DownloadFiles.return_value = '/tmp/something'
-    self.grr_flow_collector.Process()
+
+    self.grr_flow_collector.PreProcess()
+    in_containers = self.test_state.GetContainers(
+        self.grr_flow_collector.GetThreadOnContainerType())
+    for c in in_containers:
+      self.grr_flow_collector.Process(c)
+    self.grr_flow_collector.PostProcess()
+
     mock_DownloadFiles.assert_called_once_with(
         mock_grr_hosts.MOCK_CLIENT_RECENT, 'F:12345')
     results = self.test_state.GetContainers(containers.File)

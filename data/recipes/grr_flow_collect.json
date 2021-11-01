@@ -6,8 +6,8 @@
         "wants": [],
         "name": "GRRFlowCollector",
         "args": {
-            "hostname": "@hostname",
-            "flow_id": "@flow_id",
+            "hostnames": "@hostnames",
+            "flow_ids": "@flow_ids",
             "reason": "@reason",
             "grr_server_url": "@grr_server_url",
             "grr_username": "@grr_username",
@@ -25,8 +25,8 @@
         }
     }],
     "args": [
-        ["hostname", "Hostname to collect the flow from", null],
-        ["flow_id", "Flow ID to download", null],
+        ["hostnames", "Hostname(s) to collect the flow from", null],
+        ["flow_ids", "Flow ID(s) to download", null],
         ["reason", "Reason for collection", null],
         ["directory", "Directory in which to export files.", null],
         ["--approvers", "Emails for GRR approval request", null],
