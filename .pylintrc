@@ -59,6 +59,7 @@ disable=
     assignment-from-none,
     bad-inline-option,
     consider-using-f-string,
+    consider-using-from-import,
     consider-using-with,
     deprecated-pragma,
     duplicate-code,
