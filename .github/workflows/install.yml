@@ -1,0 +1,70 @@
+name: Install package
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+
+  pip:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: [3.9]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install .
+    - name: Test dftimewolf shortcut
+      run: |
+        dftimewolf -h
+
+  pipenv:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: [3.9]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        pip install pipenv
+        pipenv install
+        pipenv install . --skip-lock
+    - name: Test dftimewolf shortcut
+      run: |
+        pipenv run dftimewolf
+
+  setuppy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: [3.9]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python setup.py install
+    - name: Test dftimewolf shortcut
+      run: |
+        dftimewolf -h
