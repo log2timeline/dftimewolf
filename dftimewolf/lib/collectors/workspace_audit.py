@@ -70,7 +70,7 @@ class WorkspaceAuditCollector(module.BaseModule):
     # time.
     credentials_path = os.path.join(
         os.path.expanduser('~'), self._CREDENTIALS_FILENAME)
-    lock = filelock.FileLock(credentials_path + '.lock') # pylint: disable=abstract-class-instantiated
+    lock = filelock.FileLock(credentials_path + '.lock')  # pylint: disable=abstract-class-instantiated
     with lock:
       if os.path.exists(credentials_path):
         try:
