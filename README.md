@@ -13,7 +13,7 @@ data on to one another. How modules are orchestrated is defined in predefined
 ## Status
 Github actions |  [Codecov](https://codecov.io/) | [CodeFactor](https://codefactor.io)
 --- | --- | --
-![Pipenv Build](https://github.com/log2timeline/dftimewolf/actions/workflows/unittest-pipenv.yml/badge.svg) ![pip build](https://github.com/log2timeline/dftimewolf/actions/workflows/pip-unittest.yml/badge.svg) ![pylint](https://github.com/log2timeline/dftimewolf/actions/workflows/pylint.yml/badge.svg)  ![mypy](https://github.com/log2timeline/dftimewolf/actions/workflows/mypy.yml/badge.svg)| [![codecov](https://codecov.io/gh/log2timeline/dftimewolf/branch/main/graph/badge.svg)](https://codecov.io/gh/log2timeline/dftimewolf) | [![CodeFactor](https://www.codefactor.io/repository/github/log2timeline/dftimewolf/badge)](https://www.codefactor.io/repository/github/log2timeline/dftimewolf)
+![Unit tests](https://github.com/log2timeline/dftimewolf/actions/workflows/unittests.yml/badge.svg) ![pylint checks](https://github.com/log2timeline/dftimewolf/actions/workflows/pylint.yml/badge.svg)  ![mypy checks](https://github.com/log2timeline/dftimewolf/actions/workflows/mypy.yml/badge.svg) ![Install](https://github.com/log2timeline/dftimewolf/actions/workflows/install.yml/badge.svg) | [![codecov](https://codecov.io/gh/log2timeline/dftimewolf/branch/main/graph/badge.svg)](https://codecov.io/gh/log2timeline/dftimewolf) | [![CodeFactor](https://www.codefactor.io/repository/github/log2timeline/dftimewolf/badge)](https://www.codefactor.io/repository/github/log2timeline/dftimewolf)
 
 ### Getting started
 
