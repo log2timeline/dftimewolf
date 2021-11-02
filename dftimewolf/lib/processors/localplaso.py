@@ -55,7 +55,7 @@ class LocalPlasoProcessor(module.BaseModule):
 
   def _DockerPlasoRun(
       self, file_container_path: str, command: str, plaso_input_path: str,
-      plaso_output_path: str):
+      plaso_output_path: str) -> None:
     volumes = {
         file_container_path: {
             'bind': plaso_input_path,
@@ -70,7 +70,7 @@ class LocalPlasoProcessor(module.BaseModule):
     client.containers.run(
         "log2timeline/plaso:latest", volumes=volumes, command=command)
 
-  def _LocalPlasoRun(self, command: str):
+  def _LocalPlasoRun(self, command: List[str]) -> None:
     try:
       l2t_proc = subprocess.Popen(
           command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

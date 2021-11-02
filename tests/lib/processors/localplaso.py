@@ -51,9 +51,8 @@ class LocalPlasoTest(unittest.TestCase):
     self.assertEqual(
         test_state.GetContainers(containers.File)[0].path, plaso_path)
 
-  @mock.patch('os.path.isfile')
   @mock.patch('docker.from_env')
-  def testProcessingDockerized(self, mock_docker, mock_exists):
+  def testProcessingDockerized(self, mock_docker):
     """Tests that plaso processing is called using Docker."""
     test_state = state.DFTimewolfState(config.Config)
     mock_docker.return_value = mock.Mock()
@@ -67,7 +66,7 @@ class LocalPlasoTest(unittest.TestCase):
     # Get the plaso output file name, which was dynamically generated
     match = re.match(r".*/([a-z0-9]+\.plaso).*", args['command'])
     self.assertIsNotNone(match)
-    self.assertRegexpMatches(
+    self.assertRegex(
         test_state.GetContainers(containers.File)[0].path,
         f".*/{match.group(1)}")
 
