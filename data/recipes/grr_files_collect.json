@@ -11,6 +11,7 @@
             "grr_server_url": "@grr_server_url",
             "grr_username": "@grr_username",
             "grr_password": "@grr_password",
+            "max_file_size": "@max_file_size",
             "files": "@files",
             "use_tsk": "@use_tsk",
             "approvers": "@approvers",
@@ -38,6 +39,7 @@
         ["--action", "String denoting action (download/hash/stat) to take", "download"],
         ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
         ["--grr_username", "GRR username", "admin"],
-        ["--grr_password", "GRR password", "admin"]
+        ["--grr_password", "GRR password", "admin"],
+        ["--max_file_size", "Maximum size of files to collect (in bytes)", 5368709120]
     ]
 }
