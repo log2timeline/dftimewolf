@@ -488,7 +488,8 @@ class GRRArtifactCollector(GRRFlow):
           artifact_list=artifact_list,
           use_tsk=self.use_tsk,
           ignore_interpolation_errors=True,
-          apply_parsers=False)
+          apply_parsers=False,
+          max_file_size=self.max_file_size)
       flow_id = self._LaunchFlow(client, 'ArtifactCollectorFlow', flow_args)
       if not flow_id:
         msg = 'Flow could not be launched on {0:s}.'.format(client.client_id)
@@ -611,7 +612,11 @@ class GRRFileCollector(GRRFlow):
       DFTimewolfError: if no files specified.
     """
     for client in self._FindClients([container.hostname]):
-      flow_action = flows_pb2.FileFinderAction(action_type=self.action)
+      flow_action = flows_pb2.FileFinderAction(
+        action_type=self.action,
+        download=flows_pb2.FileFinderDownloadActionOptions(
+            max_size=self.max_file_size
+        ))
       flow_args = flows_pb2.FileFinderArgs(
           paths=self.files,
           action=flow_action)
