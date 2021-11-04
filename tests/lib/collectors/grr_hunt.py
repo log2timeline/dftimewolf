@@ -34,7 +34,8 @@ class GRRHuntArtifactCollectorTest(unittest.TestCase):
         grr_server_url='http://fake/endpoint',
         grr_username='admin',
         grr_password='admin',
-        approvers='approver1,approver2'
+        approvers='approver1,approver2',
+        max_file_size="1234"
     )
 
   def testProcess(self):
@@ -66,7 +67,8 @@ class GRRHuntFileCollectorTest(unittest.TestCase):
         grr_server_url='http://fake/endpoint',
         grr_username='admin',
         grr_password='admin',
-        approvers='approver1,approver2'
+        approvers='approver1,approver2',
+        max_file_size="1234"
     )
 
   def testInitialization(self):

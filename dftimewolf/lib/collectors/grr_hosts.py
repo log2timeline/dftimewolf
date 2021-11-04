@@ -396,6 +396,7 @@ class GRRArtifactCollector(GRRFlow):
     self.extra_artifacts = [] # type: List[str]
     self.hosts = [] # type: List[containers.Host]
     self.use_tsk = False
+    self.max_file_size = 5*1024*1024*1024  # 5 GB
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
@@ -407,6 +408,7 @@ class GRRArtifactCollector(GRRFlow):
             grr_server_url: str,
             grr_username: str,
             grr_password: str,
+            max_file_size: str,
             approvers: Optional[str]=None,
             verify: bool=True,
             skip_offline_clients: bool=False) -> None:
@@ -422,6 +424,7 @@ class GRRArtifactCollector(GRRFlow):
       grr_server_url (str): GRR server URL.
       grr_username (str): GRR username.
       grr_password (str): GRR password.
+      max_file_size (str): Maximum file size to collect (in bytes).
       approvers (Optional[str]): list of GRR approval recipients.
       verify (Optional[bool]): True to indicate GRR server's x509 certificate
           should be verified.
@@ -445,6 +448,8 @@ class GRRArtifactCollector(GRRFlow):
         self.state.StoreContainer(containers.Host(hostname=hostname))
 
     self.use_tsk = use_tsk
+    if max_file_size:
+      self.max_file_size = int(max_file_size)
 
   def Process(self, container: containers.Host) -> None:
     """Collects artifacts from a host with GRR.
@@ -542,6 +547,7 @@ class GRRFileCollector(GRRFlow):
     self.hosts = []  # type: List[containers.Host]
     self.use_tsk = False
     self.action = None
+    self.max_file_size = 5*1024*1024*1024  # 5 GB
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
@@ -552,6 +558,7 @@ class GRRFileCollector(GRRFlow):
             grr_server_url: str,
             grr_username: str,
             grr_password: str,
+            max_file_size: str,
             approvers: Optional[str]=None,
             verify: bool=True,
             skip_offline_clients: bool=False,
@@ -566,6 +573,7 @@ class GRRFileCollector(GRRFlow):
       grr_server_url (str): GRR server URL.
       grr_username (str): GRR username.
       grr_password (str): GRR password.
+      max_file_size (str): Maximum file size to collect (in bytes).
       approvers (Optional[str]): list of GRR approval recipients.
       verify (Optional[bool]): True to indicate GRR server's x509 certificate
           should be verified.
@@ -593,6 +601,8 @@ class GRRFileCollector(GRRFlow):
     if self.action is None:
       self.ModuleError("Invalid action {0!s}".format(action),
                        critical=True)
+    if max_file_size:
+      self.max_file_size = int(max_file_size)
 
   def Process(self, container: containers.Host) -> None:
     """Collects files from a host with GRR.

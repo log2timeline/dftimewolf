@@ -11,6 +11,7 @@
             "grr_server_url": "@grr_server_url",
             "grr_username": "@grr_username",
             "grr_password": "@grr_password",
+            "max_file_size": "@max_file_size",
             "artifacts": "@artifacts",
             "extra_artifacts": "@extra_artifacts",
             "use_tsk": "@use_tsk",
@@ -50,6 +51,7 @@
         ["--verify", "Whether to verify the GRR TLS certificate", true],
         ["--skip_offline_clients", "Whether to skip clients that are offline", false],
         ["--grr_username", "GRR username", "admin"],
-        ["--grr_password", "GRR password", "admin"]
+        ["--grr_password", "GRR password", "admin"],
+        ["--max_file_size", "Maximum size of files to collect (in bytes)", 5368709120]
     ]
 }
