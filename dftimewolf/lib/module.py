@@ -55,7 +55,7 @@ class BaseModule(object):
 
     self.SetupLogging()
 
-  def SetupLogging(self) -> None:
+  def SetupLogging(self, threaded: bool = False) -> None:
     """Sets up stream and file logging for a specific module."""
     self.logger.setLevel(logging.DEBUG)
 
@@ -67,7 +67,7 @@ class BaseModule(object):
     self.logger.addHandler(file_handler)
 
     console_handler = logging.StreamHandler()
-    formatter = logging_utils.WolfFormatter(random_color=True)
+    formatter = logging_utils.WolfFormatter(random_color=True, threaded=threaded)
     console_handler.setFormatter(formatter)
 
     self.logger.addHandler(console_handler)
@@ -175,6 +175,11 @@ class ThreadAwareModule(BaseModule):
     """
     super(ThreadAwareModule, self).__init__(
         state, name=name, critical=critical)
+
+    # The call to super.__init__ sets up the logger, but we want to change it
+    # for threaded modules.
+    self.logger.handlers.clear()
+    self.SetupLogging(threaded=True)
 
   @abc.abstractmethod
   def PreSetUp(self) -> None:

@@ -42,6 +42,9 @@ BOLD = '\u001b[1m'  # Bold / bright modifier
 LOG_FORMAT = (
     '[%(asctime)s] [{0:s}{color:s}%(name)-20s{1:s}] %(levelname)-8s'
     ' %(message)s')
+LOG_FORMAT_WITH_THREAD = (
+    '[%(asctime)s] [{0:s}{color:s}%(name)-20s{1:s}] [%(threadName)s] '
+    '%(levelname)-8s %(message)s')
 
 LEVEL_COLOR_MAP = {
     'WARNING': YELLOW,
@@ -70,6 +73,7 @@ class WolfFormatter(logging.Formatter):
       self,
       colorize: bool = True,
       random_color: bool = False,
+      threaded: bool = False,
       **kwargs: Any) -> None:
     """Initializes the WolfFormatter object.
 
@@ -78,13 +82,14 @@ class WolfFormatter(logging.Formatter):
       random_color (bool): If True, will colorize the module name with a random
           color picked from COLOR_SEQS.
     """
+    format = LOG_FORMAT_WITH_THREAD if threaded else LOG_FORMAT
     self.colorize = colorize
-    kwargs['fmt'] = LOG_FORMAT.format('', '', color='')
+    kwargs['fmt'] = format.format('', '', color='')
     if self.colorize:
       color = ''
       if random_color:
         color = random.choice(COLOR_SEQS)
-      kwargs['fmt'] = LOG_FORMAT.format(BOLD, RESET_SEQ, color=color)
+      kwargs['fmt'] = format.format(BOLD, RESET_SEQ, color=color)
     super(WolfFormatter, self).__init__(**kwargs)
 
   def format(self, record: LogRecord) -> str:
