@@ -5,6 +5,7 @@ Threaded version of existing Turbinia module."""
 import getpass
 import os
 import tempfile
+import time
 from typing import Dict, List, Optional, TYPE_CHECKING, Tuple, Any, Union, Type
 
 # We import a class to avoid importing the whole turbinia module.
@@ -171,7 +172,7 @@ class TurbiniaProcessorThreadedBase(module.ThreadAwareModule):
               self.project, turbinia_config.TURBINIA_PROJECT), critical=True)
       return
     self._output_path = tempfile.mkdtemp()
-    self.client = turbinia_client.get_turbinia_client(run_local=False)
+    self.client = turbinia_client.get_turbinia_client()
 
   def TurbiniaProcess(
       self, evidence_: evidence.Evidence) -> List[Dict[str, Any]]:
@@ -219,8 +220,21 @@ class TurbiniaProcessorThreadedBase(module.ThreadAwareModule):
       self.client.send_request(request)
       self.logger.info('Waiting for Turbinia request {0:s} to complete'.format(
           request.request_id))
-      self.client.wait_for_request(**request_dict)
-      task_data = self.client.get_task_data(**request_dict)
+
+      # Workaround for rate limiting in turbinia when checking task status
+      finished = False
+      while not finished:
+        try:
+          self.client.wait_for_request(**request_dict)
+          task_data = self.client.get_task_data(**request_dict)
+
+          finished = True
+        except RuntimeError as exception:
+          if 'Cloud function [gettasks] call failed' not in str(exception) and \
+              'RATE_LIMIT_EXCEEDED' not in str(exception):
+            raise exception
+          self.logger.info('Rate limit for gettasks hit. Pausing 60 seconds.')
+          time.sleep(60)
     except TurbiniaException as exception:
       # TODO: determine if exception should be converted into a string as
       # elsewhere in the codebase.
@@ -229,10 +243,11 @@ class TurbiniaProcessorThreadedBase(module.ThreadAwareModule):
     message = self.client.format_task_status(full_report=True, **request_dict)
     short_message = self.client.format_task_status(**request_dict)
     self.logger.info(short_message)
-
     # Store the message for consumption by any reporting modules.
     report = containers.Report(
-        module_name='TurbiniaProcessor', text=message, text_format='markdown')
+        module_name='TurbiniaProcessor',
+        text=message,
+        text_format='markdown')
     self.state.StoreContainer(report)
 
     return task_data
@@ -278,10 +293,10 @@ class TurbiniaGCPProcessorThreaded(TurbiniaProcessorThreadedBase):
 
     self.turbinia_config_file = turbinia_config_file
 
-    for disk in disks.split(','):
-      container = containers.GCEDisk(disk)
-      self.state.StoreContainer(container)
-
+    if disks is not None:
+      for disk in disks.split(','):
+        if disk:
+          self.state.StoreContainer(containers.GCEDisk(disk))
     try:
       self.TurbiniaSetUp(project, turbinia_zone, sketch_id, run_all_jobs)
     except TurbiniaException as exception:
@@ -308,8 +323,7 @@ class TurbiniaGCPProcessorThreaded(TurbiniaProcessorThreadedBase):
     local_paths, gs_paths = self._DeterminePaths(task_data)
 
     if not local_paths and not gs_paths:
-      self.ModuleError(
-          'No interesting files found in Turbinia output.', critical=True)
+      self.logger.warning('No interesting files found in Turbinia output.')
 
     timeline_label = '{0:s}-{1:s}'.format(self.project, disk_container.name)
     # Any local files that exist we can add immediately to the output

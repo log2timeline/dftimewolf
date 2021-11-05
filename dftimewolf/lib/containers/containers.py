@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 """Attribute container definitions."""
 
+from __future__ import annotations
+
 from datetime import datetime
 from typing import Optional, Union, List, TYPE_CHECKING, Dict, Any
 
 from dftimewolf.lib.containers import interface
 
 if TYPE_CHECKING:
-  from libcloudforensics.providers.aws.internal.ebs import AWSVolume
+  from libcloudforensics.providers.aws.internal.ebs import AWSVolume as AWSVol
   from libcloudforensics.providers.azure.internal.compute import AZComputeDisk
   from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk
   import pandas
@@ -40,9 +42,7 @@ class RemoteFSPath(FSPath):
   """
   CONTAINER_TYPE = 'remotefspath'
 
-  def __init__(self,
-               path: str,
-               hostname: str) -> None:
+  def __init__(self, path: str, hostname: str) -> None:
     """Initializes the FSPath object.
 
     Args:
@@ -70,8 +70,8 @@ class Report(interface.AttributeContainer):
       self,
       module_name: str,
       text: str,
-      text_format: str='plaintext',
-      attributes: Optional[List[Dict[str, Any]]]=None) -> None:
+      text_format: str = 'plaintext',
+      attributes: Optional[List[Dict[str, Any]]] = None) -> None:
     """Initializes the analysis report.
 
     Args:
@@ -132,12 +132,9 @@ class AWSLogs(interface.AttributeContainer):
   """
   CONTAINER_TYPE = 'aws_logs'
 
-  def __init__(self,
-               path: str,
-               profile_name: Optional[str],
-               query_filter: Optional[str],
-               start_time: Optional[datetime],
-               end_time: Optional[datetime]) -> None:
+  def __init__(
+      self, path: str, profile_name: Optional[str], query_filter: Optional[str],
+      start_time: Optional[datetime], end_time: Optional[datetime]) -> None:
     """Initializes the AWS logs container.
 
     Args:
@@ -213,10 +210,8 @@ class File(interface.AttributeContainer):
   """
   CONTAINER_TYPE = 'file'
 
-  def __init__(self,
-               name: str,
-               path: str,
-               description: Optional[str]=None) -> None:
+  def __init__(
+      self, name: str, path: str, description: Optional[str] = None) -> None:
     """Initializes the attribute.
 
     Args:
@@ -225,6 +220,31 @@ class File(interface.AttributeContainer):
       description (Optional[str]): Longer description of the file.
     """
     super(File, self).__init__()
+    self.name = name
+    self.path = path
+    self.description = description
+
+
+class Directory(interface.AttributeContainer):
+  """Attribute container definition for generic directories.
+
+  Attributes:
+    name (str): Human-friendly name or short description of the directory.
+    path (str): Full path to the directory.
+    description (str): Longer description of the directory.
+  """
+  CONTAINER_TYPE = 'directory'
+
+  def __init__(
+      self, name: str, path: str, description: Optional[str] = None) -> None:
+    """Initializes the attribute.
+
+    Args:
+      name (str): Human-friendly name or short description of the file.
+      path (str): Full path to the file.
+      description (Optional[str]): Longer description of the file.
+    """
+    super(Directory, self).__init__()
     self.name = name
     self.path = path
     self.description = description
@@ -243,12 +263,10 @@ class ForensicsVM(interface.AttributeContainer):
   """
   CONTAINER_TYPE = 'forensics_vm'
 
-  def __init__(self,
-               name: str,
-               evidence_disk: Union["GoogleComputeDisk",
-                                    "AWSVolume",
-                                    "AZComputeDisk"],
-               platform: str) -> None:
+  def __init__(
+      self, name: str, evidence_disk: Union["GoogleComputeDisk", "AWSVol",
+                                            "AZComputeDisk"],
+      platform: str) -> None:
     super(ForensicsVM, self).__init__()
     self.name = name
     self.evidence_disk = evidence_disk
@@ -281,6 +299,19 @@ class GCEDisk(interface.AttributeContainer):
     self.name = name
 
 
+class GCEImage(interface.AttributeContainer):
+  """Attribute container definition for a GCE Image object.
+
+  Attributes:
+    name (str): The image name.
+  """
+  CONTAINER_TYPE = 'gceimage'
+
+  def __init__(self, name: str) -> None:
+    super(GCEImage, self).__init__()
+    self.name = name
+
+
 class DataFrame(interface.AttributeContainer):
   """Attribute container definition for a Pandas DataFrame.
 
@@ -310,7 +341,7 @@ class Host(interface.AttributeContainer):
 
   CONTAINER_TYPE = 'host'
 
-  def __init__(self, hostname: str, platform: str='unknown') -> None:
+  def __init__(self, hostname: str, platform: str = 'unknown') -> None:
     super(Host, self).__init__()
     self.hostname = hostname
     self.platform = platform
@@ -329,8 +360,11 @@ class WorkspaceLogs(interface.AttributeContainer):
   CONTAINER_TYPE = 'workspace_logs'
 
   def __init__(
-      self, application_name: str, path: str, filter_expression: str,
-      user_key: str='') -> None:
+      self,
+      application_name: str,
+      path: str,
+      filter_expression: str,
+      user_key: str = '') -> None:
     """Initializes the Workspace logs container.
 
     Args:
@@ -345,3 +379,72 @@ class WorkspaceLogs(interface.AttributeContainer):
     self.path = path
     self.application_name = application_name
     self.user_key = user_key
+
+
+class GCSObject(interface.AttributeContainer):
+  """GCS Objects container.
+
+  Attributes:
+    path (str): GCS object path.
+  """
+  CONTAINER_TYPE = 'gcs_object'
+
+  def __init__(self, path: str):
+    """Initializes the GCS object container.
+
+    Args:
+      path (str): GCS object paths.
+    """
+    super(GCSObject, self).__init__()
+    if path.startswith('gs://'):
+      self.path = path
+    else:
+      self.path = 'gs://' + path
+
+
+class AWSS3Object(interface.AttributeContainer):
+  """S3 Object container.
+
+  Attributes:
+    path (str): S3 Object path.
+  """
+
+  CONTAINER_TYPE = 'aws_s3_object'
+
+  def __init__(self, path: str):
+    """Initialise an S3Image object.
+
+    Args:
+      path (str): S3 object path.
+    """
+    super(AWSS3Object, self).__init__()
+    if path.startswith('s3://'):
+      self.path = path
+    else:
+      self.path = 's3://' + path
+
+
+class AWSVolume(interface.AttributeContainer):
+  """Attribute container for an AWS Volume.
+
+  Attributes:
+    vol_id (str): The volume id (vol-xxxxxxxx)."""
+
+  CONTAINER_TYPE = 'aws_volume'
+
+  def __init__(self, vol_id: str) -> None:
+    super(AWSVolume, self).__init__()
+    self.id = vol_id
+
+
+class AWSSnapshot(interface.AttributeContainer):
+  """Attribute container for an AWS Snapshot.
+
+  Attributes:
+    snap_id (str): The snapshot id (snap-xxxxxxxx)."""
+
+  CONTAINER_TYPE = 'aws_snapshot'
+
+  def __init__(self, snap_id: str) -> None:
+    super(AWSSnapshot, self).__init__()
+    self.id = snap_id

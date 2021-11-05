@@ -81,6 +81,7 @@ class GRRHuntArtifactCollector(GRRHunt):
     self.artifacts = []  # type: List[str]
     self.use_tsk = False
     self.hunt = None  # type: Hunt
+    self.max_file_size = 5*1024*1024*1024  # 5 GB
 
   # pylint: disable=arguments-differ
   def SetUp(self,
@@ -90,6 +91,7 @@ class GRRHuntArtifactCollector(GRRHunt):
             grr_server_url: str,
             grr_username: str,
             grr_password: str,
+            max_file_size: str,
             approvers: Optional[str]=None,
             verify: bool=True) -> None:
     """Initializes a GRR Hunt artifact collector.
@@ -114,6 +116,8 @@ class GRRHuntArtifactCollector(GRRHunt):
     if not artifacts:
       self.ModuleError('No artifacts were specified.', critical=True)
     self.use_tsk = use_tsk
+    if max_file_size:
+      self.max_file_size = int(max_file_size)
 
   def Process(self) -> None:
     """Starts a new Artifact Collection GRR hunt.
@@ -126,7 +130,8 @@ class GRRHuntArtifactCollector(GRRHunt):
         artifact_list=self.artifacts,
         use_tsk=self.use_tsk,
         ignore_interpolation_errors=True,
-        apply_parsers=False,)
+        apply_parsers=False,
+        max_file_size=self.max_file_size)
     self._CreateHunt('ArtifactCollectorFlow', hunt_args)
 
 
@@ -154,6 +159,7 @@ class GRRHuntFileCollector(GRRHunt):
     super(GRRHuntFileCollector, self).__init__(
         state, name=name, critical=critical)
     self.file_path_list = []  # type: List[str]
+    self.max_file_size = 5*1024*1024*1024  # 5 GB
 
   # pylint: disable=arguments-differ
   def SetUp(self,
@@ -162,6 +168,7 @@ class GRRHuntFileCollector(GRRHunt):
             grr_server_url: str,
             grr_username: str,
             grr_password: str,
+            max_file_size: str,
             approvers: Optional[str]=None,
             verify: bool=True) -> None:
     """Initializes a GRR Hunt file collector.
@@ -172,6 +179,7 @@ class GRRHuntFileCollector(GRRHunt):
       grr_server_url (str): GRR server URL.
       grr_username (str): GRR username.
       grr_password (str): GRR password.
+      max_file_size (str): Maximum file size to collect (in bytes).
       approvers (Optional[str]): comma-separated GRR approval recipients.
       verify (Optional[bool]): True to indicate GRR server's x509 certificate
           should be verified.
@@ -183,6 +191,8 @@ class GRRHuntFileCollector(GRRHunt):
                            in file_path_list.strip().split(',')]
     if not file_path_list:
       self.ModuleError('Files must be specified for hunts', critical=True)
+    if max_file_size:
+      self.max_file_size = int(max_file_size)
 
   # TODO: this method does not raise itself, indicate what function call does.
   def Process(self) -> None:
@@ -196,9 +206,13 @@ class GRRHuntFileCollector(GRRHunt):
     self.logger.info(
         'Files to be collected: {0!s}'.format(self.file_path_list))
     hunt_action = grr_flows.FileFinderAction(
-        action_type=grr_flows.FileFinderAction.DOWNLOAD)
+        action_type=grr_flows.FileFinderAction.DOWNLOAD,
+        download=grr_flows.FileFinderDownloadActionOptions(
+            max_size=self.max_file_size)
+        )
     hunt_args = grr_flows.FileFinderArgs(
-        paths=self.file_path_list, action=hunt_action)
+        paths=self.file_path_list,
+        action=hunt_action)
     self._CreateHunt('FileFinder', hunt_args)
 
 
