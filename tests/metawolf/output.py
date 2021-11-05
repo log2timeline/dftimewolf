@@ -53,7 +53,7 @@ class MetawolfProcessTest(unittest.TestCase):
     mock_read.return_value = output.CRITICAL_ERROR
     self.assertIn('Failed', metawolf_process.Status())
 
-    mock_read.return_value = ''
+    mock_read.return_value = 0
     self.assertIn('Completed', metawolf_process.Status())
 
   @typing.no_type_check
