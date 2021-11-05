@@ -62,7 +62,7 @@ class LocalPlasoTest(unittest.TestCase):
     local_plaso_processor.SetUp()
     local_plaso_processor.Process()
     mock_docker().containers.run.assert_called_once()
-    args = mock_docker().containers.run.call_args.kwargs
+    args = mock_docker().containers.run.call_args[1]
     # Get the plaso output file name, which was dynamically generated
     match = re.match(r".*/([a-z0-9]+\.plaso).*", args['command'])
     self.assertIsNotNone(match)
