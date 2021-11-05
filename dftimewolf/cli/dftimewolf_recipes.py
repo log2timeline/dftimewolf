@@ -22,14 +22,12 @@ from dftimewolf.lib import utils
 if TYPE_CHECKING:
   from dftimewolf.lib import state as dftw_state
 
-
+# pylint: disable=line-too-long
 MODULES = {
   'AWSCollector': 'dftimewolf.lib.collectors.aws',
   'AWSLogsCollector': 'dftimewolf.lib.collectors.aws_logging',
-  'AWSSnapshotS3CopyCollector':
-      'dftimewolf.lib.collectors.aws_snapshot_s3_copy',
-  'AWSVolumeSnapshotCollector':
-      'dftimewolf.lib.collectors.aws_volume_snapshot',
+  'AWSSnapshotS3CopyCollector': 'dftimewolf.lib.collectors.aws_snapshot_s3_copy',
+  'AWSVolumeSnapshotCollector': 'dftimewolf.lib.collectors.aws_volume_snapshot',
   'AzureCollector': 'dftimewolf.lib.collectors.azure',
   'BigQueryCollector': 'dftimewolf.lib.collectors.bigquery',
   'FilesystemCollector': 'dftimewolf.lib.collectors.filesystem',
@@ -61,13 +59,11 @@ MODULES = {
   'TurbiniaGCPProcessor': 'dftimewolf.lib.processors.turbinia_gcp',
   'VTCollector' : 'dftimewolf.lib.collectors.virustotal',
   'WorkspaceAuditCollector': 'dftimewolf.lib.collectors.workspace_audit',
-  'WorkspaceAuditTimesketch':
-      'dftimewolf.lib.processors.workspace_audit_timesketch',
-  'TimesketchExporterThreaded':
-      'dftimewolf.lib.exporters.timesketch_tam',
+  'WorkspaceAuditTimesketch': 'dftimewolf.lib.processors.workspace_audit_timesketch',
+  'TimesketchExporterThreaded': 'dftimewolf.lib.exporters.timesketch_tam',
   'TurbiniaGCPProcessorThreaded': 'dftimewolf.lib.processors.turbinia_gcp_tam',
 }
-
+# pylint: enable=line-too-long
 
 from dftimewolf.lib.recipes import manager as recipes_manager
 from dftimewolf.lib.state import DFTimewolfState

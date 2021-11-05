@@ -388,6 +388,7 @@ class GRRArtifactCollector(GRRFlow):
     self.extra_artifacts = [] # type: List[str]
     self.hosts = [] # type: List[containers.Host]
     self.use_tsk = False
+    self.max_file_size = 5*1024*1024*1024  # 5 GB
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
@@ -399,6 +400,7 @@ class GRRArtifactCollector(GRRFlow):
             grr_server_url: str,
             grr_username: str,
             grr_password: str,
+            max_file_size: str,
             approvers: Optional[str]=None,
             verify: bool=True,
             skip_offline_clients: bool=False) -> None:
@@ -414,6 +416,7 @@ class GRRArtifactCollector(GRRFlow):
       grr_server_url (str): GRR server URL.
       grr_username (str): GRR username.
       grr_password (str): GRR password.
+      max_file_size (str): Maximum file size to collect (in bytes).
       approvers (Optional[str]): list of GRR approval recipients.
       verify (Optional[bool]): True to indicate GRR server's x509 certificate
           should be verified.
@@ -438,6 +441,8 @@ class GRRArtifactCollector(GRRFlow):
         self.hosts.append(host)
 
     self.use_tsk = use_tsk
+    if max_file_size:
+      self.max_file_size = int(max_file_size)
 
   # TODO: change object to more specific GRR type information.
   def _ProcessThread(self, client: Client) -> None:
@@ -477,7 +482,8 @@ class GRRArtifactCollector(GRRFlow):
         artifact_list=artifact_list,
         use_tsk=self.use_tsk,
         ignore_interpolation_errors=True,
-        apply_parsers=False)
+        apply_parsers=False,
+        max_file_size=self.max_file_size)
     flow_id = self._LaunchFlow(client, 'ArtifactCollectorFlow', flow_args)
     if not flow_id:
       msg = 'Flow could not be launched on {0:s}.'.format(client.client_id)
@@ -537,6 +543,7 @@ class GRRFileCollector(GRRFlow):
     self.hosts = []  # type: List[containers.Host]
     self.use_tsk = False
     self.action = None
+    self.max_file_size = 5*1024*1024*1024  # 5 GB
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
@@ -547,6 +554,7 @@ class GRRFileCollector(GRRFlow):
             grr_server_url: str,
             grr_username: str,
             grr_password: str,
+            max_file_size: str,
             approvers: Optional[str]=None,
             verify: bool=True,
             skip_offline_clients: bool=False,
@@ -561,6 +569,7 @@ class GRRFileCollector(GRRFlow):
       grr_server_url (str): GRR server URL.
       grr_username (str): GRR username.
       grr_password (str): GRR password.
+      max_file_size (str): Maximum file size to collect (in bytes).
       approvers (Optional[str]): list of GRR approval recipients.
       verify (Optional[bool]): True to indicate GRR server's x509 certificate
           should be verified.
@@ -589,6 +598,8 @@ class GRRFileCollector(GRRFlow):
     if self.action is None:
       self.ModuleError("Invalid action {0!s}".format(action),
                        critical=True)
+    if max_file_size:
+      self.max_file_size = int(max_file_size)
 
   # TODO: change object to more specific GRR type information.
   def _ProcessThread(self, client: Client) -> None:
@@ -605,10 +616,14 @@ class GRRFileCollector(GRRFlow):
     self.logger.info('Filefinder to collect {0:d} items'.format(len(file_list)))
 
     flow_action = flows_pb2.FileFinderAction(
-        action_type=self.action)
+        action_type=self.action,
+        download=flows_pb2.FileFinderDownloadActionOptions(
+            max_size=self.max_file_size
+        ))
     flow_args = flows_pb2.FileFinderArgs(
         paths=file_list,
-        action=flow_action,)
+        action=flow_action)
+
     flow_id = self._LaunchFlow(client, 'FileFinder', flow_args)
     self._AwaitFlow(client, flow_id)
     collected_flow_data = self._DownloadFiles(client, flow_id)

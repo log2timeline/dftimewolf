@@ -186,6 +186,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
         grr_server_url='http://fake/endpoint',
         grr_username='user',
         grr_password='password',
+        max_file_size=1234,
         approvers='approver1,approver2',
         verify=False,
         skip_offline_clients=False
@@ -232,6 +233,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
         grr_server_url='http://fake/endpoint',
         grr_username='user',
         grr_password='password',
+        max_file_size='1234',
         approvers='approver1,approver2',
         verify=False,
         skip_offline_clients=False
@@ -241,6 +243,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     self.assertFalse(kwargs['apply_parsers'])  # default argument
     self.assertTrue(kwargs['ignore_interpolation_errors'])  # default argument
     self.assertTrue(kwargs['use_tsk'])
+    self.assertEqual(kwargs['max_file_size'], 1234)
     sorted_artifacts = sorted(['AnotherArtifact', 'RandomArtifact'])
     self.assertEqual(sorted(kwargs['artifact_list']), sorted_artifacts)
 
@@ -294,7 +297,8 @@ class GRRArtifactCollectorTest(unittest.TestCase):
         grr_password='password',
         approvers='approver1,approver2',
         verify=False,
-        skip_offline_clients=False
+        skip_offline_clients=False,
+        max_file_size=1234,
     )
     self.test_state.StoreContainer(containers.Host(hostname='container.host'))
 
@@ -321,6 +325,7 @@ class GRRFileCollectorTest(unittest.TestCase):
         grr_server_url='http://fake/endpoint',
         grr_username='admin',
         grr_password='admin',
+        max_file_size='1234',
         approvers='approver1,approver2',
         skip_offline_clients=False,
         action='stat',
@@ -348,7 +353,10 @@ class GRRFileCollectorTest(unittest.TestCase):
         flows_pb2.FileFinderArgs(
             paths=['/etc/passwd'],
             action=flows_pb2.FileFinderAction(
-                action_type=flows_pb2.FileFinderAction.STAT)
+                action_type=flows_pb2.FileFinderAction.STAT,
+                download=flows_pb2.FileFinderDownloadActionOptions(
+                    max_size=1234)
+            )
         )
     )
     results = self.test_state.GetContainers(containers.File)
@@ -380,6 +388,7 @@ class GRRFileCollectorTest(unittest.TestCase):
         grr_server_url='http://fake/endpoint',
         grr_username='admin',
         grr_password='admin',
+        max_file_size='1234',
         approvers='approver1,approver2',
         skip_offline_clients=False,
         action='stat',
