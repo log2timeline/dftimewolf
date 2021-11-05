@@ -20,7 +20,7 @@ RED = '\033[91m'
 ENDC = '\033[0m'
 
 DFTIMEWOLF = 'dftimewolf'
-CRITICAL_ERROR = 'Critical error found. Aborting.'
+CRITICAL_ERROR = '] CRITICAL'
 
 
 class MetawolfOutput:
@@ -173,9 +173,9 @@ class MetawolfProcess:
     self.process is a psutil.Process object, we call status().
 
     If None is returned, the process is still running.
-    If -1 is returned, the process was interrupted.
-    if 0 is returned, the process exited (this does not mean that the recipe
-    executed successfully, but that the dftimewolf command completed).
+    If 1 is returned, the process failed.
+    if 0 is returned, the process exited normally.
+    If -1 is returned, the process was not found (status = UNKNOWN).
 
     Returns:
       int: The process status.
@@ -190,19 +190,20 @@ class MetawolfProcess:
       err = self.process.poll()
       if err is None:
         return None
-      if err >= 0:
-        return 0
-      return -1
+      if err > 0:
+        return 1
+      return 0
 
     # self.process is a psutil.Process object
     try:
       status = self.process.status()
     except psutil.NoSuchProcess:
       # Process no longer exists
-      return 0
+      return -1
     if status == psutil.STATUS_RUNNING:
       return None
-
+    if status == psutil.STATUS_DEAD:
+      return 1
     return 0
 
   def Status(self) -> str:
@@ -217,14 +218,17 @@ class MetawolfProcess:
     if return_code is None:
       return MetawolfOutput.Color('Running', YELLOW)
 
-    # Process can be in 3 states: interrupted, failed, or completed.
-    if return_code == -1 or self.interrupted:
+    # Process can be in 4 states: interrupted, failed, completed, or unknown.
+    if self.interrupted:
       return MetawolfOutput.Color('Interrupted', RED)
+
+    if return_code == -1:
+      return MetawolfOutput.Color('Unknown', BLUE)
 
     # Else, dftimewolf completed and we need to look into the output file to
     # check whether or not the recipe executed successfully.
 
-    if CRITICAL_ERROR in self.Read(show_warning=False):
+    if CRITICAL_ERROR in self.Read(show_warning=False) or return_code == 1:
       return MetawolfOutput.Color('Failed', RED)
 
     return MetawolfOutput.Color('Completed', GREEN)
