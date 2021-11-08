@@ -47,12 +47,13 @@ class MetawolfProcessTest(unittest.TestCase):
     self.assertIn('Running', metawolf_process.Status())
 
     mock_poll.return_value = -1
-    self.assertIn('Interrupted', metawolf_process.Status())
+    self.assertIn('Unknown', metawolf_process.Status())
 
     mock_poll.return_value = 1
     mock_read.return_value = output.CRITICAL_ERROR
     self.assertIn('Failed', metawolf_process.Status())
 
+    mock_poll.return_value = 0
     mock_read.return_value = ''
     self.assertIn('Completed', metawolf_process.Status())
 
