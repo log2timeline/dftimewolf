@@ -44,9 +44,6 @@ BOLD = '\u001b[1m'  # Bold / bright modifier
 LOG_FORMAT = (
     '[%(asctime)s] [{0:s}{color:s}%(name)-20s{1:s}] %(levelname)-8s'
     ' %(message)s')
-LOG_FORMAT_WITH_THREAD = (
-    '[%(asctime)s] [{0:s}{color:s}%(name)-20s{1:s}] [%(threadName)s] '
-    '%(levelname)-8s %(message)s')
 
 LEVEL_COLOR_MAP = {
     'WARNING': YELLOW,
@@ -109,7 +106,7 @@ class WolfFormatter(logging.Formatter):
       if loglevel_color:
         message = loglevel_color + message + RESET_SEQ
       record.msg = message
-    
+
     if self.threaded:
       stack = [i[3] for i in inspect.stack()]
       if 'Process' in stack:

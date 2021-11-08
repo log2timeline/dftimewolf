@@ -70,11 +70,11 @@ class ThreadAwareConsumerModule(module.ThreadAwareModule):
 
   def SetUp(self): # pylint: disable=arguments-differ
     """SetUp"""
-    print(self.name + ' SetUp!')
+    self.logger.info('{0:s} SetUp!'.format(self.name))
 
   def Process(self, container) -> None:
     """Process"""
-    self.logger.info(self.name + ' Process!')
+    self.logger.info('{0:s} Process!'.format(self.name))
 
     time.sleep(1)
 
