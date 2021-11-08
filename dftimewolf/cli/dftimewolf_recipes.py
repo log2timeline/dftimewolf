@@ -297,7 +297,7 @@ class DFTimewolfTool(object):
 def SignalHandler(*unused_argvs: Any) -> None:
   """Catches Ctrl + C to exit cleanly."""
   sys.stderr.write("\nCtrl^C caught, bailing...\n")
-  sys.exit(0)
+  sys.exit(1)
 
 
 def SetupLogging() -> None:
