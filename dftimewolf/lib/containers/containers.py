@@ -335,7 +335,7 @@ class DataFrame(interface.AttributeContainer):
     self.description = description
     self.name = name
     self.source = source
-    
+
 
 class Host(interface.AttributeContainer):
   """Attribute container definition for a host.
