@@ -259,6 +259,8 @@ class StateTest(unittest.TestCase):
     test_state.SetupModules()
     test_state.RunModules()
 
+    self.assertEqual(len(test_state.errors), 0)
+
     # With no mocks, the first module generates 3 TestContainers, and 1
     # TestContainerTwo. The Test ThreadAwareConsumerModule is threaded on
     # and modifies TestContainer, modifies TestContainerTwo, and generates
