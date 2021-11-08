@@ -1,8 +1,10 @@
 """Module providing custom logging formatters and colorization for ANSI
 compatible terminals."""
+import inspect
 import logging
 import os
 import random
+import threading
 from logging import LogRecord
 from typing import Any, List
 
@@ -82,14 +84,14 @@ class WolfFormatter(logging.Formatter):
       random_color (bool): If True, will colorize the module name with a random
           color picked from COLOR_SEQS.
     """
-    format = LOG_FORMAT_WITH_THREAD if threaded else LOG_FORMAT
+    self.threaded = threaded
     self.colorize = colorize
-    kwargs['fmt'] = format.format('', '', color='')
+    kwargs['fmt'] = LOG_FORMAT.format('', '', color='')
     if self.colorize:
       color = ''
       if random_color:
         color = random.choice(COLOR_SEQS)
-      kwargs['fmt'] = format.format(BOLD, RESET_SEQ, color=color)
+      kwargs['fmt'] = LOG_FORMAT.format(BOLD, RESET_SEQ, color=color)
     super(WolfFormatter, self).__init__(**kwargs)
 
   def format(self, record: LogRecord) -> str:
@@ -107,4 +109,11 @@ class WolfFormatter(logging.Formatter):
       if loglevel_color:
         message = loglevel_color + message + RESET_SEQ
       record.msg = message
+    
+    if self.threaded:
+      stack = [i[3] for i in inspect.stack()]
+      if 'Process' in stack:
+        record.msg = "[{0:s}] {1:s}".format(
+            threading.current_thread().getName(),
+            record.getMessage())
     return super(WolfFormatter, self).format(record)
