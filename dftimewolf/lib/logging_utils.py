@@ -108,9 +108,9 @@ class WolfFormatter(logging.Formatter):
       record.msg = message
 
     if self.threaded:
-      stack = [i[3] for i in inspect.stack()]
+      stack = [i.function for i in inspect.stack()]
       if 'Process' in stack:
-        record.msg = "[{0:s}] {1:s}".format(
-            threading.current_thread().getName(),
-            record.getMessage())
+        thread_name = threading.current_thread().getName()
+        message = record.getMessage()
+        record.msg = "[{0:s}] {1:s}".format(thread_name, message)
     return super(WolfFormatter, self).format(record)
