@@ -70,11 +70,11 @@ class ThreadAwareConsumerModule(module.ThreadAwareModule):
 
   def SetUp(self): # pylint: disable=arguments-differ
     """SetUp"""
-    print(self.name + ' SetUp!')
+    self.logger.info('{0:s} SetUp!'.format(self.name))
 
   def Process(self, container) -> None:
     """Process"""
-    print(self.name + ' Process!')
+    self.logger.info('{0:s} Process!'.format(self.name))
 
     time.sleep(1)
 
@@ -98,13 +98,13 @@ class ThreadAwareConsumerModule(module.ThreadAwareModule):
     return 2
 
   def PreSetUp(self) -> None:
-    print("ThreadAwareConsumerModule Static Pre Set Up")
+    self.logger.info("ThreadAwareConsumerModule Static Pre Set Up")
 
   def PostSetUp(self) -> None:
-    print("ThreadAwareConsumerModule Static Post Set Up")
+    self.logger.info("ThreadAwareConsumerModule Static Post Set Up")
 
   def PreProcess(self) -> None:
-    print("ThreadAwareConsumerModule Static Pre Process")
+    self.logger.info("ThreadAwareConsumerModule Static Pre Process")
 
   def PostProcess(self) -> None:
-    print("ThreadAwareConsumerModule Static Post Process")
+    self.logger.info("ThreadAwareConsumerModule Static Post Process")
