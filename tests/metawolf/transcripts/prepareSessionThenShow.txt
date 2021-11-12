@@ -1,5 +1,5 @@
-$2cf413> set recipe aws_forensics
-To see arguments for this recipe, type set. To set them interactively, type set all
+$2cf413> set -recipe aws_forensics
+To see arguments for this recipe, type set. To set them interactively, type set -all
 $2cf413$aws_forensics> show -sessions
 +---------------------------------------------+----------------+---------------------+-----------------+
 | Session ID (`new` or `set session session`) | Recipes in use | Status (latest run) | Timestamp (UTC) |
