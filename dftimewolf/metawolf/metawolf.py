@@ -19,21 +19,21 @@ from dftimewolf.metawolf import utils
 from dftimewolf.metawolf import output
 
 SESSION_ID_NOT_INITIALIZE = 'TODO'
-SESSION_ID_SETTABLE = 'session'
-RECIPE_SETTABLE = 'recipe'
 RECIPE_NAME_IGNORED = 'IGNORED'
 
-SHOW_RECIPES = '-recipes'
-SHOW_RECIPE = '-recipe'
-SHOW_SESSIONS = '-sessions'
-SHOW_RUNNING = '-running'
-SHOW_OUTPUT = '-output'
-SHOW_RECIPES_SC = '-rs'
-SHOW_RECIPE_SC = '-r'
-SHOW_SESSIONS_SC = '-s'
-SHOW_RUNNING_SC = '-rn'
-SHOW_OUTPUT_SC = '-o'
-SET_ALL = 'all'
+ARG_RECIPES = '-recipes'
+ARG_RECIPE = '-recipe'
+ARG_SESSIONS = '-sessions'
+ARG_SESSION = '-session'
+ARG_RUNNING = '-running'
+ARG_OUTPUT = '-output'
+ARG_RECIPES_SC = '-rs'
+ARG_RECIPE_SC = '-r'
+ARG_SESSIONS_SC = '-s'
+ARG_RUNNING_SC = '-rn'
+ARG_OUTPUT_SC = '-o'
+SET_ALL = '-all'
+SET_ALL_SC = '-a'
 
 LAST_ACTIVE_SESSION = 'last_active_session'
 LAST_ACTIVE_RECIPE = 'last_active_recipe'
@@ -110,20 +110,20 @@ class Metawolf(cmd2.Cmd):
     self.recipe_settable = session.SessionSettable(
         SESSION_ID_NOT_INITIALIZE,
         RECIPE_NAME_IGNORED,
-        RECIPE_SETTABLE,
+        ARG_RECIPE,
         'Recipe to use. Type `{0:s}` to see available recipes.'.format(
-            self.metawolf_output.Color('show recipes', output.YELLOW)),
+            self.metawolf_output.Color('show -recipes', output.YELLOW)),
         str)
     self.AddSessionSettable(self.recipe_settable)
 
     self.session_id_settable = session.SessionSettable(
         SESSION_ID_NOT_INITIALIZE,
         RECIPE_NAME_IGNORED,
-        SESSION_ID_SETTABLE,
+        ARG_SESSION,
         'Metawolf\'s session_id. Type `{0:s}` to display existing '
         'sessions, and switch with `{1:s}`.'.format(
-            self.metawolf_output.Color('show sessions', output.YELLOW),
-            self.metawolf_output.Color('set session session_id', output.YELLOW)
+            self.metawolf_output.Color('show -sessions', output.YELLOW),
+            self.metawolf_output.Color('set -session session_id', output.YELLOW)
         ), str)
     self.AddSessionSettable(self.session_id_settable)
 
@@ -195,6 +195,15 @@ class Metawolf(cmd2.Cmd):
     self.SetSessionID(session_id)
     self.sessions[session_id] = {}
 
+  set_parser = cmd2.Cmd2ArgumentParser(
+    description='Set arguments in Metawolf.')
+  set_parser.add_argument('-r', ARG_RECIPE, choices=RECIPES,
+                          help='Set a recipe.')
+  set_parser.add_argument('-s', ARG_SESSION, type=str,
+                          help='Set a session.')
+  set_parser.add_argument('-a', '-all', action='store_true',
+                          help='Set all arguments of the current recipe.')
+  @cmd2.with_argparser(set_parser)  # type: ignore
   def do_set(self, args: argparse.Namespace) -> None:
     """Set arguments for Metawolf.
 
@@ -202,7 +211,7 @@ class Metawolf(cmd2.Cmd):
       args (argparse.Namespace): The arguments from the user's input.
     """
 
-    if not args.args:
+    if not args.cmd2_statement.get():
       t = PrettyTable(['Name', 'Description', 'Type', 'Current Value'],
                       align='l')
       for _, settable in self.session_settables.items():
@@ -217,15 +226,15 @@ class Metawolf(cmd2.Cmd):
       self.poutput(t)
       return
 
-    what = args.args.split(' ')
-    if len(what) != 2 and what[0] != SET_ALL:
+    what = args.cmd2_statement.get().split(' ')
+    if len(what) != 2 and what[0] not in [SET_ALL, SET_ALL_SC]:
       self.poutput('Usage: `{0:s}` to set a parameter\'s value || `{1:s}` to '
-            'interactively set all current recipe\'s parameters.'.format(
+            'interactively set -all current recipe\'s parameters.'.format(
           self.metawolf_output.Color('set arg_name arg_value', output.YELLOW),
-          self.metawolf_output.Color('set all', output.YELLOW)))
+          self.metawolf_output.Color('set -all', output.YELLOW)))
       return
 
-    if what[0] == SET_ALL:
+    if what[0] in [SET_ALL, SET_ALL_SC]:
       if not self.recipe:
         self.poutput('Please set a recipe first: `{0:s}`'.format(
             self.metawolf_output.Color(
@@ -256,7 +265,7 @@ class Metawolf(cmd2.Cmd):
           updated = self.UpdateSessionSettable(value, settable=settable)
       return
 
-    if what[0] == SESSION_ID_SETTABLE:
+    if what[0] in [ARG_SESSION, ARG_SESSIONS_SC]:
       session_id = what[1]
       if session_id not in self.sessions:
         self.poutput(self.metawolf_output.Color(
@@ -273,7 +282,7 @@ class Metawolf(cmd2.Cmd):
       self.reload_settables = True
       return
 
-    if what[0] == RECIPE_SETTABLE:
+    if what[0] in [ARG_RECIPE, ARG_RECIPE_SC]:
       recipe = what[1]
       if recipe not in self.recipes:
         self.poutput(self.metawolf_output.Color(
@@ -299,7 +308,7 @@ class Metawolf(cmd2.Cmd):
       self.poutput('To see arguments for this recipe, type {0:s}. To set them'
                    ' interactively, type {1:s}'.format(
         self.metawolf_output.Color('set', output.YELLOW),
-        self.metawolf_output.Color('set all', output.YELLOW)))
+        self.metawolf_output.Color('set -all', output.YELLOW)))
     else:
       # This block happens whenever a recipe's argument / unknown argument
       # is set
@@ -309,7 +318,7 @@ class Metawolf(cmd2.Cmd):
           s_id = '{0:s}-{1:s}-{2:s}'.format(
               self.session_id, self.recipe, what[0])
         else:
-          if what[0] != SESSION_ID_SETTABLE:
+          if what[0] not in [ARG_SESSION, ARG_SESSIONS_SC]:
             self.poutput('You must set a recipe first: `{0:s}`'.format(
                 self.metawolf_output.Color('set recipe name', output.YELLOW)))
           return
@@ -367,15 +376,15 @@ class Metawolf(cmd2.Cmd):
 
   show_parser = cmd2.Cmd2ArgumentParser(
     description='Show sessions, recipes, runs and outputs.')
-  show_parser.add_argument('-s', SHOW_SESSIONS, action='store_true',
+  show_parser.add_argument('-s', ARG_SESSIONS, action='store_true',
                            help='Show metawolf sessions.')
-  show_parser.add_argument('-r', SHOW_RECIPE, choices=RECIPES,
+  show_parser.add_argument('-r', ARG_RECIPE, choices=RECIPES,
                            help='Show details about a single recipe.')
-  show_parser.add_argument('-rs', SHOW_RECIPES, action='store_true',
+  show_parser.add_argument('-rs', ARG_RECIPES, action='store_true',
                            help='Show all recipes available.')
-  show_parser.add_argument('-rn', SHOW_RUNNING, action='store_true',
+  show_parser.add_argument('-rn', ARG_RUNNING, action='store_true',
                            help='Show past and current recipe runs.')
-  show_parser.add_argument('-o', SHOW_OUTPUT, nargs='?', type=int,
+  show_parser.add_argument('-o', ARG_OUTPUT, nargs='?', type=int,
                            help='Show the output of a recipe run.')
   @cmd2.with_argparser(show_parser)  # type: ignore
   def do_show(self, args: argparse.Namespace) -> None:
@@ -399,7 +408,7 @@ class Metawolf(cmd2.Cmd):
               '-output output_id].', output.YELLOW)))
       return
 
-    if args.cmd2_statement.get() in [SHOW_RECIPES, SHOW_RECIPES_SC]:
+    if args.cmd2_statement.get() in [ARG_RECIPES, ARG_RECIPES_SC]:
       t = PrettyTable(['Name', 'Description'], align='l')
       for recipe_name, recipe_desc in self.recipes.items():
         t.add_row([
@@ -408,7 +417,7 @@ class Metawolf(cmd2.Cmd):
       self.poutput(t)
       return
 
-    if args.cmd2_statement.get() in [SHOW_SESSIONS, SHOW_SESSIONS_SC]:
+    if args.cmd2_statement.get() in [ARG_SESSIONS, ARG_SESSIONS_SC]:
       t = PrettyTable(
           ['Session ID (`{0:s}` or `{1:s}`)'.format(
               self.metawolf_output.Color('new', output.YELLOW),
@@ -444,7 +453,7 @@ class Metawolf(cmd2.Cmd):
       self.poutput(t)
       return
 
-    if args.cmd2_statement.get() in [SHOW_RUNNING, SHOW_RUNNING_SC]:
+    if args.cmd2_statement.get() in [ARG_RUNNING, ARG_RUNNING_SC]:
       table = PrettyTable(
         ['Session ID',
          'Command ID (`{0:s}`)'.format(
@@ -470,14 +479,14 @@ class Metawolf(cmd2.Cmd):
     # Otherwise, check if we show an output or a recipe details
     user_input = args.cmd2_statement.get().split(' ')
     action = user_input[0]
-    if len(user_input) != 2 and action in [SHOW_RECIPE, SHOW_RECIPE_SC]:
+    if len(user_input) != 2 and action in [ARG_RECIPE, ARG_RECIPE_SC]:
       # Malformed command, do nothing.
       self.poutput(
           'Malformed command. Type `{0:s}` to see available options.'.format(
               self.metawolf_output.Color('show', output.YELLOW)))
       return
 
-    if action in [SHOW_RECIPE, SHOW_RECIPE_SC]:
+    if action in [ARG_RECIPE, ARG_RECIPE_SC]:
       value = user_input[1]
       df_recipe = self.metawolf_utils.recipe_manager.Recipes().get(value)
       if not df_recipe:
@@ -510,7 +519,7 @@ class Metawolf(cmd2.Cmd):
       if out:
         self.poutput(out)
 
-    if action in [SHOW_OUTPUT, SHOW_OUTPUT_SC]:
+    if action in [ARG_OUTPUT, ARG_OUTPUT_SC]:
       if len(user_input) < 2:
         # No output ID provided, output latest run.
         last_run_process = max(
@@ -521,7 +530,7 @@ class Metawolf(cmd2.Cmd):
         # Else display running processes
         self.poutput(self.metawolf_output.Color(
           'No output found. Showing (previous) runs:', output.YELLOW))
-        self.do_show(cmd2.Statement(SHOW_RUNNING))
+        self.do_show(cmd2.Statement(ARG_RUNNING))
         return
       value = user_input[1]
       for metawolf_process in self.processes:
@@ -545,7 +554,7 @@ class Metawolf(cmd2.Cmd):
     """
     # mypy associates the unused argument to below for-loop, so we ignore it.
     for _, settable in self.session_settables.items():  # type: ignore
-      if settable.name in [SESSION_ID_SETTABLE, RECIPE_SETTABLE]:
+      if settable.name in [ARG_SESSION, ARG_RECIPE]:
         continue
       settable.SetValue(None)
 
@@ -871,7 +880,7 @@ class Metawolf(cmd2.Cmd):
     """Clear current settables."""
     to_remove = []
     for _, settable in self.session_settables.items():
-      if settable.name not in [RECIPE_SETTABLE, SESSION_ID_SETTABLE]:
+      if settable.name not in [ARG_RECIPE, ARG_SESSION]:
         to_remove.append(settable)
     for settable in to_remove:
       self.RemoveSessionSettable(settable)
