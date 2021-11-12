@@ -409,21 +409,21 @@ class Metawolf(cmd2.Cmd):
         ['Session ID',
          'Command ID (`{0:s}`)'.format(
              self.metawolf_output.Color('kill command_id', output.YELLOW)),
+         'Output ID (`{0:s}`)'.format(
+           self.metawolf_output.Color(
+             'show output_id output_id', output.YELLOW)),
          'Timestamp (UTC)',
          'Command',
-         'Status',
-         'Output ID (`{0:s}`)'.format(
-             self.metawolf_output.Color(
-                 'show output_id output_id', output.YELLOW))],
+         'Status'],
         align='l')
       for metawolf_process in self.processes:
         table.add_row(
             [metawolf_process.session_id,
              metawolf_process.cmd_id,
+             metawolf_process.output_id,
              metawolf_process.timestamp_readable,
              metawolf_process.cmd_readable,
-             metawolf_process.Status(),
-             metawolf_process.output_id])
+             metawolf_process.Status()])
       self.poutput(table)
       return
 
