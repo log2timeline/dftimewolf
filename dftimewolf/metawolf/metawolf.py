@@ -280,6 +280,10 @@ class Metawolf(cmd2.Cmd):
         self.reload_settables = True
 
       self.recipe_settable.SetValue(recipe)
+      self.poutput('To see arguments for this recipe, type {0:s}. To set them'
+                   ' interactively, type {1:s}'.format(
+        self.metawolf_output.Color('set', output.YELLOW),
+        self.metawolf_output.Color('set all', output.YELLOW)))
     else:
       # This block happens whenever a recipe's argument / unknown argument
       # is set
@@ -332,6 +336,8 @@ class Metawolf(cmd2.Cmd):
 
     self.poutput('Running: {0:s}'.format(
         self.metawolf_output.Color(' '.join(cmd), output.YELLOW)))
+    self.poutput('To see past and current runs, type {0:s}.'.format(
+      self.metawolf_output.Color('`show running`', output.YELLOW)))
 
     metawolf_process = output.MetawolfProcess(
         session_id=self.session_id,
