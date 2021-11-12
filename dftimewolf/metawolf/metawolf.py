@@ -114,10 +114,9 @@ class Metawolf(cmd2.Cmd):
         RECIPE_NAME_IGNORED,
         SESSION_ID_SETTABLE,
         'Metawolf\'s session_id. Type `{0:s}` to display existing '
-        'sessions, and switch with `{1:s}`. A session has '
-        'the form incident_id-recipe'.format(
+        'sessions, and switch with `{1:s}`.'.format(
             self.metawolf_output.Color('show sessions', output.YELLOW),
-            self.metawolf_output.Color('set session session', output.YELLOW)),
+            self.metawolf_output.Color('set session session_id', output.YELLOW)),
         str)
     self.AddSessionSettable(self.session_id_settable)
 
