@@ -36,6 +36,8 @@ LAST_ACTIVE_PROCESSES = 'last_active_processes'
 
 DEFAULT_METAWOLF_STORAGE_PATH = '~/.metawolf'
 
+CMD2_CMDS = [
+  'alias', 'edit', 'run_pyscript', 'macro', 'run_script', 'shortcuts']
 
 class Metawolf(cmd2.Cmd):
   """Metawolf is a Meterpreter-like shell for DFTimewolf.
@@ -122,6 +124,10 @@ class Metawolf(cmd2.Cmd):
     self.sessions = self.LoadSession()
     self.recipes = self.metawolf_utils.GetRecipes()
     self.poutput(self.metawolf_output.Welcome())
+
+    # Hide default cmd2 commands
+    for c in CMD2_CMDS:
+      self.hidden_commands.append(c)
 
   @property
   def recipe(self) -> Any:
