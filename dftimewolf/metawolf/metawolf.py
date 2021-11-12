@@ -429,16 +429,16 @@ class Metawolf(cmd2.Cmd):
 
     # Otherwise, check if we show an output or a recipe details
     user_input = st.args.split(' ')
-    if len(user_input) != 2:
+    action = user_input[0]
+    if len(user_input) != 2 and action == SHOW_RECIPE:
       # Malformed command, do nothing.
       self.poutput(
           'Malformed command. Type `{0:s}` to see available options.'.format(
               self.metawolf_output.Color('show', output.YELLOW)))
       return
 
-    action, value = user_input
-
     if action == SHOW_RECIPE:
+      value = user_input[1]
       df_recipe = self.metawolf_utils.recipe_manager.Recipes().get(value)
       if not df_recipe:
         self.poutput(self.metawolf_output.Color(
@@ -465,12 +465,26 @@ class Metawolf(cmd2.Cmd):
       self.poutput(t)
       return
 
+    def read_output(process: output.MetawolfProcess) -> None:
+      out = process.Read()
+      if out:
+        self.poutput(out)
+
     if action == SHOW_OUTPUT:
+      if len(user_input) < 2:
+        # No output ID provided, output latest run.
+        last_run_process = max(self.processes, key=lambda p: p.output_id)
+        if last_run_process:
+          read_output(last_run_process)
+          return
+        # Else display running processes
+        self.poutput(self.metawolf_output.Color(
+          'No output found. Showing (previous) runs:', output.YELLOW))
+        return self.do_show(cmd2.Statement(SHOW_RUNNING))
+      value = user_input[1]
       for metawolf_process in self.processes:
         if value == str(metawolf_process.output_id):
-          out = metawolf_process.Read()
-          if out:
-            self.poutput(out)
+          read_output(metawolf_process)
 
   def do_reload(self, _: cmd2.Statement) -> None:
     """Reload the default recipe arguments.
