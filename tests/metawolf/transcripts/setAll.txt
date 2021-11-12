@@ -1,21 +1,22 @@
 $2cf413> set recipe aws_forensics
+To see arguments for this recipe, type set. To set them interactively, type set all
 $2cf413$aws_forensics> set all
 remote_profile_name: None --> value_1
 remote_zone: None --> value_2
 incident_id: None --> value_3
 $2cf413$aws_forensics> set
-+-----------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+------+---------------+
-| Name                  | Description                                                                                                                                                | Type | Current Value |
-+-----------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+------+---------------+
-| recipe                | Recipe to use. Type `show recipes` to see available recipes.                                                                                               | str  | aws_forensics |
-| session               | Metawolf's session_id. Type `show sessions` to display existing sessions, and switch with `set session session`. A session has the form incident_id-recipe | str  | 2cf413        |
-| remote_profile_name   | Name of the AWS profile pointing to the AWS account where the volume(s) exist(s).                                                                          | str  | value_1       |
-| remote_zone           | The AWS zone in which the source volume(s) exist(s).                                                                                                       | str  | value_2       |
-| incident_id           | Incident ID to label the VM with.                                                                                                                          | str  | value_3       |
-| instance_id           | [Optional]. Instance ID of the instance to analyze.                                                                                                        | str  | None          |
-| volume_ids            | [Optional]. Comma-separated list of volume IDs to copy.                                                                                                    | str  | None          |
-| all_volumes           | [Optional]. Copy all volumes in the designated instance. Overrides volume_ids if specified.                                                                | bool | False         |
-| boot_volume_size      | [Optional]. The size of the analysis VM boot volume (in GB).                                                                                               | int  | 50            |
-| analysis_zone         | [Optional]. The AWS zone in which to create the VM.                                                                                                        | str  | None          |
-| analysis_profile_name | [Optional]. Name of the AWS profile to use when creating the analysis VM.                                                                                  | str  | None          |
-+-----------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+------+---------------+
++-----------------------+---------------------------------------------------------------------------------------------------------------------+------+---------------+
+| Name                  | Description                                                                                                         | Type | Current Value |
++-----------------------+---------------------------------------------------------------------------------------------------------------------+------+---------------+
+| recipe                | Recipe to use. Type `show recipes` to see available recipes.                                                        | str  | aws_forensics |
+| session               | Metawolf's session_id. Type `show sessions` to display existing sessions, and switch with `set session session_id`. | str  | 2cf413        |
+| remote_profile_name   | Name of the AWS profile pointing to the AWS account where the volume(s) exist(s).                                   | str  | value_1       |
+| remote_zone           | The AWS zone in which the source volume(s) exist(s).                                                                | str  | value_2       |
+| incident_id           | Incident ID to label the VM with.                                                                                   | str  | value_3       |
+| instance_id           | [Optional]. Instance ID of the instance to analyze.                                                                 | str  | None          |
+| volume_ids            | [Optional]. Comma-separated list of volume IDs to copy.                                                             | str  | None          |
+| all_volumes           | [Optional]. Copy all volumes in the designated instance. Overrides volume_ids if specified.                         | bool | False         |
+| boot_volume_size      | [Optional]. The size of the analysis VM boot volume (in GB).                                                        | int  | 50            |
+| analysis_zone         | [Optional]. The AWS zone in which to create the VM.                                                                 | str  | None          |
+| analysis_profile_name | [Optional]. Name of the AWS profile to use when creating the analysis VM.                                           | str  | None          |
++-----------------------+---------------------------------------------------------------------------------------------------------------------+------+---------------+
