@@ -365,13 +365,19 @@ class Metawolf(cmd2.Cmd):
     self.processes.append(metawolf_process)
     self.nb_running_processes += 1
 
-  show_parser = cmd2.Cmd2ArgumentParser(description='Show sessions, recipes, runs and outputs.')
-  show_parser.add_argument('-s', SHOW_SESSIONS, action='store_true', help='Show metawolf sessions.')
-  show_parser.add_argument('-r', SHOW_RECIPE, choices=RECIPES, help='Show details about a single recipe.')
-  show_parser.add_argument('-rs', SHOW_RECIPES, action='store_true', help='Show all recipes available.')
-  show_parser.add_argument('-rn', SHOW_RUNNING, action='store_true', help='Show past and current recipe runs.')
-  show_parser.add_argument('-o', SHOW_OUTPUT, nargs='?', type=int, help='Show the output of a recipe run.')
-  @cmd2.with_argparser(show_parser)
+  show_parser = cmd2.Cmd2ArgumentParser(
+    description='Show sessions, recipes, runs and outputs.')
+  show_parser.add_argument('-s', SHOW_SESSIONS, action='store_true',
+                           help='Show metawolf sessions.')
+  show_parser.add_argument('-r', SHOW_RECIPE, choices=RECIPES,
+                           help='Show details about a single recipe.')
+  show_parser.add_argument('-rs', SHOW_RECIPES, action='store_true',
+                           help='Show all recipes available.')
+  show_parser.add_argument('-rn', SHOW_RUNNING, action='store_true',
+                           help='Show past and current recipe runs.')
+  show_parser.add_argument('-o', SHOW_OUTPUT, nargs='?', type=int,
+                           help='Show the output of a recipe run.')
+  @cmd2.with_argparser(show_parser)  # type: ignore
   def do_show(self, args: argparse.Namespace) -> None:
     """Show sessions, recipes, runs and outputs. `help show` for details.
 
