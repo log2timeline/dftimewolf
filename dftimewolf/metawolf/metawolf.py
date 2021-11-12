@@ -350,7 +350,7 @@ class Metawolf(cmd2.Cmd):
     self.nb_running_processes += 1
 
   def do_show(self, st: cmd2.Statement) -> None:
-    """Show various information about the current session.
+    """Show sessions, recipes, runs and outputs. `help show` for details.
 
     Possible choices: [`recipes`, `recipe recipe_name`, `sessions`, `running`,
     `output output_id`]. `recipes` shows the user the available DFTimewolf
