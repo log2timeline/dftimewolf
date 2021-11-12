@@ -23,11 +23,16 @@ SESSION_ID_SETTABLE = 'session'
 RECIPE_SETTABLE = 'recipe'
 RECIPE_NAME_IGNORED = 'IGNORED'
 
-SHOW_RECIPES = 'recipes'
-SHOW_RECIPE = 'recipe'
-SHOW_SESSIONS = 'sessions'
-SHOW_RUNNING = 'running'
-SHOW_OUTPUT = 'output'
+SHOW_RECIPES = '-recipes'
+SHOW_RECIPE = '-recipe'
+SHOW_SESSIONS = '-sessions'
+SHOW_RUNNING = '-running'
+SHOW_OUTPUT = '-output'
+SHOW_RECIPES_SC = '-rs'
+SHOW_RECIPE_SC = '-r'
+SHOW_SESSIONS_SC = '-s'
+SHOW_RUNNING_SC = '-rn'
+SHOW_OUTPUT_SC = '-o'
 SET_ALL = 'all'
 
 LAST_ACTIVE_SESSION = 'last_active_session'
@@ -38,6 +43,8 @@ DEFAULT_METAWOLF_STORAGE_PATH = '~/.metawolf'
 
 CMD2_CMDS = [
   'alias', 'edit', 'run_pyscript', 'macro', 'run_script', 'shortcuts']
+
+RECIPES = utils.MetawolfUtils('').GetRecipes().keys()
 
 class Metawolf(cmd2.Cmd):
   """Metawolf is a Meterpreter-like shell for DFTimewolf.
@@ -358,28 +365,35 @@ class Metawolf(cmd2.Cmd):
     self.processes.append(metawolf_process)
     self.nb_running_processes += 1
 
-  def do_show(self, st: cmd2.Statement) -> None:
+  show_parser = cmd2.Cmd2ArgumentParser(description='Show sessions, recipes, runs and outputs.')
+  show_parser.add_argument('-s', SHOW_SESSIONS, action='store_true', help='Show metawolf sessions.')
+  show_parser.add_argument('-r', SHOW_RECIPE, choices=RECIPES, help='Show details about a single recipe.')
+  show_parser.add_argument('-rs', SHOW_RECIPES, action='store_true', help='Show all recipes available.')
+  show_parser.add_argument('-rn', SHOW_RUNNING, action='store_true', help='Show past and current recipe runs.')
+  show_parser.add_argument('-o', SHOW_OUTPUT, nargs='?', type=int, help='Show the output of a recipe run.')
+  @cmd2.with_argparser(show_parser)
+  def do_show(self, args: argparse.Namespace) -> None:
     """Show sessions, recipes, runs and outputs. `help show` for details.
 
-    Possible choices: [`recipes`, `recipe recipe_name`, `sessions`, `running`,
-    `output output_id`]. `recipes` shows the user the available DFTimewolf
-    recipes, while `recipe recipe_name` shows the details of a given recipe.
-    `sessions` shows the currently available Metawolf's sessions and any recipe
-    in use, along with information about the recipe's state. `running`
-    displays running jobs and their state. `output output_id` prints to
-    STDOUT the output of the matching output_id.
+    Possible choices: [`-recipes`, `-recipe recipe_name`, `-sessions`,
+    `-running`, `-output output_id`]. `recipes` shows the user the available
+    DFTimewolf recipes, while `recipe recipe_name` shows the details of a
+    given recipe. `sessions` shows the currently available Metawolf's sessions
+    and any recipe in use, along with information about the recipe's state.
+    `running` displays running jobs and their state. `output output_id` prints
+    to STDOUT the output of the matching output_id. Autocomplete is available.
 
     Args:
       st (Statement): The user's input.
     """
-    if not st.args:
-      self.poutput('Usage of show: `{0:s}`'.format(
+    if not args.cmd2_statement.get():
+      self.poutput('Usage of show (autocompletion is enabled.): `{0:s}`'.format(
           self.metawolf_output.Color(
-              'show [recipes, recipe recipe_name, sessions, running, '
-              'output output_id]', output.YELLOW)))
+              'show [-recipes, -recipe recipe_name, -sessions, -running, '
+              '-output output_id].', output.YELLOW)))
       return
 
-    if st.args == SHOW_RECIPES:
+    if args.cmd2_statement.get() in [SHOW_RECIPES, SHOW_RECIPES_SC]:
       t = PrettyTable(['Name', 'Description'], align='l')
       for recipe_name, recipe_desc in self.recipes.items():
         t.add_row([
@@ -388,7 +402,7 @@ class Metawolf(cmd2.Cmd):
       self.poutput(t)
       return
 
-    if st.args == SHOW_SESSIONS:
+    if args.cmd2_statement.get() in [SHOW_SESSIONS, SHOW_SESSIONS_SC]:
       t = PrettyTable(
           ['Session ID (`{0:s}` or `{1:s}`)'.format(
               self.metawolf_output.Color('new', output.YELLOW),
@@ -424,7 +438,7 @@ class Metawolf(cmd2.Cmd):
       self.poutput(t)
       return
 
-    if st.args == SHOW_RUNNING:
+    if args.cmd2_statement.get() in [SHOW_RUNNING, SHOW_RUNNING_SC]:
       table = PrettyTable(
         ['Session ID',
          'Command ID (`{0:s}`)'.format(
@@ -448,16 +462,16 @@ class Metawolf(cmd2.Cmd):
       return
 
     # Otherwise, check if we show an output or a recipe details
-    user_input = st.args.split(' ')
+    user_input = args.cmd2_statement.get().split(' ')
     action = user_input[0]
-    if len(user_input) != 2 and action == SHOW_RECIPE:
+    if len(user_input) != 2 and action in [SHOW_RECIPE, SHOW_RECIPE_SC]:
       # Malformed command, do nothing.
       self.poutput(
           'Malformed command. Type `{0:s}` to see available options.'.format(
               self.metawolf_output.Color('show', output.YELLOW)))
       return
 
-    if action == SHOW_RECIPE:
+    if action in [SHOW_RECIPE, SHOW_RECIPE_SC]:
       value = user_input[1]
       df_recipe = self.metawolf_utils.recipe_manager.Recipes().get(value)
       if not df_recipe:
@@ -490,7 +504,7 @@ class Metawolf(cmd2.Cmd):
       if out:
         self.poutput(out)
 
-    if action == SHOW_OUTPUT:
+    if action in [SHOW_OUTPUT, SHOW_OUTPUT_SC]:
       if len(user_input) < 2:
         # No output ID provided, output latest run.
         last_run_process = max(
