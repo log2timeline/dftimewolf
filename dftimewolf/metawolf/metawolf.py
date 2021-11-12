@@ -165,6 +165,15 @@ class Metawolf(cmd2.Cmd):
 
     return super(Metawolf, self).postcmd(stop, statement)
 
+  def do_help(self, _: cmd2.Statement) -> None:
+    """Show this help menu.
+
+    Args:
+      _ (Statement): Unused.
+    """
+    # Always display verbose help.
+    self._help_menu(True)
+
   def do_new(self, _: cmd2.Statement) -> None:
     """Create a new session.
 
