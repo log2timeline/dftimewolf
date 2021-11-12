@@ -116,8 +116,8 @@ class Metawolf(cmd2.Cmd):
         'Metawolf\'s session_id. Type `{0:s}` to display existing '
         'sessions, and switch with `{1:s}`.'.format(
             self.metawolf_output.Color('show sessions', output.YELLOW),
-            self.metawolf_output.Color('set session session_id', output.YELLOW)),
-        str)
+            self.metawolf_output.Color('set session session_id', output.YELLOW)
+        ), str)
     self.AddSessionSettable(self.session_id_settable)
 
     self.sessions = self.LoadSession()
@@ -500,7 +500,8 @@ class Metawolf(cmd2.Cmd):
         # Else display running processes
         self.poutput(self.metawolf_output.Color(
           'No output found. Showing (previous) runs:', output.YELLOW))
-        return self.do_show(cmd2.Statement(SHOW_RUNNING))
+        self.do_show(cmd2.Statement(SHOW_RUNNING))
+        return
       value = user_input[1]
       for metawolf_process in self.processes:
         if value == str(metawolf_process.output_id):

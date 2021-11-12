@@ -104,7 +104,7 @@ class MetawolfProcess:
     self.metawolf_utils = metawolf_utils if metawolf_utils else utils.MetawolfUtils()
     # pylint: enable=line-too-long
     process = None
-    status = None
+    self.status = None
     recipe = ''
     if cmd and cmd[1] in self.metawolf_utils.GetRecipes():
       recipe = cmd[1]
@@ -156,7 +156,8 @@ class MetawolfProcess:
     # datetime.fromtimestamp format is 2021-09-10 13:46:23.071456+00:00,
     # so we cut the part after '.'
     self.timestamp_readable = str(
-        datetime.fromtimestamp(time.time(), timezone.utc)).split('.')[0]
+      datetime.fromtimestamp(time.time(), timezone.utc)).split(
+        '.', maxsplit=1)[0]
     # Metawolf writes each dftimewolf run into a file located in /tmp that
     # is identified by the process's session id, recipe and timestamp.
     file_id = '{0:s}-{1:s}-{2!s}'.format(
