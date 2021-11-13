@@ -13,9 +13,6 @@ from dftimewolf.metawolf import metawolf
 class MetawolfTest(unittest.TestCase):
   """Integration tests for Metawolf."""
 
-  def setUp(self):
-    self.m = None
-
   @typing.no_type_check
   def RunTranscript(self, path_to_transcript: str) -> int:
     """Run a test in cmd2 using the transcript stored at path_to_transcript.
@@ -35,6 +32,7 @@ class MetawolfTest(unittest.TestCase):
   @typing.no_type_check
   def setUp(self) -> None:
     """Setup test cases."""
+    self.m = None
     self.session_file = os.path.join(os.path.dirname(
         os.path.realpath(__file__)), 'metawolf-transcript-session.json')
     self.tmp_file = '/tmp/metawolf-test'
