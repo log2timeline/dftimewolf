@@ -204,7 +204,8 @@ class Metawolf(cmd2.Cmd):
   set_parser.add_argument('-a', '-all', action='store_true',
                           help='Set all arguments of the current recipe.')
   @cmd2.with_argparser(set_parser, with_unknown_args=True)  # type: ignore
-  def do_set(self, args: argparse.Namespace, unknown: Any) -> None:
+  # pylint: disable=arguments-differ
+  def do_set(self, args: argparse.Namespace, _: Any) -> None:
     """Set arguments for Metawolf.
 
     Args:
