@@ -222,6 +222,9 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     Returns:
       str: GRR identifier for launched flow, or an empty string if flow could
           not be launched.
+
+    Raises:
+      GrrError: If approvers are required but none were specified.
     """
     # Start the flow and get the flow ID
     flow = self._WrapGRRRequestWithApproval(
@@ -716,9 +719,9 @@ class GRRFlowCollector(GRRFlow):
         # If the client has a requested flow, queue it up (via the state)
         for f in flows:
           if f in client_flows:
-            self.state.StoreContainer(containers.GrrHostFlowPair(host, f))
+            self.state.StoreContainer(containers.GrrFlow(host, f))
 
-  def Process(self, container: containers.GrrHostFlowPair) -> None:
+  def Process(self, container: containers.GrrFlow) -> None:
     """Downloads the results of a GRR collection flow.
 
     Raises:
@@ -755,7 +758,7 @@ class GRRFlowCollector(GRRFlow):
 
   def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
     """This module works on host containers."""
-    return containers.GrrHostFlowPair
+    return containers.GrrFlow
 
 
 class GRRTimelineCollector(GRRFlow):

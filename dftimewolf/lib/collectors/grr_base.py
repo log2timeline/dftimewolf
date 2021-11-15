@@ -95,6 +95,8 @@ class GRRBaseModule(object):
 
     Returns:
       object: return value of the execution of grr_function(*args, **kwargs).
+    Raises:
+      GrrError: If approvers are required but none were specified.
     """
     approval_sent = False
     approval_url = None

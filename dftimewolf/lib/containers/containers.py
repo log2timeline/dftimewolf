@@ -353,7 +353,7 @@ class Host(interface.AttributeContainer):
     self.platform = platform
 
 
-class GrrHostFlowPair(interface.AttributeContainer):
+class GrrFlow(interface.AttributeContainer):
   """Attribute container definition for a host.
 
   Attributes:
@@ -361,10 +361,10 @@ class GrrHostFlowPair(interface.AttributeContainer):
     flow_id (str): A hexadecimal flow ID.
   """
 
-  CONTAINER_TYPE = 'grr_host_flow_pair'
+  CONTAINER_TYPE = 'grr_flow'
 
   def __init__(self, hostname: str, flow: str) -> None:
-    super(GrrHostFlowPair, self).__init__()
+    super(GrrFlow, self).__init__()
     self.hostname = hostname
     self.flow_id = flow
 

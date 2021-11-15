@@ -50,7 +50,7 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
       object: a GRR hunt object.
 
     Raises:
-      ValueError: if approval is needed and approvers were not specified.
+      GrrError: if approval is needed and approvers were not specified.
     """
     runner_args = self.grr_api.types.CreateHuntRunnerArgs()
     runner_args.description = self.reason
@@ -287,7 +287,7 @@ class GRRHuntDownloader(GRRHunt):
           the path to the collected data.
 
     Raises:
-      ValueError: if approval is needed and approvers were not specified.
+      GrrError: if approval is needed and approvers were not specified.
     """
     if not os.path.isdir(self.output_path):
       os.makedirs(self.output_path)
