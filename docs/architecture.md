@@ -101,6 +101,8 @@ specific format:
   - `wants`: What other modules this module should wait for before calling its
     `Process` function.
   - `name`: The name of the module class that will be instantiated.
+  - `runtime_name`: Optional argument, use this for recipes when you're using
+    the same module more than once.
   - `args`: A list of (argument_name, argument) tuples that will be passed on to
     the module's `SetUp()` function. If `argument` starts with an `@`, it will
     be replaced with its corresponding value from the command-line or the
