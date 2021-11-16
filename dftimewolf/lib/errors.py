@@ -42,7 +42,3 @@ class CommandLineParseError(DFTimewolfError):
 
 class CriticalError(DFTimewolfError):
   """Critical error that should abort the whole workflow."""
-
-
-class GrrError(DFTimewolfError):
-  """Error raised by Grr modules."""

@@ -125,7 +125,7 @@ class GRRBaseModuleTest(unittest.TestCase):
     mock_grr_object = MockGRRObject()
     mock_forbidden_function = mock.Mock(
         wraps=mock_grr_object.ForbiddenFunction)
-    with self.assertRaises(errors.GrrError) as error:
+    with self.assertRaises(errors.DFTimewolfError) as error:
       grr_base_module._WrapGRRRequestWithApproval(
           mock_grr_object,
           mock_forbidden_function,

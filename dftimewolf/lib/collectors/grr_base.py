@@ -11,7 +11,7 @@ from grr_api_client.client import Client
 from grr_api_client.flow import Flow
 from grr_api_client.hunt import Hunt
 
-from dftimewolf.lib.errors import GrrError
+from dftimewolf.lib.errors import DFTimewolfError
 
 
 class GRRBaseModule(object):
@@ -96,7 +96,7 @@ class GRRBaseModule(object):
     Returns:
       object: return value of the execution of grr_function(*args, **kwargs).
     Raises:
-      GrrError: If approvers are required but none were specified.
+      DFTimewolfError: If approvers are required but none were specified.
     """
     approval_sent = False
     approval_url = None
@@ -119,7 +119,7 @@ class GRRBaseModule(object):
         if not self.approvers:
           message = ('GRR needs approval but no approvers specified '
                      '(hint: use --approvers)')
-          raise GrrError(message, critical=True) from exception
+          raise DFTimewolfError(message, critical=True) from exception
 
         # Otherwise, send a request for approval
         approval = grr_object.CreateApproval(

@@ -224,7 +224,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
           not be launched.
 
     Raises:
-      GrrError: If approvers are required but none were specified.
+      DFTimewolfError: If approvers are required but none were specified.
     """
     # Start the flow and get the flow ID
     flow = self._WrapGRRRequestWithApproval(
