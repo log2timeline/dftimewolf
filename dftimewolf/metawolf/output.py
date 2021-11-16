@@ -235,7 +235,6 @@ class MetawolfProcess:
       if not self.status:
         # No previous known state from file.
         self.status = MetawolfOutput.Color('Unknown', BLUE)
-        return self.status
       return self.status
 
     # Else, dftimewolf completed and we need to look into the output file to
