@@ -394,10 +394,10 @@ class Metawolf(cmd2.Cmd):
     Possible choices: [`-recipes`, `-recipe recipe_name`, `-sessions`,
     `-running`, `-output output_id`]. `recipes` shows the user the available
     DFTimewolf recipes, while `recipe recipe_name` shows the details of a
-    given recipe. `sessions` shows the currently available Metawolf's sessions
+    given recipe. `sessions` shows the currently available Metawolf sessions
     and any recipe in use, along with information about the recipe's state.
-    `running` displays running jobs and their state. `output output_id` prints
-    to STDOUT the output of the matching output_id. Autocomplete is available.
+    `running` displays running jobs and their state. `output output_id` writes
+    the output of the matching output_id to STDOUT. Autocomplete is available.
 
     Args:
       st (Statement): The user's input.
