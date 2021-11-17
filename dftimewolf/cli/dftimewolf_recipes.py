@@ -62,6 +62,7 @@ MODULES = {
   'WorkspaceAuditTimesketch': 'dftimewolf.lib.processors.workspace_audit_timesketch',
   'TimesketchExporterThreaded': 'dftimewolf.lib.exporters.timesketch_tam',
   'TurbiniaGCPProcessorThreaded': 'dftimewolf.lib.processors.turbinia_gcp_tam',
+  'GoogleSheetsCollector': 'dftimewolf.lib.collectors.gsheets',
 }
 # pylint: enable=line-too-long
 
