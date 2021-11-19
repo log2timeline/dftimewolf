@@ -101,7 +101,7 @@ class GoogleSheetsCollector(module.BaseModule):
             mode='w', delete=False, encoding='utf-8', suffix='.csv')
         output_path = output_file.name
         self.logger.info(
-            'Downloading results to of sheet "{0:s}" to {1:s}'.format(
+            'Downloading results of sheet "{0:s}" to {1:s}'.format(
                 sheet_title, output_path))
 
         df.to_csv(index=False, na_rep='NaN', path_or_buf=output_file)
