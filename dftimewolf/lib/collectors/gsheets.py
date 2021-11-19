@@ -41,7 +41,7 @@ class GoogleSheetsCollector(module.BaseModule):
         state, name=name, critical=critical)
     self._credentials = None
     self._spreadsheet_id = ''
-    self._sheets_names: List[str] = []
+    self._sheet_names: List[str] = []
     # These are mandatory columns required by Timesketch.
     self._mandatory_columns = ['message', 'datetime', 'timestamp_desc']
     self._all_sheets = False
@@ -50,21 +50,21 @@ class GoogleSheetsCollector(module.BaseModule):
   # pylint: disable=arguments-differ
   def SetUp(self,
             spreadsheet: str,
-            sheets_names: List[str],
+            sheet_names: List[str],
             validate_columns: bool = True) -> None:
     """Sets up a a Google Sheets collector.
 
     Args:
       spreadsheet: ID or URL of the sheet to pull data from
-      sheets_names: List of sheets names inside the spreadsheet to parse. 'All'
+      sheet_names: List of sheet names inside the spreadsheet to parse. 'All'
         will parse all sheets inside a spreadsheet.
       validate_columns: Check if mandatory columns required by Timesketch is
         present in the sheets.
     """
     self._credentials = self._GetCredentials()
     self._spreadsheet_id = self._ValidateSpreadSheetId(spreadsheet)
-    self._sheets_names = sheets_names
-    if 'all' in (sheet.lower() for sheet in sheets_names):
+    self._sheet_names = sheet_names
+    if 'all' in (sheet.lower() for sheet in sheet_names):
       self._all_sheets = True
     self._validate_columns = validate_columns
 
@@ -87,7 +87,7 @@ class GoogleSheetsCollector(module.BaseModule):
 
         sheet_title = sheet.get('properties', {}).get('title')
 
-        if not self._all_sheets and sheet_title not in self._sheets_names:
+        if not self._all_sheets and sheet_title not in self._sheet_names:
           continue
 
         self.logger.info('Parsing sheet: {0:s}'.format(sheet_title))
@@ -212,8 +212,6 @@ class GoogleSheetsCollector(module.BaseModule):
         Dataframe with entries from sheet inside the spreadsheet
     """
 
-    df = pd.DataFrame()
-
     resource = self._BuildSheetsResource(self._credentials)
     # Pylint can't see the spreadsheets method.
     # pylint: disable=no-member
@@ -235,23 +233,22 @@ class GoogleSheetsCollector(module.BaseModule):
     if not self._validate_columns:
       return df
 
-    # pylint: disable=line-too-long
     for column in self._mandatory_columns:
       if column not in df.columns:
         self.logger.error(
             'Mandatory column "{0:s}" was not found in sheet "{1:s}".'.format(
                 column, sheet_title))
-        self.logger.error('Please make sure all mandatory are present:')
+        self.logger.error('Please make sure all mandatory columns are present:')
         self.logger.error(
             '"message": String with an informative message of the event')
         self.logger.error(
             '"datetime": ISO8601 format for example: 2015-07-24T19:01:01+00:00'
         )
         self.logger.error(
-            '"timestamp_desc": String explaining what type of timestamp it is for example file created'
+            '"timestamp_desc": String explaining what type of timestamp it is \
+              for example file created'
         )
         return None
-      # pylint: enable=line-too-long
     return df
 
 modules_manager.ModulesManager.RegisterModule(GoogleSheetsCollector)
