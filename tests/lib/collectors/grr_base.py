@@ -3,15 +3,13 @@
 """Tests the GRR base collector."""
 
 import unittest
+import logging
 import mock
 
 from grr_api_client import errors as grr_errors
 
-from dftimewolf.lib import state
 from dftimewolf.lib import errors
 from dftimewolf.lib.collectors import grr_base
-
-from dftimewolf import config
 
 
 ACCESS_FORBIDDEN_MAX = 3
@@ -44,18 +42,16 @@ class GRRBaseModuleTest(unittest.TestCase):
 
   def testInitialization(self):
     """Tests that the collector can be initialized."""
-    test_state = state.DFTimewolfState(config.Config)
-    grr_base_module = grr_base.GRRBaseModule(test_state)
+    grr_base_module = grr_base.GRRBaseModule()
     self.assertIsNotNone(grr_base_module)
 
   @mock.patch('tempfile.mkdtemp')
   @mock.patch('grr_api_client.api.InitHttp')
   def testSetup(self, mock_grr_inithttp, mock_mkdtemp):
     """Tests that setup works"""
-    test_state = state.DFTimewolfState(config.Config)
-    grr_base_module = grr_base.GRRBaseModule(test_state)
+    grr_base_module = grr_base.GRRBaseModule()
     mock_mkdtemp.return_value = '/fake'
-    grr_base_module.SetUp(
+    grr_base_module.GrrSetUp(
         reason='random reason',
         grr_server_url='http://fake/endpoint',
         grr_username='admin1',
@@ -74,9 +70,8 @@ class GRRBaseModuleTest(unittest.TestCase):
   @mock.patch('grr_api_client.api.InitHttp')
   def testApprovalWrapper(self, _):
     """Tests that the approval wrapper works correctly."""
-    test_state = state.DFTimewolfState(config.Config)
-    grr_base_module = grr_base.GRRBaseModule(test_state)
-    grr_base_module.SetUp(
+    grr_base_module = grr_base.GRRBaseModule()
+    grr_base_module.GrrSetUp(
         reason='random reason',
         grr_server_url='http://fake/endpoint',
         grr_username='admin1',
@@ -92,6 +87,7 @@ class GRRBaseModuleTest(unittest.TestCase):
     result = grr_base_module._WrapGRRRequestWithApproval(
         mock_grr_object,
         mock_forbidden_function,
+        logging.getLogger('GRRBaseModuleTest'),
         'random1',
         'random2',
         random3=4,
@@ -114,9 +110,8 @@ class GRRBaseModuleTest(unittest.TestCase):
     This should only error on unauthorized objects, which is how our mock
     behaves.
     """
-    test_state = state.DFTimewolfState(config.Config)
-    grr_base_module = grr_base.GRRBaseModule(test_state)
-    grr_base_module.SetUp(
+    grr_base_module = grr_base.GRRBaseModule()
+    grr_base_module.GrrSetUp(
         reason='random',
         grr_server_url='http://fake/url',
         grr_username='admin1',
@@ -124,6 +119,7 @@ class GRRBaseModuleTest(unittest.TestCase):
         approvers='',
         verify=True
     )
+
     # pylint: disable=protected-access
     grr_base_module._CHECK_APPROVAL_INTERVAL_SEC = 0
     mock_grr_object = MockGRRObject()
@@ -133,6 +129,7 @@ class GRRBaseModuleTest(unittest.TestCase):
       grr_base_module._WrapGRRRequestWithApproval(
           mock_grr_object,
           mock_forbidden_function,
+          logging.getLogger('GRRBaseModuleTest'),
           'random1',
           'random2',
           random3=4,
@@ -140,7 +137,6 @@ class GRRBaseModuleTest(unittest.TestCase):
     self.assertEqual('GRR needs approval but no approvers specified '
                      '(hint: use --approvers)', error.exception.message)
     self.assertTrue(error.exception.critical)
-    self.assertEqual(len(test_state.errors), 1)
 
 if __name__ == '__main__':
   unittest.main()
