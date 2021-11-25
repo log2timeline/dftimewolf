@@ -111,7 +111,7 @@ class GRRBaseModule(object):
         if approval_sent:
           logger.info('Approval not yet granted, waiting {0:d}s'.format(
               self._CHECK_APPROVAL_INTERVAL_SEC))
-          logger.success(approval_url) # type: ignore
+          logger.success(approval_url)
           time.sleep(self._CHECK_APPROVAL_INTERVAL_SEC)
           continue
 
