@@ -1,6 +1,5 @@
 """Base GRR module class. GRR modules should extend it."""
 
-import logging
 import tempfile
 import time
 from typing import Optional, Union, Callable, List, Any
@@ -12,6 +11,7 @@ from grr_api_client.flow import Flow
 from grr_api_client.hunt import Hunt
 
 from dftimewolf.lib.errors import DFTimewolfError
+from dftimewolf.lib.logging_utils import WolfLogger
 
 
 class GRRBaseModule(object):
@@ -77,7 +77,7 @@ class GRRBaseModule(object):
       self,
       grr_object: Union[Hunt, Client],
       grr_function: Callable,  # type: ignore[type-arg]
-      logger: logging.Logger,
+      logger: WolfLogger,
       *args: Any,
       **kwargs: Any
   ) -> Union[Flow, Hunt]:
