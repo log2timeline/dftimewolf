@@ -44,7 +44,7 @@ class GoogleSheetsCollector(module.BaseModule):
     self._sheet_names: List[str] = []
     # These are mandatory columns required by Timesketch.
     self._mandatory_columns = ['message', 'datetime', 'timestamp_desc']
-    self._all_sheets = False
+    self._all_sheets = True
     self._validate_columns = True
 
   # pylint: disable=arguments-differ
@@ -64,7 +64,7 @@ class GoogleSheetsCollector(module.BaseModule):
     self._credentials = self._GetCredentials()
     self._spreadsheet_id = self._ValidateSpreadSheetId(spreadsheet)
     self._sheet_names = sheet_names
-    if 'all' in (sheet.lower() for sheet in sheet_names):
+    if not sheet_names:
       self._all_sheets = True
     self._validate_columns = validate_columns
 
