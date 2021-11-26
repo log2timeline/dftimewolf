@@ -94,17 +94,13 @@ class LocalFilesystemCopy(module.BaseModule):
     Returns:
       list[str]: The full copied output paths.
     """
-    counter = 0
     full_paths = []
     if os.path.isdir(source):
       try:
-        shutil.copytree(source, destination_directory)
+        shutil.copytree(source, destination_directory, dirs_exist_ok=True)
         full_paths.append(destination_directory)
-      except FileExistsError:
-        new_directory = os.path.join(destination_directory, str(counter))
-        shutil.copytree(source, new_directory)
-        full_paths.append(new_directory)
-        counter += 1
+      except shutil.Error as e:
+        self.ModuleError(str(e), critical=True)
     else:
       try:
         shutil.copy2(source, destination_directory)

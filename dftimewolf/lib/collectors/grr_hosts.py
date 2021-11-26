@@ -7,22 +7,26 @@ import re
 import threading
 import time
 import zipfile
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Type
 
 from grr_api_client import errors as grr_errors
 from grr_api_client.client import Client
 from grr_response_proto import flows_pb2, timeline_pb2
 
+from dftimewolf.lib import module
 from dftimewolf.lib.collectors.grr_base import GRRBaseModule
-from dftimewolf.lib.containers import containers
+from dftimewolf.lib.containers import containers, interface
 from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 
 
+GRR_THREAD_POOL_SIZE = 10 # Arbitrary
+
 # TODO: GRRFlow should be extended by classes that actually implement
 # the Process() method.
-class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
+# pylint: disable=abstract-method
+class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
   """Launches and collects GRR flows.
 
   Modules that use GRR flows or interact with hosts should extend this class.
@@ -48,7 +52,8 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    super(GRRFlow, self).__init__(state, name=name, critical=critical)
+    module.ThreadAwareModule.__init__(self, state, name=name, critical=critical)
+    GRRBaseModule.__init__(self)
     self.keepalive = False
     self._skipped_flows = []  # type: List[Tuple[str, str]]
     self.skip_offline_clients = False
@@ -77,7 +82,7 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
           to complete on clients that have been offline for more than an hour.
     """
     self.skip_offline_clients = skip_offline_clients
-    super(GRRFlow, self).SetUp(
+    self.GrrSetUp(
         reason, grr_server_url, grr_username, grr_password,
         approvers=approvers, verify=verify)
 
@@ -179,7 +184,6 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
         datetime.datetime.utcnow() - last_seen_datetime).total_seconds()
     last_seen_minutes = int(round(last_seen_seconds / 60))
 
-    self.logger.info('{0:s}: Found active client'.format(client.client_id))
     self.logger.info('Found active client: {0:s}'.format(client.client_id))
     self.logger.info('Client last seen: {0:s} ({1:d} minutes ago)'.format(
         last_seen_datetime.strftime('%Y-%m-%dT%H:%M:%S+0000'),
@@ -218,10 +222,13 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
     Returns:
       str: GRR identifier for launched flow, or an empty string if flow could
           not be launched.
+
+    Raises:
+      DFTimewolfError: If approvers are required but none were specified.
     """
     # Start the flow and get the flow ID
     flow = self._WrapGRRRequestWithApproval(
-        client, client.CreateFlow, name=name, args=args)
+        client, client.CreateFlow, self.logger, name=name, args=args)
     if not flow:
       return ''
 
@@ -339,6 +346,10 @@ class GRRFlow(GRRBaseModule):  # pylint: disable=abstract-method
 
     return client_output_file
 
+  def GetThreadPoolSize(self) -> int:
+    """Thread pool size."""
+    return GRR_THREAD_POOL_SIZE
+
 
 class GRRArtifactCollector(GRRFlow):
   """Artifact collector for GRR flows.
@@ -437,86 +448,83 @@ class GRRArtifactCollector(GRRFlow):
     for item in hostnames.strip().split(','):
       hostname = item.strip()
       if hostname:
-        host = containers.Host(hostname=hostname)
-        self.hosts.append(host)
+        self.state.StoreContainer(containers.Host(hostname=hostname))
 
     self.use_tsk = use_tsk
     if max_file_size:
       self.max_file_size = int(max_file_size)
 
-  # TODO: change object to more specific GRR type information.
-  def _ProcessThread(self, client: Client) -> None:
-    """Processes a single GRR client.
-
-    This function is used as a callback for the processing thread.
-
-    Args:
-      client (object): a GRR client object.
-    """
-    system_type = client.data.os_info.system
-    self.logger.info('System type: {0:s}'.format(system_type))
-
-    # If the list is supplied by the user via a flag, honor that.
-    artifact_list = []
-    if self.artifacts:
-      self.logger.info(
-          'Artifacts to be collected: {0!s}'.format(self.artifacts))
-      artifact_list = self.artifacts
-    else:
-      default_artifacts = self.artifact_registry.get(system_type, None)
-      if default_artifacts:
-        self.logger.info('Collecting default artifacts for {0:s}: {1:s}'.format(
-            system_type, ', '.join(default_artifacts)))
-        artifact_list.extend(default_artifacts)
-
-    if self.extra_artifacts:
-      self.logger.info(
-          'Throwing in an extra {0!s}'.format(self.extra_artifacts))
-      artifact_list.extend(self.extra_artifacts)
-      artifact_list = list(set(artifact_list))
-
-    if not artifact_list:
-      return
-
-    flow_args = flows_pb2.ArtifactCollectorFlowArgs(
-        artifact_list=artifact_list,
-        use_tsk=self.use_tsk,
-        ignore_interpolation_errors=True,
-        apply_parsers=False,
-        max_file_size=self.max_file_size)
-    flow_id = self._LaunchFlow(client, 'ArtifactCollectorFlow', flow_args)
-    if not flow_id:
-      msg = 'Flow could not be launched on {0:s}.'.format(client.client_id)
-      msg += '\nArtifactCollectorFlow args: {0!s}'.format(flow_args)
-      self.ModuleError(msg, critical=True)
-    self._AwaitFlow(client, flow_id)
-    collected_flow_data = self._DownloadFiles(client, flow_id)
-
-    if collected_flow_data:
-      self.logger.success(
-          '{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
-      container = containers.File(
-          name=client.data.os_info.fqdn.lower(),
-          path=collected_flow_data
-      )
-      self.state.StoreContainer(container)
-
-  def Process(self) -> None:
+  def Process(self, container: containers.Host) -> None:
     """Collects artifacts from a host with GRR.
 
     Raises:
       DFTimewolfError: if no artifacts specified nor resolved by platform.
     """
-    self.hosts.extend(self.state.GetContainers(containers.Host))
+    for client in self._FindClients([container.hostname]):
+      system_type = client.data.os_info.system
+      self.logger.info('System type: {0:s}'.format(system_type))
 
-    threads = []
-    for client in self._FindClients([host.hostname for host in self.hosts]):
-      thread = threading.Thread(target=self._ProcessThread, args=(client, ))
-      threads.append(thread)
-      thread.start()
+      # If the list is supplied by the user via a flag, honor that.
+      artifact_list = []
+      if self.artifacts:
+        self.logger.info(
+            'Artifacts to be collected: {0!s}'.format(self.artifacts))
+        artifact_list = self.artifacts
+      else:
+        default_artifacts = self.artifact_registry.get(system_type, None)
+        if default_artifacts:
+          self.logger.info(
+              'Collecting default artifacts for {0:s}: {1:s}'.format(
+                  system_type, ', '.join(default_artifacts)))
+          artifact_list.extend(default_artifacts)
 
-    for thread in threads:
-      thread.join()
+      if self.extra_artifacts:
+        self.logger.info(
+            'Throwing in an extra {0!s}'.format(self.extra_artifacts))
+        artifact_list.extend(self.extra_artifacts)
+        artifact_list = list(set(artifact_list))
+
+      if not artifact_list:
+        return
+
+      flow_args = flows_pb2.ArtifactCollectorFlowArgs(
+          artifact_list=artifact_list,
+          use_tsk=self.use_tsk,
+          ignore_interpolation_errors=True,
+          apply_parsers=False,
+          max_file_size=self.max_file_size)
+      flow_id = self._LaunchFlow(client, 'ArtifactCollectorFlow', flow_args)
+      if not flow_id:
+        msg = 'Flow could not be launched on {0:s}.'.format(client.client_id)
+        msg += '\nArtifactCollectorFlow args: {0!s}'.format(flow_args)
+        self.ModuleError(msg, critical=True)
+      self._AwaitFlow(client, flow_id)
+      collected_flow_data = self._DownloadFiles(client, flow_id)
+
+      if collected_flow_data:
+        self.logger.success(
+            '{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
+        cont = containers.File(
+            name=client.data.os_info.fqdn.lower(),
+            path=collected_flow_data
+        )
+        self.state.StoreContainer(cont)
+
+  def PreSetup(self) -> None:
+    """Not implemented."""
+
+  def PostSetup(self) -> None:
+    """Not implemented."""
+
+  def PreProcess(self) -> None:
+    """Not implemented."""
+
+  def PostProcess(self) -> None:
+    """Not implemented."""
+
+  def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
+    """This module operates on Host containers."""
+    return containers.Host
 
 
 class GRRFileCollector(GRRFlow):
@@ -588,8 +596,7 @@ class GRRFileCollector(GRRFlow):
     for item in hostnames.strip().split(','):
       hostname = item.strip()
       if hostname:
-        host = containers.Host(hostname=hostname)
-        self.hosts.append(host)
+        self.state.StoreContainer(containers.Host(hostname=hostname))
 
     self.use_tsk = use_tsk
 
@@ -601,59 +608,56 @@ class GRRFileCollector(GRRFlow):
     if max_file_size:
       self.max_file_size = int(max_file_size)
 
-  # TODO: change object to more specific GRR type information.
-  def _ProcessThread(self, client: Client) -> None:
-    """Processes a single client.
-
-    This function is used as a callback for the processing thread.
-
-    Args:
-      client (object): GRR client object to act on.
-    """
-    file_list = self.files
-    if not file_list:
-      return
-    self.logger.info('Filefinder to collect {0:d} items'.format(len(file_list)))
-
-    flow_action = flows_pb2.FileFinderAction(
-        action_type=self.action,
-        download=flows_pb2.FileFinderDownloadActionOptions(
-            max_size=self.max_file_size
-        ))
-    flow_args = flows_pb2.FileFinderArgs(
-        paths=file_list,
-        action=flow_action)
-
-    flow_id = self._LaunchFlow(client, 'FileFinder', flow_args)
-    self._AwaitFlow(client, flow_id)
-    collected_flow_data = self._DownloadFiles(client, flow_id)
-    if collected_flow_data:
-      self.logger.success(
-          '{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
-      container = containers.File(
-          name=client.data.os_info.fqdn.lower(),
-          path=collected_flow_data
-      )
-      self.state.StoreContainer(container)
-
-  def Process(self) -> None:
+  def Process(self, container: containers.Host) -> None:
     """Collects files from a host with GRR.
 
     Raises:
       DFTimewolfError: if no files specified.
     """
-    self.hosts.extend(self.state.GetContainers(containers.Host))
+    for client in self._FindClients([container.hostname]):
+      flow_action = flows_pb2.FileFinderAction(
+        action_type=self.action,
+        download=flows_pb2.FileFinderDownloadActionOptions(
+            max_size=self.max_file_size
+        ))
+      flow_args = flows_pb2.FileFinderArgs(
+          paths=self.files,
+          action=flow_action)
+      flow_id = self._LaunchFlow(client, 'FileFinder', flow_args)
+      self._AwaitFlow(client, flow_id)
+      collected_flow_data = self._DownloadFiles(client, flow_id)
+      if collected_flow_data:
+        self.logger.success(
+            '{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
+        cont = containers.File(
+            name=client.data.os_info.fqdn.lower(),
+            path=collected_flow_data
+        )
+        self.state.StoreContainer(cont)
 
-    threads = []
-    for client in self._FindClients([host.hostname for host in self.hosts]):
-      thread = threading.Thread(target=self._ProcessThread, args=(client, ))
-      threads.append(thread)
-      thread.start()
+  def PreSetup(self) -> None:
+    """Not implemented."""
 
-    for thread in threads:
-      thread.join()
+  def PostSetup(self) -> None:
+    """Not implemented."""
 
+  def PreProcess(self) -> None:
+    """Check that we're actually doing something, and it's not a no-op."""
+    if not self.files:
+      message = 'Would fetch 0 files - bailing out instead.'
+      self.logger.critical(message)
+      raise DFTimewolfError(message, critical=False)
+    self.logger.info('Filefinder to collect {0:d} items on each host'.format(
+        len(self.files)))
+
+  def PostProcess(self) -> None:
+    """Check if we're skipping any offline clients."""
     self._CheckSkippedFlows()
+
+  def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
+    """This module works on host containers."""
+    return containers.Host
+
 
 class GRRFlowCollector(GRRFlow):
   """Flow collector.
@@ -675,8 +679,8 @@ class GRRFlowCollector(GRRFlow):
 
   # pylint: disable=arguments-differ
   def SetUp(self,
-            hostname: str,
-            flow_id: str,
+            hostnames: str,
+            flow_ids: str,
             reason: str,
             grr_server_url: str,
             grr_username: str,
@@ -687,8 +691,8 @@ class GRRFlowCollector(GRRFlow):
     """Initializes a GRR flow collector.
 
     Args:
-      hostname (str): Hostname to gather the flow from.
-      flow_id (str): GRR identifier of the flow to retrieve.
+      hostnames (str): Hostnames to gather the flows from.
+      flow_ids (str): GRR identifier of the flows to retrieve.
       reason (str): justification for GRR access.
       grr_server_url (str): GRR server URL.
       grr_username (str): GRR username.
@@ -704,10 +708,20 @@ class GRRFlowCollector(GRRFlow):
         approvers=approvers, verify=verify,
         skip_offline_clients=skip_offline_clients)
 
-    self.flow_id = flow_id
-    self.host = containers.Host(hostname=hostname)
+    flows = flow_ids.strip().split(',')
 
-  def Process(self) -> None:
+    # For each host specified, list their flows
+    for item in hostnames.strip().split(','):
+      host = item.strip()
+      if host:
+        client = self._GetClientBySelector(host)
+        client_flows = [f.flow_id for f in client.ListFlows()]
+        # If the client has a requested flow, queue it up (via the state)
+        for f in flows:
+          if f in client_flows:
+            self.state.StoreContainer(containers.GrrFlow(host, f))
+
+  def Process(self, container: containers.GrrFlow) -> None:
     """Downloads the results of a GRR collection flow.
 
     Raises:
@@ -715,18 +729,36 @@ class GRRFlowCollector(GRRFlow):
     """
     # TODO (tomchop): Change the host attribute into something more appropriate
     # like 'selectors', and the corresponding recipes.
-    client = self._GetClientBySelector(self.host.hostname)
-    self._AwaitFlow(client, self.flow_id)
+    client = self._GetClientBySelector(container.hostname)
+    self._AwaitFlow(client, container.flow_id)
     self._CheckSkippedFlows()
-    collected_flow_data = self._DownloadFiles(client, self.flow_id)
+    collected_flow_data = self._DownloadFiles(client, container.flow_id)
     if collected_flow_data:
       self.logger.success('{0:s}: Downloaded: {1:s}'.format(
           self.flow_id, collected_flow_data))
-      container = containers.File(
+      cont = containers.File(
           name=client.data.os_info.fqdn.lower(),
           path=collected_flow_data
       )
-      self.state.StoreContainer(container)
+      self.state.StoreContainer(cont)
+
+  def PreSetup(self) -> None:
+    """Not implemented."""
+
+  def PostSetup(self) -> None:
+    """Not implemented."""
+
+  def PreProcess(self) -> None:
+    """Not implemented."""
+
+  def PostProcess(self) -> None:
+    # TODO(ramoj) check if this should be per client in process
+    """Check if we're skipping any offline clients."""
+    self._CheckSkippedFlows()
+
+  def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
+    """This module works on host containers."""
+    return containers.GrrFlow
 
 
 class GRRTimelineCollector(GRRFlow):
@@ -788,56 +820,38 @@ class GRRTimelineCollector(GRRFlow):
     for item in hostnames.strip().split(','):
       hostname = item.strip()
       if hostname:
-        host = containers.Host(hostname=hostname)
-        self.hosts.append(host)
+        self.state.StoreContainer(containers.Host(hostname=hostname))
 
     self._timeline_format = int(timeline_format)
     if self._timeline_format not in [1, 2]:
       self.ModuleError('Timeline format must be 1 (BODY) or 2 (RAW).',
                        critical=True)
 
-  # TODO: change object to more specific GRR type information.
-  def _ProcessThread(self, client: Client) -> None:
-    """Processes a single client.
-    This function is used as a callback for the processing thread.
-    Args:
-      client (object): GRR client object to act on.
-    """
-    root_path = self.root_path
-    if not root_path:
-      return
-    self.logger.info(
-        'Timeline to start from "{0:s}" items'.format(root_path.decode()))
-
-    timeline_args = timeline_pb2.TimelineArgs(root=root_path,)
-    flow_id = self._LaunchFlow(client, 'TimelineFlow', timeline_args)
-    self._AwaitFlow(client, flow_id)
-    collected_flow_data = self._DownloadTimeline(client, flow_id)
-    if collected_flow_data:
-      self.logger.success(
-          '{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
-      container = containers.File(
-          name=client.data.os_info.fqdn.lower(),
-          path=collected_flow_data
-      )
-      self.state.StoreContainer(container)
-
-  def Process(self) -> None:
+  def Process(self, container: containers.Host) -> None:
     """Collects a timeline from a host with GRR.
+
     Raises:
       DFTimewolfError: if no files specified.
     """
-    self.hosts.extend(self.state.GetContainers(containers.Host))
+    for client in self._FindClients([container.hostname]):
+      root_path = self.root_path
+      if not root_path:
+        return
+      self.logger.info(
+          'Timeline to start from "{0:s}" items'.format(root_path.decode()))
 
-    threads = []
-    for client in self._FindClients([host.hostname for host in self.hosts]):
-      thread = threading.Thread(target=self._ProcessThread, args=(client, ))
-      threads.append(thread)
-      thread.start()
-
-    for thread in threads:
-      thread.join()
-    self._CheckSkippedFlows()
+      timeline_args = timeline_pb2.TimelineArgs(root=root_path,)
+      flow_id = self._LaunchFlow(client, 'TimelineFlow', timeline_args)
+      self._AwaitFlow(client, flow_id)
+      collected_flow_data = self._DownloadTimeline(client, flow_id)
+      if collected_flow_data:
+        self.logger.success(
+            '{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
+        cont = containers.File(
+            name=client.data.os_info.fqdn.lower(),
+            path=collected_flow_data
+        )
+        self.state.StoreContainer(cont)
 
   def _DownloadTimeline(self, client: Client, flow_id: str) -> Optional[str]:
     """Download a timeline in BODY format from the specified flow.
@@ -869,9 +883,26 @@ class GRRTimelineCollector(GRRFlow):
 
     return output_file_path
 
+  def PreSetup(self) -> None:
+    """Not implemented."""
+
+  def PostSetup(self) -> None:
+    """Not implemented."""
+
+  def PreProcess(self) -> None:
+    """Not implemented."""
+
+  def PostProcess(self) -> None:
+    """Check if we're skipping any offline clients."""
+    self._CheckSkippedFlows()
+
+  def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
+    """This module works on host containers."""
+    return containers.Host
+
 
 modules_manager.ModulesManager.RegisterModules([
-    GRRArtifactCollector,
-    GRRFileCollector,
-    GRRFlowCollector,
-    GRRTimelineCollector])
+    GRRArtifactCollector, # type: ignore
+    GRRFileCollector, # type: ignore
+    GRRFlowCollector, # type: ignore
+    GRRTimelineCollector]) # type: ignore
