@@ -8,7 +8,7 @@
       "name": "GoogleSheetsCollector",
       "args": {
           "spreadsheet": "@spreadsheet",
-          "sheets_names": "@sheets_names",
+          "sheet_names": "@sheet_names",
           "validate_columns" :"@validate_columns"
       }
   }, {
@@ -24,7 +24,7 @@
   }],
   "args": [
       ["spreadsheet", "ID or URL of the Google Sheet spreadsheet to collect data from.", null],
-      ["--sheets_names", "Comma-separated list sheet names to collect date from. If not set all sheets in the spreadsheet will be parsed.", []],
+      ["--sheet_names", "Comma-separated list sheet names to collect date from. If not set all sheets in the spreadsheet will be parsed.", []],
       ["--validate_columns", "Set to True to check for mandatory columns required by Timesketch while extracting data. Set to False to ignore validation. Default is True.", true],
       ["--sketch_id", "Sketch to which the timeline should be added", null],
       ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
