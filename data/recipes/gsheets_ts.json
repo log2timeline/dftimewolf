@@ -24,7 +24,7 @@
   }],
   "args": [
       ["spreadsheet", "ID or URL of the Google Sheet spreadsheet to collect data from.", null],
-      ["--sheets_names", "Comma-separated list sheet names to collect date from. Default is 'All' which parses all sheets in the spreadsheet.", ["All"]],
+      ["--sheets_names", "Comma-separated list sheet names to collect date from. Default is 'All' which parses all sheets in the spreadsheet.", []],
       ["--validate_columns", "Set to True to check for mandatory columns required by Timesketch while extracting data. Set to False to ignore validation. Default is True.", true],
       ["--sketch_id", "Sketch to which the timeline should be added", null],
       ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
