@@ -2,7 +2,9 @@
 """Local file system exporter module."""
 
 import os
+import random
 import shutil
+import string
 import tempfile
 from typing import List, Optional
 
@@ -44,9 +46,9 @@ class LocalFilesystemCopy(module.BaseModule):
     if not target_directory:
       self._target_directory = tempfile.mkdtemp(prefix='dftimewolf_local_fs')
     else:
-      if os.path.exists(target_directory):
-        target_directory = os.path.join(target_directory, 'dftimewolf')
-        os.makedirs(target_directory, exist_ok=True)
+#      if os.path.exists(target_directory):
+#        target_directory = os.path.join(target_directory, 'dftimewolf')
+#        os.makedirs(target_directory, exist_ok=True)
       self._target_directory = target_directory
 
   def Process(self) -> None:
@@ -97,7 +99,11 @@ class LocalFilesystemCopy(module.BaseModule):
     full_paths = []
     if os.path.isdir(source):
       try:
-        shutil.copytree(source, destination_directory, dirs_exist_ok=True)
+        if os.path.exists(destination_directory):
+          destination_directory = "{0:s}/{1:s}".format(
+              destination_directory,
+              ''.join(random.choices(string.ascii_uppercase, k=10)))
+        shutil.copytree(source, destination_directory)
         full_paths.append(destination_directory)
       except shutil.Error as e:
         self.ModuleError(str(e), critical=True)
