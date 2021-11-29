@@ -46,9 +46,6 @@ class LocalFilesystemCopy(module.BaseModule):
     if not target_directory:
       self._target_directory = tempfile.mkdtemp(prefix='dftimewolf_local_fs')
     else:
-#      if os.path.exists(target_directory):
-#        target_directory = os.path.join(target_directory, 'dftimewolf')
-#        os.makedirs(target_directory, exist_ok=True)
       self._target_directory = target_directory
 
   def Process(self) -> None:

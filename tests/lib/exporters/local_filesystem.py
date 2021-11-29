@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 """Tests the local filesystem exporter."""
 
-import tempfile
 import unittest
-from os.path import exists
 
 import mock
 
@@ -68,30 +66,6 @@ class LocalFileSystemTest(unittest.TestCase):
             '/fake/random'),
     ])
     mock_copy2.assert_called_with('/fake/evidence_file', '/fake/random')
-
-#  def testProcessCopyRealDirs(self):
-#    src = tempfile.mkdtemp()
-#    dst = tempfile.mkdtemp()
-#    fh = tempfile.NamedTemporaryFile(delete=False, dir=src)
-#    fh.write(b'sample data')
-#    fh.close()
-#
-#    test_state = state.DFTimewolfState(config.Config)
-#    test_state.StoreContainer(containers.File(
-#        name='description', path=src))
-#
-#    local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
-#    local_filesystem_copy.SetUp()
-#    local_filesystem_copy.Process()
-#
-#    final = dst + '/' + fh.name.split('/')[-1]
-#    print('*' * 50)
-#    print("src: " + src)
-#    print("dst: " + dst)
-#    print("fh.name: " + fh.name)
-#    print("final: " + final)
-#    print('*' * 50)
-#    self.assertEqual(exists(final), True)
 
   @mock.patch('dftimewolf.lib.utils.Compress')
   @mock.patch('tempfile.mkdtemp')
