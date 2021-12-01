@@ -3,8 +3,6 @@
 
 from typing import List, Optional, Dict
 
-import libcloudforensics
-
 from google.auth.exceptions import DefaultCredentialsError, RefreshError
 from googleapiclient.errors import HttpError
 from libcloudforensics import errors as lcf_errors
