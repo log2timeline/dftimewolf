@@ -104,6 +104,7 @@ class MetawolfProcess:
     self.metawolf_utils = metawolf_utils if metawolf_utils else utils.MetawolfUtils()
     # pylint: enable=line-too-long
     process = None
+    self.status = None
     recipe = ''
     if cmd and cmd[1] in self.metawolf_utils.GetRecipes():
       recipe = cmd[1]
@@ -118,6 +119,8 @@ class MetawolfProcess:
         raise ValueError('Command mis-configured. Format: [dftimewolf, '
                          'recipe_name, recipe_arguments...]')
     else:
+      # Restore last known process state from dict.
+      self.status = from_dict['status']
       # Look for background processes if some are still running
       for proc in psutil.process_iter():
         try:
@@ -150,8 +153,11 @@ class MetawolfProcess:
 
   def Run(self) -> None:
     """Run the process."""
+    # datetime.fromtimestamp format is 2021-09-10 13:46:23.071456+00:00,
+    # so we cut the part after '.'
     self.timestamp_readable = str(
-        datetime.fromtimestamp(time.time(), timezone.utc))
+      datetime.fromtimestamp(time.time(), timezone.utc)).split(
+        '.', maxsplit=1)[0]
     # Metawolf writes each dftimewolf run into a file located in /tmp that
     # is identified by the process's session id, recipe and timestamp.
     file_id = '{0:s}-{1:s}-{2!s}'.format(
@@ -182,7 +188,8 @@ class MetawolfProcess:
     """
 
     if not self.process:
-      return 0
+      # Process is not in memory anymore.
+      return -1
 
     # https://docs.python.org/3/library/subprocess.html#subprocess.Popen.returncode
     if hasattr(self.process, 'poll'):
@@ -216,22 +223,29 @@ class MetawolfProcess:
     return_code = self.Poll()
 
     if return_code is None:
-      return MetawolfOutput.Color('Running', YELLOW)
+      self.status = MetawolfOutput.Color('Running', YELLOW)
+      return self.status
 
     # Process can be in 4 states: interrupted, failed, completed, or unknown.
     if self.interrupted:
-      return MetawolfOutput.Color('Interrupted', RED)
+      self.status = MetawolfOutput.Color('Interrupted', RED)
+      return self.status
 
     if return_code == -1:
-      return MetawolfOutput.Color('Unknown', BLUE)
+      if not self.status:
+        # No previous known state from file.
+        self.status = MetawolfOutput.Color('Unknown', BLUE)
+      return self.status
 
     # Else, dftimewolf completed and we need to look into the output file to
     # check whether or not the recipe executed successfully.
 
     if CRITICAL_ERROR in self.Read(show_warning=False) or return_code == 1:
-      return MetawolfOutput.Color('Failed', RED)
+      self.status = MetawolfOutput.Color('Failed', RED)
+      return self.status
 
-    return MetawolfOutput.Color('Completed', GREEN)
+    self.status = MetawolfOutput.Color('Completed', GREEN)
+    return self.status
 
   def Read(self, show_warning: bool = True) -> str:
     """Read the output of the process.
@@ -287,5 +301,6 @@ class MetawolfProcess:
         'cmd_id': self.cmd_id,
         'outfile_path': self.outfile_path,
         'timestamp': self.timestamp_readable,
-        'interrupted': self.interrupted
+        'interrupted': self.interrupted,
+        'status': self.Status(),
     }
