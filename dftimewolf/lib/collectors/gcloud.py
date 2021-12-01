@@ -3,6 +3,8 @@
 
 from typing import List, Optional, Dict
 
+import libcloudforensics
+
 from google.auth.exceptions import DefaultCredentialsError, RefreshError
 from googleapiclient.errors import HttpError
 from libcloudforensics import errors as lcf_errors
@@ -93,19 +95,15 @@ class GoogleCloudCollector(module.BaseModule):
       self.state.StoreContainer(container)
 
     if self.stop_instance and not warned:
-      if self.remote_instance_name:
-        try:
-          remote_instance = self.remote_project.compute.GetInstance(
-              self.remote_instance_name)
-          # TODO(dfjxs): Account for GKE Nodes
-          remote_instance.Stop()
-        except RuntimeError as exception:
-          self.ModuleError(str(exception), critical=False)
-        self.logger.success(
-            'Stopped instance {0:s}'.format(self.remote_instance_name))
-      else:
-        self.logger.warning(
-            'Could not stop instance, instance name not provided')
+      try:
+        remote_instance = self.remote_project.compute.GetInstance(
+            self.remote_instance_name)
+        # TODO(dfjxs): Account for GKE Nodes
+        remote_instance.Stop()
+      except lcf_errors.InstanceStateChangeError as exception:
+        self.ModuleError(str(exception), critical=False)
+      self.logger.success(
+          'Stopped instance {0:s}'.format(self.remote_instance_name))
     elif self.stop_instance and warned:
       self.logger.warning(
           'Not stopping instance due to previous warnings on disk copy')
@@ -179,6 +177,12 @@ class GoogleCloudCollector(module.BaseModule):
     if not (remote_instance_name or disk_names):
       self.ModuleError(
           'You need to specify at least an instance name or disks to copy',
+          critical=True)
+      return
+
+    if stop_instance and not remote_instance_name:
+      self.ModuleError(
+          'You need to specify an instance name to stop the instance',
           critical=True)
       return
 
