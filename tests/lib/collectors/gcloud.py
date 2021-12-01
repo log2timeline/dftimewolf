@@ -7,6 +7,7 @@ import unittest
 import mock
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal import compute
+from mock.mock import MagicMock
 
 from dftimewolf import config
 from dftimewolf.lib import state
@@ -86,6 +87,7 @@ class GoogleCloudCollectorTest(unittest.TestCase):
     self.assertEqual(gcloud_collector.remote_instance_name,
                      'my-owned-instance')
     self.assertEqual(gcloud_collector.all_disks, False)
+    self.assertEqual(gcloud_collector.stop_instance, False)
 
     mock_StartAnalysisVm.assert_called_with(
         'test-analysis-project-name',
@@ -136,8 +138,10 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         42.0,
         'pd-standard',
         16,
-        remote_instance_name='my-owned-instance'
+        remote_instance_name='my-owned-instance',
+        stop_instance=True
     )
+    FAKE_INSTANCE.Stop = MagicMock()
     gcloud_collector.Process()
 
     mock_CreateDiskCopy.assert_called_with(
@@ -145,6 +149,7 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         'test-analysis-project-name',
         FAKE_DISK.zone,
         disk_name=FAKE_DISK.name)
+    FAKE_INSTANCE.Stop.assert_called_once()
     forensics_vms = test_state.GetContainers(containers.ForensicsVM)
     forensics_vm = forensics_vms[0]
     self.assertEqual(forensics_vm.name, 'fake-analysis-vm')

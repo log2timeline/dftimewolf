@@ -167,6 +167,7 @@ class GRRFlowTests(unittest.TestCase):
     self.grr_flow_module._DownloadFiles(mock_grr_hosts.MOCK_CLIENT, "F:12345")
     mock_GetFilesArchive.assert_not_called()
 
+
 class GRRArtifactCollectorTest(unittest.TestCase):
   """Tests for the GRR artifact collector."""
 
@@ -198,11 +199,14 @@ class GRRArtifactCollectorTest(unittest.TestCase):
 
   def testSetup(self):
     """Tests that the module is setup properly."""
+    actual_hosts = [h.hostname for h in \
+        self.grr_artifact_collector.state.GetContainers(
+            self.grr_artifact_collector.GetThreadOnContainerType())]
+
     self.assertEqual(self.grr_artifact_collector.artifacts, [])
     self.assertEqual(
         self.grr_artifact_collector.extra_artifacts, [])
-    self.assertEqual(self.grr_artifact_collector.hosts[0].hostname,
-                     'C.0000000000000001')
+    self.assertEqual(['C.0000000000000001'], actual_hosts)
     self.assertTrue(self.grr_artifact_collector.use_tsk)
 
   @mock.patch('grr_api_client.api.InitHttp')
@@ -238,7 +242,14 @@ class GRRArtifactCollectorTest(unittest.TestCase):
         verify=False,
         skip_offline_clients=False
     )
-    self.grr_artifact_collector.Process()
+
+    self.grr_artifact_collector.PreProcess()
+    in_containers = self.test_state.GetContainers(
+        self.grr_artifact_collector.GetThreadOnContainerType())
+    for c in in_containers:
+      self.grr_artifact_collector.Process(c)
+    self.grr_artifact_collector.PostProcess()
+
     kwargs = mock_ArtifactCollectorFlowArgs.call_args[1]
     self.assertFalse(kwargs['apply_parsers'])  # default argument
     self.assertTrue(kwargs['ignore_interpolation_errors'])  # default argument
@@ -257,7 +268,14 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     mock_CreateFlow.return_value = mock_grr_hosts.MOCK_FLOW
     mock_DownloadFiles.return_value = '/tmp/tmpRandom/tomchop'
     mock_Get.return_value = mock_grr_hosts.MOCK_FLOW
-    self.grr_artifact_collector.Process()
+
+    self.grr_artifact_collector.PreProcess()
+    in_containers = self.test_state.GetContainers(
+        self.grr_artifact_collector.GetThreadOnContainerType())
+    for c in in_containers:
+      self.grr_artifact_collector.Process(c)
+    self.grr_artifact_collector.PostProcess()
+
     # Flow ID is F:12345, Client ID is C.0000000000000001
     self.mock_grr_api.SearchClients.assert_any_call('C.0000000000000001')
     self.assertEqual(mock_CreateFlow.call_count, 1)
@@ -302,10 +320,14 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     )
     self.test_state.StoreContainer(containers.Host(hostname='container.host'))
 
-    self.grr_artifact_collector.Process()
+    self.grr_artifact_collector.PreProcess()
+    in_containers = self.test_state.GetContainers(
+        self.grr_artifact_collector.GetThreadOnContainerType())
+    for c in in_containers:
+      self.grr_artifact_collector.Process(c)
+    self.grr_artifact_collector.PostProcess()
+
     mock_FindClients.assert_called_with(['container.host'])
-
-
 
 
 class GRRFileCollectorTest(unittest.TestCase):
@@ -333,9 +355,12 @@ class GRRFileCollectorTest(unittest.TestCase):
 
   def testInitialization(self):
     """Tests that the collector can be initialized."""
+    actual_hosts = [h.hostname for h in \
+        self.grr_file_collector.state.GetContainers(
+            self.grr_file_collector.GetThreadOnContainerType())]
+
     self.assertIsNotNone(self.grr_file_collector)
-    self.assertEqual(self.grr_file_collector.hosts[0].hostname,
-                     'C.0000000000000001')
+    self.assertEqual(['C.0000000000000001'], actual_hosts)
     self.assertEqual(self.grr_file_collector.files, ['/etc/passwd'])
 
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow')
@@ -346,7 +371,14 @@ class GRRFileCollectorTest(unittest.TestCase):
     self.mock_grr_api.SearchClients.return_value = \
         mock_grr_hosts.MOCK_CLIENT_LIST
     mock_DownloadFiles.return_value = '/tmp/something'
-    self.grr_file_collector.Process()
+
+    self.grr_file_collector.PreProcess()
+    in_containers = self.test_state.GetContainers(
+        self.grr_file_collector.GetThreadOnContainerType())
+    for c in in_containers:
+      self.grr_file_collector.Process(c)
+    self.grr_file_collector.PostProcess()
+
     mock_LaunchFlow.assert_called_with(
         mock_grr_hosts.MOCK_CLIENT_RECENT,
         'FileFinder',
@@ -395,22 +427,32 @@ class GRRFileCollectorTest(unittest.TestCase):
     )
     self.test_state.StoreContainer(containers.Host(hostname='container.host'))
 
-    self.grr_file_collector.Process()
+    self.grr_file_collector.PreProcess()
+    in_containers = self.test_state.GetContainers(
+        self.grr_file_collector.GetThreadOnContainerType())
+    for c in in_containers:
+      self.grr_file_collector.Process(c)
+    self.grr_file_collector.PostProcess()
+
     mock_FindClients.assert_called_with(['container.host'])
 
 
-class GRRFlowCollector(unittest.TestCase):
+class GRRFlowCollectorTest(unittest.TestCase):
   """Tests for the GRR flow collector."""
 
+  @mock.patch('grr_api_client.client.Client.ListFlows')
   @mock.patch('grr_api_client.api.InitHttp')
-  def setUp(self, mock_InitHttp):
+  def setUp(self, mock_InitHttp, mock_list_flows):
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
+    self.mock_grr_api.SearchClients.return_value = \
+        mock_grr_hosts.MOCK_CLIENT_LIST
+    mock_list_flows.return_value = [mock_grr_hosts.flow_pb_terminated]
     self.test_state = state.DFTimewolfState(config.Config)
     self.grr_flow_collector = grr_hosts.GRRFlowCollector(self.test_state)
     self.grr_flow_collector.SetUp(
-        hostname='C.0000000000000001',
-        flow_id='F:12345',
+        hostnames='C.0000000000000001',
+        flow_ids='F:12345',
         reason='random reason',
         grr_server_url='http://fake/endpoint',
         grr_username='admin',
@@ -426,7 +468,14 @@ class GRRFlowCollector(unittest.TestCase):
     self.mock_grr_api.SearchClients.return_value = \
         mock_grr_hosts.MOCK_CLIENT_LIST
     mock_DownloadFiles.return_value = '/tmp/something'
-    self.grr_flow_collector.Process()
+
+    self.grr_flow_collector.PreProcess()
+    in_containers = self.test_state.GetContainers(
+        self.grr_flow_collector.GetThreadOnContainerType())
+    for c in in_containers:
+      self.grr_flow_collector.Process(c)
+    self.grr_flow_collector.PostProcess()
+
     mock_DownloadFiles.assert_called_once_with(
         mock_grr_hosts.MOCK_CLIENT_RECENT, 'F:12345')
     results = self.test_state.GetContainers(containers.File)
@@ -436,7 +485,7 @@ class GRRFlowCollector(unittest.TestCase):
     self.assertEqual(result.path, '/tmp/something')
 
 
-class GRRTimelineCollector(unittest.TestCase):
+class GRRTimelineCollectorTest(unittest.TestCase):
   """Tests for the GRR flow collector."""
 
   @mock.patch('grr_api_client.api.InitHttp')
@@ -460,9 +509,12 @@ class GRRTimelineCollector(unittest.TestCase):
 
   def testInitialization(self):
     """Tests that the collector can be initialized."""
+    actual_hosts = [h.hostname for h in \
+        self.grr_timeline_collector.state.GetContainers(
+            self.grr_timeline_collector.GetThreadOnContainerType())]
+
     self.assertIsNotNone(self.grr_timeline_collector)
-    self.assertEqual(self.grr_timeline_collector.hosts[0].hostname,
-                     'C.0000000000000001')
+    self.assertEqual(['C.0000000000000001'], actual_hosts)
     self.assertEqual(self.grr_timeline_collector.root_path, b'/')
     self.assertEqual(self.grr_timeline_collector._timeline_format, 1)
 
@@ -479,7 +531,14 @@ class GRRTimelineCollector(unittest.TestCase):
         mock_grr_hosts.MOCK_CLIENT_LIST
     mock_DownloadTimeline.return_value = '/tmp/something'
     mock_Get.return_value = mock_grr_hosts.MOCK_FLOW
-    self.grr_timeline_collector.Process()
+
+    self.grr_timeline_collector.PreProcess()
+    in_containers = self.test_state.GetContainers(
+        self.grr_timeline_collector.GetThreadOnContainerType())
+    for c in in_containers:
+      self.grr_timeline_collector.Process(c)
+    self.grr_timeline_collector.PostProcess()
+
     mock_DownloadTimeline.assert_called_once_with(
         mock_grr_hosts.MOCK_CLIENT_RECENT, 'F:12345')
     results = self.test_state.GetContainers(containers.File)
@@ -516,7 +575,13 @@ class GRRTimelineCollector(unittest.TestCase):
     )
     self.test_state.StoreContainer(containers.Host(hostname='container.host'))
 
-    self.grr_timeline_collector.Process()
+    self.grr_timeline_collector.PreProcess()
+    in_containers = self.test_state.GetContainers(
+        self.grr_timeline_collector.GetThreadOnContainerType())
+    for c in in_containers:
+      self.grr_timeline_collector.Process(c)
+    self.grr_timeline_collector.PostProcess()
+
     mock_FindClients.assert_called_with(['container.host'])
 
 

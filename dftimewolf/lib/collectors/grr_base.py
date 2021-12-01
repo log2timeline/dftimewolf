@@ -1,5 +1,5 @@
 """Base GRR module class. GRR modules should extend it."""
-import abc
+
 import tempfile
 import time
 from typing import Optional, Union, Callable, List, Any
@@ -10,11 +10,11 @@ from grr_api_client.client import Client
 from grr_api_client.flow import Flow
 from grr_api_client.hunt import Hunt
 
-from dftimewolf.lib import module
-from dftimewolf.lib.state import DFTimewolfState
+from dftimewolf.lib.errors import DFTimewolfError
+from dftimewolf.lib.logging_utils import WolfLogger
 
 
-class GRRBaseModule(module.BaseModule):
+class GRRBaseModule(object):
   """Base module for GRR hunt and flow modules.
 
   Attributes:
@@ -27,10 +27,7 @@ class GRRBaseModule(module.BaseModule):
 
   _CHECK_APPROVAL_INTERVAL_SEC = 10
 
-  def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str]=None,
-               critical: bool=False) -> None:
+  def __init__(self) -> None:
     """Initializes a GRR hunt or flow module.
 
     Args:
@@ -39,7 +36,6 @@ class GRRBaseModule(module.BaseModule):
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    super(GRRBaseModule, self).__init__(state, name=name, critical=critical)
     self.reason = str()
     self.grr_api = None  # type: grr_api.ApiClient
     self.grr_url = str()
@@ -47,7 +43,7 @@ class GRRBaseModule(module.BaseModule):
     self.output_path = str()
 
   # pylint: disable=arguments-differ
-  def SetUp(
+  def GrrSetUp(
       self,
       reason: str,
       grr_server_url: str,
@@ -81,6 +77,7 @@ class GRRBaseModule(module.BaseModule):
       self,
       grr_object: Union[Hunt, Client],
       grr_function: Callable,  # type: ignore[type-arg]
+      logger: WolfLogger,
       *args: Any,
       **kwargs: Any
   ) -> Union[Flow, Hunt]:
@@ -98,6 +95,8 @@ class GRRBaseModule(module.BaseModule):
 
     Returns:
       object: return value of the execution of grr_function(*args, **kwargs).
+    Raises:
+      DFTimewolfError: If approvers are required but none were specified.
     """
     approval_sent = False
     approval_url = None
@@ -107,12 +106,12 @@ class GRRBaseModule(module.BaseModule):
         return grr_function(*args, **kwargs)
 
       except grr_errors.AccessForbiddenError as exception:
-        self.logger.info('No valid approval found: {0!s}'.format(exception))
+        logger.info('No valid approval found: {0!s}'.format(exception))
         # If approval was already sent, just wait a bit more.
         if approval_sent:
-          self.logger.info('Approval not yet granted, waiting {0:d}s'.format(
+          logger.info('Approval not yet granted, waiting {0:d}s'.format(
               self._CHECK_APPROVAL_INTERVAL_SEC))
-          self.logger.success(approval_url)
+          logger.success(approval_url)
           time.sleep(self._CHECK_APPROVAL_INTERVAL_SEC)
           continue
 
@@ -120,7 +119,7 @@ class GRRBaseModule(module.BaseModule):
         if not self.approvers:
           message = ('GRR needs approval but no approvers specified '
                      '(hint: use --approvers)')
-          self.ModuleError(message, critical=True)
+          raise DFTimewolfError(message, critical=True) from exception
 
         # Otherwise, send a request for approval
         approval = grr_object.CreateApproval(
@@ -130,14 +129,6 @@ class GRRBaseModule(module.BaseModule):
                         format(self.grr_url, approval.username,
                                approval.client_id,
                                approval.approval_id))
-        self.logger.info(
+        logger.info(
             '{0!s}: approval request sent to: {1!s} (reason: {2:s})'.format(
                 grr_object, self.approvers, self.reason))
-
-  @abc.abstractmethod
-  def Process(self) -> None:
-    """Processes input and builds the module's output attribute.
-
-    Modules take input information and process it into output information,
-    which can in turn be ingested as input information by other modules.
-    """
