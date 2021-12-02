@@ -23,15 +23,16 @@ class MetawolfTest(unittest.TestCase):
     Returns:
       int: 0 if the test succeeded, 1 otherwise.
     """
-    m = metawolf.Metawolf(
+    self.m = metawolf.Metawolf(
         session_path=self.session_file,
         transcript_files=[path_to_transcript])
-    m.metawolf_utils.session_path = self.tmp_file
-    return m.cmdloop()
+    self.m.metawolf_utils.session_path = self.tmp_file
+    return self.m.cmdloop()
 
   @typing.no_type_check
   def setUp(self) -> None:
     """Setup test cases."""
+    self.m = None
     self.session_file = os.path.join(os.path.dirname(
         os.path.realpath(__file__)), 'metawolf-transcript-session.json')
     self.tmp_file = '/tmp/metawolf-test'
@@ -140,6 +141,8 @@ class MetawolfTest(unittest.TestCase):
 
   @typing.no_type_check
   def tearDown(self) -> None:
+    for recipe in self.m.metawolf_utils.recipe_manager.GetRecipes():
+      self.m.metawolf_utils.recipe_manager.DeregisterRecipe(recipe)
     try:
       os.remove(self.tmp_file)
     except IOError:

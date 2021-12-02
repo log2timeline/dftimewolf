@@ -16,7 +16,11 @@ class MainToolTest(unittest.TestCase):
   def setUp(self):
     self.tool = dftimewolf_recipes.DFTimewolfTool()
     self.tool.LoadConfiguration()
-    self.tool.ReadRecipes()
+    try:
+      self.tool.ReadRecipes()
+    except KeyError:
+      # Prevent conflicts from other tests where recipes are still registered.
+      pass
 
   def tearDown(self):
     # pylint: disable=protected-access
