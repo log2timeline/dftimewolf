@@ -17,7 +17,8 @@ MOCK_PROCESS_JSON = {
     'cmd_id': 'id_test',
     'outfile_path': 'path_test',
     'timestamp': 'timestamp_test',
-    'interrupted': False
+    'interrupted': False,
+    'status': 'Completed'
 }
 
 
@@ -47,6 +48,7 @@ class MetawolfProcessTest(unittest.TestCase):
     self.assertIn('Running', metawolf_process.Status())
 
     mock_poll.return_value = -1
+    metawolf_process.status = None
     self.assertIn('Unknown', metawolf_process.Status())
 
     mock_poll.return_value = 1
