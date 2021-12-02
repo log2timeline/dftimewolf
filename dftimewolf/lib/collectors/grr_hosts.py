@@ -336,7 +336,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
 
     # Unzip archive for processing and remove redundant zip
     fqdn = client.data.os_info.fqdn.lower()
-    client_output_file = os.path.join(self.output_path, fqdn)
+    client_output_file = os.path.join(self.output_path, fqdn, flow_id)
     if not os.path.isdir(client_output_file):
       os.makedirs(client_output_file)
 

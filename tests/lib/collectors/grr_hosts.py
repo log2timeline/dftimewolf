@@ -146,11 +146,11 @@ class GRRFlowTests(unittest.TestCase):
 
     return_value = self.grr_flow_module._DownloadFiles(
         mock_grr_hosts.MOCK_CLIENT, "F:12345")
-    self.assertEqual(return_value, '/tmp/random/tomchop')
+    self.assertEqual(return_value, '/tmp/random/tomchop/F:12345')
     mock_GetFilesArchive.assert_called_once()
     mock_ZipFile.assert_called_once_with('/tmp/random/F:12345.zip')
-    mock_isdir.assert_called_once_with('/tmp/random/tomchop')
-    mock_makedirs.assert_called_once_with('/tmp/random/tomchop')
+    mock_isdir.assert_called_once_with('/tmp/random/tomchop/F:12345')
+    mock_makedirs.assert_called_once_with('/tmp/random/tomchop/F:12345')
     mock_remove.assert_called_once_with('/tmp/random/F:12345.zip')
 
   @mock.patch('os.path.exists')
