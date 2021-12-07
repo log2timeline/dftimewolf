@@ -1,4 +1,4 @@
-name: Publish docs to GitHub Pages
+name: Publish documentation to GitHub Pages
 
 permissions: write-all
 
