@@ -22,5 +22,4 @@ jobs:
       - name: Generate recipe doc
         run: pipenv run python docs/generate_recipe_doc.py data/recipes
       - name: Build doc
-        run: mkdocs build
-      - run: mkdocs gh-deploy --force
+      - run: pipenv run  mkdocs gh-deploy --force
