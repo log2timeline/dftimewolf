@@ -3,9 +3,6 @@ name: Build documentation pages
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-  push:
-    branches:
-      - main
 
 jobs:
   build:
@@ -19,6 +16,3 @@ jobs:
         run: pip install mkdocs
       - name: Build doc
         run: mkdocs build
-      - name: Publish doc to GitHub pages
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        run: mkdocs gh-deploy --force
