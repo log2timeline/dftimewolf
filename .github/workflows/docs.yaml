@@ -13,4 +13,4 @@ jobs:
         with:
           python-version: 3.8
       - run: pip install mkdocs
-      - run: mkdocs build -d docs/
+      - run: mkdocs build
