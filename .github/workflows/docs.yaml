@@ -20,5 +20,5 @@ jobs:
       - name: Build doc
         run: mkdocs build
       - name: Publish doc to GitHub pages
-        if: ${{ github.event_name == 'push' && github.push.branches == 'main' }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         run: mkdocs gh-deploy --force
