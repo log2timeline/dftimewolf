@@ -12,7 +12,9 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: 3.8
-      - name: Install mkdocs
-        run: pip install mkdocs
+      - name: Install mkdocs & deps
+        run: pipenv install mkdocs graphviz
+      - name: Generate recipe doc
+        run: pipenv run python docs/generate_recipe_doc.py data/recipes
       - name: Build doc
         run: mkdocs build
