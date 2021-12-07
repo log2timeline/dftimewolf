@@ -1,5 +1,7 @@
 name: Publish docs to GitHub Pages
 
+permissions: write-all
+
 on:
   push:
     branches:
