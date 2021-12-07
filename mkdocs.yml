@@ -7,18 +7,19 @@ nav:
     - Developers' guide: developers-guide.md
     - Architecture: architecture.md
     - Metawolf: metawolf.md
+    - Recipe caveats: recipe-caveat.md
 
 markdown_extensions:
   - meta
   - attr_list
   - toc:
-      permalink: true
+      permalink: True
   - pymdownx.emoji:
       emoji_index: !!python/name:materialx.emoji.twemoji
       emoji_generator: !!python/name:materialx.emoji.to_svg
 
 theme:
-  name: material
+  name: readthedocs
   logo: _static/logo.png
   language: en
   features:
