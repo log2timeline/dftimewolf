@@ -14,6 +14,7 @@ jobs:
           python-version: 3.8
       - name: Install mkdocs & deps
         run: |
+          sudo apt install graphviz
           pip install pipenv
           pipenv install mkdocs graphviz
       - name: Generate recipe doc
