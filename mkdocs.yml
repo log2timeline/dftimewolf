@@ -1,0 +1,30 @@
+site_name: dfTimewolf
+site_url: https://dfTimewolf.com/
+nav:
+    - Home: index.md
+    - Getting started: getting-started.md
+    - User manual: user-manual.md
+    - Developers' guide: developers-guide.md
+    - Architecture: architecture.md
+    - Metawolf: metawolf.md
+
+markdown_extensions:
+  - meta
+  - attr_list
+  - toc:
+      permalink: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+
+theme:
+  name: material
+  logo: _static/logo.png
+  language: en
+  features:
+    - navigation.tabs
+    - navigation.sections
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/log2timeline/dftimewolf
