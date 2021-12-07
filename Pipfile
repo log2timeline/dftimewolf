@@ -13,6 +13,7 @@ yapf = "*"
 types-protobuf = "*"
 types-filelock = "*"
 types-PyYAML = "*"
+mkdocs = "*"
 
 [packages]
 beautifulsoup4 = "*"
