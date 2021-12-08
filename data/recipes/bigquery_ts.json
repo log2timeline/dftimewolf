@@ -1,7 +1,7 @@
 {
     "name": "bigquery_ts",
-    "description": "Collects results from BigQuery and loads them to Timesketch.",
-    "short_description": "Collects results from BigQuery and loads them to Timesketch.",
+    "short_description": "Collects results from BigQuery and uploads them to Timesketch.",
+    "description": "Collects results from BigQuery in JSONL form, dumps them to the filesystem, and uploads them to Timesketch.",
     "preflights": [{
       "wants": [],
       "name": "GCPTokenCheck",
@@ -30,12 +30,12 @@
             }
         }],
         "args": [
-            ["project_name", "Name of GCP project to collect logs from", null],
-            ["query", "Query to execute", null],
-            ["description", "Description of query", null],
-            ["--incident_id", "Incident ID (used for Timesketch description)", null],
-            ["--sketch_id", "Sketch to which the timeline should be added", null],
-            ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
-            ["--wait_for_timelines", "Whether to wait for timelines to finish processing.", true]        
+            ["project_name", "Name of GCP project to collect logs from.", null],
+            ["query", "Query to execute.", null],
+            ["description", "Human-readable description of the query.", null],
+            ["--incident_id", "Incident ID (used for Timesketch description).", null],
+            ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null],
+            ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
+            ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true]
         ]
 }

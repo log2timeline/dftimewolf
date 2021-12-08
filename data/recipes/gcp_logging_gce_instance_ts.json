@@ -1,7 +1,7 @@
 {
     "name": "gcp_logging_gce_instance_ts",
-    "description": "Loads GCP Cloud Audit Logs for a GCE instance into Timesketch.",
-    "short_description": "GCP Instance Cloud Audit to Timesketch",
+    "short_description": "GCP Instance Cloud Audit logs to Timesketch",
+    "description": "Collects GCP Cloud Audit Logs for a GCE instance and exports them to Timesketch. Some light processing is made to translate the logs into something Timesketch can process.",
     "preflights": [{
       "wants": [],
       "name": "GCPTokenCheck",
@@ -32,11 +32,11 @@
         }
     }],
     "args": [
-        ["project_name", "Name of GCP project to collect logs from", null],
-        ["instance_id", "Identifier for GCE instance", null],
-        ["--incident_id", "Incident ID (used for Timesketch description)", null],
-        ["--sketch_id", "Sketch to which the timeline should be added", null],
-        ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
-        ["--wait_for_timelines", "Whether to wait for timelines to finish processing.", true]
+        ["project_name", "Name of the GCP project to collect logs from.", null],
+        ["instance_id", "Identifier for GCE instance (Instance ID).", null],
+        ["--incident_id", "Incident ID (used for Timesketch description).", null],
+        ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null],
+        ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
+        ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true]
     ]
 }

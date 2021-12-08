@@ -1,7 +1,7 @@
 {
   "name": "azure_forensics",
   "short_description": "Copies a disk from an Azure account to an analysis VM.",
-  "description": "Copies a disk from an Azure account, creates an analysis VM, and attaches the copied disk to it.",
+  "description": "Copies a disk from an Azure account, creates an analysis VM in Azure (with a startup script containing installation instructions for basic forensics tooling), and attaches the copied disk to it.",
   "modules": [{
       "wants": [],
       "name": "AzureCollector",
@@ -24,11 +24,11 @@
       ["remote_profile_name", "Name of the Azure profile pointing to the Azure account where the disk(s) exist(s).", null],
       ["analysis_resource_group_name", "The Azure resource group name in which to create the VM.", null],
       ["incident_id", "Incident ID to label the VM with.", null],
-      ["ssh_public_key", "A SSH public key to add to the VM.", null],
+      ["ssh_public_key", "A SSH public key string to add to the VM (e.g. `ssh-rsa AAAAB3NzaC1y...`).", null],
       ["--instance_name", "Instance name of the instance to analyze.", null],
       ["--disk_names", "Comma-separated list of disk names to copy.", null],
-      ["--all_disks", "Copy all disks in the designated instance. Overrides disk_names if specified.", false],
-      ["--boot_disk_size", "The size of the analysis VM boot disk (in GB).", 50],
+      ["--all_disks", "Copy all disks in the designated instance. Overrides `disk_names` if specified.", false],
+      ["--boot_disk_size", "The size of the analysis VM's boot disk (in GB).", 50],
       ["--analysis_region", "The Azure region in which to create the VM.", null],
       ["--analysis_profile_name", "Name of the Azure profile to use when creating the analysis VM.", null]
   ]

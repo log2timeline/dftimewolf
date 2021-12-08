@@ -1,7 +1,7 @@
 {
     "name": "bigquery_collect",
-    "description": "Collects results from BigQuery and dumps on the filesystem.",
-    "short_description": "Collects results from BigQuery and dumps on the filesystem.",
+    "short_description": "Collects results from BigQuery and dumps them on the filesystem.",
+    "description": "Collects results from BigQuery in a GCP project and dumps them in JSONL on the local filesystem.",
     "preflights": [{
       "wants": [],
       "name": "GCPTokenCheck",
@@ -19,8 +19,8 @@
         }
     }],
     "args": [
-        ["project_name", "Name of GCP project to collect logs from", null],
-        ["query", "Query to execute", null],
-        ["description", "Description of query", null]
+        ["project_name", "Name of GCP project to collect logs from.", null],
+        ["query", "Query to execute.", null],
+        ["description", "Human-readable description of the query.", null]
     ]
 }

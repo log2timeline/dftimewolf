@@ -17,7 +17,7 @@ Copies EBS volumes from within AWS, and transfers them to GCP.
 
 **Details:**
 
-Copies EBS volumes from within AWS, and transfers them to GCP.
+Copies EBS volumes from within AWS by pushing them to an AWS S3 bucket. The S3 bucket is then copied to a Google Cloud Storage bucket, from which a GCP Disk Image and fnially a GCP Persistend Disk are created. This operation happens in the cloud and doesn't touch the local workstation on which the recipe is run.
 
 Modules: `AWSVolumeSnapshotCollector`, `AWSSnapshotS3CopyCollector`, `S3ToGCSCopy`, `GCSToGCEImage`, `GCEDiskFromImage`
 
@@ -33,7 +33,7 @@ Copies a volume from an AWS account to an analysis VM.
 
 **Details:**
 
-Copies a volume from an AWS account, creates an analysis VM, and attaches the copied volume to it.
+Copies a volume from an AWS account, creates an analysis VM in AWS (with a startup script containing installation instructions for basic forensics tooling), and attaches the copied volume to it.
 
 Modules: `AWSCollector`
 
@@ -45,11 +45,11 @@ Modules: `AWSCollector`
 
 ## `aws_logging_collect`
 
-Collects logs from an AWS account and dumps on the filesystem.
+Collects logs from an AWS account and dumps the results to the filesystem.
 
 **Details:**
 
-Collects logs from an AWS account and dumps on the filesystem.
+Collects logs from an AWS account using a specified query filter and date ranges, and dumps them on the filesystem.
 
 Modules: `AWSLogsCollector`
 
@@ -61,11 +61,11 @@ Modules: `AWSLogsCollector`
 
 ## `aws_turbinia_ts`
 
-Copies EBS volumes from within AWS, transfers them to GCP, analyses with turbinia and outputs the results to timesketch.
+Copies EBS volumes from within AWS, transfers them to GCP, analyses with Turbinia and exports the results to Timesketch.
 
 **Details:**
 
-Copies EBS volumes from within AWS, transfers them to GCP, analyses with turbinia and outputs the results to timesketch.
+Copies EBS volumes from within AWS, uses buckets and cloud-to-cloud operations to transfer the data to GCP. Once in GCP, a persistend disk is created and a job is added to the Turbinia queue to start analysis. The resulting Plaso file is then exported to Timesketch.
 
 Modules: `AWSVolumeSnapshotCollector`, `AWSSnapshotS3CopyCollector`, `S3ToGCSCopy`, `GCSToGCEImage`, `GCEDiskFromImage`, `TurbiniaGCPProcessorThreaded`, `TimesketchExporterThreaded`
 
@@ -81,7 +81,7 @@ Copies a disk from an Azure account to an analysis VM.
 
 **Details:**
 
-Copies a disk from an Azure account, creates an analysis VM, and attaches the copied disk to it.
+Copies a disk from an Azure account, creates an analysis VM in Azure (with a startup script containing installation instructions for basic forensics tooling), and attaches the copied disk to it.
 
 Modules: `AzureCollector`
 
@@ -93,11 +93,11 @@ Modules: `AzureCollector`
 
 ## `bigquery_collect`
 
-Collects results from BigQuery and dumps on the filesystem.
+Collects results from BigQuery and dumps them on the filesystem.
 
 **Details:**
 
-Collects results from BigQuery and dumps on the filesystem.
+Collects results from BigQuery in a GCP project and dumps them in JSONL on the local filesystem.
 
 Modules: `BigQueryCollector`
 
@@ -109,11 +109,11 @@ Modules: `BigQueryCollector`
 
 ## `bigquery_ts`
 
-Collects results from BigQuery and loads them to Timesketch.
+Collects results from BigQuery and uploads them to Timesketch.
 
 **Details:**
 
-Collects results from BigQuery and loads them to Timesketch.
+Collects results from BigQuery in JSONL form, dumps them to the filesystem, and uploads them to Timesketch.
 
 Modules: `BigQueryCollector`, `TimesketchExporter`
 
@@ -125,15 +125,15 @@ Modules: `BigQueryCollector`, `TimesketchExporter`
 
 ## `gce_disk_export`
 
-Export disk image from a GCP project to Google Cloud Storage.
+Export a disk image from a GCP project to a Google Cloud Storage bucket.
 
 **Details:**
 
-Creates a disk image from a Google compute persistence disks, compress the images and export them to Google Cloud Storage.
+Creates a disk image from Google Compute persistent disks, compresses the images, and exports them to Google Cloud Storage.
 
-The exported images names are appended by .tar.gz.
+The exported images names are appended by `.tar.gz.`
 
-The service account [PROJECT-NR]@cloudbuild.gserviceaccount.com in the source project or in analysis project, if analysis project is provided, must have the IAM role [Srorage Admin] on the destination storage bucket/folder.
+As this export happens through a Cloud Build job, the default service account `[PROJECT-NUMBER]@cloudbuild.gserviceaccount.com` in the source or analysis project (if provided) must have the IAM role `[Storage Admin]` on their corresponding project's storage bucket/folder.
 
 Modules: `GoogleCloudDiskExport`
 
@@ -149,7 +149,7 @@ Copies disk from a GCP project to an analysis VM.
 
 **Details:**
 
-Copies a disk from a project to another, creates an analysis VM, and attaches the copied disk to it.
+Copies a persistend disk from a GCP project to another, creates an analysis VM (with a startup script containing installation instructions for basic forensics tooling) in the destiantion project, and attaches the copied GCP persistend disk to it.
 
 Modules: `GoogleCloudCollector`
 
@@ -165,7 +165,7 @@ Collects GCP logs from a project and exports them to Timesketch.
 
 **Details:**
 
-Collects GCP logs from a project and exports them to Timesketch.
+Collects GCP logs from a project and exports them to Timesketch. Some light processing is made to translate the logs into something Timesketch can process.
 
 Modules: `GCPLogsCollector`, `GCPLoggingTimesketch`, `TimesketchExporter`
 
@@ -177,11 +177,11 @@ Modules: `GCPLogsCollector`, `GCPLoggingTimesketch`, `TimesketchExporter`
 
 ## `gcp_logging_cloudsql_ts`
 
-Collects GCP logs from Cloud SQL instances for a project and exports them to Timesketch.
+Collects GCP related to Cloud SQL instances in a project and exports them to Timesketch.
 
 **Details:**
 
-Collects GCP logs from Cloud SQL instances for a project and exports them to Timesketch.
+Collects GCP related to Cloud SQL instances in a project and exports them to Timesketch. Some light processing is made to translate the logs into something Timesketch can process.
 
 Modules: `GCPLogsCollector`, `GCPLoggingTimesketch`, `TimesketchExporter`
 
@@ -193,7 +193,7 @@ Modules: `GCPLogsCollector`, `GCPLoggingTimesketch`, `TimesketchExporter`
 
 ## `gcp_logging_collect`
 
-Collects logs from a GCP project and dumps on the filesystem.
+Collects logs from a GCP project and dumps on the filesystem (JSON). https://cloud.google.com/logging/docs/view/query-library for example queries.
 
 **Details:**
 
@@ -209,11 +209,11 @@ Modules: `GCPLogsCollector`
 
 ## `gcp_logging_gce_instance_ts`
 
-GCP Instance Cloud Audit to Timesketch
+GCP Instance Cloud Audit logs to Timesketch
 
 **Details:**
 
-Loads GCP Cloud Audit Logs for a GCE instance into Timesketch.
+Collects GCP Cloud Audit Logs for a GCE instance and exports them to Timesketch. Some light processing is made to translate the logs into something Timesketch can process.
 
 Modules: `GCPLogsCollector`, `GCPLoggingTimesketch`, `TimesketchExporter`
 
@@ -225,11 +225,11 @@ Modules: `GCPLogsCollector`, `GCPLoggingTimesketch`, `TimesketchExporter`
 
 ## `gcp_logging_gce_ts`
 
-Loads GCP Cloud Audit Logs for GCE into Timesketch
+Loads all GCE Cloud Audit Logs in a GCP project into Timesketch.
 
 **Details:**
 
-Loads GCP Cloud Audit Logs for GCE into Timesketch.
+Loads all GCE Cloud Audit Logs for all instances in a GCP project into Timesketch. Some light processing is made to translate the logs into something Timesketch can process.
 
 Modules: `GCPLogsCollector`, `GCPLoggingTimesketch`, `TimesketchExporter`
 
@@ -245,13 +245,13 @@ Imports a remote GCP persistent disk, processes it with Turbinia and sends resul
 
 **Details:**
 
-Imports a remote GCP persistent disk and sends to Turbinia and Timesketch.
+Imports a remote GCP persistent disk into an analysis GCP project and sends the result of Turbinia processing to Timesketch.
 
-- Copies a disk from a remote GCP project
-- Creates Turbinia processing requests
-- Downloads and sends results to Timesketch.
+- Copies a disk from a remote GCP project into an analysis project
+- Creates Turbinia processing request to process the imported disk
+- Downloads and sends results of the Turbinia processing to Timesketch.
 
-It will start an analysis VM with the attached disk. If the target disk is already in the same project as Turbinia you can use the `gcp_turbinia_ts` recipe.
+This recipe will also start an analysis VM in the destination project with the attached disk (the same one that Turbinia will have processed). If the target disk is already in the same project as Turbinia, you can use the `gcp_turbinia_ts` recipe.
 
 Modules: `GoogleCloudCollector`, `TurbiniaGCPProcessor`, `TimesketchExporter`
 
@@ -263,13 +263,13 @@ Modules: `GoogleCloudCollector`, `TurbiniaGCPProcessor`, `TimesketchExporter`
 
 ## `gcp_turbinia_ts`
 
-Processes an existing GCP persistent disk in the Turbinia project and sends results to Timesketch.
+Processes an existing GCP persistent disks with Turbinia project and sends results to Timesketch.
 
 **Details:**
 
-Process a GCP persistent disk with Turbinia and send output to Timesketch.
+Process GCP persistent disks with Turbinia and send output to Timesketch.
 
-This processes a disk that is already in the project where Turbinia exists. If you want to copy the disk from another project, use the gcp_turbinia_disk_copy_ts recipe.
+This processes disks that are already in the project where Turbinia exists. If you want to copy disks from another project, use the `gcp_turbinia_disk_copy_ts` recipe.
 
 Modules: `TurbiniaGCPProcessor`, `TimesketchExporter`
 
@@ -281,13 +281,15 @@ Modules: `TurbiniaGCPProcessor`, `TimesketchExporter`
 
 ## `gcp_turbinia_ts_threaded`
 
-Processes existing GCP persistent disks in the Turbinia project and sends results to Timesketch.
+Processes an existing GCP persistent disks with Turbinia project and sends results to Timesketch.
 
 **Details:**
 
+This is the threaded version of `gcp_turbinia_ts`.
+
 Process GCP persistent disks with Turbinia and send output to Timesketch.
 
-This processes disks that are already in the project where Turbinia exists. If you want to copy disks from another project, use the gcp_turbinia_disk_copy_ts recipe.
+This processes disks that are already in the project where Turbinia exists. If you want to copy disks from another project, use the `gcp_turbinia_disk_copy_ts` recipe.
 
 Modules: `TurbiniaGCPProcessorThreaded`, `TimesketchExporterThreaded`
 
@@ -303,10 +305,10 @@ Fetches ForensicArtifacts from GRR hosts and runs grep with a list of keywords o
 
 **Details:**
 
-Collect artifacts from hosts using GRR.
+Collect ForensicArtifacts from hosts using GRR.
 
 - Collect a predefined list of artifacts from hosts using GRR
-- Process them locally with grep to extract keywords
+- Process them locally with grep to extract keywords.
 
 Modules: `GRRArtifactCollector`, `GrepperSearch`
 
@@ -318,7 +320,7 @@ Modules: `GRRArtifactCollector`, `GrepperSearch`
 
 ## `grr_artifact_ts`
 
-Fetches default artifacts from a list of GRR hosts, processes them with plaso, and sends the results to Timesketch.
+Fetches default ForensicArtifacts from a sequence of GRR hosts, processes them with plaso, and sends the results to Timesketch.
 
 **Details:**
 
@@ -326,7 +328,9 @@ Collect artifacts from hosts using GRR.
 
 - Collect a predefined list of artifacts from hosts using GRR
 - Process them with a local install of plaso
-- Export them to a Timesketch sketch
+- Export them to a Timesketch sketch.
+
+The default set of artifacts is defined in the GRRArtifactCollector module (see the `_DEFAULT_ARTIFACTS_*` class attributes in `grr_hosts.py`), and varies per platform.
 
 Modules: `GRRArtifactCollector`, `LocalPlasoProcessor`, `TimesketchExporter`
 
@@ -338,11 +342,11 @@ Modules: `GRRArtifactCollector`, `LocalPlasoProcessor`, `TimesketchExporter`
 
 ## `grr_files_collect`
 
-Fetches specific files from one or more GRR hosts.
+Collects specific files from one or more GRR hosts.
 
 **Details:**
 
-Fetches specific files from one or more GRR hosts.
+Collects specific files from one or more GRR hosts. Files can be a glob pattern (e.g. `/tmp/*.so`) and support GRR variable interpolation (e.g. `%%users.localappdata%%/Directory/`) 
 
 Modules: `GRRFileCollector`, `LocalFilesystemCopy`
 
@@ -354,15 +358,11 @@ Modules: `GRRFileCollector`, `LocalFilesystemCopy`
 
 ## `grr_flow_collect`
 
-Download GRR flows.
-
-Download a GRR flow's results to the local filesystem.
+Download the result of a GRR flow to the local filesystem.
 
 **Details:**
 
-Download GRR flows.
-
-Download a GRR flow's results to the local filesystem.
+Download the result of a GRR flow to the local filesystem. Flow IDs are unique *per client*, so both need to be provided in sequence.
 
 Modules: `GRRFlowCollector`, `LocalFilesystemCopy`
 
@@ -378,8 +378,7 @@ Starts a GRR hunt for the default set of artifacts.
 
 **Details:**
 
-Starts a GRR artifact hunt and provides the Hunt ID to the user.
-Feed the Hunt ID to grr_huntresults_plaso_timesketch to process results through plaso and send them to Timesketch.
+Starts a GRR artifact hunt and provides the Hunt ID to the user. Feed the Hunt ID to `grr_huntresults_ts` to process results through Plaso and export them to Timesketch.
 
 Modules: `GRRHuntArtifactCollector`
 
@@ -395,8 +394,9 @@ Starts a GRR hunt for a list of files.
 
 **Details:**
 
-Starts a GRR hunt for a list of files and provides a Hunt ID to the user.
-Feed the Hunt ID to grr_huntresults_plaso_timesketch to process results through plaso and send them to Timesketch.
+Starts a GRR hunt for a list of files and provides a Hunt ID to the user. Feed the Hunt ID to `grr_huntresults_ts` to process results through Plaso and export them to Timesketch.
+
+Like in `grr_files_collect`, files can be globs and support variable interpolation.
 
 Modules: `GRRHuntFileCollector`
 
@@ -408,14 +408,14 @@ Modules: `GRRHuntFileCollector`
 
 ## `grr_huntresults_ts`
 
-Fetches the findings of a GRR hunt, processes them with plaso, and sends the results to Timesketch.
+Fetches the ersults of a GRR hunt, processes them with Plaso, and exports the results to Timesketch.
 
 **Details:**
 
 Download the results of a GRR hunt and process them.
 
 - Collect results of a hunt given its Hunt ID
-- Processes results with a local install of plaso
+- Processes results with a local install of Plaso
 - Exports processed items to a new Timesketch sketch
 
 Modules: `GRRHuntDownloader`, `LocalPlasoProcessor`, `TimesketchExporter`
@@ -428,11 +428,11 @@ Modules: `GRRHuntDownloader`, `LocalPlasoProcessor`, `TimesketchExporter`
 
 ## `grr_timeline_ts`
 
-Runs a TimelineFlow on a set of GRR hosts, processes results with plaso, and sends the timeline to Timesketch
+Runs a TimelineFlow on a set of GRR hosts, generating a filesystem bodyfile for each host. These bodyfiles are processed results with Plaso, and the resulting plaso files are exported to Timesketch.
 
 **Details:**
 
-Runs a TimelineFlow on a set of GRR hosts, processes results with plaso, and sends the timeline to Timesketch
+Uses the GRR TimelineFlow to generate a filesystem timeline and exports it to Timesketch..
 
 Modules: `GRRTimelineCollector`, `LocalPlasoProcessor`, `TimesketchExporter`, `TimesketchEnhancer`
 
@@ -444,11 +444,11 @@ Modules: `GRRTimelineCollector`, `LocalPlasoProcessor`, `TimesketchExporter`, `T
 
 ## `plaso_ts`
 
-Processes a list of file paths using plaso and sends results to Timesketch.
+Processes a list of file paths using a Plaso and epxort results to Timesketch.
 
 **Details:**
 
-Processes a list of file paths using plaso and sends results to Timesketch.
+Processes a list of file paths using Plaso and sends results to Timesketch.
 
 - Collectors collect from a path in the FS
 - Processes them with a local install of plaso
@@ -464,7 +464,7 @@ Modules: `FilesystemCollector`, `LocalPlasoProcessor`, `TimesketchExporter`
 
 ## `upload_ts`
 
-Uploads a CSV or Plaso file to Timesketch.
+Uploads a local CSV or Plaso file to Timesketch.
 
 **Details:**
 
@@ -480,11 +480,11 @@ Modules: `FilesystemCollector`, `TimesketchExporter`
 
 ## `upload_turbinia`
 
-Uploads arbitrary files to Turbinia.
+Uploads arbitrary files to Turbinia and downloads results.
 
 **Details:**
 
-['Uploads arbitrary files to Turbinia']
+Uploads arbitrary files to Turbinia for processing. The recipe will wait for Turbinia to return with results and will download them back to the filesystem. The Turbinia system needs to be accesible via SSH.
 
 Modules: `FilesystemCollector`, `LocalFilesystemCopy`, `SCP-Upload`, `TurbiniaArtifactProcessor`, `SCP-Download`
 
@@ -496,11 +496,13 @@ Modules: `FilesystemCollector`, `LocalFilesystemCopy`, `SCP-Upload`, `TurbiniaAr
 
 ## `upload_web_ts`
 
-Uploads a CSV/JSONL or Plaso file to Timesketch.
+Uploads a CSV/JSONL or Plaso file to Timesketch and runs web-related Timesketch analyzers.
 
 **Details:**
 
-Uploads a CSV or Plaso file to Timesketch and executes web artifact analyzers on the uploaded data
+Uploads a CSV or Plaso file to Timesketch and runs a series of web-related analyzers on the uploaded data.
+
+The following analyzers will run on the processed timeline: `browser_search,browser_timeframe,account_finder,phishy_domains,evtx_gap,login,win_crash,safebrowsing,chain`.
 
 Modules: `FilesystemCollector`, `TimesketchExporter`, `TimesketchEnhancer`
 
@@ -512,11 +514,11 @@ Modules: `FilesystemCollector`, `TimesketchExporter`, `TimesketchEnhancer`
 
 ## `vt_evtx`
 
-Fetches the EVTX from VirusTotal sandbox run for a specific hash.
+Downloads the EVTX files from VirusTotal for a specific hash.
 
 **Details:**
 
-Fetches the EVTX from VirusTotal for a specific hash, processes it with Plaso.
+Downloads the EVTX files from VirusTotal sandbox run for a specific hash, processes it with Plaso.
 
 Modules: `VTCollector`, `LocalPlasoProcessor`
 
@@ -528,11 +530,11 @@ Modules: `VTCollector`, `LocalPlasoProcessor`
 
 ## `vt_evtx_ts`
 
-Fetches the EVTX from VirusTotal sandbox run for a specific hash and upload it to Timesketch.
+Downloads the EVTX from VirusTotal sandbox runs for a specific hash and uploads the corresponding timeline to Timesketch.
 
 **Details:**
 
-Fetches the EVTX from VirusTotal for a specific hash, processes it with Plaso and upload it to Timesketch
+Downloads the EVTX file generated by VirusTotal during the sandbox runs for a specific hash, processes the EVTX files with Plaso and uploads the resulting Plaso file to Timesketch.
 
 Modules: `VTCollector`, `LocalPlasoProcessor`, `TimesketchExporter`
 
@@ -544,11 +546,11 @@ Modules: `VTCollector`, `LocalPlasoProcessor`, `TimesketchExporter`
 
 ## `vt_pcap`
 
-Fetches the PCAP from VirusTotal sandbox run for a specific hash
+Downloads the PCAP from VirusTotal for a specific hash.
 
 **Details:**
 
-Fetches the PCAP from VirusTotalfor a specific hash.
+Downloads the PCAP files generated from VirusTotal sandboxs run for a specific hash.
 
 Modules: `VTCollector`, `LocalFilesystemCopy`
 
@@ -566,6 +568,10 @@ Collects Workspace Audit logs and dumps them on the filesystem.
 
 Collects logs from Workspace Audit log and dumps them on the filesystem.
 
+See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#ApplicationName for a list of application mames.
+
+For filters, see https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list.
+
 Modules: `WorkspaceAuditCollector`
 
 **Module graph**
@@ -576,7 +582,7 @@ Modules: `WorkspaceAuditCollector`
 
 ## `workspace_meet_ts`
 
-Collects Meet records and adds to Timesketch
+Collects Meet records and adds them to Timesketch
 
 **Details:**
 
@@ -592,11 +598,13 @@ Modules: `WorkspaceAuditCollector`, `WorkspaceAuditTimesketch`, `TimesketchExpor
 
 ## `workspace_user_activity_ts`
 
-Collects records and adds to Timesketch
+Collects records for a Google Workspace user and adds them to Timesketch
 
 **Details:**
 
-Collects records for a Workspace user and adds them to Timesketch.
+Collects records for a Google Workspace user and adds them to Timesketch.
+
+Collects logs for the following apps: `Login`, `Drive`, `Token`, `Chrome`, `CAA`, `DataStudio`, `GroupsEnterprise`, `Calendar`, `Chat`, `Groups`, `Meet`, `UserAccounts`.
 
 Modules: `WorkspaceAuditCollector-Login`, `WorkspaceAuditCollector-Drive`, `WorkspaceAuditCollector-Token`, `WorkspaceAuditCollector-Chrome`, `WorkspaceAuditCollector-CAA`, `WorkspaceAuditCollector-DataStudio`, `WorkspaceAuditCollector-GroupsEnterprise`, `WorkspaceAuditCollector-Calendar`, `WorkspaceAuditCollector-Chat`, `WorkspaceAuditCollector-GCP`, `WorkspaceAuditCollector-Groups`, `WorkspaceAuditCollector-Meet`, `WorkspaceAuditCollector-UserAccounts`, `WorkspaceAuditTimesketch`, `TimesketchExporter`
 
@@ -608,11 +616,11 @@ Modules: `WorkspaceAuditCollector-Login`, `WorkspaceAuditCollector-Drive`, `Work
 
 ## `workspace_user_drive_ts`
 
-Collects Drive records and adds to Timesketch
+Collects Drive records for a Workspace user and adds them to Timesketch
 
 **Details:**
 
-Collects drive records for a Workspace user and adds them to Timesketch.
+Collects Drive records for a Workspace user and adds them to Timesketch.
 
 Modules: `WorkspaceAuditCollector`, `WorkspaceAuditTimesketch`, `TimesketchExporter`
 

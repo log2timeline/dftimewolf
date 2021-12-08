@@ -1,7 +1,7 @@
 {
   "name": "workspace_user_drive_ts",
-  "description": "Collects drive records for a Workspace user and adds them to Timesketch.",
-  "short_description": "Collects Drive records and adds to Timesketch",
+  "short_description": "Collects Drive records for a Workspace user and adds them to Timesketch",
+  "description": "Collects Drive records for a Workspace user and adds them to Timesketch.",
   "preflights": [],
   "modules": [
     {
@@ -34,12 +34,12 @@
   ],
   "args": [
     ["user", "email address of the user to query logs for",""],
-    ["--start_time", "Start time (yyyy-mm-ddTHH:MM:SSZ)", null],
-    ["--end_time", "End time (yyyy-mm-ddTHH:MM:SSZ)", null],
-    ["--filter_expression","Filter expression to use to query Workspace logs. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list",""],
-    ["--incident_id", "Incident ID (used for Timesketch description)", null],
-    ["--sketch_id", "Sketch to which the timeline should be added", null],
-    ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
-    ["--wait_for_timelines", "Whether to wait for timelines to finish processing.", true]
+    ["--start_time", "Start time (yyyy-mm-ddTHH:MM:SSZ).", null],
+    ["--end_time", "End time (yyyy-mm-ddTHH:MM:SSZ).", null],
+    ["--filter_expression", "Filter expression to use to query Workspace logs. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list",""],
+    ["--incident_id", "Incident ID (used for Timesketch description).", null],
+    ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null],
+    ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
+    ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true]
   ]
 }

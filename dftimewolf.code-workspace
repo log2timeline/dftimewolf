@@ -1,0 +1,33 @@
+{
+  "folders": [
+    {
+      "path": "/home/tomchop_google_com/dftimewolf"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/__pycache__": true,
+      "**/.eggs": true,
+      "**/.pytest_cache": true,
+      "**/.vscode": true,
+      "**/*egg-info": true,
+      "**/*.pyc": { "when": "$(basename).py"}  ,
+    },
+    "editor.tabSize": 2,
+    "python.formatting.provider": "yapf",
+    "python.workspaceSymbols.enabled": true,
+    "python.linting.enabled": true,
+    "python.pythonPath": "/home/tomchop_google_com/.local/share/virtualenvs/dftimewolf-GpH3jxVC/bin/python",
+    "python.linting.pylintEnabled": true,
+    "python.linting.mypyEnabled": true,
+    "python.linting.mypyArgs": [
+      "--ignore-missing-imports",
+      "--follow-imports=silent",
+      "--show-column-numbers",
+      "--show-error-codes",
+      "--strict"
+    ],
+    "prettier.proseWrap": "always",
+  },
+
+}
