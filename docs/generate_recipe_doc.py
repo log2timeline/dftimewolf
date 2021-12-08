@@ -81,11 +81,11 @@ def load_recipes_from_dir(directory):
 def generate_args_description(recipe):
   """Generates a description of the CLI arguments for a given recipe."""
   args = recipe['args']
-  formatted_string = ''
+  formatted_string = 'Parameter|Default value|Description\n---------|---------|-------------\n'
   for arg in args:
     flag, description, default = arg
-    formatted_string += f'- `{flag}` *(default: {repr(default)})*: {description}\n'
-  return formatted_string
+    formatted_string += f'`{flag}`|`{repr(default)}`|{description}\n'
+  return formatted_string + '\n\n'
 
 
 def recipe_to_doc(recipe):
