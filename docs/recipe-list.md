@@ -22,7 +22,7 @@ Copies EBS volumes from within AWS by pushing them to an AWS S3 bucket. The S3 b
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `aws_region`|`None`|AWS region containing the EBS volumes.
 `gcp_zone`|`None`|Destination GCP zone in which to create the disks.
 `volumes`|`None`|Comma separated list of EBS volume IDs (e.g. vol-xxxxxxxx).
@@ -59,7 +59,7 @@ Copies a volume from an AWS account, creates an analysis VM in AWS (with a start
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `remote_profile_name`|`None`|Name of the AWS profile pointing to the AWS account where the volume(s) exist(s).
 `remote_zone`|`None`|The AWS zone in which the source volume(s) exist(s).
 `incident_id`|`None`|Incident ID to label the VM with.
@@ -92,7 +92,7 @@ Collects logs from an AWS account using a specified query filter and date ranges
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `zone`|`None`|Default availability zone for API queries.
 `--profile_name`|`'default'`|Name of the AWS profile to collect logs from.
 `--query_filter`|`None`|Filter expression to use to query logs.
@@ -121,7 +121,7 @@ Copies EBS volumes from within AWS, uses buckets and cloud-to-cloud operations t
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `aws_region`|`None`|AWS region containing the EBS volumes.
 `gcp_zone`|`None`|Destination GCP zone in which to create the disks.
 `volumes`|`None`|Comma separated list of EBS volume IDs (e.g. vol-xxxxxxxx).
@@ -159,7 +159,7 @@ Copies a disk from an Azure account, creates an analysis VM in Azure (with a sta
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `remote_profile_name`|`None`|Name of the Azure profile pointing to the Azure account where the disk(s) exist(s).
 `analysis_resource_group_name`|`None`|The Azure resource group name in which to create the VM.
 `incident_id`|`None`|Incident ID to label the VM with.
@@ -193,7 +193,7 @@ Collects results from BigQuery in a GCP project and dumps them in JSONL on the l
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `project_name`|`None`|Name of GCP project to collect logs from.
 `query`|`None`|Query to execute.
 `description`|`None`|Human-readable description of the query.
@@ -220,7 +220,7 @@ Collects results from BigQuery in JSONL form, dumps them to the filesystem, and 
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `project_name`|`None`|Name of GCP project to collect logs from.
 `query`|`None`|Query to execute.
 `description`|`None`|Human-readable description of the query.
@@ -255,7 +255,7 @@ As this export happens through a Cloud Build job, the default service account `[
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `source_project_name`|`None`|Source project containing the disk to export.
 `gcs_output_location`|`None`|Google Cloud Storage parent bucket/folder to which to export the image.
 `--analysis_project_name`|`None`|Project where the disk image is created then exported. If not provided, the image is exported to a bucket in the source project.
@@ -286,7 +286,7 @@ Copies a persistend disk from a GCP project to another, creates an analysis VM (
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `remote_project_name`|`None`|Name of the project containing the instance / disks to copy.
 `--analysis_project_name`|`None`|Name of the project where the analysis VM will be created and disks copied to.
 `--incident_id`|`None`|Incident ID to label the VM with.
@@ -322,7 +322,7 @@ Collects GCP logs from a project and exports them to Timesketch. Some light proc
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `project_name`|`None`|Name of the GCP project to collect logs from.
 `start_date`|`None`|Start date (yyyy-mm-ddTHH:MM:SSZ).
 `end_date`|`None`|End date (yyyy-mm-ddTHH:MM:SSZ).
@@ -353,7 +353,7 @@ Collects GCP related to Cloud SQL instances in a project and exports them to Tim
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `project_name`|`None`|Name of the GCP project to collect logs from.
 `start_date`|`None`|Start date (yyyy-mm-ddTHH:MM:SSZ).
 `end_date`|`None`|End date (yyyy-mm-ddTHH:MM:SSZ).
@@ -384,7 +384,7 @@ Collects logs from a GCP project and dumps on the filesystem.
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `project_name`|`None`|Name of the GCP project to collect logs from.
 `filter_expression`|`"resource.type = 'gce_instance'"`|Filter expression to use to query GCP logs. See https://cloud.google.com/logging/docs/view/query-library for examples.
 
@@ -410,7 +410,7 @@ Collects GCP Cloud Audit Logs for a GCE instance and exports them to Timesketch.
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `project_name`|`None`|Name of the GCP project to collect logs from.
 `instance_id`|`None`|Identifier for GCE instance (Instance ID).
 `--incident_id`|`None`|Incident ID (used for Timesketch description).
@@ -440,7 +440,7 @@ Loads all GCE Cloud Audit Logs for all instances in a GCP project into Timesketc
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `project_name`|`None`|Name of the GCP project to collect logs from.
 `start_date`|`None`|Start date (yyyy-mm-ddTHH:MM:SSZ).
 `end_date`|`None`|End date (yyyy-mm-ddTHH:MM:SSZ).
@@ -477,7 +477,7 @@ This recipe will also start an analysis VM in the destination project with the a
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `remote_project_name`|`None`|Name of the project containing the instance / disks to copy.
 `analysis_project_name`|`None`|Name of the project containing the Turbinia instance.
 `--turbinia_zone`|`None`|The GCP zone the disk to process and Turbinia workers are in.
@@ -521,7 +521,7 @@ This processes disks that are already in the project where Turbinia exists. If y
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `analysis_project_name`|`None`|Name of GCP project the disk exists in.
 `turbinia_zone`|`None`|The GCP zone the disk to process (and Turbinia workers) are in.
 `disk_name`|`None`|Name of GCP persistent disk to process.
@@ -557,7 +557,7 @@ This processes disks that are already in the project where Turbinia exists. If y
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `analysis_project_name`|`None`|Name of GCP project the disk(s) and Turbinia are in.
 `turbinia_zone`|`None`|The GCP zone the disk(s) to process and Turbinia workers are in.
 `disks`|`None`|Comma separated names of GCP persistent disks to process.
@@ -592,7 +592,7 @@ Collect ForensicArtifacts from hosts using GRR.
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `hostnames`|`None`|Comma-separated list of hostnames or GRR client IDs to process.
 `reason`|`None`|Reason for collection.
 `keywords`|`None`|Pipe-separated list of keywords to search for (e.g. key1|key2|key3.
@@ -635,7 +635,7 @@ The default set of artifacts is defined in the GRRArtifactCollector module (see 
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `hostnames`|`None`|Comma-separated list of hostnames or GRR client IDs to process.
 `reason`|`None`|Reason for collection.
 `--artifacts`|`None`|Comma-separated list of artifacts to fetch (override default artifacts).
@@ -675,7 +675,7 @@ Collects specific files from one or more GRR hosts. Files can be a glob pattern 
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `hostnames`|`None`|Comma-separated list of hostnames or GRR client IDs to process.
 `reason`|`None`|Reason for collection.
 `files`|`None`|Comma-separated list of files to fetch (supports globs and GRR variable interpolation).
@@ -712,7 +712,7 @@ Download the result of a GRR flow to the local filesystem. Flow IDs are unique *
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `hostnames`|`None`|Hostname(s) to collect the flow from.
 `flow_ids`|`None`|Flow ID(s) to download.
 `reason`|`None`|Reason for collection.
@@ -746,7 +746,7 @@ Starts a GRR artifact hunt and provides the Hunt ID to the user. Feed the Hunt I
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `artifacts`|`None`|Comma-separated list of artifacts to hunt for.
 `reason`|`None`|Reason for collection.
 `--use_tsk`|`False`|Use TSK to fetch artifacts.
@@ -781,7 +781,7 @@ Like in `grr_files_collect`, files can be globs and support variable interpolati
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `file_path_list`|`None`|Comma-separated list of file paths to hunt for.
 `reason`|`None`|Reason for collection.
 `--approvers`|`None`|Emails for GRR approval request.
@@ -817,7 +817,7 @@ Download the results of a GRR hunt and process them.
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `hunt_id`|`None`|ID of GRR Hunt results to fetch.
 `reason`|`None`|Reason for exporting hunt (used for Timesketch description).
 `--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
@@ -851,7 +851,7 @@ Uses the GRR TimelineFlow to generate a filesystem timeline and exports it to Ti
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `hostnames`|`None`|Comma-separated list of hostnames or GRR client IDs to process.
 `root_path`|`'/'`|Root path for timeline generation.
 `reason`|`None`|Reason for collection.
@@ -891,7 +891,7 @@ Processes a list of file paths using Plaso and sends results to Timesketch.
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `paths`|`None`|Comma-separated list of paths to process.
 `--incident_id`|`None`|Incident ID (used for Timesketch description).
 `--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
@@ -920,7 +920,7 @@ Uploads a CSV or Plaso file to Timesketch.
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `files`|`None`|Comma-separated list of paths to CSV files or Plaso storage files.
 `--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
 `--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
@@ -949,7 +949,7 @@ Uploads arbitrary files to Turbinia for processing. The recipe will wait for Tur
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `files`|`None`|Paths to process.
 `--destination_turbinia_dir`|`None`|Destination path in Turbinia host to write the files to.
 `--hostname`|`None`|Remote host.
@@ -982,7 +982,7 @@ The following analyzers will run on the processed timeline: `browser_search,brow
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `files`|`None`|Comma-separated list of paths to CSV files or Plaso storage files.
 `--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
 `--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
@@ -1015,7 +1015,7 @@ Downloads the EVTX files from VirusTotal sandbox run for a specific hash, proces
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `hashes`|`None`|Comma-separated list of hashes to process.
 `directory`|`None`|Directory in which to export files.
 `--vt_api_key`|`'admin'`|Virustotal API key
@@ -1042,7 +1042,7 @@ Downloads the EVTX file generated by VirusTotal during the sandbox runs for a sp
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `hashes`|`None`|Comma-separated list of hashes to process.
 `directory`|`None`|Directory in which to export files.
 `--vt_api_key`|`'admin'`|Virustotal API key
@@ -1073,7 +1073,7 @@ Downloads the PCAP files generated from VirusTotal sandboxs run for a specific h
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `hashes`|`None`|Comma-separated list of hashes to process.
 `directory`|`None`|Directory in which to export files.
 `--vt_api_key`|`'admin'`|Virustotal API key
@@ -1104,7 +1104,7 @@ For filters, see https://developers.google.com/admin-sdk/reports/reference/rest/
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `application_name`|`None`|Name of application to to collect logs for. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#ApplicationName for a list of possible values.
 `--user`|`'all'`|email address of the user to query logs for
 `--start_time`|`None`|Start time (yyyy-mm-ddTHH:MM:SSZ).
@@ -1133,7 +1133,7 @@ Collects Google Workspace audit records for a Google Meet and adds them to Times
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `meeting_id`|`None`|ID for the Meeting to look up.
 `--start_time`|`None`|Start time (yyyy-mm-ddTHH:MM:SSZ).
 `--end_time`|`None`|End time (yyyy-mm-ddTHH:MM:SSZ).
@@ -1166,7 +1166,7 @@ Collects logs for the following apps: `Login`, `Drive`, `Token`, `Chrome`, `CAA`
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `user`|`''`|email address of the user to query logs for
 `--start_time`|`None`|Start time (yyyy-mm-ddTHH:MM:SSZ).
 `--end_time`|`None`|End time (yyyy-mm-ddTHH:MM:SSZ).
@@ -1198,7 +1198,7 @@ Collects Drive records for a Workspace user and adds them to Timesketch.
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `user`|`''`|email address of the user to query logs for
 `--start_time`|`None`|Start time (yyyy-mm-ddTHH:MM:SSZ).
 `--end_time`|`None`|End time (yyyy-mm-ddTHH:MM:SSZ).
@@ -1230,7 +1230,7 @@ Collects login records for a Workspace user and adds them to Timesketch.
 **CLI parameters:**
 
 Parameter|Default value|Description
----------|---------|-------------
+---------|-------------|-----------
 `user`|`''`|email address of the user to query logs for
 `--start_time`|`None`|Start time (yyyy-mm-ddTHH:MM:SSZ).
 `--end_time`|`None`|End time (yyyy-mm-ddTHH:MM:SSZ).
