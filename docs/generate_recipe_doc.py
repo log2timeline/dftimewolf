@@ -50,7 +50,7 @@ Modules: {3:s}
 
 **Module graph**
 
-![{0:s}](/_static/graphviz/{0:s}.png)
+![{0:s}](_static/graphviz/{0:s}.png)
 
 ----
 

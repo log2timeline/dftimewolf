@@ -23,7 +23,7 @@ Modules: `AWSVolumeSnapshotCollector`, `AWSSnapshotS3CopyCollector`, `S3ToGCSCop
 
 **Module graph**
 
-![aws_disk_to_gcp](/_static/graphviz/aws_disk_to_gcp.png)
+![aws_disk_to_gcp](_static/graphviz/aws_disk_to_gcp.png)
 
 ----
 
@@ -39,7 +39,7 @@ Modules: `AWSCollector`
 
 **Module graph**
 
-![aws_forensics](/_static/graphviz/aws_forensics.png)
+![aws_forensics](_static/graphviz/aws_forensics.png)
 
 ----
 
@@ -55,7 +55,7 @@ Modules: `AWSLogsCollector`
 
 **Module graph**
 
-![aws_logging_collect](/_static/graphviz/aws_logging_collect.png)
+![aws_logging_collect](_static/graphviz/aws_logging_collect.png)
 
 ----
 
@@ -71,7 +71,7 @@ Modules: `AWSVolumeSnapshotCollector`, `AWSSnapshotS3CopyCollector`, `S3ToGCSCop
 
 **Module graph**
 
-![aws_turbinia_ts](/_static/graphviz/aws_turbinia_ts.png)
+![aws_turbinia_ts](_static/graphviz/aws_turbinia_ts.png)
 
 ----
 
@@ -87,7 +87,7 @@ Modules: `AzureCollector`
 
 **Module graph**
 
-![azure_forensics](/_static/graphviz/azure_forensics.png)
+![azure_forensics](_static/graphviz/azure_forensics.png)
 
 ----
 
@@ -103,7 +103,7 @@ Modules: `BigQueryCollector`
 
 **Module graph**
 
-![bigquery_collect](/_static/graphviz/bigquery_collect.png)
+![bigquery_collect](_static/graphviz/bigquery_collect.png)
 
 ----
 
@@ -119,7 +119,7 @@ Modules: `BigQueryCollector`, `TimesketchExporter`
 
 **Module graph**
 
-![bigquery_ts](/_static/graphviz/bigquery_ts.png)
+![bigquery_ts](_static/graphviz/bigquery_ts.png)
 
 ----
 
@@ -139,7 +139,7 @@ Modules: `GoogleCloudDiskExport`
 
 **Module graph**
 
-![gce_disk_export](/_static/graphviz/gce_disk_export.png)
+![gce_disk_export](_static/graphviz/gce_disk_export.png)
 
 ----
 
@@ -155,7 +155,7 @@ Modules: `GoogleCloudCollector`
 
 **Module graph**
 
-![gcp_forensics](/_static/graphviz/gcp_forensics.png)
+![gcp_forensics](_static/graphviz/gcp_forensics.png)
 
 ----
 
@@ -171,7 +171,7 @@ Modules: `GCPLogsCollector`, `GCPLoggingTimesketch`, `TimesketchExporter`
 
 **Module graph**
 
-![gcp_logging_cloudaudit_ts](/_static/graphviz/gcp_logging_cloudaudit_ts.png)
+![gcp_logging_cloudaudit_ts](_static/graphviz/gcp_logging_cloudaudit_ts.png)
 
 ----
 
@@ -187,7 +187,7 @@ Modules: `GCPLogsCollector`, `GCPLoggingTimesketch`, `TimesketchExporter`
 
 **Module graph**
 
-![gcp_logging_cloudsql_ts](/_static/graphviz/gcp_logging_cloudsql_ts.png)
+![gcp_logging_cloudsql_ts](_static/graphviz/gcp_logging_cloudsql_ts.png)
 
 ----
 
@@ -203,7 +203,7 @@ Modules: `GCPLogsCollector`
 
 **Module graph**
 
-![gcp_logging_collect](/_static/graphviz/gcp_logging_collect.png)
+![gcp_logging_collect](_static/graphviz/gcp_logging_collect.png)
 
 ----
 
@@ -219,7 +219,7 @@ Modules: `GCPLogsCollector`, `GCPLoggingTimesketch`, `TimesketchExporter`
 
 **Module graph**
 
-![gcp_logging_gce_instance_ts](/_static/graphviz/gcp_logging_gce_instance_ts.png)
+![gcp_logging_gce_instance_ts](_static/graphviz/gcp_logging_gce_instance_ts.png)
 
 ----
 
@@ -235,7 +235,7 @@ Modules: `GCPLogsCollector`, `GCPLoggingTimesketch`, `TimesketchExporter`
 
 **Module graph**
 
-![gcp_logging_gce_ts](/_static/graphviz/gcp_logging_gce_ts.png)
+![gcp_logging_gce_ts](_static/graphviz/gcp_logging_gce_ts.png)
 
 ----
 
@@ -257,7 +257,7 @@ Modules: `GoogleCloudCollector`, `TurbiniaGCPProcessor`, `TimesketchExporter`
 
 **Module graph**
 
-![gcp_turbinia_disk_copy_ts](/_static/graphviz/gcp_turbinia_disk_copy_ts.png)
+![gcp_turbinia_disk_copy_ts](_static/graphviz/gcp_turbinia_disk_copy_ts.png)
 
 ----
 
@@ -275,7 +275,7 @@ Modules: `TurbiniaGCPProcessor`, `TimesketchExporter`
 
 **Module graph**
 
-![gcp_turbinia_ts](/_static/graphviz/gcp_turbinia_ts.png)
+![gcp_turbinia_ts](_static/graphviz/gcp_turbinia_ts.png)
 
 ----
 
@@ -293,7 +293,7 @@ Modules: `TurbiniaGCPProcessorThreaded`, `TimesketchExporterThreaded`
 
 **Module graph**
 
-![gcp_turbinia_ts_threaded](/_static/graphviz/gcp_turbinia_ts_threaded.png)
+![gcp_turbinia_ts_threaded](_static/graphviz/gcp_turbinia_ts_threaded.png)
 
 ----
 
@@ -312,7 +312,7 @@ Modules: `GRRArtifactCollector`, `GrepperSearch`
 
 **Module graph**
 
-![grr_artifact_grep](/_static/graphviz/grr_artifact_grep.png)
+![grr_artifact_grep](_static/graphviz/grr_artifact_grep.png)
 
 ----
 
@@ -332,7 +332,7 @@ Modules: `GRRArtifactCollector`, `LocalPlasoProcessor`, `TimesketchExporter`
 
 **Module graph**
 
-![grr_artifact_ts](/_static/graphviz/grr_artifact_ts.png)
+![grr_artifact_ts](_static/graphviz/grr_artifact_ts.png)
 
 ----
 
@@ -348,7 +348,7 @@ Modules: `GRRFileCollector`, `LocalFilesystemCopy`
 
 **Module graph**
 
-![grr_files_collect](/_static/graphviz/grr_files_collect.png)
+![grr_files_collect](_static/graphviz/grr_files_collect.png)
 
 ----
 
@@ -368,7 +368,7 @@ Modules: `GRRFlowCollector`, `LocalFilesystemCopy`
 
 **Module graph**
 
-![grr_flow_collect](/_static/graphviz/grr_flow_collect.png)
+![grr_flow_collect](_static/graphviz/grr_flow_collect.png)
 
 ----
 
@@ -385,7 +385,7 @@ Modules: `GRRHuntArtifactCollector`
 
 **Module graph**
 
-![grr_hunt_artifacts](/_static/graphviz/grr_hunt_artifacts.png)
+![grr_hunt_artifacts](_static/graphviz/grr_hunt_artifacts.png)
 
 ----
 
@@ -402,7 +402,7 @@ Modules: `GRRHuntFileCollector`
 
 **Module graph**
 
-![grr_hunt_file](/_static/graphviz/grr_hunt_file.png)
+![grr_hunt_file](_static/graphviz/grr_hunt_file.png)
 
 ----
 
@@ -422,7 +422,7 @@ Modules: `GRRHuntDownloader`, `LocalPlasoProcessor`, `TimesketchExporter`
 
 **Module graph**
 
-![grr_huntresults_ts](/_static/graphviz/grr_huntresults_ts.png)
+![grr_huntresults_ts](_static/graphviz/grr_huntresults_ts.png)
 
 ----
 
@@ -438,7 +438,7 @@ Modules: `GRRTimelineCollector`, `LocalPlasoProcessor`, `TimesketchExporter`, `T
 
 **Module graph**
 
-![grr_timeline_ts](/_static/graphviz/grr_timeline_ts.png)
+![grr_timeline_ts](_static/graphviz/grr_timeline_ts.png)
 
 ----
 
@@ -458,7 +458,7 @@ Modules: `FilesystemCollector`, `LocalPlasoProcessor`, `TimesketchExporter`
 
 **Module graph**
 
-![plaso_ts](/_static/graphviz/plaso_ts.png)
+![plaso_ts](_static/graphviz/plaso_ts.png)
 
 ----
 
@@ -474,7 +474,7 @@ Modules: `FilesystemCollector`, `TimesketchExporter`
 
 **Module graph**
 
-![upload_ts](/_static/graphviz/upload_ts.png)
+![upload_ts](_static/graphviz/upload_ts.png)
 
 ----
 
@@ -490,7 +490,7 @@ Modules: `FilesystemCollector`, `LocalFilesystemCopy`, `SCP-Upload`, `TurbiniaAr
 
 **Module graph**
 
-![upload_turbinia](/_static/graphviz/upload_turbinia.png)
+![upload_turbinia](_static/graphviz/upload_turbinia.png)
 
 ----
 
@@ -506,7 +506,7 @@ Modules: `FilesystemCollector`, `TimesketchExporter`, `TimesketchEnhancer`
 
 **Module graph**
 
-![upload_web_ts](/_static/graphviz/upload_web_ts.png)
+![upload_web_ts](_static/graphviz/upload_web_ts.png)
 
 ----
 
@@ -522,7 +522,7 @@ Modules: `VTCollector`, `LocalPlasoProcessor`
 
 **Module graph**
 
-![vt_evtx](/_static/graphviz/vt_evtx.png)
+![vt_evtx](_static/graphviz/vt_evtx.png)
 
 ----
 
@@ -538,7 +538,7 @@ Modules: `VTCollector`, `LocalPlasoProcessor`, `TimesketchExporter`
 
 **Module graph**
 
-![vt_evtx_ts](/_static/graphviz/vt_evtx_ts.png)
+![vt_evtx_ts](_static/graphviz/vt_evtx_ts.png)
 
 ----
 
@@ -554,7 +554,7 @@ Modules: `VTCollector`, `LocalFilesystemCopy`
 
 **Module graph**
 
-![vt_pcap](/_static/graphviz/vt_pcap.png)
+![vt_pcap](_static/graphviz/vt_pcap.png)
 
 ----
 
@@ -570,7 +570,7 @@ Modules: `WorkspaceAuditCollector`
 
 **Module graph**
 
-![workspace_logging_collect](/_static/graphviz/workspace_logging_collect.png)
+![workspace_logging_collect](_static/graphviz/workspace_logging_collect.png)
 
 ----
 
@@ -586,7 +586,7 @@ Modules: `WorkspaceAuditCollector`, `WorkspaceAuditTimesketch`, `TimesketchExpor
 
 **Module graph**
 
-![workspace_meet_ts](/_static/graphviz/workspace_meet_ts.png)
+![workspace_meet_ts](_static/graphviz/workspace_meet_ts.png)
 
 ----
 
@@ -602,7 +602,7 @@ Modules: `WorkspaceAuditCollector-Login`, `WorkspaceAuditCollector-Drive`, `Work
 
 **Module graph**
 
-![workspace_user_activity_ts](/_static/graphviz/workspace_user_activity_ts.png)
+![workspace_user_activity_ts](_static/graphviz/workspace_user_activity_ts.png)
 
 ----
 
@@ -618,7 +618,7 @@ Modules: `WorkspaceAuditCollector`, `WorkspaceAuditTimesketch`, `TimesketchExpor
 
 **Module graph**
 
-![workspace_user_drive_ts](/_static/graphviz/workspace_user_drive_ts.png)
+![workspace_user_drive_ts](_static/graphviz/workspace_user_drive_ts.png)
 
 ----
 
@@ -634,7 +634,7 @@ Modules: `WorkspaceAuditCollector`, `WorkspaceAuditTimesketch`, `TimesketchExpor
 
 **Module graph**
 
-![workspace_user_login_ts](/_static/graphviz/workspace_user_login_ts.png)
+![workspace_user_login_ts](_static/graphviz/workspace_user_login_ts.png)
 
 ----
 
