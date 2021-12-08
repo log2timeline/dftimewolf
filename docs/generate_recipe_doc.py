@@ -78,6 +78,7 @@ def load_recipes_from_dir(directory):
             recipes.append(recipe_json)
   return recipes
 
+
 def generate_args_description(recipe):
   """Generates a description of the CLI arguments for a given recipe."""
   args = recipe['args']
