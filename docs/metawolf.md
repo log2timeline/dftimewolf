@@ -6,6 +6,12 @@ Metawolf is a meterpreter-like shell for DFTimewolf. It allows you to browse, co
 
 ## Using Metawolf
 
+First of all, open a metawolf shell by running:
+
+```
+python dftimewolf/metawolf/metawolf.py
+```
+
 ### Sessions
 
 `new`: Create a new Metawolf session.

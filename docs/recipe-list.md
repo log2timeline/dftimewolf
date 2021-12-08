@@ -17,7 +17,28 @@ Copies EBS volumes from within AWS, and transfers them to GCP.
 
 **Details:**
 
-Copies EBS volumes from within AWS, and transfers them to GCP.
+Copies EBS volumes from within AWS by pushing them to an AWS S3 bucket. The S3 bucket is then copied to a Google Cloud Storage bucket, from which a GCP Disk Image and fnially a GCP Persistend Disk are created. This operation happens in the cloud and doesn't touch the local workstation on which the recipe is run.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`aws_region`|`None`|AWS region containing the EBS volumes.
+`gcp_zone`|`None`|Destination GCP zone in which to create the disks.
+`volumes`|`None`|Comma separated list of EBS volume IDs (e.g. vol-xxxxxxxx).
+`aws_bucket`|`None`|AWS bucket for image storage.
+`gcp_bucket`|`None`|GCP bucket for image storage.
+`--subnet`|`None`|AWS subnet to copy instances from, required if there is no default subnet in the volume region.
+`--gcp_project`|`None`|Destination GCP project.
+`--aws_profile`|`None`|Source AWS profile.
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--run_all_jobs`|`False`|Run all Turbinia processing jobs instead of a faster subset.
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+
+
+
 
 Modules: `AWSVolumeSnapshotCollector`, `AWSSnapshotS3CopyCollector`, `S3ToGCSCopy`, `GCSToGCEImage`, `GCEDiskFromImage`
 
@@ -33,7 +54,24 @@ Copies a volume from an AWS account to an analysis VM.
 
 **Details:**
 
-Copies a volume from an AWS account, creates an analysis VM, and attaches the copied volume to it.
+Copies a volume from an AWS account, creates an analysis VM in AWS (with a startup script containing installation instructions for basic forensics tooling), and attaches the copied volume to it.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`remote_profile_name`|`None`|Name of the AWS profile pointing to the AWS account where the volume(s) exist(s).
+`remote_zone`|`None`|The AWS zone in which the source volume(s) exist(s).
+`incident_id`|`None`|Incident ID to label the VM with.
+`--instance_id`|`None`|Instance ID of the instance to analyze.
+`--volume_ids`|`None`|Comma-separated list of volume IDs to copy.
+`--all_volumes`|`False`|Copy all volumes in the designated instance. Overrides volume_ids if specified.
+`--boot_volume_size`|`50`|The size of the analysis VM boot volume (in GB).
+`--analysis_zone`|`None`|The AWS zone in which to create the VM.
+`--analysis_profile_name`|`None`|Name of the AWS profile to use when creating the analysis VM.
+
+
+
 
 Modules: `AWSCollector`
 
@@ -45,11 +83,24 @@ Modules: `AWSCollector`
 
 ## `aws_logging_collect`
 
-Collects logs from an AWS account and dumps on the filesystem.
+Collects logs from an AWS account and dumps the results to the filesystem.
 
 **Details:**
 
-Collects logs from an AWS account and dumps on the filesystem.
+Collects logs from an AWS account using a specified query filter and date ranges, and dumps them on the filesystem.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`zone`|`None`|Default availability zone for API queries.
+`--profile_name`|`'default'`|Name of the AWS profile to collect logs from.
+`--query_filter`|`None`|Filter expression to use to query logs.
+`--start_time`|`None`|Start time for the query.
+`--end_time`|`None`|End time for the query.
+
+
+
 
 Modules: `AWSLogsCollector`
 
@@ -61,11 +112,33 @@ Modules: `AWSLogsCollector`
 
 ## `aws_turbinia_ts`
 
-Copies EBS volumes from within AWS, transfers them to GCP, analyses with turbinia and outputs the results to timesketch.
+Copies EBS volumes from within AWS, transfers them to GCP, analyses with Turbinia and exports the results to Timesketch.
 
 **Details:**
 
-Copies EBS volumes from within AWS, transfers them to GCP, analyses with turbinia and outputs the results to timesketch.
+Copies EBS volumes from within AWS, uses buckets and cloud-to-cloud operations to transfer the data to GCP. Once in GCP, a persistend disk is created and a job is added to the Turbinia queue to start analysis. The resulting Plaso file is then exported to Timesketch.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`aws_region`|`None`|AWS region containing the EBS volumes.
+`gcp_zone`|`None`|Destination GCP zone in which to create the disks.
+`volumes`|`None`|Comma separated list of EBS volume IDs (e.g. vol-xxxxxxxx).
+`aws_bucket`|`None`|AWS bucket for image storage.
+`gcp_bucket`|`None`|GCP bucket for image storage.
+`--subnet`|`None`|AWS subnet to copy instances from, required if there is no default subnet in the volume region.
+`--gcp_project`|`None`|Destination GCP project.
+`--aws_profile`|`None`|Source AWS profile.
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--run_all_jobs`|`False`|Run all Turbinia processing jobs instead of a faster subset.
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--turbinia_zone`|`'us-central1-f'`|Zone Turbinia is located in
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+
+
+
 
 Modules: `AWSVolumeSnapshotCollector`, `AWSSnapshotS3CopyCollector`, `S3ToGCSCopy`, `GCSToGCEImage`, `GCEDiskFromImage`, `TurbiniaGCPProcessorThreaded`, `TimesketchExporterThreaded`
 
@@ -81,7 +154,25 @@ Copies a disk from an Azure account to an analysis VM.
 
 **Details:**
 
-Copies a disk from an Azure account, creates an analysis VM, and attaches the copied disk to it.
+Copies a disk from an Azure account, creates an analysis VM in Azure (with a startup script containing installation instructions for basic forensics tooling), and attaches the copied disk to it.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`remote_profile_name`|`None`|Name of the Azure profile pointing to the Azure account where the disk(s) exist(s).
+`analysis_resource_group_name`|`None`|The Azure resource group name in which to create the VM.
+`incident_id`|`None`|Incident ID to label the VM with.
+`ssh_public_key`|`None`|A SSH public key string to add to the VM (e.g. `ssh-rsa AAAAB3NzaC1y...`).
+`--instance_name`|`None`|Instance name of the instance to analyze.
+`--disk_names`|`None`|Comma-separated list of disk names to copy.
+`--all_disks`|`False`|Copy all disks in the designated instance. Overrides `disk_names` if specified.
+`--boot_disk_size`|`50`|The size of the analysis VM's boot disk (in GB).
+`--analysis_region`|`None`|The Azure region in which to create the VM.
+`--analysis_profile_name`|`None`|Name of the Azure profile to use when creating the analysis VM.
+
+
+
 
 Modules: `AzureCollector`
 
@@ -93,11 +184,22 @@ Modules: `AzureCollector`
 
 ## `bigquery_collect`
 
-Collects results from BigQuery and dumps on the filesystem.
+Collects results from BigQuery and dumps them on the filesystem.
 
 **Details:**
 
-Collects results from BigQuery and dumps on the filesystem.
+Collects results from BigQuery in a GCP project and dumps them in JSONL on the local filesystem.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`project_name`|`None`|Name of GCP project to collect logs from.
+`query`|`None`|Query to execute.
+`description`|`None`|Human-readable description of the query.
+
+
+
 
 Modules: `BigQueryCollector`
 
@@ -109,11 +211,26 @@ Modules: `BigQueryCollector`
 
 ## `bigquery_ts`
 
-Collects results from BigQuery and loads them to Timesketch.
+Collects results from BigQuery and uploads them to Timesketch.
 
 **Details:**
 
-Collects results from BigQuery and loads them to Timesketch.
+Collects results from BigQuery in JSONL form, dumps them to the filesystem, and uploads them to Timesketch.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`project_name`|`None`|Name of GCP project to collect logs from.
+`query`|`None`|Query to execute.
+`description`|`None`|Human-readable description of the query.
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+
+
+
 
 Modules: `BigQueryCollector`, `TimesketchExporter`
 
@@ -125,15 +242,30 @@ Modules: `BigQueryCollector`, `TimesketchExporter`
 
 ## `gce_disk_export`
 
-Export disk image from a GCP project to Google Cloud Storage.
+Export a disk image from a GCP project to a Google Cloud Storage bucket.
 
 **Details:**
 
-Creates a disk image from a Google compute persistence disks, compress the images and export them to Google Cloud Storage.
+Creates a disk image from Google Compute persistent disks, compresses the images, and exports them to Google Cloud Storage.
 
-The exported images names are appended by .tar.gz.
+The exported images names are appended by `.tar.gz.`
 
-The service account [PROJECT-NR]@cloudbuild.gserviceaccount.com in the source project or in analysis project, if analysis project is provided, must have the IAM role [Srorage Admin] on the destination storage bucket/folder.
+As this export happens through a Cloud Build job, the default service account `[PROJECT-NUMBER]@cloudbuild.gserviceaccount.com` in the source or analysis project (if provided) must have the IAM role `[Storage Admin]` on their corresponding project's storage bucket/folder.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`source_project_name`|`None`|Source project containing the disk to export.
+`gcs_output_location`|`None`|Google Cloud Storage parent bucket/folder to which to export the image.
+`--analysis_project_name`|`None`|Project where the disk image is created then exported. If not provided, the image is exported to a bucket in the source project.
+`--source_disk_names`|`None`|Comma-separated list of disk names to export. If not provided, disks attached to `remote_instance_name` will be used.
+`--remote_instance_name`|`None`|Instance in source project to export its disks. If not provided, `disk_names` will be used.
+`--all_disks`|`False`|If True, copy all disks attached to the `remote_instance_name` instance. If False and `remote_instance_name` is provided, it will select the instance's boot disk.
+`--exported_image_name`|`None`|Name of the output file, must comply with `^[A-Za-z0-9-]*$` and `'.tar.gz'` will be appended to the name. If not provided or if more than one disk is selected, the exported image will be named `exported-image-{TIMESTAMP('%Y%m%d%H%M%S')}`.
+
+
+
 
 Modules: `GoogleCloudDiskExport`
 
@@ -149,7 +281,27 @@ Copies disk from a GCP project to an analysis VM.
 
 **Details:**
 
-Copies a disk from a project to another, creates an analysis VM, and attaches the copied disk to it.
+Copies a persistend disk from a GCP project to another, creates an analysis VM (with a startup script containing installation instructions for basic forensics tooling) in the destiantion project, and attaches the copied GCP persistend disk to it.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`remote_project_name`|`None`|Name of the project containing the instance / disks to copy.
+`--analysis_project_name`|`None`|Name of the project where the analysis VM will be created and disks copied to.
+`--incident_id`|`None`|Incident ID to label the VM with.
+`--instance`|`None`|Name of the instance to analyze.
+`--disks`|`None`|Comma-separated list of disks to copy from the source GCP project (if `instance` not provided).
+`--all_disks`|`False`|Copy all disks in the designated instance. Overrides `disk_names` if specified.
+`--stop_instance`|`False`|Stop the designated instance after copying disks.
+`--create_analysis_vm`|`True`|Create an analysis VM in the destination project.
+`--cpu_cores`|`4`|Number of CPU cores of the analysis VM.
+`--boot_disk_size`|`50.0`|The size of the analysis VM boot disk (in GB).
+`--boot_disk_type`|`'pd-standard'`|Disk type to use [pd-standard, pd-ssd].
+`--zone`|`'us-central1-f'`|The GCP zone where the Analysis VM and copied disks will be created.
+
+
+
 
 Modules: `GoogleCloudCollector`
 
@@ -165,7 +317,22 @@ Collects GCP logs from a project and exports them to Timesketch.
 
 **Details:**
 
-Collects GCP logs from a project and exports them to Timesketch.
+Collects GCP logs from a project and exports them to Timesketch. Some light processing is made to translate the logs into something Timesketch can process.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`project_name`|`None`|Name of the GCP project to collect logs from.
+`start_date`|`None`|Start date (yyyy-mm-ddTHH:MM:SSZ).
+`end_date`|`None`|End date (yyyy-mm-ddTHH:MM:SSZ).
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+
+
+
 
 Modules: `GCPLogsCollector`, `GCPLoggingTimesketch`, `TimesketchExporter`
 
@@ -177,11 +344,26 @@ Modules: `GCPLogsCollector`, `GCPLoggingTimesketch`, `TimesketchExporter`
 
 ## `gcp_logging_cloudsql_ts`
 
-Collects GCP logs from Cloud SQL instances for a project and exports them to Timesketch.
+Collects GCP related to Cloud SQL instances in a project and exports them to Timesketch.
 
 **Details:**
 
-Collects GCP logs from Cloud SQL instances for a project and exports them to Timesketch.
+Collects GCP related to Cloud SQL instances in a project and exports them to Timesketch. Some light processing is made to translate the logs into something Timesketch can process.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`project_name`|`None`|Name of the GCP project to collect logs from.
+`start_date`|`None`|Start date (yyyy-mm-ddTHH:MM:SSZ).
+`end_date`|`None`|End date (yyyy-mm-ddTHH:MM:SSZ).
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+
+
+
 
 Modules: `GCPLogsCollector`, `GCPLoggingTimesketch`, `TimesketchExporter`
 
@@ -193,11 +375,21 @@ Modules: `GCPLogsCollector`, `GCPLoggingTimesketch`, `TimesketchExporter`
 
 ## `gcp_logging_collect`
 
-Collects logs from a GCP project and dumps on the filesystem.
+Collects logs from a GCP project and dumps on the filesystem (JSON). https://cloud.google.com/logging/docs/view/query-library for example queries.
 
 **Details:**
 
 Collects logs from a GCP project and dumps on the filesystem.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`project_name`|`None`|Name of the GCP project to collect logs from.
+`filter_expression`|`"resource.type = 'gce_instance'"`|Filter expression to use to query GCP logs. See https://cloud.google.com/logging/docs/view/query-library for examples.
+
+
+
 
 Modules: `GCPLogsCollector`
 
@@ -209,11 +401,25 @@ Modules: `GCPLogsCollector`
 
 ## `gcp_logging_gce_instance_ts`
 
-GCP Instance Cloud Audit to Timesketch
+GCP Instance Cloud Audit logs to Timesketch
 
 **Details:**
 
-Loads GCP Cloud Audit Logs for a GCE instance into Timesketch.
+Collects GCP Cloud Audit Logs for a GCE instance and exports them to Timesketch. Some light processing is made to translate the logs into something Timesketch can process.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`project_name`|`None`|Name of the GCP project to collect logs from.
+`instance_id`|`None`|Identifier for GCE instance (Instance ID).
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+
+
+
 
 Modules: `GCPLogsCollector`, `GCPLoggingTimesketch`, `TimesketchExporter`
 
@@ -225,11 +431,26 @@ Modules: `GCPLogsCollector`, `GCPLoggingTimesketch`, `TimesketchExporter`
 
 ## `gcp_logging_gce_ts`
 
-Loads GCP Cloud Audit Logs for GCE into Timesketch
+Loads all GCE Cloud Audit Logs in a GCP project into Timesketch.
 
 **Details:**
 
-Loads GCP Cloud Audit Logs for GCE into Timesketch.
+Loads all GCE Cloud Audit Logs for all instances in a GCP project into Timesketch. Some light processing is made to translate the logs into something Timesketch can process.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`project_name`|`None`|Name of the GCP project to collect logs from.
+`start_date`|`None`|Start date (yyyy-mm-ddTHH:MM:SSZ).
+`end_date`|`None`|End date (yyyy-mm-ddTHH:MM:SSZ).
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+
+
+
 
 Modules: `GCPLogsCollector`, `GCPLoggingTimesketch`, `TimesketchExporter`
 
@@ -245,13 +466,39 @@ Imports a remote GCP persistent disk, processes it with Turbinia and sends resul
 
 **Details:**
 
-Imports a remote GCP persistent disk and sends to Turbinia and Timesketch.
+Imports a remote GCP persistent disk into an analysis GCP project and sends the result of Turbinia processing to Timesketch.
 
-- Copies a disk from a remote GCP project
-- Creates Turbinia processing requests
-- Downloads and sends results to Timesketch.
+- Copies a disk from a remote GCP project into an analysis project
+- Creates Turbinia processing request to process the imported disk
+- Downloads and sends results of the Turbinia processing to Timesketch.
 
-It will start an analysis VM with the attached disk. If the target disk is already in the same project as Turbinia you can use the `gcp_turbinia_ts` recipe.
+This recipe will also start an analysis VM in the destination project with the attached disk (the same one that Turbinia will have processed). If the target disk is already in the same project as Turbinia, you can use the `gcp_turbinia_ts` recipe.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`remote_project_name`|`None`|Name of the project containing the instance / disks to copy.
+`analysis_project_name`|`None`|Name of the project containing the Turbinia instance.
+`--turbinia_zone`|`None`|The GCP zone the disk to process and Turbinia workers are in.
+`--incident_id`|`None`|Incident ID (used for Timesketch description and to label the VM with).
+`--run_all_jobs`|`False`|Run all Turbinia processing jobs instead of a faster subset.
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--analysis_vm`|`True`|Create an analysis VM in the destination project.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+`--instance`|`None`|Name of the instance to analyze.
+`--disks`|`None`|Comma-separated list of disks to copy from the source GCP project (if `instance` not provided).
+`--all_disks`|`False`|Copy all disks in the designated instance. Overrides disk_names if specified.
+`--stop_instance`|`False`|Stop the designated instance after copying disks.
+`--cpu_cores`|`4`|Number of CPU cores of the analysis VM.
+`--boot_disk_size`|`50.0`|The size of the analysis VM boot disk (in GB).
+`--boot_disk_type`|`'pd-standard'`|Disk type to use [pd-standard, pd-ssd]
+`--image_project`|`'ubuntu-os-cloud'`|Name of the project where the analysis VM image is hosted.
+`--image_family`|`'ubuntu-1804-lts'`|Name of the image to use to create the analysis VM.
+
+
+
 
 Modules: `GoogleCloudCollector`, `TurbiniaGCPProcessor`, `TimesketchExporter`
 
@@ -263,13 +510,29 @@ Modules: `GoogleCloudCollector`, `TurbiniaGCPProcessor`, `TimesketchExporter`
 
 ## `gcp_turbinia_ts`
 
-Processes an existing GCP persistent disk in the Turbinia project and sends results to Timesketch.
+Processes an existing GCP persistent disks with Turbinia project and sends results to Timesketch.
 
 **Details:**
 
-Process a GCP persistent disk with Turbinia and send output to Timesketch.
+Process GCP persistent disks with Turbinia and send output to Timesketch.
 
-This processes a disk that is already in the project where Turbinia exists. If you want to copy the disk from another project, use the gcp_turbinia_disk_copy_ts recipe.
+This processes disks that are already in the project where Turbinia exists. If you want to copy disks from another project, use the `gcp_turbinia_disk_copy_ts` recipe.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`analysis_project_name`|`None`|Name of GCP project the disk exists in.
+`turbinia_zone`|`None`|The GCP zone the disk to process (and Turbinia workers) are in.
+`disk_name`|`None`|Name of GCP persistent disk to process.
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--run_all_jobs`|`False`|Run all Turbinia processing jobs instead of a faster subset.
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+
+
+
 
 Modules: `TurbiniaGCPProcessor`, `TimesketchExporter`
 
@@ -281,13 +544,31 @@ Modules: `TurbiniaGCPProcessor`, `TimesketchExporter`
 
 ## `gcp_turbinia_ts_threaded`
 
-Processes existing GCP persistent disks in the Turbinia project and sends results to Timesketch.
+Processes an existing GCP persistent disks with Turbinia project and sends results to Timesketch.
 
 **Details:**
 
+This is the threaded version of `gcp_turbinia_ts`.
+
 Process GCP persistent disks with Turbinia and send output to Timesketch.
 
-This processes disks that are already in the project where Turbinia exists. If you want to copy disks from another project, use the gcp_turbinia_disk_copy_ts recipe.
+This processes disks that are already in the project where Turbinia exists. If you want to copy disks from another project, use the `gcp_turbinia_disk_copy_ts` recipe.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`analysis_project_name`|`None`|Name of GCP project the disk(s) and Turbinia are in.
+`turbinia_zone`|`None`|The GCP zone the disk(s) to process and Turbinia workers are in.
+`disks`|`None`|Comma separated names of GCP persistent disks to process.
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--run_all_jobs`|`False`|Run all Turbinia processing jobs instead of a faster subset.
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+
+
+
 
 Modules: `TurbiniaGCPProcessorThreaded`, `TimesketchExporterThreaded`
 
@@ -303,10 +584,31 @@ Fetches ForensicArtifacts from GRR hosts and runs grep with a list of keywords o
 
 **Details:**
 
-Collect artifacts from hosts using GRR.
+Collect ForensicArtifacts from hosts using GRR.
 
 - Collect a predefined list of artifacts from hosts using GRR
-- Process them locally with grep to extract keywords
+- Process them locally with grep to extract keywords.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`hostnames`|`None`|Comma-separated list of hostnames or GRR client IDs to process.
+`reason`|`None`|Reason for collection.
+`keywords`|`None`|Pipe-separated list of keywords to search for (e.g. key1|key2|key3.
+`--artifacts`|`None`|Comma-separated list of artifacts to fetch (override default artifacts).
+`--extra_artifacts`|`None`|Comma-separated list of artifacts to append to the default artifact list.
+`--use_tsk`|`False`|Use TSK to fetch artifacts.
+`--approvers`|`None`|Emails for GRR approval request.
+`--grr_server_url`|`'http://localhost:8000'`|GRR endpoint.
+`--verify`|`True`|Whether to verify the GRR TLS certificate.
+`--skip_offline_clients`|`False`|Whether to skip clients that are offline.
+`--grr_username`|`'admin'`|GRR username.
+`--grr_password`|`'admin'`|GRR password.
+`--max_file_size`|`5368709120`|Maximum size of files to collect (in bytes).
+
+
+
 
 Modules: `GRRArtifactCollector`, `GrepperSearch`
 
@@ -318,7 +620,7 @@ Modules: `GRRArtifactCollector`, `GrepperSearch`
 
 ## `grr_artifact_ts`
 
-Fetches default artifacts from a list of GRR hosts, processes them with plaso, and sends the results to Timesketch.
+Fetches default ForensicArtifacts from a sequence of GRR hosts, processes them with plaso, and sends the results to Timesketch.
 
 **Details:**
 
@@ -326,7 +628,33 @@ Collect artifacts from hosts using GRR.
 
 - Collect a predefined list of artifacts from hosts using GRR
 - Process them with a local install of plaso
-- Export them to a Timesketch sketch
+- Export them to a Timesketch sketch.
+
+The default set of artifacts is defined in the GRRArtifactCollector module (see the `_DEFAULT_ARTIFACTS_*` class attributes in `grr_hosts.py`), and varies per platform.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`hostnames`|`None`|Comma-separated list of hostnames or GRR client IDs to process.
+`reason`|`None`|Reason for collection.
+`--artifacts`|`None`|Comma-separated list of artifacts to fetch (override default artifacts).
+`--extra_artifacts`|`None`|Comma-separated list of artifacts to append to the default artifact list.
+`--use_tsk`|`False`|Use TSK to fetch artifacts.
+`--approvers`|`None`|Emails for GRR approval request.
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--grr_server_url`|`'http://localhost:8000'`|GRR endpoint.
+`--verify`|`True`|Whether to verify the GRR TLS certificate.
+`--skip_offline_clients`|`False`|Whether to skip clients that are offline.
+`--grr_username`|`'admin'`|GRR username
+`--grr_password`|`'admin'`|GRR password
+`--max_file_size`|`5368709120`|Maximum size of files to collect (in bytes).
+
+
+
 
 Modules: `GRRArtifactCollector`, `LocalPlasoProcessor`, `TimesketchExporter`
 
@@ -338,11 +666,32 @@ Modules: `GRRArtifactCollector`, `LocalPlasoProcessor`, `TimesketchExporter`
 
 ## `grr_files_collect`
 
-Fetches specific files from one or more GRR hosts.
+Collects specific files from one or more GRR hosts.
 
 **Details:**
 
-Fetches specific files from one or more GRR hosts.
+Collects specific files from one or more GRR hosts. Files can be a glob pattern (e.g. `/tmp/*.so`) and support GRR variable interpolation (e.g. `%%users.localappdata%%/Directory/`) 
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`hostnames`|`None`|Comma-separated list of hostnames or GRR client IDs to process.
+`reason`|`None`|Reason for collection.
+`files`|`None`|Comma-separated list of files to fetch (supports globs and GRR variable interpolation).
+`directory`|`None`|Directory in which to export files.
+`--use_tsk`|`False`|Use TSK to fetch artifacts.
+`--approvers`|`None`|Emails for GRR approval request.
+`--verify`|`True`|Whether to verify the GRR TLS certificate.
+`--skip_offline_clients`|`False`|Whether to skip clients that are offline.
+`--action`|`'download'`|String denoting action (download/hash/stat) to take
+`--grr_server_url`|`'http://localhost:8000'`|GRR endpoint
+`--grr_username`|`'admin'`|GRR username
+`--grr_password`|`'admin'`|GRR password
+`--max_file_size`|`5368709120`|Maximum size of files to collect (in bytes).
+
+
+
 
 Modules: `GRRFileCollector`, `LocalFilesystemCopy`
 
@@ -354,15 +703,29 @@ Modules: `GRRFileCollector`, `LocalFilesystemCopy`
 
 ## `grr_flow_collect`
 
-Download GRR flows.
-
-Download a GRR flow's results to the local filesystem.
+Download the result of a GRR flow to the local filesystem.
 
 **Details:**
 
-Download GRR flows.
+Download the result of a GRR flow to the local filesystem. Flow IDs are unique *per client*, so both need to be provided in sequence.
 
-Download a GRR flow's results to the local filesystem.
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`hostnames`|`None`|Hostname(s) to collect the flow from.
+`flow_ids`|`None`|Flow ID(s) to download.
+`reason`|`None`|Reason for collection.
+`directory`|`None`|Directory in which to export files.
+`--approvers`|`None`|Emails for GRR approval request.
+`--grr_server_url`|`'http://localhost:8000'`|GRR endpoint
+`--verify`|`True`|Whether to verify the GRR TLS certificate.
+`--skip_offline_clients`|`False`|Whether to skip clients that are offline.
+`--grr_username`|`'admin'`|GRR username
+`--grr_password`|`'admin'`|GRR password
+
+
+
 
 Modules: `GRRFlowCollector`, `LocalFilesystemCopy`
 
@@ -378,8 +741,24 @@ Starts a GRR hunt for the default set of artifacts.
 
 **Details:**
 
-Starts a GRR artifact hunt and provides the Hunt ID to the user.
-Feed the Hunt ID to grr_huntresults_plaso_timesketch to process results through plaso and send them to Timesketch.
+Starts a GRR artifact hunt and provides the Hunt ID to the user. Feed the Hunt ID to `grr_huntresults_ts` to process results through Plaso and export them to Timesketch.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`artifacts`|`None`|Comma-separated list of artifacts to hunt for.
+`reason`|`None`|Reason for collection.
+`--use_tsk`|`False`|Use TSK to fetch artifacts.
+`--approvers`|`None`|Emails for GRR approval request.
+`--grr_server_url`|`'http://localhost:8000'`|GRR endpoint
+`--verify`|`True`|Whether to verify the GRR TLS certificate.
+`--grr_username`|`'admin'`|GRR username
+`--grr_password`|`'admin'`|GRR password
+`--max_file_size`|`5368709120`|Maximum size of files to collect (in bytes).
+
+
+
 
 Modules: `GRRHuntArtifactCollector`
 
@@ -395,8 +774,25 @@ Starts a GRR hunt for a list of files.
 
 **Details:**
 
-Starts a GRR hunt for a list of files and provides a Hunt ID to the user.
-Feed the Hunt ID to grr_huntresults_plaso_timesketch to process results through plaso and send them to Timesketch.
+Starts a GRR hunt for a list of files and provides a Hunt ID to the user. Feed the Hunt ID to `grr_huntresults_ts` to process results through Plaso and export them to Timesketch.
+
+Like in `grr_files_collect`, files can be globs and support variable interpolation.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`file_path_list`|`None`|Comma-separated list of file paths to hunt for.
+`reason`|`None`|Reason for collection.
+`--approvers`|`None`|Emails for GRR approval request.
+`--grr_server_url`|`'http://localhost:8000'`|GRR endpoint
+`--verify`|`True`|Whether to verify the GRR TLS certificate.
+`--grr_username`|`'admin'`|GRR username
+`--grr_password`|`'admin'`|GRR password
+`--max_file_size`|`5368709120`|Maximum size of files to collect (in bytes).
+
+
+
 
 Modules: `GRRHuntFileCollector`
 
@@ -408,15 +804,33 @@ Modules: `GRRHuntFileCollector`
 
 ## `grr_huntresults_ts`
 
-Fetches the findings of a GRR hunt, processes them with plaso, and sends the results to Timesketch.
+Fetches the ersults of a GRR hunt, processes them with Plaso, and exports the results to Timesketch.
 
 **Details:**
 
 Download the results of a GRR hunt and process them.
 
 - Collect results of a hunt given its Hunt ID
-- Processes results with a local install of plaso
+- Processes results with a local install of Plaso
 - Exports processed items to a new Timesketch sketch
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`hunt_id`|`None`|ID of GRR Hunt results to fetch.
+`reason`|`None`|Reason for exporting hunt (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+`--approvers`|`None`|Emails for GRR approval request.
+`--grr_server_url`|`'http://localhost:8000'`|GRR endpoint
+`--verify`|`True`|Whether to verify the GRR TLS certificate.
+`--grr_username`|`'admin'`|GRR username
+`--grr_password`|`'admin'`|GRR password
+
+
+
 
 Modules: `GRRHuntDownloader`, `LocalPlasoProcessor`, `TimesketchExporter`
 
@@ -428,11 +842,31 @@ Modules: `GRRHuntDownloader`, `LocalPlasoProcessor`, `TimesketchExporter`
 
 ## `grr_timeline_ts`
 
-Runs a TimelineFlow on a set of GRR hosts, processes results with plaso, and sends the timeline to Timesketch
+Runs a TimelineFlow on a set of GRR hosts, generating a filesystem bodyfile for each host. These bodyfiles are processed results with Plaso, and the resulting plaso files are exported to Timesketch.
 
 **Details:**
 
-Runs a TimelineFlow on a set of GRR hosts, processes results with plaso, and sends the timeline to Timesketch
+Uses the GRR TimelineFlow to generate a filesystem timeline and exports it to Timesketch..
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`hostnames`|`None`|Comma-separated list of hostnames or GRR client IDs to process.
+`root_path`|`'/'`|Root path for timeline generation.
+`reason`|`None`|Reason for collection.
+`--skip_offline_clients`|`False`|Whether to skip clients that are offline.
+`--approvers`|`None`|Comma-separated list of usernames to ask for approval.
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--grr_server_url`|`'http://localhost:8000'`|GRR endpoint.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--timesketch_quick`|`False`|Skip waiting for analyzers to complete their run.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+`--grr_username`|`'admin'`|GRR username.
+`--grr_password`|`'admin'`|GRR password.
+
+
+
 
 Modules: `GRRTimelineCollector`, `LocalPlasoProcessor`, `TimesketchExporter`, `TimesketchEnhancer`
 
@@ -444,15 +878,28 @@ Modules: `GRRTimelineCollector`, `LocalPlasoProcessor`, `TimesketchExporter`, `T
 
 ## `plaso_ts`
 
-Processes a list of file paths using plaso and sends results to Timesketch.
+Processes a list of file paths using a Plaso and epxort results to Timesketch.
 
 **Details:**
 
-Processes a list of file paths using plaso and sends results to Timesketch.
+Processes a list of file paths using Plaso and sends results to Timesketch.
 
 - Collectors collect from a path in the FS
 - Processes them with a local install of plaso
 - Exports them to a new Timesketch sketch
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`paths`|`None`|Comma-separated list of paths to process.
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+
+
+
 
 Modules: `FilesystemCollector`, `LocalPlasoProcessor`, `TimesketchExporter`
 
@@ -464,11 +911,24 @@ Modules: `FilesystemCollector`, `LocalPlasoProcessor`, `TimesketchExporter`
 
 ## `upload_ts`
 
-Uploads a CSV or Plaso file to Timesketch.
+Uploads a local CSV or Plaso file to Timesketch.
 
 **Details:**
 
 Uploads a CSV or Plaso file to Timesketch.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`files`|`None`|Comma-separated list of paths to CSV files or Plaso storage files.
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+
+
+
 
 Modules: `FilesystemCollector`, `TimesketchExporter`
 
@@ -480,11 +940,26 @@ Modules: `FilesystemCollector`, `TimesketchExporter`
 
 ## `upload_turbinia`
 
-Uploads arbitrary files to Turbinia.
+Uploads arbitrary files to Turbinia and downloads results.
 
 **Details:**
 
-['Uploads arbitrary files to Turbinia']
+Uploads arbitrary files to Turbinia for processing. The recipe will wait for Turbinia to return with results and will download them back to the filesystem. The Turbinia system needs to be accesible via SSH.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`files`|`None`|Paths to process.
+`--destination_turbinia_dir`|`None`|Destination path in Turbinia host to write the files to.
+`--hostname`|`None`|Remote host.
+`--directory`|`None`|Directory in which to copy and compress files.
+`--turbinia_config`|`None`|Turbinia config file to use.
+`--local_turbinia_results`|`None`|Directory where Turbinia results will be downloaded to.
+`--sketch_id`|`None`|Timesketch sketch ID.
+
+
+
 
 Modules: `FilesystemCollector`, `LocalFilesystemCopy`, `SCP-Upload`, `TurbiniaArtifactProcessor`, `SCP-Download`
 
@@ -496,11 +971,30 @@ Modules: `FilesystemCollector`, `LocalFilesystemCopy`, `SCP-Upload`, `TurbiniaAr
 
 ## `upload_web_ts`
 
-Uploads a CSV/JSONL or Plaso file to Timesketch.
+Uploads a CSV/JSONL or Plaso file to Timesketch and runs web-related Timesketch analyzers.
 
 **Details:**
 
-Uploads a CSV or Plaso file to Timesketch and executes web artifact analyzers on the uploaded data
+Uploads a CSV or Plaso file to Timesketch and runs a series of web-related analyzers on the uploaded data.
+
+The following analyzers will run on the processed timeline: `browser_search,browser_timeframe,account_finder,phishy_domains,evtx_gap,login,win_crash,safebrowsing,chain`.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`files`|`None`|Comma-separated list of paths to CSV files or Plaso storage files.
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--wait_for_analyzers`|`True`|Wait for analyzers until they complete their run, if set to False the TS enhancer will be skipped.
+`--timesketch_include_stories`|`False`|Include story dumps in reports.
+`--searches_to_skip`|`None`|A comma separated list of saved searches that should not be uploaded.
+`--analyzer_max_checks`|`0`|Number of wait cycles (per cycle is 3 seconds) before terminating wait for analyzers to complete.
+`--aggregations_to_skip`|`None`|A comma separated list of aggregation names that should not be uploaded.
+
+
+
 
 Modules: `FilesystemCollector`, `TimesketchExporter`, `TimesketchEnhancer`
 
@@ -512,11 +1006,22 @@ Modules: `FilesystemCollector`, `TimesketchExporter`, `TimesketchEnhancer`
 
 ## `vt_evtx`
 
-Fetches the EVTX from VirusTotal sandbox run for a specific hash.
+Downloads the EVTX files from VirusTotal for a specific hash.
 
 **Details:**
 
-Fetches the EVTX from VirusTotal for a specific hash, processes it with Plaso.
+Downloads the EVTX files from VirusTotal sandbox run for a specific hash, processes it with Plaso.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`hashes`|`None`|Comma-separated list of hashes to process.
+`directory`|`None`|Directory in which to export files.
+`--vt_api_key`|`'admin'`|Virustotal API key
+
+
+
 
 Modules: `VTCollector`, `LocalPlasoProcessor`
 
@@ -528,11 +1033,26 @@ Modules: `VTCollector`, `LocalPlasoProcessor`
 
 ## `vt_evtx_ts`
 
-Fetches the EVTX from VirusTotal sandbox run for a specific hash and upload it to Timesketch.
+Downloads the EVTX from VirusTotal sandbox runs for a specific hash and uploads the corresponding timeline to Timesketch.
 
 **Details:**
 
-Fetches the EVTX from VirusTotal for a specific hash, processes it with Plaso and upload it to Timesketch
+Downloads the EVTX file generated by VirusTotal during the sandbox runs for a specific hash, processes the EVTX files with Plaso and uploads the resulting Plaso file to Timesketch.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`hashes`|`None`|Comma-separated list of hashes to process.
+`directory`|`None`|Directory in which to export files.
+`--vt_api_key`|`'admin'`|Virustotal API key
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+
+
+
 
 Modules: `VTCollector`, `LocalPlasoProcessor`, `TimesketchExporter`
 
@@ -544,11 +1064,22 @@ Modules: `VTCollector`, `LocalPlasoProcessor`, `TimesketchExporter`
 
 ## `vt_pcap`
 
-Fetches the PCAP from VirusTotal sandbox run for a specific hash
+Downloads the PCAP from VirusTotal for a specific hash.
 
 **Details:**
 
-Fetches the PCAP from VirusTotalfor a specific hash.
+Downloads the PCAP files generated from VirusTotal sandboxs run for a specific hash.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`hashes`|`None`|Comma-separated list of hashes to process.
+`directory`|`None`|Directory in which to export files.
+`--vt_api_key`|`'admin'`|Virustotal API key
+
+
+
 
 Modules: `VTCollector`, `LocalFilesystemCopy`
 
@@ -566,6 +1097,23 @@ Collects Workspace Audit logs and dumps them on the filesystem.
 
 Collects logs from Workspace Audit log and dumps them on the filesystem.
 
+See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#ApplicationName for a list of application mames.
+
+For filters, see https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`application_name`|`None`|Name of application to to collect logs for. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#ApplicationName for a list of possible values.
+`--user`|`'all'`|email address of the user to query logs for
+`--start_time`|`None`|Start time (yyyy-mm-ddTHH:MM:SSZ).
+`--end_time`|`None`|End time (yyyy-mm-ddTHH:MM:SSZ).
+`--filter_expression`|`''`|Filter expression to use to query Workspace logs. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list.
+
+
+
+
 Modules: `WorkspaceAuditCollector`
 
 **Module graph**
@@ -576,11 +1124,26 @@ Modules: `WorkspaceAuditCollector`
 
 ## `workspace_meet_ts`
 
-Collects Meet records and adds to Timesketch
+Collects Meet records and adds them to Timesketch
 
 **Details:**
 
 Collects Google Workspace audit records for a Google Meet and adds them to Timesketch.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`meeting_id`|`None`|ID for the Meeting to look up.
+`--start_time`|`None`|Start time (yyyy-mm-ddTHH:MM:SSZ).
+`--end_time`|`None`|End time (yyyy-mm-ddTHH:MM:SSZ).
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+
+
+
 
 Modules: `WorkspaceAuditCollector`, `WorkspaceAuditTimesketch`, `TimesketchExporter`
 
@@ -592,11 +1155,29 @@ Modules: `WorkspaceAuditCollector`, `WorkspaceAuditTimesketch`, `TimesketchExpor
 
 ## `workspace_user_activity_ts`
 
-Collects records and adds to Timesketch
+Collects records for a Google Workspace user and adds them to Timesketch
 
 **Details:**
 
-Collects records for a Workspace user and adds them to Timesketch.
+Collects records for a Google Workspace user and adds them to Timesketch.
+
+Collects logs for the following apps: `Login`, `Drive`, `Token`, `Chrome`, `CAA`, `DataStudio`, `GroupsEnterprise`, `Calendar`, `Chat`, `Groups`, `Meet`, `UserAccounts`.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`user`|`''`|email address of the user to query logs for
+`--start_time`|`None`|Start time (yyyy-mm-ddTHH:MM:SSZ).
+`--end_time`|`None`|End time (yyyy-mm-ddTHH:MM:SSZ).
+`--filter_expression`|`''`|Filter expression to use to query Workspace logs. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+
+
+
 
 Modules: `WorkspaceAuditCollector-Login`, `WorkspaceAuditCollector-Drive`, `WorkspaceAuditCollector-Token`, `WorkspaceAuditCollector-Chrome`, `WorkspaceAuditCollector-CAA`, `WorkspaceAuditCollector-DataStudio`, `WorkspaceAuditCollector-GroupsEnterprise`, `WorkspaceAuditCollector-Calendar`, `WorkspaceAuditCollector-Chat`, `WorkspaceAuditCollector-GCP`, `WorkspaceAuditCollector-Groups`, `WorkspaceAuditCollector-Meet`, `WorkspaceAuditCollector-UserAccounts`, `WorkspaceAuditTimesketch`, `TimesketchExporter`
 
@@ -608,11 +1189,27 @@ Modules: `WorkspaceAuditCollector-Login`, `WorkspaceAuditCollector-Drive`, `Work
 
 ## `workspace_user_drive_ts`
 
-Collects Drive records and adds to Timesketch
+Collects Drive records for a Workspace user and adds them to Timesketch
 
 **Details:**
 
-Collects drive records for a Workspace user and adds them to Timesketch.
+Collects Drive records for a Workspace user and adds them to Timesketch.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`user`|`''`|email address of the user to query logs for
+`--start_time`|`None`|Start time (yyyy-mm-ddTHH:MM:SSZ).
+`--end_time`|`None`|End time (yyyy-mm-ddTHH:MM:SSZ).
+`--filter_expression`|`''`|Filter expression to use to query Workspace logs. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+
+
+
 
 Modules: `WorkspaceAuditCollector`, `WorkspaceAuditTimesketch`, `TimesketchExporter`
 
@@ -629,6 +1226,22 @@ Collects login records and adds to Timesketch
 **Details:**
 
 Collects login records for a Workspace user and adds them to Timesketch.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`user`|`''`|email address of the user to query logs for
+`--start_time`|`None`|Start time (yyyy-mm-ddTHH:MM:SSZ).
+`--end_time`|`None`|End time (yyyy-mm-ddTHH:MM:SSZ).
+`--filter_expression`|`''`|Filter expression to use to query Workspace logs. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+
+
+
 
 Modules: `WorkspaceAuditCollector`, `WorkspaceAuditTimesketch`, `TimesketchExporter`
 

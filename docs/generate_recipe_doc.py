@@ -33,6 +33,10 @@ python docs/generate_recipe_doc.py data/recipes
 #
 # <LONG_DESCRIPTION>
 #
+# CLI parameters:
+#
+# <CLI PARAMS>
+#
 # Modules: <LIST OF MODULES USED BY THE RECIPE>
 #
 # **Module graph**
@@ -46,7 +50,11 @@ RECIPE_FORMAT_TEMPLATE = """## `{0:s}`
 
 {2:s}
 
-Modules: {3:s}
+**CLI parameters:**
+
+{3:s}
+
+Modules: {4:s}
 
 **Module graph**
 
@@ -71,6 +79,17 @@ def load_recipes_from_dir(directory):
   return recipes
 
 
+def generate_args_description(recipe):
+  """Generates a description of the CLI arguments for a given recipe."""
+  args = recipe['args']
+  formatted_string = 'Parameter|Default value|Description\n'
+  formatted_string += '---------|-------------|-----------\n'
+  for arg in args:
+    flag, description, default = arg
+    formatted_string += f'`{flag}`|`{repr(default)}`|{description}\n'
+  return formatted_string + '\n\n'
+
+
 def recipe_to_doc(recipe):
   """Updates recipe-list.md with the markdown and graph for a given recipe."""
   recipe_name = recipe['name']
@@ -78,6 +97,7 @@ def recipe_to_doc(recipe):
   mkd = RECIPE_FORMAT_TEMPLATE.format(
       recipe['name'], str(recipe['short_description']),
       str(recipe['description']),
+      generate_args_description(recipe),
       ', '.join([f'`{name}`' for name in module_names]))
 
   with open(f'docs/recipe-list.md', 'a') as f:

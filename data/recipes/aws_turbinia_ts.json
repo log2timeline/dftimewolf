@@ -1,7 +1,7 @@
 {
   "name": "aws_turbinia_ts",
-  "short_description": "Copies EBS volumes from within AWS, transfers them to GCP, analyses with turbinia and outputs the results to timesketch.",
-  "description": "Copies EBS volumes from within AWS, transfers them to GCP, analyses with turbinia and outputs the results to timesketch.",
+  "short_description": "Copies EBS volumes from within AWS, transfers them to GCP, analyses with Turbinia and exports the results to Timesketch.",
+  "description": "Copies EBS volumes from within AWS, uses buckets and cloud-to-cloud operations to transfer the data to GCP. Once in GCP, a persistend disk is created and a job is added to the Turbinia queue to start analysis. The resulting Plaso file is then exported to Timesketch.",
   "preflights": [
     {
       "wants": [],
@@ -83,19 +83,19 @@
     }
   ],
   "args": [
-    ["aws_region", "AWS region with the EBS volumes", null],
-    ["gcp_zone", "Destination zone in GCP for the disks", null],
-    ["volumes", "Comma separated list of ebs volume ids (vol-xxxxxxxx)", null],
-    ["aws_bucket", "AWS bucket for image storage", null],
-    ["gcp_bucket", "GCP bucket for image storage", null],
-    ["--subnet", "AWS subnet for copy instances, required if there is no default subnet in the volume region.", null],
-    ["--gcp_project", "Destination GCP project", null],
-    ["--aws_profile", "Source AWS profile", null],
-    ["--incident_id", "Incident ID (used for Timesketch description)", null],
-    ["--run_all_jobs", "Run all Turbinia processing jobs instead of a faster subset", false],
-    ["--sketch_id", "Sketch to which the timeline should be added", null],
-    ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
-    ["--turbinia_zone", "Zone turbiunia is located in", "us-central1-f"],
-    ["--wait_for_timelines", "Whether to wait for timelines to finish processing.", true]
+    ["aws_region", "AWS region containing the EBS volumes.", null],
+    ["gcp_zone", "Destination GCP zone in which to create the disks.", null],
+    ["volumes", "Comma separated list of EBS volume IDs (e.g. vol-xxxxxxxx).", null],
+    ["aws_bucket", "AWS bucket for image storage.", null],
+    ["gcp_bucket", "GCP bucket for image storage.", null],
+    ["--subnet", "AWS subnet to copy instances from, required if there is no default subnet in the volume region.", null],
+    ["--gcp_project", "Destination GCP project.", null],
+    ["--aws_profile", "Source AWS profile.", null],
+    ["--incident_id", "Incident ID (used for Timesketch description).", null],
+    ["--run_all_jobs", "Run all Turbinia processing jobs instead of a faster subset.", false],
+    ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null],
+    ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
+    ["--turbinia_zone", "Zone Turbinia is located in", "us-central1-f"],
+    ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true]
   ]
 }

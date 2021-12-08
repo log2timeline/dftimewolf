@@ -31,11 +31,11 @@ $2cf413$azure_forensics> set
 | remote_profile_name          | Name of the Azure profile pointing to the Azure account where the disk(s) exist(s).                                   | str  | value_1         |
 | analysis_resource_group_name | The Azure resource group name in which to create the VM.                                                              | str  | None            |
 | incident_id                  | Incident ID to label the VM with.                                                                                     | str  | value_3         |
-| ssh_public_key               | A SSH public key to add to the VM.                                                                                    | str  | None            |
+| ssh_public_key               | A SSH public key string to add to the VM (e.g. `ssh-rsa AAAAB3NzaC1y...`).                                            | str  | None            |
 | instance_name                | [Optional]. Instance name of the instance to analyze.                                                                 | str  | None            |
 | disk_names                   | [Optional]. Comma-separated list of disk names to copy.                                                               | str  | None            |
-| all_disks                    | [Optional]. Copy all disks in the designated instance. Overrides disk_names if specified.                             | bool | False           |
-| boot_disk_size               | [Optional]. The size of the analysis VM boot disk (in GB).                                                            | int  | 50              |
+| all_disks                    | [Optional]. Copy all disks in the designated instance. Overrides `disk_names` if specified.                           | bool | False           |
+| boot_disk_size               | [Optional]. The size of the analysis VM's boot disk (in GB).                                                          | int  | 50              |
 | analysis_region              | [Optional]. The Azure region in which to create the VM.                                                               | str  | None            |
 | analysis_profile_name        | [Optional]. Name of the Azure profile to use when creating the analysis VM.                                           | str  | None            |
 +------------------------------+-----------------------------------------------------------------------------------------------------------------------+------+-----------------+
