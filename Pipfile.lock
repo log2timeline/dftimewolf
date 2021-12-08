@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "344dd5dde03ea0c273ed9767a7059894f6241c2ab677f7cf0512a85d4b407c6d"
+            "sha256": "c14d8f9141ec622fbf670388c1e3196ccd5b1b9453bd455d7e5e622b705eca97"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -333,7 +333,7 @@
                 "sha256:1eecaa09422db5be9e29d7fc65664e6c33bd06f9ced7838578ba40d58bdf3721",
                 "sha256:b0b883e8e874edfdece9c28f314e3dd5badf067342e42fb162203335ae61aa2c"
             ],
-            "markers": "python_version >= '3.5'",
+            "markers": "python_full_version >= '3.5.0'",
             "version": "==2.0.9"
         },
         "click": {
@@ -1530,7 +1530,7 @@
                 "sha256:6b312d5e15138552f1bda8a4e66c30e236c831b612b2bf0005f8a1df10a4bc33",
                 "sha256:a5700ce83414c64514d82d60bcda8aabfde092d1c1a8663f9200c07fdcc6da8f"
             ],
-            "markers": "python_version >= '3.5'",
+            "markers": "python_full_version >= '3.5.0'",
             "version": "==0.11.2"
         },
         "turbinia": {
@@ -1600,11 +1600,11 @@
         },
         "websocket-client": {
             "hashes": [
-                "sha256:21861f8645eb5725d1becfe86d7e7ae1a31d98b72556f9d44fcc5100976353cf",
-                "sha256:5d6a25cf0a8e936f473eceb53c4017ca85d91c7bc45c31634b62ec7190f5728e"
+                "sha256:1315816c0acc508997eb3ae03b9d3ff619c9d12d544c9a9b553704b1cc4f6af5",
+                "sha256:2eed4cc58e4d65613ed6114af2f380f7910ff416fc8c46947f6e76b6815f56c0"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==1.2.2"
+            "version": "==1.2.3"
         },
         "werkzeug": {
             "hashes": [
@@ -1842,6 +1842,14 @@
                 "sha256:947b3771f11be850c852c64b561c600fdddf794bab363060854c1ee7ad05e071"
             ],
             "version": "==2.0.2"
+        },
+        "graphviz": {
+            "hashes": [
+                "sha256:60704af002770700b099e5d684b7f2bd59c06bbaec8f575def7fba7a31a1a27a",
+                "sha256:b42554a1c47f24a9473b7f4e380d17b228586a067c97ea69d5354d6074be8dfd"
+            ],
+            "index": "pypi",
+            "version": "==0.19"
         },
         "importlib-metadata": {
             "hashes": [

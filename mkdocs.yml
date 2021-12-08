@@ -7,6 +7,7 @@ nav:
     - Developers' guide: developers-guide.md
     - Architecture: architecture.md
     - Metawolf: metawolf.md
+    - Recipe list: recipe-list.md
     - Recipe caveats: recipe-caveat.md
 
 markdown_extensions:
