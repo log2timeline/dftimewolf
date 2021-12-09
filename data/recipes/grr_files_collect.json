@@ -1,5 +1,6 @@
 {
     "name": "grr_files_collect",
+    "tags": ["grr", "filesystem"],
     "short_description": "Collects specific files from one or more GRR hosts.",
     "description": "Collects specific files from one or more GRR hosts. Files can be a glob pattern (e.g. `/tmp/*.so`) and support GRR variable interpolation (e.g. `%%users.localappdata%%/Directory/`) ",
     "modules": [{

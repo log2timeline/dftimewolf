@@ -1,5 +1,6 @@
 {
     "name": "grr_huntresults_ts",
+    "tags": ["grr", "hunt"],
     "short_description": "Fetches the ersults of a GRR hunt, processes them with Plaso, and exports the results to Timesketch.",
     "description": "Download the results of a GRR hunt and process them.\n\n- Collect results of a hunt given its Hunt ID\n- Processes results with a local install of Plaso\n- Exports processed items to a new Timesketch sketch",
     "modules": [{

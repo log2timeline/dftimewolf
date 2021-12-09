@@ -1,5 +1,6 @@
 {
     "name": "gcp_logging_collect",
+    "tags": ["logs", "gcp", "cloud"],
     "description": "Collects logs from a GCP project and dumps on the filesystem.",
     "short_description": "Collects logs from a GCP project and dumps on the filesystem (JSON). https://cloud.google.com/logging/docs/view/query-library for example queries.",
     "preflights": [{

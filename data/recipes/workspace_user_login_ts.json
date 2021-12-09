@@ -1,5 +1,6 @@
 {
   "name": "workspace_user_login_ts",
+  "tags": ["workspace", "logs", "login"],
   "description": "Collects login records for a Workspace user and adds them to Timesketch.",
   "short_description": "Collects login records and adds to Timesketch",
   "preflights": [],

@@ -1,5 +1,6 @@
 {
     "name": "upload_web_ts",
+    "tags": ["timesketch", "analyzers"],
     "short_description": "Uploads a CSV/JSONL or Plaso file to Timesketch and runs web-related Timesketch analyzers.",
     "description": "Uploads a CSV or Plaso file to Timesketch and runs a series of web-related analyzers on the uploaded data.\n\nThe following analyzers will run on the processed timeline: `browser_search,browser_timeframe,account_finder,phishy_domains,evtx_gap,login,win_crash,safebrowsing,chain`.",
     "modules": [{

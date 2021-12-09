@@ -1,5 +1,6 @@
 {
     "name": "gcp_logging_gce_ts",
+    "tags": ["logs", "gcp", "cloud", "gce"],
     "short_description": "Loads all GCE Cloud Audit Logs in a GCP project into Timesketch.",
     "description": "Loads all GCE Cloud Audit Logs for all instances in a GCP project into Timesketch. Some light processing is made to translate the logs into something Timesketch can process.",
     "preflights": [{

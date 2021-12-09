@@ -1,5 +1,6 @@
 {
   "name": "grr_timeline_ts",
+  "tags": ["grr", "filesystem", "timeline"],
   "description": "Uses the GRR TimelineFlow to generate a filesystem timeline and exports it to Timesketch..",
   "short_description": "Runs a TimelineFlow on a set of GRR hosts, generating a filesystem bodyfile for each host. These bodyfiles are processed results with Plaso, and the resulting plaso files are exported to Timesketch.",
   "preflights": [],

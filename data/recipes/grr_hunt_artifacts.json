@@ -1,5 +1,6 @@
 {
     "name": "grr_hunt_artifacts",
+    "tags": ["grr", "hunt", "artifact"],
     "short_description": "Starts a GRR hunt for the default set of artifacts.",
     "description": "Starts a GRR artifact hunt and provides the Hunt ID to the user. Feed the Hunt ID to `grr_huntresults_ts` to process results through Plaso and export them to Timesketch.",
     "modules": [{

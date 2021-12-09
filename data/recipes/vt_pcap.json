@@ -1,5 +1,6 @@
 {
   "name": "vt_pcap",
+  "tags": ["virustotal", "pcap"],
   "short_description": "Downloads the PCAP from VirusTotal for a specific hash.",
   "description": "Downloads the PCAP files generated from VirusTotal sandboxs run for a specific hash.",
   "modules": [

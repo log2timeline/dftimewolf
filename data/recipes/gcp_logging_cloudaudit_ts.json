@@ -1,5 +1,6 @@
 {
     "name": "gcp_logging_cloudaudit_ts",
+    "tags": ["logs", "gcp", "cloud"],
     "short_description": "Collects GCP logs from a project and exports them to Timesketch.",
     "description": "Collects GCP logs from a project and exports them to Timesketch. Some light processing is made to translate the logs into something Timesketch can process.",
     "preflights": [{

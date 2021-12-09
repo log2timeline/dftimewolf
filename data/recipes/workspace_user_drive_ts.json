@@ -1,5 +1,6 @@
 {
   "name": "workspace_user_drive_ts",
+  "tags": ["workspace", "logs", "drive"],
   "short_description": "Collects Drive records for a Workspace user and adds them to Timesketch",
   "description": "Collects Drive records for a Workspace user and adds them to Timesketch.",
   "preflights": [],

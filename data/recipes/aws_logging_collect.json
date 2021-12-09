@@ -1,5 +1,6 @@
 {
     "name": "aws_logging_collect",
+    "tags": ["aws", "cloud"],
     "short_description": "Collects logs from an AWS account and dumps the results to the filesystem.",
     "description": "Collects logs from an AWS account using a specified query filter and date ranges, and dumps them on the filesystem.",
     "preflights": [{

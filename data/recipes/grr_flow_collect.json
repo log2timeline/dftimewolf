@@ -1,5 +1,6 @@
 {
     "name": "grr_flow_collect",
+    "tags": ["grr", "flow"],
     "short_description": "Download the result of a GRR flow to the local filesystem.",
     "description": "Download the result of a GRR flow to the local filesystem. Flow IDs are unique *per client*, so both need to be provided in sequence.",
     "modules": [{

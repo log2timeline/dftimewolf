@@ -1,5 +1,6 @@
 {
     "name": "upload_ts",
+    "tags": ["timesketch"],
     "description": "Uploads a CSV or Plaso file to Timesketch.",
     "short_description": "Uploads a local CSV or Plaso file to Timesketch.",
     "modules": [{

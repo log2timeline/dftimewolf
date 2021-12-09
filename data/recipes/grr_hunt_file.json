@@ -1,5 +1,6 @@
 {
     "name": "grr_hunt_file",
+    "tags": ["grr", "hunt", "filesystem"],
     "short_description": "Starts a GRR hunt for a list of files.",
     "description": "Starts a GRR hunt for a list of files and provides a Hunt ID to the user. Feed the Hunt ID to `grr_huntresults_ts` to process results through Plaso and export them to Timesketch.\n\nLike in `grr_files_collect`, files can be globs and support variable interpolation.",
     "modules": [{

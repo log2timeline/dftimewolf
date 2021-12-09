@@ -1,5 +1,6 @@
 {
   "name": "azure_forensics",
+  "tags": ["azure", "cloud"],
   "short_description": "Copies a disk from an Azure account to an analysis VM.",
   "description": "Copies a disk from an Azure account, creates an analysis VM in Azure (with a startup script containing installation instructions for basic forensics tooling), and attaches the copied disk to it.",
   "modules": [{

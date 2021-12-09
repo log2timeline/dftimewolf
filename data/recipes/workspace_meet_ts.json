@@ -1,5 +1,6 @@
 {
   "name": "workspace_meet_ts",
+  "tags": ["workspace", "logs", "meet"],
   "short_description": "Collects Meet records and adds them to Timesketch",
   "description": "Collects Google Workspace audit records for a Google Meet and adds them to Timesketch.",
   "preflights": [],

@@ -1,5 +1,6 @@
 {
     "name": "grr_artifact_grep",
+    "tags": ["grr", "artifact"],
     "short_description": "Fetches ForensicArtifacts from GRR hosts and runs grep with a list of keywords on them.",
     "description": "Collect ForensicArtifacts from hosts using GRR.\n\n- Collect a predefined list of artifacts from hosts using GRR\n- Process them locally with grep to extract keywords.",
     "modules": [{

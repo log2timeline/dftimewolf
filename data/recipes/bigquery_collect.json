@@ -1,5 +1,6 @@
 {
     "name": "bigquery_collect",
+    "tags": ["bigquery", "gcp", "cloud"],
     "short_description": "Collects results from BigQuery and dumps them on the filesystem.",
     "description": "Collects results from BigQuery in a GCP project and dumps them in JSONL on the local filesystem.",
     "preflights": [{

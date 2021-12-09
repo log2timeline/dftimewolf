@@ -1,5 +1,6 @@
 {
   "name": "vt_evtx",
+  "tags": ["virustotal", "evtx"],
   "short_description": "Downloads the EVTX files from VirusTotal for a specific hash.",
   "description": "Downloads the EVTX files from VirusTotal sandbox run for a specific hash, processes it with Plaso.",
   "modules": [

@@ -1,5 +1,6 @@
 {
     "name": "gce_disk_export",
+    "tags": ["gce", "gcp", "cloud"],
     "short_description": "Export a disk image from a GCP project to a Google Cloud Storage bucket.",
     "description": "Creates a disk image from Google Compute persistent disks, compresses the images, and exports them to Google Cloud Storage.\n\nThe exported images names are appended by `.tar.gz.`\n\nAs this export happens through a Cloud Build job, the default service account `[PROJECT-NUMBER]@cloudbuild.gserviceaccount.com` in the source or analysis project (if provided) must have the IAM role `[Storage Admin]` on their corresponding project's storage bucket/folder.",
     "preflights": [{
