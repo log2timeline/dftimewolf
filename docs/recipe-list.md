@@ -344,11 +344,11 @@ Modules: `GCPLogsCollector`, `GCPLoggingTimesketch`, `TimesketchExporter`
 
 ## `gcp_logging_cloudsql_ts`
 
-Collects GCP related to Cloud SQL instances in a project and exports them to Timesketch.
+Collects GCP logs related to Cloud SQL instances in a project and exports them to Timesketch.
 
 **Details:**
 
-Collects GCP related to Cloud SQL instances in a project and exports them to Timesketch. Some light processing is made to translate the logs into something Timesketch can process.
+Collects GCP logs related to Cloud SQL instances in a project and exports them to Timesketch. Some light processing is made to translate the logs into something Timesketch can process.
 
 **CLI parameters:**
 
