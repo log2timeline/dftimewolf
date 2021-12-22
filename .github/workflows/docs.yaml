@@ -18,6 +18,6 @@ jobs:
           pip install pipenv
           pipenv install mkdocs graphviz
       - name: Generate recipe doc
-        run: pipenv run python docs/generate_recipe_doc.py data/recipes
+        run: pipenv run python docs/generate_recipe_doc.py data/recipes docs
       - name: Build doc
         run: pipenv run mkdocs build
