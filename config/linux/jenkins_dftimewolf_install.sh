@@ -46,7 +46,7 @@ fi
 
 if [[ "$*" =~ "include-timesketch" ]]; then
     # Start the Timesketch server container.
-     export ELASTICSEARCH_VERSION=7.6.2
+     export OPENSEARCH_VERSION=1.2.2
      git clone https://github.com/google/timesketch.git
      cd timesketch
      cd docker
