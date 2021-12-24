@@ -32,7 +32,7 @@ class Recipe(object):
     self.name = contents['name']  # type: str
     self.description = description
 
-  def GetHelpString(self) -> str:
+  def GetShortDescriptionString(self) -> str:
     """Generates a description for argparse help.
 
     Returns:
@@ -41,3 +41,29 @@ class Recipe(object):
     short_description = self.contents.get(
         'short_description', 'No description')
     return ' {0:<35s}{1:s}\n'.format(self.name, short_description)
+
+  def GetModuleNames(self) -> List[str]:
+    """Returns a list of modules used by the recipe.
+
+    Returns:
+      List of modules used by the recipe.
+    """
+    modules = [
+      module.get('runtime_name', module['name'])
+      for module in self.contents['modules']
+    ]
+
+    return modules
+
+  def GetPreflightNames(self) -> List[str]:
+    """Returns a list of preflights used by the recipe.
+
+    Returns:
+      List of preflights used by the recipe.
+    """
+    preflights = [
+      preflight.get('runtime_name', preflight['name'])
+      for preflight in self.contents.get('preflights', [])
+    ]
+
+    return preflights

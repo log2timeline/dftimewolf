@@ -102,6 +102,9 @@ class DFTimewolfTool(object):
 
     for recipe in self._recipes_manager.GetRecipes():
       description = recipe.description
+      description += f'\n\nPreflights: {", ".join(recipe.GetPreflightNames())}'
+      description += f'\nModules: {", ".join(recipe.GetModuleNames())}'
+
       subparser = subparsers.add_parser(
           recipe.name, formatter_class=utils.DFTimewolfFormatterClass,
           description=description)
@@ -156,7 +159,7 @@ class DFTimewolfTool(object):
             data_files_path))
         data_files_path = self._DEFAULT_DATA_FILES_PATH
 
-    logger.debug("Recipe data path: {0:s}".format(data_files_path))
+    logger.debug('Recipe data path: {0:s}'.format(data_files_path))
     self._data_files_path = data_files_path
 
   def _GenerateHelpText(self) -> str:
@@ -171,9 +174,7 @@ class DFTimewolfTool(object):
     else:
       help_text = '\nAvailable recipes:\n\n'
       for recipe in recipes:
-        short_description = recipe.contents.get(
-            'short_description', 'No description')
-        help_text += ' {0:<35s}{1:s}\n'.format(recipe.name, short_description)
+        help_text += recipe.GetShortDescriptionString()
 
     return help_text
 
