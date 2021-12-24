@@ -7,7 +7,6 @@ import unittest
 import mock
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal import compute
-from mock.mock import MagicMock
 
 from dftimewolf import config
 from dftimewolf.lib import state
@@ -141,7 +140,7 @@ class GoogleCloudCollectorTest(unittest.TestCase):
         remote_instance_name='my-owned-instance',
         stop_instance=True
     )
-    FAKE_INSTANCE.Stop = MagicMock()
+    FAKE_INSTANCE.Stop = mock.MagicMock()
     gcloud_collector.Process()
 
     mock_CreateDiskCopy.assert_called_with(
