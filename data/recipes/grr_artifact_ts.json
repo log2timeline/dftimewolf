@@ -1,6 +1,6 @@
 {
     "name": "grr_artifact_ts",
-    "tags": ["grr", "artifact"],
+    "tags": ["grr", "flow", "artifact"],
     "short_description": "Fetches default ForensicArtifacts from a sequence of GRR hosts, processes them with plaso, and sends the results to Timesketch.",
     "description": "Collect artifacts from hosts using GRR.\n\n- Collect a predefined list of artifacts from hosts using GRR\n- Process them with a local install of plaso\n- Export them to a Timesketch sketch.\n\nThe default set of artifacts is defined in the GRRArtifactCollector module (see the `_DEFAULT_ARTIFACTS_*` class attributes in `grr_hosts.py`), and varies per platform.",
     "modules": [{
