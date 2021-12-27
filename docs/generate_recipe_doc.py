@@ -105,7 +105,7 @@ def recipe_to_doc(recipe, destination_directory=''):
 
   graph = generate_graph(recipe)
   graph.render(
-      f'{destination_directory}/_static/graphviz/{recipe_name}', format='png', cleanup=True)
+      f'{destination_directory}/_static/graphviz/{recipe_name}', cleanup=True)
 
 
 def generate_graph(recipe):
