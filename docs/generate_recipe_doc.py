@@ -90,7 +90,7 @@ def generate_args_description(recipe):
   return formatted_string + '\n\n'
 
 
-def recipe_to_doc(recipe):
+def recipe_to_doc(recipe, destination_directory=''):
   """Updates recipe-list.md with the markdown and graph for a given recipe."""
   recipe_name = recipe['name']
   module_names = [m.get('runtime_name', m['name']) for m in recipe['modules']]
@@ -100,12 +100,12 @@ def recipe_to_doc(recipe):
       generate_args_description(recipe),
       ', '.join([f'`{name}`' for name in module_names]))
 
-  with open(f'docs/recipe-list.md', 'a') as f:
+  with open(f'{destination_directory}/recipe-list.md', 'a') as f:
     f.write(mkd)
 
   graph = generate_graph(recipe)
   graph.render(
-      f'docs/_static/graphviz/{recipe_name}', format='png', cleanup=True)
+      f'{destination_directory}/_static/graphviz/{recipe_name}', cleanup=True)
 
 
 def generate_graph(recipe):
@@ -160,17 +160,18 @@ def generate_graph(recipe):
 
 if __name__ == '__main__':
   recipedir = os.path.abspath(sys.argv[1])
+  outputdir = os.path.abspath(sys.argv[2])
   if not os.path.exists(recipedir):
     print(f'Recipe directory does not exist: {recipedir}')
     sys.exit(1)
   print(f'Generating docs for recipes in {recipedir}')
 
   # Write a static header to the recipe-list.md file.
-  with open('docs/recipe-list.md', 'w') as f:
+  with open(f'{outputdir}/recipe-list.md', 'w') as f:
     f.write(HEADER)
 
   recipes = load_recipes_from_dir(recipedir)
   recipes.sort(key=lambda r: r['name'])
   for recipe in recipes:
     print(f'Generating docs for {recipe["name"]}')
-    recipe_to_doc(recipe)
+    recipe_to_doc(recipe, outputdir)
