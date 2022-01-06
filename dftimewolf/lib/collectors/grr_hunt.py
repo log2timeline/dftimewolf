@@ -25,14 +25,25 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
   """This class groups functions generic to all GRR Hunt modules.
 
   Should be extended by the modules that interact with GRR hunts.
+
+  Attributes:
+    match_mode (str): the clientRuleSet matchMode
+    client_os (str): the clientRuleSet OS type
+    client_labels (str): the clientRuleSet label name
   """
 
   def __init__(self,
                state: DFTimewolfState,
                name: Optional[str]=None,
+               match_mode: Optional[str]=None,
+               client_os: Optional[str]=None,
+               client_labels: Optional[str]=None,
                critical: bool=False) -> None:
     module.BaseModule.__init__(self, state, name=name, critical=critical)
     grr_base.GRRBaseModule.__init__(self)
+    self.match_mode = match_mode
+    self.client_os = client_os
+    self.client_labels = client_labels
 
   # TODO: change object to more specific GRR type information.
   def _CreateHunt(
@@ -54,8 +65,38 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
     """
     runner_args = self.grr_api.types.CreateHuntRunnerArgs()
     runner_args.description = self.reason
+
+    if self.match_mode.lower() in ('all', 'any'):
+      runner_args.client_rule_set.match_mode = runner_args.client_rule_set.MATCH_ANY
+    else:
+      self.ModuleError('Unknown match mode', critical=True)
+
+    if self.client_label:
+      label_rule = runner_args.client_rule_set.rules.add()
+      label_rule.rule_type == label_rule.LABEL
+      label_rule.label.label_names.append(self.client_label)
+
+    if self.client_os:
+      client_oses = set(
+          [os for os in self.client_os.lower().split(',')
+              if os in ('win', 'osx', 'linux')])
+
+      if client_oses:
+        for client_os in client_oses:
+          os_rule = runner_args.client_rule_set.rules.add()
+          os_rule.rule_type == os_rule.OS
+          if self.client_os.lower() == 'win':
+            os_rule.os.os_windows = True
+          elif self.client_os.lower() == 'osx':
+            os_rule.os.os_darwin = True
+          elif self.client_os.lower() == 'linux':
+            os_rule.os.os_linux = True
+      else:
+        self.ModuleError('unknown OS', critical=True)
+
     hunt = self.grr_api.CreateHunt(
         flow_name=name, flow_args=args, hunt_runner_args=runner_args)
+
     self.logger.success('{0!s}: Hunt created'.format(hunt.hunt_id))
     self._WrapGRRRequestWithApproval(hunt, hunt.Start, self.logger)
     return hunt
