@@ -83,7 +83,7 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
 
     if self.client_operating_systems:
       client_operating_systems = set(
-          os for os in self.client_os.lower().split(',')
+          os for os in self.client_operating_systems.lower().split(',')
           if os in ('win', 'osx', 'linux'))
 
       if len(client_operating_systems) != len(self.client_operating_systems):
@@ -144,7 +144,7 @@ class GRRHuntArtifactCollector(GRRHunt):
     self.hunt = None  # type: Hunt
     self.max_file_size = 5*1024*1024*1024  # 5 GB
 
-  # pylint: disable=arguments-differ
+  # pylint: disable=arguments-differ,disable=too-many-arguments
   def SetUp(self,
             artifacts: str,
             use_tsk: bool,
@@ -171,9 +171,9 @@ class GRRHuntArtifactCollector(GRRHunt):
       approvers (Optional[str]): comma-separated GRR approval recipients.
       verify (Optional[bool]): True to indicate GRR server's x509 certificate
           should be verified.
-      match_mode (Optional[str]): match mode of the client rule set. 
+      match_mode (Optional[str]): match mode of the client rule set.
           (ALL or ANY).
-      client_operating_systems (Optional[str]): a comma separated list of 
+      client_operating_systems (Optional[str]): a comma separated list of
           client OS types (win, osx or linux).
       client_labels (Optional[str]): a comma separated list of client labels.
     """
@@ -233,7 +233,7 @@ class GRRHuntFileCollector(GRRHunt):
     self.file_path_list = []  # type: List[str]
     self.max_file_size = 5*1024*1024*1024  # 5 GB
 
-  # pylint: disable=arguments-differ
+  # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
             file_path_list: str,
             reason: str,
@@ -258,9 +258,9 @@ class GRRHuntFileCollector(GRRHunt):
       approvers (Optional[str]): comma-separated GRR approval recipients.
       verify (Optional[bool]): True to indicate GRR server's x509 certificate
           should be verified.
-      match_mode (Optional[str]): match mode of the client rule set. 
+      match_mode (Optional[str]): match mode of the client rule set.
           (ALL or ANY).
-      client_operating_systems (Optional[str]): a comma separated list of 
+      client_operating_systems (Optional[str]): a comma separated list of
           client OS types (win, osx or linux).
       client_labels (Optional[str]): a comma separated list of client labels.
     """
