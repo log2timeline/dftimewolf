@@ -27,22 +27,23 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
   Should be extended by the modules that interact with GRR hunts.
 
   Attributes:
-    match_mode (str): the clientRuleSet matchMode
-    client_os (str): the clientRuleSet OS type
-    client_labels (str): the clientRuleSet label name
+    match_mode (str): match mode of the client rule set (ALL or ANY).
+    client_operating_systems (str): a comma separated list of client OS types
+        (win, osx or linux).
+    client_labels (str): a comma separated list of client labels.
   """
 
   def __init__(self,
                state: DFTimewolfState,
-               name: Optional[str]=None,
-               match_mode: Optional[str]=None,
-               client_os: Optional[str]=None,
-               client_labels: Optional[str]=None,
-               critical: bool=False) -> None:
+               name: Optional[str] = None,
+               match_mode: Optional[str] = None,
+               client_operating_systems: Optional[str] = None,
+               client_labels: Optional[str] = None,
+               critical: bool = False) -> None:
     module.BaseModule.__init__(self, state, name=name, critical=critical)
     grr_base.GRRBaseModule.__init__(self)
     self.match_mode = match_mode
-    self.client_os = client_os
+    self.client_operating_systems = client_operating_systems
     self.client_labels = client_labels
 
   # TODO: change object to more specific GRR type information.
@@ -66,33 +67,47 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
     runner_args = self.grr_api.types.CreateHuntRunnerArgs()
     runner_args.description = self.reason
 
-    if self.match_mode.lower() in ('all', 'any'):
-      runner_args.client_rule_set.match_mode = runner_args.client_rule_set.MATCH_ANY
-    else:
-      self.ModuleError('Unknown match mode', critical=True)
-
-    if self.client_label:
-      label_rule = runner_args.client_rule_set.rules.add()
-      label_rule.rule_type == label_rule.LABEL
-      label_rule.label.label_names.append(self.client_label)
-
-    if self.client_os:
-      client_oses = set(
-          [os for os in self.client_os.lower().split(',')
-              if os in ('win', 'osx', 'linux')])
-
-      if client_oses:
-        for client_os in client_oses:
-          os_rule = runner_args.client_rule_set.rules.add()
-          os_rule.rule_type == os_rule.OS
-          if self.client_os.lower() == 'win':
-            os_rule.os.os_windows = True
-          elif self.client_os.lower() == 'osx':
-            os_rule.os.os_darwin = True
-          elif self.client_os.lower() == 'linux':
-            os_rule.os.os_linux = True
+    if self.match_mode:
+      if self.match_mode.lower() == 'any':
+        match_mode = runner_args.client_rule_set.MATCH_ANY
+      elif self.match_mode.lower() == 'all':
+        match_mode = runner_args.client_rule_set.MATCH_ALL
       else:
-        self.ModuleError('unknown OS', critical=True)
+        self.ModuleError(f'Unknown match mode {self.match_mode}', critical=True)
+
+      runner_args.client_rule_set.match_mode = match_mode
+
+    if self.client_labels:
+      for client_label in self.client_labels.split(','):
+        label_rule = runner_args.client_rule_set.rules.add()
+
+        label_rule.rule_type = label_rule.LABEL
+        label_rule.label.label_names.append(client_label)
+
+    if self.client_operating_systems:
+      client_operating_systems = set(
+          os for os in self.client_os.lower().split(',')
+          if os in ('win', 'osx', 'linux'))
+
+      if len(client_operating_systems) != len(self.client_operating_systems):
+        self.ModuleError('Invalid client OS values.', critical=True)
+
+      if client_operating_systems:
+        for client_operating_system in client_operating_systems:
+          os_rule = runner_args.client_rule_set.rules.add()
+
+          os_rule.rule_type = os_rule.OS
+
+          if client_operating_system == 'win':
+            os_rule.os.os_windows = True
+          elif client_operating_system == 'osx':
+            os_rule.os.os_darwin = True
+          elif client_operating_system == 'linux':
+            os_rule.os.os_linux = True
+
+      else:
+        self.ModuleError('No valid client OS values.', critical=True)
+
 
     hunt = self.grr_api.CreateHunt(
         flow_name=name, flow_args=args, hunt_runner_args=runner_args)
