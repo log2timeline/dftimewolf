@@ -9,7 +9,7 @@ import mock
 from dftimewolf import config
 from dftimewolf.lib import state
 from dftimewolf.lib.containers import containers
-from dftimewolf.lib.exporters import timesketch as timesketch
+from dftimewolf.lib.exporters import timesketch
 from dftimewolf.lib import errors
 
 
