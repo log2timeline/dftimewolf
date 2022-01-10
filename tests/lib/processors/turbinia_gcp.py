@@ -144,7 +144,8 @@ class TurbiniaProcessorTest(unittest.TestCase):
 
     test_state = state.DFTimewolfState(config.Config)
     test_state.StoreContainer(
-      containers.YaraRule(name='dummy_yara', rule_text="rule dummy { condition: false }")
+      containers.YaraRule(
+        name='dummy_yara', rule_text="rule dummy { condition: false }")
     )
     turbinia_processor = turbinia_gcp.TurbiniaGCPProcessor(test_state)
     turbinia_processor.SetUp(
@@ -188,7 +189,10 @@ class TurbiniaProcessorTest(unittest.TestCase):
         request.recipe['globals']['jobs_denylist'],
         ['StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob'])
     turbinia_processor.client.get_task_data.assert_called()
-    self.assertEqual(request.recipe['globals']['yara_rules'], "rule dummy { condition: false }")
+    self.assertEqual(
+      request.recipe['globals']['yara_rules'],
+      "rule dummy { condition: false }"
+    )
 
     # pylint: disable=protected-access
     mock_GCSOutputWriter.assert_any_call(
