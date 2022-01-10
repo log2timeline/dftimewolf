@@ -25,6 +25,8 @@ from dftimewolf import config
 from turbinia import config as turbinia_config
 turbinia_config.TURBINIA_PROJECT = 'turbinia-project'
 
+YARA_RULE = """rule dummy { condition: false }"""
+
 
 class TurbiniaProcessorTest(unittest.TestCase):
   """Tests for the Turbinia processor."""
@@ -141,6 +143,10 @@ class TurbiniaProcessorTest(unittest.TestCase):
     """Tests that the processor processes data correctly."""
 
     test_state = state.DFTimewolfState(config.Config)
+    test_state.StoreContainer(
+      containers.YaraRule(
+        name='dummy_yara', rule_text="rule dummy { condition: false }")
+    )
     turbinia_processor = turbinia_gcp.TurbiniaGCPProcessor(test_state)
     turbinia_processor.SetUp(
         turbinia_config_file=None,
@@ -183,6 +189,11 @@ class TurbiniaProcessorTest(unittest.TestCase):
         request.recipe['globals']['jobs_denylist'],
         ['StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob'])
     turbinia_processor.client.get_task_data.assert_called()
+    self.assertEqual(
+      request.recipe['globals']['yara_rules'],
+      "rule dummy { condition: false }"
+    )
+
     # pylint: disable=protected-access
     mock_GCSOutputWriter.assert_any_call(
         'gs://BinaryExtractorTask.tar.gz',

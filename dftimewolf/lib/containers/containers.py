@@ -176,6 +176,19 @@ class ThreatIntelligence(interface.AttributeContainer):
     self.path = path
 
 
+class YaraRule(interface.AttributeContainer):
+  """Attribute container representing Yara rules.
+
+  Attributes:
+    name: The name of the Yara rule.
+    rule_text: The actual Yara rule string.
+  """
+  def __init__(self, name: str, rule_text: str) -> None:
+    super(YaraRule, self).__init__()
+    self.name = name
+    self.rule_text = rule_text
+
+
 class TicketAttribute(interface.AttributeContainer):
   """Attribute container definition for generic ticketing system attributes.
 
