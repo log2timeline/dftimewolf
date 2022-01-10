@@ -204,6 +204,14 @@ class TurbiniaProcessorBase(module.BaseModule):
       indicators = [item.indicator for item in threatintel]
       request.recipe['globals']['filter_patterns'] = indicators
 
+    yara_rules = self.state.GetContainers(containers.YaraRule)
+    if yara_rules:
+      self.logger.info(
+          'Sending {0:d} Yara rules to Turbinia Plaso worker...'.format(
+              len(yara_rules)))
+      yara_text = '\n'.join([rule.rule_text for rule in yara_rules])
+      request.recipe['globals']['yara_rules'] = yara_text
+
     request_dict = {
         'instance': self.instance,
         'project': self.project,
