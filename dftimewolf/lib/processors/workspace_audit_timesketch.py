@@ -23,8 +23,7 @@ class WorkspaceAuditTimesketch(BaseModule):
       'workspace_format_strings.json')
 
   _IGNORABLE_RECORD_FIELDS = [
-      'time', 'datetime', 'timestamp', 'data_type', 'timestamp_desc'
-  ]
+      'time', 'datetime', 'timestamp', 'data_type', 'timestamp_desc']
 
   def __init__(self,
                state: "state.DFTimewolfState",

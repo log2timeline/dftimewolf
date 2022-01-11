@@ -413,8 +413,9 @@ class WorkspaceLogs(interface.AttributeContainer):
           used to generate the results.
       user_key (Optional[str]): user key associated with the audit records.
       start_time (Optional[str]): Beginning of the time period the results
-          cover.
-      end_time (Optional[str]): End of the time period the results cover.
+          cover. Format yyyy-mm-ddTHH:MM:SSZ.
+      end_time (Optional[str]): End of the time period the results cover. Format
+          yyyy-mm-ddTHH:MM:SSZ.
     """
     super(WorkspaceLogs, self).__init__()
     self.filter_expression = filter_expression
