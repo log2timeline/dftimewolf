@@ -125,14 +125,14 @@ class WorkspaceAuditTimesketch(BaseModule):
           actor = (timesketch_record.get('actor_email') or
                    timesketch_record.get('actor_profileId') or
                    timesketch_record.get('actor_key'))
-          message += '{0:s}'.format(actor)
+          message += '{0!s}'.format(actor)
           continue
         value = timesketch_record.get(field)
         if not value:
           value = timesketch_record.get(field.lower())
         if not value:
           value = ''
-        message += '{0:s}'.format(value)
+        message += '{0!s}'.format(value)
 
     timesketch_record['message'] = message
 
