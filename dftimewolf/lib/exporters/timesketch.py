@@ -183,18 +183,9 @@ class TimesketchExporter(module.ThreadAwareModule):
       if streamer.response and container.description:
         streamer.timeline.description = container.description
 
-    api_root = self.sketch.api.api_root
-    self.host_url = api_root.partition('api/v1')[0]
-    sketch_url = '{0:s}sketches/{1:d}/'.format(self.host_url, self.sketch.id)
-    message = 'Your Timesketch URL is: {0:s}'.format(sketch_url)
-    report_container = containers.Report(
-        module_name='TimesketchExporter',
-        text=message,
-        text_format='markdown')
-    self.state.StoreContainer(report_container)
-
     if self.wait_for_timelines:
-      self.logger.info('Waiting for timelines to finish processing...')
+      self.logger.info('Waiting for timeline {0:s} to finish processing...'\
+          .format(timeline_name))
       self._WaitForTimelines()
 
     for analyzer in self._analyzers:
@@ -245,9 +236,17 @@ class TimesketchExporter(module.ThreadAwareModule):
       self.logger.info('New sketch created: {0:d}'.format(self.sketch_id))
 
   def PostProcess(self) -> None:
-    sketch_url = '{0:s}sketches/{1:d}/'.format(self.host_url, self.sketch.id)
+    api_root = self.sketch.api.api_root
+    host_url = api_root.partition('api/v1')[0]
+    sketch_url = '{0:s}sketches/{1:d}/'.format(host_url, self.sketch.id)
     message = 'Your Timesketch URL is: {0:s}'.format(sketch_url)
     self.logger.success(message)
+
+    report_container = containers.Report(
+        module_name='TimesketchExporter',
+        text=message,
+        text_format='markdown')
+    self.state.StoreContainer(report_container)
 
 
 modules_manager.ModulesManager.RegisterModule(TimesketchExporter)
