@@ -391,6 +391,8 @@ class WorkspaceLogs(interface.AttributeContainer):
         used to generate the results.
     path (str): path to a Workspace log file.
     user_key (str): user key associated with the audit records.
+    start_time (Optional[str]): Beginning of the time period the results cover.
+    end_time (Optional[str]): End of the time period the results cover.
   """
   CONTAINER_TYPE = 'workspace_logs'
 
@@ -399,21 +401,29 @@ class WorkspaceLogs(interface.AttributeContainer):
       application_name: str,
       path: str,
       filter_expression: str,
-      user_key: str = '') -> None:
+      user_key: Optional[str ]= '',
+      start_time: Optional[str]='',
+      end_time: Optional[str]='') -> None:
     """Initializes the Workspace logs container.
 
     Args:
-      application_name (str): Name of the application the audit records are for
+      application_name (str): Name of the application the audit records are for.
+      path (str): path to a Workspace log file.
       filter_expression (str): Workspace audit logs filter expression
           used to generate the results.
-      user_key (str): user key associated with the audit records.
-      path (str): path to a Workspace log file.
+      user_key (Optional[str]): user key associated with the audit records.
+      start_time (Optional[str]): Beginning of the time period the results
+          cover. Format yyyy-mm-ddTHH:MM:SSZ.
+      end_time (Optional[str]): End of the time period the results cover. Format
+          yyyy-mm-ddTHH:MM:SSZ.
     """
     super(WorkspaceLogs, self).__init__()
     self.filter_expression = filter_expression
     self.path = path
     self.application_name = application_name
     self.user_key = user_key
+    self.start_time = start_time
+    self.end_time = end_time
 
 
 class GCSObject(interface.AttributeContainer):
