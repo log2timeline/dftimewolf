@@ -78,7 +78,7 @@ class TimesketchExporter(module.ThreadAwareModule):
           'Unable to get a Timesketch API client, try deleting the files '
           '~/.timesketchrc and ~/.timesketch.token', critical=True)
     self.incident_id = incident_id
-    self.sketch_id = sketch_id if sketch_id else 0
+    self.sketch_id = int(sketch_id) if sketch_id else 0
     self.sketch = None
 
     # Check that we have a timesketch session.
@@ -102,8 +102,8 @@ class TimesketchExporter(module.ThreadAwareModule):
       self.state.AddToCache('timesketch_sketch', self.sketch)
       self.sketch_id = self.sketch.id
 
-    if analyzers and isinstance(analyzers, (tuple, list)):
-      self._analyzers = analyzers
+    if analyzers:
+      self._analyzers = [x.strip() for x in analyzers.split(',')]
 
   def _CreateSketch(self, incident_id: Optional[str]=None) -> ts_sketch.Sketch:
     """Creates a new Timesketch sketch.
@@ -174,6 +174,8 @@ class TimesketchExporter(module.ThreadAwareModule):
     else:
       timeline_name = recipe_name
 
+    self.logger.info('Uploading {0:s}...'.format(timeline_name))
+
     with importer.ImportStreamer() as streamer:
       streamer.set_sketch(self.sketch)
       streamer.set_timeline_name(timeline_name)
@@ -189,13 +191,19 @@ class TimesketchExporter(module.ThreadAwareModule):
       self._WaitForTimelines()
 
     for analyzer in self._analyzers:
+      self.logger.info("Running analyzer {0:s} on timeline {1:s}".format(
+          analyzer, timeline_name))
       results = self.sketch.run_analyzer(
           analyzer_name=analyzer, timeline_name=timeline_name)
+
       if not results:
         self.logger.info('Analyzer [{0:s}] not able to run on {1:s}'.format(
             analyzer, timeline_name))
         continue
-      session_id = results.id
+
+      # Unknown why, but we get a list of 2 identical result objects
+      results = results[0]
+      session_id = results._session_id # pylint: disable=protected-access
       if not session_id:
         self.logger.info(
             'Analyzer [{0:s}] didn\'t provide any session data'.format(
