@@ -87,14 +87,14 @@ class TurbiniaProcessorTest(unittest.TestCase):
     self.assertEqual(len(test_state.errors), 1)
     self.assertEqual(test_state.errors[0], error.exception)
     error_msg = error.exception.message
-    self.assertEqual(error_msg, 'Specified project turbinia-wrong-project does'
-                                ' not match Turbinia configured project '
+    self.assertEqual(error_msg, 'Specified project turbinia-wrong-project does '
+                                'not match Turbinia configured project '
                                 'turbinia-project. Use '
                                 'gcp_turbinia_disk_copy_ts recipe to copy the '
                                 'disk into the same project.')
     self.assertTrue(error.exception.critical)
 
-  @mock.patch('dftimewolf.lib.processors.turbinia_gcp.turbinia_config')
+  @mock.patch('dftimewolf.lib.processors.turbinia_base.turbinia_config')
   @mock.patch('turbinia.client.get_turbinia_client')
   # pylint: disable=invalid-name
   def testWrongSetup(self, _mock_TurbiniaClient, mock_turbinia_config):
@@ -121,7 +121,6 @@ class TurbiniaProcessorTest(unittest.TestCase):
                       'specified, bailing out')
 
     for combination in params:
-      print("Here I am")
       mock_turbinia_config.TURBINIA_PROJECT = combination['project']
       mock_turbinia_config.TURBINIA_ZONE = combination['turbinia_zone']
       test_state = state.DFTimewolfState(config.Config)
@@ -155,7 +154,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
     turbinia_processor = turbinia_gcp.TurbiniaGCPProcessor(test_state)
     turbinia_processor.SetUp(
         turbinia_config_file=None,
-        disk_name='disk-1',
+        disk_names='disk-1',
         project='turbinia-project',
         turbinia_zone='europe-west1',
         sketch_id=4567,
@@ -178,7 +177,12 @@ class TurbiniaProcessorTest(unittest.TestCase):
     local_mock.copy_from.return_value = '/local/BinaryExtractorTask.tar.gz'
     mock_GCSOutputWriter.return_value = local_mock
 
-    turbinia_processor.Process()
+    turbinia_processor.PreProcess()
+    in_containers = test_state.GetContainers(
+        turbinia_processor.GetThreadOnContainerType())
+    for c in in_containers:
+      turbinia_processor.Process(c)
+    turbinia_processor.PostProcess()
 
     mock_GoogleCloudDisk.assert_called_with(
         disk_name='disk-1',

@@ -70,9 +70,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
         self.state.StoreContainer(containers.GCEDisk(name=disk))
 
     try:
-      print("Before TurbiniaSetUp")
       self.TurbiniaSetUp(project, turbinia_zone, sketch_id, run_all_jobs)
-      print("After TurbiniaSetUp")
     except TurbiniaException as exception:
       self.ModuleError(str(exception), critical=True)
       return
