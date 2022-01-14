@@ -143,20 +143,12 @@ class TurbiniaProcessorBase(object):
     self.run_all_jobs = run_all_jobs
 
     turbinia_config.LoadConfig(config_file=self.turbinia_config_file)
-
-    print("self.project: " + self.project)
-    print("self.turbinia_zone: " + self.turbinia_zone)
-
     if not self.project:
       self.project = turbinia_config.TURBINIA_PROJECT
     if not self.turbinia_zone:
       self.turbinia_zone = turbinia_config.TURBINIA_ZONE
 
-    print("self.project: " + self.project)
-    print("self.turbinia_zone: " + self.turbinia_zone)
-
     if not self.project or not self.turbinia_zone:
-      print("I am raising a TurbiniaException from TurbiniaSetUp")
       raise TurbiniaException(
         'project or turbinia_zone are not all specified, bailing out')
 
