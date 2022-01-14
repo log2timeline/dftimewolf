@@ -1,2 +1,2 @@
 $2cf413> show
-Usage of show (autocompletion is enabled.): `show [-recipes, -recipe recipe_name, -sessions, -running, -output output_id].`
+Usage of show (autocompletion is enabled.): `show [-rs[recipes], -r[ecipe] recipe_name, -s[essions], -rn[running], -o[utput] output_id].`
