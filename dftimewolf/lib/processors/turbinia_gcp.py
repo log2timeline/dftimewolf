@@ -47,11 +47,11 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
   # pylint: disable=arguments-differ
   def SetUp(self,
             turbinia_config_file: str,
-            disk_names: str,
             project: str,
             turbinia_zone: str,
             sketch_id: int,
-            run_all_jobs: bool) -> None:
+            run_all_jobs: bool,
+            disk_names: str = '') -> None:
     """Sets up the object attributes.
 
     Args:
