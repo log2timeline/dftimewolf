@@ -123,7 +123,8 @@ class Metawolf(cmd2.Cmd):
         'Metawolf\'s session_id. Type `{0:s}` to display existing '
         'sessions, and switch with `{1:s}`.'.format(
             self.metawolf_output.Color('show -s[essions]', output.YELLOW),
-            self.metawolf_output.Color('set -s[ession] session_id', output.YELLOW)
+            self.metawolf_output.Color(
+                'set -s[ession] session_id', output.YELLOW)
         ), str)
     self.AddSessionSettable(self.session_id_settable)
 
@@ -405,8 +406,8 @@ class Metawolf(cmd2.Cmd):
     if not args.cmd2_statement.get():
       self.poutput('Usage of show (autocompletion is enabled.): `{0:s}`'.format(
           self.metawolf_output.Color(
-              'show [-rs[recipes], -r[ecipe] recipe_name, -s[essions], -rn[running], '
-              '-o[utput] output_id].', output.YELLOW)))
+              'show [-rs[recipes], -r[ecipe] recipe_name, -s[essions], '
+              '-rn[running], -o[utput] output_id].', output.YELLOW)))
       return
 
     if args.cmd2_statement.get() in [ARG_RECIPES, ARG_RECIPES_SC]:
