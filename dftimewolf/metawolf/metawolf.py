@@ -112,7 +112,7 @@ class Metawolf(cmd2.Cmd):
         RECIPE_NAME_IGNORED,
         ARG_RECIPE,
         'Recipe to use. Type `{0:s}` to see available recipes.'.format(
-            self.metawolf_output.Color('show -recipes', output.YELLOW)),
+            self.metawolf_output.Color('show -rs[recipes]', output.YELLOW)),
         str)
     self.AddSessionSettable(self.recipe_settable)
 
@@ -122,8 +122,8 @@ class Metawolf(cmd2.Cmd):
         ARG_SESSION,
         'Metawolf\'s session_id. Type `{0:s}` to display existing '
         'sessions, and switch with `{1:s}`.'.format(
-            self.metawolf_output.Color('show -sessions', output.YELLOW),
-            self.metawolf_output.Color('set -session session_id', output.YELLOW)
+            self.metawolf_output.Color('show -s[essions]', output.YELLOW),
+            self.metawolf_output.Color('set -s[ession] session_id', output.YELLOW)
         ), str)
     self.AddSessionSettable(self.session_id_settable)
 
@@ -230,9 +230,9 @@ class Metawolf(cmd2.Cmd):
     what = args.cmd2_statement.get().split(' ')
     if len(what) != 2 and what[0] not in [SET_ALL, SET_ALL_SC]:
       self.poutput('Usage: `{0:s}` to set a parameter\'s value || `{1:s}` to '
-            'interactively set -all current recipe\'s parameters.'.format(
+            'interactively set -a[ll] current recipe\'s parameters.'.format(
           self.metawolf_output.Color('set arg_name arg_value', output.YELLOW),
-          self.metawolf_output.Color('set -all', output.YELLOW)))
+          self.metawolf_output.Color('set -a[ll]', output.YELLOW)))
       return
 
     if what[0] in [SET_ALL, SET_ALL_SC]:
@@ -309,7 +309,7 @@ class Metawolf(cmd2.Cmd):
       self.poutput('To see arguments for this recipe, type {0:s}. To set them'
                    ' interactively, type {1:s}'.format(
         self.metawolf_output.Color('set', output.YELLOW),
-        self.metawolf_output.Color('set -all', output.YELLOW)))
+        self.metawolf_output.Color('set -a[ll]', output.YELLOW)))
     else:
       # This block happens whenever a recipe's argument / unknown argument
       # is set
@@ -363,7 +363,7 @@ class Metawolf(cmd2.Cmd):
     self.poutput('Running: {0:s}'.format(
         self.metawolf_output.Color(' '.join(cmd), output.YELLOW)))
     self.poutput('To see past and current runs, type {0:s}.'.format(
-      self.metawolf_output.Color('`show running`', output.YELLOW)))
+      self.metawolf_output.Color('`show -rn[running]`', output.YELLOW)))
 
     metawolf_process = output.MetawolfProcess(
         session_id=self.session_id,
@@ -405,8 +405,8 @@ class Metawolf(cmd2.Cmd):
     if not args.cmd2_statement.get():
       self.poutput('Usage of show (autocompletion is enabled.): `{0:s}`'.format(
           self.metawolf_output.Color(
-              'show [-recipes, -recipe recipe_name, -sessions, -running, '
-              '-output output_id].', output.YELLOW)))
+              'show [-rs[recipes], -r[ecipe] recipe_name, -s[essions], -rn[running], '
+              '-o[utput] output_id].', output.YELLOW)))
       return
 
     if args.cmd2_statement.get() in [ARG_RECIPES, ARG_RECIPES_SC]:
