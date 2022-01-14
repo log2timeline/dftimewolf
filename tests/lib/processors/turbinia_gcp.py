@@ -45,17 +45,21 @@ class TurbiniaProcessorTest(unittest.TestCase):
     turbinia_processor = turbinia_gcp.TurbiniaGCPProcessor(test_state)
     turbinia_processor.SetUp(
         turbinia_config_file=None,
-        disk_name='disk-1',
+        disk_names='disk-1',
         project='turbinia-project',
         turbinia_zone='europe-west1',
         sketch_id=123,
         run_all_jobs=False)
-    self.assertEqual(turbinia_processor.disk_name, 'disk-1')
     self.assertEqual(turbinia_processor.project, 'turbinia-project')
     self.assertEqual(turbinia_processor.turbinia_zone, 'europe-west1')
     self.assertEqual(turbinia_processor.sketch_id, 123)
     self.assertEqual(turbinia_processor.run_all_jobs, False)
     self.assertEqual(test_state.errors, [])
+    self.assertEqual(
+        'disk-1',
+        test_state.GetContainers(
+            turbinia_processor.GetThreadOnContainerType())[0].name)
+
 
     # TURBINIA_REGION is dynamically generated
     # pylint: disable=no-member
@@ -74,7 +78,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
     with self.assertRaises(errors.DFTimewolfError) as error:
       turbinia_processor.SetUp(
           turbinia_config_file=None,
-          disk_name='disk-1',
+          disk_names='disk-1',
           project='turbinia-wrong-project',
           turbinia_zone='europe-west1',
           sketch_id=None,
@@ -97,16 +101,16 @@ class TurbiniaProcessorTest(unittest.TestCase):
     """Tests that invalid setup options generate errors."""
     params = [
         {
-             'turbinia_config_file': None,
-            'disk_name': 'disk-1',
+            'turbinia_config_file': None,
+            'disk_names': 'disk-1',
             'project': None,
             'turbinia_zone': 'europe-west1',
             'sketch_id': None,
             'run_all_jobs': False,
         },
         {
-             'turbinia_config_file': None,
-            'disk_name': 'disk-1',
+            'turbinia_config_file': None,
+            'disk_names': 'disk-1',
             'project': 'turbinia-project',
             'turbinia_zone': None,
             'sketch_id': None,
@@ -117,6 +121,7 @@ class TurbiniaProcessorTest(unittest.TestCase):
                       'specified, bailing out')
 
     for combination in params:
+      print("Here I am")
       mock_turbinia_config.TURBINIA_PROJECT = combination['project']
       mock_turbinia_config.TURBINIA_ZONE = combination['turbinia_zone']
       test_state = state.DFTimewolfState(config.Config)
@@ -247,6 +252,9 @@ class TurbiniaProcessorTest(unittest.TestCase):
         local_paths, ['/local/path.plaso', '/tmp/BinaryExtractorTask.tar.gz'])
     self.assertEqual(gs_paths, ['gs://hashes.json'])
 
+  def testPreProcess(self):
+    """Tests that ForensicsVM containers are picked up properly."""
+    self.assertTrue(False) # Implement
 
 if __name__ == '__main__':
   unittest.main()

@@ -9,16 +9,17 @@ from typing import Optional, TYPE_CHECKING
 from turbinia import TurbiniaException, evidence
 from turbinia import config as turbinia_config
 
+from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.processors.turbinia_gcp import TurbiniaProcessorBase
+from dftimewolf.lib.processors.turbinia_base import TurbiniaProcessorBase
 
 if TYPE_CHECKING:
   from dftimewolf.lib import state
 
 # pylint: disable=no-member
 
-class TurbiniaArtifactProcessor(TurbiniaProcessorBase):
+class TurbiniaArtifactProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
   """Processes Exported GRR Artifacts with Turbinia.
 
   Attributes:

@@ -84,12 +84,6 @@ class GCEDiskFromImage(module.ThreadAwareModule):
   def GetThreadPoolSize(self) -> int:
     return 10
 
-  def PreSetUp(self) -> None:
-    pass
-
-  def PostSetUp(self) -> None:
-    pass
-
   def PreProcess(self) -> None:
     pass
 

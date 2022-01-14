@@ -226,16 +226,12 @@ class StateTest(unittest.TestCase):
 
   # pylint: disable=line-too-long
   @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.Process')
-  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PreSetUp')
-  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PostSetUp')
   @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PreProcess')
   @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PostProcess')
   # pylint: enable=line-too-long
   def testProcessThreadAwareModule(self,
       mock_post_process,
       mock_pre_process,
-      mock_post_setup,
-      mock_pre_setup,
       mock_threaded_process):
     """Tests the ThreadAwareModules process functions are correctly called."""
     test_state = state.DFTimewolfState(config.Config)
@@ -246,8 +242,6 @@ class StateTest(unittest.TestCase):
     self.assertEqual(mock_threaded_process.call_count, 3)
     self.assertEqual(mock_post_process.call_count, 1)
     self.assertEqual(mock_pre_process.call_count, 1)
-    self.assertEqual(mock_post_setup.call_count, 1)
-    self.assertEqual(mock_pre_setup.call_count, 1)
     self.assertEqual(3,
         len(test_state.GetContainers(thread_aware_modules.TestContainer)))
 
@@ -281,51 +275,6 @@ class StateTest(unittest.TestCase):
     expected_values = ['output one', 'output two', 'output three']
 
     self.assertEqual(sorted(values), sorted(expected_values))
-
-  # pylint: disable=line-too-long
-  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PreSetUp')
-  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.SetUp')
-  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PostSetUp')
-  # pylint: enable=line-too-long
-  def testThreadAwareModulePreSetUpFailure(self,
-      mock_post_setup,
-      mock_setup,
-      mock_pre_setup):
-    """Tests that if PreSetUp exceptions, SetUp and PostSetUp are not
-    called."""
-    mock_pre_setup.side_effect = \
-        errors.DFTimewolfError('Exception thrown', critical=False)
-
-    test_state = state.DFTimewolfState(config.Config)
-    test_state.command_line_options = {}
-    test_state.LoadRecipe(test_recipe.threaded_no_preflights, TEST_MODULES)
-    test_state.SetupModules()
-
-    self.assertEqual(mock_pre_setup.call_count, 1)
-    self.assertEqual(mock_setup.call_count, 0)
-    self.assertEqual(mock_post_setup.call_count, 0)
-
-  # pylint: disable=line-too-long
-  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PreSetUp')
-  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.SetUp')
-  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PostSetUp')
-  # pylint: enable=line-too-long
-  def testThreadAwareModuleSetUpFailure(self,
-      mock_post_setup,
-      mock_setup,
-      mock_pre_setup):
-    """Tests that if SetUp exceptions, PostSetUp is not called."""
-    mock_setup.side_effect = \
-        errors.DFTimewolfError('Exception thrown', critical=False)
-
-    test_state = state.DFTimewolfState(config.Config)
-    test_state.command_line_options = {}
-    test_state.LoadRecipe(test_recipe.threaded_no_preflights, TEST_MODULES)
-    test_state.SetupModules()
-
-    self.assertEqual(mock_pre_setup.call_count, 1)
-    self.assertEqual(mock_setup.call_count, 1)
-    self.assertEqual(mock_post_setup.call_count, 0)
 
   # pylint: disable=line-too-long
   @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PreProcess')
