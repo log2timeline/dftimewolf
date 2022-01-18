@@ -14,7 +14,7 @@ class MainToolTest(unittest.TestCase):
   """Tests for main tool functions."""
 
   def setUp(self):
-    self.tool = dftimewolf_recipes.DFTimewolfTool()
+    self.tool = dftimewolf_recipes.DFTimewolfTool(log_filename='/tmp/test.log')
     self.tool.LoadConfiguration()
     try:
       self.tool.ReadRecipes()
@@ -50,7 +50,8 @@ class MainToolTest(unittest.TestCase):
     # We want to access the tool's sate object to load recipes and go through
     # modules.
     # pylint: disable=protected-access
-    self.tool._state =  dftw_state.DFTimewolfState(config.Config)
+    self.tool._state =  dftw_state.DFTimewolfState(config.Config,
+                                                   log_filename='/tmp/test.log')
 
     for recipe in self.tool._recipes_manager.GetRecipes():
       self.tool._state.LoadRecipe(recipe.contents, dftimewolf_recipes.MODULES)

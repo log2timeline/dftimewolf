@@ -8,9 +8,6 @@ import threading
 from logging import LogRecord
 from typing import Any, List
 
-DEFAULT_LOG_FILE = os.path.join(os.sep, 'tmp', 'dftimewolf.log')
-MAX_BYTES = 5 * 1024 * 1024
-BACKUP_COUNT = 3
 SUCCESS = 25  # 25 is right between INFO and WARNING
 
 

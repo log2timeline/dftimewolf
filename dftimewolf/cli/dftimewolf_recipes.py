@@ -3,6 +3,7 @@
 """dftimewolf main entrypoint."""
 
 import argparse
+import datetime
 import logging
 # Some AttributeErrors occurred when trying to access logging.handlers, so
 # we import them separately
@@ -10,6 +11,8 @@ from logging import handlers
 import os
 import signal
 import sys
+import tempfile
+
 from typing import TYPE_CHECKING, List, Optional, Dict, Any, cast
 
 # pylint: disable=wrong-import-position
@@ -75,15 +78,19 @@ class DFTimewolfTool(object):
   _DEFAULT_DATA_FILES_PATH = os.path.join(
       os.sep, 'usr', 'local', 'share', 'dftimewolf')
 
-  def __init__(self) -> None:
-    """Initializes a DFTimewolf tool."""
+  def __init__(self, log_filename: str) -> None:
+    """Initializes a DFTimewolf tool.
+
+    Args:
+        log_filename: The filename to which dftimewolf should log output.
+    """
     super(DFTimewolfTool, self).__init__()
     self._command_line_options: Optional[argparse.Namespace]
     self._data_files_path = ''
     self._recipes_manager = recipes_manager.RecipesManager()
     self._recipe = {}  # type: Dict[str, Any]
     self._state: "dftw_state.DFTimewolfState"
-
+    self._log_filename = log_filename
     self._DetermineDataFilesPath()
 
   @property
@@ -245,7 +252,8 @@ class DFTimewolfTool(object):
 
     self._recipe = self._command_line_options.recipe
 
-    self._state = DFTimewolfState(config.Config)
+    self._state = DFTimewolfState(
+      config.Config, log_filename=self._log_filename)
     logger.info('Loading recipe {0:s}...'.format(self._recipe['name']))
     # Raises errors.RecipeParseError on error.
     self._state.LoadRecipe(self._recipe, MODULES)
@@ -299,8 +307,20 @@ def SignalHandler(*unused_argvs: Any) -> None:
   sys.exit(1)
 
 
-def SetupLogging() -> None:
-  """Sets up a logging handler with dftimewolf's custom formatter."""
+def SetupLogging() -> str:
+  """Sets up a logging handler with dftimewolf's custom formatter.
+
+  Returns:
+      The filename to which dfTimewolf should log output.
+  """
+  logfile = tempfile.NamedTemporaryFile(
+    mode='a',
+    prefix=f'dftimewolf-run-{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}_',
+    suffix='.log',
+    delete=False)
+  log_filename = logfile.name
+  logfile.close()
+
   # Add a custom level name
   logging.addLevelName(logging_utils.SUCCESS, 'SUCCESS')
 
@@ -320,10 +340,7 @@ def SetupLogging() -> None:
 
   # File handler needs go be added first because it doesn't format messages
   # with color
-  file_handler = handlers.RotatingFileHandler(
-      logging_utils.DEFAULT_LOG_FILE,
-      maxBytes=logging_utils.MAX_BYTES,
-      backupCount=logging_utils.BACKUP_COUNT)
+  file_handler = logging.FileHandler(log_filename)
   file_handler.setFormatter(logging_utils.WolfFormatter(colorize=False))
   logger.addHandler(file_handler)
 
@@ -331,9 +348,9 @@ def SetupLogging() -> None:
   colorize = not bool(os.environ.get('DFTIMEWOLF_NO_RAINBOW'))
   console_handler.setFormatter(logging_utils.WolfFormatter(colorize=colorize))
   logger.addHandler(console_handler)
-  logger.debug(
-      'Logging to stdout and {0:s}'.format(logging_utils.DEFAULT_LOG_FILE))
-  logger.success('Success!')
+  logger.success(
+      'Logging to stdout and {0:s}'.format(log_filename))
+  return log_filename
 
 
 def Main() -> bool:
@@ -342,7 +359,6 @@ def Main() -> bool:
   Returns:
     bool: True if DFTimewolf could be run successfully, False otherwise.
   """
-  SetupLogging()
 
   version_tuple = (sys.version_info[0], sys.version_info[1])
   if version_tuple[0] != 3 or version_tuple < (3, 6):
@@ -350,7 +366,8 @@ def Main() -> bool:
                      'required.').format(sys.version))
     return False
 
-  tool = DFTimewolfTool()
+  log_filename = SetupLogging()
+  tool = DFTimewolfTool(log_filename)
 
   # TODO: log errors if this fails.
   tool.LoadConfiguration()

@@ -40,10 +40,10 @@ class BaseModule(object):
     """Initialize a module.
 
     Args:
-      state (DFTimewolfState): recipe state.
-      name (Optional[str]): A unique name for a specific instance of the module
+      state: recipe state.
+      name: A unique name for a specific instance of the module
           class. If not provided, will default to the module's class name.
-      critical (Optional[bool]): True if the module is critical, which causes
+      critical: True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
     super(BaseModule, self).__init__()
@@ -53,16 +53,17 @@ class BaseModule(object):
     self.logger = cast(logging_utils.WolfLogger,
                        logging.getLogger(name=self.name))
 
-    self.SetupLogging()
+  def SetupLogging(self, log_filename: str, threaded: bool = False) -> None:
+    """Sets up stream and file logging for a specific module.
 
-  def SetupLogging(self, threaded: bool = False) -> None:
-    """Sets up stream and file logging for a specific module."""
+    Args:
+      log_filename: The filename to which dftimewolf should log output.
+      threaded: Whether the module is threaded. This will influence how logging
+          is formatted.
+    """
     self.logger.setLevel(logging.DEBUG)
 
-    file_handler = handlers.RotatingFileHandler(
-        logging_utils.DEFAULT_LOG_FILE,
-        maxBytes=logging_utils.MAX_BYTES,
-        backupCount=logging_utils.BACKUP_COUNT)
+    file_handler = logging.FileHandler(log_filename)
     file_handler.setFormatter(logging_utils.WolfFormatter(colorize=False))
     self.logger.addHandler(file_handler)
 
@@ -181,7 +182,6 @@ class ThreadAwareModule(BaseModule):
     # The call to super.__init__ sets up the logger, but we want to change it
     # for threaded modules.
     self.logger.handlers.clear()
-    self.SetupLogging(threaded=True)
 
   @abc.abstractmethod
   def PreSetUp(self) -> None:

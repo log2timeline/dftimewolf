@@ -46,7 +46,7 @@ class DFTimewolfState(object):
     store (dict[str, object]): arbitrary data for modules.
   """
 
-  def __init__(self, config: Type[Config]) -> None:
+  def __init__(self, config: Type[Config], log_filename: str) -> None:
     """Initializes a state."""
     super(DFTimewolfState, self).__init__()
     self.command_line_options = {}  # type: Dict[str, Any]
@@ -61,6 +61,7 @@ class DFTimewolfState(object):
     self.store = {}  # type: Dict[str, List[interface.AttributeContainer]]
     self.streaming_callbacks = {}  # type: Dict[Type[interface.AttributeContainer], List[Callable[[Any], Any]]]  # pylint: disable=line-too-long
     self._abort_execution = False
+    self.log_filename = log_filename
 
   def _InvokeModulesInThreads(self, callback: Callable[[Any], Any]) -> None:
     """Invokes the callback function on all the modules in separate threads.
@@ -84,7 +85,7 @@ class DFTimewolfState(object):
     """Dynamically loads the modules declared in a recipe.
 
     Args:
-      module_location (dict[str, str]): A dfTimewolf module name - Python module
+      module_locations: A dfTimewolf module name - Python module
           mapping. e.g.:
             {'GRRArtifactCollector': 'dftimewolf.lib.collectors.grr_hosts'}
 
@@ -114,7 +115,10 @@ class DFTimewolfState(object):
     """Populates the internal module pool with modules declared in a recipe.
 
     Args:
-      recipe (dict[str, Any]): recipe declaring modules to load.
+      recipe: recipe declaring modules to load.
+      module_locations: A dfTimewolf module name - Python module
+          mapping. e.g.:
+            {'GRRArtifactCollector': 'dftimewolf.lib.collectors.grr_hosts'}
 
     Raises:
       RecipeParseError: if a module in the recipe has not been declared.
@@ -132,7 +136,10 @@ class DFTimewolfState(object):
       runtime_name = module_definition.get('runtime_name')
       if not runtime_name:
         runtime_name = module_name
-      self._module_pool[runtime_name] = module_class(self, name=runtime_name)
+      module = module_class(self, name=runtime_name)
+      threaded = isinstance(module, ThreadAwareModule)
+      module.SetupLogging(self.log_filename, threaded=threaded)
+      self._module_pool[runtime_name] = module
 
   def FormatExecutionPlan(self) -> str:
     """Formats execution plan.
