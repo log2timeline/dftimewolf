@@ -320,10 +320,7 @@ def SetupLogging() -> None:
 
   # File handler needs go be added first because it doesn't format messages
   # with color
-  file_handler = handlers.RotatingFileHandler(
-      logging_utils.DEFAULT_LOG_FILE,
-      maxBytes=logging_utils.MAX_BYTES,
-      backupCount=logging_utils.BACKUP_COUNT)
+  file_handler = logging.FileHandler(logging_utils.DEFAULT_LOG_FILE)
   file_handler.setFormatter(logging_utils.WolfFormatter(colorize=False))
   logger.addHandler(file_handler)
 
