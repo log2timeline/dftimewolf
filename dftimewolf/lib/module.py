@@ -59,10 +59,7 @@ class BaseModule(object):
     """Sets up stream and file logging for a specific module."""
     self.logger.setLevel(logging.DEBUG)
 
-    file_handler = handlers.RotatingFileHandler(
-        logging_utils.DEFAULT_LOG_FILE,
-        maxBytes=logging_utils.MAX_BYTES,
-        backupCount=logging_utils.BACKUP_COUNT)
+    file_handler = handlers.RotatingFileHandler(logging_utils.DEFAULT_LOG_FILE)
     file_handler.setFormatter(logging_utils.WolfFormatter(colorize=False))
     self.logger.addHandler(file_handler)
 
