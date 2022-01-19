@@ -252,11 +252,7 @@ class DFTimewolfState(object):
     module = self._module_pool[runtime_name]
 
     try:
-      if isinstance(module, ThreadAwareModule):
-        module.PreSetUp()
       module.SetUp(**new_args)
-      if isinstance(module, ThreadAwareModule):
-        module.PostSetUp()
     except errors.DFTimewolfError:
       msg = "A critical error occurred in module {0:s}, aborting execution."
       logger.critical(msg.format(module.name))

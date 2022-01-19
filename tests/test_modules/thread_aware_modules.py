@@ -97,12 +97,6 @@ class ThreadAwareConsumerModule(module.ThreadAwareModule):
   def GetThreadPoolSize(self):
     return 2
 
-  def PreSetUp(self) -> None:
-    self.logger.info("ThreadAwareConsumerModule Static Pre Set Up")
-
-  def PostSetUp(self) -> None:
-    self.logger.info("ThreadAwareConsumerModule Static Post Set Up")
-
   def PreProcess(self) -> None:
     self.logger.info("ThreadAwareConsumerModule Static Pre Process")
 

@@ -322,11 +322,5 @@ class GCSToGCEImage(module.ThreadAwareModule):
   def GetThreadPoolSize(self) -> int:
     return 10
 
-  def PreSetUp(self) -> None:
-    pass
-
-  def PostSetUp(self) -> None:
-    pass
-
 
 modules_manager.ModulesManager.RegisterModule(GCSToGCEImage)

@@ -184,16 +184,6 @@ class ThreadAwareModule(BaseModule):
     self.SetupLogging(threaded=True)
 
   @abc.abstractmethod
-  def PreSetUp(self) -> None:
-    """Carries out optional SetUp actions that only need to be performed once,
-    regardless of the number of class instantiations. Called before SetUp."""
-
-  @abc.abstractmethod
-  def PostSetUp(self) -> None:
-    """Carries out optional SetUp actions that only need to be performed once,
-    regardless of the number of class instantiations. Called after SetUp."""
-
-  @abc.abstractmethod
   def PreProcess(self) -> None:
     """Carries out optional Process actions that only need to be performed
     once, regardless of the number of class instantiations. Called before
