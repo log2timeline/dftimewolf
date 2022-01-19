@@ -3,7 +3,6 @@ compatible terminals."""
 import datetime
 import inspect
 import logging
-import os
 import random
 import tempfile
 import threading
