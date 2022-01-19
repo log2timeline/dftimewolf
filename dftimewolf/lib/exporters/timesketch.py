@@ -220,12 +220,6 @@ class TimesketchExporter(module.ThreadAwareModule):
   def GetThreadPoolSize(self) -> int:
     return 5
 
-  def PreSetUp(self) -> None:
-    pass
-
-  def PostSetUp(self) -> None:
-    pass
-
   def PreProcess(self) -> None:
     """Get the sketch, creating it if it doesn't yet exist."""
     if not self.timesketch_api:
