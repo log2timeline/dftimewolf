@@ -60,7 +60,6 @@ MODULES = {
   'VTCollector' : 'dftimewolf.lib.collectors.virustotal',
   'WorkspaceAuditCollector': 'dftimewolf.lib.collectors.workspace_audit',
   'WorkspaceAuditTimesketch': 'dftimewolf.lib.processors.workspace_audit_timesketch',
-  'TurbiniaGCPProcessorThreaded': 'dftimewolf.lib.processors.turbinia_gcp_tam',
 }
 # pylint: enable=line-too-long
 

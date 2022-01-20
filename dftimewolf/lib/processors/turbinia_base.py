@@ -2,17 +2,15 @@
 """Base class for turbinia interactions."""
 
 import getpass
-import os
 import tempfile
-from typing import Dict, List, Optional, TYPE_CHECKING, Tuple, Any, Union
-from dftimewolf.lib.logging_utils import WolfLogger
+from typing import Dict, List, Optional, Tuple, Any, Union
 
-# We import a class to avoid importing the whole turbinia module.
 from turbinia import TurbiniaException
 from turbinia import client as turbinia_client
 from turbinia import config as turbinia_config
 from turbinia import evidence, output_manager
 from turbinia.message import TurbiniaRequest
+from dftimewolf.lib.logging_utils import WolfLogger
 
 
 # pylint: disable=abstract-method,no-member
@@ -166,8 +164,9 @@ class TurbiniaProcessorBase(object):
   def TurbiniaProcess(
       self,
       evidence_: evidence.Evidence,
-      threat_intel_indicators: Optional[List[Optional[str]]] = [],
-      yara_rules: Optional[List[str]] = []) -> Tuple[List[Dict[str, str]], Any]:
+      threat_intel_indicators: Optional[List[Optional[str]]] = None,
+      yara_rules: Optional[List[str]] = None
+      ) -> Tuple[List[Dict[str, str]], Any]:
     """Creates and sends a Turbinia processing request.
 
     Args:
@@ -193,7 +192,7 @@ class TurbiniaProcessorBase(object):
       request.recipe['globals']['filter_patterns'] = threat_intel_indicators
 
     if yara_rules:
-      yara_text = '\n'.join([rule for rule in yara_rules])
+      yara_text = '\n'.join(list(yara_rules))
       request.recipe['globals']['yara_rules'] = yara_text
 
     request_dict = {
@@ -219,4 +218,3 @@ class TurbiniaProcessorBase(object):
     self.logger.info(short_message)
 
     return task_data, message
-

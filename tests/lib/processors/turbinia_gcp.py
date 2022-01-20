@@ -29,7 +29,7 @@ turbinia_config.TURBINIA_PROJECT = 'turbinia-project'
 YARA_RULE = """rule dummy { condition: false }"""
 
 
-class TurbiniaProcessorTest(unittest.TestCase):
+class TurbiniaGCPProcessorTest(unittest.TestCase):
   """Tests for the Turbinia processor."""
 
   def testInitialization(self):
@@ -349,13 +349,14 @@ class TurbiniaProcessorTest(unittest.TestCase):
     self.assertEqual(gs_paths, ['gs://hashes.json'])
 
   @mock.patch('turbinia.client.get_turbinia_client')
-  def testPreProcess(self, mockTurbiniaClient):
+  # pylint: disable=invalid-name
+  def testPreProcess(self, _mockTurbiniaClient):
     """Tests that ForensicsVM containers are picked up properly.
-    
+
     We store a ForensicsVM container in the state, run PreProcess, then check
     that the state containes a GCEDisk as expected."""
     test_state = state.DFTimewolfState(config.Config)
-    test_state.StoreContainer(containers.ForensicsVM(      
+    test_state.StoreContainer(containers.ForensicsVM(
          name='ForensicsVM',
          evidence_disk=GoogleComputeDisk(
            name='disk-1',
@@ -363,9 +364,6 @@ class TurbiniaProcessorTest(unittest.TestCase):
            zone='europe-west1'),
          platform = 'gcp'))
 
-
-    print(test_state.store)
-    
     turbinia_processor = turbinia_gcp.TurbiniaGCPProcessor(test_state)
     turbinia_processor.SetUp(
         turbinia_config_file=None,

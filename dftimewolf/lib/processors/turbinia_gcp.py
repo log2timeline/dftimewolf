@@ -1,22 +1,18 @@
 # -*- coding: utf-8 -*-
 """Processes GCP cloud disks using Turbinia."""
 
-import getpass
 import os
-import tempfile
-from typing import Dict, List, Optional, TYPE_CHECKING, Tuple, Any, Type, Union
-from dftimewolf.lib.processors.turbinia_base import TurbiniaProcessorBase
+from typing import Dict, List, Optional, TYPE_CHECKING, Any, Type, Union
 
-# We import a class to avoid importing the whole turbinia module.
 from turbinia import TurbiniaException
 from turbinia import client as turbinia_client
-from turbinia import config as turbinia_config
-from turbinia import evidence, output_manager
-from turbinia.message import TurbiniaRequest
+from turbinia import config as turbinia_config  #pylint: disable=unused-import
+from turbinia import evidence
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers, interface
 from dftimewolf.lib.modules import manager as modules_manager
+from dftimewolf.lib.processors.turbinia_base import TurbiniaProcessorBase
 
 if TYPE_CHECKING:
   from dftimewolf.lib import state
@@ -89,6 +85,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
         self.state.StoreContainer(
             containers.GCEDisk(name=container.evidence_disk.name))
 
+  # pylint: disable=arguments-renamed
   def Process(self, disk_container: containers.GCEDisk) -> None:
     """Process a GCE Disk with Turbinia."""
     log_file_path = os.path.join(self._output_path, '{0:s}-turbinia.log'.format(
@@ -167,6 +164,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
         self.logger.success('Found plaso result: {0:s}'.format(path))
         container = containers.File(name=description, path=path)
       self.state.StoreContainer(container)
+  # pylint: enable=arguments-renamed
 
   @staticmethod
   def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
