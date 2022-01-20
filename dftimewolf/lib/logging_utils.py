@@ -1,16 +1,29 @@
 """Module providing custom logging formatters and colorization for ANSI
 compatible terminals."""
+import datetime
 import inspect
 import logging
-import os
 import random
+import tempfile
 import threading
 from logging import LogRecord
 from typing import Any, List
 
-DEFAULT_LOG_FILE = os.path.join(os.sep, 'tmp', 'dftimewolf.log')
-MAX_BYTES = 5 * 1024 * 1024
-BACKUP_COUNT = 3
+
+def _GenerateTempLogFile() -> str:
+  """Generates a temporary log file name."""
+  now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+  logfile = tempfile.NamedTemporaryFile(
+    mode='a',
+    prefix=f'dftimewolf-run-{now}_',
+    suffix='.log',
+    delete=False)
+  log_filename = logfile.name
+  logfile.close()
+  return log_filename
+
+
+DEFAULT_LOG_FILE = _GenerateTempLogFile()
 SUCCESS = 25  # 25 is right between INFO and WARNING
 
 
