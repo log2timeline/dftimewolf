@@ -119,8 +119,7 @@ class Issue503Module(module.ThreadAwareModule):
   def Process(self, container) -> None:
     """Process"""
     self.logger.info('{0:s} Process!'.format(self.name))
-    to_store = TestContainer(container.value + " Processed")
-    self.state.StoreContainer(to_store)
+    self.state.StoreContainer(TestContainer(container.value + " Processed"))
 
   @staticmethod
   def GetThreadOnContainerType():
