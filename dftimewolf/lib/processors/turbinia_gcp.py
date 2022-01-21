@@ -5,7 +5,6 @@ import os
 from typing import Dict, List, Optional, TYPE_CHECKING, Any, Type, Union
 
 from turbinia import TurbiniaException
-from turbinia import client as turbinia_client
 from turbinia import config as turbinia_config  #pylint: disable=unused-import
 from turbinia import evidence
 
