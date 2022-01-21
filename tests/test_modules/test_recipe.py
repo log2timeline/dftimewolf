@@ -88,4 +88,14 @@ named_modules_contents = {
     }]
 }
 
+issue_503_recipe = {
+    'name': 'issue_503_recipe',
+    'short_description': 'Nothing to see here.',
+    'modules': [{
+        'wants': [],
+        'name': 'Issue503Module',
+        'args': {},
+    }]
+}
+
 args = []
