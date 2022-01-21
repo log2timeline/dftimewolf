@@ -377,7 +377,7 @@ class StateTest(unittest.TestCase):
     """Tests that containers are handled properly when they are configured to
     pop from the state by a ThreadAwareModule that uses the same container type
     for input and output.
-    
+
     Ref: https://github.com/log2timeline/dftimewolf/issues/503
     """
     test_state = state.DFTimewolfState(config.Config)
