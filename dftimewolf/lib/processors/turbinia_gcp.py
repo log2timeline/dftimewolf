@@ -60,10 +60,10 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     """
     self.turbinia_config_file = turbinia_config_file
 
-    for item in disk_names.strip().split(','):
-      disk = item.strip()
-      if disk:
-        self.state.StoreContainer(containers.GCEDisk(name=disk))
+    if disk_names:
+      for disk in disk_names.strip().split(','):
+        if disk:
+          self.state.StoreContainer(containers.GCEDisk(name=disk))
 
     try:
       self.TurbiniaSetUp(project, turbinia_zone, sketch_id, run_all_jobs)
