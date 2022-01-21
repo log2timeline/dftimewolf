@@ -23,7 +23,8 @@ TEST_MODULES = {
   'DummyModule2': 'tests.test_modules.modules',
   'DummyPreflightModule': 'tests.test_modules.modules',
   'ContainerGeneratorModule': 'tests.test_modules.thread_aware_modules',
-  'ThreadAwareConsumerModule': 'tests.test_modules.thread_aware_modules'
+  'ThreadAwareConsumerModule': 'tests.test_modules.thread_aware_modules',
+  'Issue503Module': 'tests.test_modules.thread_aware_modules'
 }
 
 class StateTest(unittest.TestCase):
@@ -36,7 +37,8 @@ class StateTest(unittest.TestCase):
         modules.DummyModule2,
         modules.DummyPreflightModule,
         thread_aware_modules.ContainerGeneratorModule,
-        thread_aware_modules.ThreadAwareConsumerModule])
+        thread_aware_modules.ThreadAwareConsumerModule,
+        thread_aware_modules.Issue503Module])
 
     self._recipe = resources.Recipe(
         test_recipe.__doc__, test_recipe.contents, test_recipe.args)
@@ -61,6 +63,8 @@ class StateTest(unittest.TestCase):
         thread_aware_modules.ContainerGeneratorModule)
     modules_manager.ModulesManager.DeregisterModule(
         thread_aware_modules.ThreadAwareConsumerModule)
+    modules_manager.ModulesManager.DeregisterModule(
+        thread_aware_modules.Issue503Module)
 
   def testLoadRecipe(self):
     """Tests that a recipe can be loaded correctly."""
@@ -368,6 +372,28 @@ class StateTest(unittest.TestCase):
         type_='asd', name='asd', value='asd')
     test_state.StreamContainer(attributes)
     mock_callback.assert_not_called()
+
+  def testThreadAwareModuleContainerReuse(self):
+    """Tests that containers are handled properly when they are configured to
+    pop from the state by a ThreadAwareModule that uses the same container type
+    for input and output. https://github.com/log2timeline/dftimewolf/issues/503
+    """
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.command_line_options = {}
+    test_state.StoreContainer(thread_aware_modules.TestContainer('one'))
+    test_state.StoreContainer(thread_aware_modules.TestContainer('two'))
+    test_state.StoreContainer(thread_aware_modules.TestContainer('three'))
+    test_state.LoadRecipe(test_recipe.issue_503_recipe, TEST_MODULES)
+    test_state.SetupModules()
+    test_state.RunModules()
+
+    values = [container.value for container in test_state.GetContainers(
+        thread_aware_modules.TestContainer)]
+    expected_values = ['one Processed',
+                       'two Processed',
+                       'three Processed']
+    self.assertEqual(sorted(values), sorted(expected_values))
+
 
 if __name__ == '__main__':
   unittest.main()

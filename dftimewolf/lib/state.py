@@ -323,8 +323,9 @@ class DFTimewolfState(object):
 
         with ThreadPoolExecutor(max_workers=module.GetThreadPoolSize()) \
             as executor:
-          for container in \
-              self.GetContainers(module.GetThreadOnContainerType()):
+          pop = not module.KeepThreadedContainersInState()
+          conts = self.GetContainers(module.GetThreadOnContainerType(), pop)
+          for container in conts:
             futures.append(
                 executor.submit(module.Process, container))
 
@@ -333,9 +334,6 @@ class DFTimewolfState(object):
         for fut in futures:
           if fut.exception():
             raise fut.exception() # type: ignore
-
-        if not module.KeepThreadedContainersInState():
-          self.GetContainers(module.GetThreadOnContainerType(), True)
       else:
         module.Process()
     except errors.DFTimewolfError:
