@@ -1,0 +1,220 @@
+# -*- coding: utf-8 -*-
+"""Base class for turbinia interactions."""
+
+import getpass
+import tempfile
+from typing import Dict, List, Optional, Tuple, Any, Union
+
+from turbinia import TurbiniaException
+from turbinia import client as turbinia_client
+from turbinia import config as turbinia_config
+from turbinia import evidence, output_manager
+from turbinia.message import TurbiniaRequest
+from dftimewolf.lib.logging_utils import WolfLogger
+
+
+# pylint: disable=abstract-method,no-member
+class TurbiniaProcessorBase(object):
+  """Base class for processing with Turbinia.
+
+  Attributes:
+    turbinia_config_file (str): Full path to the Turbinia config file to use.
+    client (TurbiniaClient): Turbinia client.
+    instance (str): name of the Turbinia instance
+    project (str): name of the GCP project containing the disk to process.
+    run_all_jobs (bool): Whether to run all jobs or to remove slow-running jobs:
+        'StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob'.
+    sketch_id (int): The Timesketch sketch id
+    turbinia_region (str): GCP region in which the Turbinia server is running.
+    turbinia_zone (str): GCP zone in which the Turbinia server is running.
+  """
+
+  def __init__(self, logger: WolfLogger) -> None:
+    """Initializes a Turbinia base processor.
+
+    Args:
+      state (state.DFTimewolfState): recipe state.
+      name (Optional[str]): The module's runtime name.
+      critical (Optional[bool]): True if the module is critical, which causes
+          the entire recipe to fail if the module encounters an error.
+    """
+    self.turbinia_config_file = ''
+    self._output_path = str()
+    self.client = None  # type: turbinia_client.BaseTurbiniaClient
+    self.instance = None
+    self.project = str()
+    self.run_all_jobs = False
+    self.sketch_id = int()
+    self.turbinia_region = None
+    self.turbinia_zone = str()
+    self.parallel_count = 5  # Arbitrary, used by ThreadAwareModule
+    self.logger = logger
+
+  def _DeterminePaths(
+      self,
+      task_data: List[Dict[str, Any]]) -> Tuple[List[str], List[str]]:
+    """Builds lists of local and remote paths from data retured by Turbinia.
+
+    This finds all .plaso, hashes.json, and BinaryExtractorTask files in the
+    Turbinia output, and determines if they are local or remote (it's possible
+    this will be running against a local instance of Turbinia).
+
+    Args:
+      task_data (list[dict]): List of dictionaries representing Turbinia task
+          data.
+
+    Returns:
+      tuple[list, list]: A tuple of two lists. The first element contains the
+          local paths, the second element contains the remote (GS) paths.
+    """
+    local_paths = []
+    gs_paths = []
+    for task in task_data:
+      # saved_paths may be set to None
+      saved_paths = task.get('saved_paths') or []
+      for path in saved_paths:
+
+        if path.endswith('.plaso') or \
+            path.endswith('BinaryExtractorTask.tar.gz') or \
+            path.endswith('hashes.json'):
+
+          if path.startswith('gs://'):
+            gs_paths.append(path)
+          else:
+            local_paths.append(path)
+
+    return local_paths, gs_paths
+
+  def _DownloadFilesFromGCS(self,
+                            timeline_label: str,
+                            gs_paths: List[str]) -> List[Tuple[str, str]]:
+    """Downloads files stored in Google Cloud Storage to the local filesystem.
+
+    Args:
+      timeline_label (str): Label to use to construct the path list.
+      gs_paths (List[str]):  gs:// URI to files that need to be downloaded
+          from GS.
+
+    Raises:
+      TurbiniaException: Upon errors downloading from GCS
+
+    Returns:
+      list:
+        tuple: containing:
+          str: The timeline label for this path.
+          str: A local path where GS files have been copied to.
+    """
+    # TODO: Externalize fetching files from GCS buckets to a different module.
+
+    local_paths = []
+    for path in gs_paths:
+      local_path = None
+      output_writer = output_manager.GCSOutputWriter(
+          path, local_output_dir=self._output_path)
+      local_path = output_writer.copy_from(path)
+      self.logger.success('Downloaded {0:s} to {1:s}'.format(path, local_path))
+
+      if local_path:
+        local_paths.append((timeline_label, local_path))
+
+    return local_paths
+
+  def TurbiniaSetUp(self,
+                    project: str,
+                    turbinia_zone: str,
+                    sketch_id: int,
+                    run_all_jobs: bool) -> None:
+    """Sets up the object attributes.
+
+    Raises:
+      TurbiniaException: For errors in setting up the Turbinia client.
+
+    Args:
+      project (str): name of the GCP project containing the disk to process.
+      turbinia_zone (str): GCP zone in which the Turbinia server is running.
+      sketch_id (int): The Timesketch sketch ID.
+      run_all_jobs (bool): Whether to run all jobs instead of a faster subset.
+    """
+    self.project = project
+    self.turbinia_zone = turbinia_zone
+    self.sketch_id = sketch_id
+    self.run_all_jobs = run_all_jobs
+
+    turbinia_config.LoadConfig(config_file=self.turbinia_config_file)
+    if not self.project:
+      self.project = turbinia_config.TURBINIA_PROJECT
+    if not self.turbinia_zone:
+      self.turbinia_zone = turbinia_config.TURBINIA_ZONE
+
+    if not self.project or not self.turbinia_zone:
+      raise TurbiniaException(
+        'project or turbinia_zone are not all specified, bailing out')
+
+    self.turbinia_region = turbinia_config.TURBINIA_REGION
+    self.instance = turbinia_config.INSTANCE_ID
+    if turbinia_config.TURBINIA_PROJECT != self.project:
+      raise TurbiniaException(
+          'Specified project {0!s} does not match Turbinia configured '
+          'project {1!s}. Use gcp_turbinia_disk_copy_ts recipe to copy the '
+          'disk into the same project.'.format(
+              self.project, turbinia_config.TURBINIA_PROJECT))
+    self._output_path = tempfile.mkdtemp()
+    self.client = turbinia_client.get_turbinia_client()
+
+  def TurbiniaProcess(
+      self,
+      evidence_: evidence.Evidence,
+      threat_intel_indicators: Optional[List[Optional[str]]] = None,
+      yara_rules: Optional[List[str]] = None
+      ) -> Tuple[List[Dict[str, str]], Any]:
+    """Creates and sends a Turbinia processing request.
+
+    Args:
+      evidence_(turbinia.evidence.Evidence): The evience to proecess
+
+    Raises:
+      TurbiniaException: Exceptions raised for turbinia errors.
+
+    Returns:
+      list[dict]: The Turbinia task data
+    """
+    evidence_.validate()
+
+    request = TurbiniaRequest(requester=getpass.getuser())
+    request.evidence.append(evidence_)
+    if self.sketch_id:
+      request.recipe['globals']['sketch_id'] = self.sketch_id
+    if not self.run_all_jobs:
+      request.recipe['globals']['jobs_denylist'] = [
+          'StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob']
+
+    if threat_intel_indicators:
+      request.recipe['globals']['filter_patterns'] = threat_intel_indicators
+
+    if yara_rules:
+      yara_text = '\n'.join(list(yara_rules))
+      request.recipe['globals']['yara_rules'] = yara_text
+
+    request_dict = {
+        'instance': self.instance,
+        'project': self.project,
+        'region': self.turbinia_region,
+        'request_id': request.request_id
+    }
+
+    task_data = []  # type: List[Dict[str, str]]
+
+    self.logger.success(
+        'Creating Turbinia request {0:s} with Evidence {1!s}'.format(
+            request.request_id, evidence_.name))
+    self.client.send_request(request)
+    self.logger.info('Waiting for Turbinia request {0:s} to complete'.format(
+        request.request_id))
+    self.client.wait_for_request(**request_dict)
+    task_data = self.client.get_task_data(**request_dict)
+
+    message = self.client.format_task_status(full_report=True, **request_dict)
+    short_message = self.client.format_task_status(**request_dict)
+    self.logger.info(short_message)
+
+    return task_data, message
