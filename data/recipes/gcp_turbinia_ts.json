@@ -1,6 +1,6 @@
 {
     "name": "gcp_turbinia_ts",
-    "short_description": "Processes an existing GCP persistent disks with Turbinia project and sends results to Timesketch.",
+    "short_description": "Processes existing GCP persistent disks with Turbinia project and sends results to Timesketch.",
     "description": "Process GCP persistent disks with Turbinia and send output to Timesketch.\n\nThis processes disks that are already in the project where Turbinia exists. If you want to copy disks from another project, use the `gcp_turbinia_disk_copy_ts` recipe.",
     "preflights": [{
       "wants": [],
@@ -14,7 +14,7 @@
         "name": "TurbiniaGCPProcessor",
         "args": {
             "turbinia_config_file": null,
-            "disk_name": "@disk_name",
+            "disk_names": "@disk_name",
             "project": "@analysis_project_name",
             "turbinia_zone": "@turbinia_zone",
             "run_all_jobs": "@run_all_jobs",
@@ -34,7 +34,7 @@
     "args": [
         ["analysis_project_name", "Name of GCP project the disk exists in.", null],
         ["turbinia_zone", "The GCP zone the disk to process (and Turbinia workers) are in.", null],
-        ["disk_name", "Name of GCP persistent disk to process.", null],
+        ["disk_names", "Names of GCP persistent disks to process.", null],
         ["--incident_id", "Incident ID (used for Timesketch description).", null],
         ["--run_all_jobs", "Run all Turbinia processing jobs instead of a faster subset.", false],
         ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null],

@@ -42,7 +42,7 @@
         "name": "TurbiniaGCPProcessor",
         "args": {
             "turbinia_config_file": null,
-            "disk_name": null,
+            "disk_names": null,
             "project": "@analysis_project_name",
             "turbinia_zone": "@turbinia_zone",
             "run_all_jobs": "@run_all_jobs",

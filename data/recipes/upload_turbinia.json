@@ -37,7 +37,7 @@
             "turbinia_config_file": "@turbinia_config",
             "project": null,
             "turbinia_zone": "us-central1-f",
-            "directory_path": null,
+            "output_directory": null,
             "sketch_id": null,
             "run_all_jobs": false
         }

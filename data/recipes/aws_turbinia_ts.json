@@ -61,18 +61,18 @@
       }
     }, {
       "wants": ["GCEDiskFromImage"],
-      "name": "TurbiniaGCPProcessorThreaded",
+      "name": "TurbiniaGCPProcessor",
       "args": {
         "turbinia_config_file": null,
-        "disks": "",
+        "disk_names": null,
         "project": "@gcp_project",
         "turbinia_zone": "@turbinia_zone",
         "run_all_jobs": "@run_all_jobs",
         "sketch_id": "@sketch_id"
       }
     }, {
-      "wants": ["TurbiniaGCPProcessorThreaded"],
-      "name": "TimesketchExporterThreaded",
+      "wants": ["TurbiniaGCPProcessor"],
+      "name": "TimesketchExporter",
       "args": {
         "incident_id": "@incident_id",
         "token_password": "@token_password",
