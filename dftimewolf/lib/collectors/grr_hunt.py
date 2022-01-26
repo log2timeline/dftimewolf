@@ -71,8 +71,7 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
       self.client_operating_systems = normalised_client_operating_systems
 
     if client_labels:
-      self.client_labels = [
-          client_label for client_label in client_labels.split(',')]
+      self.client_labels = list(client_labels.split(','))
 
   # TODO: change object to more specific GRR type information.
   def _CreateHunt(
