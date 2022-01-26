@@ -28,26 +28,56 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
 
   Attributes:
     match_mode (str): match mode of the client rule set (ALL or ANY).
-    client_operating_systems (str): a comma separated list of client OS types
+    client_operating_systems (List[str]): a list of client OS types
         (win, osx or linux).
-    client_labels (str): a comma separated list of client labels.
+    client_labels (List[str]): a list of client labels.
   """
 
   def __init__(self,
                state: DFTimewolfState,
-               name: Optional[str] = None,
-               critical: bool = False) -> None:
+               name: Optional[str],
+               critical: bool = False):
     module.BaseModule.__init__(self, state, name=name, critical=critical)
     grr_base.GRRBaseModule.__init__(self)
-    self.match_mode = None
-    self.client_operating_systems = None
-    self.client_labels = None
+    self.match_mode = ""
+    self.client_operating_systems : List[str] = []
+    self.client_labels : List[str] = []
+
+  def HuntSetup(
+      self, 
+      match_mode: str = None, 
+      client_operating_systems: str = None, 
+      client_labels: str = None):
+    """Setup hunt client filter arguments.
+
+    Args:
+      match_mode: match mode of the client rule set (ALL or ANY).
+      client_operating_systems: a comma separated list of client OS types
+        (win, osx or linux).
+      client_labels: a comma separated list of client labels.
+    """
+    if match_mode:
+      if match_mode.upper() not in ('ALL', 'ANY'):
+        self.ModuleError(f'Unknown match mode {self.match_mode}', critical=True)
+
+      self.match_mode = match_mode
+
+    if client_operating_systems:
+      normalised_client_operating_systems = list(set(
+          os.lower() for os in client_operating_systems.split(',')
+          if os.lower() in ('win', 'osx', 'linux')))
+
+      self.client_operating_systems = normalised_client_operating_systems
+    
+    if client_labels:
+      self.client_labels = [
+          client_label for client_label in client_labels.split(',')]
 
   # TODO: change object to more specific GRR type information.
   def _CreateHunt(
-    self,
-    name: str,
-    args: Union[FileFinderArgs, ArtifactCollectorFlowArgs]) -> Hunt:
+      self,
+      name: str,
+      args: Union[FileFinderArgs, ArtifactCollectorFlowArgs]) -> Hunt:
     """Creates a GRR hunt.
 
     Args:
@@ -75,7 +105,7 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
       runner_args.client_rule_set.match_mode = match_mode
 
     if self.client_labels:
-      for client_label in self.client_labels.split(','):
+      for client_label in self.client_labels:
         label_rule = runner_args.client_rule_set.rules.add()
 
         label_rule.rule_type = label_rule.LABEL
@@ -83,28 +113,20 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
 
     if self.client_operating_systems:
       client_operating_systems = set(
-          os for os in self.client_operating_systems.lower().split(',')
+          os for os in self.client_operating_systems 
           if os in ('win', 'osx', 'linux'))
 
-      if len(client_operating_systems) != len(self.client_operating_systems):
-        self.ModuleError('Invalid client OS values.', critical=True)
+      for client_operating_system in client_operating_systems:
+        os_rule = runner_args.client_rule_set.rules.add()
 
-      if client_operating_systems:
-        for client_operating_system in client_operating_systems:
-          os_rule = runner_args.client_rule_set.rules.add()
+        os_rule.rule_type = os_rule.OS
 
-          os_rule.rule_type = os_rule.OS
-
-          if client_operating_system == 'win':
-            os_rule.os.os_windows = True
-          elif client_operating_system == 'osx':
-            os_rule.os.os_darwin = True
-          elif client_operating_system == 'linux':
-            os_rule.os.os_linux = True
-
-      else:
-        self.ModuleError('No valid client OS values.', critical=True)
-
+        if client_operating_system == 'win':
+          os_rule.os.os_windows = True
+        elif client_operating_system == 'osx':
+          os_rule.os.os_darwin = True
+        elif client_operating_system == 'linux':
+          os_rule.os.os_linux = True
 
     hunt = self.grr_api.CreateHunt(
         flow_name=name, flow_args=args, hunt_runner_args=runner_args)
@@ -128,7 +150,7 @@ class GRRHuntArtifactCollector(GRRHunt):
   def __init__(self,
                state: DFTimewolfState,
                name: Optional[str] = None,
-               critical: Optional[bool] = False) -> None:
+               critical: bool = False) -> None:
     """Initializes a GRR artifact collector hunt.
 
     Args:
@@ -187,9 +209,7 @@ class GRRHuntArtifactCollector(GRRHunt):
     if max_file_size:
       self.max_file_size = int(max_file_size)
 
-    self.match_mode = match_mode
-    self.client_operating_systems = client_operating_systems
-    self.client_labels = client_labels
+    self.HuntSetup(match_mode, client_operating_systems, client_labels)
 
   def Process(self) -> None:
     """Starts a new Artifact Collection GRR hunt.
@@ -218,8 +238,8 @@ class GRRHuntFileCollector(GRRHunt):
 
   def __init__(self,
                state: DFTimewolfState,
-               name: Optional[str]=None,
-               critical: bool=False) -> None:
+               name: Optional[str] = None,
+               critical: bool = False) -> None:
     """Initializes a GRR file collector hunt.
 
     Args:
@@ -274,9 +294,7 @@ class GRRHuntFileCollector(GRRHunt):
     if max_file_size:
       self.max_file_size = int(max_file_size)
 
-    self.match_mode = match_mode
-    self.client_operating_systems = client_operating_systems
-    self.client_labels = client_labels
+    self.HuntSetup(match_mode, client_operating_systems, client_labels)
 
   # TODO: this method does not raise itself, indicate what function call does.
   def Process(self) -> None:
@@ -311,7 +329,7 @@ class GRRHuntDownloader(GRRHunt):
   def __init__(self,
                state: DFTimewolfState,
                name: Optional[str] = None,
-               critical: Optional[bool] = False) -> None:
+               critical: bool = False) -> None:
     """Initializes a GRR hunt results downloader.
 
     Args:
