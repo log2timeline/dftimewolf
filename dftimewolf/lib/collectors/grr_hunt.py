@@ -44,17 +44,18 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
     self.client_labels : List[str] = []
 
   def HuntSetup(
-      self, 
-      match_mode: str = None, 
-      client_operating_systems: str = None, 
-      client_labels: str = None):
+      self,
+      match_mode: Optional[str],
+      client_operating_systems: Optional[str],
+      client_labels: Optional[str]) -> None:
     """Setup hunt client filter arguments.
 
     Args:
-      match_mode: match mode of the client rule set (ALL or ANY).
-      client_operating_systems: a comma separated list of client OS types
-        (win, osx or linux).
-      client_labels: a comma separated list of client labels.
+      match_mode (Optional[str]): match mode of the client rule set (ALL or
+          ANY).
+      client_operating_systems (Optional[str]): a comma separated list of client
+          OS types (win, osx or linux).
+      client_labels (Optional[str]): a comma separated list of client labels.
     """
     if match_mode:
       if match_mode.upper() not in ('ALL', 'ANY'):
@@ -68,7 +69,7 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
           if os.lower() in ('win', 'osx', 'linux')))
 
       self.client_operating_systems = normalised_client_operating_systems
-    
+
     if client_labels:
       self.client_labels = [
           client_label for client_label in client_labels.split(',')]
@@ -113,7 +114,7 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
 
     if self.client_operating_systems:
       client_operating_systems = set(
-          os for os in self.client_operating_systems 
+          os for os in self.client_operating_systems
           if os in ('win', 'osx', 'linux'))
 
       for client_operating_system in client_operating_systems:
@@ -156,7 +157,7 @@ class GRRHuntArtifactCollector(GRRHunt):
     Args:
       state (DFTimewolfState): recipe state.
       name (Optional[str]): The module's runtime name.
-      critical (Optional[bool]): True if the module is critical, which causes
+      critical (bool): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
     super(GRRHuntArtifactCollector, self).__init__(
@@ -176,7 +177,7 @@ class GRRHuntArtifactCollector(GRRHunt):
             grr_password: str,
             max_file_size: str,
             approvers: Optional[str] = None,
-            verify: Optional[bool] = True,
+            verify: bool = True,
             match_mode: Optional[str] = None,
             client_operating_systems: Optional[str] = None,
             client_labels: Optional[str] = None) -> None:
@@ -245,7 +246,7 @@ class GRRHuntFileCollector(GRRHunt):
     Args:
       state (DFTimewolfState): recipe state.
       name (Optional[str]): The module's runtime name.
-      critical (Optional[bool]): True if the module is critical, which causes
+      critical (bool): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
     super(GRRHuntFileCollector, self).__init__(
@@ -262,7 +263,7 @@ class GRRHuntFileCollector(GRRHunt):
             grr_password: str,
             max_file_size: str,
             approvers: Optional[str] = None,
-            verify: Optional[bool] = True,
+            verify: bool = True,
             match_mode: Optional[str] = None,
             client_operating_systems: Optional[str] = None,
             client_labels: Optional[str] = None) -> None:
@@ -335,7 +336,7 @@ class GRRHuntDownloader(GRRHunt):
     Args:
       state (DFTimewolfState): recipe state.
       name (Optional[str]): The module's runtime name.
-      critical (Optional[bool]): True if the module is critical, which causes
+      critical (bool): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
     super(GRRHuntDownloader, self).__init__(state, name=name, critical=critical)
@@ -350,7 +351,7 @@ class GRRHuntDownloader(GRRHunt):
             grr_username: str,
             grr_password: str,
             approvers: Optional[str] = None,
-            verify: Optional[bool] = True) -> None:
+            verify: bool = True) -> None:
     """Initializes a GRR Hunt file collector.
 
     Args:
@@ -360,7 +361,7 @@ class GRRHuntDownloader(GRRHunt):
       grr_username (str): GRR username.
       grr_password (str): GRR password.
       approvers (Optional[str]): comma-separated GRR approval recipients.
-      verify (Optional[bool]): True to indicate GRR server's x509 certificate
+      verify (bool): True to indicate GRR server's x509 certificate
           should be verified.
     """
     self.GrrSetUp(
