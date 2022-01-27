@@ -3,6 +3,7 @@
 
 import getpass
 import tempfile
+import time
 from typing import Dict, List, Optional, Tuple, Any, Union
 
 from turbinia import TurbiniaException
@@ -203,32 +204,26 @@ class TurbiniaProcessorBase(object):
     }
 
     task_data = []  # type: List[Dict[str, str]]
-    try:
-      self.logger.success(
-          'Creating Turbinia request {0:s} with Evidence {1!s}'.format(
-              request.request_id, evidence_.name))
-      self.client.send_request(request)
-      self.logger.info('Waiting for Turbinia request {0:s} to complete'.format(
-          request.request_id))
+    self.logger.success(
+        'Creating Turbinia request {0:s} with Evidence {1!s}'.format(
+            request.request_id, evidence_.name))
+    self.client.send_request(request)
+    self.logger.info('Waiting for Turbinia request {0:s} to complete'.format(
+        request.request_id))
 
-      # Workaround for rate limiting in turbinia when checking task status
-      finished = False
-      while not finished:
-        try:
-          self.client.wait_for_request(**request_dict)
-          task_data = self.client.get_task_data(**request_dict)
-
-          finished = True
-        except RuntimeError as exception:
-          if 'Cloud function [gettasks] call failed' not in str(exception) and \
-              'RATE_LIMIT_EXCEEDED' not in str(exception):
-            raise exception
-          self.logger.info('Rate limit for gettasks hit. Pausing 60 seconds.')
-          time.sleep(60)
-    except TurbiniaException as exception:
-      # TODO: determine if exception should be converted into a string as
-      # elsewhere in the codebase.
-      self.ModuleError(str(exception), critical=True)
+    # Workaround for rate limiting in turbinia when checking task status
+    finished = False
+    while not finished:
+      try:
+        self.client.wait_for_request(**request_dict)
+        task_data = self.client.get_task_data(**request_dict)
+        finished = True
+      except RuntimeError as exception:
+        if 'Cloud function [gettasks] call failed' not in str(exception) and \
+            'RATE_LIMIT_EXCEEDED' not in str(exception):
+          raise exception
+        self.logger.info('Rate limit for gettasks hit. Pausing 60 seconds.')
+        time.sleep(60)
 
     message = self.client.format_task_status(full_report=True, **request_dict)
     short_message = self.client.format_task_status(**request_dict)
