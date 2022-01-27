@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """Tests the GRR hunt collectors."""
 
-from tkinter import N
 import unittest
 import zipfile
 import mock
