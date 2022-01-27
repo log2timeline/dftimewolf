@@ -15,7 +15,7 @@
             "approvers": "@approvers",
             "verify": "@verify",
             "match_mode": "@match_mode",
-            "client_operating_systems": "@client_operating_system",
+            "client_operating_systems": "@client_operating_systems",
             "client_labels": "@client_labels"
         }
     }],
