@@ -64,9 +64,9 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
       self.match_mode = match_mode.lower()
 
     if client_operating_systems:
-      normalised_client_operating_systems = set(
+      normalised_client_operating_systems = list(set(
           os.lower() for os in client_operating_systems.split(',')
-          if os.lower() in ('win', 'osx', 'linux'))
+          if os.lower() in ('win', 'osx', 'linux')))
 
       if not normalised_client_operating_systems:
         self.ModuleError('No valid client operating systems in argument '
