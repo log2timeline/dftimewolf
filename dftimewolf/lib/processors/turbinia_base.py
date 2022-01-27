@@ -2,6 +2,7 @@
 """Base class for turbinia interactions."""
 
 import getpass
+import random
 import tempfile
 import time
 from typing import Dict, List, Optional, Tuple, Any, Union
@@ -171,7 +172,7 @@ class TurbiniaProcessorBase(object):
     """Creates and sends a Turbinia processing request.
 
     Args:
-      evidence_(turbinia.evidence.Evidence): The evience to proecess
+      evidence_(turbinia.evidence.Evidence): The evidence to process
 
     Raises:
       TurbiniaException: Exceptions raised for turbinia errors.
@@ -212,21 +213,22 @@ class TurbiniaProcessorBase(object):
         request.request_id))
 
     # Workaround for rate limiting in turbinia when checking task status
-    finished = False
-    while not finished:
+    while True:
       try:
         self.client.wait_for_request(**request_dict)
         task_data = self.client.get_task_data(**request_dict)
-        finished = True
+
+        message = self.client.format_task_status(
+            full_report=True, **request_dict)
+        short_message = self.client.format_task_status(**request_dict)
+        self.logger.info(short_message)
+
+        return task_data, message
       except RuntimeError as exception:
         if 'Cloud function [gettasks] call failed' not in str(exception) and \
             'RATE_LIMIT_EXCEEDED' not in str(exception):
           raise exception
-        self.logger.info('Rate limit for gettasks hit. Pausing 60 seconds.')
-        time.sleep(60)
-
-    message = self.client.format_task_status(full_report=True, **request_dict)
-    short_message = self.client.format_task_status(**request_dict)
-    self.logger.info(short_message)
-
-    return task_data, message
+        delay = 60 + random.randint(0, 30)
+        self.logger.info(
+            f'Rate limit for gettasks hit. Pausing {delay} seconds.')
+        time.sleep(delay)
