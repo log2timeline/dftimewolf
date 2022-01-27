@@ -229,5 +229,6 @@ class TurbiniaProcessorBase(object):
             'RATE_LIMIT_EXCEEDED' not in str(exception):
           raise exception
         delay = 60 + random.randint(0, 30)
-        self.logger.info(f'Rate limit for gettasks hit. Pausing {delay} seconds.')
+        self.logger.info(
+            f'Rate limit for gettasks hit. Pausing {delay} seconds.')
         time.sleep(delay)
