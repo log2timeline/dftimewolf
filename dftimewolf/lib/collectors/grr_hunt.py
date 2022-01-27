@@ -58,15 +58,15 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
       client_labels (Optional[str]): a comma separated list of client labels.
     """
     if match_mode:
-      if match_mode.upper() not in ('ALL', 'ANY'):
+      if match_mode.lower() not in ('all', 'any'):
         self.ModuleError(f'Unknown match mode {self.match_mode}', critical=True)
 
-      self.match_mode = match_mode
+      self.match_mode = match_mode.lower()
 
     if client_operating_systems:
-      normalised_client_operating_systems = list(set(
+      normalised_client_operating_systems = set(
           os.lower() for os in client_operating_systems.split(',')
-          if os.lower() in ('win', 'osx', 'linux')))
+          if os.lower() in ('win', 'osx', 'linux'))
 
       if not normalised_client_operating_systems:
         self.ModuleError('No valid client operating systems in argument '
@@ -99,12 +99,10 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
     runner_args.description = self.reason
 
     if self.match_mode:
-      if self.match_mode.lower() == 'any':
+      if self.match_mode == 'any':
         match_mode = runner_args.client_rule_set.MATCH_ANY
-      elif self.match_mode.lower() == 'all':
+      elif self.match_mode == 'all':
         match_mode = runner_args.client_rule_set.MATCH_ALL
-      else:
-        self.ModuleError(f'Unknown match mode {self.match_mode}', critical=True)
 
       runner_args.client_rule_set.match_mode = match_mode
 
@@ -116,11 +114,7 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
         label_rule.label.label_names.append(client_label)
 
     if self.client_operating_systems:
-      client_operating_systems = set(
-          os for os in self.client_operating_systems
-          if os in ('win', 'osx', 'linux'))
-
-      for client_operating_system in client_operating_systems:
+      for client_operating_system in self.client_operating_systems:
         os_rule = runner_args.client_rule_set.rules.add()
 
         os_rule.rule_type = os_rule.OS
@@ -179,11 +173,11 @@ class GRRHuntArtifactCollector(GRRHunt):
             grr_username: str,
             grr_password: str,
             max_file_size: str,
-            approvers: Optional[str] = None,
-            verify: bool = True,
-            match_mode: Optional[str] = None,
-            client_operating_systems: Optional[str] = None,
-            client_labels: Optional[str] = None) -> None:
+            approvers: str,
+            verify: bool,
+            match_mode: str,
+            client_operating_systems: str,
+            client_labels: str) -> None:
     """Initializes a GRR Hunt artifact collector.
 
     Args:
@@ -194,14 +188,14 @@ class GRRHuntArtifactCollector(GRRHunt):
       grr_server_url (str): GRR server URL.
       grr_username (str): GRR username.
       grr_password (str): GRR password.
-      approvers (Optional[str]): comma-separated GRR approval recipients.
-      verify (Optional[bool]): True to indicate GRR server's x509 certificate
+      approvers (str): comma-separated GRR approval recipients.
+      verify (bool): True to indicate GRR server's x509 certificate
           should be verified.
-      match_mode (Optional[str]): match mode of the client rule set.
-          (ALL or ANY).
-      client_operating_systems (Optional[str]): a comma separated list of
+      match_mode (str): match mode of the client rule set.
+          (all/ALL or any/ANY).
+      client_operating_systems (str): a comma separated list of
           client OS types (win, osx or linux).
-      client_labels (Optional[str]): a comma separated list of client labels.
+      client_labels (str): a comma separated list of client labels.
     """
     self.GrrSetUp(reason, grr_server_url, grr_username, grr_password,
         approvers=approvers, verify=verify)
@@ -265,11 +259,11 @@ class GRRHuntFileCollector(GRRHunt):
             grr_username: str,
             grr_password: str,
             max_file_size: str,
-            approvers: Optional[str] = None,
-            verify: bool = True,
-            match_mode: Optional[str] = None,
-            client_operating_systems: Optional[str] = None,
-            client_labels: Optional[str] = None) -> None:
+            approvers: str,
+            verify: bool,
+            match_mode: str,
+            client_operating_systems: str,
+            client_labels: str) -> None:
     """Initializes a GRR Hunt file collector.
 
     Args:
@@ -279,14 +273,14 @@ class GRRHuntFileCollector(GRRHunt):
       grr_username (str): GRR username.
       grr_password (str): GRR password.
       max_file_size (str): Maximum file size to collect (in bytes).
-      approvers (Optional[str]): comma-separated GRR approval recipients.
-      verify (Optional[bool]): True to indicate GRR server's x509 certificate
+      approvers (str): comma-separated GRR approval recipients.
+      verify (bool): True to indicate GRR server's x509 certificate
           should be verified.
-      match_mode (Optional[str]): match mode of the client rule set.
-          (ALL or ANY).
-      client_operating_systems (Optional[str]): a comma separated list of
+      match_mode (str): match mode of the client rule set.
+          (all/ALL or any/ANY).
+      client_operating_systems (str): a comma separated list of
           client OS types (win, osx or linux).
-      client_labels (Optional[str]): a comma separated list of client labels.
+      client_labels (str): a comma separated list of client labels.
     """
     self.GrrSetUp(
         reason, grr_server_url, grr_username, grr_password,
@@ -353,8 +347,8 @@ class GRRHuntDownloader(GRRHunt):
             grr_server_url: str,
             grr_username: str,
             grr_password: str,
-            approvers: Optional[str] = None,
-            verify: bool = True) -> None:
+            approvers: str,
+            verify: bool) -> None:
     """Initializes a GRR Hunt file collector.
 
     Args:
@@ -363,7 +357,7 @@ class GRRHuntDownloader(GRRHunt):
       grr_server_url (str): GRR server URL.
       grr_username (str): GRR username.
       grr_password (str): GRR password.
-      approvers (Optional[str]): comma-separated GRR approval recipients.
+      approvers (str): comma-separated GRR approval recipients.
       verify (bool): True to indicate GRR server's x509 certificate
           should be verified.
     """
