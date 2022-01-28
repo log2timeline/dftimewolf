@@ -12,6 +12,7 @@ from types import FrameType
 from typing import Dict, Optional, Union, Any, List
 
 import cmd2  # pylint: disable=import-error
+import cmd2.ansi as cmd2_ansi  # pylint: disable=import-error
 from prettytable import PrettyTable  # pylint: disable=import-error
 
 from dftimewolf.metawolf import session
@@ -77,7 +78,8 @@ class Metawolf(cmd2.Cmd):
   def __init__(
       self,
       session_path: str = DEFAULT_METAWOLF_STORAGE_PATH,
-      transcript_files: Optional[List[str]] = None
+      transcript_files: Optional[List[str]] = None,
+      colored_prompt: bool = True,
   ) -> None:
     """Initialize Metawolf.
 
@@ -87,6 +89,8 @@ class Metawolf(cmd2.Cmd):
           '~/.metawolf'.
       transcript_files (List[str]): Optional. A list of paths to transcripts.
           This can be used to e.g. test end-to-end interactions with Metawolf.
+      colored_prompt (bool): Optional. True if the prompt should be displayed
+          with colors.
     """
     super(Metawolf, self).__init__(
         shortcuts=cmd2.DEFAULT_SHORTCUTS,
@@ -95,6 +99,7 @@ class Metawolf(cmd2.Cmd):
 
     self.metawolf_output = output.MetawolfOutput()
     self.metawolf_utils = utils.MetawolfUtils(session_path)
+    self.colored_prompt = colored_prompt
 
     self._settables = {}  # Ignore default CMD2 settables
     self.session_settables = {}  # type: Dict[str, session.SessionSettable]
@@ -759,7 +764,12 @@ class Metawolf(cmd2.Cmd):
           self.recipe), output.BLUE)
     prompt += self.metawolf_output.Color('> ', output.BLUE)
     # self.prompt is inherited from cmd2
-    self.prompt = prompt  # pylint: disable=attribute-defined-outside-init
+    # pylint: disable=attribute-defined-outside-init
+    if self.colored_prompt:
+      self.prompt = prompt
+    else:
+      self.prompt = cmd2_ansi.strip_style(prompt)
+    # pylint: enable=attribute-defined-outside-init
 
   def ReloadSettables(self) -> None:
     """Reload Metawolf's settables based on the current recipe."""
