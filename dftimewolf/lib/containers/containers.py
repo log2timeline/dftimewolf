@@ -69,7 +69,7 @@ class Report(interface.AttributeContainer):
       module_name: str,
       text: str,
       text_format: str = 'plaintext',
-      attributes: List[Dict[str, Any]] = []) -> None:
+      attributes: Optional[List[Dict[str, Any]]] = None) -> None:
     """Initializes the analysis report.
 
     Args:

@@ -23,7 +23,7 @@ class AttributeContainer():
   CONTAINER_TYPE = None  # type: str
   attributes = []  # type: List[Dict[str, Any]]
 
-  def __init__(self, attributes: Optional[List[Dict[str, any]]] = None):
+  def __init__(self, attributes: Optional[List[Dict[str, Any]]] = None):
     """Initializes an AttributeContainer.
 
     Args:
