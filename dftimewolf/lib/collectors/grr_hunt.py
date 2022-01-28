@@ -4,7 +4,7 @@
 import os
 import tempfile
 import zipfile
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Set, Tuple, Union
 
 from grr_api_client.hunt import Hunt
 from grr_response_proto import flows_pb2 as grr_flows
@@ -28,7 +28,7 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
 
   Attributes:
     match_mode (str): match mode of the client rule set (ALL or ANY).
-    client_operating_systems (List[str]): a list of client OS types
+    client_operating_systems (Set[str]): a list of client OS types
         (win, osx or linux).
     client_labels (List[str]): a list of client labels.
   """
@@ -40,7 +40,7 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
     module.BaseModule.__init__(self, state, name=name, critical=critical)
     grr_base.GRRBaseModule.__init__(self)
     self.match_mode = ""
-    self.client_operating_systems : List[str] = []
+    self.client_operating_systems : Set[str] = set()
     self.client_labels : List[str] = []
 
   def HuntSetup(
@@ -64,9 +64,9 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
       self.match_mode = match_mode.lower()
 
     if client_operating_systems:
-      normalised_client_operating_systems = list(set(
+      normalised_client_operating_systems = set(
           os.lower() for os in client_operating_systems.split(',')
-          if os.lower() in ('win', 'osx', 'linux')))
+          if os.lower() in ('win', 'osx', 'linux'))
 
       if not normalised_client_operating_systems:
         self.ModuleError('No valid client operating systems in argument '
