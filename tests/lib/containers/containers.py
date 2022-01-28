@@ -12,7 +12,8 @@ class ReportDataTest(unittest.TestCase):
     """Tests the GetAttributeNames function."""
     attribute_container = containers.Report(module_name='name', text='text')
 
-    expected_attribute_names = ['module_name', 'text', 'text_format']
+    expected_attribute_names = [
+        'attributes', 'module_name', 'text', 'text_format']
 
     attribute_names = sorted(attribute_container.GetAttributeNames())
 
@@ -29,7 +30,7 @@ class ThreatIntelligenceDataTest(unittest.TestCase):
         indicator='.*',
         path='/')
 
-    expected_attribute_names = ['indicator', 'name', 'path']
+    expected_attribute_names = ['attributes', 'indicator', 'name', 'path']
 
     attribute_names = sorted(attribute_container.GetAttributeNames())
 
@@ -43,7 +44,7 @@ class FSPathDataTest(unittest.TestCase):
     """Tests the GetAttributeNames function."""
     attribute_container = containers.FSPath(path='name')
 
-    expected_attribute_names = ['path']
+    expected_attribute_names = ['attributes', 'path']
 
     attribute_names = sorted(attribute_container.GetAttributeNames())
 
@@ -57,7 +58,7 @@ class RemoteFSPathDataTest(unittest.TestCase):
     """Tests the GetAttributeNames function."""
     attribute_container = containers.RemoteFSPath(path='name', hostname='host')
 
-    expected_attribute_names = ['hostname', 'path']
+    expected_attribute_names = ['attributes', 'hostname', 'path']
 
     attribute_names = sorted(attribute_container.GetAttributeNames())
 
