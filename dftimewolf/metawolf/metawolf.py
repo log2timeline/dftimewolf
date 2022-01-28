@@ -763,6 +763,8 @@ class Metawolf(cmd2.Cmd):
       prompt += self.metawolf_output.Color('${0:s}'.format(
           self.recipe), output.BLUE)
     prompt += self.metawolf_output.Color('> ', output.BLUE)
+    # Readline needs escaping around invisible characters
+    prompt = '\001' + prompt + '\002'
     # self.prompt is inherited from cmd2
     # pylint: disable=attribute-defined-outside-init
     if self.colored_prompt:
