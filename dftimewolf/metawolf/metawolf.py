@@ -79,7 +79,7 @@ class Metawolf(cmd2.Cmd):
       self,
       session_path: str = DEFAULT_METAWOLF_STORAGE_PATH,
       transcript_files: Optional[List[str]] = None,
-      colored_prompt: bool = False,
+      colored_prompt: bool = True,
   ) -> None:
     """Initialize Metawolf.
 
