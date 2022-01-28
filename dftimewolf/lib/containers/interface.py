@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """The attribute container interface."""
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 
 class AttributeContainer():
@@ -23,14 +23,17 @@ class AttributeContainer():
   CONTAINER_TYPE = None  # type: str
   attributes = []  # type: List[Dict[str, Any]]
 
-  def __init__(self, attributes: List[Dict[str, any]] = []):
+  def __init__(self, attributes: Optional[List[Dict[str, any]]] = None):
     """Initializes an AttributeContainer.
 
     Args:
       attributes: A list of generic attributes that can be used for passing
         metadata between collection/processing module and output modules.
     """
-    self.attributes = attributes
+    if attributes is None:
+      self.attributes = []
+    else:
+      self.attributes = attributes
 
   # TODO: note that this method is only used by tests.
   def GetAttributeNames(self) -> List[str]:
