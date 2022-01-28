@@ -69,7 +69,7 @@ class Report(interface.AttributeContainer):
       module_name: str,
       text: str,
       text_format: str = 'plaintext',
-      attributes: Optional[List[Dict[str, Any]]] = None) -> None:
+      attributes: List[Dict[str, Any]] = []) -> None:
     """Initializes the analysis report.
 
     Args:
@@ -80,12 +80,10 @@ class Report(interface.AttributeContainer):
       attributes (list): attribute list of dicts that must contain 'name',
         'type', 'values' keys.
     """
-    super(Report, self).__init__()
+    super(Report, self).__init__(attributes=attributes)
     self.module_name = module_name
     self.text = text
     self.text_format = text_format
-    if attributes:
-      self.attributes = attributes
 
 
 class GCPLogs(interface.AttributeContainer):
