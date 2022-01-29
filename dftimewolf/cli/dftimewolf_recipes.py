@@ -43,6 +43,7 @@ MODULES = {
   'GRRHuntArtifactCollector': 'dftimewolf.lib.collectors.grr_hunt',
   'GRRHuntDownloader': 'dftimewolf.lib.collectors.grr_hunt',
   'GRRHuntFileCollector': 'dftimewolf.lib.collectors.grr_hunt',
+  'GRRHuntOsqueryCollector': 'dftimewolf.lib.collectors.grr_hunt',
   'GRRTimelineCollector': 'dftimewolf.lib.collectors.grr_hosts',
   'LocalFilesystemCopy': 'dftimewolf.lib.exporters.local_filesystem',
   'LocalPlasoProcessor': 'dftimewolf.lib.processors.localplaso',

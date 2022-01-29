@@ -1,0 +1,33 @@
+{
+    "name": "grr_hunt_osquery",
+    "short_description": "Starts a GRR hunt for an Osquery flow.",
+    "description": "Starts a GRR osquery hunt and provides the Hunt ID to the user.",
+    "modules": [{
+        "wants": [],
+        "name": "GRRHuntOsqueryCollector",
+        "args": {
+            "osquery_statement": "@osquery_statement",
+            "reason": "@reason",
+            "grr_server_url": "@grr_server_url",
+            "grr_username": "@grr_username",
+            "grr_password": "@grr_password",
+            "approvers": "@approvers",
+            "verify": "@verify",
+            "match_mode": "@match_mode",
+            "client_operating_systems": "@client_operating_systems",
+            "client_labels": "@client_labels"
+        }
+    }],
+    "args": [
+        ["osquery_statement", "Osquery statement to hunt for.", null],
+        ["reason", "Reason for collection.", null],
+        ["--approvers", "Emails for GRR approval request.", null],
+        ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
+        ["--verify", "Whether to verify the GRR TLS certificate.", true],
+        ["--grr_username", "GRR username", "admin"],
+        ["--grr_password", "GRR password", "admin"],
+        ["--match_mode", "Match mode of the client rule set (ANY or ALL)", null],
+        ["--client_operating_systems", "Comma-separated list of client operating systems to filter hosts on (linux, osx, win).", null],
+        ["--client_labels", "Comma-separated list of client labels to filter GRR hosts on.", null]
+    ]
+}

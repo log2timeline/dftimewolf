@@ -100,6 +100,48 @@ class GRRHuntFileCollectorTest(unittest.TestCase):
                      'random reason')
 
 
+class GRRHuntOsqueryCollectorTest(unittest.TestCase):
+  """Tests for the GRR osquer collector."""
+
+  @mock.patch('grr_api_client.api.InitHttp')
+  def setUp(self, mock_InitHttp):
+    self.mock_grr_api = mock.Mock()
+    mock_InitHttp.return_value = self.mock_grr_api
+    self.test_state = state.DFTimewolfState(config.Config)
+    self.grr_hunt_osquery_collector = grr_hunt.GRRHuntOsqueryCollector(
+        self.test_state)
+    self.grr_hunt_osquery_collector.SetUp(
+        osquery_statement='SELECT * FROM processes',
+        reason='random reason',
+        grr_server_url='http://fake/endpoint',
+        grr_username='admin',
+        grr_password='admin',
+        approvers='approver1,approver2',
+        verify=False,
+        match_mode=None,
+        client_operating_systems=None,
+        client_labels=None)
+
+  def testInitialization(self):
+    """Tests that the collector can be initialized."""
+    self.assertEqual(
+        self.grr_hunt_osquery_collector.osquery_statement,
+        'SELECT * FROM processes'
+    )
+
+  def testProcess(self):
+    """Tests that the process method invokes the correct GRR API calls."""
+    self.grr_hunt_osquery_collector.Process()
+    # extract call kwargs
+    call_kwargs = self.mock_grr_api.CreateHunt.call_args[1]
+    self.assertEqual(call_kwargs['flow_args'].query,
+                     'SELECT * FROM processes')
+    self.assertEqual(call_kwargs['flow_args'].timeout_millis,
+                     3000000)
+    self.assertEqual(call_kwargs['flow_args'].ignore_stderr_errors, True)
+    self.assertEqual(call_kwargs['flow_name'], 'OsqueryHunt')
+    self.assertEqual(call_kwargs['hunt_runner_args'].description,
+                     'random reason')
 
 class GRRFHuntDownloader(unittest.TestCase):
   """Tests for the GRR hunt downloader."""
