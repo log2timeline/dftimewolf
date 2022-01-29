@@ -139,7 +139,7 @@ class GRRHuntOsqueryCollectorTest(unittest.TestCase):
     self.assertEqual(call_kwargs['flow_args'].timeout_millis,
                      3000000)
     self.assertEqual(call_kwargs['flow_args'].ignore_stderr_errors, True)
-    self.assertEqual(call_kwargs['flow_name'], 'OsqueryHunt')
+    self.assertEqual(call_kwargs['flow_name'], 'OsqueryFlow')
     self.assertEqual(call_kwargs['hunt_runner_args'].description,
                      'random reason')
 
