@@ -344,6 +344,7 @@ class GRRHuntOsqueryCollector(GRRHunt):
     self.ignore_stderr_errors = True
     self.osquery_statement = ""
 
+  # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
             osquery_statement: str,
             reason: str,
@@ -391,7 +392,7 @@ class GRRHuntOsqueryCollector(GRRHunt):
 
     self.HuntSetup(match_mode, client_operating_systems, client_labels)
 
-  def Process(self):
+  def Process(self) -> None:
     """Starts a new Osquery GRR hunt."""
     hunt_args = osquery_flows.OsqueryFlowArgs()
     hunt_args.query = self.osquery_statement
