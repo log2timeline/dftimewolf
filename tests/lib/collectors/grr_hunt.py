@@ -35,7 +35,11 @@ class GRRHuntArtifactCollectorTest(unittest.TestCase):
         grr_username='admin',
         grr_password='admin',
         approvers='approver1,approver2',
-        max_file_size="1234"
+        max_file_size='1234',
+        verify=False,
+        match_mode=None,
+        client_operating_systems=None,
+        client_labels=None
     )
 
   def testProcess(self):
@@ -68,7 +72,11 @@ class GRRHuntFileCollectorTest(unittest.TestCase):
         grr_username='admin',
         grr_password='admin',
         approvers='approver1,approver2',
-        max_file_size="1234"
+        max_file_size='1234',
+        verify=False,
+        match_mode=None,
+        client_operating_systems=None,
+        client_labels=None
     )
 
   def testInitialization(self):
@@ -108,7 +116,8 @@ class GRRFHuntDownloader(unittest.TestCase):
         grr_server_url='http://fake/endpoint',
         grr_username='admin',
         grr_password='admin',
-        approvers='approver1,approver2'
+        approvers='approver1,approver2',
+        verify=False
     )
     self.grr_hunt_downloader.output_path = '/tmp/test'
 

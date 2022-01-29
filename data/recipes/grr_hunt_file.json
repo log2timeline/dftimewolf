@@ -13,7 +13,10 @@
             "grr_password": "@grr_password",
             "max_file_size": "@max_file_size",
             "approvers": "@approvers",
-            "verify": "@verify"
+            "verify": "@verify",
+            "match_mode": "@match_mode",
+            "client_operating_systems": "@client_operating_systems",
+            "client_labels": "@client_labels"
         }
     }],
     "processors": [],
@@ -26,6 +29,9 @@
         ["--verify", "Whether to verify the GRR TLS certificate.", true],
         ["--grr_username", "GRR username", "admin"],
         ["--grr_password", "GRR password", "admin"],
-        ["--max_file_size", "Maximum size of files to collect (in bytes).", 5368709120]
+        ["--max_file_size", "Maximum size of files to collect (in bytes).", 5368709120],
+        ["--match_mode", "Match mode of the client rule set (ANY or ALL)", null],
+        ["--client_operating_systems", "Comma-separated list of client operating systems to filter hosts on (linux, osx, win).", null],
+        ["--client_labels", "Comma-separated list of client labels to filter GRR hosts on.", null]
     ]
 }
