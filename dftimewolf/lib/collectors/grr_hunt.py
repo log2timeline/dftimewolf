@@ -399,7 +399,7 @@ class GRRHuntOsqueryCollector(GRRHunt):
     hunt_args.timeout_millis = self.timeout_millis
     hunt_args.ignore_stderr_errors = self.ignore_stderr_errors
 
-    self._CreateHunt('OsqueryHunt', hunt_args)
+    self._CreateHunt('OsqueryFlow', hunt_args)
 
 
 class GRRHuntDownloader(GRRHunt):
