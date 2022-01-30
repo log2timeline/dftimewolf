@@ -40,6 +40,7 @@ MODULES = {
   'GRRArtifactCollector': 'dftimewolf.lib.collectors.grr_hosts',
   'GRRFileCollector': 'dftimewolf.lib.collectors.grr_hosts',
   'GRRFlowCollector': 'dftimewolf.lib.collectors.grr_hosts',
+  'GRROsqueryCollector': 'dftimewolf.lib.collectors.grr_hosts',
   'GRRHuntArtifactCollector': 'dftimewolf.lib.collectors.grr_hunt',
   'GRRHuntDownloader': 'dftimewolf.lib.collectors.grr_hunt',
   'GRRHuntFileCollector': 'dftimewolf.lib.collectors.grr_hunt',

@@ -1,0 +1,40 @@
+{
+    "name": "grr_osquery_flow",
+    "short_description": "Runs osquery on GRR hosts and save any results to local CSV files.",
+    "description": "Runs osquery on GRR hosts and save any results to local CSV files.",
+    "modules": [{
+        "wants": [],
+        "name": "OsqueryCollector",
+        "args": {
+            "query": "@osquery_query",
+            "paths": "@osquery_paths"
+        }
+    },{
+        "wants": ["OsqueryCollector"],
+        "name": "GRROsqueryCollector",
+        "args": {
+            "hostnames": "@hostnames",
+            "reason": "@reason",
+            "directory": "@directory",
+            "grr_server_url": "@grr_server_url",
+            "grr_username": "@grr_username",
+            "grr_password": "@grr_password",
+            "approvers": "@approvers",
+            "verify": "@verify",
+            "skip_offline_clients": "@skip_offline_clients"
+        }
+    }],
+    "args": [
+      ["reason", "Reason for collection.", null],
+      ["hostnames", "Hostname(s) to collect the osquery flow from.", null],
+      ["--osquery_query", "Osquery query to hunt for.", null],
+      ["--osquery_paths", "Path(s) to text file containing one osquery query per line.", null],
+      ["--directory", "Directory in which to export results.", null],
+      ["--approvers", "Emails for GRR approval request.", null],
+      ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
+      ["--verify", "Whether to verify the GRR TLS certificate.", true],
+      ["--skip_offline_clients", "Whether to skip clients that are offline.", false],
+      ["--grr_username", "GRR username", "admin"],
+      ["--grr_password", "GRR password", "admin"]
+  ]
+}
