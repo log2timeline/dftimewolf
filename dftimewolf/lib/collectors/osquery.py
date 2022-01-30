@@ -39,7 +39,7 @@ class OsqueryCollector(module.BaseModule):
   # pylint: disable=arguments-differ
   def SetUp(self,
             query: str,
-            paths: str) -> None:  
+            paths: str) -> None:
     """Sets up the paths to collect.
 
     Args:
