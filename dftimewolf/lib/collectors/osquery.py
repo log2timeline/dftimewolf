@@ -33,20 +33,21 @@ class OsqueryCollector(module.BaseModule):
     """
     super(OsqueryCollector, self).__init__(
         state, name=name, critical=critical)
-    self.query = ""
-    self.paths = []
+    self.query: str = ""
+    self.paths: List[str] = []
 
+  # pylint: disable=arguments-differ
   def SetUp(self,
             query: str,
-            paths: str) -> None:  # pylint: disable=arguments-differ
+            paths: str) -> None:  
     """Sets up the paths to collect.
 
     Args:
-      osquery_query (str): osquery query.
-      osquery_files (str): osquery filepaths
+      query (str): osquery query.
+      files (str): osquery filepaths
     """
     if not query and not paths:
-        self.ModuleError('Both query and files cannot be empty.', critical=True)
+      self.ModuleError('Both query and files cannot be empty.', critical=True)
 
     if query:
       self.query = query

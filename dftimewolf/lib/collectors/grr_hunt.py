@@ -322,7 +322,12 @@ class GRRHuntFileCollector(GRRHunt):
 
 
 class GRRHuntOsqueryCollector(GRRHunt):
-  """Osquery collector for a GRR Hunt."""
+  """Osquery collector for a GRR Hunt.
+  
+  Attributes:
+    timeout_millis (int): the number of milliseconds before osquery timeouts.
+    ignore_stderr_errors (bool): ignore stderr errors from osquery.
+  """
 
   DEFAULT_OSQUERY_TIMEOUT_MILLIS = 3000000
 
