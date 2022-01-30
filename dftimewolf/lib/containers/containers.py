@@ -493,3 +493,16 @@ class AWSSnapshot(interface.AttributeContainer):
   def __init__(self, snap_id: str) -> None:
     super(AWSSnapshot, self).__init__()
     self.id = snap_id
+
+
+class OsqueryQuery(interface.AttributeContainer):
+  """Attribute container for an Osquery query.
+
+  Attributes:
+    query (str): The osquery query."""
+
+  CONTAINER_TYPE = 'osquery_query'
+
+  def __init__(self, query: str) -> None:
+    super(OsqueryQuery, self).__init__()
+    self.query = query

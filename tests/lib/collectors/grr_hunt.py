@@ -12,6 +12,7 @@ from dftimewolf import config
 from dftimewolf.lib import state
 from dftimewolf.lib import errors
 from dftimewolf.lib.collectors import grr_hunt
+from dftimewolf.lib.containers import containers
 from tests.lib.collectors.test_data import mock_grr_hosts
 
 
@@ -108,10 +109,11 @@ class GRRHuntOsqueryCollectorTest(unittest.TestCase):
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
     self.test_state = state.DFTimewolfState(config.Config)
+    self.test_state.StoreContainer(
+        containers.OsqueryQuery('SELECT * FROM processes'))
     self.grr_hunt_osquery_collector = grr_hunt.GRRHuntOsqueryCollector(
         self.test_state)
     self.grr_hunt_osquery_collector.SetUp(
-        osquery_statement='SELECT * FROM processes',
         reason='random reason',
         grr_server_url='http://fake/endpoint',
         grr_username='admin',
@@ -121,13 +123,6 @@ class GRRHuntOsqueryCollectorTest(unittest.TestCase):
         match_mode=None,
         client_operating_systems=None,
         client_labels=None)
-
-  def testInitialization(self):
-    """Tests that the collector can be initialized."""
-    self.assertEqual(
-        self.grr_hunt_osquery_collector.osquery_statement,
-        'SELECT * FROM processes'
-    )
 
   def testProcess(self):
     """Tests that the process method invokes the correct GRR API calls."""

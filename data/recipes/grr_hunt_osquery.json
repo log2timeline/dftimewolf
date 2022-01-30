@@ -4,9 +4,15 @@
     "description": "Starts a GRR osquery hunt and provides the Hunt ID to the user.",
     "modules": [{
         "wants": [],
+        "name": "OsqueryCollector",
+        "args": {
+            "query": "@osquery_query",
+            "paths": "@osquery_paths"
+        }
+    },{
+        "wants": ["OsqueryCollector"],
         "name": "GRRHuntOsqueryCollector",
         "args": {
-            "osquery_statement": "@osquery_statement",
             "reason": "@reason",
             "grr_server_url": "@grr_server_url",
             "grr_username": "@grr_username",
@@ -19,8 +25,9 @@
         }
     }],
     "args": [
-        ["osquery_statement", "Osquery statement to hunt for.", null],
         ["reason", "Reason for collection.", null],
+        ["--osquery_query", "Osquery query to hunt for.", null],
+        ["--osquery_paths", "Path(s) to text file containing one osquery query per line.", null],
         ["--approvers", "Emails for GRR approval request.", null],
         ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
         ["--verify", "Whether to verify the GRR TLS certificate.", true],

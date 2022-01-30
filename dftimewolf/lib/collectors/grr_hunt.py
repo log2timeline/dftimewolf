@@ -336,17 +336,14 @@ class GRRHuntOsqueryCollector(GRRHunt):
       name (Optional[str]): The module's runtime name.
       critical (bool): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
-      osquery_statement (str): osquery statement.
     """
     super(GRRHuntOsqueryCollector, self).__init__(
         state, name=name, critical=critical)
     self.timeout_millis = self.DEFAULT_OSQUERY_TIMEOUT_MILLIS
     self.ignore_stderr_errors = True
-    self.osquery_statement = ""
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
-            osquery_statement: str,
             reason: str,
             grr_server_url: str,
             grr_username: str,
@@ -359,7 +356,6 @@ class GRRHuntOsqueryCollector(GRRHunt):
     """Initializes a GRR Hunt Osquery collector.
 
     Args:
-      osquery_statement (str): osquery statement.
       reason (str): justification for GRR access.
       grr_server_url (str): GRR server URL.
       grr_username (str): GRR username.
@@ -373,15 +369,6 @@ class GRRHuntOsqueryCollector(GRRHunt):
           client OS types (win, osx or linux).
       client_labels (str): a comma separated list of client labels.
     """
-    if not osquery_statement:
-      self.ModuleError('Osquery statement cannot be null', critical=True)
-
-    if not osquery_statement.upper().startswith('SELECT '):
-      self.ModuleError(
-          'Osquery statement doesn\'t start with SELECT', critical=True)
-
-    self.osquery_statement = osquery_statement
-
     self.GrrSetUp(
         reason=reason,
         grr_server_url=grr_server_url,
@@ -394,12 +381,15 @@ class GRRHuntOsqueryCollector(GRRHunt):
 
   def Process(self) -> None:
     """Starts a new Osquery GRR hunt."""
-    hunt_args = osquery_flows.OsqueryFlowArgs()
-    hunt_args.query = self.osquery_statement
-    hunt_args.timeout_millis = self.timeout_millis
-    hunt_args.ignore_stderr_errors = self.ignore_stderr_errors
+    osquery_containers = self.state.GetContainers(containers.OsqueryQuery)
 
-    self._CreateHunt('OsqueryFlow', hunt_args)
+    for osquery_container in osquery_containers:
+      hunt_args = osquery_flows.OsqueryFlowArgs()
+      hunt_args.query = osquery_container.query
+      hunt_args.timeout_millis = self.timeout_millis
+      hunt_args.ignore_stderr_errors = self.ignore_stderr_errors
+
+      self._CreateHunt('OsqueryFlow', hunt_args)
 
 
 class GRRHuntDownloader(GRRHunt):
