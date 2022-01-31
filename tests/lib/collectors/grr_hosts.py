@@ -617,7 +617,8 @@ class GRROsqueryCollectorTest(unittest.TestCase):
     self.assertIsNotNone(self.grr_osquery_collector)
 
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow')
-  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRROsqueryCollector._DownloadResults')
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRROsqueryCollector.'
+              '_DownloadResults')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._LaunchFlow')
   def testProcess(self, mock_LaunchFlow, mock_DownloadResults, _):
     """Tests that the module launches appropriate flows."""
@@ -637,7 +638,8 @@ class GRROsqueryCollectorTest(unittest.TestCase):
         'OsqueryFlow',
         osquery_pb2.OsqueryFlowArgs(
             query='SELECT * FROM processes',
-            timeout_millis=grr_hosts.GRROsqueryCollector.DEFAULT_OSQUERY_TIMEOUT_MILLIS,
+            timeout_millis=
+                grr_hosts.GRROsqueryCollector.DEFAULT_OSQUERY_TIMEOUT_MILLIS,
             ignore_stderr_errors=True
         )
     )

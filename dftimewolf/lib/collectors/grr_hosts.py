@@ -713,11 +713,11 @@ class GRROsqueryCollector(GRRFlow):
     for hostname in hosts:
       self.state.StoreContainer(containers.Host(hostname=hostname))
 
-  def _DownloadResults(self, client, flow_id) -> List[pd.DataFrame]:
+  def _DownloadResults(self, client: Client, flow_id: str) -> List[pd.DataFrame]:
     """Process osquery results.
 
     Args:
-      client (object): the GRR Client.
+      client (Client): the GRR Client.
       flow_id (str): the Osquery flow ID to download results from.
 
     Returns:
@@ -807,7 +807,8 @@ class GRROsqueryCollector(GRRFlow):
         query = container.description
 
         output_file_path = os.path.join(
-          self.directory, '.'.join((hostname, flow_id, 'csv')))
+            self.directory, '.'.join(
+                str(val) for val in (hostname, flow_id, 'csv')))
 
         with open(output_file_path, mode='w') as fd:
           container.data_frame.to_csv(fd)
