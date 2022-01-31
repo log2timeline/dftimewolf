@@ -245,7 +245,7 @@ class DFTimewolfState(object):
     """
     module_name = module_definition['name']
     runtime_name = module_definition.get('runtime_name', module_name)
-    logger.info('Setting up module: {runtime_name}')
+    logger.info(f'Setting up module: {runtime_name}')
     new_args = utils.ImportArgsFromDict(
         module_definition['args'], self.command_line_options, self.config)
     module = self._module_pool[runtime_name]
