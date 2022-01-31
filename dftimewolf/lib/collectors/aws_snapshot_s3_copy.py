@@ -94,7 +94,7 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
   def PreProcess(self) -> None:
     """Set up for the snapshot copy operation."""
     if not self.bucket_exists:
-      self.logger.info('Creating AWS bucket {0:s}'.format(self.bucket))
+      self.logger.info(f'Creating AWS bucket {self.bucket}')
       self.s3.create_bucket(
         Bucket=self.bucket,
         CreateBucketConfiguration={'LocationConstraint': self.region})

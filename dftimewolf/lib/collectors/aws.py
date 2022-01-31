@@ -70,7 +70,7 @@ class AWSCollector(module.BaseModule):
   def Process(self) -> None:
     """Copies a volume and attaches it to the analysis VM."""
     for volume in self._FindVolumesToCopy():
-      print('Volume copy of {0:s} started...'.format(volume.volume_id))
+      self.logger.info(f'Volume copy of {volume.volume_id} started...')
       new_volume = aws_forensics.CreateVolumeCopy(
           self.remote_zone,
           dst_zone=self.analysis_zone,
@@ -79,8 +79,8 @@ class AWSCollector(module.BaseModule):
           dst_profile=self.analysis_profile_name)
       self.analysis_vm.AttachVolume(
           new_volume, self._FindNextAvailableDeviceName())
-      print('Volume {0:s} successfully copied to {1:s}'.format(
-          volume.volume_id, new_volume.volume_id))
+      self.logger.info(f'Volume {volume.volume_id} successfully copied to '
+          f'{new_volume.volume_id}')
 
       container = containers.ForensicsVM(
           name=self.analysis_vm.name,
@@ -168,8 +168,8 @@ class AWSCollector(module.BaseModule):
     self.analysis_zone = analysis_zone or remote_zone
     self.analysis_profile_name = analysis_profile_name or remote_profile_name
 
-    analysis_vm_name = 'aws-forensics-vm-{0:s}'.format(self.incident_id)
-    print('Your analysis VM will be: {0:s}'.format(analysis_vm_name))
+    analysis_vm_name = f'aws-forensics-vm-{self.incident_id}'
+    self.logger.info(f'Your analysis VM will be: {analysis_vm_name}')
     self.state.StoreContainer(
         containers.TicketAttribute(
             name=self._ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME,
@@ -198,9 +198,8 @@ class AWSCollector(module.BaseModule):
       try:
         volumes.append(self.source_account.ebs.GetVolumeById(volume_id))
       except RuntimeError:
-        self.ModuleError(
-            'Volume "{0:s}" was not found in AWS account {1:s}'.format(
-                volume_id, self.remote_profile_name),
+        self.ModuleError(f'Volume "{volume_id}" was not found in AWS account '
+                f'{self.remote_profile_name}',
             critical=True)
         return []
     return volumes
@@ -262,7 +261,7 @@ class AWSCollector(module.BaseModule):
     except IndexError as exception:
       self.ModuleError('Error: there are no more device names available '
                        'for this VM. Consider copying less volumes! '
-                       '{0:s}'.format(str(exception)), critical=True)
+                       f'{str(exception)}', critical=True)
       return ''
     return '/dev/sd' + next_available
 

@@ -147,11 +147,11 @@ class DFTimewolfTool(object):
 
       # If all else fails, fall back to hardcoded default
       if not os.path.isdir(data_files_path):
-        logger.debug('{0:s} not found, defaulting to /usr/local/share'.format(
-            data_files_path))
+        logger.debug(f'{data_files_path} not found, defaulting to '
+            '/usr/local/share')
         data_files_path = self._DEFAULT_DATA_FILES_PATH
 
-    logger.debug("Recipe data path: {0:s}".format(data_files_path))
+    logger.debug(f'Recipe data path: {data_files_path}')
     self._data_files_path = data_files_path
 
   def _GenerateHelpText(self) -> str:
@@ -180,11 +180,10 @@ class DFTimewolfTool(object):
     """
     try:
       if config.Config.LoadExtra(configuration_file_path):
-        logger.debug('Configuration loaded from: {0:s}'.format(
-            configuration_file_path))
+        logger.debug(f'Configuration loaded from: {configuration_file_path}')
 
     except errors.BadConfigurationError as exception:
-      logger.warning('{0!s}'.format(exception))
+      logger.warning(f'{exception}')
 
   def LoadConfiguration(self) -> None:
     """Loads the configuration.
@@ -242,14 +241,14 @@ class DFTimewolfTool(object):
     self._recipe = self._command_line_options.recipe
 
     self._state = DFTimewolfState(config.Config)
-    logger.info('Loading recipe {0:s}...'.format(self._recipe['name']))
+    logger.info(f"Loading recipe {self._recipe['name']}...")
     # Raises errors.RecipeParseError on error.
     self._state.LoadRecipe(self._recipe, MODULES)
 
     module_cnt = len(self._recipe.get('modules', [])) + \
                  len(self._recipe.get('preflights', []))
-    logger.info('Loaded recipe {0:s} with {1:d} modules'.format(
-        self._recipe['name'], module_cnt))
+    logger.info(f"Loaded recipe {self._recipe['name']} with {module_cnt} "
+        "modules")
 
     self._state.command_line_options = vars(self._command_line_options)
 
@@ -269,8 +268,7 @@ class DFTimewolfTool(object):
     """Runs the modules."""
     logger.info('Running modules...')
     self._state.RunModules()
-    logger.info('Recipe {0:s} executed successfully!'.format(
-        self._recipe['name']))
+    logger.info(f"Recipe {self._recipe['name']} executed successfully!")
 
   def SetupModules(self) -> None:
     """Sets up the modules."""
@@ -324,8 +322,7 @@ def SetupLogging() -> None:
   colorize = not bool(os.environ.get('DFTIMEWOLF_NO_RAINBOW'))
   console_handler.setFormatter(logging_utils.WolfFormatter(colorize=colorize))
   logger.addHandler(console_handler)
-  logger.debug(
-      'Logging to stdout and {0:s}'.format(logging_utils.DEFAULT_LOG_FILE))
+  logger.debug(f'Logging to stdout and {logging_utils.DEFAULT_LOG_FILE}')
   logger.success('Success!')
 
 
@@ -339,8 +336,8 @@ def Main() -> bool:
 
   version_tuple = (sys.version_info[0], sys.version_info[1])
   if version_tuple[0] != 3 or version_tuple < (3, 6):
-    logger.critical(('Unsupported Python version: {0:s}, version 3.6 or higher '
-                     'required.').format(sys.version))
+    logger.critical(f'Unsupported Python version: {sys.version}, version 3.6 or'
+                     ' higher required.')
     return False
 
   tool = DFTimewolfTool()

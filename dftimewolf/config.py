@@ -62,9 +62,9 @@ class Config(object):
     try:
       json_dict = json.loads(json_string)
     except ValueError as exception:
-      raise errors.BadConfigurationError((
+      raise errors.BadConfigurationError(
           'Unable to read configuration from JSON string with error: '
-          '{0!s}').format(exception))
+          f'{exception}')
 
     cls._extra_config.update(json_dict)
 

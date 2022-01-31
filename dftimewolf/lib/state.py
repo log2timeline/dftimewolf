@@ -98,10 +98,9 @@ class DFTimewolfState(object):
         msg = (f'In {self.recipe["name"]}: module {name} cannot be found. '
                'It may not have been declared.')
         raise errors.RecipeParseError(msg)
-      logger.debug('Loading module {0:s} from {1:s}'.format(
-          name, module_locations[name]))
-
       location = module_locations[name]
+      logger.debug(f'Loading module {name} from {location}')
+
       try:
         importlib.import_module(location)
       except ModuleNotFoundError as exception:
@@ -157,9 +156,9 @@ class DFTimewolfState(object):
     for module in modules:
       runtime_name = module.get('runtime_name')
       if runtime_name:
-        plan += '{0:s} ({1:s}):\n'.format(runtime_name, module['name'])
+        plan += f"{runtime_name} ({module['name']}):\n"
       else:
-        plan += '{0:s}:\n'.format(module['name'])
+        plan += f"{module['name']}:\n"
 
       new_args = utils.ImportArgsFromDict(
           module['args'], self.command_line_options, self.config)
@@ -167,7 +166,7 @@ class DFTimewolfState(object):
       if not new_args:
         plan += '  *No params*\n'
       for key, value in new_args.items():
-        plan += '  {0:s}{1:s}\n'.format(key.ljust(maxlen + 3), repr(value))
+        plan += f'  {key.ljust(maxlen + 3)}{repr(value)}\n'
 
     return plan
 
@@ -246,7 +245,7 @@ class DFTimewolfState(object):
     """
     module_name = module_definition['name']
     runtime_name = module_definition.get('runtime_name', module_name)
-    logger.info('Setting up module: {0:s}'.format(runtime_name))
+    logger.info(f'Setting up module: {runtime_name}')
     new_args = utils.ImportArgsFromDict(
         module_definition['args'], self.command_line_options, self.config)
     module = self._module_pool[runtime_name]
@@ -254,11 +253,10 @@ class DFTimewolfState(object):
     try:
       module.SetUp(**new_args)
     except errors.DFTimewolfError:
-      msg = "A critical error occurred in module {0:s}, aborting execution."
-      logger.critical(msg.format(module.name))
+      logger.critical(f'A critical error occurred in module {module.name}, '
+                       'aborting execution.')
     except Exception as exception:  # pylint: disable=broad-except
-      msg = 'An unknown error occurred in module {0:s}: {1!s}'.format(
-          module.name, exception)
+      msg = f'An unknown error occurred in module {module.name}: {exception}'
       logger.critical(msg)
       # We're catching any exception that is not a DFTimewolfError, so we want
       # to generate an error for further reporting.
@@ -301,25 +299,22 @@ class DFTimewolfState(object):
     # Abort processing if a module has had critical failures before.
     if self._abort_execution:
       logger.critical(
-          'Aborting execution of {0:s} due to previous errors'.format(
-              module.name))
+          f'Aborting execution of {module.name} due to previous errors')
       self._threading_event_per_module[runtime_name].set()
       self.CleanUp()
       return
 
-    logger.info('Running module: {0:s}'.format(runtime_name))
+    logger.info(f'Running module: {runtime_name}')
 
     try:
       if isinstance(module, ThreadAwareModule):
         module.PreProcess()
 
         futures = []
+        length = len(self.GetContainers(module.GetThreadOnContainerType()))
         logger.info(
-            'Running {0:d} threads, max {1:d} simultaneous for module {2:s}'\
-            .format(
-                len(self.GetContainers(module.GetThreadOnContainerType())),
-                module.GetThreadPoolSize(),
-                runtime_name))
+            f'Running {length} threads, max {module.GetThreadPoolSize()} '
+             'simultaneous for module {runtime_name}')
 
         with ThreadPoolExecutor(max_workers=module.GetThreadPoolSize()) \
             as executor:
@@ -337,11 +332,9 @@ class DFTimewolfState(object):
         module.Process()
     except errors.DFTimewolfError:
       logger.critical(
-          "Critical error in module {0:s}, aborting execution".format(
-              module.name))
+         f"Critical error in module {module.name}, aborting execution")
     except Exception as exception:  # pylint: disable=broad-except
-      msg = 'An unknown error occurred in module {0:s}: {1!s}'.format(
-          module.name, exception)
+      msg = f'An unknown error occurred in module {module.name}: {exception}'
       logger.critical(msg)
       # We're catching any exception that is not a DFTimewolfError, so we want
       # to generate an error for further reporting.
@@ -350,7 +343,7 @@ class DFTimewolfState(object):
           critical=True, unexpected=True)
       self.AddError(error)
 
-    logger.info('Module {0:s} finished execution'.format(runtime_name))
+    logger.info(f'Module {runtime_name} finished execution')
     self._threading_event_per_module[runtime_name].set()
     self.CleanUp()
 
@@ -463,8 +456,7 @@ class DFTimewolfState(object):
       logger.error('dfTimewolf encountered one or more errors:')
 
     for index, error in enumerate(error_objects):
-      logger.error('{0:d}: error from {1:s}: {2:s}'.format(
-          index+1, error.name, error.message))
+      logger.error(f'{index+1}: error from {error.name}: {error.message}')
       if error.stacktrace:
         for line in error.stacktrace.split('\n'):
           logger.error(line)
@@ -473,8 +465,7 @@ class DFTimewolfState(object):
 
     if any(error.unexpected for error in error_objects):
       logger.critical('One or more unexpected errors occurred.')
-      logger.critical(
-          'Please consider opening an issue: {0:s}'.format(NEW_ISSUE_URL))
+      logger.critical(f'Please consider opening an issue: {NEW_ISSUE_URL}')
 
     if critical_errors:
       raise errors.CriticalError('Critical error found. Aborting.')

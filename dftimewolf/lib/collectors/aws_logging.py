@@ -69,15 +69,15 @@ class AWSLogsCollector(module.BaseModule):
         self._zone, aws_profile=self._profile_name)
     self._log_client = aws_log.AWSCloudTrail(self._log_account)
 
-    self.logger.info('Downloading logs to {0:s}'.format(output_path))
+    self.logger.info(f'Downloading logs to {output_path}')
     events = self._log_client.LookupEvents(qfilter=self._query_filter,
         starttime=self._start_time, endtime=self._end_time)
-    self.logger.info('Downloaded {0:d} log events.'.format(len(events)))
+    self.logger.info(f'Downloaded {len(events)} log events.')
 
     # Set the default serializer to str() to account for datetime objects.
     output_file.write(json.dumps(events, default=str))
     output_file.write('\n')
-    self.logger.success('Downloaded logs to {0:s}'.format(output_path))
+    self.logger.success(f'Downloaded logs to {output_path}')
     output_file.close()
 
     logs_report = containers.AWSLogs(
