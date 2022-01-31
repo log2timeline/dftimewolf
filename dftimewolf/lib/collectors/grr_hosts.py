@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 """Definition of modules for collecting data from GRR hosts."""
 
-from calendar import c
 import datetime
 import os
 import re
-import threading
 import time
 import zipfile
 from typing import List, Optional, Tuple, Type
@@ -668,7 +666,7 @@ class GRROsqueryCollector(GRRFlow):
                critical: bool=False) -> None:
     super(GRROsqueryCollector, self).__init__(
         state, name=name, critical=critical)
-    self.directory = None
+    self.directory = ""
     self.timeout_millis = self.DEFAULT_OSQUERY_TIMEOUT_MILLIS
     self.ignore_stderr_errors = True
 
@@ -688,6 +686,7 @@ class GRROsqueryCollector(GRRFlow):
     Args:
       hostnames (str): comma-separated hostnames to launch the flow on.
       reason (str): justification for GRR access.
+      directory (str): the directory in which to export results.
       grr_server_url (str): GRR server URL.
       grr_username (str): GRR username.
       grr_password (str): GRR password.
@@ -714,6 +713,41 @@ class GRROsqueryCollector(GRRFlow):
     for hostname in hosts:
       self.state.StoreContainer(containers.Host(hostname=hostname))
 
+  def _DownloadResults(self, client, flow_id) -> List[pd.DataFrame]:
+    """Process osquery results.
+
+    Args:
+      client (object): the GRR Client.
+      flow_id (str): the Osquery flow ID to download results from.
+
+    Returns:
+      List[pd.DataFrame]: the Osquery results.
+    """
+    flow = client.Flow(flow_id)
+    list_results = list(flow.ListResults())
+    self.logger.info(type(flow))
+
+    if not list_results:
+      self.logger.info(
+          'No results for flow ID {0:s}'.format(str(flow)))
+      return []
+
+    results = []
+    for result in list_results:
+      payload = result.payload
+      if not isinstance(payload, osquery_flows.OsqueryResult):
+        self.logger.error(
+            'Incorrect results format from flow ID {0:s}'.format(flow))
+        continue
+
+      headers = [column.name for column in payload.table.header.columns]
+      data = []
+      for row in payload.table.rows:
+        data.append(row.values)
+      data_frame = pd.DataFrame.from_records(data, columns=headers)
+      results.append(data_frame)
+    return results
+
   def Process(self, container: containers.Host) -> None:
     """Collect osquery results from a host with GRR.
 
@@ -733,30 +767,9 @@ class GRROsqueryCollector(GRRFlow):
 
         self._AwaitFlow(client, flow_id)
 
-        flow = client.Flow(flow_id)
-        list_results = list(flow.ListResults())
-        if not list_results:
-          self.logger.info(
-              'No results for flow ID {0:s} ({1:s})'.format(
-                  flow, container.hostname))
-          continue
-
-        for result in list_results:
-          payload = result.payload
-          if not isinstance(payload, osquery_flows.OsqueryResult):
-            self.logger.error(
-                'Incorrect results format from flow ID {0:s} ({1:s})'.format(
-                    flow, container.hostname))
-            continue
-
-          headers = [column.name for column in payload.table.header.columns]
-          data = []
-          for row in payload.table.rows:
-            data.append(row.values)
-          data_frame = pd.DataFrame.from_records(data, columns=headers)
-
+        for data_frame in self._DownloadResults(client, flow_id):
           self.logger.info('{0:s} ({1:s}): {2:d} rows collected'.format(
-              flow_id, container.hostname, len(data_frame)))
+              str(flow_id), container.hostname, len(data_frame)))
 
           dataframe_container = containers.DataFrame(
               data_frame=data_frame,
@@ -801,9 +814,9 @@ class GRROsqueryCollector(GRRFlow):
 
         self.logger.info('Saved {0:s}'.format(output_file_path))
 
-        manifest_fd.write(f'"{container.name}",')
-        manifest_fd.write(f'"{container.source}",')
-        manifest_fd.write(f'"{container.description}"\n')
+        manifest_fd.write(f'"{flow_id}",')
+        manifest_fd.write(f'"{hostname}",')
+        manifest_fd.write(f'"{query}"\n')
 
   def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
     """This module operates on Host containers."""
