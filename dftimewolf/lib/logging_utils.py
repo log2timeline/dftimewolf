@@ -125,5 +125,5 @@ class WolfFormatter(logging.Formatter):
       if 'Process' in stack:
         thread_name = threading.current_thread().getName()
         message = record.getMessage()
-        record.msg = "[{0:s}] {1:s}".format(thread_name, message)
+        record.msg = f'[{thread_name}] {message}'
     return super(WolfFormatter, self).format(record)

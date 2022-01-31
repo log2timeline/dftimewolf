@@ -31,13 +31,12 @@ def Compress(source_path: str, output_directory: Optional[str]=None) -> str:
     output_directory = tempfile.mkdtemp()
 
   output_file = os.path.basename(source_path)
-  arcname = '{0:d}-{1:s}'.format(int(time()), output_file)
-  output_file = '{0:s}.tgz'.format(arcname)
+  arcname = f'{time()}-{output_file}'
+  output_file = f'{arcname}.tgz'
   output_file = os.path.join(output_directory, output_file)
 
   if os.path.exists(output_file):
-    raise RuntimeError(
-        'Output file {0:s} already exists.'.format(output_file))
+    raise RuntimeError(f'Output file {output_file} already exists.')
 
   try:
     with tarfile.TarFile.open(output_file, 'w:gz') as tar:
@@ -45,8 +44,8 @@ def Compress(source_path: str, output_directory: Optional[str]=None) -> str:
       tar.close()
   except (IOError, tarfile.TarError) as exception:
     raise RuntimeError(
-        'An error has while compressing directory {0:s}: {1!s}'.format(
-            source_path, exception)) from exception
+        f'An error has while compressing directory {source_path}: {exception}'
+        ) from exception
 
   return output_file
 
@@ -182,7 +181,7 @@ class HTMLFormatter(FormatterInterface):
     Returns:
         str: A formatted indented string.
     """
-    return '<li>{0:s}</li>'.format(text)
+    return f'<li>{text}</li>'
 
   def IndentEnd(self) -> str:
     """Return a formatted text for ending an indent."""
@@ -190,19 +189,19 @@ class HTMLFormatter(FormatterInterface):
 
   def BoldText(self, text: str) -> str:
     """Return a formatted text that will be bold."""
-    return '<b>{0:s}</b>'.format(text)
+    return f'<b>{text}</b>'
 
   def Link(self, url: str, text: str) -> str:
     """Return a formatted text that contains a link."""
-    return '<a href="{0:s}" target="_blank">{1:s}</a>'.format(url, text)
+    return f'<a href="{url}" target="_blank">{text}</a>'
 
   def ItalicText(self, text: str) -> str:
     """Return a formatted text that will be italic."""
-    return '<i>{0:s}</i>'.format(text)
+    return f'<i>{text}</i>'
 
   def UnderlineText(self, text: str) -> str:
     """Return a formatted text that will be underlined."""
-    return '<u>{0:s}</u>'.format(text)
+    return f'<u>{text}</u>'
 
   def Line(self) -> str:
     """Return a formatted new line."""
@@ -210,11 +209,11 @@ class HTMLFormatter(FormatterInterface):
 
   def Heading(self, text: str, level: int=1) -> str:
     """Return a formatted heading."""
-    return '<h{0:d}>{1:s}</h{0:d}>'.format(level, text)
+    return f'<h{level}>{text}</h{level}>'
 
   def Paragraph(self, text: str) -> str:
     """Return a formatted paragraph."""
-    return '<p>{0:s}</p>'.format(text)
+    return f'<p>{text}</p>'
 
 
 class MarkdownFormatter(FormatterInterface):
@@ -234,23 +233,23 @@ class MarkdownFormatter(FormatterInterface):
     Returns:
         str: A formatted indented string.
     """
-    return '{0:s}+ {1:s}\n'.format(' '*(2 * level), text)
+    return f"{' '*(2 * level)}+ {text}\n"
 
   def BoldText(self, text: str) -> str:
     """Return a formatted text that will be bold."""
-    return '**{0:s}**'.format(text)
+    return f'**{text}**'
 
   def Link(self, url: str, text: str) -> str:
     """Return a formatted text that contains a link."""
-    return '[{0:s}]({1:s})'.format(text, url)
+    return f'[{text}]({url})'
 
   def ItalicText(self, text: str) -> str:
     """Return a formatted text that will be italic."""
-    return '*{0:s}*'.format(text)
+    return f'*{text}*'
 
   def UnderlineText(self, text: str) -> str:
     """Return a formatted text that will be underlined."""
-    return '**_{0:s}_**'.format(text)
+    return f'**_{text}_**'
 
   def Line(self) -> str:
     """Return a formatted new line."""
@@ -258,11 +257,11 @@ class MarkdownFormatter(FormatterInterface):
 
   def Heading(self, text: str, level: int=1) -> str:
     """Return a formatted heading."""
-    return '{0:s} {1:s}\n'.format('#'*level, text)
+    return f"{'#'*level} {text}\n"
 
   def Paragraph(self, text: str) -> str:
     """Return a formatted paragraph."""
-    return '{0:s}\n'.format(text)
+    return f'{text}\n'
 
   def IndentStart(self) -> str:
     """Return formatted text for starting an indent."""
