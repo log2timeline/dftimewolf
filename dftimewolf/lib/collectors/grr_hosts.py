@@ -713,7 +713,9 @@ class GRROsqueryCollector(GRRFlow):
     for hostname in hosts:
       self.state.StoreContainer(containers.Host(hostname=hostname))
 
-  def _DownloadResults(self, client: Client, flow_id: str) -> List[pd.DataFrame]:
+  def _DownloadResults(self,
+                       client: Client,
+                       flow_id: str) -> List[pd.DataFrame]:
     """Process osquery results.
 
     Args:
