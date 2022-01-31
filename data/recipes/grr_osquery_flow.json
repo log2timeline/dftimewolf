@@ -14,6 +14,8 @@
         "name": "GRROsqueryCollector",
         "args": {
             "hostnames": "@hostnames",
+            "timeout_millis": "@timeout_millis",
+            "ignore_stderr_errors": "@ignore_stderr_errors",
             "reason": "@reason",
             "directory": "@directory",
             "grr_server_url": "@grr_server_url",
@@ -25,16 +27,18 @@
         }
     }],
     "args": [
-      ["reason", "Reason for collection.", null],
-      ["hostnames", "Hostname(s) to collect the osquery flow from.", null],
-      ["--osquery_query", "Osquery query to hunt for.", null],
-      ["--osquery_paths", "Path(s) to text file containing one osquery query per line.", null],
-      ["--directory", "Directory in which to export results.", null],
-      ["--approvers", "Emails for GRR approval request.", null],
-      ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
-      ["--verify", "Whether to verify the GRR TLS certificate.", true],
-      ["--skip_offline_clients", "Whether to skip clients that are offline.", false],
-      ["--grr_username", "GRR username", "admin"],
-      ["--grr_password", "GRR password", "admin"]
+        ["reason", "Reason for collection.", null],
+        ["hostnames", "Hostname(s) to collect the osquery flow from.", null],
+        ["--osquery_query", "Osquery query to hunt for.", null],
+        ["--osquery_paths", "Path(s) to text file containing one osquery query per line.", null],
+        ["--timeout_millis", "Osquery timeout in milliseconds", 300000],
+        ["--ignore_stderr_errors", "Ignore osquery stderr errors", false],
+        ["--directory", "Directory in which to export results.", null],
+        ["--approvers", "Emails for GRR approval request.", null],
+        ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
+        ["--verify", "Whether to verify the GRR TLS certificate.", true],
+        ["--skip_offline_clients", "Whether to skip clients that are offline.", false],
+        ["--grr_username", "GRR username", "admin"],
+        ["--grr_password", "GRR password", "admin"]
   ]
 }

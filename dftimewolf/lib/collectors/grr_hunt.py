@@ -329,7 +329,7 @@ class GRRHuntOsqueryCollector(GRRHunt):
     ignore_stderr_errors (bool): ignore stderr errors from osquery.
   """
 
-  DEFAULT_OSQUERY_TIMEOUT_MILLIS = 3000000
+  DEFAULT_OSQUERY_TIMEOUT_MILLIS = 300000
 
   def __init__(self,
                state: DFTimewolfState,
@@ -350,6 +350,8 @@ class GRRHuntOsqueryCollector(GRRHunt):
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
             reason: str,
+            timeout_millis: int,
+            ignore_stderr_errors: bool,
             grr_server_url: str,
             grr_username: str,
             grr_password: str,
@@ -362,6 +364,8 @@ class GRRHuntOsqueryCollector(GRRHunt):
 
     Args:
       reason (str): justification for GRR access.
+      timeout_millis (int): Osquery timeout in milliseconds
+      ignore_stderr_errors (bool): Ignore osquery stderr errors
       grr_server_url (str): GRR server URL.
       grr_username (str): GRR username.
       grr_password (str): GRR password.
@@ -383,6 +387,9 @@ class GRRHuntOsqueryCollector(GRRHunt):
         verify=verify)
 
     self.HuntSetup(match_mode, client_operating_systems, client_labels)
+
+    self.timeout_millis = timeout_millis
+    self.ignore_stderr_errors = ignore_stderr_errors
 
   def Process(self) -> None:
     """Starts a new Osquery GRR hunt."""

@@ -658,7 +658,7 @@ class GRROsqueryCollector(GRRFlow):
     ignore_stderr_errors (bool): ignore stderr errors from osquery.
   """
 
-  DEFAULT_OSQUERY_TIMEOUT_MILLIS = 3000000
+  DEFAULT_OSQUERY_TIMEOUT_MILLIS = 300000
 
   def __init__(self,
                state: DFTimewolfState,
@@ -668,12 +668,14 @@ class GRROsqueryCollector(GRRFlow):
         state, name=name, critical=critical)
     self.directory = ""
     self.timeout_millis = self.DEFAULT_OSQUERY_TIMEOUT_MILLIS
-    self.ignore_stderr_errors = True
+    self.ignore_stderr_errors = False
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
             hostnames: str,
             reason: str,
+            timeout_millis: int,
+            ignore_stderr_errors: bool,
             directory: str,
             grr_server_url: str,
             grr_username: str,
@@ -686,6 +688,8 @@ class GRROsqueryCollector(GRRFlow):
     Args:
       hostnames (str): comma-separated hostnames to launch the flow on.
       reason (str): justification for GRR access.
+      timeout_millis (int): Osquery timeout in milliseconds
+      ignore_stderr_errors (bool): Ignore osquery stderr errors
       directory (str): the directory in which to export results.
       grr_server_url (str): GRR server URL.
       grr_username (str): GRR username.
@@ -712,6 +716,9 @@ class GRROsqueryCollector(GRRFlow):
 
     for hostname in hosts:
       self.state.StoreContainer(containers.Host(hostname=hostname))
+
+    self.timeout_millis = timeout_millis
+    self.ignore_stderr_errors = ignore_stderr_errors
 
   def _DownloadResults(self,
                        client: Client,

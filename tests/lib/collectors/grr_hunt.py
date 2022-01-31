@@ -115,6 +115,8 @@ class GRRHuntOsqueryCollectorTest(unittest.TestCase):
         self.test_state)
     self.grr_hunt_osquery_collector.SetUp(
         reason='random reason',
+        timeout_millis=300000,
+        ignore_stderr_errors=False,
         grr_server_url='http://fake/endpoint',
         grr_username='admin',
         grr_password='admin',
@@ -132,8 +134,8 @@ class GRRHuntOsqueryCollectorTest(unittest.TestCase):
     self.assertEqual(call_kwargs['flow_args'].query,
                      'SELECT * FROM processes')
     self.assertEqual(call_kwargs['flow_args'].timeout_millis,
-                     3000000)
-    self.assertEqual(call_kwargs['flow_args'].ignore_stderr_errors, True)
+                     300000)
+    self.assertEqual(call_kwargs['flow_args'].ignore_stderr_errors, False)
     self.assertEqual(call_kwargs['flow_name'], 'OsqueryFlow')
     self.assertEqual(call_kwargs['hunt_runner_args'].description,
                      'random reason')

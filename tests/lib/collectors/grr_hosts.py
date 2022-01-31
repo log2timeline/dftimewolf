@@ -603,6 +603,8 @@ class GRROsqueryCollectorTest(unittest.TestCase):
     self.grr_osquery_collector.SetUp(
         hostnames='C.0000000000000001',
         reason='Random reason',
+        timeout_millis=300000,
+        ignore_stderr_errors=False,
         directory='',
         grr_server_url='http://fake/endpoint',
         grr_username='user',
@@ -640,7 +642,7 @@ class GRROsqueryCollectorTest(unittest.TestCase):
             query='SELECT * FROM processes',
             timeout_millis=
                 grr_hosts.GRROsqueryCollector.DEFAULT_OSQUERY_TIMEOUT_MILLIS,
-            ignore_stderr_errors=True
+            ignore_stderr_errors=False
         )
     )
 
