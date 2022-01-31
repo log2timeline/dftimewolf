@@ -777,7 +777,7 @@ class GRROsqueryCollector(GRRFlow):
               name=flow_id,
               source=container.hostname)
 
-        self.state.StoreContainer(dataframe_container)
+          self.state.StoreContainer(dataframe_container)
 
   def PreProcess(self) -> None:
     """Not implemented."""
