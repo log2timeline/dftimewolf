@@ -30,7 +30,7 @@ class OsqueryCollectorTest(unittest.TestCase):
     with self.assertRaises(DFTimewolfError) as context:
       osquery_collector.SetUp(query='', paths='')
 
-    self.assertEquals(
+    self.assertEqual(
         context.exception.message, 'Both query and paths cannot be empty.')
 
   def testSetupQuery(self) -> None:
@@ -41,7 +41,7 @@ class OsqueryCollectorTest(unittest.TestCase):
     with self.assertRaises(DFTimewolfError) as context:
       osquery_collector.SetUp(query='not a query', paths='')
 
-    self.assertEquals(context.exception.message, 'No valid osquery collected.')
+    self.assertEqual(context.exception.message, 'No valid osquery collected.')
 
   def testSetupPaths(self) -> None:
     """Tests the collector's Setup() method with invalid paths parameter."""

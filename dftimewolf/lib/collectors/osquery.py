@@ -76,8 +76,8 @@ class OsqueryCollector(module.BaseModule):
             if self._ValidateOsquery(line):
               self.osqueries.append(line)
             else:
-              self.logger.warning(f'Osquery on line {line_number} of {path} does'
-                                  ' not appear to be valid.')
+              self.logger.warning(f'Osquery on line {line_number} of {path} '
+                                  'does not appear to be valid.')
 
     if not self.osqueries:
       self.ModuleError(
