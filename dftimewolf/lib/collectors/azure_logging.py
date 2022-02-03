@@ -21,7 +21,7 @@ class AzureLogsCollector(module.BaseModule):
                state: DFTimewolfState,
                name: Optional[str]=None,
                critical: bool=False) -> None:
-    """Initializes a Azure logs collector."""
+    """Initializes an Azure logs collector."""
     super(AzureLogsCollector, self).__init__(
         state, name=name, critical=critical)
     self._filter_expression = ''
@@ -65,7 +65,7 @@ class AzureLogsCollector(module.BaseModule):
         output_file.write('\n')
 
     except az_exceptions.ClientAuthenticationError as exception:
-      self.ModuleError('Ensure credentials are properly configured see '
+      self.ModuleError('Ensure credentials are properly configured, see '
       'https://docs.microsoft.com/en-us/python/api/azure-identity/azure.identity.defaultazurecredential?view=azure-python')
       self.ModuleError(exception, critical=True)
 
