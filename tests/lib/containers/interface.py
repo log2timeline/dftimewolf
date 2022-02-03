@@ -16,7 +16,8 @@ class AttributeContainerTest(unittest.TestCase):
     attribute_container.attribute_name = 'attribute_name'
     attribute_container.attribute_value = 'attribute_value'
 
-    expected_attribute_names = ['attribute_name', 'attribute_value']
+    expected_attribute_names = [
+        'attribute_name', 'attribute_value', 'attributes']
 
     attribute_names = sorted(attribute_container.GetAttributeNames())
 
