@@ -163,7 +163,7 @@ class AzureLogs(interface.AttributeContainer):
   CONTAINER_TYPE = 'azure_logs'
 
   def __init__(
-      self, path: str, filter_expression: Optional[str], 
+      self, path: str, filter_expression: Optional[str],
       subscription_id: Optional[str]) -> None:
     """Initializes the Azure logs container.
 

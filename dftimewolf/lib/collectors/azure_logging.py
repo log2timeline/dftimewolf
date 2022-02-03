@@ -66,8 +66,8 @@ class AzureLogsCollector(module.BaseModule):
 
     except az_exceptions.ClientAuthenticationError as exception:
       self.ModuleError('Ensure credentials are properly configured, see '
-      'https://docs.microsoft.com/en-us/python/api/azure-identity/azure.identity.defaultazurecredential?view=azure-python')
-      self.ModuleError(exception, critical=True)
+      'https://docs.microsoft.com/en-us/python/api/azure-identity/azure.identity.defaultazurecredential?view=azure-python')  # pylint: disable=line-too-long
+      self.ModuleError(str(exception), critical=True)
 
     except az_exceptions.HttpResponseError as exception:
       if exception.status_code == 400:
