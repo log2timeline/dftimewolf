@@ -30,8 +30,11 @@ class OsqueryCollectorTest(unittest.TestCase):
     with self.assertRaises(DFTimewolfError) as context:
       osquery_collector.SetUp(query='', paths='')
 
+    self.assertEquals(
+        context.exception.message, 'Both query and paths cannot be empty.')
+
   def testSetupQuery(self) -> None:
-    """Tests the collector's Setup() function."""
+    """Tests the collector's Setup() function with invalid query parameter."""
     test_state = state.DFTimewolfState(config.Config)
     osquery_collector = osquery.OsqueryCollector(test_state)
 
@@ -41,28 +44,28 @@ class OsqueryCollectorTest(unittest.TestCase):
     self.assertEquals(context.exception.message, 'No valid osquery collected.')
 
   def testSetupPaths(self) -> None:
-    """Tests the collector"""
+    """Tests the collector's Setup() method with invalid paths parameter."""
     test_state = state.DFTimewolfState(config.Config)
     osquery_collector = osquery.OsqueryCollector(test_state)
 
-    TEST_EMPTY_DATA = ""
-    TEST_BAD_DATA = "bad"
+    test_empty_data = ""
+    test_bad_data = "bad"
 
     with mock.patch(
-        'builtins.open'.format(__name__),
-        new=mock.mock_open(read_data=TEST_EMPTY_DATA)) as _:
+        'builtins.open',
+        new=mock.mock_open(read_data=test_empty_data)) as _:
       with self.assertRaises(DFTimewolfError) as context:
         osquery_collector.SetUp(query='', paths='empty')
 
-    self.assertEquals(context.exception.message, 'No valid osquery collected.')
+    self.assertEqual(context.exception.message, 'No valid osquery collected.')
 
     with mock.patch(
-        'builtins.open'.format(__name__),
-        new=mock.mock_open(read_data=TEST_BAD_DATA)) as _:
+        'builtins.open',
+        new=mock.mock_open(read_data=test_bad_data)) as _:
       with self.assertRaises(DFTimewolfError) as context:
         osquery_collector.SetUp(query='', paths='fbad')
 
-    self.assertEquals(context.exception.message, 'No valid osquery collected.')
+    self.assertEqual(context.exception.message, 'No valid osquery collected.')
 
   @mock.patch('os.path.exists')
   def testProcess(self, mock_exists) -> None:
@@ -71,10 +74,11 @@ class OsqueryCollectorTest(unittest.TestCase):
     osquery_collector = osquery.OsqueryCollector(test_state)
     mock_exists.return_value = True
 
-    TEST_OK_DATA = "SELECT * FROM processes"
+    test_ok_data = "SELECT * FROM processes"
+
     with mock.patch(
-        'builtins.open'.format(__name__),
-        new=mock.mock_open(read_data=TEST_OK_DATA)) as _:
+        'builtins.open',
+        new=mock.mock_open(read_data=test_ok_data)) as _:
       osquery_collector.SetUp(query='', paths='ok')
 
     osquery_collector.Process()

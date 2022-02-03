@@ -33,7 +33,7 @@ class OsqueryCollector(module.BaseModule):
         state, name=name, critical=critical)
     self.osqueries: List[str] = []
 
-  def _ValidateOsquery(self, query) -> bool:
+  def _ValidateOsquery(self, query: str) -> bool:
     """Validate Osquery query.
 
     Args:
@@ -76,8 +76,8 @@ class OsqueryCollector(module.BaseModule):
             if self._ValidateOsquery(line):
               self.osqueries.append(line)
             else:
-              self.logger.warning(f'Osquery on line {line_number} of {path} does '
-                                  'not appear to be valid.')
+              self.logger.warning(f'Osquery on line {line_number} of {path} does'
+                                  ' not appear to be valid.')
 
     if not self.osqueries:
       self.ModuleError(
