@@ -85,6 +85,7 @@ class OsqueryCollectorTest(unittest.TestCase):
 
     containers = test_state.GetContainers(OsqueryQuery)
     self.assertEqual(len(containers), 1)
+    self.assertEqual(containers[0].query, "SELECT * FROM processes")
 
 
 if __name__ == '__main__':
