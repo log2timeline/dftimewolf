@@ -61,8 +61,6 @@ class Report(interface.AttributeContainer):
     text (str): report text.
     text_format (str): format of text in the report. Must be either 'plaintext'
       or 'markdown'.
-    attributes (list): attribute list, dicts must contain 'name',
-      'type', 'values' keys.
   """
   CONTAINER_TYPE = 'report'
 
@@ -82,14 +80,10 @@ class Report(interface.AttributeContainer):
       attributes (list): attribute list of dicts that must contain 'name',
         'type', 'values' keys.
     """
-    super(Report, self).__init__()
+    super(Report, self).__init__(attributes=attributes)
     self.module_name = module_name
     self.text = text
     self.text_format = text_format
-    if attributes is None:
-      self.attributes = []
-    else:
-      self.attributes = attributes
 
 
 class GCPLogs(interface.AttributeContainer):
