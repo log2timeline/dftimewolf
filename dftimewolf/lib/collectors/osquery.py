@@ -68,7 +68,7 @@ class OsqueryCollector(module.BaseModule):
 
       for path in split_paths:
         if not os.path.exists(path):
-          self.logger.warning('Path {0:s} does not exist.'.format(path))
+          self.logger.warning(f'Path {path} does not exist.')
           continue
 
         with open(path, mode='r') as fd:

@@ -737,8 +737,7 @@ class GRROsqueryCollector(GRRFlow):
     self.logger.info(type(flow))
 
     if not list_results:
-      self.logger.info(
-          'No results for flow ID {0:s}'.format(str(flow)))
+      self.logger.info(f'No results for flow ID {str(flow)}')
       return []
 
     results = []
