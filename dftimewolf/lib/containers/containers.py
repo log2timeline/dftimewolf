@@ -152,6 +152,32 @@ class AWSLogs(interface.AttributeContainer):
     self.end_time = str(end_time)
 
 
+class AzureLogs(interface.AttributeContainer):
+  """Azure logs container.
+
+  Attributes:
+      path (str): path to an Azure log file.
+      filter_expression (str): the filter_expression used in the log query.
+      subscription_id (str): the subscription_id of the queried subscription.
+  """
+  CONTAINER_TYPE = 'azure_logs'
+
+  def __init__(
+      self, path: str, filter_expression: Optional[str], 
+      subscription_id: Optional[str]) -> None:
+    """Initializes the Azure logs container.
+
+    Args:
+      path (str): path to a Azure log file.
+      filter_expression (str): the filter used in the log query.
+      subscription_id (str): the subscription_id of the queried subscription.
+    """
+    super(AzureLogs, self).__init__()
+    self.path = path
+    self.filter_expression = filter_expression
+    self.subscription_id = subscription_id
+
+
 class ThreatIntelligence(interface.AttributeContainer):
   """Threat Intelligence attribute container.
 
