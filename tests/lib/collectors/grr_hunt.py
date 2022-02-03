@@ -102,7 +102,7 @@ class GRRHuntFileCollectorTest(unittest.TestCase):
 
 
 class GRRHuntOsqueryCollectorTest(unittest.TestCase):
-  """Tests for the GRR osquer collector."""
+  """Tests for the GRR osquery collector."""
 
   @mock.patch('grr_api_client.api.InitHttp')
   def setUp(self, mock_InitHttp):

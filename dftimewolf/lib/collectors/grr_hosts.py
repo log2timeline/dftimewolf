@@ -745,8 +745,7 @@ class GRROsqueryCollector(GRRFlow):
     for result in list_results:
       payload = result.payload
       if not isinstance(payload, osquery_flows.OsqueryResult):
-        self.logger.error(
-            'Incorrect results format from flow ID {0:s}'.format(flow))
+        self.logger.error(f'Incorrect results format from flow ID {flow}')
         continue
 
       headers = [column.name for column in payload.table.header.columns]
@@ -767,18 +766,19 @@ class GRROsqueryCollector(GRRFlow):
       osquery_containers = self.state.GetContainers(containers.OsqueryQuery)
 
       for osquery_container in osquery_containers:
-        hunt_args = osquery_flows.OsqueryFlowArgs()
-        hunt_args.query = osquery_container.query
-        hunt_args.timeout_millis = self.timeout_millis
-        hunt_args.ignore_stderr_errors = self.ignore_stderr_errors
+        hunt_args = osquery_flows.OsqueryFlowArgs(
+            query=osquery_container.query,
+            timeout_millis=self.timeout_millis,
+            ignore_stderr_errors=self.ignore_stderr_errors)
 
         flow_id = self._LaunchFlow(client, 'OsqueryFlow', hunt_args)
 
         self._AwaitFlow(client, flow_id)
 
         for data_frame in self._DownloadResults(client, flow_id):
-          self.logger.info('{0:s} ({1:s}): {2:d} rows collected'.format(
-              str(flow_id), container.hostname, len(data_frame)))
+          self.logger.info(
+              f'{str(flow_id)} ({container.hostname}): {len(data_frame)} rows '
+              'collected')
 
           dataframe_container = containers.DataFrame(
               data_frame=data_frame,
@@ -805,7 +805,7 @@ class GRROsqueryCollector(GRRFlow):
     manifest_file_path = os.path.join(self.directory, 'MANIFEST.csv')
 
     self.logger.info(
-        'Saving osquery flow results to {0:s}'.format(manifest_file_path))
+        f'Saving osquery flow results to {manifest_file_path}')
 
     with open(manifest_file_path, mode='w') as manifest_fd:
       manifest_fd.write('"Flow ID","Hostname","Osquery"\n')
@@ -822,11 +822,9 @@ class GRROsqueryCollector(GRRFlow):
         with open(output_file_path, mode='w') as fd:
           container.data_frame.to_csv(fd)
 
-        self.logger.info('Saved {0:s}'.format(output_file_path))
+        self.logger.info(f'Saved {output_file_path}.')
 
-        manifest_fd.write(f'"{flow_id}",')
-        manifest_fd.write(f'"{hostname}",')
-        manifest_fd.write(f'"{query}"\n')
+        manifest_fd.write(f'"{flow_id}","{hostname}","{query}"\n')
 
   def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
     """This module operates on Host containers."""

@@ -640,8 +640,7 @@ class GRROsqueryCollectorTest(unittest.TestCase):
         'OsqueryFlow',
         osquery_pb2.OsqueryFlowArgs(
             query='SELECT * FROM processes',
-            timeout_millis=
-                grr_hosts.GRROsqueryCollector.DEFAULT_OSQUERY_TIMEOUT_MILLIS,
+            timeout_millis=300000,
             ignore_stderr_errors=False
         )
     )

@@ -14,9 +14,7 @@ class OsqueryCollector(module.BaseModule):
   """Osquey query collector.
 
   Attributes:
-      query (str): osquery query.
-      paths (List[str]): list of file paths where each file contains osquery
-          queries (one per line).
+      osqueries (List[str]): list of osquery queries.
   """
 
   def __init__(self,
@@ -33,8 +31,19 @@ class OsqueryCollector(module.BaseModule):
     """
     super(OsqueryCollector, self).__init__(
         state, name=name, critical=critical)
-    self.query: str = ""
-    self.paths: List[str] = []
+    self.osqueries: List[str] = []
+
+  def _ValidateOsquery(self, query) -> bool:
+    """Validate Osquery query.
+
+    Args:
+      query (str): osquery query.
+
+    Returns:
+      True if the query appears to be valid, False otherwise
+    """
+    # TODO(sydp): add more checks.
+    return query.upper().startswith('SELECT ')
 
   # pylint: disable=arguments-differ
   def SetUp(self,
@@ -44,44 +53,39 @@ class OsqueryCollector(module.BaseModule):
 
     Args:
       query (str): osquery query.
-      files (str): osquery filepaths
+      paths (str): osquery filepaths.
     """
     if not query and not paths:
-      self.ModuleError('Both query and files cannot be empty.', critical=True)
+      self.ModuleError('Both query and paths cannot be empty.', critical=True)
 
-    if query:
-      self.query = query
+    if self._ValidateOsquery(query):
+      self.osqueries.append(query)
+    else:
+      self.logger.warning('Osquery parameter does not appear to be valid.')
 
     if paths:
-      self.paths = [path.strip() for path in paths.split(',')]
+      split_paths = [path.strip() for path in paths.split(',')]
 
-  def Process(self) -> None:
-    """Collects osquery from the command line and local file system."""
-    osquery_queries = []
-    if not self.query.upper().startswith('SELECT '):
-      self.logger.warning(
-          'Osquery parameter does not start with SELECT.')
-    else:
-      osquery_queries.append(self.query)
+      for path in split_paths:
+        if not os.path.exists(path):
+          self.logger.warning('Path {0:s} does not exist.'.format(path))
+          continue
 
-    for path in self.paths:
-      if not os.path.exists(path):
-        self.logger.warning('Path {0:s} does not exist'.format(path))
-        continue
+        with open(path, mode='r') as fd:
+          for line_number, line in enumerate(fd.readlines()):
+            if self._ValidateOsquery(line):
+              self.osqueries.append(line)
+            else:
+              self.logger.warning(f'Osquery on line {line_number} of {path} does '
+                                  'not appear to be valid.')
 
-      with open(path, mode='r') as fd:
-        for line_number, line in enumerate(fd.readlines()):
-          if not line.upper().startswith('SELECT '):
-            self.logger.warning('Osquery on line {0:d} of {1:s} does not start '
-                                'with SELECT.'.format(line_number, path))
-          else:
-            osquery_queries.append(self.query)
-
-    if not osquery_queries:
+    if not self.osqueries:
       self.ModuleError(
         message='No valid osquery collected.', critical=True)
 
-    for osquery in osquery_queries:
+  def Process(self) -> None:
+    """Collects osquery from the command line and local file system."""
+    for osquery in self.osqueries:
       container = containers.OsqueryQuery(osquery)
       self.state.StoreContainer(container)
 
