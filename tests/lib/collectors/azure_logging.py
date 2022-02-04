@@ -4,9 +4,7 @@
 
 import unittest
 from datetime import datetime as dt
-from unittest.mock import MagicMock
-
-import mock
+import unittest.mock as mock
 
 from dftimewolf.lib import state
 from dftimewolf import config
@@ -31,9 +29,9 @@ class AzureLogging(unittest.TestCase):
     # Create mock objects with required attributes - not mocking Azure objects
     # directly as this leads to frail mocks based on version-dependent package
     # names like azure.mgmt.monitor.v2015_04_01.models._models_py3.EventData.
-    mock_monitor_client = MagicMock(spec=['activity_logs'])
-    mock_activity_logs_client = MagicMock(spec=['list'])
-    mock_event_data = MagicMock(spec=['as_dict'])
+    mock_monitor_client = mock.MagicMock(spec=['activity_logs'])
+    mock_activity_logs_client = mock.MagicMock(spec=['list'])
+    mock_event_data = mock.MagicMock(spec=['as_dict'])
 
     mock_monitor_client.activity_logs = mock_activity_logs_client
     mock_activity_logs_client.list.return_value = iter([mock_event_data])
