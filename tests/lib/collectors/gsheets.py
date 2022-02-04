@@ -77,25 +77,26 @@ class GoogleSheetsCollectorTest(unittest.TestCase):
     # Sheet API
     _mock_credentials.from_authorized_user_file().return_value = ''
 
-    # pylint: disable=line-too-long
+    mock_spreadsheet_call = _mock_discovery.build.return_value.spreadsheets.return_value.values.return_value.get.return_value.execute # pylint: disable=line-too-long
+
     # Testing with column validation is True
     collector.SetUp(spreadsheet_id, sheet_title, True)
-    _mock_discovery.build.return_value.spreadsheets.return_value.values.return_value.get.return_value.execute.return_value = VALID_SHEET
+    mock_spreadsheet_call.return_value = VALID_SHEET
     self.assertIsNotNone(
         collector._ExtractEntiresFromSheet(spreadsheet_id, sheet_title))
-    _mock_discovery.build.return_value.spreadsheets.return_value.values.return_value.get.return_value.execute.return_value = INVALID_SHEET
+    mock_spreadsheet_call.return_value = INVALID_SHEET
     self.assertIsNone(
         collector._ExtractEntiresFromSheet(spreadsheet_id, sheet_title))
 
     # Testing with column validation is False
     collector.SetUp(spreadsheet_id, sheet_title, False)
-    _mock_discovery.build.return_value.spreadsheets.return_value.values.return_value.get.return_value.execute.return_value = VALID_SHEET
+    mock_spreadsheet_call.return_value = VALID_SHEET
     self.assertIsNotNone(
         collector._ExtractEntiresFromSheet(spreadsheet_id, sheet_title))
-    _mock_discovery.build.return_value.spreadsheets.return_value.values.return_value.get.return_value.execute.return_value = INVALID_SHEET
+    mock_spreadsheet_call.return_value = INVALID_SHEET
     self.assertIsNotNone(
         collector._ExtractEntiresFromSheet(spreadsheet_id, sheet_title))
-    # pylint: enable=line-too-long
+
 
 if __name__ == '__main__':
   unittest.main()

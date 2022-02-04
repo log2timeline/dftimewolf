@@ -111,8 +111,9 @@ class GoogleSheetsCollector(module.BaseModule):
                 sheet_title, output_path))
         output_file.close()
         sheet_csv_file = containers.File(
-            name='{0:s}_{1:s}'.format(spreadsheet_title, sheet_title),
-            path=output_path)
+            name= self._spreadsheet_id,
+            path=output_path,
+            description= '{0:s}_{1:s}'.format(spreadsheet_title, sheet_title))
         self.state.StoreContainer(sheet_csv_file)
 
     except (RefreshError, DefaultCredentialsError) as exception:
@@ -235,16 +236,18 @@ class GoogleSheetsCollector(module.BaseModule):
 
     for column in self._mandatory_columns:
       if column not in df.columns:
-        self.logger.error(
+        self.logger.warning(
             'Mandatory column "{0:s}" was not found in sheet "{1:s}".'.format(
                 column, sheet_title))
-        self.logger.error('Please make sure all mandatory columns are present:')
-        self.logger.error(
+        self.logger.warning('Please make sure all mandatory columns are \
+          present:'
+        )
+        self.logger.warning(
             '"message": String with an informative message of the event')
-        self.logger.error(
+        self.logger.warning(
             '"datetime": ISO8601 format for example: 2015-07-24T19:01:01+00:00'
         )
-        self.logger.error(
+        self.logger.warning(
             '"timestamp_desc": String explaining what type of timestamp it is \
               for example file created'
         )
