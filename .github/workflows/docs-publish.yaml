@@ -1,0 +1,26 @@
+name: Publish documentation to GitHub Pages
+
+permissions: write-all
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install mkdocs & deps
+        run: |
+          sudo apt install graphviz
+          pip install pipenv
+          pipenv install mkdocs graphviz
+      - name: Generate recipe doc
+        run: pipenv run python docs/generate_recipe_doc.py data/recipes docs
+      - name: Build doc
+        run: pipenv run  mkdocs gh-deploy --force

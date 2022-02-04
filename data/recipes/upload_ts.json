@@ -1,7 +1,7 @@
 {
     "name": "upload_ts",
     "description": "Uploads a CSV or Plaso file to Timesketch.",
-    "short_description": "Uploads a CSV or Plaso file to Timesketch.",
+    "short_description": "Uploads a local CSV or Plaso file to Timesketch.",
     "modules": [{
         "wants": [],
         "name": "FilesystemCollector",
@@ -15,15 +15,16 @@
             "incident_id": "@incident_id",
             "token_password": "@token_password",
             "sketch_id": "@sketch_id",
-            "analyzers": null,
+            "analyzers": "@analyzers",
             "wait_for_timelines": "@wait_for_timelines"
         }
     }],
     "args": [
-        ["files", "Comma-separated list of paths to CSV files or Plaso storage files", null],
-        ["--sketch_id", "Sketch to which the timeline should be added", null],
-        ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
-        ["--incident_id", "Incident ID (used for Timesketch description)", null],
-        ["--wait_for_timelines", "Whether to wait for timelines to finish processing.", true]
+        ["files", "Comma-separated list of paths to CSV files or Plaso storage files.", null],
+        ["--analyzers", "Timesketch analysers to run.", null],
+        ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null],
+        ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
+        ["--incident_id", "Incident ID (used for Timesketch description).", null],
+        ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true]
     ]
 }

@@ -22,6 +22,9 @@ class WorkspaceAuditTimesketch(BaseModule):
   _FORMAT_STRINGS_PATH = os.path.join(os.path.dirname(__file__),
       'workspace_format_strings.json')
 
+  _IGNORABLE_RECORD_FIELDS = [
+      'time', 'datetime', 'timestamp', 'data_type', 'timestamp_desc']
+
   def __init__(self,
                state: "state.DFTimewolfState",
                name: Optional[str]=None,
@@ -95,9 +98,23 @@ class WorkspaceAuditTimesketch(BaseModule):
         and uploaded to Timesketch.
     """
     application_name = timesketch_record.get('applicationName')
-    format_strings = self._all_application_format_strings.get(application_name)
+    format_strings = self._all_application_format_strings.get(
+        application_name, {})
+    if not format_strings:
+      self.logger.warning(
+          'No format strings found for application name {0:s}'.format(
+              application_name))
     event_name = timesketch_record.get('_event_name', '').lower()
     format_string = format_strings.get(event_name)
+
+    if not format_string:
+      self.logger.warning(
+          'No format strings found for event_name {0:s}'.format(event_name))
+      columns = [
+          f'{{{field}}}' for field in timesketch_record.keys()
+          if field not in self._IGNORABLE_RECORD_FIELDS
+      ]
+      format_string = ' '.join(columns)
 
     message = ''
     formatter = string.Formatter()
@@ -108,14 +125,14 @@ class WorkspaceAuditTimesketch(BaseModule):
           actor = (timesketch_record.get('actor_email') or
                    timesketch_record.get('actor_profileId') or
                    timesketch_record.get('actor_key'))
-          message += '"{0:s}"'.format(actor)
+          message += '{0!s}'.format(actor)
           continue
         value = timesketch_record.get(field)
         if not value:
           value = timesketch_record.get(field.lower())
         if not value:
           value = ''
-        message += '"{0:s}"'.format(value)
+        message += '{0!s}'.format(value)
 
     timesketch_record['message'] = message
 
@@ -179,9 +196,17 @@ class WorkspaceAuditTimesketch(BaseModule):
           output_file.write('\n')
     output_file.close()
 
-    timeline_name = 'Workspace {0:s} logs {1:s} {2:s}'.format(
-        logs_container.application_name, logs_container.user_key,
-        logs_container.filter_expression)
+    timeline_name = 'Workspace {0:s} logs'.format(
+        logs_container.application_name)
+    if logs_container.user_key:
+      timeline_name = f'{timeline_name} for {logs_container.user_key}'
+    if logs_container.start_time:
+      timeline_name = f'{timeline_name} from {logs_container.start_time}'
+    if logs_container.end_time:
+      timeline_name = f'{timeline_name} to {logs_container.end_time}'
+    if logs_container.filter_expression:
+      timeline_name = (
+          f'{timeline_name} filter {logs_container.filter_expression}')
 
     container = containers.File(name=timeline_name, path=output_path)
     self.state.StoreContainer(container)

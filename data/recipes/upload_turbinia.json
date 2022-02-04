@@ -1,7 +1,7 @@
 {
     "name": "upload_turbinia",
-    "description": ["Uploads arbitrary files to Turbinia"],
-    "short_description": "Uploads arbitrary files to Turbinia.",
+    "short_description": "Uploads arbitrary files to Turbinia and downloads results.",
+    "description": "Uploads arbitrary files to Turbinia for processing. The recipe will wait for Turbinia to return with results and will download them back to the filesystem. The Turbinia system needs to be accesible via SSH.",
     "modules": [{
       "wants": [],
       "name": "FilesystemCollector",
@@ -37,7 +37,7 @@
             "turbinia_config_file": "@turbinia_config",
             "project": null,
             "turbinia_zone": "us-central1-f",
-            "directory_path": null,
+            "output_directory": null,
             "sketch_id": null,
             "run_all_jobs": false
         }
@@ -58,12 +58,12 @@
           }
       }],
     "args": [
-        ["files", "Paths to process", null],
-        ["--destination_turbinia_dir", "Destination path in Turbinia host to write the files to", null],
+        ["files", "Paths to process.", null],
+        ["--destination_turbinia_dir", "Destination path in Turbinia host to write the files to.", null],
         ["--hostname", "Remote host.", null],
         ["--directory", "Directory in which to copy and compress files.", null],
         ["--turbinia_config", "Turbinia config file to use.", null],
         ["--local_turbinia_results", "Directory where Turbinia results will be downloaded to.", null],
-        ["--sketch_id", "Timesketch sketch ID", null]
+        ["--sketch_id", "Timesketch sketch ID.", null]
     ]
   }

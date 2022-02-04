@@ -1,7 +1,7 @@
 {
   "name": "gcp_forensics",
   "short_description": "Copies disk from a GCP project to an analysis VM.",
-  "description": "Copies a disk from a project to another, creates an analysis VM, and attaches the copied disk to it.",
+  "description": "Copies a persistend disk from a GCP project to another, creates an analysis VM (with a startup script containing installation instructions for basic forensics tooling) in the destiantion project, and attaches the copied GCP persistend disk to it.",
   "preflights": [{
     "wants": [],
     "name": "GCPTokenCheck",
@@ -30,6 +30,7 @@
           "create_analysis_vm": "@create_analysis_vm",
           "disk_names": "@disks",
           "all_disks": "@all_disks",
+          "stop_instance": "@stop_instance",
           "boot_disk_size": "@boot_disk_size",
           "boot_disk_type": "@boot_disk_type",
           "cpu_cores": "@cpu_cores",
@@ -38,16 +39,17 @@
       }
   }],
   "args": [
-      ["remote_project_name", "Name of the project containing the instance / disks to copy ", null],
-      ["--analysis_project_name", "Name of the project where the analysis VM will be created", null],
+      ["remote_project_name", "Name of the project containing the instance / disks to copy.", null],
+      ["--analysis_project_name", "Name of the project where the analysis VM will be created and disks copied to.", null],
       ["--incident_id", "Incident ID to label the VM with.", null],
       ["--instance", "Name of the instance to analyze.", null],
-      ["--disks", "Comma-separated list of disks to copy.", null],
-      ["--all_disks", "Copy all disks in the designated instance. Overrides disk_names if specified", false],
-      ["--create_analysis_vm", "Create an analysis VM.", true],
-      ["--cpu_cores", "Number of CPU cores of the analysis VM", 4],
-      ["--boot_disk_size", "The size of the analysis VM boot disk (in GB)", 50.0],
-      ["--boot_disk_type", "Disk type to use [pd-standard, pd-ssd]", "pd-standard"],
-      ["--zone", "The GCP zone where the Analysis VM and copied disks will be created", "us-central1-f"]
+      ["--disks", "Comma-separated list of disks to copy from the source GCP project (if `instance` not provided).", null],
+      ["--all_disks", "Copy all disks in the designated instance. Overrides `disk_names` if specified.", false],
+      ["--stop_instance", "Stop the designated instance after copying disks.", false],
+      ["--create_analysis_vm", "Create an analysis VM in the destination project.", true],
+      ["--cpu_cores", "Number of CPU cores of the analysis VM.", 4],
+      ["--boot_disk_size", "The size of the analysis VM boot disk (in GB).", 50.0],
+      ["--boot_disk_type", "Disk type to use [pd-standard, pd-ssd].", "pd-standard"],
+      ["--zone", "The GCP zone where the Analysis VM and copied disks will be created.", "us-central1-f"]
   ]
 }

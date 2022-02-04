@@ -63,8 +63,7 @@ class LocalFileSystemTest(unittest.TestCase):
 
     mock_copytree.assert_has_calls([
         mock.call('/fake/evidence_directory',
-            '/fake/random',
-            dirs_exist_ok=True),
+            '/fake/random'),
     ])
     mock_copy2.assert_called_with('/fake/evidence_file', '/fake/random')
 

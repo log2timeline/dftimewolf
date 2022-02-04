@@ -23,7 +23,8 @@ TEST_MODULES = {
   'DummyModule2': 'tests.test_modules.modules',
   'DummyPreflightModule': 'tests.test_modules.modules',
   'ContainerGeneratorModule': 'tests.test_modules.thread_aware_modules',
-  'ThreadAwareConsumerModule': 'tests.test_modules.thread_aware_modules'
+  'ThreadAwareConsumerModule': 'tests.test_modules.thread_aware_modules',
+  'Issue503Module': 'tests.test_modules.thread_aware_modules'
 }
 
 class StateTest(unittest.TestCase):
@@ -36,7 +37,8 @@ class StateTest(unittest.TestCase):
         modules.DummyModule2,
         modules.DummyPreflightModule,
         thread_aware_modules.ContainerGeneratorModule,
-        thread_aware_modules.ThreadAwareConsumerModule])
+        thread_aware_modules.ThreadAwareConsumerModule,
+        thread_aware_modules.Issue503Module])
 
     self._recipe = resources.Recipe(
         test_recipe.__doc__, test_recipe.contents, test_recipe.args)
@@ -61,6 +63,8 @@ class StateTest(unittest.TestCase):
         thread_aware_modules.ContainerGeneratorModule)
     modules_manager.ModulesManager.DeregisterModule(
         thread_aware_modules.ThreadAwareConsumerModule)
+    modules_manager.ModulesManager.DeregisterModule(
+        thread_aware_modules.Issue503Module)
 
   def testLoadRecipe(self):
     """Tests that a recipe can be loaded correctly."""
@@ -226,16 +230,12 @@ class StateTest(unittest.TestCase):
 
   # pylint: disable=line-too-long
   @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.Process')
-  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PreSetUp')
-  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PostSetUp')
   @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PreProcess')
   @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PostProcess')
   # pylint: enable=line-too-long
   def testProcessThreadAwareModule(self,
       mock_post_process,
       mock_pre_process,
-      mock_post_setup,
-      mock_pre_setup,
       mock_threaded_process):
     """Tests the ThreadAwareModules process functions are correctly called."""
     test_state = state.DFTimewolfState(config.Config)
@@ -246,8 +246,6 @@ class StateTest(unittest.TestCase):
     self.assertEqual(mock_threaded_process.call_count, 3)
     self.assertEqual(mock_post_process.call_count, 1)
     self.assertEqual(mock_pre_process.call_count, 1)
-    self.assertEqual(mock_post_setup.call_count, 1)
-    self.assertEqual(mock_pre_setup.call_count, 1)
     self.assertEqual(3,
         len(test_state.GetContainers(thread_aware_modules.TestContainer)))
 
@@ -283,51 +281,6 @@ class StateTest(unittest.TestCase):
     self.assertEqual(sorted(values), sorted(expected_values))
 
   # pylint: disable=line-too-long
-  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PreSetUp')
-  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.SetUp')
-  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PostSetUp')
-  # pylint: enable=line-too-long
-  def testThreadAwareModulePreSetUpFailure(self,
-      mock_post_setup,
-      mock_setup,
-      mock_pre_setup):
-    """Tests that if PreSetUp exceptions, SetUp and PostSetUp are not
-    called."""
-    mock_pre_setup.side_effect = \
-        errors.DFTimewolfError('Exception thrown', critical=False)
-
-    test_state = state.DFTimewolfState(config.Config)
-    test_state.command_line_options = {}
-    test_state.LoadRecipe(test_recipe.threaded_no_preflights, TEST_MODULES)
-    test_state.SetupModules()
-
-    self.assertEqual(mock_pre_setup.call_count, 1)
-    self.assertEqual(mock_setup.call_count, 0)
-    self.assertEqual(mock_post_setup.call_count, 0)
-
-  # pylint: disable=line-too-long
-  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PreSetUp')
-  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.SetUp')
-  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PostSetUp')
-  # pylint: enable=line-too-long
-  def testThreadAwareModuleSetUpFailure(self,
-      mock_post_setup,
-      mock_setup,
-      mock_pre_setup):
-    """Tests that if SetUp exceptions, PostSetUp is not called."""
-    mock_setup.side_effect = \
-        errors.DFTimewolfError('Exception thrown', critical=False)
-
-    test_state = state.DFTimewolfState(config.Config)
-    test_state.command_line_options = {}
-    test_state.LoadRecipe(test_recipe.threaded_no_preflights, TEST_MODULES)
-    test_state.SetupModules()
-
-    self.assertEqual(mock_pre_setup.call_count, 1)
-    self.assertEqual(mock_setup.call_count, 1)
-    self.assertEqual(mock_post_setup.call_count, 0)
-
-  # pylint: disable=line-too-long
   @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PreProcess')
   @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.Process')
   @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PostProcess')
@@ -360,7 +313,7 @@ class StateTest(unittest.TestCase):
       mock_post_process,
       mock_process,
       mock_pre_process):
-    """Tests that if process exceptions, PostProcess is still called."""
+    """Tests that if Process exceptions, PostProcess is still called."""
     mock_process.side_effect = \
         errors.DFTimewolfError('Exception thrown', critical=False)
 
@@ -419,6 +372,30 @@ class StateTest(unittest.TestCase):
         type_='asd', name='asd', value='asd')
     test_state.StreamContainer(attributes)
     mock_callback.assert_not_called()
+
+  def testThreadAwareModuleContainerReuse(self):
+    """Tests that containers are handled properly when they are configured to
+    pop from the state by a ThreadAwareModule that uses the same container type
+    for input and output.
+
+    Ref: https://github.com/log2timeline/dftimewolf/issues/503
+    """
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.command_line_options = {}
+    test_state.StoreContainer(thread_aware_modules.TestContainer('one'))
+    test_state.StoreContainer(thread_aware_modules.TestContainer('two'))
+    test_state.StoreContainer(thread_aware_modules.TestContainer('three'))
+    test_state.LoadRecipe(test_recipe.issue_503_recipe, TEST_MODULES)
+    test_state.SetupModules()
+    test_state.RunModules()
+
+    values = [container.value for container in test_state.GetContainers(
+        thread_aware_modules.TestContainer)]
+    expected_values = ['one Processed',
+                       'two Processed',
+                       'three Processed']
+    self.assertEqual(sorted(values), sorted(expected_values))
+
 
 if __name__ == '__main__':
   unittest.main()

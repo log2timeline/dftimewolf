@@ -4,7 +4,7 @@
 import os
 import tempfile
 import zipfile
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Set, Tuple, Union
 
 from grr_api_client.hunt import Hunt
 from grr_response_proto import flows_pb2 as grr_flows
@@ -25,20 +25,63 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
   """This class groups functions generic to all GRR Hunt modules.
 
   Should be extended by the modules that interact with GRR hunts.
+
+  Attributes:
+    match_mode (str): match mode of the client rule set (ALL or ANY).
+    client_operating_systems (Set[str]): a list of client OS types
+        (win, osx or linux).
+    client_labels (List[str]): a list of client labels.
   """
 
   def __init__(self,
                state: DFTimewolfState,
-               name: Optional[str]=None,
-               critical: bool=False) -> None:
+               name: Optional[str],
+               critical: bool = False):
     module.BaseModule.__init__(self, state, name=name, critical=critical)
     grr_base.GRRBaseModule.__init__(self)
+    self.match_mode = ""
+    self.client_operating_systems : Set[str] = set()
+    self.client_labels : List[str] = []
+
+  def HuntSetup(
+      self,
+      match_mode: Optional[str],
+      client_operating_systems: Optional[str],
+      client_labels: Optional[str]) -> None:
+    """Setup hunt client filter arguments.
+
+    Args:
+      match_mode (Optional[str]): match mode of the client rule set (ALL or
+          ANY).
+      client_operating_systems (Optional[str]): a comma separated list of client
+          OS types (win, osx or linux).
+      client_labels (Optional[str]): a comma separated list of client labels.
+    """
+    if match_mode:
+      if match_mode.lower() not in ('all', 'any'):
+        self.ModuleError(f'Unknown match mode {self.match_mode}', critical=True)
+
+      self.match_mode = match_mode.lower()
+
+    if client_operating_systems:
+      normalised_client_operating_systems = set(
+          os.lower() for os in client_operating_systems.split(',')
+          if os.lower() in ('win', 'osx', 'linux'))
+
+      if not normalised_client_operating_systems:
+        self.ModuleError('No valid client operating systems in argument '
+                         f'"{client_operating_systems}"', critical=True)
+
+      self.client_operating_systems = normalised_client_operating_systems
+
+    if client_labels:
+      self.client_labels = list(client_labels.split(','))
 
   # TODO: change object to more specific GRR type information.
   def _CreateHunt(
-    self,
-    name: str,
-    args: Union[FileFinderArgs, ArtifactCollectorFlowArgs]) -> Hunt:
+      self,
+      name: str,
+      args: Union[FileFinderArgs, ArtifactCollectorFlowArgs]) -> Hunt:
     """Creates a GRR hunt.
 
     Args:
@@ -54,8 +97,38 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
     """
     runner_args = self.grr_api.types.CreateHuntRunnerArgs()
     runner_args.description = self.reason
+
+    if self.match_mode:
+      if self.match_mode == 'any':
+        match_mode = runner_args.client_rule_set.MATCH_ANY
+      elif self.match_mode == 'all':
+        match_mode = runner_args.client_rule_set.MATCH_ALL
+
+      runner_args.client_rule_set.match_mode = match_mode
+
+    if self.client_labels:
+      for client_label in self.client_labels:
+        label_rule = runner_args.client_rule_set.rules.add()
+
+        label_rule.rule_type = label_rule.LABEL
+        label_rule.label.label_names.append(client_label)
+
+    if self.client_operating_systems:
+      for client_operating_system in self.client_operating_systems:
+        os_rule = runner_args.client_rule_set.rules.add()
+
+        os_rule.rule_type = os_rule.OS
+
+        if client_operating_system == 'win':
+          os_rule.os.os_windows = True
+        elif client_operating_system == 'osx':
+          os_rule.os.os_darwin = True
+        elif client_operating_system == 'linux':
+          os_rule.os.os_linux = True
+
     hunt = self.grr_api.CreateHunt(
         flow_name=name, flow_args=args, hunt_runner_args=runner_args)
+
     self.logger.success('{0!s}: Hunt created'.format(hunt.hunt_id))
     self._WrapGRRRequestWithApproval(hunt, hunt.Start, self.logger)
     return hunt
@@ -74,14 +147,14 @@ class GRRHuntArtifactCollector(GRRHunt):
 
   def __init__(self,
                state: DFTimewolfState,
-               name: Optional[str]=None,
-               critical: bool=False) -> None:
+               name: Optional[str] = None,
+               critical: bool = False) -> None:
     """Initializes a GRR artifact collector hunt.
 
     Args:
       state (DFTimewolfState): recipe state.
       name (Optional[str]): The module's runtime name.
-      critical (Optional[bool]): True if the module is critical, which causes
+      critical (bool): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
     super(GRRHuntArtifactCollector, self).__init__(
@@ -91,7 +164,7 @@ class GRRHuntArtifactCollector(GRRHunt):
     self.hunt = None  # type: Hunt
     self.max_file_size = 5*1024*1024*1024  # 5 GB
 
-  # pylint: disable=arguments-differ
+  # pylint: disable=arguments-differ,disable=too-many-arguments
   def SetUp(self,
             artifacts: str,
             use_tsk: bool,
@@ -100,8 +173,11 @@ class GRRHuntArtifactCollector(GRRHunt):
             grr_username: str,
             grr_password: str,
             max_file_size: str,
-            approvers: Optional[str]=None,
-            verify: bool=True) -> None:
+            approvers: str,
+            verify: bool,
+            match_mode: str,
+            client_operating_systems: str,
+            client_labels: str) -> None:
     """Initializes a GRR Hunt artifact collector.
 
     Args:
@@ -112,9 +188,14 @@ class GRRHuntArtifactCollector(GRRHunt):
       grr_server_url (str): GRR server URL.
       grr_username (str): GRR username.
       grr_password (str): GRR password.
-      approvers (Optional[str]): comma-separated GRR approval recipients.
-      verify (Optional[bool]): True to indicate GRR server's x509 certificate
+      approvers (str): comma-separated GRR approval recipients.
+      verify (bool): True to indicate GRR server's x509 certificate
           should be verified.
+      match_mode (str): match mode of the client rule set.
+          (all/ALL or any/ANY).
+      client_operating_systems (str): a comma separated list of
+          client OS types (win, osx or linux).
+      client_labels (str): a comma separated list of client labels.
     """
     self.GrrSetUp(reason, grr_server_url, grr_username, grr_password,
         approvers=approvers, verify=verify)
@@ -125,6 +206,8 @@ class GRRHuntArtifactCollector(GRRHunt):
     self.use_tsk = use_tsk
     if max_file_size:
       self.max_file_size = int(max_file_size)
+
+    self.HuntSetup(match_mode, client_operating_systems, client_labels)
 
   def Process(self) -> None:
     """Starts a new Artifact Collection GRR hunt.
@@ -153,14 +236,14 @@ class GRRHuntFileCollector(GRRHunt):
 
   def __init__(self,
                state: DFTimewolfState,
-               name: Optional[str]=None,
-               critical: bool=False) -> None:
+               name: Optional[str] = None,
+               critical: bool = False) -> None:
     """Initializes a GRR file collector hunt.
 
     Args:
       state (DFTimewolfState): recipe state.
       name (Optional[str]): The module's runtime name.
-      critical (Optional[bool]): True if the module is critical, which causes
+      critical (bool): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
     super(GRRHuntFileCollector, self).__init__(
@@ -168,7 +251,7 @@ class GRRHuntFileCollector(GRRHunt):
     self.file_path_list = []  # type: List[str]
     self.max_file_size = 5*1024*1024*1024  # 5 GB
 
-  # pylint: disable=arguments-differ
+  # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
             file_path_list: str,
             reason: str,
@@ -176,8 +259,11 @@ class GRRHuntFileCollector(GRRHunt):
             grr_username: str,
             grr_password: str,
             max_file_size: str,
-            approvers: Optional[str]=None,
-            verify: bool=True) -> None:
+            approvers: str,
+            verify: bool,
+            match_mode: str,
+            client_operating_systems: str,
+            client_labels: str) -> None:
     """Initializes a GRR Hunt file collector.
 
     Args:
@@ -187,9 +273,14 @@ class GRRHuntFileCollector(GRRHunt):
       grr_username (str): GRR username.
       grr_password (str): GRR password.
       max_file_size (str): Maximum file size to collect (in bytes).
-      approvers (Optional[str]): comma-separated GRR approval recipients.
-      verify (Optional[bool]): True to indicate GRR server's x509 certificate
+      approvers (str): comma-separated GRR approval recipients.
+      verify (bool): True to indicate GRR server's x509 certificate
           should be verified.
+      match_mode (str): match mode of the client rule set.
+          (all/ALL or any/ANY).
+      client_operating_systems (str): a comma separated list of
+          client OS types (win, osx or linux).
+      client_labels (str): a comma separated list of client labels.
     """
     self.GrrSetUp(
         reason, grr_server_url, grr_username, grr_password,
@@ -200,6 +291,8 @@ class GRRHuntFileCollector(GRRHunt):
       self.ModuleError('Files must be specified for hunts', critical=True)
     if max_file_size:
       self.max_file_size = int(max_file_size)
+
+    self.HuntSetup(match_mode, client_operating_systems, client_labels)
 
   # TODO: this method does not raise itself, indicate what function call does.
   def Process(self) -> None:
@@ -233,14 +326,14 @@ class GRRHuntDownloader(GRRHunt):
 
   def __init__(self,
                state: DFTimewolfState,
-               name: Optional[str]=None,
-               critical: bool=False) -> None:
+               name: Optional[str] = None,
+               critical: bool = False) -> None:
     """Initializes a GRR hunt results downloader.
 
     Args:
       state (DFTimewolfState): recipe state.
       name (Optional[str]): The module's runtime name.
-      critical (Optional[bool]): True if the module is critical, which causes
+      critical (bool): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
     super(GRRHuntDownloader, self).__init__(state, name=name, critical=critical)
@@ -254,8 +347,8 @@ class GRRHuntDownloader(GRRHunt):
             grr_server_url: str,
             grr_username: str,
             grr_password: str,
-            approvers: Optional[str]=None,
-            verify: bool=True) -> None:
+            approvers: str,
+            verify: bool) -> None:
     """Initializes a GRR Hunt file collector.
 
     Args:
@@ -264,8 +357,8 @@ class GRRHuntDownloader(GRRHunt):
       grr_server_url (str): GRR server URL.
       grr_username (str): GRR username.
       grr_password (str): GRR password.
-      approvers (Optional[str]): comma-separated GRR approval recipients.
-      verify (Optional[bool]): True to indicate GRR server's x509 certificate
+      approvers (str): comma-separated GRR approval recipients.
+      verify (bool): True to indicate GRR server's x509 certificate
           should be verified.
     """
     self.GrrSetUp(

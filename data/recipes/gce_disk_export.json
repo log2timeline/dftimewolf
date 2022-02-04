@@ -1,7 +1,7 @@
 {
     "name": "gce_disk_export",
-    "short_description": "Export disk image from a GCP project to Google Cloud Storage.",
-    "description": "Creates a disk image from a Google compute persistence disks, compress the images and export them to Google Cloud Storage.\n\nThe exported images names are appended by .tar.gz.\n\nThe service account [PROJECT-NR]@cloudbuild.gserviceaccount.com in the source project or in analysis project, if analysis project is provided, must have the IAM role [Srorage Admin] on the destination storage bucket/folder.",
+    "short_description": "Export a disk image from a GCP project to a Google Cloud Storage bucket.",
+    "description": "Creates a disk image from Google Compute persistent disks, compresses the images, and exports them to Google Cloud Storage.\n\nThe exported images names are appended by `.tar.gz.`\n\nAs this export happens through a Cloud Build job, the default service account `[PROJECT-NUMBER]@cloudbuild.gserviceaccount.com` in the source or analysis project (if provided) must have the IAM role `[Storage Admin]` on their corresponding project's storage bucket/folder.",
     "preflights": [{
       "wants": [],
       "name": "GCPTokenCheck",
@@ -33,11 +33,11 @@
     }],
     "args": [
         ["source_project_name", "Source project containing the disk to export.", null],
-        ["gcs_output_location", "Google Cloud Storage parent bucket/folder of the exported image. Service Account [PROJECT-NUMBER]@cloudbuild.gserviceaccount.com, in source project or in analysis project if analysis project is provided, must have sufficient rights on the output bucket, these rights are default if the bucket belongs to the source/analysis project.", null],
-        ["--analysis_project_name", "Project where the disk image is created then exported. If not exist, source_project_name will be used.", null],
-        ["--source_disk_names", "Comma-separated list of disk names to export. If not exist, disks attahced to remote_instance_name will be used.", null],
-        ["--remote_instance_name", "Instance in source project to export its disks. If not exist, disk_names will be used.", null],
-        ["--all_disks", "True if all disks attached to the source instance should be copied. If False and remote_instance_name is provided it will select the instance's boot disk.", false],
-        ["--exported_image_name", "Name of the output file, must comply with ^[A-Za-z0-9-]*$' and '.tar.gz' will be appended to the name. If not exist or if more than one disk is selected, exported image name as exported-image-{TIMESTAMP('%Y%m%d%H%M%S')}", null]
+        ["gcs_output_location", "Google Cloud Storage parent bucket/folder to which to export the image.", null],
+        ["--analysis_project_name", "Project where the disk image is created then exported. If not provided, the image is exported to a bucket in the source project.", null],
+        ["--source_disk_names", "Comma-separated list of disk names to export. If not provided, disks attached to `remote_instance_name` will be used.", null],
+        ["--remote_instance_name", "Instance in source project to export its disks. If not provided, `disk_names` will be used.", null],
+        ["--all_disks", "If True, copy all disks attached to the `remote_instance_name` instance. If False and `remote_instance_name` is provided, it will select the instance's boot disk.", false],
+        ["--exported_image_name", "Name of the output file, must comply with `^[A-Za-z0-9-]*$` and `'.tar.gz'` will be appended to the name. If not provided or if more than one disk is selected, the exported image will be named `exported-image-{TIMESTAMP('%Y%m%d%H%M%S')}`.", null]
     ]
   }

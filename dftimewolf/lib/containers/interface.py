@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """The attribute container interface."""
-from typing import List
+from typing import Any, Dict, List, Optional
 
 
 class AttributeContainer():
@@ -15,8 +15,25 @@ class AttributeContainer():
 
   Attributes are public class members of an serializable type. Protected
   and private class members are not to be serialized.
+
+  Attributes:
+    attributes: A list of generic attributes that can be used for passing
+      metadata between collection/processing module and output modules.
   """
   CONTAINER_TYPE = None  # type: str
+  attributes = []  # type: List[Dict[str, Any]]
+
+  def __init__(self, attributes: Optional[List[Dict[str, Any]]] = None):
+    """Initializes an AttributeContainer.
+
+    Args:
+      attributes: A list of generic attributes that can be used for passing
+        metadata between collection/processing module and output modules.
+    """
+    if attributes is None:
+      self.attributes = []
+    else:
+      self.attributes = attributes
 
   # TODO: note that this method is only used by tests.
   def GetAttributeNames(self) -> List[str]:

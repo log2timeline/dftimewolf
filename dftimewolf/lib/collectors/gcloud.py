@@ -60,10 +60,12 @@ class GoogleCloudCollector(module.BaseModule):
     self.remote_instance_name = None  # type: Optional[str]
     self.disk_names = []  # type: List[str]
     self.all_disks = False
+    self.stop_instance = False
     self._gcp_label = {}  # type: Dict[str, str]
 
   def Process(self) -> None:
     """Copies a disk to the analysis project."""
+    warned = False
     for disk in self._FindDisksToCopy():
       self.logger.info('Disk copy of {0:s} started...'.format(disk.name))
 
@@ -75,6 +77,7 @@ class GoogleCloudCollector(module.BaseModule):
             disk_name=disk.name)
       except lcf_errors.ResourceCreationError as exception:
         self.logger.warning('Could not create disk: {0!s}'.format(exception))
+        warned = True
         continue
 
       self.logger.success('Disk {0:s} successfully copied to {1:s}'.format(
@@ -89,6 +92,20 @@ class GoogleCloudCollector(module.BaseModule):
           platform='gcp')
       self.state.StoreContainer(container)
 
+    if self.stop_instance and not warned:
+      try:
+        remote_instance = self.remote_project.compute.GetInstance(
+            self.remote_instance_name)
+        # TODO(dfjxs): Account for GKE Nodes
+        remote_instance.Stop()
+      except lcf_errors.InstanceStateChangeError as exception:
+        self.ModuleError(str(exception), critical=False)
+      self.logger.success(
+          'Stopped instance {0:s}'.format(self.remote_instance_name))
+    elif self.stop_instance and warned:
+      self.logger.warning(
+          'Not stopping instance due to previous warnings on disk copy')
+
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
             analysis_project_name: str,
@@ -102,6 +119,7 @@ class GoogleCloudCollector(module.BaseModule):
             remote_instance_name: Optional[str]=None,
             disk_names: Optional[str]=None,
             all_disks: bool=False,
+            stop_instance: bool=False,
             image_project: str='ubuntu-os-cloud',
             image_family: str='ubuntu-1804-lts') -> None:
     """Sets up a Google Cloud Platform(GCP) collector.
@@ -147,6 +165,8 @@ class GoogleCloudCollector(module.BaseModule):
       disk_names (Optional[str]): Optional. Comma separated disk names to copy.
       all_disks (Optional[bool]): Optional. True if all disks attached to the
           source instance should be copied.
+      stop_instance (Optional[bool]): Optional. Stop the target instance after
+          copying disks.
       image_project (Optional[str]): Optional. Name of the project where the
           analysis VM image is hosted.
       image_family (Optional[str]): Optional. Name of the image to use to
@@ -155,6 +175,12 @@ class GoogleCloudCollector(module.BaseModule):
     if not (remote_instance_name or disk_names):
       self.ModuleError(
           'You need to specify at least an instance name or disks to copy',
+          critical=True)
+      return
+
+    if stop_instance and not remote_instance_name:
+      self.ModuleError(
+          'You need to specify an instance name to stop the instance',
           critical=True)
       return
 
@@ -169,6 +195,7 @@ class GoogleCloudCollector(module.BaseModule):
     self.remote_instance_name = remote_instance_name
     self.disk_names = disk_names.split(',') if disk_names else []
     self.all_disks = all_disks
+    self.stop_instance = stop_instance
     if incident_id:
       self.incident_id = incident_id
       self._gcp_label = {'incident_id': self.incident_id}

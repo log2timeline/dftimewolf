@@ -1,7 +1,7 @@
 {
   "name": "aws_forensics",
   "short_description": "Copies a volume from an AWS account to an analysis VM.",
-  "description": "Copies a volume from an AWS account, creates an analysis VM, and attaches the copied volume to it.",
+  "description": "Copies a volume from an AWS account, creates an analysis VM in AWS (with a startup script containing installation instructions for basic forensics tooling), and attaches the copied volume to it.",
   "modules": [{
       "wants": [],
       "name": "AWSCollector",

@@ -60,6 +60,9 @@ class MetawolfUtilsTest(unittest.TestCase):
   """Test utils.py"""
   # pylint: disable=unused-argument
 
+  def setUp(self) -> None:
+    self.utils = None
+
   def testIsInt(self) -> None:
     """That whether or not a string is an int."""
     self.assertTrue(utils.IsInt('1'))
@@ -120,8 +123,8 @@ class MetawolfUtilsTest(unittest.TestCase):
     """Test that the session file is read correctly."""
     session_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 'metawolf-session.json')
-    s = utils.MetawolfUtils(
-        session_path=session_path).ReadSessionFromFile()
+    self.utils = utils.MetawolfUtils(session_path=session_path)
+    s = self.utils.ReadSessionFromFile()
     self.assertIn('session_test', s)
     json_session_settable = s['session_test']['recipe_test'][
       'session_test-recipe_test-param_name']
@@ -133,8 +136,7 @@ class MetawolfUtilsTest(unittest.TestCase):
     self.assertEqual(MOCK_SESSION_SETTABLE.GetValue(),
                      json_session_settable.GetValue())
 
-    s = utils.MetawolfUtils(
-        session_path=session_path).ReadSessionFromFile(unmarshal=False)
+    s = self.utils.ReadSessionFromFile(unmarshal=False)
     self.assertIn('session_test', s)
     with open(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                            'metawolf-session-settable.json')) as settable:
@@ -148,8 +150,8 @@ class MetawolfUtilsTest(unittest.TestCase):
     """Test that the DFTimewolf command is constructed correctly."""
     session_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 'metawolf-full-session.json')
-    sessions = utils.MetawolfUtils(
-        session_path=session_path).ReadSessionFromFile()
+    self.utils = utils.MetawolfUtils(session_path=session_path)
+    sessions = self.utils.ReadSessionFromFile()
     session_settables = sessions.get(sessions.get(
         'last_active_session')).get('aws_forensics')
     cmd = utils.MetawolfUtils().PrepareDFTimewolfCommand(
@@ -161,6 +163,13 @@ class MetawolfUtilsTest(unittest.TestCase):
     # If a non-optional settable has no value, the command should be empty
     session_settables.get(
         'b6b30f-aws_forensics-remote_profile_name').SetValue(None)
-    cmd = utils.MetawolfUtils().PrepareDFTimewolfCommand(
+    cmd = self.utils.PrepareDFTimewolfCommand(
         'aws_forensics', MOCK_SESSION_SETTABLES)
     self.assertEqual([], cmd)
+
+  @typing.no_type_check
+  def tearDown(self) -> None:
+    if not self.utils:
+      return
+    for recipe in self.utils.recipe_manager.GetRecipes():
+      self.utils.recipe_manager.DeregisterRecipe(recipe)

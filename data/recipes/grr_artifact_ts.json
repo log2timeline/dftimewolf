@@ -1,7 +1,7 @@
 {
     "name": "grr_artifact_ts",
-    "description": "Collect artifacts from hosts using GRR.\n\n- Collect a predefined list of artifacts from hosts using GRR\n- Process them with a local install of plaso\n- Export them to a Timesketch sketch",
-    "short_description": "Fetches default artifacts from a list of GRR hosts, processes them with plaso, and sends the results to Timesketch.",
+    "short_description": "Fetches default ForensicArtifacts from a sequence of GRR hosts, processes them with plaso, and sends the results to Timesketch.",
+    "description": "Collect artifacts from hosts using GRR.\n\n- Collect a predefined list of artifacts from hosts using GRR\n- Process them with a local install of plaso\n- Export them to a Timesketch sketch.\n\nThe default set of artifacts is defined in the GRRArtifactCollector module (see the `_DEFAULT_ARTIFACTS_*` class attributes in `grr_hosts.py`), and varies per platform.",
     "modules": [{
         "wants": [],
         "name": "GRRArtifactCollector",
@@ -32,26 +32,27 @@
             "incident_id": "@reason",
             "token_password": "@token_password",
             "sketch_id": "@sketch_id",
-            "analyzers": null,
+            "analyzers": "@analyzers",
             "wait_for_timelines": "@wait_for_timelines"
         }
     }],
     "args": [
-        ["hostnames", "Comma-separated list of hostnames or GRR client IDs to process", null],
-        ["reason", "Reason for collection", null],
-        ["--artifacts", "Comma-separated list of artifacts to fetch (override default artifacts)", null],
-        ["--extra_artifacts", "Comma-separated list of artifacts to append to the default artifact list", null],
-        ["--use_tsk", "Use TSK to fetch artifacts", false],
-        ["--approvers", "Emails for GRR approval request", null],
-        ["--sketch_id", "Sketch to which the timeline should be added", null],
-        ["--wait_for_timelines", "Whether to wait for timelines to finish processing.", true],
-        ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
-        ["--incident_id", "Incident ID (used for Timesketch description)", null],
-        ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
-        ["--verify", "Whether to verify the GRR TLS certificate", true],
-        ["--skip_offline_clients", "Whether to skip clients that are offline", false],
+        ["hostnames", "Comma-separated list of hostnames or GRR client IDs to process.", null],
+        ["reason", "Reason for collection.", null],
+        ["--artifacts", "Comma-separated list of artifacts to fetch (override default artifacts).", null],
+        ["--extra_artifacts", "Comma-separated list of artifacts to append to the default artifact list.", null],
+        ["--use_tsk", "Use TSK to fetch artifacts.", false],
+        ["--approvers", "Emails for GRR approval request.", null],
+        ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null],
+        ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true],
+        ["--analyzers", "Timesketch analysers to run", null],
+        ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
+        ["--incident_id", "Incident ID (used for Timesketch description).", null],
+        ["--grr_server_url", "GRR endpoint.", "http://localhost:8000"],
+        ["--verify", "Whether to verify the GRR TLS certificate.", true],
+        ["--skip_offline_clients", "Whether to skip clients that are offline.", false],
         ["--grr_username", "GRR username", "admin"],
         ["--grr_password", "GRR password", "admin"],
-        ["--max_file_size", "Maximum size of files to collect (in bytes)", 5368709120]
+        ["--max_file_size", "Maximum size of files to collect (in bytes).", 5368709120]
     ]
 }
