@@ -3,8 +3,8 @@
 """Tests the Azure logging collector."""
 
 import unittest
-from datetime import datetime as dt
 import unittest.mock as mock
+from datetime import datetime as dt
 
 from dftimewolf.lib import state
 from dftimewolf import config
