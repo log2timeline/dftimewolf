@@ -7,11 +7,13 @@
         "name": "AzureLogsCollector",
         "args": {
           "subscription_id": "@subscription_id",
-          "filter_expression": "@filter_expression"
+          "filter_expression": "@filter_expression",
+          "profile_name": "@profile_name"
         }
     }],
     "args": [
         ["subscription_id", "Subscription ID for the subscription to collect logs from.", null],
-        ["filter_expression", "A filter expression to use for the log query, must specify at least a start date like \"eventTimestamp ge '2022-02-01'\"", null]
+        ["filter_expression", "A filter expression to use for the log query, must specify at least a start date like \"eventTimestamp ge '2022-02-01'\"", null],
+        ["--profile_name", "A profile name to use when looking for Azure credentials.", null]
     ]
 }
