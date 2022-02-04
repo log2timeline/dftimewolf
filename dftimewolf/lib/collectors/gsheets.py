@@ -201,7 +201,8 @@ class GoogleSheetsCollector(module.BaseModule):
 
     return spreadsheet_match.group(1)
 
-  def _ExtractEntiresFromSheet(self, spreadsheet_id: str,
+  def _ExtractEntiresFromSheet(self,
+                               spreadsheet_id: str,
                                sheet_title: str) -> DataFrame:
     """Extract entries from the sheet inside the spreadsheet.
 
