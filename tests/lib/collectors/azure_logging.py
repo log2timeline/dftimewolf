@@ -38,9 +38,9 @@ class AzureLogging(unittest.TestCase):
     self.assertEqual(
         azure_logging_collector._profile_name, 'profile1')
 
-  @mock.patch('azure.identity.DefaultAzureCredential')
+  @mock.patch('libcloudforensics.providers.azure.internal.common.GetCredentials')  # pylint: disable=line-too-long
   @mock.patch('azure.mgmt.monitor.MonitorManagementClient')
-  def testProcess(self, mock_monitor, mock_identity):
+  def testProcess(self, mock_monitor, mock_credentials):
     """Tests that the Azure monitor client is called with the correct args."""
 
     # Create mock objects with required attributes - not mocking Azure objects
@@ -55,7 +55,7 @@ class AzureLogging(unittest.TestCase):
     mock_event_data.as_dict.return_value = {'log_entry': 1}
 
     mock_monitor.return_value = mock_monitor_client
-    mock_identity.return_value = 'Credentials'
+    mock_credentials.return_value = ('_', 'Credentials')
 
     test_state = state.DFTimewolfState(config.Config)
     azure_logging_collector = azure_logging.AzureLogsCollector(test_state)
