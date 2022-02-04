@@ -4,7 +4,6 @@ import json
 import tempfile
 from typing import Optional
 
-from azure import identity as az_identity
 from azure.mgmt import monitor as az_monitor
 from azure.core import exceptions as az_exceptions
 
@@ -29,7 +28,7 @@ class AzureLogsCollector(module.BaseModule):
         state, name=name, critical=critical)
     self._filter_expression = ''
     self._subscription_id = ''
-    self._profile_name = ''
+    self._profile_name: Optional[str] = ''
 
   # pylint: disable=arguments-differ
   def SetUp(self,
@@ -58,7 +57,7 @@ class AzureLogsCollector(module.BaseModule):
     try:
       _, credentials = lcf_common.GetCredentials(
           profile_name=self._profile_name)
-    except (lcf_errors.CredentialsConfigurationError, 
+    except (lcf_errors.CredentialsConfigurationError,
             FileNotFoundError) as exception:
       self.ModuleError('Ensure credentials are properly configured as expected '
           'by libcloudforensics: either a credentials.json file associated '

@@ -24,6 +24,7 @@ class AzureLogging(unittest.TestCase):
     azure_logging_collector = azure_logging.AzureLogsCollector(test_state)
     self.assertIsNotNone(azure_logging_collector)
 
+  # pylint: disable=protected-access
   def testSetup(self):
     """Tests that attributes are properly set during setup."""
     test_state = state.DFTimewolfState(config.Config)
@@ -76,12 +77,12 @@ class AzureLogging(unittest.TestCase):
 
     # Ensure DFTimewolfError is raised when creds aren't found.
     mock_credentials.side_effect = FileNotFoundError
-    with self.assertRaises(errors.DFTimewolfError) as error:
+    with self.assertRaises(errors.DFTimewolfError):
       azure_logging_collector.Process()
     mock_credentials.side_effect = None
 
     # Ensure DFTimewolfError is raised when Azure libs raise an exception.
     mock_activity_logs_client.list.side_effect = (
         az_exceptions.HttpResponseError)
-    with self.assertRaises(errors.DFTimewolfError) as error:
+    with self.assertRaises(errors.DFTimewolfError):
       azure_logging_collector.Process()
