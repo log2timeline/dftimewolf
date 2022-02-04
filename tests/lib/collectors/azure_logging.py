@@ -21,6 +21,20 @@ class AzureLogging(unittest.TestCase):
     azure_logging_collector = azure_logging.AzureLogsCollector(test_state)
     self.assertIsNotNone(azure_logging_collector)
 
+  def testSetup(self):
+    """Tests that attributes are properly set during setup."""
+    test_state = state.DFTimewolfState(config.Config)
+    azure_logging_collector = azure_logging.AzureLogsCollector(test_state)
+    azure_logging_collector.SetUp(
+        subscription_id='55c5ff71-b3e2-450d-89da-cb12c1a38d87',
+        filter_expression='eventTimestamp ge \'2022-02-01\'')
+    self.assertEqual(
+        azure_logging_collector._subscription_id,
+        '55c5ff71-b3e2-450d-89da-cb12c1a38d87')
+    self.assertEqual(
+        azure_logging_collector._filter_expression,
+        'eventTimestamp ge \'2022-02-01\'')
+
   @mock.patch('azure.identity.DefaultAzureCredential')
   @mock.patch('azure.mgmt.monitor.MonitorManagementClient')
   def testProcess(self, mock_monitor, mock_identity):
