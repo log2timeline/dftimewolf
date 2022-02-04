@@ -4,7 +4,6 @@
 
 import unittest
 import unittest.mock as mock
-from datetime import datetime as dt
 
 from azure.core import exceptions as az_exceptions
 
