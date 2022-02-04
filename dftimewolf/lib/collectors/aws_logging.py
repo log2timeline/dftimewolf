@@ -4,10 +4,9 @@
 import json
 import tempfile
 from datetime import datetime
-from typing import Optional, Union
+from typing import Any, Dict, Optional, Union
 
-from libcloudforensics.providers.aws.internal import account as aws_account
-from libcloudforensics.providers.aws.internal import log as aws_log
+from boto3 import session as boto3_session
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
@@ -22,15 +21,13 @@ class AWSLogsCollector(module.BaseModule):
                state: DFTimewolfState,
                name: Optional[str]=None,
                critical: bool=False) -> None:
-    """Initializes AWS logs collector."""
+    """Initializes an AWS logs collector."""
     super(AWSLogsCollector, self).__init__(state, name=name, critical=critical)
-    self._zone = None  # type: Union[str, None]
-    self._profile_name = None  # type: Optional[str]
-    self._query_filter = None  # type: Optional[str]
-    self._start_time = None  # type: Optional[datetime]
-    self._end_time = None  # type: Optional[datetime]
-    self._log_account = None  # type: Union[str, None]
-    self._log_client = None  # type: Optional[aws_log.AWSCloudTrail]
+    self._zone: str = ''
+    self._profile_name: Optional[str] = None
+    self._query_filter: Optional[str] = None
+    self._start_time: Optional[datetime] = None
+    self._end_time:Optional[datetime] = None
 
   # pylint: disable=arguments-differ
   def SetUp(self,
@@ -63,20 +60,43 @@ class AWSLogsCollector(module.BaseModule):
     """Copies logs from an AWS account."""
 
     output_file = tempfile.NamedTemporaryFile(
-        mode='w', delete=False, encoding='utf-8', suffix='.jsonl')
+    mode='w', delete=False, encoding='utf-8', suffix='.jsonl')
     output_path = output_file.name
-    self._log_account = aws_account.AWSAccount(
-        self._zone, aws_profile=self._profile_name)
-    self._log_client = aws_log.AWSCloudTrail(self._log_account)
-
     self.logger.info('Downloading logs to {0:s}'.format(output_path))
-    events = self._log_client.LookupEvents(qfilter=self._query_filter,
-        starttime=self._start_time, endtime=self._end_time)
-    self.logger.info('Downloaded {0:d} log events.'.format(len(events)))
 
-    # Set the default serializer to str() to account for datetime objects.
-    output_file.write(json.dumps(events, default=str))
-    output_file.write('\n')
+    # TODO: Add handling for auth related exceptions.
+    if self._profile_name:
+      session = boto3_session.Session(profile_name=self._profile_name)
+    else:
+      session = boto3_session.Session()
+
+    cloudtrail_client = session.client('cloudtrail')
+
+    request_params: Dict[str, Any] = {}
+    if self._query_filter:
+      k, v = self._query_filter.split(',')
+      filters = [{'AttributeKey': k, 'AttributeValue': v}]
+      request_params['LookupAttributes'] = filters
+    if self._start_time:
+      request_params['StartTime'] = self._start_time
+    if self._end_time:
+      request_params['EndTime'] = self._end_time
+
+    while True:
+      # TODO: Add handling for boto3 related exceptions.
+      results = cloudtrail_client.lookup_events(**request_params)
+      events = results.get('Events', [])
+      for event in events:
+        # Set the default serializer to str() to account for datetime objects.
+        event_string = json.dumps(event, default=str)
+        output_file.write(event_string)
+        output_file.write('\n')
+
+      next_token = results.get('NextToken')
+      if not next_token:
+        break
+      request_params['NextToken'] = next_token
+
     self.logger.success('Downloaded logs to {0:s}'.format(output_path))
     output_file.close()
 

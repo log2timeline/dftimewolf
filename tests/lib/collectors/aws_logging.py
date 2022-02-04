@@ -3,9 +3,8 @@
 """Tests the AWS logging collector."""
 
 import unittest
+import unittest.mock as mock
 from datetime import datetime as dt
-
-import mock
 
 from dftimewolf.lib import state
 from dftimewolf import config
@@ -16,70 +15,63 @@ from dftimewolf.lib.containers.containers import AWSLogs
 class AWSLoggingTest(unittest.TestCase):
   """Tests for the AWS logging collector."""
 
-  FAKE_ZONE = 'fake-zone-1b'
-  FAKE_LCF_RESPONSE = [
-    {
-      'EventName': 'GetCallerIdentity',
-      'ReadOnly': 'true',
-      'AccessKeyId': '11111111111111111111',
-      'EventTime': dt.fromisoformat('2021-01-01 00:00:00'),
-      'EventSource': 'sts.amazonaws.com',
-      'Username': 'fakename',
-      'Resources': [],
-      'CloudTrailEvent': '{}'
-    },
-    {
-      'EventName': 'GetCallerIdentity',
-      'ReadOnly': 'true',
-      'AccessKeyId': '11111111111111111111',
-      'EventTime': dt.fromisoformat('2021-01-01 00:00:00'),
-      'EventSource': 'sts.amazonaws.com',
-      'Username': 'fakename',
-      'Resources': [],
-      'CloudTrailEvent': '{}'
-    }
-  ]
-
   def testInitialization(self):
     """Tests that the collector can be initialized."""
     test_state = state.DFTimewolfState(config.Config)
     aws_logging_collector = aws_logging.AWSLogsCollector(test_state)
     self.assertIsNotNone(aws_logging_collector)
 
-  @mock.patch('libcloudforensics.providers.aws.internal.account.AWSAccount')
-  @mock.patch('libcloudforensics.providers.aws.internal.log.AWSCloudTrail')
-  # pylint: disable=unused-argument
-  def testLogClientArgs(self, mock_log, mock_account):
-    """Tests that libcloudforensics methods are called with the correct
-    args.
-    """
+  def testSetup(self):
+    """Tests that attributes are properly set during setup."""
+    test_state = state.DFTimewolfState(config.Config)
+    aws_logging_collector = aws_logging.AWSLogsCollector(test_state)
+    aws_logging_collector.SetUp(
+        'fake-zone-1b',
+        profile_name='default',
+        query_filter='Username,fakename',
+        start_time='2021-01-01 00:00:00',
+        end_time='2021-01-02 00:00:00')
+
+    # pylint: disable=protected-access
+    self.assertEqual(aws_logging_collector._zone, 'fake-zone-1b')
+    self.assertEqual(aws_logging_collector._profile_name, 'default')
+    self.assertEqual(aws_logging_collector._query_filter, 'Username,fakename')
+    self.assertEqual(
+        aws_logging_collector._start_time,
+        dt.fromisoformat('2021-01-01 00:00:00'))
+    self.assertEqual(
+      aws_logging_collector._end_time,
+      dt.fromisoformat('2021-01-02 00:00:00'))
+
+  @mock.patch('boto3.session.Session')
+  def testProcess(self, mock_boto3):
+    """Tests the process method."""
+    mock_session = mock.MagicMock(spec=['client'])
+    mock_client = mock.MagicMock(spec=['lookup_events'])
+    mock_client.lookup_events.return_value = {'Events': [{'log_line':1}]}
+    mock_session.client.return_value = mock_client
+    mock_boto3.return_value = mock_session
+
     test_state = state.DFTimewolfState(config.Config)
     aws_logging_collector = aws_logging.AWSLogsCollector(test_state)
 
-    aws_logging_collector.SetUp(self.FAKE_ZONE,
+    aws_logging_collector.SetUp(
+        'fake-zone-1b',
         query_filter='Username,fakename',
         start_time='2021-01-01 00:00:00',
         end_time='2021-01-02 00:00:00')
     aws_logging_collector.Process()
 
-    # pylint: disable=protected-access,no-member
-    aws_logging_collector._log_client.LookupEvents.assert_called_with(
-        qfilter='Username,fakename',
-        starttime=dt.fromisoformat('2021-01-01 00:00:00'),
-        endtime=dt.fromisoformat('2021-01-02 00:00:00'))
-
-  @mock.patch('libcloudforensics.providers.aws.internal.account.AWSAccount')
-  @mock.patch('libcloudforensics.providers.aws.internal.log.'
-      'AWSCloudTrail.LookupEvents', return_value=FAKE_LCF_RESPONSE)
-  # pylint: disable=unused-argument
-  def testContainers(self, mock_log, mock_account):
-    """Tests that the containers are added to state."""
-    test_state = state.DFTimewolfState(config.Config)
-    aws_logging_collector = aws_logging.AWSLogsCollector(test_state)
-
-    aws_logging_collector.SetUp(self.FAKE_ZONE)
-    aws_logging_collector.Process()
-
+    mock_session.client.assert_called_with('cloudtrail')
+    mock_client.lookup_events.assert_called_with(
+        LookupAttributes=[
+          {
+            'AttributeKey': 'Username',
+            'AttributeValue': 'fakename'
+          }
+        ],
+        StartTime=dt.fromisoformat('2021-01-01 00:00:00'),
+        EndTime=dt.fromisoformat('2021-01-02 00:00:00'))
     self.assertTrue(test_state.GetContainers(AWSLogs))
 
 
