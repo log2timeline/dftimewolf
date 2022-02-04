@@ -6,10 +6,13 @@ import unittest
 import unittest.mock as mock
 from datetime import datetime as dt
 
+from azure.core import exceptions as az_exceptions
+
 from dftimewolf.lib import state
 from dftimewolf import config
 from dftimewolf.lib.collectors import azure_logging
 from dftimewolf.lib.containers.containers import AzureLogs
+from dftimewolf.lib import errors
 
 
 class AzureLogging(unittest.TestCase):
@@ -70,3 +73,15 @@ class AzureLogging(unittest.TestCase):
     mock_activity_logs_client.list.assert_called_with(
         filter='eventTimestamp ge \'2022-02-01\'')
     self.assertTrue(test_state.GetContainers(AzureLogs))
+
+    # Ensure DFTimewolfError is raised when creds aren't found.
+    mock_credentials.side_effect = FileNotFoundError
+    with self.assertRaises(errors.DFTimewolfError) as error:
+      azure_logging_collector.Process()
+    mock_credentials.side_effect = None
+
+    # Ensure DFTimewolfError is raised when Azure libs raise an exception.
+    mock_activity_logs_client.list.side_effect = (
+        az_exceptions.HttpResponseError)
+    with self.assertRaises(errors.DFTimewolfError) as error:
+      azure_logging_collector.Process()
