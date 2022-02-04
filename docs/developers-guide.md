@@ -24,15 +24,17 @@ pip install pipenv
 pipenv install --dev
 ```
 
-Now you are ready to run dfTimewolf in your local envirenment:
+Now you are ready to run dfTimewolf in your local environment:
 
 ```bash
 /home/user/dev/dftimewolf/venv/bin/dftimewolf -h
+```
 or
+```
 python -m dftimewolf.cli.dftimewolf_recipes -h # if you installed with pipenv
 ```
 
-## Codereview
+## Code review
 
 As for other Log2Timeline projects, all contributions to dfTimewolf undergo code
 review. The process is documented
@@ -109,10 +111,10 @@ There are two locations to register new modules:
 
 ## Run tests
 
-It is recommended to run tests locallty to discover issues early in the development lifecycle.
+It is recommended to run tests locally to discover issues early in the development lifecycle.
 
-````python
+```bash
 pip install pipenv
-pipenv install -d
+pipenv install --dev
 python -m unittest discover -s tests -p '*.py'
 ```

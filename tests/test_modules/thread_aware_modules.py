@@ -97,14 +97,42 @@ class ThreadAwareConsumerModule(module.ThreadAwareModule):
   def GetThreadPoolSize(self):
     return 2
 
-  def PreSetUp(self) -> None:
-    self.logger.info("ThreadAwareConsumerModule Static Pre Set Up")
-
-  def PostSetUp(self) -> None:
-    self.logger.info("ThreadAwareConsumerModule Static Post Set Up")
-
   def PreProcess(self) -> None:
     self.logger.info("ThreadAwareConsumerModule Static Pre Process")
 
   def PostProcess(self) -> None:
     self.logger.info("ThreadAwareConsumerModule Static Post Process")
+
+class Issue503Module(module.ThreadAwareModule):
+  """This is a module for testing a certain pattern of container handling.
+
+  As described by https://github.com/log2timeline/dftimewolf/issues/503 this
+  module pops containers for input, and uses the same container type as output.
+  """
+  def __init__(self, state, name=None):
+    super(Issue503Module, self).__init__(state, name)
+
+  def SetUp(self): # pylint: disable=arguments-differ
+    """SetUp"""
+    self.logger.info('{0:s} SetUp!'.format(self.name))
+
+  def Process(self, container) -> None:
+    """Process"""
+    self.logger.info('{0:s} Process!'.format(self.name))
+    self.state.StoreContainer(TestContainer(container.value + " Processed"))
+
+  @staticmethod
+  def GetThreadOnContainerType():
+    return TestContainer
+
+  def GetThreadPoolSize(self):
+    return 2
+
+  def PreProcess(self) -> None:
+    pass
+
+  def PostProcess(self) -> None:
+    pass
+
+  def KeepThreadedContainersInState(self) -> bool:
+    return False

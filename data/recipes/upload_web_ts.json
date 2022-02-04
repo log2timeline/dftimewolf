@@ -1,7 +1,7 @@
 {
     "name": "upload_web_ts",
-    "description": "Uploads a CSV or Plaso file to Timesketch and executes web artifact analyzers on the uploaded data",
-    "short_description": "Uploads a CSV/JSONL or Plaso file to Timesketch.",
+    "short_description": "Uploads a CSV/JSONL or Plaso file to Timesketch and runs web-related Timesketch analyzers.",
+    "description": "Uploads a CSV or Plaso file to Timesketch and runs a series of web-related analyzers on the uploaded data.\n\nThe following analyzers will run on the processed timeline: `browser_search,browser_timeframe,account_finder,phishy_domains,evtx_gap,login,win_crash,safebrowsing,chain`.",
     "modules": [{
         "wants": [],
         "name": "FilesystemCollector",
@@ -15,7 +15,7 @@
             "incident_id": "@incident_id",
             "token_password": "@token_password",
             "sketch_id": "@sketch_id",
-            "wait_for_timelines": "@wait_for_timelines",
+            "wait_for_timelines": true,
             "analyzers": "browser_search,browser_timeframe,account_finder,phishy_domains,evtx_gap,login,win_crash,safebrowsing,chain,"
         }
     }, {
@@ -32,13 +32,12 @@
     }
     }],
     "args": [
-        ["files", "Comma-separated list of paths to CSV files or Plaso storage files", null],
-        ["--sketch_id", "Sketch to which the timeline should be added", null],
-        ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
-        ["--incident_id", "Incident ID (used for Timesketch description)", null],
-        ["--wait_for_analyzers", "Wait for analyzers until they complete their run, if set to False the TS enhancer will be skipped", true],
-        ["--wait_for_timelines", "Whether to wait for timelines to finish processing.", true],
-        ["--timesketch_include_stories", "Include story dumps in reports", false],
+        ["files", "Comma-separated list of paths to CSV files or Plaso storage files.", null],
+        ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null],
+        ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
+        ["--incident_id", "Incident ID (used for Timesketch description).", null],
+        ["--wait_for_analyzers", "Wait for analyzers until they complete their run, if set to False the TS enhancer will be skipped.", true],
+        ["--timesketch_include_stories", "Include story dumps in reports.", false],
         ["--searches_to_skip", "A comma separated list of saved searches that should not be uploaded.", null],
         ["--analyzer_max_checks", "Number of wait cycles (per cycle is 3 seconds) before terminating wait for analyzers to complete.", 0],
         ["--aggregations_to_skip", "A comma separated list of aggregation names that should not be uploaded.", null]

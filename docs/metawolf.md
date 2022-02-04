@@ -6,13 +6,19 @@ Metawolf is a meterpreter-like shell for DFTimewolf. It allows you to browse, co
 
 ## Using Metawolf
 
+First of all, open a metawolf shell by running:
+
+```
+python dftimewolf/metawolf/metawolf.py
+```
+
 ### Sessions
 
 `new`: Create a new Metawolf session.
 
-`set session_id xxx`: Set the current session to session `xxx`.
+`set -s[ession] xxx`: Set the current session to session `xxx`.
 
-`show sessions`: Show existing Metawolf sessions, including:
+`show -s[essions]`: Show existing Metawolf sessions, including:
   - Any recipe in use in the session.
   - The status of the latest recipe run for that session.
 
@@ -29,9 +35,9 @@ Currently, the following syntaxes are supported:
 
 `set xxx yyy`: Set parameter `xxx` with value `yyy`. This only works if `xxx` is a settable parameter (i.e. if it is displayed in the output of the `set` command).
 
-`set recipe xxx`: Set the current recipe to recipe `xxx`.
+`set -r[ecipe] xxx`: Set the current recipe to recipe `xxx`.
 
-`set all`: If a recipe is set, `set all` loops through the recipe's parameters and prompts you to enter a value for each parameter. Inputs are verified against the expected parameter's type.
+`set -a[ll]`: If a recipe is set, `set -a` loops through the recipe's parameters and prompts you to enter a value for each parameter. Inputs are verified against the expected parameter's type.
 
 ![metawolf_setall](./_static/metawolf_setall.png)
 
@@ -47,7 +53,7 @@ Once a recipe is loaded and its parameters set, the following actions are availb
 
 To monitor a running recipe:
 
-`show running`: Show various information about running recipes. Available information:
+`show -rn[-running]`: Show various information about running recipes. Available information:
   - `session_id`: The session ID this recipe run belongs to.
   - `command_id`: A command identifier for the recipe. This is mainly usefull to e.g. `kill` a recipe run.
   - `timestamp`: Timestamp at which the recipe was run.
@@ -55,11 +61,11 @@ To monitor a running recipe:
   - `status`: The status of the recipe run. Can be one of `[Running, Completed, Failed, Interrupted]`.
   - `output_id`: A simple identifier linking a recipe run to its output. This is used to display the current output of the recipe run.
 
-`show output output_id`: Display the current output of the recipe run.
+`show -o[utput] output_id`: Display the current output of the recipe run.
 
-`show recipes`: Show DFTimewolf available recipes.
+`show -rs[-recipes]`: Show DFTimewolf available recipes.
 
-`show recipe recipe_name`: Show details about a particular recipe.
+`show -r[ecipe] recipe_name`: Show details about a particular recipe.
 
 ![metawolf_run](./_static/metawolf_run.png)
 

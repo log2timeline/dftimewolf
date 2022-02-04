@@ -166,12 +166,6 @@ class S3ToGCSCopy(module.ThreadAwareModule):
     # limit is 100 per 100 seconds, or 1000/day.
     return 30
 
-  def PreSetUp(self) -> None:
-    pass
-
-  def PostSetUp(self) -> None:
-    pass
-
   def PostProcess(self) -> None:
     pass
 

@@ -12,6 +12,7 @@ from types import FrameType
 from typing import Dict, Optional, Union, Any, List
 
 import cmd2  # pylint: disable=import-error
+import cmd2.ansi as cmd2_ansi  # pylint: disable=import-error
 from prettytable import PrettyTable  # pylint: disable=import-error
 
 from dftimewolf.metawolf import session
@@ -77,7 +78,8 @@ class Metawolf(cmd2.Cmd):
   def __init__(
       self,
       session_path: str = DEFAULT_METAWOLF_STORAGE_PATH,
-      transcript_files: Optional[List[str]] = None
+      transcript_files: Optional[List[str]] = None,
+      colored_prompt: bool = True,
   ) -> None:
     """Initialize Metawolf.
 
@@ -87,6 +89,8 @@ class Metawolf(cmd2.Cmd):
           '~/.metawolf'.
       transcript_files (List[str]): Optional. A list of paths to transcripts.
           This can be used to e.g. test end-to-end interactions with Metawolf.
+      colored_prompt (bool): Optional. True if the prompt should be displayed
+          with colors.
     """
     super(Metawolf, self).__init__(
         shortcuts=cmd2.DEFAULT_SHORTCUTS,
@@ -95,6 +99,7 @@ class Metawolf(cmd2.Cmd):
 
     self.metawolf_output = output.MetawolfOutput()
     self.metawolf_utils = utils.MetawolfUtils(session_path)
+    self.colored_prompt = colored_prompt
 
     self._settables = {}  # Ignore default CMD2 settables
     self.session_settables = {}  # type: Dict[str, session.SessionSettable]
@@ -112,7 +117,7 @@ class Metawolf(cmd2.Cmd):
         RECIPE_NAME_IGNORED,
         ARG_RECIPE,
         'Recipe to use. Type `{0:s}` to see available recipes.'.format(
-            self.metawolf_output.Color('show -recipes', output.YELLOW)),
+            self.metawolf_output.Color('show -rs[recipes]', output.YELLOW)),
         str)
     self.AddSessionSettable(self.recipe_settable)
 
@@ -122,8 +127,9 @@ class Metawolf(cmd2.Cmd):
         ARG_SESSION,
         'Metawolf\'s session_id. Type `{0:s}` to display existing '
         'sessions, and switch with `{1:s}`.'.format(
-            self.metawolf_output.Color('show -sessions', output.YELLOW),
-            self.metawolf_output.Color('set -session session_id', output.YELLOW)
+            self.metawolf_output.Color('show -s[essions]', output.YELLOW),
+            self.metawolf_output.Color(
+                'set -s[ession] session_id', output.YELLOW)
         ), str)
     self.AddSessionSettable(self.session_id_settable)
 
@@ -230,9 +236,9 @@ class Metawolf(cmd2.Cmd):
     what = args.cmd2_statement.get().split(' ')
     if len(what) != 2 and what[0] not in [SET_ALL, SET_ALL_SC]:
       self.poutput('Usage: `{0:s}` to set a parameter\'s value || `{1:s}` to '
-            'interactively set -all current recipe\'s parameters.'.format(
+            'interactively set -a[ll] current recipe\'s parameters.'.format(
           self.metawolf_output.Color('set arg_name arg_value', output.YELLOW),
-          self.metawolf_output.Color('set -all', output.YELLOW)))
+          self.metawolf_output.Color('set -a[ll]', output.YELLOW)))
       return
 
     if what[0] in [SET_ALL, SET_ALL_SC]:
@@ -309,7 +315,7 @@ class Metawolf(cmd2.Cmd):
       self.poutput('To see arguments for this recipe, type {0:s}. To set them'
                    ' interactively, type {1:s}'.format(
         self.metawolf_output.Color('set', output.YELLOW),
-        self.metawolf_output.Color('set -all', output.YELLOW)))
+        self.metawolf_output.Color('set -a[ll]', output.YELLOW)))
     else:
       # This block happens whenever a recipe's argument / unknown argument
       # is set
@@ -363,7 +369,7 @@ class Metawolf(cmd2.Cmd):
     self.poutput('Running: {0:s}'.format(
         self.metawolf_output.Color(' '.join(cmd), output.YELLOW)))
     self.poutput('To see past and current runs, type {0:s}.'.format(
-      self.metawolf_output.Color('`show running`', output.YELLOW)))
+      self.metawolf_output.Color('`show -rn[running]`', output.YELLOW)))
 
     metawolf_process = output.MetawolfProcess(
         session_id=self.session_id,
@@ -405,8 +411,8 @@ class Metawolf(cmd2.Cmd):
     if not args.cmd2_statement.get():
       self.poutput('Usage of show (autocompletion is enabled.): `{0:s}`'.format(
           self.metawolf_output.Color(
-              'show [-recipes, -recipe recipe_name, -sessions, -running, '
-              '-output output_id].', output.YELLOW)))
+              'show [-rs[recipes], -r[ecipe] recipe_name, -s[essions], '
+              '-rn[running], -o[utput] output_id].', output.YELLOW)))
       return
 
     if args.cmd2_statement.get() in [ARG_RECIPES, ARG_RECIPES_SC]:
@@ -757,8 +763,15 @@ class Metawolf(cmd2.Cmd):
       prompt += self.metawolf_output.Color('${0:s}'.format(
           self.recipe), output.BLUE)
     prompt += self.metawolf_output.Color('> ', output.BLUE)
+    # Readline needs escaping around invisible characters
+    prompt = '\001' + prompt + '\002'
     # self.prompt is inherited from cmd2
-    self.prompt = prompt  # pylint: disable=attribute-defined-outside-init
+    # pylint: disable=attribute-defined-outside-init
+    if self.colored_prompt:
+      self.prompt = prompt
+    else:
+      self.prompt = cmd2_ansi.strip_style(prompt)
+    # pylint: enable=attribute-defined-outside-init
 
   def ReloadSettables(self) -> None:
     """Reload Metawolf's settables based on the current recipe."""

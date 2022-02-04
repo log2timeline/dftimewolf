@@ -1,7 +1,7 @@
 {
     "name": "grr_hunt_artifacts",
-    "description": "Starts a GRR artifact hunt and provides the Hunt ID to the user.\nFeed the Hunt ID to grr_huntresults_plaso_timesketch to process results through plaso and send them to Timesketch.",
     "short_description": "Starts a GRR hunt for the default set of artifacts.",
+    "description": "Starts a GRR artifact hunt and provides the Hunt ID to the user. Feed the Hunt ID to `grr_huntresults_ts` to process results through Plaso and export them to Timesketch.",
     "modules": [{
         "wants": [],
         "name": "GRRHuntArtifactCollector",
@@ -14,18 +14,24 @@
             "max_file_size": "@max_file_size",
             "use_tsk": "@use_tsk",
             "approvers": "@approvers",
-            "verify": "@verify"
+            "verify": "@verify",
+            "match_mode": "@match_mode",
+            "client_operating_systems": "@client_operating_systems",
+            "client_labels": "@client_labels"
         }
     }],
     "args": [
-        ["artifacts", "Comma-separated list of artifacts to hunt for", null],
-        ["reason", "Reason for collection", null],
-        ["--use_tsk", "Use TSK to fetch artifacts", false],
-        ["--approvers", "Emails for GRR approval request", null],
+        ["artifacts", "Comma-separated list of artifacts to hunt for.", null],
+        ["reason", "Reason for collection.", null],
+        ["--use_tsk", "Use TSK to fetch artifacts.", false],
+        ["--approvers", "Emails for GRR approval request.", null],
         ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
-        ["--verify", "Whether to verify the GRR TLS certificate", true],
+        ["--verify", "Whether to verify the GRR TLS certificate.", true],
         ["--grr_username", "GRR username", "admin"],
         ["--grr_password", "GRR password", "admin"],
-        ["--max_file_size", "Maximum size of files to collect (in bytes)", 5368709120]
+        ["--max_file_size", "Maximum size of files to collect (in bytes).", 5368709120],
+        ["--match_mode", "Match mode of the client rule set (ANY or ALL)", null],
+        ["--client_operating_systems", "Comma-separated list of client operating systems to filter hosts on (linux, osx, win).", null],
+        ["--client_labels", "Comma-separated list of client labels to filter GRR hosts on.", null]
     ]
 }

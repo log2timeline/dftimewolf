@@ -1,7 +1,7 @@
 {
   "name": "aws_disk_to_gcp",
   "short_description": "Copies EBS volumes from within AWS, and transfers them to GCP.",
-  "description": "Copies EBS volumes from within AWS, and transfers them to GCP.",
+  "description": "Copies EBS volumes from within AWS by pushing them to an AWS S3 bucket. The S3 bucket is then copied to a Google Cloud Storage bucket, from which a GCP Disk Image and fnially a GCP Persistend Disk are created. This operation happens in the cloud and doesn't touch the local workstation on which the recipe is run.",
   "preflights": [
     {
       "wants": [],
@@ -62,18 +62,18 @@
     }
   ],
   "args": [
-    ["aws_region", "AWS region with the EBS volumes", null],
-    ["gcp_zone", "Destination zone in GCP for the disks", null],
-    ["volumes", "Comma separated list of ebs volume ids (vol-xxxxxxxx)", null],
-    ["aws_bucket", "AWS bucket for image storage", null],
-    ["gcp_bucket", "GCP bucket for image storage", null],
-    ["--subnet", "AWS subnet for copy instances, required if there is no default subnet in the volume region.", null],
-    ["--gcp_project", "Destination GCP project", null],
-    ["--aws_profile", "Source AWS profile", null],
-    ["--incident_id", "Incident ID (used for Timesketch description)", null],
-    ["--run_all_jobs", "Run all Turbinia processing jobs instead of a faster subset", false],
-    ["--sketch_id", "Sketch to which the timeline should be added", null],
-    ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
-    ["--wait_for_timelines", "Whether to wait for timelines to finish processing.", true]
+    ["aws_region", "AWS region containing the EBS volumes.", null],
+    ["gcp_zone", "Destination GCP zone in which to create the disks.", null],
+    ["volumes", "Comma separated list of EBS volume IDs (e.g. vol-xxxxxxxx).", null],
+    ["aws_bucket", "AWS bucket for image storage.", null],
+    ["gcp_bucket", "GCP bucket for image storage.", null],
+    ["--subnet", "AWS subnet to copy instances from, required if there is no default subnet in the volume region.", null],
+    ["--gcp_project", "Destination GCP project.", null],
+    ["--aws_profile", "Source AWS profile.", null],
+    ["--incident_id", "Incident ID (used for Timesketch description).", null],
+    ["--run_all_jobs", "Run all Turbinia processing jobs instead of a faster subset.", false],
+    ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null],
+    ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
+    ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true]
   ]
 }

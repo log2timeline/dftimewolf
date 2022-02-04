@@ -510,12 +510,6 @@ class GRRArtifactCollector(GRRFlow):
         )
         self.state.StoreContainer(cont)
 
-  def PreSetup(self) -> None:
-    """Not implemented."""
-
-  def PostSetup(self) -> None:
-    """Not implemented."""
-
   def PreProcess(self) -> None:
     """Not implemented."""
 
@@ -635,12 +629,6 @@ class GRRFileCollector(GRRFlow):
         )
         self.state.StoreContainer(cont)
 
-  def PreSetup(self) -> None:
-    """Not implemented."""
-
-  def PostSetup(self) -> None:
-    """Not implemented."""
-
   def PreProcess(self) -> None:
     """Check that we're actually doing something, and it's not a no-op."""
     if not self.files:
@@ -741,12 +729,6 @@ class GRRFlowCollector(GRRFlow):
           path=collected_flow_data
       )
       self.state.StoreContainer(cont)
-
-  def PreSetup(self) -> None:
-    """Not implemented."""
-
-  def PostSetup(self) -> None:
-    """Not implemented."""
 
   def PreProcess(self) -> None:
     """Not implemented."""
@@ -883,12 +865,6 @@ class GRRTimelineCollector(GRRFlow):
 
     return output_file_path
 
-  def PreSetup(self) -> None:
-    """Not implemented."""
-
-  def PostSetup(self) -> None:
-    """Not implemented."""
-
   def PreProcess(self) -> None:
     """Not implemented."""
 
@@ -902,7 +878,7 @@ class GRRTimelineCollector(GRRFlow):
 
 
 modules_manager.ModulesManager.RegisterModules([
-    GRRArtifactCollector, # type: ignore
-    GRRFileCollector, # type: ignore
-    GRRFlowCollector, # type: ignore
-    GRRTimelineCollector]) # type: ignore
+    GRRArtifactCollector,
+    GRRFileCollector,
+    GRRFlowCollector,
+    GRRTimelineCollector])

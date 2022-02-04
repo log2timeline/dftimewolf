@@ -1,7 +1,7 @@
 {
     "name": "grr_artifact_grep",
-    "description": "Collect artifacts from hosts using GRR.\n\n- Collect a predefined list of artifacts from hosts using GRR\n- Process them locally with grep to extract keywords",
     "short_description": "Fetches ForensicArtifacts from GRR hosts and runs grep with a list of keywords on them.",
+    "description": "Collect ForensicArtifacts from hosts using GRR.\n\n- Collect a predefined list of artifacts from hosts using GRR\n- Process them locally with grep to extract keywords.",
     "modules": [{
         "wants": [],
         "name": "GRRArtifactCollector",
@@ -27,18 +27,18 @@
         }
     }],
     "args": [
-        ["hostnames", "Comma-separated list of hostnames or GRR client IDs to process", null],
-        ["reason", "Reason for collection", null],
-        ["--artifacts", "Comma-separated list of artifacts to fetch (override default artifacts)", null],
-        ["--extra_artifacts", "Comma-separated list of artifacts to append to the default artifact list", null],
-        ["--use_tsk", "Use TSK to fetch artifacts", false],
-        ["--approvers", "Emails for GRR approval request", null],
-        ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
-        ["--verify", "Whether to verify the GRR TLS certificate", true],
-        ["--skip_offline_clients", "Whether to skip clients that are offline", false],
-        ["--grr_username", "GRR username", "admin"],
-        ["--grr_password", "GRR password", "admin"],
-        ["--max_file_size", "Maximum size of files to collect (in bytes)", 5368709120],
-        ["--keywords", "Pipe-separated list of keywords to search for (e.g. key1|key2|key3", null]
+        ["hostnames", "Comma-separated list of hostnames or GRR client IDs to process.", null],
+        ["reason", "Reason for collection.", null],
+        ["keywords", "Pipe-separated list of keywords to search for (e.g. key1|key2|key3.", null],
+        ["--artifacts", "Comma-separated list of artifacts to fetch (override default artifacts).", null],
+        ["--extra_artifacts", "Comma-separated list of artifacts to append to the default artifact list.", null],
+        ["--use_tsk", "Use TSK to fetch artifacts.", false],
+        ["--approvers", "Emails for GRR approval request.", null],
+        ["--grr_server_url", "GRR endpoint.", "http://localhost:8000"],
+        ["--verify", "Whether to verify the GRR TLS certificate.", true],
+        ["--skip_offline_clients", "Whether to skip clients that are offline.", false],
+        ["--grr_username", "GRR username.", "admin"],
+        ["--grr_password", "GRR password.", "admin"],
+        ["--max_file_size", "Maximum size of files to collect (in bytes).", 5368709120]
     ]
 }
