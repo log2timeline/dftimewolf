@@ -69,7 +69,7 @@ class AWSLogsCollector(module.BaseModule):
       try:
         session = boto3_session.Session(profile_name=self._profile_name)
       except boto_exceptions.ProfileNotFound as exception:
-        self.ModuleError('AWS profile {0:s} not found.')
+        self.ModuleError(f'AWS profile {self._profile_name} not found.')
         self.ModuleError(str(exception), critical=True)
     else:
       session = boto3_session.Session()

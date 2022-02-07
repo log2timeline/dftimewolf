@@ -75,7 +75,13 @@ class AWSLoggingTest(unittest.TestCase):
         ],
         StartTime=dt.fromisoformat('2021-01-01 00:00:00'),
         EndTime=dt.fromisoformat('2021-01-02 00:00:00'))
-    self.assertTrue(test_state.GetContainers(AWSLogs))
+
+    aws_containers = test_state.GetContainers(AWSLogs)
+    self.assertTrue(aws_containers)
+    self.assertEqual(aws_containers[0].profile_name, None)
+    self.assertEqual(aws_containers[0].query_filter, 'Username,fakename')
+    self.assertEqual(aws_containers[0].start_time, '2021-01-01 00:00:00')
+    self.assertEqual(aws_containers[0].end_time, '2021-01-02 00:00:00')
 
     mock_client.get_caller_identity.side_effect = (
         boto_exceptions.NoCredentialsError)
