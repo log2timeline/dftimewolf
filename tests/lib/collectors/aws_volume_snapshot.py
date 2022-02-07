@@ -22,7 +22,7 @@ with mock.patch('boto3.session.Session._setup_loader') as mock_session:
   FAKE_AWS_ACCOUNT = aws_account.AWSAccount(
       default_availability_zone=FAKE_AZ)
 
-# Mirrors the responses from AWS APIs (minus unecessary fields)
+# Mirrors the responses from AWS APIs (minus unnecessary fields)
 FAKE_VOLUME_1 = {
   'AvailabilityZone': FAKE_AZ,
   'VolumeId': 'vol-01234567',

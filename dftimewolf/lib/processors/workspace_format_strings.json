@@ -381,9 +381,9 @@
   "chrome": {
     "password_changed": "Password changed for {trigger_user}",
     "password_reuse": "Password reuse for {trigger_user}",
-    "content_transfer": "Content was transfered",
-    "content_unscanned": "The transfered content was not scanned because of {event_reason_enum_type}",
-    "malware_transfer": "Malware was detected in the tranferred content for {trigger_user}",
+    "content_transfer": "Content was transferred",
+    "content_unscanned": "The transferred content was not scanned because of {event_reason_enum_type}",
+    "malware_transfer": "Malware was detected in the transferred content for {trigger_user}",
     "sensitive_data_transfer": "Sensitive data was detected in the transferred content for {trigger_user}",
     "unsafe_site_visit": "Unsage site visit warning shown for {trigger_user}"
   },

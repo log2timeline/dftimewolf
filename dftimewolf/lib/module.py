@@ -214,5 +214,5 @@ class ThreadAwareModule(BaseModule):
   def KeepThreadedContainersInState() -> bool:
     """Whether to keep the containers that are used to thread on in the state,
     or pop them. Default behaviour is to keep the containers. Override this
-    mthod to return false to pop them from the state."""
+    method to return false to pop them from the state."""
     return True

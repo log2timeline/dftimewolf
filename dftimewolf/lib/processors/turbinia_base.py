@@ -55,7 +55,7 @@ class TurbiniaProcessorBase(object):
   def _DeterminePaths(
       self,
       task_data: List[Dict[str, Any]]) -> Tuple[List[str], List[str]]:
-    """Builds lists of local and remote paths from data retured by Turbinia.
+    """Builds lists of local and remote paths from data returned by Turbinia.
 
     This finds all .plaso, hashes.json, and BinaryExtractorTask files in the
     Turbinia output, and determines if they are local or remote (it's possible
