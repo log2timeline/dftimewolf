@@ -55,7 +55,7 @@ FAKE_EBS_COPY_PROCESS_RESPONSE = [{
   }
 ]
 
-# Mirrors the responses from AWS APIs (minus unecessary fields)
+# Mirrors the responses from AWS APIs (minus unnecessary fields)
 FAKE_SNAPSHOT_1 = {
   'SnapshotId': 'snap-01234567',
   'State': 'completed',
@@ -178,7 +178,7 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
 
   @mock.patch('boto3.session.Session._setup_loader')
   def testPickAvailabilityZone(self, mock_loader):
-    """Test the utility funciton that picks an availability zone in the
+    """Test the utility function that picks an availability zone in the
     region to use."""
     mock_loader.return_value = None
 

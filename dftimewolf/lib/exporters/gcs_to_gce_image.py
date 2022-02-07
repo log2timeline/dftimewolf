@@ -137,7 +137,7 @@ class GCSToGCEImage(module.ThreadAwareModule):
     """Creates a GCE image from an image in GCS.
 
     Args:
-      container (containers.GCSObject): The conatiner to process.
+      container (containers.GCSObject): The container to process.
     """
     # Because this comes from a GCSObject container,
     # it should always be prefixed by gs:// - remove that.

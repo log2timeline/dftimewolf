@@ -57,7 +57,7 @@ class GCEDiskFromImage(module.ThreadAwareModule):
     """Creates a GCE disk from an image.
 
     Args:
-      container (containers.GCEImage): The conatiner to process.
+      container (containers.GCEImage): The container to process.
     """
     self.logger.info('Creating disk from image {0:s}'.format(container.name))
 

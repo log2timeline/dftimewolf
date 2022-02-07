@@ -354,7 +354,7 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
     """Tests that ForensicsVM containers are picked up properly.
 
     We store a ForensicsVM container in the state, run PreProcess, then check
-    that the state containes a GCEDisk as expected."""
+    that the state contains a GCEDisk as expected."""
     test_state = state.DFTimewolfState(config.Config)
     test_state.StoreContainer(containers.ForensicsVM(
          name='ForensicsVM',

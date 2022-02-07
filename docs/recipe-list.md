@@ -281,7 +281,7 @@ Copies disk from a GCP project to an analysis VM.
 
 **Details:**
 
-Copies a persistend disk from a GCP project to another, creates an analysis VM (with a startup script containing installation instructions for basic forensics tooling) in the destiantion project, and attaches the copied GCP persistend disk to it.
+Copies a persistend disk from a GCP project to another, creates an analysis VM (with a startup script containing installation instructions for basic forensics tooling) in the destination project, and attaches the copied GCP persistend disk to it.
 
 **CLI parameters:**
 
@@ -944,7 +944,7 @@ Uploads arbitrary files to Turbinia and downloads results.
 
 **Details:**
 
-Uploads arbitrary files to Turbinia for processing. The recipe will wait for Turbinia to return with results and will download them back to the filesystem. The Turbinia system needs to be accesible via SSH.
+Uploads arbitrary files to Turbinia for processing. The recipe will wait for Turbinia to return with results and will download them back to the filesystem. The Turbinia system needs to be accessible via SSH.
 
 **CLI parameters:**
 

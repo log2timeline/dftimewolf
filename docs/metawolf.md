@@ -43,7 +43,7 @@ Currently, the following syntaxes are supported:
 
 ### Recipes
 
-Once a recipe is loaded and its parameters set, the following actions are availble:
+Once a recipe is loaded and its parameters set, the following actions are available:
 
 `run`: Run the recipe with the current parameters.
 
@@ -55,13 +55,13 @@ To monitor a running recipe:
 
 `show -rn[-running]`: Show various information about running recipes. Available information:
   - `session_id`: The session ID this recipe run belongs to.
-  - `command_id`: A command identifier for the recipe. This is mainly usefull to e.g. `kill` a recipe run.
+  - `command_id`: A command identifier for the recipe. This is mainly useful to e.g. `kill` a recipe run.
   - `timestamp`: Timestamp at which the recipe was run.
   - `command`: The full DFTimewolf command corresponding to the recipe run.
   - `status`: The status of the recipe run. Can be one of `[Running, Completed, Failed, Interrupted]`.
   - `output_id`: A simple identifier linking a recipe run to its output. This is used to display the current output of the recipe run.
 
-`show -o[utput] output_id`: Display the current output of the recipe run.
+`show -o[output] output_id`: Display the current output of the recipe run.
 
 `show -rs[-recipes]`: Show DFTimewolf available recipes.
 

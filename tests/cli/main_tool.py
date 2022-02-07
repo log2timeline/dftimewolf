@@ -47,7 +47,7 @@ class MainToolTest(unittest.TestCase):
 
   def testRecipeSetupArgs(self):
     """Checks that all recipes pass the correct arguments to their modules."""
-    # We want to access the tool's sate object to load recipes and go through
+    # We want to access the tool's state object to load recipes and go through
     # modules.
     # pylint: disable=protected-access
     self.tool._state =  dftw_state.DFTimewolfState(config.Config)
