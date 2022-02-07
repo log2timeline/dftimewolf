@@ -12,6 +12,7 @@ from dftimewolf import config
 from dftimewolf.lib import state
 from dftimewolf.lib import errors
 from dftimewolf.lib.collectors import grr_hunt
+from dftimewolf.lib.containers import containers
 from tests.lib.collectors.test_data import mock_grr_hosts
 
 
@@ -100,6 +101,44 @@ class GRRHuntFileCollectorTest(unittest.TestCase):
                      'random reason')
 
 
+class GRRHuntOsqueryCollectorTest(unittest.TestCase):
+  """Tests for the GRR osquery collector."""
+
+  @mock.patch('grr_api_client.api.InitHttp')
+  def setUp(self, mock_InitHttp):
+    self.mock_grr_api = mock.Mock()
+    mock_InitHttp.return_value = self.mock_grr_api
+    self.test_state = state.DFTimewolfState(config.Config)
+    self.test_state.StoreContainer(
+        containers.OsqueryQuery('SELECT * FROM processes'))
+    self.grr_hunt_osquery_collector = grr_hunt.GRRHuntOsqueryCollector(
+        self.test_state)
+    self.grr_hunt_osquery_collector.SetUp(
+        reason='random reason',
+        timeout_millis=300000,
+        ignore_stderr_errors=False,
+        grr_server_url='http://fake/endpoint',
+        grr_username='admin',
+        grr_password='admin',
+        approvers='approver1,approver2',
+        verify=False,
+        match_mode=None,
+        client_operating_systems=None,
+        client_labels=None)
+
+  def testProcess(self):
+    """Tests that the process method invokes the correct GRR API calls."""
+    self.grr_hunt_osquery_collector.Process()
+    # extract call kwargs
+    call_kwargs = self.mock_grr_api.CreateHunt.call_args[1]
+    self.assertEqual(call_kwargs['flow_args'].query,
+                     'SELECT * FROM processes')
+    self.assertEqual(call_kwargs['flow_args'].timeout_millis,
+                     300000)
+    self.assertEqual(call_kwargs['flow_args'].ignore_stderr_errors, False)
+    self.assertEqual(call_kwargs['flow_name'], 'OsqueryFlow')
+    self.assertEqual(call_kwargs['hunt_runner_args'].description,
+                     'random reason')
 
 class GRRFHuntDownloader(unittest.TestCase):
   """Tests for the GRR hunt downloader."""

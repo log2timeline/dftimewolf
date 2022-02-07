@@ -6,8 +6,11 @@ import unittest
 
 import mock
 import six
+
+import pandas as pd
 from grr_api_client import errors as grr_errors
 from grr_response_proto import flows_pb2
+from grr_response_proto import osquery_pb2
 from tests.lib.collectors.test_data import mock_grr_hosts
 
 from dftimewolf import config
@@ -584,6 +587,66 @@ class GRRTimelineCollectorTest(unittest.TestCase):
 
     mock_FindClients.assert_called_with(['container.host'])
 
+
+class GRROsqueryCollectorTest(unittest.TestCase):
+  """Tests for the GRR Osquery collector."""
+
+  @mock.patch('grr_api_client.api.InitHttp')
+  def setUp(self, mock_InitHttp):
+    self.mock_grr_api = mock.Mock()
+    mock_InitHttp.return_value = self.mock_grr_api
+    self.test_state = state.DFTimewolfState(config.Config)
+    self.test_state.StoreContainer(
+      containers.OsqueryQuery('SELECT * FROM processes'))
+    self.grr_osquery_collector = grr_hosts.GRROsqueryCollector(
+        self.test_state)
+    self.grr_osquery_collector.SetUp(
+        hostnames='C.0000000000000001',
+        reason='Random reason',
+        timeout_millis=300000,
+        ignore_stderr_errors=False,
+        directory='',
+        grr_server_url='http://fake/endpoint',
+        grr_username='user',
+        grr_password='password',
+        approvers='approver1,approver2',
+        verify=False,
+        skip_offline_clients=False
+    )
+
+  def testInitialization(self):
+    """Tests that the collector can be initialized."""
+    self.assertIsNotNone(self.grr_osquery_collector)
+
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow')
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRROsqueryCollector.'
+              '_DownloadResults')
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._LaunchFlow')
+  def testProcess(self, mock_LaunchFlow, mock_DownloadResults, _):
+    """Tests that the module launches appropriate flows."""
+    self.mock_grr_api.SearchClients.return_value = \
+        mock_grr_hosts.MOCK_CLIENT_LIST
+    mock_DownloadResults.return_value = [pd.DataFrame([[1, 2]])]
+
+    self.grr_osquery_collector.PreProcess()
+    in_containers = self.test_state.GetContainers(
+        self.grr_osquery_collector.GetThreadOnContainerType())
+    for container in in_containers:
+      self.grr_osquery_collector.Process(container)
+    self.grr_osquery_collector.PostProcess()
+
+    mock_LaunchFlow.assert_called_with(
+        mock_grr_hosts.MOCK_CLIENT_RECENT,
+        'OsqueryFlow',
+        osquery_pb2.OsqueryFlowArgs(
+            query='SELECT * FROM processes',
+            timeout_millis=300000,
+            ignore_stderr_errors=False
+        )
+    )
+
+    results = self.test_state.GetContainers(containers.DataFrame)
+    self.assertEqual(len(results), 1)
 
 
 if __name__ == '__main__':

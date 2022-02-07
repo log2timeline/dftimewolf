@@ -4,14 +4,16 @@
 import datetime
 import os
 import re
-import threading
 import time
 import zipfile
 from typing import List, Optional, Tuple, Type
 
+import pandas as pd
+
 from grr_api_client import errors as grr_errors
 from grr_api_client.client import Client
 from grr_response_proto import flows_pb2, timeline_pb2
+from grr_response_proto import osquery_pb2 as osquery_flows
 
 from dftimewolf.lib import module
 from dftimewolf.lib.collectors.grr_base import GRRBaseModule
@@ -647,6 +649,187 @@ class GRRFileCollector(GRRFlow):
     return containers.Host
 
 
+class GRROsqueryCollector(GRRFlow):
+  """Osquery collector for GRR flows.
+
+  Attributes:
+    directory (str): the directory in which to export results.
+    timeout_millis (int): the number of milliseconds before osquery timeouts.
+    ignore_stderr_errors (bool): ignore stderr errors from osquery.
+  """
+
+  DEFAULT_OSQUERY_TIMEOUT_MILLIS = 300000
+
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str]=None,
+               critical: bool=False) -> None:
+    super(GRROsqueryCollector, self).__init__(
+        state, name=name, critical=critical)
+    self.directory = ""
+    self.timeout_millis = self.DEFAULT_OSQUERY_TIMEOUT_MILLIS
+    self.ignore_stderr_errors = False
+
+  # pylint: disable=arguments-differ,too-many-arguments
+  def SetUp(self,
+            hostnames: str,
+            reason: str,
+            timeout_millis: int,
+            ignore_stderr_errors: bool,
+            directory: str,
+            grr_server_url: str,
+            grr_username: str,
+            grr_password: str,
+            approvers: str,
+            verify: bool,
+            skip_offline_clients: bool) -> None:
+    """Initializes a GRR artifact collector.
+
+    Args:
+      hostnames (str): comma-separated hostnames to launch the flow on.
+      reason (str): justification for GRR access.
+      timeout_millis (int): Osquery timeout in milliseconds
+      ignore_stderr_errors (bool): Ignore osquery stderr errors
+      directory (str): the directory in which to export results.
+      grr_server_url (str): GRR server URL.
+      grr_username (str): GRR username.
+      grr_password (str): GRR password.
+      approvers (str): list of GRR approval recipients.
+      verify (bool): True to indicate GRR server's x509 certificate
+          should be verified.
+      skip_offline_clients (bool): Whether to wait for flows
+          to complete on clients that have been offline for more than an hour.
+    """
+    super(GRROsqueryCollector, self).SetUp(
+        reason, grr_server_url, grr_username, grr_password, approvers=approvers,
+        verify=verify, skip_offline_clients=skip_offline_clients)
+
+    if directory and os.path.isdir(directory):
+      self.ModuleError('Output directory already exists.', critical=True)
+
+    self.directory = directory
+
+    hosts = set(hostname.strip() for hostname in hostnames.strip().split(','))
+
+    if not hosts:
+      self.ModuleError('No hostnames found.', critical=True)
+
+    for hostname in hosts:
+      self.state.StoreContainer(containers.Host(hostname=hostname))
+
+    self.timeout_millis = timeout_millis
+    self.ignore_stderr_errors = ignore_stderr_errors
+
+  def _DownloadResults(self,
+                       client: Client,
+                       flow_id: str) -> List[pd.DataFrame]:
+    """Process osquery results.
+
+    Args:
+      client (Client): the GRR Client.
+      flow_id (str): the Osquery flow ID to download results from.
+
+    Returns:
+      List[pd.DataFrame]: the Osquery results.
+    """
+    flow = client.Flow(flow_id)
+    list_results = list(flow.ListResults())
+    self.logger.info(type(flow))
+
+    if not list_results:
+      self.logger.info(f'No results for flow ID {str(flow)}')
+      return []
+
+    results = []
+    for result in list_results:
+      payload = result.payload
+      if not isinstance(payload, osquery_flows.OsqueryResult):
+        self.logger.error(f'Incorrect results format from flow ID {flow}')
+        continue
+
+      headers = [column.name for column in payload.table.header.columns]
+      data = []
+      for row in payload.table.rows:
+        data.append(row.values)
+      data_frame = pd.DataFrame.from_records(data, columns=headers)
+      results.append(data_frame)
+    return results
+
+  def Process(self, container: containers.Host) -> None:
+    """Collect osquery results from a host with GRR.
+
+    Raises:
+      DFTimewolfError: if no artifacts specified nor resolved by platform.
+    """
+    for client in self._FindClients([container.hostname]):
+      osquery_containers = self.state.GetContainers(containers.OsqueryQuery)
+
+      for osquery_container in osquery_containers:
+        hunt_args = osquery_flows.OsqueryFlowArgs(
+            query=osquery_container.query,
+            timeout_millis=self.timeout_millis,
+            ignore_stderr_errors=self.ignore_stderr_errors)
+
+        flow_id = self._LaunchFlow(client, 'OsqueryFlow', hunt_args)
+
+        self._AwaitFlow(client, flow_id)
+
+        for data_frame in self._DownloadResults(client, flow_id):
+          self.logger.info(
+              f'{str(flow_id)} ({container.hostname}): {len(data_frame)} rows '
+              'collected')
+
+          dataframe_container = containers.DataFrame(
+              data_frame=data_frame,
+              description=osquery_container.query,
+              name=flow_id,
+              source=container.hostname)
+
+          self.state.StoreContainer(dataframe_container)
+
+  def PreProcess(self) -> None:
+    """Not implemented."""
+
+  def PostProcess(self) -> None:
+    """When a directory is specified, get the flow results and save them
+       to the directory as CSV files.  A CSV named MANIFEST.csv contains
+       details about each flow result.
+    """
+    if not self.directory:
+      return
+
+    if not os.path.isdir(self.directory):
+      os.makedirs(self.directory)
+
+    manifest_file_path = os.path.join(self.directory, 'MANIFEST.csv')
+
+    self.logger.info(
+        f'Saving osquery flow results to {manifest_file_path}')
+
+    with open(manifest_file_path, mode='w') as manifest_fd:
+      manifest_fd.write('"Flow ID","Hostname","Osquery"\n')
+
+      for container in self.state.GetContainers(containers.DataFrame):
+        flow_id = container.name
+        hostname = container.source
+        query = container.description
+
+        output_file_path = os.path.join(
+            self.directory, '.'.join(
+                str(val) for val in (hostname, flow_id, 'csv')))
+
+        with open(output_file_path, mode='w') as fd:
+          container.data_frame.to_csv(fd)
+
+        self.logger.info(f'Saved {output_file_path}.')
+
+        manifest_fd.write(f'"{flow_id}","{hostname}","{query}"\n')
+
+  def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
+    """This module operates on Host containers."""
+    return containers.Host
+
+
 class GRRFlowCollector(GRRFlow):
   """Flow collector.
 
@@ -881,4 +1064,5 @@ modules_manager.ModulesManager.RegisterModules([
     GRRArtifactCollector,
     GRRFileCollector,
     GRRFlowCollector,
+    GRROsqueryCollector,
     GRRTimelineCollector])

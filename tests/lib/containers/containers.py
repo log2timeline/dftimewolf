@@ -65,6 +65,19 @@ class RemoteFSPathDataTest(unittest.TestCase):
     self.assertEqual(attribute_names, expected_attribute_names)
 
 
+class OsqueryQueryDataTest(unittest.TestCase):
+  """Tests for the OsqueryQuery attribute container."""
+
+  def testGetAttributeNames(self):
+    """Tests the GetAttributeNames function."""
+    attribute_container = containers.OsqueryQuery(query='')
+
+    expected_attribute_names = ['attributes', 'query']
+
+    attribute_names = sorted(attribute_container.GetAttributeNames())
+
+    self.assertEqual(attribute_names, expected_attribute_names)
+
 
 if __name__ == '__main__':
   unittest.main()

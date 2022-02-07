@@ -8,6 +8,7 @@ from typing import List, Optional, Set, Tuple, Union
 
 from grr_api_client.hunt import Hunt
 from grr_response_proto import flows_pb2 as grr_flows
+from grr_response_proto import osquery_pb2 as osquery_flows
 from grr_response_proto.flows_pb2 import ArtifactCollectorFlowArgs
 from grr_response_proto.flows_pb2 import FileFinderArgs
 import yaml
@@ -81,7 +82,11 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
   def _CreateHunt(
       self,
       name: str,
-      args: Union[FileFinderArgs, ArtifactCollectorFlowArgs]) -> Hunt:
+      args: Union[
+          ArtifactCollectorFlowArgs,
+          FileFinderArgs,
+          osquery_flows.OsqueryFlowArgs]
+    ) -> Hunt:
     """Creates a GRR hunt.
 
     Args:
@@ -316,6 +321,89 @@ class GRRHuntFileCollector(GRRHunt):
     self._CreateHunt('FileFinder', hunt_args)
 
 
+class GRRHuntOsqueryCollector(GRRHunt):
+  """Osquery collector for a GRR Hunt.
+
+  Attributes:
+    timeout_millis (int): the number of milliseconds before osquery timeouts.
+    ignore_stderr_errors (bool): ignore stderr errors from osquery.
+  """
+
+  DEFAULT_OSQUERY_TIMEOUT_MILLIS = 300000
+
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str] = None,
+               critical: bool = False) -> None:
+    """Initializes a GRR file collector hunt.
+    Args:
+      state (DFTimewolfState): recipe state.
+      name (Optional[str]): The module's runtime name.
+      critical (bool): True if the module is critical, which causes
+          the entire recipe to fail if the module encounters an error.
+    """
+    super(GRRHuntOsqueryCollector, self).__init__(
+        state, name=name, critical=critical)
+    self.timeout_millis = self.DEFAULT_OSQUERY_TIMEOUT_MILLIS
+    self.ignore_stderr_errors = True
+
+  # pylint: disable=arguments-differ,too-many-arguments
+  def SetUp(self,
+            reason: str,
+            timeout_millis: int,
+            ignore_stderr_errors: bool,
+            grr_server_url: str,
+            grr_username: str,
+            grr_password: str,
+            approvers: str,
+            verify: bool,
+            match_mode: str,
+            client_operating_systems: str,
+            client_labels: str) -> None:
+    """Initializes a GRR Hunt Osquery collector.
+
+    Args:
+      reason (str): justification for GRR access.
+      timeout_millis (int): Osquery timeout in milliseconds
+      ignore_stderr_errors (bool): Ignore osquery stderr errors
+      grr_server_url (str): GRR server URL.
+      grr_username (str): GRR username.
+      grr_password (str): GRR password.
+      approvers (str): comma-separated GRR approval recipients.
+      verify (bool): True to indicate GRR server's x509 certificate
+          should be verified.
+      match_mode (str): match mode of the client rule set.
+          (all/ALL or any/ANY).
+      client_operating_systems (str): a comma separated list of
+          client OS types (win, osx or linux).
+      client_labels (str): a comma separated list of client labels.
+    """
+    self.GrrSetUp(
+        reason=reason,
+        grr_server_url=grr_server_url,
+        grr_username=grr_username,
+        grr_password=grr_password,
+        approvers=approvers,
+        verify=verify)
+
+    self.HuntSetup(match_mode, client_operating_systems, client_labels)
+
+    self.timeout_millis = timeout_millis
+    self.ignore_stderr_errors = ignore_stderr_errors
+
+  def Process(self) -> None:
+    """Starts a new Osquery GRR hunt."""
+    osquery_containers = self.state.GetContainers(containers.OsqueryQuery)
+
+    for osquery_container in osquery_containers:
+      hunt_args = osquery_flows.OsqueryFlowArgs()
+      hunt_args.query = osquery_container.query
+      hunt_args.timeout_millis = self.timeout_millis
+      hunt_args.ignore_stderr_errors = self.ignore_stderr_errors
+
+      self._CreateHunt('OsqueryFlow', hunt_args)
+
+
 class GRRHuntDownloader(GRRHunt):
   """Downloads results from a GRR Hunt.
 
@@ -515,4 +603,7 @@ class GRRHuntDownloader(GRRHunt):
 
 
 modules_manager.ModulesManager.RegisterModules([
-    GRRHuntArtifactCollector, GRRHuntFileCollector, GRRHuntDownloader])
+    GRRHuntArtifactCollector,
+    GRRHuntFileCollector,
+    GRRHuntOsqueryCollector,
+    GRRHuntDownloader])
