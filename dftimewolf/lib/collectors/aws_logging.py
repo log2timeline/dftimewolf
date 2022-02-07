@@ -4,9 +4,10 @@
 import json
 import tempfile
 from datetime import datetime
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
 from boto3 import session as boto3_session
+from botocore import exceptions as boto_exceptions
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
@@ -64,11 +65,23 @@ class AWSLogsCollector(module.BaseModule):
     output_path = output_file.name
     self.logger.info('Downloading logs to {0:s}'.format(output_path))
 
-    # TODO: Add handling for auth related exceptions.
     if self._profile_name:
-      session = boto3_session.Session(profile_name=self._profile_name)
+      try:
+        session = boto3_session.Session(profile_name=self._profile_name)
+      except boto_exceptions.ProfileNotFound as exception:
+        self.ModuleError('AWS profile {0:s} not found.')
+        self.ModuleError(str(exception), critical=True)
     else:
       session = boto3_session.Session()
+
+    try:
+      sts_client = session.client('sts')
+      sts_client.get_caller_identity()
+    except (boto_exceptions.NoRegionError,
+            boto_exceptions.NoCredentialsError) as exception:
+      self.ModuleError('No profile found or credentials not properly '
+          'configured. See https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html')  # pylint: disable=line-too-long
+      self.ModuleError(str(exception), critical=True)
 
     cloudtrail_client = session.client('cloudtrail')
 
@@ -83,19 +96,23 @@ class AWSLogsCollector(module.BaseModule):
       request_params['EndTime'] = self._end_time
 
     while True:
-      # TODO: Add handling for boto3 related exceptions.
-      results = cloudtrail_client.lookup_events(**request_params)
-      events = results.get('Events', [])
-      for event in events:
-        # Set the default serializer to str() to account for datetime objects.
-        event_string = json.dumps(event, default=str)
-        output_file.write(event_string)
-        output_file.write('\n')
+      try:
+        results = cloudtrail_client.lookup_events(**request_params)
+        events = results.get('Events', [])
+        for event in events:
+          # Set the default serializer to str() to account for datetime objects.
+          event_string = json.dumps(event, default=str)
+          output_file.write(event_string)
+          output_file.write('\n')
 
-      next_token = results.get('NextToken')
-      if not next_token:
-        break
-      request_params['NextToken'] = next_token
+        next_token = results.get('NextToken')
+        if not next_token:
+          break
+        request_params['NextToken'] = next_token
+      except boto_exceptions.ClientError as exception:
+        self.ModuleError('Boto3 client error, check that lookup parameters '
+        'are correct https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_LookupEvents.html')  # pylint: disable=line-too-long
+        self.ModuleError(str(exception), critical=True)
 
     self.logger.success('Downloaded logs to {0:s}'.format(output_path))
     output_file.close()

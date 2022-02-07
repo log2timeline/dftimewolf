@@ -6,10 +6,13 @@ import unittest
 import unittest.mock as mock
 from datetime import datetime as dt
 
+from botocore import exceptions as boto_exceptions
+
 from dftimewolf.lib import state
 from dftimewolf import config
 from dftimewolf.lib.collectors import aws_logging
 from dftimewolf.lib.containers.containers import AWSLogs
+from dftimewolf.lib import errors
 
 
 class AWSLoggingTest(unittest.TestCase):
@@ -47,7 +50,7 @@ class AWSLoggingTest(unittest.TestCase):
   def testProcess(self, mock_boto3):
     """Tests the process method."""
     mock_session = mock.MagicMock(spec=['client'])
-    mock_client = mock.MagicMock(spec=['lookup_events'])
+    mock_client = mock.MagicMock(spec=['lookup_events', 'get_caller_identity'])
     mock_client.lookup_events.return_value = {'Events': [{'log_line':1}]}
     mock_session.client.return_value = mock_client
     mock_boto3.return_value = mock_session
@@ -73,6 +76,18 @@ class AWSLoggingTest(unittest.TestCase):
         StartTime=dt.fromisoformat('2021-01-01 00:00:00'),
         EndTime=dt.fromisoformat('2021-01-02 00:00:00'))
     self.assertTrue(test_state.GetContainers(AWSLogs))
+
+    mock_client.get_caller_identity.side_effect = (
+        boto_exceptions.NoCredentialsError)
+    with self.assertRaises(errors.DFTimewolfError):
+      aws_logging_collector.Process()
+    mock_client.get_caller_identity.side_effect = None
+
+    mock_client.lookup_events.side_effect = (
+        boto_exceptions.ClientError({}, 'abc'))
+    with self.assertRaises(errors.DFTimewolfError):
+      aws_logging_collector.Process()
+    mock_client.lookup_events.side_effect = None
 
 
 if __name__ == '__main__':
