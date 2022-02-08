@@ -1,7 +1,7 @@
 {
   "name": "gcp_forensics",
   "short_description": "Copies disk from a GCP project to an analysis VM.",
-  "description": "Copies a persistend disk from a GCP project to another, creates an analysis VM (with a startup script containing installation instructions for basic forensics tooling) in the destination project, and attaches the copied GCP persistend disk to it.",
+  "description": "Copies a persistent disk from a GCP project to another, creates an analysis VM (with a startup script containing installation instructions for basic forensics tooling) in the destination project, and attaches the copied GCP persistent disk to it.",
   "preflights": [{
     "wants": [],
     "name": "GCPTokenCheck",
