@@ -74,6 +74,11 @@ class GoogleSheetsCollector(module.BaseModule):
     """Copies entries from Google Sheets."""
 
     try:
+      if not self._sheets_resource:
+        self.ModuleError('Google Sheets API resource was not initialized',
+          critical=True)
+        return #return is required otherwise mypy will complain
+
       # Retrieve list of sheets in the spreadsheet
       # Pylint can't see the spreadsheets method.
       # pylint: disable=no-member
@@ -183,6 +188,7 @@ class GoogleSheetsCollector(module.BaseModule):
       self.ModuleError(
           f'spreadsheet ID is not in the correct format {spreadsheet}.',
           critical=True)
+      return "" #return is required otherwise mypy will complain
 
     return spreadsheet_match.group(1)
 
@@ -199,6 +205,11 @@ class GoogleSheetsCollector(module.BaseModule):
         Dataframe with entries from sheet inside the spreadsheet or None if the
         sheet contain no entries.
     """
+
+    if not self._sheets_resource:
+      self.ModuleError('Google Sheets API resource was not initialized',
+        critical=True)
+      return None #return is required otherwise mypy will complain
 
     # Pylint can't see the spreadsheets method.
     # pylint: disable=no-member
