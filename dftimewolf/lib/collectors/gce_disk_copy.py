@@ -220,8 +220,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
 
     if all_disks:
       return [d.name for d in list(remote_instance.ListDisks().values())]
-    else:
-      return [remote_instance.GetBootDisk().name]
+    return [remote_instance.GetBootDisk().name]
 
   @staticmethod
   def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:

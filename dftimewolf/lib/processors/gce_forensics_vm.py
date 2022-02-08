@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Creates an analysis VM and copies GCP disks to it for analysis."""
+"""Creates a GCE analysis VM and attaches disks from previous modules."""
 
 from typing import List, Optional, Dict, Type
 
@@ -17,7 +17,7 @@ from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 
 
-class GoogleCloudCollector(module.ThreadAwareModule):
+class GoogleCloudForensicsVM(module.BaseModule):
   """Google Cloud Platform (GCP) Collector.
 
   Attributes:

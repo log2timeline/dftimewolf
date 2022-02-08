@@ -225,7 +225,7 @@ class GCEDiskCopyTest(unittest.TestCase):
     collector.PostProcess()
 
     FAKE_INSTANCE.Stop.assert_called_once()
-    out_disks = sorted([d.name for d in 
+    out_disks = sorted([d.name for d in
         test_state.GetContainers(containers.GCEDisk, True)])
     expected_disks = ['disk1-copy', 'disk2-copy']
     self.assertEqual(out_disks, expected_disks)
@@ -253,7 +253,7 @@ class GCEDiskCopyTest(unittest.TestCase):
     collector.PostProcess()
 
     FAKE_INSTANCE.Stop.assert_not_called()
-    out_disks = sorted([d.name for d in 
+    out_disks = sorted([d.name for d in
         test_state.GetContainers(containers.GCEDisk, True)])
     expected_disks = ['disk1-copy', 'disk2-copy']
     self.assertEqual(out_disks, expected_disks)
