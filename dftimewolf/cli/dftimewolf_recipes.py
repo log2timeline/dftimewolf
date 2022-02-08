@@ -61,6 +61,7 @@ MODULES = {
   'VTCollector' : 'dftimewolf.lib.collectors.virustotal',
   'WorkspaceAuditCollector': 'dftimewolf.lib.collectors.workspace_audit',
   'WorkspaceAuditTimesketch': 'dftimewolf.lib.processors.workspace_audit_timesketch',
+  'GoogleSheetsCollector': 'dftimewolf.lib.collectors.gsheets',
 }
 # pylint: enable=line-too-long
 
