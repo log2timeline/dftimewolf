@@ -1,7 +1,7 @@
 {
   "name": "aws_disk_to_gcp",
   "short_description": "Copies EBS volumes from within AWS, and transfers them to GCP.",
-  "description": "Copies EBS volumes from within AWS by pushing them to an AWS S3 bucket. The S3 bucket is then copied to a Google Cloud Storage bucket, from which a GCP Disk Image and fnially a GCP Persistend Disk are created. This operation happens in the cloud and doesn't touch the local workstation on which the recipe is run.",
+  "description": "Copies EBS volumes from within AWS by pushing them to an AWS S3 bucket. The S3 bucket is then copied to a Google Cloud Storage bucket, from which a GCP Disk Image and fnially a GCP Persistent Disk are created. This operation happens in the cloud and doesn't touch the local workstation on which the recipe is run.",
   "preflights": [
     {
       "wants": [],

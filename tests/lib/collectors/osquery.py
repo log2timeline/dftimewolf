@@ -17,7 +17,7 @@ class OsqueryCollectorTest(unittest.TestCase):
   """Tests for the GRR osquery collector."""
 
   def testInitialization(self) -> None:
-    """Tests that the collector can be intialized."""
+    """Tests that the collector can be initialized."""
     test_state = state.DFTimewolfState(config.Config)
     osquery_collector = osquery.OsqueryCollector(test_state)
     self.assertIsNotNone(osquery_collector)
