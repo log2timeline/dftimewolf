@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Creates an analysis VM and copies GCP disks to it for analysis."""
 
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Type
 
 from google.auth.exceptions import DefaultCredentialsError, RefreshError
 from googleapiclient.errors import HttpError
@@ -12,12 +12,12 @@ from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal import compute
 
 from dftimewolf.lib import module
-from dftimewolf.lib.containers import containers
+from dftimewolf.lib.containers import containers, interface
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 
 
-class GoogleCloudCollector(module.BaseModule):
+class GoogleCloudCollector(module.ThreadAwareModule):
   """Google Cloud Platform (GCP) Collector.
 
   Attributes:
@@ -62,49 +62,6 @@ class GoogleCloudCollector(module.BaseModule):
     self.all_disks = False
     self.stop_instance = False
     self._gcp_label = {}  # type: Dict[str, str]
-
-  def Process(self) -> None:
-    """Copies a disk to the analysis project."""
-    warned = False
-    for disk in self._FindDisksToCopy():
-      self.logger.info('Disk copy of {0:s} started...'.format(disk.name))
-
-      try:
-        new_disk = gcp_forensics.CreateDiskCopy(
-            self.remote_project.project_id,
-            self.analysis_project.project_id,
-            self.analysis_project.default_zone,
-            disk_name=disk.name)
-      except lcf_errors.ResourceCreationError as exception:
-        self.logger.warning('Could not create disk: {0!s}'.format(exception))
-        warned = True
-        continue
-
-      self.logger.success('Disk {0:s} successfully copied to {1:s}'.format(
-          disk.name, new_disk.name))
-      if self._gcp_label:
-        new_disk.AddLabels(self._gcp_label)
-      self.analysis_vm.AttachDisk(new_disk)
-
-      container = containers.ForensicsVM(
-          name=self.analysis_vm.name,
-          evidence_disk=new_disk,
-          platform='gcp')
-      self.state.StoreContainer(container)
-
-    if self.stop_instance and not warned:
-      try:
-        remote_instance = self.remote_project.compute.GetInstance(
-            self.remote_instance_name)
-        # TODO(dfjxs): Account for GKE Nodes
-        remote_instance.Stop()
-      except lcf_errors.InstanceStateChangeError as exception:
-        self.ModuleError(str(exception), critical=False)
-      self.logger.success(
-          'Stopped instance {0:s}'.format(self.remote_instance_name))
-    elif self.stop_instance and warned:
-      self.logger.warning(
-          'Not stopping instance due to previous warnings on disk copy')
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
@@ -255,6 +212,55 @@ class GoogleCloudCollector(module.BaseModule):
         msg += str(exception)
         self.ModuleError(msg, critical=True)
 
+  def PreProcess(self) -> None:
+    pass
+
+  def Process(self) -> None:
+    """Copies a disk to the analysis project."""
+    warned = False
+    for disk in self._FindDisksToCopy():
+      self.logger.info('Disk copy of {0:s} started...'.format(disk.name))
+
+      try:
+        new_disk = gcp_forensics.CreateDiskCopy(
+            self.remote_project.project_id,
+            self.analysis_project.project_id,
+            self.analysis_project.default_zone,
+            disk_name=disk.name)
+      except lcf_errors.ResourceCreationError as exception:
+        self.logger.warning('Could not create disk: {0!s}'.format(exception))
+        warned = True
+        continue
+
+      self.logger.success('Disk {0:s} successfully copied to {1:s}'.format(
+          disk.name, new_disk.name))
+      if self._gcp_label:
+        new_disk.AddLabels(self._gcp_label)
+      self.analysis_vm.AttachDisk(new_disk)
+
+      container = containers.ForensicsVM(
+          name=self.analysis_vm.name,
+          evidence_disk=new_disk,
+          platform='gcp')
+      self.state.StoreContainer(container)
+
+    if self.stop_instance and not warned:
+      try:
+        remote_instance = self.remote_project.compute.GetInstance(
+            self.remote_instance_name)
+        # TODO(dfjxs): Account for GKE Nodes
+        remote_instance.Stop()
+      except lcf_errors.InstanceStateChangeError as exception:
+        self.ModuleError(str(exception), critical=False)
+      self.logger.success(
+          'Stopped instance {0:s}'.format(self.remote_instance_name))
+    elif self.stop_instance and warned:
+      self.logger.warning(
+          'Not stopping instance due to previous warnings on disk copy')
+
+  def PostProcess(self) -> None:
+    pass
+
   def _GetDisksFromNames(
       self, disk_names: List[str]) -> List[compute.GoogleComputeDisk]:
     """Gets disks from a project by disk name.
@@ -341,5 +347,13 @@ class GoogleCloudCollector(module.BaseModule):
           'Could not find any disks to copy', critical=True)
 
     return disks_to_copy
+
+  @staticmethod
+  def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
+    return containers.GCEDisk
+
+  def GetThreadPoolSize(self) -> int:
+    return 15  # Arbitrary
+
 
 modules_manager.ModulesManager.RegisterModule(GoogleCloudCollector)
