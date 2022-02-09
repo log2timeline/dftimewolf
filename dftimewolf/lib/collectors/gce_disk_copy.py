@@ -3,7 +3,6 @@
 
 from typing import List, Optional, Dict, Type
 
-from google.auth.exceptions import DefaultCredentialsError, RefreshError
 from googleapiclient.errors import HttpError
 from libcloudforensics import errors as lcf_errors
 from libcloudforensics.providers.gcp import forensics as gcp_forensics
@@ -28,9 +27,6 @@ class GCEDiskCopy(module.ThreadAwareModule):
         instance should be copied.
   """
 
-  _ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME = 'Analysis VM'
-  _ANALYSIS_VM_CONTAINER_ATTRIBUTE_TYPE = 'text'
-
   def __init__(self,
                state: DFTimewolfState,
                name: Optional[str]=None,
@@ -50,7 +46,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
     self.remote_instance_names = []  # type: List[str]
     self.disk_names = []  # type: List[str]
     self.all_disks = False
-    self.stop_instance = False
+    self.stop_instances = False
     self._gcp_label = {}  # type: Dict[str, str]
     self.warned = False  # type: bool
 
@@ -62,7 +58,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
             remote_instance_names: Optional[str]=None,
             disk_names: Optional[str]=None,
             all_disks: bool=False,
-            stop_instance: bool=False) -> None:
+            stop_instances: bool=False) -> None:
     """Sets up a GCEDiskCopyCollector.
 
     This method sets up the module for copying disks.
@@ -88,25 +84,23 @@ class GCEDiskCopy(module.ThreadAwareModule):
           must be copied from.
       destination_zone (Optional[str]): Optional. GCP zone in which disks should
           be copied to. Default is us-central1-f.
-      s (Optional[str]): Optional. Name of the instance in
+      remote_instance_names (Optional[str]): Optional. Name of the instances in
           the remote project containing the disks to be copied.
       disk_names (Optional[str]): Optional. Comma separated disk names to copy.
       all_disks (Optional[bool]): Optional. True if all disks attached to the
           source instance should be copied.
-      stop_instance (Optional[bool]): Optional. Stop the target instance after
+      stop_instances (Optional[bool]): Optional. Stop the target instance after
           copying disks.
     """
     if not (remote_instance_names or disk_names):
       self.ModuleError(
           'You need to specify at least an instance name or disks to copy',
           critical=True)
-      return
 
-    if stop_instance and not remote_instance_names:
+    if stop_instances and not remote_instance_names:
       self.ModuleError(
           'You need to specify an instance name to stop the instance',
           critical=True)
-      return
 
     self.source_project = gcp_project.GoogleCloudProject(
         source_project_name, default_zone=destination_zone)
@@ -120,7 +114,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
         remote_instance_names.split(',') if remote_instance_names else [])
     self.disk_names = disk_names.split(',') if disk_names else []
     self.all_disks = all_disks
-    self.stop_instance = stop_instance
+    self.stop_instances = stop_instances
 
   def PreProcess(self) -> None:
     """Organise any disks to be copied.
@@ -143,12 +137,6 @@ class GCEDiskCopy(module.ThreadAwareModule):
           self.ModuleError(
             message=f'Instance "{i}" not found or insufficient permissions',
             critical=True)
-          return
-    except (RefreshError, DefaultCredentialsError) as exception:
-      msg = ('Something is wrong with your Application Default Credentials. '
-             'Try running:\n  $ gcloud auth application-default login\n')
-      msg += str(exception)
-      self.ModuleError(msg, critical=True)
     except HttpError as exception:
       if exception.resp.status == 403:
         self.ModuleError(
@@ -175,16 +163,21 @@ class GCEDiskCopy(module.ThreadAwareModule):
           self.destination_project.project_id,
           self.destination_project.default_zone,
           disk_name=container.name)
-    except lcf_errors.ResourceCreationError as exception:
-      self.logger.warning('Could not create disk: {0!s}'.format(exception))
+    except lcf_errors.ResourceNotFoundError as exception:
+      self.logger.error(f'Could not find disk "{container.name}": {exception}')
       self.warned = True
+      self.ModuleError(str(exception), critical=True)
+    except lcf_errors.ResourceCreationError as exception:
+      self.logger.error('Could not create disk: {0!s}'.format(exception))
+      self.warned = True
+      self.ModuleError(str(exception), critical=True)
 
     self.logger.success('Disk {0:s} successfully copied to {1:s}'.format(
         container.name, new_disk.name))
     self.state.StoreContainer(containers.GCEDisk(new_disk.name))
 
   def PostProcess(self) -> None:
-    if self.stop_instance and not self.warned:
+    if self.stop_instances and not self.warned:
       for i in self.remote_instance_names:
         try:
           remote_instance = self.source_project.compute.GetInstance(i)
@@ -194,7 +187,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
           self.ModuleError(str(exception), critical=False)
         self.logger.success(
             'Stopped instance {0:s}'.format(i))
-    elif self.stop_instance and self.warned:
+    elif self.stop_instances and self.warned:
       self.logger.warning(
           'Not stopping instance due to previous warnings on disk copy')
 
