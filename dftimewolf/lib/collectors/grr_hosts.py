@@ -734,7 +734,6 @@ class GRROsqueryCollector(GRRFlow):
     """
     flow = client.Flow(flow_id)
     list_results = list(flow.ListResults())
-    self.logger.info(type(flow))
 
     if not list_results:
       self.logger.info(f'No results for flow ID {str(flow)}')
@@ -782,8 +781,8 @@ class GRROsqueryCollector(GRRFlow):
           dataframe_container = containers.DataFrame(
               data_frame=data_frame,
               description=osquery_container.query,
-              name=flow_id,
-              source=container.hostname)
+              name=f'Osquery flow: {flow_id}',
+              source=f'{container.hostname}: {client}')
 
           self.state.StoreContainer(dataframe_container)
 
