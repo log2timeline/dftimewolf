@@ -62,6 +62,8 @@ MODULES = {
   'WorkspaceAuditCollector': 'dftimewolf.lib.collectors.workspace_audit',
   'WorkspaceAuditTimesketch': 'dftimewolf.lib.processors.workspace_audit_timesketch',
   'GoogleSheetsCollector': 'dftimewolf.lib.collectors.gsheets',
+  'GCEForensicsVM': 'dftimewolf.lib.processors.gce_forensics_vm',
+  'TestGCEDiskGenerator': 'dftimewolf.lib.collectors.test_gcedisk_generator'
 }
 # pylint: enable=line-too-long
 
