@@ -21,25 +21,6 @@ FAKE_ANALYSIS_VM = compute.GoogleComputeInstance(
     FAKE_PROJECT.project_id,
     'fake_zone',
     'fake-analysis-vm')
-FAKE_INSTANCE = compute.GoogleComputeInstance(
-    FAKE_PROJECT.project_id,
-    'fake_zone',
-    'fake-instance')
-FAKE_DISK = compute.GoogleComputeDisk(
-    FAKE_PROJECT.project_id,
-    'fake_zone',
-    'disk1')
-FAKE_BOOT_DISK = compute.GoogleComputeDisk(
-    FAKE_PROJECT.project_id,
-    'fake_zone',
-    'bootdisk')
-FAKE_SNAPSHOT = compute.GoogleComputeSnapshot(
-    FAKE_DISK,
-    'fake_snapshot')
-FAKE_DISK_COPY = compute.GoogleComputeDisk(
-    FAKE_PROJECT.project_id,
-    'fake_zone',
-    'disk1-copy')
 
 
 class GCEForensicsVMTest(unittest.TestCase):
@@ -92,7 +73,6 @@ class GCEForensicsVMTest(unittest.TestCase):
     mock_StartAnalysisVm.return_value = (FAKE_ANALYSIS_VM, None)
     FAKE_ANALYSIS_VM.AddLabels = mock_AddLabels
     FAKE_ANALYSIS_VM.GetBootDisk = mock_GetBootDisk
-    FAKE_DISK_COPY.AddLabels = mock_AddLabels
 
     disk1 = compute.GoogleComputeDisk('test-analysis-project-name', 'test-zone', 'test-disk-1')
     disk2 = compute.GoogleComputeDisk('test-analysis-project-name', 'test-zone', 'test-disk-2')
