@@ -25,6 +25,10 @@ class GCEDiskCopy(module.ThreadAwareModule):
     disk_names (list[str]): Comma-separated list of disk names to copy.
     all_disks (bool): True if all disks attached to the source
         instance should be copied.
+    stop_instances (bool): True is instances should be stopped after disks are
+        copied.
+    warned (bool): True in an error was encountered that prevents stopping
+        instances when requested by stop_instances.
   """
 
   def __init__(self,
@@ -66,16 +70,11 @@ class GCEDiskCopy(module.ThreadAwareModule):
     If destination_project_name is not specified, destination_project will be
     the same as source_project.
 
-    If disk_names is specified, it will copy the corresponding disks from the
-    project, ignoring disks belonging to any specific instances.
-
     If remote_instance_names is specified, two behaviors are possible:
     * If no other parameters are specified, it will select the instance's boot
       disks
     * if all_disks is set to True, it will select all disks in the project
       that are attached to the instance
-
-    disk_names takes precedence over instance_names
 
     Args:
       destination_project_name (str): Optional. Name of the project where disks
@@ -177,6 +176,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
     self.state.StoreContainer(containers.GCEDisk(new_disk.name))
 
   def PostProcess(self) -> None:
+    """Stops instances where it was requested."""
     if self.stop_instances and not self.warned:
       for i in self.remote_instance_names:
         try:
