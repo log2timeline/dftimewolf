@@ -25,9 +25,9 @@ class GCEDiskCopy(module.ThreadAwareModule):
     disk_names (list[str]): Comma-separated list of disk names to copy.
     all_disks (bool): True if all disks attached to the source
         instance should be copied.
-    stop_instances (bool): True is instances should be stopped after disks are
+    stop_instances (bool): True if instances should be stopped after disks are
         copied.
-    warned (bool): True in an error was encountered that prevents stopping
+    warned (bool): True if an error was encountered that prevents stopping
         instances when requested by stop_instances.
   """
 
