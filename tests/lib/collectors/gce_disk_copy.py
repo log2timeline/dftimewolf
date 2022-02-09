@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Tests the GoogleCloudCollector."""
+"""Tests for the GCEDiskCopy collector."""
 
 import unittest
 
@@ -42,9 +42,6 @@ FAKE_BOOT_DISK = compute.GoogleComputeDisk(
     FAKE_PROJECT.project_id,
     'fake_zone',
     'bootdisk')
-FAKE_SNAPSHOT = compute.GoogleComputeSnapshot(
-    FAKE_DISK,
-    'fake_snapshot')
 FAKE_DISK_COPY = [
     compute.GoogleComputeDisk(
         FAKE_PROJECT.project_id,
@@ -57,7 +54,7 @@ FAKE_DISK_COPY = [
 ]
 
 class GCEDiskCopyTest(unittest.TestCase):
-  """Tests for the GCloud collector."""
+  """Tests for the GCEDiskCopy collector."""
 
   def testInitialization(self):
     """Tests that the collector can be initialized."""
@@ -66,7 +63,7 @@ class GCEDiskCopyTest(unittest.TestCase):
     self.assertIsNotNone(collector)
 
   def testSetUp(self):
-    """Tests that the collector can be initialized."""
+    """Tests the SetUp method of the collector."""
     test_state = state.DFTimewolfState(config.Config)
 
     # Test setup with single disk and instance
