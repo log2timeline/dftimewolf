@@ -155,7 +155,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
     Args:
       container: GCEDisk container referencing the disk to copy.
     """
-    self.logger.info('Disk copy of {0:s} started...'.format(container.name))
+    self.logger.info(f'Disk copy of {container.name} started...')
 
     try:
       new_disk = gcp_forensics.CreateDiskCopy(
@@ -168,12 +168,12 @@ class GCEDiskCopy(module.ThreadAwareModule):
       self.warned = True
       self.ModuleError(str(exception), critical=True)
     except lcf_errors.ResourceCreationError as exception:
-      self.logger.error('Could not create disk: {0!s}'.format(exception))
+      self.logger.error(f'Could not create disk: {exception}')
       self.warned = True
       self.ModuleError(str(exception), critical=True)
 
-    self.logger.success('Disk {0:s} successfully copied to {1:s}'.format(
-        container.name, new_disk.name))
+    self.logger.success(f'Disk {container.name} successfully copied to '
+        f'{new_disk.name}')
     self.state.StoreContainer(containers.GCEDisk(new_disk.name))
 
   def PostProcess(self) -> None:
@@ -185,8 +185,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
           remote_instance.Stop()
         except lcf_errors.InstanceStateChangeError as exception:
           self.ModuleError(str(exception), critical=False)
-        self.logger.success(
-            'Stopped instance {0:s}'.format(i))
+        self.logger.success(f'Stopped instance {i}')
     elif self.stop_instances and self.warned:
       self.logger.warning(
           'Not stopping instance due to previous warnings on disk copy')
