@@ -63,9 +63,9 @@ class GoogleSheetsCollectorTest(unittest.TestCase):
   @mock.patch('os.path.exists')
   @mock.patch('dftimewolf.lib.collectors.gsheets.Credentials')
   @mock.patch('dftimewolf.lib.collectors.gsheets.discovery')
-  def testExtractEntiresFromSheet(self, _mock_discovery, _mock_credentials,
+  def testExtractEntriesFromSheet(self, _mock_discovery, _mock_credentials,
                                   _mock_exists):
-    """Test _ExtractEntiresFromSheet() function."""
+    """Test _ExtractEntriesFromSheet() function."""
     test_state = state.DFTimewolfState(config.Config)
     collector = gsheets.GoogleSheetsCollector(test_state)
     spreadsheet_id = '1DD78vj61BEBoqpw69EdOoaxBUdDqM1GFxk5qRj7-vr4'
@@ -83,19 +83,19 @@ class GoogleSheetsCollectorTest(unittest.TestCase):
     collector.SetUp(spreadsheet_id, sheet_title, True)
     mock_spreadsheet_call.return_value = VALID_SHEET
     self.assertIsNotNone(
-        collector._ExtractEntiresFromSheet(spreadsheet_id, sheet_title))
+        collector._ExtractEntriesFromSheet(spreadsheet_id, sheet_title))
     mock_spreadsheet_call.return_value = INVALID_SHEET
     self.assertIsNone(
-        collector._ExtractEntiresFromSheet(spreadsheet_id, sheet_title))
+        collector._ExtractEntriesFromSheet(spreadsheet_id, sheet_title))
 
     # Testing with column validation is False
     collector.SetUp(spreadsheet_id, sheet_title, False)
     mock_spreadsheet_call.return_value = VALID_SHEET
     self.assertIsNotNone(
-        collector._ExtractEntiresFromSheet(spreadsheet_id, sheet_title))
+        collector._ExtractEntriesFromSheet(spreadsheet_id, sheet_title))
     mock_spreadsheet_call.return_value = INVALID_SHEET
     self.assertIsNotNone(
-        collector._ExtractEntiresFromSheet(spreadsheet_id, sheet_title))
+        collector._ExtractEntriesFromSheet(spreadsheet_id, sheet_title))
 
 
 if __name__ == '__main__':
