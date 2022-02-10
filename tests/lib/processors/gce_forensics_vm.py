@@ -41,11 +41,13 @@ class GCEForensicsVMTest(unittest.TestCase):
     processor.SetUp(
         'test-analysis-project-name',
         'test-incident-id',
-        zone='test-zone',
-        boot_disk_size=120,
-        cpu_cores=64,
-        image_project='test-image-project',
-        image_family='test-image-family'
+        'test-zone',
+        120,
+        'pd-standard',
+        64,
+        'test-image-project',
+        'test-image-family',
+        True
     )
     self.assertEqual(test_state.errors, [])
     self.assertEqual(processor.project.project_id,
@@ -77,7 +79,6 @@ class GCEForensicsVMTest(unittest.TestCase):
     disk1 = compute.GoogleComputeDisk('test-analysis-project-name', 'test-zone', 'test-disk-1')
     disk2 = compute.GoogleComputeDisk('test-analysis-project-name', 'test-zone', 'test-disk-2')
     disk3 = compute.GoogleComputeDisk('test-analysis-project-name', 'test-zone', 'test-disk-3')
-
     mock_DiskInit.side_effect = [disk1, disk2, disk3]
 
     test_state = state.DFTimewolfState(config.Config)
@@ -88,11 +89,13 @@ class GCEForensicsVMTest(unittest.TestCase):
     processor.SetUp(
         'test-analysis-project-name',
         'test-incident-id',
-        zone='test-zone',
-        boot_disk_size=120,
-        cpu_cores=64,
-        image_project='test-image-project',
-        image_family='test-image-family'
+        'test-zone',
+        120,
+        'pd-standard',
+        64,
+        'test-image-project',
+        'test-image-family',
+        True
     )
     processor.Process()
 
@@ -136,15 +139,49 @@ class GCEForensicsVMTest(unittest.TestCase):
     processor.SetUp(
         'test-analysis-project-name',
         'test-incident-id',
-        zone='test-zone',
-        boot_disk_size=120,
-        cpu_cores=64,
-        image_project='test-image-project',
-        image_family='test-image-family'
+        'test-zone',
+        120,
+        'pd-standard',
+        64,
+        'test-image-project',
+        'test-image-family',
+        True
     )
     with self.assertRaises(errors.DFTimewolfError) as error:
       processor.Process()
     self.assertEqual(error.exception.message, 'Permission denied')
+
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.AttachDisk')
+  @mock.patch('libcloudforensics.providers.gcp.forensics.StartAnalysisVm')
+  def testNoCreateVMFlag(self, mock_StartAnalysisVM, mock_AttachDisk):
+    """Tests that nothing happens when create_analysis_vm is false."""
+
+    test_state = state.DFTimewolfState(config.Config)
+    for d in ['test-disk-1', 'test-disk-2', 'test-disk-3']:
+      test_state.StoreContainer(containers.GCEDisk(d))
+
+    processor = GCEForensicsVM(test_state)
+    processor.SetUp(
+        'test-analysis-project-name',
+        'test-incident-id',
+        'test-zone',
+        120,
+        'pd-standard',
+        64,
+        'test-image-project',
+        'test-image-family',
+        False
+    )
+    processor.Process()
+
+    self.assertIsNone(processor.project)
+    mock_StartAnalysisVM.assert_not_called()
+    mock_AttachDisk.assert_not_called()
+
+    self.assertEqual(3, len(test_state.GetContainers(containers.GCEDisk)))
+    expected_disks = ['test-disk-1', 'test-disk-2', 'test-disk-3']
+    actual_disks = [d.name for d in test_state.GetContainers(containers.GCEDisk)]
+    self.assertEqual(expected_disks, actual_disks)
 
 
 if __name__ == '__main__':

@@ -32,6 +32,7 @@ class GCEForensicsVM(module.BaseModule):
         analysis VM image is hosted.
     image_family (Optional[str]): Optional. Name of the image to use to
         create the analysis VM.
+    create_analysis_vm: Legacy option. False to skip this module entirely.
   """
 
   _ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME = 'Analysis VM'
@@ -60,35 +61,36 @@ class GCEForensicsVM(module.BaseModule):
     self.image_project = str()
     self.image_family = str()
     self._gcp_label = {}  # type: Dict[str, str]
+    self.create_analysis_vm = bool()
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
             project_name: str,
-            incident_id: Optional[str]=None,
-            zone: str='us-central1-f',
-            boot_disk_size: float=50,
-            boot_disk_type: str='pd-standard',
-            cpu_cores: int=4,
-            image_project: str='ubuntu-os-cloud',
-            image_family: str='ubuntu-1804-lts') -> None:
+            incident_id: str,
+            zone: str,
+            boot_disk_size: float,
+            boot_disk_type: str,
+            cpu_cores: int,
+            image_project: str,
+            image_family: str,
+            create_analysis_vm: bool) -> None:
     """Sets up a GCE Forensics VM processor.
 
     Args:
-      project_name (str): Optional. name of the project that contains
-          the analysis VM. Default is None.
-      zone (Optional[str]): Optional. GCP zone in which new resources should
-          be created. Default is us-central1-f.
-      boot_disk_size (Optional[float]): Optional. Size of the analysis VM boot
-          disk (in GB). Default is 50.
-      boot_disk_type (Optional[str]): Optional. Disk type to use.
-          Default is pd-standard.
-      cpu_cores (Optional[int]): Optional. Number of CPU cores to
-          create the VM with. Default is 4.
-      image_project (Optional[str]): Optional. Name of the project where the
-          analysis VM image is hosted.
-      image_family (Optional[str]): Optional. Name of the image to use to
-          create the analysis VM.
+      project_name: Optional. name of the project that contains the analysis VM.
+      zone: Optional. GCP zone in which new resources should be created.
+      boot_disk_size: Size of the analysis VM boot disk (in GB). Default is 50.
+      boot_disk_type: Disk type to use.
+      cpu_cores: Number of CPU cores to create the VM with.
+      image_project: Name of the project where the analysis VM image is hosted.
+      image_family: Name of the image to use to create the analysis VM.
+      create_analysis_vm: Legacy option. False to skip this module entirely.
     """
+    self.create_analysis_vm = create_analysis_vm
+    if not self.create_analysis_vm:
+      self.logger.warning('Skipping SetUp for Forensics VM creation.')
+      return
+
     self.project = gcp_project.GoogleCloudProject(
         project_name, default_zone=zone)
 
@@ -104,6 +106,10 @@ class GCEForensicsVM(module.BaseModule):
 
   def Process(self) -> None:
     """Launches the analysis VM."""
+    if not self.create_analysis_vm:
+      self.logger.warning('Skipping Process for Forensics VM creation.')
+      return
+
     if self.incident_id:
       analysis_vm_name = f'gcp-forensics-vm-{self.incident_id}'
     else:
@@ -132,18 +138,18 @@ class GCEForensicsVM(module.BaseModule):
           int(self.cpu_cores),
           image_project=self.image_project,
           image_family=self.image_family)
-      if not created:
-        self.logger.info(f'Instance {analysis_vm_name} exists: resusing.')
-      if self._gcp_label:
-        self.analysis_vm.AddLabels(self._gcp_label)
-        self.analysis_vm.GetBootDisk().AddLabels(self._gcp_label)
-      self.state.StoreContainer(containers.ForensicsVM(
-          name=self.analysis_vm.name,
-          evidence_disk=None,
-          platform='gcp'))
     except lcf_errors.ResourceCreationError as exception:
       self.logger.error(f'Could not create VM: {exception}')
       self.ModuleError(str(exception), critical=True)
+    if not created:
+      self.logger.info(f'Instance {analysis_vm_name} exists: resusing.')
+    if self._gcp_label:
+      self.analysis_vm.AddLabels(self._gcp_label)
+      self.analysis_vm.GetBootDisk().AddLabels(self._gcp_label)
+    self.state.StoreContainer(containers.ForensicsVM(
+        name=self.analysis_vm.name,
+        evidence_disk=None,
+        platform='gcp'))
 
     for d in [d.name for d in self.state.GetContainers(containers.GCEDisk)]:
       self.logger.info(f'Attaching {d} to {analysis_vm_name}')
