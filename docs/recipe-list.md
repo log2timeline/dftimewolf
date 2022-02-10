@@ -17,7 +17,7 @@ Copies EBS volumes from within AWS, and transfers them to GCP.
 
 **Details:**
 
-Copies EBS volumes from within AWS by pushing them to an AWS S3 bucket. The S3 bucket is then copied to a Google Cloud Storage bucket, from which a GCP Disk Image and fnially a GCP Persistend Disk are created. This operation happens in the cloud and doesn't touch the local workstation on which the recipe is run.
+Copies EBS volumes from within AWS by pushing them to an AWS S3 bucket. The S3 bucket is then copied to a Google Cloud Storage bucket, from which a GCP Disk Image and fnially a GCP Persistent Disk are created. This operation happens in the cloud and doesn't touch the local workstation on which the recipe is run.
 
 **CLI parameters:**
 
@@ -116,7 +116,7 @@ Copies EBS volumes from within AWS, transfers them to GCP, analyses with Turbini
 
 **Details:**
 
-Copies EBS volumes from within AWS, uses buckets and cloud-to-cloud operations to transfer the data to GCP. Once in GCP, a persistend disk is created and a job is added to the Turbinia queue to start analysis. The resulting Plaso file is then exported to Timesketch.
+Copies EBS volumes from within AWS, uses buckets and cloud-to-cloud operations to transfer the data to GCP. Once in GCP, a persistent disk is created and a job is added to the Turbinia queue to start analysis. The resulting Plaso file is then exported to Timesketch.
 
 **CLI parameters:**
 
@@ -140,7 +140,7 @@ Parameter|Default value|Description
 
 
 
-Modules: `AWSVolumeSnapshotCollector`, `AWSSnapshotS3CopyCollector`, `S3ToGCSCopy`, `GCSToGCEImage`, `GCEDiskFromImage`, `TurbiniaGCPProcessorThreaded`, `TimesketchExporterThreaded`
+Modules: `AWSVolumeSnapshotCollector`, `AWSSnapshotS3CopyCollector`, `S3ToGCSCopy`, `GCSToGCEImage`, `GCEDiskFromImage`, `TurbiniaGCPProcessor`, `TimesketchExporter`
 
 **Module graph**
 
@@ -179,6 +179,33 @@ Modules: `AzureCollector`
 **Module graph**
 
 ![azure_forensics](_static/graphviz/azure_forensics.png)
+
+----
+
+## `azure_logging_collect`
+
+Collects logs from an Azure subscription and dumps the results to the filesystem.
+
+**Details:**
+
+Collects logs from an Azure subscription using a specified filter, and dumps them on the filesystem.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`subscription_id`|`None`|Subscription ID for the subscription to collect logs from.
+`filter_expression`|`None`|A filter expression to use for the log query, must specify at least a start date like "eventTimestamp ge '2022-02-01'"
+`--profile_name`|`None`|A profile name to use when looking for Azure credentials.
+
+
+
+
+Modules: `AzureLogsCollector`
+
+**Module graph**
+
+![azure_logging_collect](_static/graphviz/azure_logging_collect.png)
 
 ----
 
@@ -281,7 +308,7 @@ Copies disk from a GCP project to an analysis VM.
 
 **Details:**
 
-Copies a persistend disk from a GCP project to another, creates an analysis VM (with a startup script containing installation instructions for basic forensics tooling) in the destination project, and attaches the copied GCP persistend disk to it.
+Copies a persistent disk from a GCP project to another, creates an analysis VM (with a startup script containing installation instructions for basic forensics tooling) in the destination project, and attaches the copied GCP persistent disk to it.
 
 **CLI parameters:**
 
@@ -510,7 +537,7 @@ Modules: `GoogleCloudCollector`, `TurbiniaGCPProcessor`, `TimesketchExporter`
 
 ## `gcp_turbinia_ts`
 
-Processes an existing GCP persistent disks with Turbinia project and sends results to Timesketch.
+Processes existing GCP persistent disks with Turbinia project and sends results to Timesketch.
 
 **Details:**
 
@@ -524,7 +551,7 @@ Parameter|Default value|Description
 ---------|-------------|-----------
 `analysis_project_name`|`None`|Name of GCP project the disk exists in.
 `turbinia_zone`|`None`|The GCP zone the disk to process (and Turbinia workers) are in.
-`disk_name`|`None`|Name of GCP persistent disk to process.
+`disk_names`|`None`|Names of GCP persistent disks to process.
 `--incident_id`|`None`|Incident ID (used for Timesketch description).
 `--run_all_jobs`|`False`|Run all Turbinia processing jobs instead of a faster subset.
 `--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
@@ -539,42 +566,6 @@ Modules: `TurbiniaGCPProcessor`, `TimesketchExporter`
 **Module graph**
 
 ![gcp_turbinia_ts](_static/graphviz/gcp_turbinia_ts.png)
-
-----
-
-## `gcp_turbinia_ts_threaded`
-
-Processes an existing GCP persistent disks with Turbinia project and sends results to Timesketch.
-
-**Details:**
-
-This is the threaded version of `gcp_turbinia_ts`.
-
-Process GCP persistent disks with Turbinia and send output to Timesketch.
-
-This processes disks that are already in the project where Turbinia exists. If you want to copy disks from another project, use the `gcp_turbinia_disk_copy_ts` recipe.
-
-**CLI parameters:**
-
-Parameter|Default value|Description
----------|-------------|-----------
-`analysis_project_name`|`None`|Name of GCP project the disk(s) and Turbinia are in.
-`turbinia_zone`|`None`|The GCP zone the disk(s) to process and Turbinia workers are in.
-`disks`|`None`|Comma separated names of GCP persistent disks to process.
-`--incident_id`|`None`|Incident ID (used for Timesketch description).
-`--run_all_jobs`|`False`|Run all Turbinia processing jobs instead of a faster subset.
-`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
-`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
-`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
-
-
-
-
-Modules: `TurbiniaGCPProcessorThreaded`, `TimesketchExporterThreaded`
-
-**Module graph**
-
-![gcp_turbinia_ts_threaded](_static/graphviz/gcp_turbinia_ts_threaded.png)
 
 ----
 
@@ -644,6 +635,7 @@ Parameter|Default value|Description
 `--approvers`|`None`|Emails for GRR approval request.
 `--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
 `--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+`--analyzers`|`None`|Timesketch analysers to run
 `--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
 `--incident_id`|`None`|Incident ID (used for Timesketch description).
 `--grr_server_url`|`'http://localhost:8000'`|GRR endpoint.
@@ -756,6 +748,9 @@ Parameter|Default value|Description
 `--grr_username`|`'admin'`|GRR username
 `--grr_password`|`'admin'`|GRR password
 `--max_file_size`|`5368709120`|Maximum size of files to collect (in bytes).
+`--match_mode`|`None`|Match mode of the client rule set (ANY or ALL)
+`--client_operating_systems`|`None`|Comma-separated list of client operating systems to filter hosts on (linux, osx, win).
+`--client_labels`|`None`|Comma-separated list of client labels to filter GRR hosts on.
 
 
 
@@ -790,6 +785,9 @@ Parameter|Default value|Description
 `--grr_username`|`'admin'`|GRR username
 `--grr_password`|`'admin'`|GRR password
 `--max_file_size`|`5368709120`|Maximum size of files to collect (in bytes).
+`--match_mode`|`None`|Match mode of the client rule set (ANY or ALL)
+`--client_operating_systems`|`None`|Comma-separated list of client operating systems to filter hosts on (linux, osx, win).
+`--client_labels`|`None`|Comma-separated list of client labels to filter GRR hosts on.
 
 
 
@@ -799,6 +797,43 @@ Modules: `GRRHuntFileCollector`
 **Module graph**
 
 ![grr_hunt_file](_static/graphviz/grr_hunt_file.png)
+
+----
+
+## `grr_hunt_osquery`
+
+Starts a GRR hunt for an Osquery flow.
+
+**Details:**
+
+Starts a GRR osquery hunt and provides the Hunt ID to the user.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`reason`|`None`|Reason for collection.
+`--osquery_query`|`None`|Osquery query to hunt for.
+`--osquery_paths`|`None`|Path(s) to text file containing one osquery query per line.
+`--timeout_millis`|`300000`|Osquery timeout in milliseconds
+`--ignore_stderr_errors`|`False`|Ignore osquery stderr errors
+`--approvers`|`None`|Emails for GRR approval request.
+`--grr_server_url`|`'http://localhost:8000'`|GRR endpoint
+`--verify`|`True`|Whether to verify the GRR TLS certificate.
+`--grr_username`|`'admin'`|GRR username
+`--grr_password`|`'admin'`|GRR password
+`--match_mode`|`None`|Match mode of the client rule set (ANY or ALL)
+`--client_operating_systems`|`None`|Comma-separated list of client operating systems to filter hosts on (linux, osx, win).
+`--client_labels`|`None`|Comma-separated list of client labels to filter GRR hosts on.
+
+
+
+
+Modules: `OsqueryCollector`, `GRRHuntOsqueryCollector`
+
+**Module graph**
+
+![grr_hunt_osquery](_static/graphviz/grr_hunt_osquery.png)
 
 ----
 
@@ -840,6 +875,43 @@ Modules: `GRRHuntDownloader`, `LocalPlasoProcessor`, `TimesketchExporter`
 
 ----
 
+## `grr_osquery_flow`
+
+Runs osquery on GRR hosts and save any results to local CSV files.
+
+**Details:**
+
+Runs osquery on GRR hosts and save any results to local CSV files.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`reason`|`None`|Reason for collection.
+`hostnames`|`None`|Hostname(s) to collect the osquery flow from.
+`--osquery_query`|`None`|Osquery query to hunt for.
+`--osquery_paths`|`None`|Path(s) to text file containing one osquery query per line.
+`--timeout_millis`|`300000`|Osquery timeout in milliseconds
+`--ignore_stderr_errors`|`False`|Ignore osquery stderr errors
+`--directory`|`None`|Directory in which to export results.
+`--approvers`|`None`|Emails for GRR approval request.
+`--grr_server_url`|`'http://localhost:8000'`|GRR endpoint
+`--verify`|`True`|Whether to verify the GRR TLS certificate.
+`--skip_offline_clients`|`False`|Whether to skip clients that are offline.
+`--grr_username`|`'admin'`|GRR username
+`--grr_password`|`'admin'`|GRR password
+
+
+
+
+Modules: `OsqueryCollector`, `GRROsqueryCollector`
+
+**Module graph**
+
+![grr_osquery_flow](_static/graphviz/grr_osquery_flow.png)
+
+----
+
 ## `grr_timeline_ts`
 
 Runs a TimelineFlow on a set of GRR hosts, generating a filesystem bodyfile for each host. These bodyfiles are processed results with Plaso, and the resulting plaso files are exported to Timesketch.
@@ -873,6 +945,37 @@ Modules: `GRRTimelineCollector`, `LocalPlasoProcessor`, `TimesketchExporter`, `T
 **Module graph**
 
 ![grr_timeline_ts](_static/graphviz/grr_timeline_ts.png)
+
+----
+
+## `gsheets_ts`
+
+Collects data from google sheets and outputs them to Timesketch.
+
+**Details:**
+
+Collects data from google sheets and outputs them to Timesketch.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`spreadsheet`|`None`|ID or URL of the Google Sheet spreadsheet to collect data from.
+`--sheet_names`|`[]`|Comma-separated list sheet names to collect date from. If not set all sheets in the spreadsheet will be parsed.
+`--validate_columns`|`True`|Set to True to check for mandatory columns required by Timesketch while extracting data. Set to False to ignore validation. Default is True.
+`--sketch_id`|`None`|Sketch to which the timeline should be added
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with
+`--incident_id`|`None`|Incident ID (used for Timesketch description)
+`--wait_for_timelines`|`True`|Whether to wait for timelines to finish processing.
+
+
+
+
+Modules: `GoogleSheetsCollector`, `TimesketchExporter`
+
+**Module graph**
+
+![gsheets_ts](_static/graphviz/gsheets_ts.png)
 
 ----
 
@@ -922,6 +1025,7 @@ Uploads a CSV or Plaso file to Timesketch.
 Parameter|Default value|Description
 ---------|-------------|-----------
 `files`|`None`|Comma-separated list of paths to CSV files or Plaso storage files.
+`--analyzers`|`None`|Timesketch analysers to run.
 `--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
 `--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
 `--incident_id`|`None`|Incident ID (used for Timesketch description).
