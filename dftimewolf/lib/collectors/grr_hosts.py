@@ -809,8 +809,11 @@ class GRROsqueryCollector(GRRFlow):
       manifest_fd.write('"Flow ID","Hostname","GRR Client Id","Osquery"\n')
 
       for container in self.state.GetContainers(containers.DataFrame):
-        flow_id = container.name.split(':')[1]
+        if not container.source:
+          self.logger.error('Source attribute in container is empty.')
+          continue
         hostname, client_id = container.source.split(':')
+        flow_id = container.name.split(':')[1]
         query = container.description
 
         output_file_path = os.path.join(
