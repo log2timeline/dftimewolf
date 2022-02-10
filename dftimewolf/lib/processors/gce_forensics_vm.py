@@ -142,7 +142,7 @@ class GCEForensicsVM(module.BaseModule):
       self.logger.error(f'Could not create VM: {exception}')
       self.ModuleError(str(exception), critical=True)
     if not created:
-      self.logger.info(f'Instance {analysis_vm_name} exists: resusing.')
+      self.logger.info(f'Instance {analysis_vm_name} exists: reusing.')
     if self._gcp_label:
       self.analysis_vm.AddLabels(self._gcp_label)
       self.analysis_vm.GetBootDisk().AddLabels(self._gcp_label)
