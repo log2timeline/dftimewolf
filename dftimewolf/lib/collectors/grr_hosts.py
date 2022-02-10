@@ -781,8 +781,8 @@ class GRROsqueryCollector(GRRFlow):
           dataframe_container = containers.DataFrame(
               data_frame=data_frame,
               description=osquery_container.query,
-              name=f'Osquery flow: {flow_id}',
-              source=f'{container.hostname}: {client}')
+              name=f'Osquery flow:{flow_id}',
+              source=f'{container.hostname}:{client.client_id}')
 
           self.state.StoreContainer(dataframe_container)
 
@@ -806,11 +806,11 @@ class GRROsqueryCollector(GRRFlow):
         f'Saving osquery flow results to {manifest_file_path}')
 
     with open(manifest_file_path, mode='w') as manifest_fd:
-      manifest_fd.write('"Flow ID","Hostname","Osquery"\n')
+      manifest_fd.write('"Flow ID","Hostname","GRR Client Id","Osquery"\n')
 
       for container in self.state.GetContainers(containers.DataFrame):
-        flow_id = container.name
-        hostname = container.source
+        flow_id = container.name.split(':')[1]
+        hostname, client_id = container.source.split(':')
         query = container.description
 
         output_file_path = os.path.join(
@@ -822,7 +822,7 @@ class GRROsqueryCollector(GRRFlow):
 
         self.logger.info(f'Saved {output_file_path}.')
 
-        manifest_fd.write(f'"{flow_id}","{hostname}","{query}"\n')
+        manifest_fd.write(f'"{flow_id}","{hostname}","{client_id}","{query}"\n')
 
   def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
     """This module operates on Host containers."""
