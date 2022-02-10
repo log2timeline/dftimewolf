@@ -93,8 +93,10 @@ class GCEDiskCopyTest(unittest.TestCase):
         'test-destination-project-name',
         'test-source-project-name',
         'fake_zone',
-        remote_instance_names='my-owned-instance1,my-owned-instance2',
-        disk_names='fake-disk-1,fake-disk-2'
+        'my-owned-instance1,my-owned-instance2',
+        'fake-disk-1,fake-disk-2',
+        False,
+        False
     )
     self.assertEqual(test_state.errors, [])
     self.assertEqual(collector.destination_project.project_id,
@@ -138,6 +140,10 @@ class GCEDiskCopyTest(unittest.TestCase):
           'test-destination-project-name',
           'test-source-project-name',
           'fake_zone',
+          None,
+          None,
+          False,
+          False
       )
     self.assertEqual(error.exception.message,
         'You need to specify at least an instance name or disks to copy')
@@ -153,8 +159,10 @@ class GCEDiskCopyTest(unittest.TestCase):
           'test-destination-project-name',
           'test-source-project-name',
           'fake_zone',
-          disk_names='disk1',
-          stop_instances=True
+          None,
+          'disk1',
+          False,
+          True
       )
     self.assertEqual(error.exception.message,
         'You need to specify an instance name to stop the instance')
@@ -188,7 +196,10 @@ class GCEDiskCopyTest(unittest.TestCase):
         'test-analysis-project-name',
         'test-target-project-name',
         'fake_zone',
-        remote_instance_names='my-owned-instance'
+        'my-owned-instance',
+        None,
+        False,
+        False
     )
     collector.PreProcess()
     disks = test_state.GetContainers(containers.GCEDisk, True)
@@ -198,13 +209,14 @@ class GCEDiskCopyTest(unittest.TestCase):
 
     # Specifying all_disks should return all disks for the instance
     # (see mock_list_disks return value)
-    collector = gce_disk_copy.GCEDiskCopy(test_state)
     collector.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
         'fake_zone',
-        remote_instance_names='my-owned-instance',
-        all_disks=True
+        'my-owned-instance',
+        None,
+        True,
+        False
     )
     collector.PreProcess()
     disks = test_state.GetContainers(containers.GCEDisk, True)
@@ -218,9 +230,10 @@ class GCEDiskCopyTest(unittest.TestCase):
         'test-analysis-project-name',
         'test-target-project-name',
         'fake_zone',
-        remote_instance_names='my-owned-instance',
-        disk_names='another_disk_1,another_disk_2',
-        all_disks=True
+        'my-owned-instance',
+        'another_disk_1,another_disk_2',
+        True,
+        False
     )
     collector.PreProcess()
     disks = test_state.GetContainers(containers.GCEDisk, True)
@@ -242,17 +255,21 @@ class GCEDiskCopyTest(unittest.TestCase):
         'test-analysis-project-name',
         'test-target-project-name',
         'fake_zone',
-        remote_instance_names='nonexistent'
+        'nonexistent',
+        None,
+        False,
+        False
     )
     with self.assertRaises(errors.DFTimewolfError) as error:
       collector.PreProcess()
 
     self.assertEqual(error.exception.message,
-        'Instance "nonexistent" not found or insufficient permissions')
+        'Instance "nonexistent" in test-target-project-name not found or '
+        'insufficient permissions')
 
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
   def testHTTPErrors(self, mock_GetInstance):
-    """Tests the 403 and 404 checked for in PreProcess."""
+    """Tests the 403 checked for in PreProcess."""
     test_state = state.DFTimewolfState(config.Config)
 
     # 403
@@ -266,31 +283,15 @@ class GCEDiskCopyTest(unittest.TestCase):
         'test-analysis-project-name',
         'test-target-project-name',
         'fake_zone',
-        remote_instance_names='nonexistent'
+        'nonexistent',
+        None,
+        False,
+        False
     )
     with self.assertRaises(errors.DFTimewolfError) as error:
       collector.PreProcess()
     self.assertEqual(error.exception.message,
         '403 response. Do you have appropriate permissions on the project?')
-
-    # 404
-    mock_GetInstance.side_effect = HttpError(httplib2.Response({
-        'status': 404,
-        'reason': 'Not found'
-    }), b'')
-
-    collector = gce_disk_copy.GCEDiskCopy(test_state)
-    collector.SetUp(
-        'test-analysis-project-name',
-        'test-target-project-name',
-        'fake_zone',
-        remote_instance_names='nonexistent'
-    )
-    with self.assertRaises(errors.DFTimewolfError) as error:
-      collector.PreProcess()
-    self.assertEqual(error.exception.message,
-        'GCP resource not found. Maybe a typo in the project / instance / '
-        'disk name?')
 
     # Other (500)
     mock_GetInstance.side_effect = HttpError(httplib2.Response({
@@ -303,7 +304,10 @@ class GCEDiskCopyTest(unittest.TestCase):
         'test-analysis-project-name',
         'test-target-project-name',
         'fake_zone',
-        remote_instance_names='nonexistent'
+        'nonexistent',
+        None,
+        False,
+        False
     )
     with self.assertRaises(errors.DFTimewolfError) as error:
       collector.PreProcess()
@@ -335,9 +339,10 @@ class GCEDiskCopyTest(unittest.TestCase):
         'test-analysis-project-name',
         'test-target-project-name',
         'fake_zone',
-        remote_instance_names='my-owned-instance',
-        all_disks=True,
-        stop_instances=True
+        'my-owned-instance',
+        None,
+        True,
+        True
     )
     FAKE_INSTANCE.Stop = mock.MagicMock()
 
@@ -365,8 +370,10 @@ class GCEDiskCopyTest(unittest.TestCase):
         'test-analysis-project-name',
         'test-target-project-name',
         'fake_zone',
-        remote_instance_names='my-owned-instance',
-        all_disks=True
+        'my-owned-instance',
+        None,
+        True,
+        False,
     )
     FAKE_INSTANCE.Stop = mock.MagicMock()
 
@@ -403,16 +410,19 @@ class GCEDiskCopyTest(unittest.TestCase):
         'test-destination-project-name',
         'test-source-project-name',
         'fake_zone',
-        disk_names='nonexistent',
+        None,
+        'nonexistent',
+        False,
+        False
     )
     collector.PreProcess()
     conts = test_state.GetContainers(collector.GetThreadOnContainerType(), True)
+    for d in conts:
+      collector.Process(d)
     with self.assertRaises(errors.DFTimewolfError) as error:
-      for d in conts:
-        collector.Process(d)
+      collector.PostProcess()
     self.assertEqual(error.exception.message,
-        'Could not find disk "nonexistent": Disk nonexistent was not found in '
-        'project test-source-project-name')
+        'No successful disk copy operations completed.')
 
     # Fail if the disk cannot be created
     mock_CreateDiskCopy.side_effect = lcf_errors.ResourceCreationError(
@@ -424,7 +434,10 @@ class GCEDiskCopyTest(unittest.TestCase):
         'test-destination-project-name',
         'test-source-project-name',
         'fake_zone',
-        disk_names='nonexistent',
+        None,
+        'nonexistent',
+        False,
+        False
     )
     collector.PreProcess()
     conts = test_state.GetContainers(collector.GetThreadOnContainerType(), True)

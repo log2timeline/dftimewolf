@@ -29,6 +29,8 @@ class GCEDiskCopy(module.ThreadAwareModule):
         copied.
     warned (bool): True if an error was encountered that prevents stopping
         instances when requested by stop_instances.
+    failed_disks (list[str]): List of disks that failed.
+    at_least_one_success (bool): True if at least one disk copy suceeded.
   """
 
   def __init__(self,
@@ -53,16 +55,18 @@ class GCEDiskCopy(module.ThreadAwareModule):
     self.stop_instances = False
     self._gcp_label = {}  # type: Dict[str, str]
     self.warned = False  # type: bool
+    self.failed_disks = []  # type: List[str]
+    self.at_least_one_success = False
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
             destination_project_name: str,
             source_project_name: str,
-            destination_zone: str='us-central1-f',
-            remote_instance_names: Optional[str]=None,
-            disk_names: Optional[str]=None,
-            all_disks: bool=False,
-            stop_instances: bool=False) -> None:
+            destination_zone: str,
+            remote_instance_names: str,
+            disk_names: str,
+            all_disks: bool,
+            stop_instances: bool) -> None:
     """Sets up a GCEDiskCopyCollector.
 
     This method sets up the module for copying disks.
@@ -77,19 +81,17 @@ class GCEDiskCopy(module.ThreadAwareModule):
       that are attached to the instance
 
     Args:
-      destination_project_name (str): Optional. Name of the project where disks
-          will be copied to.
-      source_project_name (str): Name of the remote project where the disks
-          must be copied from.
-      destination_zone (Optional[str]): Optional. GCP zone in which disks should
-          be copied to. Default is us-central1-f.
-      remote_instance_names (Optional[str]): Optional. Name of the instances in
-          the remote project containing the disks to be copied.
-      disk_names (Optional[str]): Optional. Comma separated disk names to copy.
-      all_disks (Optional[bool]): Optional. True if all disks attached to the
-          source instance should be copied.
-      stop_instances (Optional[bool]): Optional. Stop the target instance after
-          copying disks.
+      destination_project_name: Name of the project where disks will be copied
+          to.
+      source_project_name: Name of the remote project where the disks must be
+          copied from.
+      destination_zone: GCP zone in which disks should be copied to.
+      remote_instance_names: Name of the instances in the remote project
+          containing the disks to be copied.
+      disk_names: Comma separated disk names to copy.
+      all_disks: True if all disks attached to the source instance should be
+          copied.
+      stop_instances: Stop the target instance after copying disks.
     """
     if not (remote_instance_names or disk_names):
       self.ModuleError(
@@ -134,17 +136,13 @@ class GCEDiskCopy(module.ThreadAwareModule):
 
         except lcf_errors.ResourceNotFoundError:
           self.ModuleError(
-            message=f'Instance "{i}" not found or insufficient permissions',
+            message=f'Instance "{i}" in {self.source_project.project_id} not '
+                'found or insufficient permissions',
             critical=True)
     except HttpError as exception:
       if exception.resp.status == 403:
         self.ModuleError(
             '403 response. Do you have appropriate permissions on the project?',
-            critical=True)
-      if exception.resp.status == 404:
-        self.ModuleError(
-            'GCP resource not found. Maybe a typo in the project / instance / '
-            'disk name?',
             critical=True)
       self.ModuleError(str(exception), critical=True)
 
@@ -162,33 +160,48 @@ class GCEDiskCopy(module.ThreadAwareModule):
           self.destination_project.project_id,
           self.destination_project.default_zone,
           disk_name=container.name)
+      self.at_least_one_success = True
+      self.logger.success(f'Disk {container.name} successfully copied to '
+          f'{new_disk.name}')
+      self.state.StoreContainer(containers.GCEDisk(new_disk.name))
     except lcf_errors.ResourceNotFoundError as exception:
       self.logger.error(f'Could not find disk "{container.name}": {exception}')
       self.warned = True
-      self.ModuleError(str(exception), critical=True)
+      self.ModuleError(str(exception), critical=False)
+      self.failed_disks.append(container.name)
     except lcf_errors.ResourceCreationError as exception:
       self.logger.error(f'Could not create disk: {exception}')
       self.warned = True
       self.ModuleError(str(exception), critical=True)
 
-    self.logger.success(f'Disk {container.name} successfully copied to '
-        f'{new_disk.name}')
-    self.state.StoreContainer(containers.GCEDisk(new_disk.name))
-
   def PostProcess(self) -> None:
     """Stops instances where it was requested."""
-    if self.stop_instances and not self.warned:
-      for i in self.remote_instance_names:
-        try:
-          remote_instance = self.source_project.compute.GetInstance(i)
-          # TODO(dfjxs): Account for GKE Nodes
-          remote_instance.Stop()
-        except lcf_errors.InstanceStateChangeError as exception:
-          self.ModuleError(str(exception), critical=False)
-        self.logger.success(f'Stopped instance {i}')
-    elif self.stop_instances and self.warned:
+    if self.stop_instances:
+      self._StopInstances()
+
+    if self.failed_disks:
+      self.logger.warning('The following disks dould not be found: '
+          f'{", ".join(self.failed_disks)}')
+
+    if not self.at_least_one_success:
+      self.ModuleError(
+          'No successful disk copy operations completed.', critical=True)
+
+  def _StopInstances(self) -> None:
+    """Stops instances where it was requested."""
+    if self.warned:
       self.logger.warning(
           'Not stopping instance due to previous warnings on disk copy')
+      return
+
+    for i in self.remote_instance_names:
+      try:
+        remote_instance = self.source_project.compute.GetInstance(i)
+        # TODO(dfjxs): Account for GKE Nodes
+        remote_instance.Stop()
+      except lcf_errors.InstanceStateChangeError as exception:
+        self.ModuleError(str(exception), critical=False)
+      self.logger.success(f'Stopped instance {i}')
 
   def _GetDisksFromInstance(
       self,
