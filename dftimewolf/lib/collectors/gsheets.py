@@ -98,7 +98,7 @@ class GoogleSheetsCollector(module.BaseModule):
 
         self.logger.info(f'Parsing sheet: {sheet_title}')
 
-        df = self._ExtractEntiresFromSheet(self._spreadsheet_id, sheet_title)
+        df = self._ExtractEntriesFromSheet(self._spreadsheet_id, sheet_title)
 
         if df is None or df.empty:
           continue
@@ -192,7 +192,7 @@ class GoogleSheetsCollector(module.BaseModule):
 
     return spreadsheet_match.group(1)
 
-  def _ExtractEntiresFromSheet(self,
+  def _ExtractEntriesFromSheet(self,
                                spreadsheet_id: str,
                                sheet_title: str) -> pd.DataFrame:
     """Extract entries from the sheet inside the spreadsheet.
