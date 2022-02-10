@@ -647,6 +647,9 @@ class GRROsqueryCollectorTest(unittest.TestCase):
 
     results = self.test_state.GetContainers(containers.DataFrame)
     self.assertEqual(len(results), 1)
+    self.assertEqual(results[0].description, 'SELECT * FROM processes')
+    self.assertIn('Osquery flow:', results[0].name)
+    self.assertIn('C.0000000000000001', results[0].source)
 
 
 if __name__ == '__main__':
