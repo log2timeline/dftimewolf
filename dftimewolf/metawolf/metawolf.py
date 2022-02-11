@@ -341,7 +341,7 @@ class Metawolf(cmd2.Cmd):
       if self.session_id:
         if self.recipe:
           s_id = '{0:s}-{1:s}-{2:s}'.format(
-            self.session_id, self.recipe, what[1])
+              self.session_id, self.recipe, what[1])
         else:
           self.poutput('You must set a recipe first: `{0:s}`'.format(
             self.metawolf_output.Color(
