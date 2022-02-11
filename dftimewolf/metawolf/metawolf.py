@@ -30,11 +30,13 @@ ARG_SESSION = '-session'
 ARG_RUNNING = '-running'
 ARG_OUTPUT = '-output'
 ARG_INPUT = '-input'
+ARG_PARAMETER = '-parameter'
 ARG_RECIPES_SC = '-rs'
 ARG_RECIPE_SC = '-r'
 ARG_SESSIONS_SC = '-s'
 ARG_RUNNING_SC = '-rn'
 ARG_OUTPUT_SC = '-o'
+ARG_PARAMETER_SC = '-p'
 ARG_INPUT_SC = '-i'
 SET_ALL = '-all'
 SET_ALL_SC = '-a'
@@ -194,6 +196,30 @@ class Metawolf(cmd2.Cmd):
     self.ClearSessionSettables()
     self.SetSessionID(session_id)
     self.sessions[session_id] = {}
+    # Remove auto-complete choices for the previous recipe
+    for a in self.set_parser._actions:  # pylint: disable=protected-access
+      if a.dest == 'p':
+        a.choices = None
+        break
+
+  def do_ls(self, _: cmd2.Statement) -> None:
+    """Print the current recipe and its arguments.
+
+    Args:
+      _ (Statement): Unused.
+    """
+    t = PrettyTable(['Name', 'Description', 'Type', 'Current Value'],
+                    align='l')
+    for _, settable in self.session_settables.items():  # type: ignore
+      value = settable.GetValue()
+      t.add_row(
+        [self.metawolf_output.Color(settable.name, output.GREEN),
+         settable.description,
+         settable.type.__name__,
+         self.metawolf_output.Color(
+           value, output.GREEN) if value is not None else value
+         ])
+    self.poutput(t)
 
   set_parser = cmd2.Cmd2ArgumentParser(
     description='Set arguments in Metawolf.')
@@ -203,6 +229,8 @@ class Metawolf(cmd2.Cmd):
                           help='Set a session.')
   set_parser.add_argument('-a', '-all', action='store_true',
                           help='Set all arguments of the current recipe.')
+  set_parser.add_argument('-p', ARG_PARAMETER, type=str,
+                          help='Set a recipe argument.')
   @cmd2.with_argparser(set_parser, with_unknown_args=True)  # type: ignore
   # pylint: disable=arguments-differ
   def do_set(self, args: argparse.Namespace, _: Any) -> None:
@@ -213,27 +241,10 @@ class Metawolf(cmd2.Cmd):
     """
 
     if not args.cmd2_statement.get():
-      t = PrettyTable(['Name', 'Description', 'Type', 'Current Value'],
-                      align='l')
-      for _, settable in self.session_settables.items():
-        value = settable.GetValue()
-        t.add_row(
-            [self.metawolf_output.Color(settable.name, output.GREEN),
-             settable.description,
-             settable.type.__name__,
-             self.metawolf_output.Color(
-                 value, output.GREEN) if value is not None else value
-             ])
-      self.poutput(t)
+      self.do_ls(_)
       return
 
-    what = args.cmd2_statement.get().split(' ')
-    if len(what) != 2 and what[0] not in [SET_ALL, SET_ALL_SC]:
-      self.poutput('Usage: `{0:s}` to set a parameter\'s value || `{1:s}` to '
-            'interactively set -a[ll] current recipe\'s parameters.'.format(
-          self.metawolf_output.Color('set arg_name arg_value', output.YELLOW),
-          self.metawolf_output.Color('set -a[ll]', output.YELLOW)))
-      return
+    what =  shlex.split(args.cmd2_statement.get())
 
     if what[0] in [SET_ALL, SET_ALL_SC]:
       if not self.recipe:
@@ -324,24 +335,23 @@ class Metawolf(cmd2.Cmd):
                    ' interactively, type {1:s}'.format(
         self.metawolf_output.Color('set', output.YELLOW),
         self.metawolf_output.Color('set -a[ll]', output.YELLOW)))
-    else:
-      # This block happens whenever a recipe's argument / unknown argument
-      # is set
+
+    if what[0] in [ARG_PARAMETER, ARG_PARAMETER_SC]:
       s_id = None
       if self.session_id:
         if self.recipe:
           s_id = '{0:s}-{1:s}-{2:s}'.format(
-              self.session_id, self.recipe, what[0])
+              self.session_id, self.recipe, what[1])
         else:
-          if what[0] not in [ARG_SESSION, ARG_SESSIONS_SC]:
-            self.poutput('You must set a recipe first: `{0:s}`'.format(
-                self.metawolf_output.Color('set recipe name', output.YELLOW)))
+          self.poutput('You must set a recipe first: `{0:s}`'.format(
+            self.metawolf_output.Color(
+              'set -r[ecipe] name', output.YELLOW)))
           return
-      if s_id in self.session_settables:
-        _ = self.UpdateSessionSettable(what[1], s_id=s_id)
+      if s_id in self.session_settables and len(what) > 2:
+        _ = self.UpdateSessionSettable(what[2], s_id=s_id)
       else:
         self.poutput(self.metawolf_output.Color(
-            '{0:s} is not a settable attribute.'.format(what[0]), output.RED))
+          'You must specify a value for this parameter.', output.RED))
 
   def do_run(self, _: cmd2.Statement) -> None:
     """Run a DFTimewolf recipe. Show running recipes: `show -rn[running]`.
@@ -746,6 +756,14 @@ class Metawolf(cmd2.Cmd):
             self.session_id, self.recipe, settable.name)
         if settable_id == s_id and settable_id not in self.session_settables:
           self.AddSessionSettable(settable)
+        # Restore auto-complete choices for the current recipe
+        if recipe in [last_recipe, self.recipe]:
+          for a in self.set_parser._actions:  # pylint: disable=protected-access
+            if a.dest == 'p':
+              if not a.choices:
+                a.choices = []
+              a.choices.append(settable.name)  # type: ignore
+              break
 
     # Reset current nb of proc
     if self.processes:
@@ -883,6 +901,12 @@ class Metawolf(cmd2.Cmd):
             session_settable.SetValue(previous_settables[session_settable.name])
 
         self.AddSessionSettable(session_settable)
+    # Add the recipe arguments to the autocomplete parser
+    for action in self.set_parser._actions:  # pylint: disable=protected-access
+      if action.dest == 'p':
+        action.choices = [name.replace('--', '') for name, _, _ in
+                          recipes[self.recipe].args]
+        break
 
     # Recipes just reloaded, so we can turn this off.
     self.reload_settables = False
