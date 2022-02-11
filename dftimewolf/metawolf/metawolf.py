@@ -238,8 +238,8 @@ class Metawolf(cmd2.Cmd):
     if what[0] in [SET_ALL, SET_ALL_SC]:
       if not self.recipe:
         self.poutput('Please set a recipe first: `{0:s}`'.format(
-          self.metawolf_output.Color(
-            'set -r[ecipe] recipe_name', output.YELLOW)))
+            self.metawolf_output.Color(
+                'set -r[ecipe] recipe_name', output.YELLOW)))
         return
       for settable in self.session_settables.values():
         if settable.recipe == RECIPE_NAME_IGNORED:
@@ -366,8 +366,8 @@ class Metawolf(cmd2.Cmd):
       return
 
     value = input('Confirm running: {0:s} [yN]? '.format(
-      self.metawolf_output.Color(' '.join(['dftimewolf'] + cmd[1:]),
-                                 output.YELLOW, escape=True))) or 'n'
+        self.metawolf_output.Color(' '.join(['dftimewolf'] + cmd[1:]),
+                                   output.YELLOW, escape=True))) or 'n'
     ans = utils.Str2Bool(str(value))
     while ans not in [False, True]:
       value = input('[yN]? ') or 'n'
