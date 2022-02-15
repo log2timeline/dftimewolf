@@ -21,8 +21,8 @@ import unittest
 import warnings
 
 from googleapiclient.errors import HttpError
-from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal import compute, common
+from libcloudforensics.providers.gcp.internal import project as gcp_project
 
 from dftimewolf import config
 from dftimewolf.lib import resources, state
@@ -32,65 +32,68 @@ from dftimewolf.lib.recipes import manager as recipes_manager
 
 log = logging.getLogger(__name__)
 
-
+# pylint: disable=line-too-long
 RECIPE = {
     'name': 'unittest_gce_forensics_recipe',
     'short_description': 'Nothing to see here.',
-    'preflights': [{
-      'wants': [],
-      'name': 'GCPTokenCheck',
-      'runtime_name': 'GCPTokenCheck-destination',
-      'args': {
-          'project_name': '@destination_project_name'
-      }
-    }, {
-      'wants': [],
-      'name': 'GCPTokenCheck',
-      'runtime_name': 'GCPTokenCheck-source',
-      'args': {
-          'project_name': '@source_project_name'
-      }
-    }],
-    'modules': [
-    {
-        'wants': [],
-        'name': 'GCEDiskCopy',
-        'args': {
-            'source_project_name': '@source_project_name',
-            'destination_project_name': '@destination_project_name',
-            'disk_names': '@disks',
-            'remote_instance_names': '@instances',
-            'all_disks': '@all_disks',
-            'destination_zone': '@zone',
-            'stop_instances': '@stop_instances'
+    'preflights': [
+        {
+            'wants': [],
+            'name': 'GCPTokenCheck',
+            'runtime_name': 'GCPTokenCheck-destination',
+            'args': {
+                'project_name': '@destination_project_name'
+            },
+        }, {
+            'wants': [],
+            'name': 'GCPTokenCheck',
+            'runtime_name': 'GCPTokenCheck-source',
+            'args': {
+                'project_name': '@source_project_name'
+            },
         }
-    },{
-      'wants': ['GCEDiskCopy'],
-      'name': 'GCEForensicsVM',
-      'args': {
-            'project_name': '@destination_project_name',
-            'incident_id': '@incident_id',
-            'zone': '@zone',
-            'boot_disk_size': 50,
-            'boot_disk_type': 'pd-standard',
-            'cpu_cores': 4,
-            'image_project': 'ubuntu-os-cloud',
-            'image_family': 'ubuntu-1804-lts',
-            'create_analysis_vm': True
-      }
-    }
-  ],
+    ],
+    'modules': [
+        {
+            'wants': [],
+            'name': 'GCEDiskCopy',
+            'args': {
+                'source_project_name': '@source_project_name',
+                'destination_project_name': '@destination_project_name',
+                'disk_names': '@disks',
+                'remote_instance_names': '@instances',
+                'all_disks': '@all_disks',
+                'destination_zone': '@zone',
+                'stop_instances': '@stop_instances',
+            }
+        }, {
+            'wants': ['GCEDiskCopy'],
+            'name': 'GCEForensicsVM',
+            'args': {
+                'project_name': '@destination_project_name',
+                'incident_id': '@incident_id',
+                'zone': '@zone',
+                'boot_disk_size': 50,
+                'boot_disk_type': 'pd-standard',
+                'cpu_cores': 4,
+                'image_project': 'ubuntu-os-cloud',
+                'image_family': 'ubuntu-1804-lts',
+                'create_analysis_vm': True,
+            }
+        }
+    ],
     'args': [
-      ['source_project_name', 'Name of the project containing the instance / disks to copy.', None],
-      ['destination_project_name', 'Name of the project where the analysis VM will be created and disks copied to.', None],
-      ['--incident_id', 'Incident ID to label the VM with.', None],
-      ['--instances', 'Name of the instance to analyze.', None],
-      ['--disks', 'Comma-separated list of disks to copy from the source GCP project (if `instance` not provided).', None],
-      ['--all_disks', 'Copy all disks in the designated instance. Overrides `disk_names` if specified.', False],
-      ['--stop_instances', 'Stop the designated instance after copying disks.', False],
-      ['--zone', 'The GCP zone where the Analysis VM and copied disks will be created.', 'us-central1-f']
+        ['source_project_name', 'Name of the project containing the instance / disks to copy.', None],
+        ['destination_project_name', 'Name of the project where the analysis VM will be created and disks copied to.', None],
+        ['--incident_id', 'Incident ID to label the VM with.', None],
+        ['--instances', 'Name of the instance to analyze.', None],
+        ['--disks', 'Comma-separated list of disks to copy from the source GCP project (if `instance` not provided).', None],
+        ['--all_disks', 'Copy all disks in the designated instance. Overrides `disk_names` if specified.', False],
+        ['--stop_instances', 'Stop the designated instance after copying disks.', False],
+        ['--zone', 'The GCP zone where the Analysis VM and copied disks will be created.', 'us-central1-f']
     ]
 }
+# pylint: enable=line-too-long
 
 TEST_MODULES = {
   'GCEDiskCopy': 'dftimewolf.lib.collectors.gce_disk_copy',
@@ -153,7 +156,7 @@ class GCEForensicsEndToEndTest(unittest.TestCase):
     self._recipes_manager.DeregisterRecipe(self._recipe)
 
   def testBootDiskCopy(self):
-    """Tests copy on boot disk from an instance only.""" 
+    """Tests copy on boot disk from an instance only."""
     warnings.filterwarnings(
         action="ignore", message="unclosed", category=ResourceWarning)
 
@@ -173,7 +176,7 @@ class GCEForensicsEndToEndTest(unittest.TestCase):
     self.test_state.RunModules()
 
     # Get the forensics VM name, confirm it exists
-    self.assertEqual(1, 
+    self.assertEqual(1,
         len(self.test_state.GetContainers(containers.ForensicsVM)))
     for_vm = self.test_state.GetContainers(containers.ForensicsVM)[0]
 
@@ -189,8 +192,9 @@ class GCEForensicsEndToEndTest(unittest.TestCase):
       self.project_id, self.zone, for_vm.name).ListDisks().keys()
     expected_disks = [
         d.name for d in self.test_state.GetContainers(containers.GCEDisk)]
-    
-    self.assertEqual(len(actual_disks), len(expected_disks) + 1)  # +1 for the boot disk
+
+    # Length should differ by 1 for the boot disk
+    self.assertEqual(len(actual_disks), len(expected_disks) + 1)
     for d in expected_disks:
       self.assertIn(d, actual_disks)
 
@@ -218,7 +222,7 @@ class GCEForensicsEndToEndTest(unittest.TestCase):
     self.test_state.RunModules()
 
     # Get the forensics VM name, confirm it exists
-    self.assertEqual(1, 
+    self.assertEqual(1,
         len(self.test_state.GetContainers(containers.ForensicsVM)))
     for_vm = self.test_state.GetContainers(containers.ForensicsVM)[0]
 
@@ -234,8 +238,9 @@ class GCEForensicsEndToEndTest(unittest.TestCase):
       self.project_id, self.zone, for_vm.name).ListDisks().keys()
     expected_disks = [
         d.name for d in self.test_state.GetContainers(containers.GCEDisk)]
-    
-    self.assertEqual(len(actual_disks), len(expected_disks) + 1)  # +1 for the boot disk
+
+    # Length should differ by 1 for the boot disk
+    self.assertEqual(len(actual_disks), len(expected_disks) + 1)
     for d in expected_disks:
       self.assertIn(d, actual_disks)
 
