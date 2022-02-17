@@ -317,15 +317,15 @@ class GCEDiskCopyTest(unittest.TestCase):
   # pylint: disable=line-too-long
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
   @mock.patch('libcloudforensics.providers.gcp.forensics.CreateDiskCopy')
-  @mock.patch('dftimewolf.lib.collectors.gcloud.GoogleCloudCollector._FindDisksToCopy')
+  @mock.patch('dftimewolf.lib.collectors.gce_disk_copy.GCEDiskCopy._GetDisksFromInstance')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.ListDisks')
   def testProcess(self,
                   mock_list_disks,
-                  mock_FindDisks,
+                  mock_getDisksFromInstance,
                   mock_CreateDiskCopy,
                   mock_GetInstance):
     """Tests the collector's Process() function."""
-    mock_FindDisks.return_value = FAKE_DISK_MULTIPLE
+    mock_getDisksFromInstance.return_value = FAKE_DISK_MULTIPLE
     mock_CreateDiskCopy.side_effect = FAKE_DISK_COPY
     mock_GetInstance.return_value = FAKE_INSTANCE
     mock_list_disks.return_value = {
