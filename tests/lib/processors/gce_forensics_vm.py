@@ -77,15 +77,21 @@ class GCEForensicsVMTest(unittest.TestCase):
     FAKE_ANALYSIS_VM.AddLabels = mock_AddLabels
     FAKE_ANALYSIS_VM.GetBootDisk = mock_GetBootDisk
 
-    disk1 = compute.GoogleComputeDisk('test-analysis-project-name', 'test-zone', 'test-disk-1')
-    disk2 = compute.GoogleComputeDisk('test-analysis-project-name', 'test-zone', 'test-disk-2')
-    disk3 = compute.GoogleComputeDisk('test-analysis-project-name', 'test-zone', 'test-disk-3')
+    disk1 = compute.GoogleComputeDisk(
+        'test-analysis-project-name', 'test-zone', 'test-disk-1')
+    disk2 = compute.GoogleComputeDisk(
+        'test-analysis-project-name', 'test-zone', 'test-disk-2')
+    disk3 = compute.GoogleComputeDisk(
+        'test-analysis-project-name', 'test-zone', 'test-disk-3')
     mock_DiskInit.side_effect = [disk1, disk2, disk3]
 
     test_state = state.DFTimewolfState(config.Config)
-    test_state.StoreContainer(containers.GCEDiskCopyResult('test-disk-1', 'test-analysis-project-name'))
-    test_state.StoreContainer(containers.GCEDiskCopyResult('test-disk-2', 'test-analysis-project-name'))
-    test_state.StoreContainer(containers.GCEDiskCopyResult('test-disk-3', 'test-analysis-project-name'))
+    test_state.StoreContainer(containers.GCEDiskCopyResult(
+        'test-disk-1', 'test-analysis-project-name'))
+    test_state.StoreContainer(containers.GCEDiskCopyResult(
+        'test-disk-2', 'test-analysis-project-name'))
+    test_state.StoreContainer(containers.GCEDiskCopyResult(
+        'test-disk-3', 'test-analysis-project-name'))
 
     processor = GCEForensicsVM(test_state)
     processor.SetUp(
