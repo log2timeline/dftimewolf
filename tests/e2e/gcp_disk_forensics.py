@@ -190,13 +190,12 @@ class GCEForensicsEndToEndTest(unittest.TestCase):
     # Check the disks are attached as expected
     actual_disks = compute.GoogleComputeInstance(
       self.project_id, self.zone, for_vm.name).ListDisks().keys()
-    expected_disks = [
-        d.name for d in self.test_state.GetContainers(containers.GCEDisk)]
+    expected_disks = self.test_state.GetContainers(containers.GCEDiskCopyResult)
 
     # Length should differ by 1 for the boot disk
     self.assertEqual(len(actual_disks), len(expected_disks) + 1)
     for d in expected_disks:
-      self.assertIn(d, actual_disks)
+      self.assertIn(d.name, actual_disks)
 
   def testOtherDiskCopy(self):
     """Tests copy from a specified disk."""
@@ -236,13 +235,12 @@ class GCEForensicsEndToEndTest(unittest.TestCase):
     # Check the disks are attached as expected
     actual_disks = compute.GoogleComputeInstance(
       self.project_id, self.zone, for_vm.name).ListDisks().keys()
-    expected_disks = [
-        d.name for d in self.test_state.GetContainers(containers.GCEDisk)]
+    expected_disks = self.test_state.GetContainers(containers.GCEDiskCopyResult)
 
     # Length should differ by 1 for the boot disk
     self.assertEqual(len(actual_disks), len(expected_disks) + 1)
     for d in expected_disks:
-      self.assertIn(d, actual_disks)
+      self.assertIn(d.name, actual_disks)
 
 
 def ReadProjectInfo():
