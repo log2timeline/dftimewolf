@@ -61,8 +61,11 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
 
     if disk_names:
       for disk in disk_names.strip().split(','):
-        if disk:
-          self.state.StoreContainer(containers.GCEDisk(name=disk))
+        if not disk:
+          continue
+        self.state.StoreContainer(containers.GCEDiskEvidence(
+            name=disk,
+            project=project))
 
     try:
       self.TurbiniaSetUp(project, turbinia_zone, sketch_id, run_all_jobs)
@@ -73,26 +76,28 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
   def PreProcess(self) -> None:
     """Ensure ForensicsVM containers from previous modules are processed.
 
-    Before the addition of containers.GCEDisk, containers.ForensicsVM was used
-    to track disks needing processing by Turbinia via this module. Here we grab
-    those containers and track the disks for processing by this module, for any
-    modules that aren't using the new container yet.
+    Before the addition of containers.GCEDiskEvidence, containers.ForensicsVM
+    was used to track disks needing processing by Turbinia via this module. Here
+    we grab those containers and track the disks for processing by this module,
+    for any modules that aren't using the new container yet.
     """
     vm_containers = self.state.GetContainers(containers.ForensicsVM)
     for container in vm_containers:
       if container.evidence_disk.name:
         self.state.StoreContainer(
-            containers.GCEDisk(name=container.evidence_disk.name))
+            containers.GCEDiskEvidence(
+                name=container.evidence_disk.name,
+                project=self.project))
 
   # pylint: disable=arguments-renamed
-  def Process(self, disk_container: containers.GCEDisk) -> None:
+  def Process(self, disk_container: containers.GCEDiskEvidence) -> None:
     """Process a GCE Disk with Turbinia."""
-    log_file_path = os.path.join(self._output_path, '{0:s}-turbinia.log'.format(
-      disk_container.name))
+    log_file_path = os.path.join(
+        self._output_path, f'{disk_container.name}-turbinia.log')
 
-    self.logger.info('Turbinia log file: {0:s}'.format(log_file_path))
-    self.logger.info('Using disk {0:s} from previous collector'.format(
-        disk_container.name))
+    self.logger.info(f'Turbinia log file: {log_file_path}')
+    self.logger.info(
+        f'Using disk {disk_container.name} from previous collector')
 
     evidence_ = evidence.GoogleCloudDisk(
         disk_name=disk_container.name,
@@ -103,16 +108,14 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     threatintel = self.state.GetContainers(containers.ThreatIntelligence)
     if threatintel:
       self.logger.info(
-          'Sending {0:d} threatintel to Turbinia GrepWorkers...'.format(
-              len(threatintel)))
+          f'Sending {len(threatintel)} threatintel to Turbinia GrepWorkers...')
       threat_intel_indicators = [item.indicator for item in threatintel]
 
     yara_rules = None
     yara_containers = self.state.GetContainers(containers.YaraRule)
     if yara_containers:
-      self.logger.info(
-          'Sending {0:d} Yara rules to Turbinia Plaso worker...'.format(
-              len(yara_containers)))
+      self.logger.info(f'Sending {len(yara_containers)} Yara rules to Turbinia '
+          'Plaso worker...')
       yara_rules = [rule.rule_text for rule in yara_containers]
 
     try:
@@ -130,7 +133,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       self.ModuleError(
           'No interesting files found in Turbinia output.', critical=True)
 
-    timeline_label = '{0:s}-{1:s}'.format(self.project, disk_container.name)
+    timeline_label = f'{self.project}-{disk_container.name}'
     # Any local files that exist we can add immediately to the output
     all_local_paths = [
         (timeline_label, p) for p in local_paths if os.path.exists(p)]
@@ -143,7 +146,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       self.ModuleError(str(exception), critical=False)
 
     all_local_paths.extend(downloaded_gs_paths)
-    self.logger.info('Collected {0:d} results'.format(len(all_local_paths)))
+    self.logger.info(f'Collected {len(all_local_paths)} results')
 
     if not all_local_paths:
       self.ModuleError('No interesting files could be found.', critical=True)
@@ -151,23 +154,22 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     container: Union[containers.File, containers.ThreatIntelligence]
     for description, path in all_local_paths:
       if path.endswith('BinaryExtractorTask.tar.gz'):
-        self.logger.success(
-            'Found BinaryExtractorTask result: {0:s}'.format(path))
+        self.logger.success(f'Found BinaryExtractorTask result: {path}')
         container = containers.ThreatIntelligence(
             name='BinaryExtractorResults', indicator=None, path=path)
       if path.endswith('hashes.json'):
-        self.logger.success('Found hashes.json: {0:s}'.format(path))
+        self.logger.success(f'Found hashes.json: {path}')
         container = containers.ThreatIntelligence(
             name='ImageExportHashes', indicator=None, path=path)
       if path.endswith('.plaso'):
-        self.logger.success('Found plaso result: {0:s}'.format(path))
+        self.logger.success(f'Found plaso result: {path}')
         container = containers.File(name=description, path=path)
       self.state.StoreContainer(container)
   # pylint: enable=arguments-renamed
 
   @staticmethod
   def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
-    return containers.GCEDisk
+    return containers.GCEDiskEvidence
 
   def GetThreadPoolSize(self) -> int:
     return self.parallel_count

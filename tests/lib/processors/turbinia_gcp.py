@@ -243,7 +243,8 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
       containers.YaraRule(
         name='dummy_yara', rule_text="rule dummy { condition: false }")
     )
-    test_state.StoreContainer(containers.GCEDisk(name='disk-1'))
+    test_state.StoreContainer(containers.GCEDiskEvidence(
+        name='disk-1', project='turbinia-project'))
     turbinia_processor = turbinia_gcp.TurbiniaGCPProcessor(test_state)
     turbinia_processor.SetUp(
         turbinia_config_file=None,
@@ -373,7 +374,7 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
         run_all_jobs=False)
     turbinia_processor.PreProcess()
 
-    out_containers = test_state.GetContainers(containers.GCEDisk)
+    out_containers = test_state.GetContainers(containers.GCEDiskEvidence)
 
     self.assertEqual(len(out_containers), 1)
     self.assertEqual(out_containers[0].name, 'disk-1')
