@@ -77,7 +77,7 @@ class GCEDiskFromImage(module.ThreadAwareModule):
         disk.name,
         self.dest_project_name))
 
-    self.logger.info('Disk {0:s} finished creation'.format(disk.name))
+    self.logger.info(f'Disk {disk.name} finished creation')
 
   @staticmethod
   def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:

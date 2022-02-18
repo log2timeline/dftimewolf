@@ -154,12 +154,13 @@ class GCEForensicsVM(module.BaseModule):
     disks = self.state.GetContainers(containers.GCEDiskEvidence)
 
     for d in disks:
-      if d.project == self.project.project_id:
-        self.logger.info(f'Attaching {d.name} to {analysis_vm_name}')
-        self.analysis_vm.AttachDisk(compute.GoogleComputeDisk(
-            self.project.project_id,
-            self.project.default_zone,
-            d.name))
+      if d.project != self.project.project_id:
+        continue
+      self.logger.info(f'Attaching {d.name} to {analysis_vm_name}')
+      self.analysis_vm.AttachDisk(compute.GoogleComputeDisk(
+          self.project.project_id,
+          self.project.default_zone,
+          d.name))
 
 
 modules_manager.ModulesManager.RegisterModule(GCEForensicsVM)
