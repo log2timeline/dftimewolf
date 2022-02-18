@@ -62,7 +62,9 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     if disk_names:
       for disk in disk_names.strip().split(','):
         if disk:
-          self.state.StoreContainer(containers.GCEDisk(name=disk))
+          self.state.StoreContainer(containers.GCEDiskEvidence(
+              name=disk,
+              project=project))
 
     try:
       self.TurbiniaSetUp(project, turbinia_zone, sketch_id, run_all_jobs)
@@ -73,19 +75,21 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
   def PreProcess(self) -> None:
     """Ensure ForensicsVM containers from previous modules are processed.
 
-    Before the addition of containers.GCEDisk, containers.ForensicsVM was used
-    to track disks needing processing by Turbinia via this module. Here we grab
-    those containers and track the disks for processing by this module, for any
-    modules that aren't using the new container yet.
+    Before the addition of containers.GCEDiskEvidence, containers.ForensicsVM
+    was used to track disks needing processing by Turbinia via this module. Here
+    we grab those containers and track the disks for processing by this module,
+    for any modules that aren't using the new container yet.
     """
     vm_containers = self.state.GetContainers(containers.ForensicsVM)
     for container in vm_containers:
       if container.evidence_disk.name:
         self.state.StoreContainer(
-            containers.GCEDisk(name=container.evidence_disk.name))
+            containers.GCEDiskEvidence(
+                name=container.evidence_disk.name,
+                project=self.project))
 
   # pylint: disable=arguments-renamed
-  def Process(self, disk_container: containers.GCEDisk) -> None:
+  def Process(self, disk_container: containers.GCEDiskEvidence) -> None:
     """Process a GCE Disk with Turbinia."""
     log_file_path = os.path.join(self._output_path, '{0:s}-turbinia.log'.format(
       disk_container.name))
@@ -167,7 +171,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
 
   @staticmethod
   def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
-    return containers.GCEDisk
+    return containers.GCEDiskEvidence
 
   def GetThreadPoolSize(self) -> int:
     return self.parallel_count

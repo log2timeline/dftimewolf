@@ -331,17 +331,17 @@ class GCEDisk(interface.AttributeContainer):
     super(GCEDisk, self).__init__()
     self.name = name
 
-class GCEDiskCopyResult(interface.AttributeContainer):
+class GCEDiskEvidence(interface.AttributeContainer):
   """Attribute container definition for a GCE Disk that has been copied.
 
   Attributes:
     name (str): The disk name.
     project (str): The project the disk was copied to.
   """
-  CONTAINER_TYPE = 'gcediskcopy'
+  CONTAINER_TYPE = 'gcediskevidence'
 
   def __init__(self, name: str, project: str) -> None:
-    super(GCEDiskCopyResult, self).__init__()
+    super(GCEDiskEvidence, self).__init__()
     self.name = name
     self.project = project
 
