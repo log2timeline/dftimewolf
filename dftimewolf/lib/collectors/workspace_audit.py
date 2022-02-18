@@ -129,11 +129,10 @@ class WorkspaceAuditCollector(module.BaseModule):
 
     # Omit '-' delimiter from the filter_expression (meeting_id) for
     # the meet application
-    if application_name == 'meet':
-      if '-' in filter_expression:
-        filter_expression = filter_expression.replace('-', '')
-        self.logger.info(
-            'Found \'-\' delimiter in the meeting_id and removed it!')
+    if application_name == 'meet' and '-' in filter_expression:
+      filter_expression = filter_expression.replace('-', '')
+      self.logger.info(
+        "Found '-' delimiter in the meeting_id and removed it!")
 
     self._credentials = self._GetCredentials()
     self._application_name = application_name
