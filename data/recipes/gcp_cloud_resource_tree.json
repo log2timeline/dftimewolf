@@ -1,0 +1,27 @@
+{
+  "name": "gcp_cloud_resource_tree",
+  "description": "Collects logs from a GCP project and create a resource tree",
+  "short_description": "Collects logs from a GCP project and create a resource tree.",
+  "preflights": [{
+    "wants": [],
+    "name": "GCPTokenCheck",
+    "args": {
+        "project_name": "@project_id"
+    }
+  }],
+  "modules": [ {
+      "wants": [],
+      "name": "GCPCloudResourceTree",
+      "args": {
+          "project_id": "@project_id",
+          "resource_name": "@resource_name",
+          "resource_type": "@resource_type",
+          "mode": "online"
+      }
+  }],
+  "args": [
+      ["project_id", "ID of the project where the resource is located", null],
+      ["resource_name","Resource name", null],
+      ["resource_type","Resource type (currently supported types: gce_instance, gce_disk, gce_image, gce_machine_image, gce_instance_template, gce_snapshot)", null]
+  ]
+}
