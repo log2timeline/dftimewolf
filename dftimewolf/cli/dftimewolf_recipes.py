@@ -291,6 +291,17 @@ class DFTimewolfTool(object):
     """Calls the preflight's CleanUp functions."""
     self._state.CleanUpPreflights()
 
+  def PrintStats(self) -> None:
+    """Prints collected stats if existing."""
+    statentries = self._state.GetStats()
+    if not statentries:
+      logger.info('No statistics collected during execution.')
+
+    logger.info(f'{len(statentries)} stat entries collected during execution.')
+    for entry in statentries:
+      logger.debug('[{0:s} ({1:s]})] {1!s}'.format(
+          entry.module_name, entry.module_type, entry.stats)
+
   def RecipesManager(self) -> recipes_manager.RecipesManager:
     """Returns the recipes manager."""
     return self._recipes_manager
@@ -386,6 +397,7 @@ def Main() -> bool:
     return False
 
   tool.CleanUpPreflights()
+  tool.PrintStats()
 
   return True
 

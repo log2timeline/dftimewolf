@@ -72,6 +72,21 @@ class BaseModule(object):
 
     self.logger.addHandler(console_handler)
 
+  def LogStats(self, stats: Dict[str, Any]) -> None:
+    """Saves useful runtime statistics to the state for later processing.
+
+    Args:
+      stats: Stats to store. Contents are arbitrary, but keys must be strings.
+
+    Raises:
+      ValueError: If the keys in the stats dict are not strings.
+    """
+    if not all (isinstance(key, str) for key in stats.keys()):
+      raise ValueError("Stats keys must be strings.")
+    stastentry = self.state.StatsEntry(
+        type(self).__name__, self.state.runtime_name, stats)
+    self.state.StoreStats(stastentry)
+
   def CleanUp(self) -> None:
     """Cleans up module output to prepare it for the next module."""
     # No clean up is required.
