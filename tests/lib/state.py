@@ -407,6 +407,8 @@ class StateTest(unittest.TestCase):
     conts = test_state.GetContainers(thread_aware_modules.TestContainer)
 
     self.assertEqual(len(conts), 2)
+    for value in [c.value for c in conts]:
+      self.assertIn(value, ['one', 'two'])
 
 
 if __name__ == '__main__':
