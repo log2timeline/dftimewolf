@@ -409,9 +409,5 @@ class StateTest(unittest.TestCase):
     self.assertEqual(len(conts), 2)
 
 
-
-
-
-
 if __name__ == '__main__':
   unittest.main()

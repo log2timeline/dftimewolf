@@ -331,6 +331,10 @@ class GCEDisk(interface.AttributeContainer):
     super(GCEDisk, self).__init__()
     self.name = name
 
+  def __eq__(self, other: GCEDisk) -> bool:
+    """Override __eq__() for this container."""
+    return self.name == other.name
+
 class GCEDiskEvidence(interface.AttributeContainer):
   """Attribute container definition for a GCE Disk that has been copied.
 

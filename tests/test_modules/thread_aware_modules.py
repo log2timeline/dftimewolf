@@ -18,9 +18,9 @@ class TestContainer(interface.AttributeContainer):
   def __init__(self, value: str) -> None:
     super(TestContainer, self).__init__()
     self.value = value
-  
+
   def __eq__(self, other: object) -> bool:
-      return self.value == other.value
+    return self.value == other.value
 
 class TestContainerTwo(interface.AttributeContainer):
   """Test attribute container."""
