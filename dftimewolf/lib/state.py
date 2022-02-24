@@ -236,6 +236,22 @@ class DFTimewolfState(object):
         self.store[container_class.CONTAINER_TYPE] = []
       return tuple(container_objects)
 
+  def DedupeContainers(self, container_class: Type[T]) -> None:
+    """Thread safe deduping of containers of the given type.
+
+    This requires the container being deduped to override `__eq__()`.
+
+    Args:
+      container_class (type): AttributeContainer class to dedupe.
+    """
+    with self._state_lock:
+      deduped = []
+      for c in self.store.get(container_class.CONTAINER_TYPE, []):
+        if c not in deduped:
+          deduped.append(c)
+
+      self.store[container_class.CONTAINER_TYPE] = deduped
+
   def _SetupModuleThread(self, module_definition: Dict[str, str]) -> None:
     """Calls the module's SetUp() function and sets a threading event for it.
 

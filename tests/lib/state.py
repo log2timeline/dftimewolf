@@ -396,6 +396,20 @@ class StateTest(unittest.TestCase):
                        'three Processed']
     self.assertEqual(sorted(values), sorted(expected_values))
 
+  def testContainerDedupe(self):
+    """Tests the DFTimewolfState.DedupeContainers method."""
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.command_line_options = {}
+    test_state.StoreContainer(thread_aware_modules.TestContainer('one'))
+    test_state.StoreContainer(thread_aware_modules.TestContainer('one'))
+    test_state.StoreContainer(thread_aware_modules.TestContainer('two'))
+    test_state.DedupeContainers(thread_aware_modules.TestContainer)
+    conts = test_state.GetContainers(thread_aware_modules.TestContainer)
+
+    self.assertEqual(len(conts), 2)
+    for value in [c.value for c in conts]:
+      self.assertIn(value, ['one', 'two'])
+
 
 if __name__ == '__main__':
   unittest.main()
