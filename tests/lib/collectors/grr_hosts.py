@@ -551,7 +551,7 @@ class GRRFlowCollectorTest(unittest.TestCase):
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow')
   def testProcessNoFlowData(self,
-      _, 
+      _,
       mock_DLFiles,
       mock_InitHttp,
       mock_list_flows):
