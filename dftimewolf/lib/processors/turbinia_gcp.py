@@ -92,6 +92,9 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
   # pylint: disable=arguments-renamed
   def Process(self, disk_container: containers.GCEDiskEvidence) -> None:
     """Process a GCE Disk with Turbinia."""
+    if disk_container.project != self.project:
+      return
+
     log_file_path = os.path.join(
         self._output_path, f'{disk_container.name}-turbinia.log')
 
