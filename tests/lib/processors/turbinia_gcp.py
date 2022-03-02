@@ -353,6 +353,7 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
     file_containers = test_state.GetContainers(containers.File)
     self.assertEqual(len(file_containers), 0)
 
+    # pylint: disable=no-member
     mock_GoogleCloudDisk.assert_not_called()
     turbinia_processor.client.send_request.assert_not_called()
 
