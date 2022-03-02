@@ -922,6 +922,9 @@ class GRRFlowCollector(GRRFlow):
           path=collected_flow_data
       )
       self.state.StoreContainer(cont)
+    else:
+      self.logger.warning('No flow data collected for '
+          f'{container.hostname}:{container.flow_id}')
 
   def PreProcess(self) -> None:
     """Check that we're actually about to collect anything."""
