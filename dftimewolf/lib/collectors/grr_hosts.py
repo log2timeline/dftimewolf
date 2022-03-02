@@ -917,7 +917,7 @@ class GRRFlowCollector(GRRFlow):
 
   def PreProcess(self) -> None:
     """Check that we're actually about to collect anything."""
-    if len(self.state.GetContainers(containers.GrrFlow)) == 0:
+    if len(self.state.GetContainers(self.GetThreadOnContainerType())) == 0:
       self.logger.error('No flows found for collection.')
       self.logger.error('Did you specify a child flow instead of a parent?')
       self.ModuleError('No flows found for collection.', critical=True)
