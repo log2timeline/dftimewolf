@@ -93,6 +93,8 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
   def Process(self, disk_container: containers.GCEDiskEvidence) -> None:
     """Process a GCE Disk with Turbinia."""
     if disk_container.project != self.project:
+      self.logger.info(f'Found disk "{disk_container.name}" but skipping as it '
+          f'is in a different project "{disk_container.project}".')
       return
 
     log_file_path = os.path.join(
