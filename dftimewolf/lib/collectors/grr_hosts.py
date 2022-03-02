@@ -897,7 +897,7 @@ class GRRFlowCollector(GRRFlow):
             found_flows.append(f)
 
     missing_flows = sorted([f for f in flows if f not in found_flows])
-    if len(missing_flows) != 0:
+    if missing_flows:
       self.logger.warning('The following flows were not found: '
           f'{", ".join(missing_flows)}')
       self.logger.warning('Did you specify a child flow instead of a parent?')
