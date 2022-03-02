@@ -489,6 +489,35 @@ class GRRFlowCollectorTest(unittest.TestCase):
 
   @mock.patch('grr_api_client.client.Client.ListFlows')
   @mock.patch('grr_api_client.api.InitHttp')
+  def testSetUpMissingFlows(self, mock_InitHttp, mock_list_flows):
+    """Tests missing flows are correctly identified."""
+    self.mock_grr_api = mock.Mock()
+    mock_InitHttp.return_value = self.mock_grr_api
+    self.mock_grr_api.SearchClients.return_value = \
+        mock_grr_hosts.MOCK_CLIENT_LIST
+    mock_list_flows.return_value = [mock_grr_hosts.flow_pb_terminated]
+
+    with self.assertLogs(level='WARNING') as lc:
+      grr_flow_collector = grr_hosts.GRRFlowCollector(self.test_state)
+      grr_flow_collector.SetUp(
+          hostnames='C.0000000000000001',
+          flow_ids='F:12345,F:23456,F:34567',
+          reason='random reason',
+          grr_server_url='http://fake/endpoint',
+          grr_username='admin',
+          grr_password='admin',
+          approvers='approver1,approver2',
+          skip_offline_clients=False,
+      )
+
+      log_messages = [record.getMessage() for record in lc.records]
+      # pylint: disable=line-too-long
+      self.assertIn('\x1b[38;5;11mThe following flows were not found: F:23456, F:34567\x1b[0m', log_messages)
+      self.assertIn('\x1b[38;5;11mDid you specify a child flow instead of a parent?\x1b[0m', log_messages)
+      # pylint: enable=line-too-long
+
+  @mock.patch('grr_api_client.client.Client.ListFlows')
+  @mock.patch('grr_api_client.api.InitHttp')
   def testPreProcessNoFlows(self, mock_InitHttp, mock_list_flows):
     """Tests that if no flows are found, an error is thrown."""
     self.mock_grr_api = mock.Mock()

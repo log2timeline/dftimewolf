@@ -882,6 +882,7 @@ class GRRFlowCollector(GRRFlow):
         skip_offline_clients=skip_offline_clients)
 
     flows = flow_ids.strip().split(',')
+    found_flows = []
 
     # For each host specified, list their flows
     for item in hostnames.strip().split(','):
@@ -893,6 +894,13 @@ class GRRFlowCollector(GRRFlow):
         for f in flows:
           if f in client_flows:
             self.state.StoreContainer(containers.GrrFlow(host, f))
+            found_flows.append(f)
+
+    missing_flows = sorted([f for f in flows if f not in found_flows])
+    if len(missing_flows) != 0:
+      self.logger.warning('The following flows were not found: '
+          f'{", ".join(missing_flows)}')
+      self.logger.warning('Did you specify a child flow instead of a parent?')
 
   def Process(self, container: containers.GrrFlow) -> None:
     """Downloads the results of a GRR collection flow.
@@ -918,8 +926,6 @@ class GRRFlowCollector(GRRFlow):
   def PreProcess(self) -> None:
     """Check that we're actually about to collect anything."""
     if len(self.state.GetContainers(self.GetThreadOnContainerType())) == 0:
-      self.logger.error('No flows found for collection.')
-      self.logger.error('Did you specify a child flow instead of a parent?')
       self.ModuleError('No flows found for collection.', critical=True)
 
   def PostProcess(self) -> None:
