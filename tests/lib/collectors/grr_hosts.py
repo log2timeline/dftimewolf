@@ -509,7 +509,8 @@ class GRRFlowCollectorTest(unittest.TestCase):
         skip_offline_clients=False,
     )
 
-    self.test_state.GetContainers(containers.GrrFlow, True)  # Clear the containers to test correct failure on no containers being found.
+    # Clear the containers to test correct failure on no containers being found.
+    self.test_state.GetContainers(containers.GrrFlow, True)
 
     with self.assertRaises(errors.DFTimewolfError) as error:
       grr_flow_collector.PreProcess()
