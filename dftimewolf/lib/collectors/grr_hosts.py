@@ -916,7 +916,11 @@ class GRRFlowCollector(GRRFlow):
       self.state.StoreContainer(cont)
 
   def PreProcess(self) -> None:
-    """Not implemented."""
+    """Check that we're actually about to collect anything."""
+    if len(self.state.GetContainers(containers.GrrFlow)) == 0:
+      self.logger.error('No flows found for collection.')
+      self.logger.error('Did you specify a child flow instead of a parent?')
+      self.ModuleError('No flows found for collection.', critical=True)
 
   def PostProcess(self) -> None:
     # TODO(ramoj) check if this should be per client in process
@@ -924,7 +928,7 @@ class GRRFlowCollector(GRRFlow):
     self._CheckSkippedFlows()
 
   def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
-    """This module works on host containers."""
+    """This module works on GrrFlow containers."""
     return containers.GrrFlow
 
 

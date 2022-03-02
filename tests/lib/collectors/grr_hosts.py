@@ -487,6 +487,35 @@ class GRRFlowCollectorTest(unittest.TestCase):
     self.assertEqual(result.name, 'tomchop')
     self.assertEqual(result.path, '/tmp/something')
 
+  @mock.patch('grr_api_client.client.Client.ListFlows')
+  @mock.patch('grr_api_client.api.InitHttp')
+  def testPreProcessNoFlows(self, mock_InitHttp, mock_list_flows):
+    """Tests that if no flows are found, an error is thrown."""
+    self.mock_grr_api = mock.Mock()
+    mock_InitHttp.return_value = self.mock_grr_api
+    self.mock_grr_api.SearchClients.return_value = \
+        mock_grr_hosts.MOCK_CLIENT_LIST
+    mock_list_flows.return_value = [mock_grr_hosts.flow_pb_terminated]
+
+    grr_flow_collector = grr_hosts.GRRFlowCollector(self.test_state)
+    grr_flow_collector.SetUp(
+        hostnames='C.0000000000000001',
+        flow_ids='F:12345',
+        reason='random reason',
+        grr_server_url='http://fake/endpoint',
+        grr_username='admin',
+        grr_password='admin',
+        approvers='approver1,approver2',
+        skip_offline_clients=False,
+    )
+
+    self.test_state.GetContainers(containers.GrrFlow, True)  # Clear the containers to test correct failure on no containers being found.
+
+    with self.assertRaises(errors.DFTimewolfError) as error:
+      grr_flow_collector.PreProcess()
+    self.assertEqual('No flows found for collection.', error.exception.message)
+    self.assertEqual(len(self.test_state.errors), 1)
+
 
 class GRRTimelineCollectorTest(unittest.TestCase):
   """Tests for the GRR flow collector."""
