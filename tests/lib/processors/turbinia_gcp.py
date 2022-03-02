@@ -334,15 +334,6 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
         sketch_id=4567,
         run_all_jobs=False)
 
-    turbinia_processor.client.get_task_data.return_value = [{
-        'saved_paths': [
-            '/fake/data.plaso',
-            '/fake/data2.plaso',
-            '/another/random/file.txt',
-            'gs://BinaryExtractorTask.tar.gz',
-        ]
-    }]
-
     turbinia_processor.PreProcess()
     in_containers = test_state.GetContainers(
         turbinia_processor.GetThreadOnContainerType())
