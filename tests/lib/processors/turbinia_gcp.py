@@ -316,6 +316,38 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
     self.assertEqual(file_containers[0].path, '/fake/data.plaso')
     self.assertEqual(file_containers[1].path, '/fake/data2.plaso')
 
+  @mock.patch('turbinia.evidence.GoogleCloudDisk')
+  @mock.patch('turbinia.client.get_turbinia_client')
+  # pylint: disable=invalid-name
+  def testProcessCrossProject(self,
+                              _mock_TurbiniaClient,
+                              mock_GoogleCloudDisk):
+    """Tests that process does nothing if the disks are in another project."""
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.StoreContainer(containers.GCEDiskEvidence(
+        name='disk-1', project='another-project'))
+    turbinia_processor = turbinia_gcp.TurbiniaGCPProcessor(test_state)
+    turbinia_processor.SetUp(
+        turbinia_config_file=None,
+        project='turbinia-project',
+        turbinia_zone='europe-west1',
+        sketch_id=4567,
+        run_all_jobs=False)
+
+    turbinia_processor.PreProcess()
+    in_containers = test_state.GetContainers(
+        turbinia_processor.GetThreadOnContainerType())
+    for c in in_containers:
+      turbinia_processor.Process(c)
+    turbinia_processor.PostProcess()
+
+    file_containers = test_state.GetContainers(containers.File)
+    self.assertEqual(len(file_containers), 0)
+
+    # pylint: disable=no-member
+    mock_GoogleCloudDisk.assert_not_called()
+    turbinia_processor.client.send_request.assert_not_called()
+
   @mock.patch('turbinia.output_manager.GCSOutputWriter')
   # pylint: disable=invalid-name
   def testDownloadFilesFromGCS(self, mock_GCSOutputWriter):
