@@ -32,12 +32,13 @@ MODULES = {
   'FilesystemCollector': 'dftimewolf.lib.collectors.filesystem',
   'GCEDiskCopy': 'dftimewolf.lib.collectors.gce_disk_copy',
   'GCEDiskFromImage': 'dftimewolf.lib.exporters.gce_disk_from_image',
+  'GCEForensicsVM': 'dftimewolf.lib.processors.gce_forensics_vm',
   'GCPLoggingTimesketch': 'dftimewolf.lib.processors.gcp_logging_timesketch',
   'GCPLogsCollector': 'dftimewolf.lib.collectors.gcp_logging',
   'GCPTokenCheck': 'dftimewolf.lib.preflights.cloud_token',
   'GCSToGCEImage': 'dftimewolf.lib.exporters.gcs_to_gce_image',
-  'GoogleCloudCollector': 'dftimewolf.lib.collectors.gcloud',
   'GoogleCloudDiskExport': 'dftimewolf.lib.exporters.gce_disk_export',
+  'GoogleSheetsCollector': 'dftimewolf.lib.collectors.gsheets',
   'GrepperSearch': 'dftimewolf.lib.processors.grepper',
   'GRRArtifactCollector': 'dftimewolf.lib.collectors.grr_hosts',
   'GRRFileCollector': 'dftimewolf.lib.collectors.grr_hosts',
@@ -61,9 +62,7 @@ MODULES = {
   'TurbiniaGCPProcessor': 'dftimewolf.lib.processors.turbinia_gcp',
   'VTCollector' : 'dftimewolf.lib.collectors.virustotal',
   'WorkspaceAuditCollector': 'dftimewolf.lib.collectors.workspace_audit',
-  'WorkspaceAuditTimesketch': 'dftimewolf.lib.processors.workspace_audit_timesketch',
-  'GoogleSheetsCollector': 'dftimewolf.lib.collectors.gsheets',
-  'GCEForensicsVM': 'dftimewolf.lib.processors.gce_forensics_vm',
+  'WorkspaceAuditTimesketch': 'dftimewolf.lib.processors.workspace_audit_timesketch'
 }
 # pylint: enable=line-too-long
 

@@ -662,7 +662,7 @@ Collects specific files from one or more GRR hosts.
 
 **Details:**
 
-Collects specific files from one or more GRR hosts. Files can be a glob pattern (e.g. `/tmp/*.so`) and support GRR variable interpolation (e.g. `%%users.localappdata%%/Directory/`) 
+Collects specific files from one or more GRR hosts. Files can be a glob pattern (e.g. `/tmp/*.so`) and support GRR variable interpolation (e.g. `%%users.localappdata%%/Directory/`)
 
 **CLI parameters:**
 
@@ -1238,7 +1238,7 @@ Collects Google Workspace audit records for a Google Meet and adds them to Times
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`meeting_id`|`None`|ID for the Meeting to look up.
+`meeting_id`|`None`|ID for the Meeting to look up. (Without the '-' delimiter)
 `--start_time`|`None`|Start time (yyyy-mm-ddTHH:MM:SSZ).
 `--end_time`|`None`|End time (yyyy-mm-ddTHH:MM:SSZ).
 `--incident_id`|`None`|Incident ID (used for Timesketch description).

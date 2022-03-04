@@ -202,13 +202,14 @@ class GCEDiskCopyTest(unittest.TestCase):
         False
     )
     collector.PreProcess()
-    disks = test_state.GetContainers(containers.GCEDisk, True)
+    disks = test_state.GetContainers(containers.GCEDisk)
     self.assertEqual(len(disks), 1)
     self.assertEqual(disks[0].name, 'bootdisk')
     mock_GetBootDisk.assert_called_once()
 
     # Specifying all_disks should return all disks for the instance
     # (see mock_list_disks return value)
+    test_state.GetContainers(containers.GCEDisk, True)  # Clear containers first
     collector.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
@@ -219,13 +220,14 @@ class GCEDiskCopyTest(unittest.TestCase):
         False
     )
     collector.PreProcess()
-    disks = test_state.GetContainers(containers.GCEDisk, True)
+    disks = test_state.GetContainers(containers.GCEDisk)
     self.assertEqual(len(disks), 2)
     self.assertEqual(disks[0].name, 'bootdisk')
     self.assertEqual(disks[1].name, 'disk1')
 
     # Specifying a csv list of disks should have those included also
     collector = gce_disk_copy.GCEDiskCopy(test_state)
+    test_state.GetContainers(containers.GCEDisk, True)  # Clear containers first
     collector.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
@@ -236,7 +238,7 @@ class GCEDiskCopyTest(unittest.TestCase):
         False
     )
     collector.PreProcess()
-    disks = test_state.GetContainers(containers.GCEDisk, True)
+    disks = test_state.GetContainers(containers.GCEDisk)
     self.assertEqual(len(disks), 4)
     self.assertEqual(disks[0].name, 'another_disk_1')
     self.assertEqual(disks[1].name, 'another_disk_2')
@@ -317,15 +319,15 @@ class GCEDiskCopyTest(unittest.TestCase):
   # pylint: disable=line-too-long
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
   @mock.patch('libcloudforensics.providers.gcp.forensics.CreateDiskCopy')
-  @mock.patch('dftimewolf.lib.collectors.gcloud.GoogleCloudCollector._FindDisksToCopy')
+  @mock.patch('dftimewolf.lib.collectors.gce_disk_copy.GCEDiskCopy._GetDisksFromInstance')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.ListDisks')
   def testProcess(self,
                   mock_list_disks,
-                  mock_FindDisks,
+                  mock_getDisksFromInstance,
                   mock_CreateDiskCopy,
                   mock_GetInstance):
     """Tests the collector's Process() function."""
-    mock_FindDisks.return_value = FAKE_DISK_MULTIPLE
+    mock_getDisksFromInstance.return_value = FAKE_DISK_MULTIPLE
     mock_CreateDiskCopy.side_effect = FAKE_DISK_COPY
     mock_GetInstance.return_value = FAKE_INSTANCE
     mock_list_disks.return_value = {
@@ -347,7 +349,7 @@ class GCEDiskCopyTest(unittest.TestCase):
     FAKE_INSTANCE.Stop = mock.MagicMock()
 
     collector.PreProcess()
-    conts = test_state.GetContainers(collector.GetThreadOnContainerType(), True)
+    conts = test_state.GetContainers(collector.GetThreadOnContainerType())
     for d in conts:
       collector.Process(d)
       mock_CreateDiskCopy.assert_called_with(
@@ -358,12 +360,18 @@ class GCEDiskCopyTest(unittest.TestCase):
     collector.PostProcess()
 
     FAKE_INSTANCE.Stop.assert_called_once()
-    out_disks = sorted([d.name for d in
-        test_state.GetContainers(containers.GCEDisk, True)])
-    expected_disks = ['disk1-copy', 'disk2-copy']
-    self.assertEqual(out_disks, expected_disks)
+
+    out_disks = test_state.GetContainers(containers.GCEDiskEvidence)
+    out_disk_names = sorted([d.name for d in out_disks])
+    expected_disk_names = ['disk1-copy', 'disk2-copy']
+    self.assertEqual(out_disk_names, expected_disk_names)
+    for d in out_disks:
+      self.assertEqual(d.project, 'test-analysis-project-name')
 
     # Do it again, but we don't want to stop the instance this time.
+    # First, clear the containers
+    test_state.GetContainers(containers.GCEDisk, True)
+    test_state.GetContainers(containers.GCEDiskEvidence, True)
     mock_CreateDiskCopy.side_effect = FAKE_DISK_COPY
     collector = gce_disk_copy.GCEDiskCopy(test_state)
     collector.SetUp(
@@ -378,7 +386,7 @@ class GCEDiskCopyTest(unittest.TestCase):
     FAKE_INSTANCE.Stop = mock.MagicMock()
 
     collector.PreProcess()
-    conts = test_state.GetContainers(collector.GetThreadOnContainerType(), True)
+    conts = test_state.GetContainers(collector.GetThreadOnContainerType())
     for d in conts:
       collector.Process(d)
       mock_CreateDiskCopy.assert_called_with(
@@ -389,10 +397,12 @@ class GCEDiskCopyTest(unittest.TestCase):
     collector.PostProcess()
 
     FAKE_INSTANCE.Stop.assert_not_called()
-    out_disks = sorted([d.name for d in
-        test_state.GetContainers(containers.GCEDisk, True)])
-    expected_disks = ['disk1-copy', 'disk2-copy']
-    self.assertEqual(out_disks, expected_disks)
+    out_disks = test_state.GetContainers(containers.GCEDiskEvidence)
+    out_disk_names = sorted([d.name for d in out_disks])
+    expected_disk_names = ['disk1-copy', 'disk2-copy']
+    self.assertEqual(out_disk_names, expected_disk_names)
+    for d in out_disks:
+      self.assertEqual(d.project, 'test-analysis-project-name')
 
   @mock.patch('libcloudforensics.providers.gcp.forensics.CreateDiskCopy')
   def testProcessDiskCopyErrors(self, mock_CreateDiskCopy):
@@ -416,7 +426,7 @@ class GCEDiskCopyTest(unittest.TestCase):
         False
     )
     collector.PreProcess()
-    conts = test_state.GetContainers(collector.GetThreadOnContainerType(), True)
+    conts = test_state.GetContainers(collector.GetThreadOnContainerType())
     for d in conts:
       collector.Process(d)
     with self.assertRaises(errors.DFTimewolfError) as error:
@@ -440,7 +450,7 @@ class GCEDiskCopyTest(unittest.TestCase):
         False
     )
     collector.PreProcess()
-    conts = test_state.GetContainers(collector.GetThreadOnContainerType(), True)
+    conts = test_state.GetContainers(collector.GetThreadOnContainerType())
     with self.assertRaises(errors.DFTimewolfError) as error:
       for d in conts:
         collector.Process(d)

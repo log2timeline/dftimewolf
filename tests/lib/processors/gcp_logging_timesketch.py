@@ -73,6 +73,8 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
             'test_query',
         'project_name':
             'test_project',
+        'data_type':
+            'gcp:log:json',
         'datetime':
             '2019-06-06T09:00:41.797000Z',
         'timestamp_desc':
@@ -202,6 +204,8 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
             'test_query',
         'project_name':
             'test_project',
+        'data_type':
+            'gcp:log:json',
         'datetime':
             '2019-06-06T09:00:27.066000Z',
         'timestamp_desc':
@@ -295,6 +299,8 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
             'test_query',
         'project_name':
             'test_project',
+        'data_type':
+            'gcp:log:json',
         'datetime':
             '2019-06-06T09:29:04.499000Z',
         'timestamp_desc':
@@ -425,6 +431,8 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
             'test_query',
         'project_name':
             'test_project',
+        'data_type':
+            'gcp:log:json',
         'datetime':
             '2020-06-16T05:09:57.427874505Z',
         'timestamp_desc':
@@ -516,6 +524,7 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
         'message': 'line 470: /etc/selinux/config: Permission denied',
         'project_name': 'test_project',
         'query': 'test_query',
+        'data_type': 'gcp:log:json',
         'resource_label_cluster_name': 'cluster-ca8b',
         'resource_label_cluster_uuid': '44444-444444-444-4444-4444',
         'resource_label_project_id': 'metastore-playground',

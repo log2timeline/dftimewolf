@@ -331,6 +331,24 @@ class GCEDisk(interface.AttributeContainer):
     super(GCEDisk, self).__init__()
     self.name = name
 
+  def __eq__(self, other: GCEDisk) -> bool:
+    """Override __eq__() for this container."""
+    return self.name == other.name
+
+class GCEDiskEvidence(interface.AttributeContainer):
+  """Attribute container definition for a GCE Disk that has been copied.
+
+  Attributes:
+    name (str): The disk name.
+    project (str): The project the disk was copied to.
+  """
+  CONTAINER_TYPE = 'gcediskevidence'
+
+  def __init__(self, name: str, project: str) -> None:
+    super(GCEDiskEvidence, self).__init__()
+    self.name = name
+    self.project = project
+
 
 class GCEImage(interface.AttributeContainer):
   """Attribute container definition for a GCE Image object.

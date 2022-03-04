@@ -139,6 +139,8 @@ class GCEDiskCopy(module.ThreadAwareModule):
             message=f'Instance "{i}" in {self.source_project.project_id} not '
                 'found or insufficient permissions',
             critical=True)
+
+      self.state.DedupeContainers(containers.GCEDisk)
     except HttpError as exception:
       if exception.resp.status == 403:
         self.ModuleError(
@@ -163,7 +165,8 @@ class GCEDiskCopy(module.ThreadAwareModule):
       self.at_least_one_success = True
       self.logger.success(f'Disk {container.name} successfully copied to '
           f'{new_disk.name}')
-      self.state.StoreContainer(containers.GCEDisk(new_disk.name))
+      self.state.StoreContainer(containers.GCEDiskEvidence(
+          new_disk.name, self.destination_project.project_id))
     except lcf_errors.ResourceNotFoundError as exception:
       self.logger.error(f'Could not find disk "{container.name}": {exception}')
       self.warned = True
@@ -233,10 +236,6 @@ class GCEDiskCopy(module.ThreadAwareModule):
 
   def GetThreadPoolSize(self) -> int:
     return 15  # Arbitrary
-
-  @staticmethod
-  def KeepThreadedContainersInState() -> bool:
-    return False
 
 
 modules_manager.ModulesManager.RegisterModule(GCEDiskCopy)
