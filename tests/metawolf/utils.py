@@ -86,7 +86,7 @@ class MetawolfUtilsTest(unittest.TestCase):
   def testGetType(self) -> None:
     """Test that the type of a string is inferred correctly."""
     self.assertEqual(bool, utils.GetType('y'))
-    self.assertEqual(int, utils.GetType('0'))
+    self.assertEqual(bool, utils.GetType('0'))
     self.assertEqual(float, utils.GetType('1.'))
 
   def testCastToType(self) -> None:
