@@ -624,7 +624,7 @@ class Metawolf(cmd2.Cmd):
     self.reload_default = True
 
   def do_clear(self, _: cmd2.Statement) -> None:
-    """Clear the recipe's settable values.
+    """Clear the screen.
 
     Args:
       _ (Statement): Unused.
