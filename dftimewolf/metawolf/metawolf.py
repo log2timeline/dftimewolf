@@ -257,8 +257,12 @@ class Metawolf(cmd2.Cmd):
           # Session and recipe settables are not in scope.
           continue
         try:
-          value = input('Set value for parameter {0:s} ({1:s}: {2:s}. Press '
-                        '"enter" to skip or ctrl+d to abort.): '.format(
+          value = input('Set value for{0:s}parameter {1:s} ({2:s}: {3:s}. '
+                        'Press "enter" to skip or ctrl+d to abort.): '.format(
+            ' ({0:s}) '.format(self.metawolf_output.Color(
+              'optional',
+              output.YELLOW,
+              escape=True)) if settable.IsOptional() else ' ',
             settable.name,
             self.metawolf_output.Color(
                 'Current value', output.YELLOW, escape=True),
@@ -462,21 +466,26 @@ class Metawolf(cmd2.Cmd):
             continue
           active_recipes.append(recipe)
         statuses = {}
-        for metawolf_process in self.processes:
-          if s_id == metawolf_process.session_id and metawolf_process.recipe:
-            statuses[metawolf_process.recipe] = (
-                metawolf_process.Status(),
-                metawolf_process.timestamp_readable or ''
-            )  # latest status of recipe run
+        for recipe in active_recipes:
+          statuses[recipe] = ('', '')
+          for metawolf_process in self.processes:
+            # pylint: disable=line-too-long
+            if s_id == metawolf_process.session_id and metawolf_process.recipe == recipe:
+              # pylint: enable=line-too-long
+              statuses[recipe] = (
+                  metawolf_process.Status(),
+                  metawolf_process.timestamp_readable or ''
+              )  # latest status of recipe run
         session_iter = self.metawolf_output.Color(s_id, output.GREEN)
         if self.session_id in session_iter:
           session_iter = '{0:s}{1:s}'.format(
               session_iter, self.metawolf_output.Color(' <--', output.YELLOW))
+        sortedStatues = {key:statuses[key] for key in sorted(statuses)}
         t.add_row(
             [session_iter,
-             '\n'.join(active_recipes),
-             '\n'.join([s for s, _ in statuses.values()]),
-             '\n'.join([t for _, t in statuses.values()])])
+             '\n'.join(sorted(active_recipes)),
+             '\n'.join([s for s, _ in sortedStatues.values()]),
+             '\n'.join([t for _, t in sortedStatues.values()])])
       self.poutput(t)
       return
 
@@ -620,11 +629,7 @@ class Metawolf(cmd2.Cmd):
     Args:
       _ (Statement): Unused.
     """
-    # mypy associates the unused argument to below for-loop, so we ignore it.
-    for _, settable in self.session_settables.items():  # type: ignore
-      if settable.name in [ARG_SESSION, ARG_RECIPE]:
-        continue
-      settable.SetValue(None)
+    self.do_shell('clear')
 
   def do_clean(self, _: cmd2.Statement) -> None:
     """Clean the processes associated to the current session.
@@ -962,7 +967,7 @@ class Metawolf(cmd2.Cmd):
 
     prev_value = settable.GetValue()
     value = utils.CastToType(updated_value, settable.type)
-    if not value:
+    if value is None:
       input_type = utils.GetType(updated_value)
       self.poutput(self.metawolf_output.Color(
           'Cannot use: {0:s} (of type {1!s}) for recipe argument: {2:s} '
