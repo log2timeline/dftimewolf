@@ -497,8 +497,10 @@ class GRRFlowCollectorTest(unittest.TestCase):
         mock_grr_hosts.MOCK_CLIENT_LIST
     mock_list_flows.return_value = [mock_grr_hosts.flow_pb_terminated]
 
-    with self.assertLogs(level='WARNING') as lc:
-      grr_flow_collector = grr_hosts.GRRFlowCollector(self.test_state)
+    grr_flow_collector = grr_hosts.GRRFlowCollector(self.test_state)
+    logger = grr_flow_collector.logger
+
+    with self.assertLogs(logger) as lc:
       grr_flow_collector.SetUp(
           hostnames='C.0000000000000001',
           flow_ids='F:12345,F:23456,F:34567',
@@ -512,8 +514,8 @@ class GRRFlowCollectorTest(unittest.TestCase):
 
       log_messages = [record.getMessage() for record in lc.records]
       # pylint: disable=line-too-long
-      self.assertIn('\x1b[38;5;11mThe following flows were not found: F:23456, F:34567\x1b[0m', log_messages)
-      self.assertIn('\x1b[38;5;11mDid you specify a child flow instead of a parent?\x1b[0m', log_messages)
+      self.assertIn('The following flows were not found: F:23456, F:34567', log_messages)
+      self.assertIn('Did you specify a child flow instead of a parent?', log_messages)
       # pylint: enable=line-too-long
 
   @mock.patch('grr_api_client.client.Client.ListFlows')
@@ -563,8 +565,10 @@ class GRRFlowCollectorTest(unittest.TestCase):
     mock_list_flows.return_value = [mock_grr_hosts.flow_pb_terminated]
     mock_DLFiles.return_value = None
 
-    with self.assertLogs(level='WARNING') as lc:
-      grr_flow_collector = grr_hosts.GRRFlowCollector(self.test_state)
+    grr_flow_collector = grr_hosts.GRRFlowCollector(self.test_state)
+    logger = grr_flow_collector.logger
+
+    with self.assertLogs(logger) as lc:
       grr_flow_collector.SetUp(
           hostnames='C.0000000000000001',
           flow_ids='F:12345',
@@ -584,7 +588,7 @@ class GRRFlowCollectorTest(unittest.TestCase):
 
       log_messages = [record.getMessage() for record in lc.records]
       # pylint: disable=line-too-long
-      self.assertIn('[MainThread] \x1b[38;5;11mNo flow data collected for C.0000000000000001:F:12345\x1b[0m', log_messages)
+      self.assertIn('No flow data collected for C.0000000000000001:F:12345', log_messages)
       # pylint: enable=line-too-long
 
 
