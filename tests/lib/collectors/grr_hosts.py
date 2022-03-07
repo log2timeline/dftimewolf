@@ -129,7 +129,7 @@ class GRRFlowTests(unittest.TestCase):
   def testAwaitFlowGRRError(self, mock_FlowGet):
     """"Test that an exception is raised if the GRR API raises an error."""
     mock_FlowGet.side_effect = grr_errors.UnknownError
-    error_msg = 'Unable to stat flow F:12345 for host'
+    error_msg = 'Unable to start flow F:12345 for host'
     with six.assertRaisesRegex(self, DFTimewolfError, error_msg):
       self.grr_flow_module._AwaitFlow(mock_grr_hosts.MOCK_CLIENT, "F:12345")
 
