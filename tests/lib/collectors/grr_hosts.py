@@ -584,7 +584,7 @@ class GRRFlowCollectorTest(unittest.TestCase):
 
       log_messages = [record.getMessage() for record in lc.records]
       # pylint: disable=line-too-long
-      self.assertIn('[MainThread] \x1b[38;5;11mNo flow data collected for C.0000000000000001:F:12345\x1b[0m', log_messages)
+      self.assertIn('[MainThread] \x1b[38;5;11m[MainThread] No flow data collected for C.0000000000000001:F:12345\x1b[0m', log_messages)
       # pylint: enable=line-too-long
 
 

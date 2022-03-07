@@ -60,7 +60,9 @@ class BaseModule(object):
     self.logger.setLevel(logging.DEBUG)
 
     file_handler = handlers.RotatingFileHandler(logging_utils.DEFAULT_LOG_FILE)
-    file_handler.setFormatter(logging_utils.WolfFormatter(colorize=False))
+    file_handler.setFormatter(logging_utils.WolfFormatter(
+        colorize=False,
+        threaded=threaded))
     self.logger.addHandler(file_handler)
 
     console_handler = logging.StreamHandler()
