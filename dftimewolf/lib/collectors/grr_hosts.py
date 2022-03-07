@@ -264,7 +264,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       try:
         status = client.Flow(flow_id).Get().data
       except grr_errors.UnknownError:
-        msg = 'Unable to stat flow {0:s} for host {1:s}'.format(
+        msg = 'Unable to start flow {0:s} for host {1:s}'.format(
             flow_id, client.data.os_info.fqdn.lower())
         self.ModuleError(msg, critical=True)
 
