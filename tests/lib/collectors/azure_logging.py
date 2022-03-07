@@ -73,7 +73,7 @@ class AzureLogging(unittest.TestCase):
     mock_activity_logs_client.list.assert_called_with(
         filter='eventTimestamp ge \'2022-02-01\'')
 
-    azure_containers = test_state.GetContainers(containers.File) 
+    azure_containers = test_state.GetContainers(containers.File)
     self.assertTrue(azure_containers)
     self.assertEqual(azure_containers[0].name, 'AzureLogsCollector result')
 
