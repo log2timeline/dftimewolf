@@ -498,9 +498,8 @@ class GRRFlowCollectorTest(unittest.TestCase):
     mock_list_flows.return_value = [mock_grr_hosts.flow_pb_terminated]
 
     grr_flow_collector = grr_hosts.GRRFlowCollector(self.test_state)
-    logger = grr_flow_collector.logger
 
-    with self.assertLogs(logger) as lc:
+    with self.assertLogs(grr_flow_collector.logger) as lc:
       grr_flow_collector.SetUp(
           hostnames='C.0000000000000001',
           flow_ids='F:12345,F:23456,F:34567',
@@ -566,9 +565,8 @@ class GRRFlowCollectorTest(unittest.TestCase):
     mock_DLFiles.return_value = None
 
     grr_flow_collector = grr_hosts.GRRFlowCollector(self.test_state)
-    logger = grr_flow_collector.logger
 
-    with self.assertLogs(logger) as lc:
+    with self.assertLogs(grr_flow_collector.logger) as lc:
       grr_flow_collector.SetUp(
           hostnames='C.0000000000000001',
           flow_ids='F:12345',
