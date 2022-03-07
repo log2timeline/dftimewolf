@@ -10,7 +10,7 @@ from azure.core import exceptions as az_exceptions
 from dftimewolf.lib import state
 from dftimewolf import config
 from dftimewolf.lib.collectors import azure_logging
-from dftimewolf.lib.containers.containers import AzureLogs
+from dftimewolf.lib.containers import containers
 from dftimewolf.lib import errors
 
 
@@ -72,7 +72,10 @@ class AzureLogging(unittest.TestCase):
         'Credentials', '55c5ff71-b3e2-450d-89da-cb12c1a38d87')
     mock_activity_logs_client.list.assert_called_with(
         filter='eventTimestamp ge \'2022-02-01\'')
-    self.assertTrue(test_state.GetContainers(AzureLogs))
+
+    azure_containers = test_state.GetContainers(containers.File) 
+    self.assertTrue(azure_containers)
+    self.assertEqual(azure_containers[0].name, 'AzureLogsCollector result')
 
     # Ensure DFTimewolfError is raised when creds aren't found.
     mock_credentials.side_effect = FileNotFoundError
