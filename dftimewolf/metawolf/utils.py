@@ -94,8 +94,8 @@ def Str2Bool(value: str) -> Optional[bool]:
   """
   if not isinstance(value, str):
     return None
-  true_set = {'yes', 'true', 't', 'y'}
-  false_set = {'no', 'false', 'f', 'n'}
+  true_set = {'yes', 'true', 't', 'y', '1'}
+  false_set = {'no', 'false', 'f', 'n', '0'}
   if value.lower() in true_set:
     return True
   if value.lower() in false_set:
