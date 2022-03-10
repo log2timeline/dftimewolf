@@ -117,10 +117,7 @@ class AWSLogsCollector(module.BaseModule):
     self.logger.success('Downloaded logs to {0:s}'.format(output_path))
     output_file.close()
 
-    logs_report = containers.AWSLogs(
-        path=output_path, profile_name=self._profile_name,
-        query_filter=self._query_filter, start_time=self._start_time,
-        end_time=self._end_time)
+    logs_report = containers.File('AWSLogsCollector result', output_path)
     self.state.StoreContainer(logs_report)
 
 
