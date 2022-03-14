@@ -35,7 +35,7 @@ log = logging.getLogger(__name__)
 
 # pylint: disable=line-too-long
 RECIPE = {
-  'name': 'unittest-aws-to-gcp',
+  'name': 'e2e-test-aws-to-gcp',
   'short_description': 'Nothing to see here.',
   'preflights': [
     {
@@ -177,7 +177,7 @@ class AWSToGCPForensicsEndToEndTest(unittest.TestCase):
     self._recipes_manager.RegisterRecipe(self._recipe)
 
   def testRunRecipe(self):
-    """Tests copy on boot disk from an instance only."""
+    """Tests the recipe for AWS->GCP disk copy."""
     warnings.filterwarnings(
         action="ignore", message="unclosed", category=ResourceWarning)
 
@@ -195,7 +195,9 @@ class AWSToGCPForensicsEndToEndTest(unittest.TestCase):
     self.test_state.SetupModules()
     self.test_state.RunModules()
 
-    # AWS Volume in count should equal GCE Disk out count
+    # AWS Volume in count should equal GCE Disk out count, and be at least 1
+    self.assertGreaterEqual(
+        len(self.test_state.GetContainers(containers.AWSVolume)), 1)
     self.assertEqual(len(self.test_state.GetContainers(containers.AWSVolume)),
         len(self.test_state.GetContainers(containers.GCEDiskEvidence)))
 
