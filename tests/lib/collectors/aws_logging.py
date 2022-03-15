@@ -29,14 +29,12 @@ class AWSLoggingTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     aws_logging_collector = aws_logging.AWSLogsCollector(test_state)
     aws_logging_collector.SetUp(
-        'fake-zone-1b',
         profile_name='default',
         query_filter='Username,fakename',
         start_time='2021-01-01 00:00:00',
         end_time='2021-01-02 00:00:00')
 
     # pylint: disable=protected-access
-    self.assertEqual(aws_logging_collector._zone, 'fake-zone-1b')
     self.assertEqual(aws_logging_collector._profile_name, 'default')
     self.assertEqual(aws_logging_collector._query_filter, 'Username,fakename')
     self.assertEqual(
@@ -59,7 +57,6 @@ class AWSLoggingTest(unittest.TestCase):
     aws_logging_collector = aws_logging.AWSLogsCollector(test_state)
 
     aws_logging_collector.SetUp(
-        'fake-zone-1b',
         query_filter='Username,fakename',
         start_time='2021-01-01 00:00:00',
         end_time='2021-01-02 00:00:00')

@@ -24,7 +24,6 @@ class AWSLogsCollector(module.BaseModule):
                critical: bool=False) -> None:
     """Initializes an AWS logs collector."""
     super(AWSLogsCollector, self).__init__(state, name=name, critical=critical)
-    self._zone: str = ''
     self._profile_name: Optional[str] = None
     self._query_filter: Optional[str] = None
     self._start_time: Optional[datetime] = None
@@ -32,7 +31,6 @@ class AWSLogsCollector(module.BaseModule):
 
   # pylint: disable=arguments-differ
   def SetUp(self,
-            zone: str,
             profile_name: Optional[str]=None,
             query_filter: Optional[str]=None,
             start_time: Optional[str]=None,
@@ -40,7 +38,6 @@ class AWSLogsCollector(module.BaseModule):
     """Sets up an AWS logs collector
 
     Args:
-      zone (str): default availability zone for libcloudforensics AWSAccount.
       profile_name (str): Optional. The profile name to collect logs with.
       query_filter (str): Optional. The CloudTrail query filter in the form
         'key,value'
@@ -49,7 +46,6 @@ class AWSLogsCollector(module.BaseModule):
       end_time (str): Optional. The end time for the query in the format
         'YYYY-MM-DD HH:MM:SS'
     """
-    self._zone = zone
     self._profile_name = profile_name
     self._query_filter = query_filter
     if start_time:
