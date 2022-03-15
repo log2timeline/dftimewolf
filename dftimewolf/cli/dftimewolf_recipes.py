@@ -329,6 +329,7 @@ def SetupLogging() -> None:
   console_handler = logging.StreamHandler(stream=sys.stdout)
   colorize = not bool(os.environ.get('DFTIMEWOLF_NO_RAINBOW'))
   console_handler.setFormatter(logging_utils.WolfFormatter(colorize=colorize))
+  logger.propagate = False
   logger.addHandler(console_handler)
   logger.debug(
       'Logging to stdout and {0:s}'.format(logging_utils.DEFAULT_LOG_FILE))
