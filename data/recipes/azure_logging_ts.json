@@ -2,13 +2,7 @@
     "name": "azure_logging_ts",
     "short_description": "Collects logs from an Azure subscription, processes the logs with Plaso and uploads the result to Timesketch.",
     "description": "Collects logs from an Azure subscription using a specified query filter and date ranges, processes the logs with plaso and uploads the result to Timesketch.",
-    "preflights": [{
-        "wants": [],
-        "name": "AzureAccountCheck",
-        "args": {
-            "profile_name": "@profile_name"
-        }
-    }],
+    "preflights": [],
     "modules": [{
         "wants": [],
         "name": "AzureLogsCollector",
