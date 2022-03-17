@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2020 Google Inc.
+# Copyright 2022 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""End to end test for the AWS -> GCP cloud forensics modules."""
+"""End to end test for the AWS -> GCP disk copy process."""
 import json
 import logging
 import os
@@ -125,7 +125,7 @@ INFO_REQUIRED_KEYS = ["gcp_project_id", "gcp_bucket", "gcp_zone", "aws_volume", 
 class AWSToGCPForensicsEndToEndTest(unittest.TestCase):
   """End to end test of the AWS -> GCP disk copy workflow.
 
-  This end-to-end test runs directly on GCP and tests the following modules:
+  This end-to-end test runs directly on AWS+GCP and tests the following modules:
     1. AWSVolumeSnapshotCollector
     2. AWSSnapshotS3CopyCollector
     3. S3ToGCSCopy
@@ -166,7 +166,7 @@ class AWSToGCPForensicsEndToEndTest(unittest.TestCase):
     self.aws_volume = project_info['aws_volume']
     self.aws_region = project_info['aws_region']
     self.aws_bucket = project_info['aws_bucket']
-    self.aws_subnet = project_info['aws_subnet']
+    self.aws_subnet = project_info.get('aws_subnet', '')
 
   def setUp(self):
     self.incident_id = 'fake-incident-id'
@@ -201,10 +201,15 @@ class AWSToGCPForensicsEndToEndTest(unittest.TestCase):
     self.assertEqual(len(self.test_state.GetContainers(containers.AWSVolume)),
         len(self.test_state.GetContainers(containers.GCEDiskEvidence)))
 
+    real_gce_disk_names = list(
+        compute.GoogleCloudCompute(self.gcp_project_id).Disks().keys())
+
     for d in self.test_state.GetContainers(containers.GCEDiskEvidence):
+      self.assertIn(d.name, real_gce_disk_names)
       real_disk = compute.GoogleComputeDisk(
           self.gcp_project_id, self.gcp_zone, d.name)
       self.assertEqual(real_disk.GetDiskType(), 'pd-standard')
+      # Make an API call to the service that will fail if the disk doesn't exist
 
   def tearDown(self):
     """Clean up after the test."""
