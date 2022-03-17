@@ -31,6 +31,8 @@ MODULES = {
   'BigQueryCollector': 'dftimewolf.lib.collectors.bigquery',
   'FilesystemCollector': 'dftimewolf.lib.collectors.filesystem',
   'GCEDiskCopy': 'dftimewolf.lib.collectors.gce_disk_copy',
+  'GoogleCloudDiskExport': 'dftimewolf.lib.exporters.gce_disk_export',
+  'GoogleCloudDiskExportStream': 'dftimewolf.lib.exporters.gce_disk_export_dd',
   'GCEDiskFromImage': 'dftimewolf.lib.exporters.gce_disk_from_image',
   'GCEForensicsVM': 'dftimewolf.lib.processors.gce_forensics_vm',
   'GCPLoggingTimesketch': 'dftimewolf.lib.processors.gcp_logging_timesketch',
