@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Export disk image from a GCP project to Google Cloud Storage (GCS).
 
-The export is performed via bit streaming the the disk bytes to GCS.
+The export is performed via bit streaming the disk bytes to GCS.
 This will allow getting a disk image out of the project in case both
 organization policies `constraints/compute.storageResourceUseRestrictions`
 and `constraints/compute.trustedImageProjects` are enforced and in case
