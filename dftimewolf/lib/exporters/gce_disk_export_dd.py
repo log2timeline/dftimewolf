@@ -29,17 +29,15 @@ from libcloudforensics.providers.gcp.internal import common as gcp_common
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk
 
-from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
-from dftimewolf.lib.exporters.gce_disk_export_base import GoogleComputeDiskExportBase  # pylint: disable=line-too-long
+from dftimewolf.lib.exporters.gce_disk_export_base import GoogleCloudDiskExportBase  # pylint: disable=line-too-long
 
 
 _EXPORT_STARTUP_SCRIPT = 'export_machine_startup_script.sh'
 
-class GoogleCloudDiskExportStream(
-  module.BaseModule, GoogleComputeDiskExportBase):
+class GoogleCloudDiskExportStream(GoogleCloudDiskExportBase):
   """Google Cloud Platform (GCP) disk bit-stream export.
 
   Attributes:
@@ -76,8 +74,8 @@ class GoogleCloudDiskExportStream(
     self.all_disks = False
     self.source_disks = []  # type: List[GoogleComputeDisk]
     self.startup_script = str()
-    self.boot_image_project = str()
-    self.boot_image_family = str()
+    self.boot_image_project = None # type: Optional[str]
+    self.boot_image_family = None # type: Optional[str]
 
   # pylint: disable=arguments-differ
   def SetUp(self,
@@ -86,8 +84,8 @@ class GoogleCloudDiskExportStream(
             source_disk_names: Optional[str]=None,
             remote_instance_name: Optional[str]=None,
             all_disks: bool=False,
-            boot_image_project: str=None,
-            boot_image_family: str=None) -> None:
+            boot_image_project: Optional[str]=None,
+            boot_image_family: Optional[str]=None) -> None:
     """Sets up a Google Cloud Platform (GCP) Disk Export.
 
     This method creates the required objects to initialize
@@ -161,6 +159,7 @@ class GoogleCloudDiskExportStream(
     while not self._ExportJobFinished():
       self.logger.info(
         ('Waiting for export instance {0:s} to finish exporting disks. '
+        'This can take up-to few minutes or hours depending on disks size.'
         'All non-boot disk must have "archive" and "archive_hash_verified" '
         'labels equal "true" for the export job to finish.').format(
           export_instance.name))

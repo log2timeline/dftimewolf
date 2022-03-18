@@ -8,14 +8,13 @@ from typing import List, Optional
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk
 
-from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
-from dftimewolf.lib.exporters.gce_disk_export_base import GoogleComputeDiskExportBase  # pylint: disable=line-too-long
+from dftimewolf.lib.exporters.gce_disk_export_base import GoogleCloudDiskExportBase  # pylint: disable=line-too-long
 
 
-class GoogleCloudDiskExport(module.BaseModule, GoogleComputeDiskExportBase):
+class GoogleCloudDiskExport(GoogleCloudDiskExportBase):
   """Google Cloud Platform (GCP) Disk Export.
 
   Attributes:

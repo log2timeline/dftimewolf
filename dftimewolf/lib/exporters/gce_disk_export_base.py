@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 """BAse Class to Export Compute disk images to Google Cloud Storage."""
 import os
-from typing import List
+from typing import List, Optional
 from googleapiclient.errors import HttpError
+from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk  # pylint: disable=line-too-long
+from dftimewolf.lib import module
+from dftimewolf.lib.state import DFTimewolfState
 
-# pylint: disable=no-member
-class GoogleComputeDiskExportBase(object):
-  """Google Cloud Platform (GCP) Disk Export base class.
+
+#pylint: disable=abstract-method
+class GoogleCloudDiskExportBase(module.BaseModule):
+  """Google Cloud Platform (GCP) disk export base class.
 
   Attributes:
     source_project (gcp_project.GoogleCloudProject): Source project
@@ -17,6 +21,25 @@ class GoogleComputeDiskExportBase(object):
     all_disks (bool): True if all disks attached to the source
         instance should be copied.
   """
+
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str]=None,
+               critical: bool=False) -> None:
+    """Initializes GCP disk export base class.
+
+    Args:
+      state (DFTimewolfState): recipe state.
+      name (Optional[str]): The module's runtime name.
+      critical (Optional[bool]): True if the module is critical, which causes
+          the entire recipe to fail if the module encounters an error.
+    """
+    super(GoogleCloudDiskExportBase, self).__init__(
+        state, name=name, critical=critical)
+    self.source_project = None  # type: gcp_project.GoogleCloudProject
+    self.remote_instance_name = None  # type: Optional[str]
+    self.source_disk_names = []  # type: List[str]
+    self.all_disks = False
 
   def _GetDisksFromNames(
       self, source_disk_names: List[str]) -> List[GoogleComputeDisk]:
@@ -120,7 +143,7 @@ class GoogleComputeDiskExportBase(object):
           'Could not open/read/close the Export script {0:s}: {1:s}'.format(
               path, str(exception))) from exception
 
-  def _DetachDisks(self, disks: List[GoogleComputeDisk]):
+  def _DetachDisks(self, disks: List[GoogleComputeDisk]) -> None:
     """Detaches disks from VMs in case they are attached.
 
     Args:
