@@ -87,8 +87,7 @@ class GoogleCloudDiskExportBase(module.BaseModule):
     """Determines which disks to copy depending on object attributes.
 
     Returns:
-      list: the disks to copy to the
-          analysis project.
+      The disks to copy to the analysis project.
     """
     if not (self.remote_instance_name or self.source_disk_names):
       self.ModuleError(
