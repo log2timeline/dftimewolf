@@ -149,7 +149,6 @@ class GoogleCloudDiskExportBase(module.BaseModule):
       disks: disks to detach.
     """
     try:
-
       for disk in disks:
         users = disk.GetValue('users')
         if users:
