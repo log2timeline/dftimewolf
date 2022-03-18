@@ -1,7 +1,7 @@
 {
   "name": "gce_disk_export_dd",
   "short_description": "Stream the disk bytes from a GCP project to a Google Cloud Storage bucket.",
-  "description": "The export is performed via bit streaming the the disk bytes to GCS. This will allow getting a disk image out of the project in case both organization policies `constraints/compute.storageResourceUseRestrictions` and `constraints/compute.trustedImageProjects` are enforced and in case OsLogin is allowed only for the organization users while the analyst is an external user with no roles/compute.osLoginExternalUser role..\n\nThe exported images names are appended by `.tar.gz.`\n\nThe compute engine default service account in the source project must have sufficient permissions to Create and List Storage objects on the corresponding storage bucket/folder. ",
+  "description": "The export is performed via bit streaming the the disk bytes to GCS. This will allow getting a disk image out of the project in case both organization policies `constraints/compute.storageResourceUseRestrictions` and `constraints/compute.trustedImageProjects` are enforced and in case OsLogin is allowed only for the organization users while the analyst is an external user with no roles/`compute.osLoginExternalUser` role.\n\nThe exported images names are appended by `.tar.gz.`\n\nThe compute engine default service account in the source project must have sufficient permissions to Create and List Storage objects on the corresponding storage bucket/folder. ",
   "preflights": [{
     "wants": [],
     "name": "GCPTokenCheck",
