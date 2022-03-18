@@ -171,6 +171,8 @@ class GoogleCloudDiskExportStream(GoogleCloudDiskExportBase):
         'metadata', {}).get('items', []):
         if not key_value_dict['key'].startswith('archive_path_'):
           continue
+        # Reading the last value of the partition result, which is sometimes
+        # prefixed with special characters making its position inconsistent.
         archived_disk = key_value_dict['key'].partition('archive_path_')[-1]
         if archived_disk == disk.name:
           value_tuple = key_value_dict['value'].partition(r'\n')
