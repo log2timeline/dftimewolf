@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""BAse Class to Export Compute disk images to Google Cloud Storage."""
+"""Base class to Export Compute disk images to Google Cloud Storage."""
 import os
 from typing import List, Optional
 from googleapiclient.errors import HttpError
