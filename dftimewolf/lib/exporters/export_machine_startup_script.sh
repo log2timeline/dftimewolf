@@ -1,4 +1,10 @@
 #!/bin/bash
+#
+# A GCE startup script to start a VM that loops on all disks attached to it and stream all the
+# non-boot disks to a GCS bucket. After the export is done the script calculates the hash of 
+# each disk and compares it to the hash of the export in GCS and updates the instance
+# metadata and labels as well as the disks labels to reflect the export progress and
+# integrity. The script installs all the required tools.
 
 export CLOUDSDK_PYTHON=python3;
 LOCKDIR="/tmp/add_label.lock";
