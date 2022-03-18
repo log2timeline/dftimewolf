@@ -129,7 +129,7 @@ class GoogleCloudDiskExportBase(module.BaseModule):
 
     Args:
       filename: name of the file to read.
-      
+
     Raises:
       OSError: If the script cannot be opened, read or closed.
     """
