@@ -12,7 +12,7 @@ The export process happen in the following order:
     the analyst to specify the source image of the machine, this is needed
     in case `constraints/compute.trustedImageProjects` is enforced.
   - The Export VM will have evidence disks attached in read-only mode.
-  - Print the output path to the use and some information on how to track
+  - Print the output path to the user and some information on how to track
     the disk export progress in case the terminal session is interrupted.
   - A startup script in the export machine will:
     - Enumerate all, non-boot, disks attached to the VM.
