@@ -46,10 +46,10 @@ class GoogleCloudDiskExportBase(module.BaseModule):
     """Gets disks from a project by disk name.
 
     Args:
-    source_disk_names: List of disk names to get from the project.
+      source_disk_names: List of disk names to get from the project.
 
     Returns:
-    List of GoogleComputeDisk objects to copy.
+      List of GoogleComputeDisk objects to copy.
     """
     disks = []
     for name in source_disk_names:
