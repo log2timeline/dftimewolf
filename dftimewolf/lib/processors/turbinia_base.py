@@ -194,7 +194,9 @@ class TurbiniaProcessorBase(object):
     if self.turbinia_recipe:
       # Use a pre-configured turbinia recipe
       recipe = self.client.create_recipe(
-          recipe_name=self.turbinia_recipe, sketch_id=self.sketch_id)
+          recipe_name=self.turbinia_recipe,
+          sketch_id=self.sketch_id,
+          yara_rules=yara_text)
     else:
       # Use default recipe with custom parameters
       recipe = self.client.create_recipe(
