@@ -160,7 +160,7 @@ class GoogleCloudDiskExportStream(GoogleCloudDiskExportBase):
     while not self._ExportJobFinished():
       self.logger.info(
         ('Waiting for export instance {0:s} to finish exporting disks. '
-        'This can take up-to few minutes or hours depending on disks size.'
+        'This can take up-to few minutes or hours depending on disks size. '
         'All non-boot disk must have "archive" and "archive_hash_verified" '
         'labels equal "true" for the export job to finish.').format(
           export_instance.name))
