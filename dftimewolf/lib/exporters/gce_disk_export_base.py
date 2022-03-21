@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """Base class to Export Compute disk images to Google Cloud Storage."""
-import os
 from typing import List, Optional
 from googleapiclient.errors import HttpError
 from libcloudforensics.providers.gcp.internal import project as gcp_project
