@@ -33,6 +33,7 @@ from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 from dftimewolf.lib.exporters.gce_disk_export_base import GoogleCloudDiskExportBase  # pylint: disable=line-too-long
+from utils import utils
 
 
 _EXPORT_STARTUP_SCRIPT = 'export_machine_startup_script.sh'
@@ -131,7 +132,7 @@ class GoogleCloudDiskExportStream(GoogleCloudDiskExportBase):
     self._DetachDisks(self.source_disks)
     # Add a trailing slash if it's not already there.
     self.gcs_output_location = os.path.join(gcs_output_location, '')
-    self.startup_script = self._ReadExportScript(_EXPORT_STARTUP_SCRIPT)
+    self.startup_script = utils.ReadExportScript(_EXPORT_STARTUP_SCRIPT)
     self.boot_image_project = boot_image_project
     self.boot_image_family = boot_image_family
 
