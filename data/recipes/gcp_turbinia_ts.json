@@ -33,12 +33,12 @@
     }],
     "args": [
         ["analysis_project_name", "Name of GCP project the disk exists in.", null],
-        ["turbinia_recipe", "The Turbinia recipe name to use for evidence processing.", null],
         ["turbinia_zone", "The GCP zone the disk to process (and Turbinia workers) are in.", null],
         ["disk_names", "Names of GCP persistent disks to process.", null],
         ["--incident_id", "Incident ID (used for Timesketch description).", null],
         ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
+        ["--turbinia_recipe", "The Turbinia recipe name to use for evidence processing.", null],
         ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true]
     ]
 }

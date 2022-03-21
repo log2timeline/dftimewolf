@@ -44,7 +44,7 @@ class TurbiniaProcessorBase(object):
     self.instance = None
     self.project = str()
     self.sketch_id = int()
-    self.turbinia_recipe = None
+    self.turbinia_recipe = str()
     self.turbinia_region = None
     self.turbinia_zone = str()
     self.parallel_count = 5  # Arbitrary, used by ThreadAwareModule

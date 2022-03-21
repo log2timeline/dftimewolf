@@ -349,8 +349,8 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
         turbinia_config_file=None,
         project='turbinia-project',
         turbinia_zone='europe-west1',
-        sketch_id=4567,
-        run_all_jobs=False)
+        turbinia_recipe=None,
+        sketch_id=4567)
 
     turbinia_processor.PreProcess()
     in_containers = test_state.GetContainers(
