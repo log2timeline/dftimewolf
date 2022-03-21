@@ -51,7 +51,7 @@ class TurbiniaArtifactProcessorTest(unittest.TestCase):
         output_directory='/tmp/outputdir',
         sketch_id=123)
     turbinia_processor.client.create_request.return_value = TurbiniaRequest()
-    
+  
     self.assertEqual(turbinia_processor.project, 'turbinia-project')
     self.assertEqual(turbinia_processor.turbinia_recipe, None)
     self.assertEqual(turbinia_processor.turbinia_zone, 'europe-west1')
