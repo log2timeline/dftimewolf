@@ -20,25 +20,32 @@
     }],
     "modules": [{
         "wants": [],
-        "name": "GoogleCloudCollector",
+        "name": "GCEDiskCopy",
         "args": {
-            "analysis_project_name": "@analysis_project_name",
-            "remote_project_name": "@remote_project_name",
-            "remote_instance_name": "@instance",
-            "incident_id": "@incident_id",
-            "zone": "@turbinia_zone",
-            "create_analysis_vm": "@analysis_vm",
-            "disk_names": "@disks",
-            "all_disks": "@all_disks",
-            "stop_instance": "@stop_instance",
-            "boot_disk_size": "@boot_disk_size",
-            "boot_disk_type": "@boot_disk_type",
-            "cpu_cores": "@cpu_cores",
-            "image_project": "@image_project",
-            "image_family": "@image_family"
+          "destination_project_name": "@analysis_project_name",
+          "source_project_name": "@source_project_name",
+          "destination_zone": "@turbinia_zone",
+          "remote_instance_names": "@instances",
+          "disk_names": "@disks",
+          "all_disks": "@all_disks",
+          "stop_instances": "@stop_instances"
         }
-    }, {
-        "wants": ["GoogleCloudCollector"],
+      }, {
+        "wants": ["GCEDiskCopy"],
+        "name": "GCEForensicsVM",
+        "args": {
+          "project_name": "@analysis_project_name",
+          "incident_id": "@incident_id",
+          "zone": "@turbinia_zone",
+          "boot_disk_size": "@boot_disk_size",
+          "boot_disk_type": "@boot_disk_type",
+          "cpu_cores": "@cpu_cores",
+          "image_project": "ubuntu-os-cloud",
+          "image_family": "ubuntu-1804-lts",
+          "create_analysis_vm": "@create_analysis_vm"
+        }
+      }, {
+        "wants": ["GCEDiskCopy"],
         "name": "TurbiniaGCPProcessor",
         "args": {
             "turbinia_config_file": null,
@@ -60,19 +67,19 @@
         }
     }],
     "args": [
-        ["remote_project_name", "Name of the project containing the instance / disks to copy.", null],
+        ["source_project_name", "Name of the project containing the instance / disks to copy.", null],
         ["analysis_project_name", "Name of the project containing the Turbinia instance.", null],
         ["--turbinia_recipe", "The Turbinia recipe name to use for evidence processing.", null],
-        ["--turbinia_zone", "The GCP zone the disk to process and Turbinia workers are in.", null],
+        ["--turbinia_zone", "The GCP zone the disk to process and Turbinia workers are in.", "us-central1-f"],
         ["--incident_id", "Incident ID (used for Timesketch description and to label the VM with).", null],
         ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
-        ["--analysis_vm", "Create an analysis VM in the destination project.", true],
+        ["--create_analysis_vm", "Create an analysis VM in the destination project.", true],
         ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true],
-        ["--instance", "Name of the instance to analyze.", null],
+        ["--instances", "Name of the instances to analyze.", null],
         ["--disks", "Comma-separated list of disks to copy from the source GCP project (if `instance` not provided).", null],
         ["--all_disks", "Copy all disks in the designated instance. Overrides disk_names if specified.", false],
-        ["--stop_instance", "Stop the designated instance after copying disks.", false],
+        ["--stop_instances", "Stop the designated instances after copying disks.", false],
         ["--cpu_cores", "Number of CPU cores of the analysis VM.", 4],
         ["--boot_disk_size", "The size of the analysis VM boot disk (in GB).", 50.0],
         ["--boot_disk_type", "Disk type to use [pd-standard, pd-ssd]", "pd-standard"],

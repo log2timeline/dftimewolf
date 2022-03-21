@@ -126,6 +126,14 @@ class WorkspaceAuditCollector(module.BaseModule):
           for.
       end_time (Optional[str]): End of the time period to return results for.
     """
+
+    # Omit '-' delimiter from the filter_expression (meeting_id) for
+    # the meet application
+    if application_name == 'meet' and '-' in filter_expression:
+      filter_expression = filter_expression.replace('-', '')
+      self.logger.info(
+        "Found '-' delimiter in the meeting_id and removed it!")
+
     self._credentials = self._GetCredentials()
     self._application_name = application_name
     self._filter_expression = filter_expression

@@ -1,0 +1,48 @@
+{
+    "name": "aws_logging_ts",
+    "short_description": "Collects logs from an AWS account, processes the logs with Plaso and uploads the result to Timesketch.",
+    "description": "Collects logs from an AWS account using a specified query filter and date ranges, processes the logs with plaso and uploads the result to Timesketch. If no args are provided this recipe will collect 90 days of logs for the default AWS profile.",
+    "preflights": [{
+        "wants": [],
+        "name": "AWSAccountCheck",
+        "args": {
+            "profile_name": "@profile_name"
+        }
+    }],
+    "modules": [{
+        "wants": [],
+        "name": "AWSLogsCollector",
+        "args": {
+          "profile_name": "@profile_name",
+          "query_filter": "@query_filter",
+          "start_time": "@start_time",
+          "end_time": "@end_time"
+        }
+      }, {
+        "wants": ["AWSLogsCollector"],
+        "name": "LocalPlasoProcessor",
+        "args": {
+          "timezone": null
+        }
+      }, {
+        "wants": ["LocalPlasoProcessor"],
+        "name": "TimesketchExporter",
+        "args": {
+            "incident_id": "@incident_id",
+            "token_password": "@token_password",
+            "sketch_id": "@sketch_id",
+            "analyzers": null,
+            "wait_for_timelines": "@wait_for_timelines"
+        }
+    }],
+    "args": [
+        ["--profile_name", "Name of the AWS profile to collect logs from.", "default"],
+        ["--query_filter", "Filter expression to use to query logs.", null],
+        ["--start_time", "Start time for the query.", null],
+        ["--end_time", "End time for the query.", null],
+        ["--incident_id", "Incident ID (used for Timesketch description).", null],
+        ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null],
+        ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
+        ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true]
+    ]
+}

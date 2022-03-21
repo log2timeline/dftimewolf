@@ -264,8 +264,8 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       try:
         status = client.Flow(flow_id).Get().data
       except grr_errors.UnknownError:
-        msg = 'Unable to stat flow {0:s} for host {1:s}'.format(
-            flow_id, client.data.os_info.fqdn.lower())
+        msg = (f'Unknown error retrieving flow {flow_id} for host '
+            f'{client.data.os_info.fqdn.lower()}')
         self.ModuleError(msg, critical=True)
 
       if status.state == flows_pb2.FlowContext.ERROR:
@@ -882,6 +882,7 @@ class GRRFlowCollector(GRRFlow):
         skip_offline_clients=skip_offline_clients)
 
     flows = flow_ids.strip().split(',')
+    found_flows = []
 
     # For each host specified, list their flows
     for item in hostnames.strip().split(','):
@@ -893,6 +894,13 @@ class GRRFlowCollector(GRRFlow):
         for f in flows:
           if f in client_flows:
             self.state.StoreContainer(containers.GrrFlow(host, f))
+            found_flows.append(f)
+
+    missing_flows = sorted([f for f in flows if f not in found_flows])
+    if missing_flows:
+      self.logger.warning('The following flows were not found: '
+          f'{", ".join(missing_flows)}')
+      self.logger.warning('Did you specify a child flow instead of a parent?')
 
   def Process(self, container: containers.GrrFlow) -> None:
     """Downloads the results of a GRR collection flow.
@@ -914,9 +922,14 @@ class GRRFlowCollector(GRRFlow):
           path=collected_flow_data
       )
       self.state.StoreContainer(cont)
+    else:
+      self.logger.warning('No flow data collected for '
+          f'{container.hostname}:{container.flow_id}')
 
   def PreProcess(self) -> None:
-    """Not implemented."""
+    """Check that we're actually about to collect anything."""
+    if len(self.state.GetContainers(self.GetThreadOnContainerType())) == 0:
+      self.ModuleError('No flows found for collection.', critical=True)
 
   def PostProcess(self) -> None:
     # TODO(ramoj) check if this should be per client in process
@@ -924,7 +937,7 @@ class GRRFlowCollector(GRRFlow):
     self._CheckSkippedFlows()
 
   def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
-    """This module works on host containers."""
+    """This module works on GrrFlow containers."""
     return containers.GrrFlow
 
 

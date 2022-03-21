@@ -129,7 +129,7 @@ class GRRFlowTests(unittest.TestCase):
   def testAwaitFlowGRRError(self, mock_FlowGet):
     """"Test that an exception is raised if the GRR API raises an error."""
     mock_FlowGet.side_effect = grr_errors.UnknownError
-    error_msg = 'Unable to stat flow F:12345 for host'
+    error_msg = 'Unknown error retrieving flow F:12345 for host'
     with six.assertRaisesRegex(self, DFTimewolfError, error_msg):
       self.grr_flow_module._AwaitFlow(mock_grr_hosts.MOCK_CLIENT, "F:12345")
 
@@ -486,6 +486,108 @@ class GRRFlowCollectorTest(unittest.TestCase):
     result = results[0]
     self.assertEqual(result.name, 'tomchop')
     self.assertEqual(result.path, '/tmp/something')
+
+  @mock.patch('grr_api_client.client.Client.ListFlows')
+  @mock.patch('grr_api_client.api.InitHttp')
+  def testSetUpMissingFlows(self, mock_InitHttp, mock_list_flows):
+    """Tests missing flows are correctly identified."""
+    self.mock_grr_api = mock.Mock()
+    mock_InitHttp.return_value = self.mock_grr_api
+    self.mock_grr_api.SearchClients.return_value = \
+        mock_grr_hosts.MOCK_CLIENT_LIST
+    mock_list_flows.return_value = [mock_grr_hosts.flow_pb_terminated]
+
+    grr_flow_collector = grr_hosts.GRRFlowCollector(self.test_state)
+
+    with self.assertLogs(grr_flow_collector.logger) as lc:
+      grr_flow_collector.SetUp(
+          hostnames='C.0000000000000001',
+          flow_ids='F:12345,F:23456,F:34567',
+          reason='random reason',
+          grr_server_url='http://fake/endpoint',
+          grr_username='admin',
+          grr_password='admin',
+          approvers='approver1,approver2',
+          skip_offline_clients=False,
+      )
+
+      log_messages = [record.getMessage() for record in lc.records]
+      # pylint: disable=line-too-long
+      self.assertIn('The following flows were not found: F:23456, F:34567', log_messages)
+      self.assertIn('Did you specify a child flow instead of a parent?', log_messages)
+      # pylint: enable=line-too-long
+
+  @mock.patch('grr_api_client.client.Client.ListFlows')
+  @mock.patch('grr_api_client.api.InitHttp')
+  def testPreProcessNoFlows(self, mock_InitHttp, mock_list_flows):
+    """Tests that if no flows are found, an error is thrown."""
+    self.mock_grr_api = mock.Mock()
+    mock_InitHttp.return_value = self.mock_grr_api
+    self.mock_grr_api.SearchClients.return_value = \
+        mock_grr_hosts.MOCK_CLIENT_LIST
+    mock_list_flows.return_value = [mock_grr_hosts.flow_pb_terminated]
+
+    grr_flow_collector = grr_hosts.GRRFlowCollector(self.test_state)
+    grr_flow_collector.SetUp(
+        hostnames='C.0000000000000001',
+        flow_ids='F:12345',
+        reason='random reason',
+        grr_server_url='http://fake/endpoint',
+        grr_username='admin',
+        grr_password='admin',
+        approvers='approver1,approver2',
+        skip_offline_clients=False,
+    )
+
+    # Clear the containers to test correct failure on no containers being found.
+    self.test_state.GetContainers(containers.GrrFlow, True)
+
+    with self.assertRaises(errors.DFTimewolfError) as error:
+      grr_flow_collector.PreProcess()
+    self.assertEqual('No flows found for collection.', error.exception.message)
+    self.assertEqual(len(self.test_state.errors), 1)
+
+  @mock.patch('grr_api_client.client.Client.ListFlows')
+  @mock.patch('grr_api_client.api.InitHttp')
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow')
+  def testProcessNoFlowData(self,
+      _,
+      mock_DLFiles,
+      mock_InitHttp,
+      mock_list_flows):
+    """Tests Process when the flow is found but has no data collected."""
+    self.mock_grr_api = mock.Mock()
+    mock_InitHttp.return_value = self.mock_grr_api
+    self.mock_grr_api.SearchClients.return_value = \
+        mock_grr_hosts.MOCK_CLIENT_LIST
+    mock_list_flows.return_value = [mock_grr_hosts.flow_pb_terminated]
+    mock_DLFiles.return_value = None
+
+    grr_flow_collector = grr_hosts.GRRFlowCollector(self.test_state)
+
+    with self.assertLogs(grr_flow_collector.logger) as lc:
+      grr_flow_collector.SetUp(
+          hostnames='C.0000000000000001',
+          flow_ids='F:12345',
+          reason='random reason',
+          grr_server_url='http://fake/endpoint',
+          grr_username='admin',
+          grr_password='admin',
+          approvers='approver1,approver2',
+          skip_offline_clients=False,
+      )
+      self.grr_flow_collector.PreProcess()
+      in_containers = self.test_state.GetContainers(
+          self.grr_flow_collector.GetThreadOnContainerType())
+      for c in in_containers:
+        self.grr_flow_collector.Process(c)
+      self.grr_flow_collector.PostProcess()
+
+      log_messages = [record.getMessage() for record in lc.records]
+      # pylint: disable=line-too-long
+      self.assertIn('No flow data collected for C.0000000000000001:F:12345', log_messages)
+      # pylint: enable=line-too-long
 
 
 class GRRTimelineCollectorTest(unittest.TestCase):
