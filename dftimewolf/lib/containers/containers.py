@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Optional, Union, List, TYPE_CHECKING, Dict, Any
 
 from dftimewolf.lib.containers import interface
@@ -110,66 +109,6 @@ class GCPLogs(interface.AttributeContainer):
     self.filter_expression = filter_expression
     self.path = path
     self.project_name = project_name
-
-
-class AWSLogs(interface.AttributeContainer):
-  """AWS logs container.
-
-  Attributes:
-      path (str): path to a AWS log file.
-      profile_name (str): the profile used to collect logs.
-      query_filter (str): the query filter used in the log query.
-      start_time (str): the start time used in the log query in format
-        'YYYY-MM-DD HH:MM:SS.US'.
-      end_time (str): the end time used in the log query in format
-        'YYYY-MM-DD HH:MM:SS.US'.
-  """
-  CONTAINER_TYPE = 'aws_logs'
-
-  def __init__(
-      self, path: str, profile_name: Optional[str], query_filter: Optional[str],
-      start_time: Optional[datetime], end_time: Optional[datetime]) -> None:
-    """Initializes the AWS logs container.
-
-    Args:
-      path (str): path to a AWS log file.
-      profile_name (str): the profile used to collect logs.
-      query_filter (str): the query filter used in the log query.
-      start_time (datetime): the start time used in the log query.
-      end_time (datetime): the end time used in the log query.
-    """
-    super(AWSLogs, self).__init__()
-    self.path = path
-    self.profile_name = profile_name
-    self.query_filter = query_filter
-    self.start_time = str(start_time)
-    self.end_time = str(end_time)
-
-
-class AzureLogs(interface.AttributeContainer):
-  """Azure logs container.
-
-  Attributes:
-      path (str): path to an Azure log file.
-      filter_expression (str): the filter_expression used in the log query.
-      subscription_id (str): the subscription_id of the queried subscription.
-  """
-  CONTAINER_TYPE = 'azure_logs'
-
-  def __init__(
-      self, path: str, filter_expression: Optional[str],
-      subscription_id: Optional[str]) -> None:
-    """Initializes the Azure logs container.
-
-    Args:
-      path (str): path to a Azure log file.
-      filter_expression (str): the filter used in the log query.
-      subscription_id (str): the subscription_id of the queried subscription.
-    """
-    super(AzureLogs, self).__init__()
-    self.path = path
-    self.filter_expression = filter_expression
-    self.subscription_id = subscription_id
 
 
 class ThreatIntelligence(interface.AttributeContainer):
@@ -330,6 +269,24 @@ class GCEDisk(interface.AttributeContainer):
   def __init__(self, name: str) -> None:
     super(GCEDisk, self).__init__()
     self.name = name
+
+  def __eq__(self, other: GCEDisk) -> bool:
+    """Override __eq__() for this container."""
+    return self.name == other.name
+
+class GCEDiskEvidence(interface.AttributeContainer):
+  """Attribute container definition for a GCE Disk that has been copied.
+
+  Attributes:
+    name (str): The disk name.
+    project (str): The project the disk was copied to.
+  """
+  CONTAINER_TYPE = 'gcediskevidence'
+
+  def __init__(self, name: str, project: str) -> None:
+    super(GCEDiskEvidence, self).__init__()
+    self.name = name
+    self.project = project
 
 
 class GCEImage(interface.AttributeContainer):

@@ -16,6 +16,8 @@ if TYPE_CHECKING:
 class GCPLoggingTimesketch(BaseModule):
   """Transforms Google Cloud Platform logs for Timesketch."""
 
+  DATA_TYPE = 'gcp:log:json'
+
   def __init__(self,
                state: "state.DFTimewolfState",
                name: Optional[str]=None,
@@ -44,7 +46,8 @@ class GCPLoggingTimesketch(BaseModule):
     log_record = json.loads(log_line)
 
     # Metadata about how the record was obtained.
-    timesketch_record = {'query': query, 'project_name': project_name}
+    timesketch_record = {'query': query, 'project_name': project_name,
+                         'data_type': self.DATA_TYPE}
 
     # Timestamp related fields.
     timestamp = log_record.get('timestamp', None)

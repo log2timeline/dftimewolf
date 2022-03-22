@@ -264,8 +264,8 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       try:
         status = client.Flow(flow_id).Get().data
       except grr_errors.UnknownError:
-        msg = 'Unable to stat flow {0:s} for host {1:s}'.format(
-            flow_id, client.data.os_info.fqdn.lower())
+        msg = (f'Unknown error retrieving flow {flow_id} for host '
+            f'{client.data.os_info.fqdn.lower()}')
         self.ModuleError(msg, critical=True)
 
       if status.state == flows_pb2.FlowContext.ERROR:
@@ -734,7 +734,6 @@ class GRROsqueryCollector(GRRFlow):
     """
     flow = client.Flow(flow_id)
     list_results = list(flow.ListResults())
-    self.logger.info(type(flow))
 
     if not list_results:
       self.logger.info(f'No results for flow ID {str(flow)}')
@@ -784,8 +783,8 @@ class GRROsqueryCollector(GRRFlow):
           dataframe_container = containers.DataFrame(
               data_frame=data_frame,
               description=osquery_container.query,
-              name=flow_id,
-              source=container.hostname)
+              name=f'Osquery flow:{flow_id}',
+              source=f'{container.hostname}:{client.client_id}')
 
           self.state.StoreContainer(dataframe_container)
 
@@ -809,11 +808,14 @@ class GRROsqueryCollector(GRRFlow):
         f'Saving osquery flow results to {manifest_file_path}')
 
     with open(manifest_file_path, mode='w') as manifest_fd:
-      manifest_fd.write('"Flow ID","Hostname","Osquery"\n')
+      manifest_fd.write('"Flow ID","Hostname","GRR Client Id","Osquery"\n')
 
       for container in self.state.GetContainers(containers.DataFrame):
-        flow_id = container.name
-        hostname = container.source
+        if not container.source:
+          self.logger.error('Source attribute in container is empty.')
+          continue
+        hostname, client_id = container.source.split(':')
+        flow_id = container.name.split(':')[1]
         query = container.description
 
         output_file_path = os.path.join(
@@ -825,7 +827,7 @@ class GRROsqueryCollector(GRRFlow):
 
         self.logger.info(f'Saved {output_file_path}.')
 
-        manifest_fd.write(f'"{flow_id}","{hostname}","{query}"\n')
+        manifest_fd.write(f'"{flow_id}","{hostname}","{client_id}","{query}"\n')
 
   def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
     """This module operates on Host containers."""
@@ -882,6 +884,7 @@ class GRRFlowCollector(GRRFlow):
         skip_offline_clients=skip_offline_clients)
 
     flows = flow_ids.strip().split(',')
+    found_flows = []
 
     # For each host specified, list their flows
     for item in hostnames.strip().split(','):
@@ -893,6 +896,13 @@ class GRRFlowCollector(GRRFlow):
         for f in flows:
           if f in client_flows:
             self.state.StoreContainer(containers.GrrFlow(host, f))
+            found_flows.append(f)
+
+    missing_flows = sorted([f for f in flows if f not in found_flows])
+    if missing_flows:
+      self.logger.warning('The following flows were not found: '
+          f'{", ".join(missing_flows)}')
+      self.logger.warning('Did you specify a child flow instead of a parent?')
 
   def Process(self, container: containers.GrrFlow) -> None:
     """Downloads the results of a GRR collection flow.
@@ -914,9 +924,14 @@ class GRRFlowCollector(GRRFlow):
           path=collected_flow_data
       )
       self.state.StoreContainer(cont)
+    else:
+      self.logger.warning('No flow data collected for '
+          f'{container.hostname}:{container.flow_id}')
 
   def PreProcess(self) -> None:
-    """Not implemented."""
+    """Check that we're actually about to collect anything."""
+    if len(self.state.GetContainers(self.GetThreadOnContainerType())) == 0:
+      self.ModuleError('No flows found for collection.', critical=True)
 
   def PostProcess(self) -> None:
     # TODO(ramoj) check if this should be per client in process
@@ -924,7 +939,7 @@ class GRRFlowCollector(GRRFlow):
     self._CheckSkippedFlows()
 
   def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
-    """This module works on host containers."""
+    """This module works on GrrFlow containers."""
     return containers.GrrFlow
 
 

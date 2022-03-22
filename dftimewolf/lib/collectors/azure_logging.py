@@ -104,9 +104,7 @@ class AzureLogsCollector(module.BaseModule):
     self.logger.success('Downloaded logs to {0:s}'.format(output_path))
     output_file.close()
 
-    logs_report = containers.AzureLogs(
-        path=output_path, filter_expression=self._filter_expression,
-        subscription_id=self._subscription_id)
+    logs_report = containers.File('AzureLogsCollector result', output_path)
     self.state.StoreContainer(logs_report)
 
 

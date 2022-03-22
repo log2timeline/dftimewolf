@@ -13,39 +13,48 @@
   {
     "wants": [],
     "name": "GCPTokenCheck",
-    "runtime_name": "GCPTokenCheck-remote",
+    "runtime_name": "GCPTokenCheck-source",
     "args": {
-        "project_name": "@remote_project_name"
+        "project_name": "@source_project_name"
     }
   }],
-  "modules": [{
+  "modules": [
+    {
       "wants": [],
-      "name": "GoogleCloudCollector",
+      "name": "GCEDiskCopy",
       "args": {
-          "analysis_project_name": "@analysis_project_name",
-          "remote_project_name": "@remote_project_name",
-          "remote_instance_name": "@instance",
-          "incident_id": "@incident_id",
-          "zone": "@zone",
-          "create_analysis_vm": "@create_analysis_vm",
-          "disk_names": "@disks",
-          "all_disks": "@all_disks",
-          "stop_instance": "@stop_instance",
-          "boot_disk_size": "@boot_disk_size",
-          "boot_disk_type": "@boot_disk_type",
-          "cpu_cores": "@cpu_cores",
-          "image_project": "ubuntu-os-cloud",
-          "image_family": "ubuntu-1804-lts"
+        "destination_project_name": "@analysis_project_name",
+        "source_project_name": "@source_project_name",
+        "destination_zone": "@zone",
+        "remote_instance_names": "@instances",
+        "disk_names": "@disks",
+        "all_disks": "@all_disks",
+        "stop_instances": "@stop_instances"
       }
-  }],
+    }, {
+      "wants": ["GCEDiskCopy"],
+      "name": "GCEForensicsVM",
+      "args": {
+        "project_name": "@analysis_project_name",
+        "incident_id": "@incident_id",
+        "zone": "@zone",
+        "boot_disk_size": "@boot_disk_size",
+        "boot_disk_type": "@boot_disk_type",
+        "cpu_cores": "@cpu_cores",
+        "image_project": "ubuntu-os-cloud",
+        "image_family": "ubuntu-1804-lts",
+        "create_analysis_vm": "@create_analysis_vm"
+      }
+    }
+  ],
   "args": [
-      ["remote_project_name", "Name of the project containing the instance / disks to copy.", null],
-      ["--analysis_project_name", "Name of the project where the analysis VM will be created and disks copied to.", null],
+      ["source_project_name", "Name of the project containing the instance / disks to copy.", null],
+      ["analysis_project_name", "Name of the project where the analysis VM will be created and disks copied to.", null],
       ["--incident_id", "Incident ID to label the VM with.", null],
-      ["--instance", "Name of the instance to analyze.", null],
+      ["--instances", "Name of the instance to analyze.", null],
       ["--disks", "Comma-separated list of disks to copy from the source GCP project (if `instance` not provided).", null],
       ["--all_disks", "Copy all disks in the designated instance. Overrides `disk_names` if specified.", false],
-      ["--stop_instance", "Stop the designated instance after copying disks.", false],
+      ["--stop_instances", "Stop the designated instance after copying disks.", false],
       ["--create_analysis_vm", "Create an analysis VM in the destination project.", true],
       ["--cpu_cores", "Number of CPU cores of the analysis VM.", 4],
       ["--boot_disk_size", "The size of the analysis VM boot disk (in GB).", 50.0],

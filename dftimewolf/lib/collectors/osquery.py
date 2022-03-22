@@ -58,7 +58,7 @@ class OsqueryCollector(module.BaseModule):
     if not query and not paths:
       self.ModuleError('Both query and paths cannot be empty.', critical=True)
 
-    if self._ValidateOsquery(query):
+    if query and self._ValidateOsquery(query):
       self.osqueries.append(query)
     else:
       self.logger.warning('Osquery parameter does not appear to be valid.')

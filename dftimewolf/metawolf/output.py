@@ -21,6 +21,7 @@ ENDC = '\033[0m'
 
 DFTIMEWOLF = 'dftimewolf'
 CRITICAL_ERROR = '] CRITICAL'
+PYTHON_ERROR = "Traceback (most recent call last):"
 
 
 class MetawolfOutput:
@@ -44,16 +45,19 @@ class MetawolfOutput:
     # pylint: enable=anomalous-backslash-in-string
 
   @staticmethod
-  def Color(value: Any, color: str) -> str:
+  def Color(value: Any, color: str, escape: bool = False) -> str:
     """Return a colored output for stdout.
 
     Args:
       value (str): The value to format.
       color (str): The color to format the string with.
+      escape (bool): Optional. True if the color codes should be escaped.
 
     Returns:
       str: The formatted string.
     """
+    if escape:
+      return '\001{0:s}\002{1!s}\001{2:s}\002'.format(color, value, ENDC)
     return '{0:s}{1!s}{2:s}'.format(color, value, ENDC)
 
 
@@ -168,8 +172,9 @@ class MetawolfProcess:
     if self.cmd:  # Always true here, but needed by Mypy.
       self.process = subprocess.Popen(self.cmd,
                                       shell=False,
+                                      stdin=subprocess.PIPE,
                                       stdout=self.stdout,
-                                      stderr=self.stdout,
+                                      stderr=subprocess.STDOUT,
                                       text=True)
 
   def Poll(self) -> Optional[int]:
@@ -231,17 +236,22 @@ class MetawolfProcess:
       self.status = MetawolfOutput.Color('Interrupted', RED)
       return self.status
 
-    if return_code == -1:
-      if not self.status:
-        # No previous known state from file.
-        self.status = MetawolfOutput.Color('Unknown', BLUE)
+    if return_code == -1 and not self.status:
+      # No previous known state from file.
+      self.status = MetawolfOutput.Color('Unknown', BLUE)
       return self.status
 
-    # Else, dftimewolf completed and we need to look into the output file to
-    # check whether or not the recipe executed successfully.
+    # Else, dftimewolf completed / was interrupted and we need to look into
+    # the output file to check whether or not the recipe executed successfully.
+    output = self.Read(show_warning=False)
+    for err in [CRITICAL_ERROR, PYTHON_ERROR]:
+      if err in output or return_code == 1:
+        self.status = MetawolfOutput.Color('Failed', RED)
+        return self.status
 
-    if CRITICAL_ERROR in self.Read(show_warning=False) or return_code == 1:
-      self.status = MetawolfOutput.Color('Failed', RED)
+    # No change in state since last Metawolf run, so the process status saved
+    # on file is correct.
+    if return_code == -1 and self.status:
       return self.status
 
     self.status = MetawolfOutput.Color('Completed', GREEN)
@@ -268,13 +278,29 @@ class MetawolfProcess:
               'files, type `clean`'.format(self.outfile_path), RED))
     return ''
 
+  def Send(self, value: str) -> None:
+    """Send a value to the STDIN of the process.
+
+    Args:
+      value (str): The value to send to the process.
+    """
+    try:
+      self.process.stdin.write(value + '\n')  # type: ignore
+      self.process.stdin.flush()  # type: ignore
+    except IOError as e:
+      print('Error writing to stdin: {0!s}'.format(
+        MetawolfOutput.Color(e, RED)))
+    except AttributeError:
+      print(MetawolfOutput.Color(
+        'The file handle to this process no longer exists, input cannot '
+        'be sent.', RED))
+
   def Terminate(self) -> str:
     """Terminate a process and close its IO file.
 
     Returns:
       str: An output (e.g. informational message), if any.
     """
-    out = ''
     if self.Poll() is None and self.process:
       self.process.terminate()
       out = MetawolfOutput.Color(
