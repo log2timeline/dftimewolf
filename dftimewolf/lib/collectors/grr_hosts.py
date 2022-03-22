@@ -738,7 +738,9 @@ class GRROsqueryCollector(GRRFlow):
 
     if not list_results:
       self.logger.info(f'No results for flow ID {str(flow)}')
-      return []
+      # Insert an empty dataframe to represent the flow completed without 
+      # result.
+      return [pd.DataFrame()]
 
     results = []
     for result in list_results:
