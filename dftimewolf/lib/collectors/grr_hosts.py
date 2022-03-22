@@ -771,9 +771,13 @@ class GRROsqueryCollector(GRRFlow):
             timeout_millis=self.timeout_millis,
             ignore_stderr_errors=self.ignore_stderr_errors)
 
-        flow_id = self._LaunchFlow(client, 'OsqueryFlow', hunt_args)
-
-        self._AwaitFlow(client, flow_id)
+        try:
+          flow_id = self._LaunchFlow(client, 'OsqueryFlow', hunt_args)
+          self._AwaitFlow(client, flow_id)
+        except DFTimewolfError as error:
+          self.ModuleError(
+              f'Error raised while launching/awaiting flow: {error.message}')
+          continue
 
         for data_frame in self._DownloadResults(client, flow_id):
           self.logger.info(
