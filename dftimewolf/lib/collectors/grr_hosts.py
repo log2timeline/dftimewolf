@@ -723,7 +723,7 @@ class GRROsqueryCollector(GRRFlow):
   def _DownloadResults(self,
                        client: Client,
                        flow_id: str) -> List[pd.DataFrame]:
-    """Process osquery results.
+    """Download osquery results.
 
     Args:
       client (Client): the GRR Client.
@@ -736,8 +736,8 @@ class GRROsqueryCollector(GRRFlow):
     list_results = list(flow.ListResults())
 
     if not list_results:
-      self.logger.info(f'No results for flow ID {str(flow)}')
-      return []
+      self.logger.info(f'No rows returned for flow ID {str(flow)}')
+      return list_results
 
     results = []
     for result in list_results:
@@ -769,11 +769,25 @@ class GRROsqueryCollector(GRRFlow):
             timeout_millis=self.timeout_millis,
             ignore_stderr_errors=self.ignore_stderr_errors)
 
-        flow_id = self._LaunchFlow(client, 'OsqueryFlow', hunt_args)
+        try:
+          flow_id = self._LaunchFlow(client, 'OsqueryFlow', hunt_args)
+          self._AwaitFlow(client, flow_id)
+        except DFTimewolfError as error:
+          self.ModuleError(
+              f'Error raised while launching/awaiting flow: {error.message}')
+          continue
 
-        self._AwaitFlow(client, flow_id)
+        results = self._DownloadResults(client, flow_id)
+        if not results:
+          dataframe_container = containers.DataFrame(
+              data_frame=pd.DataFrame(),
+              description=osquery_container.query,
+              name=f'Osquery flow:{flow_id}',
+              source=f'{container.hostname}:{client.client_id}')
+          self.state.StoreContainer(dataframe_container)
+          continue
 
-        for data_frame in self._DownloadResults(client, flow_id):
+        for data_frame in results:
           self.logger.info(
               f'{str(flow_id)} ({container.hostname}): {len(data_frame)} rows '
               'collected')
