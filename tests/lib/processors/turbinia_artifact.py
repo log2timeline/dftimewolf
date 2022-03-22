@@ -22,7 +22,7 @@ from dftimewolf import config
 # Manually set TURBINIA_PROJECT to the value we expect.
 # pylint: disable=wrong-import-position, wrong-import-order
 from turbinia import config as turbinia_config
-from turbinia.message import TurbiniaRequest
+from turbinia import message as turbinia_message
 
 turbinia_config.TURBINIA_PROJECT = 'turbinia-project'
 YARA_RULE = """rule dummy { condition: false }"""
@@ -50,8 +50,8 @@ class TurbiniaArtifactProcessorTest(unittest.TestCase):
         turbinia_zone='europe-west1',
         output_directory='/tmp/outputdir',
         sketch_id=123)
-    turbinia_processor.client.create_request.return_value = TurbiniaRequest()
-
+    # pylint: disable=line-too-long
+    turbinia_processor.client.create_request.return_value = turbinia_message.TurbiniaRequest()
     self.assertEqual(turbinia_processor.project, 'turbinia-project')
     self.assertEqual(turbinia_processor.turbinia_recipe, None)
     self.assertEqual(turbinia_processor.turbinia_zone, 'europe-west1')
@@ -80,7 +80,8 @@ class TurbiniaArtifactProcessorTest(unittest.TestCase):
         turbinia_zone='europe-west1',
         output_directory='/tmp/outputdir',
         sketch_id=123)
-    turbinia_processor.client.create_request.return_value = TurbiniaRequest()
+    # pylint: disable=line-too-long
+    turbinia_processor.client.create_request.return_value = turbinia_message.TurbiniaRequest()
     turbinia_processor.client.get_task_data.return_value = [{
         'saved_paths': [
             '/fake/data.plaso',

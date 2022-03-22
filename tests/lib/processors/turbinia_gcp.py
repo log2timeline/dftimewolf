@@ -24,7 +24,7 @@ from dftimewolf import config
 # Manually set TURBINIA_PROJECT to the value we expect.
 # pylint: disable=wrong-import-position, wrong-import-order
 from turbinia import config as turbinia_config
-from turbinia.message import TurbiniaRequest
+from turbinia import message as turbinia_message
 
 turbinia_config.TURBINIA_PROJECT = 'turbinia-project'
 
@@ -53,7 +53,8 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
         turbinia_recipe=None,
         turbinia_zone='europe-west1',
         sketch_id=123)
-    turbinia_processor.client.create_request.return_value = TurbiniaRequest()
+    # pylint: disable=line-too-long
+    turbinia_processor.client.create_request.return_value = turbinia_message.TurbiniaRequest()
     self.assertEqual(turbinia_processor.project, 'turbinia-project')
     self.assertEqual(turbinia_processor.turbinia_zone, 'europe-west1')
     self.assertEqual(turbinia_processor.turbinia_recipe, None)
@@ -87,7 +88,8 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
           turbinia_recipe=None,
           turbinia_zone='europe-west1',
           sketch_id=None)
-      turbinia_processor.client.create_request.return_value = TurbiniaRequest()
+      # pylint: disable=line-too-long
+      turbinia_processor.client.create_request.return_value = turbinia_message.TurbiniaRequest()
     self.assertEqual(len(test_state.errors), 1)
     self.assertEqual(test_state.errors[0], error.exception)
     error_msg = error.exception.message
@@ -173,8 +175,8 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
             ]
         }
     }
-
-    turbinia_processor.client.create_request.return_value = TurbiniaRequest(
+    # pylint: disable=line-too-long
+    turbinia_processor.client.create_request.return_value = turbinia_message.TurbiniaRequest(
         recipe=recipe)
     turbinia_processor.client.get_task_data.return_value = [{
         'saved_paths': [
@@ -273,7 +275,8 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
             ]
         }
     }
-    turbinia_processor.client.create_request.return_value = TurbiniaRequest(
+    # pylint: disable=line-too-long
+    turbinia_processor.client.create_request.return_value = turbinia_message.TurbiniaRequest(
         recipe=recipe)
     turbinia_processor.client.get_task_data.return_value = [{
         'saved_paths': [
@@ -423,7 +426,8 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
         turbinia_recipe=None,
         turbinia_zone='europe-west1',
         sketch_id=4567)
-    turbinia_processor.client.create_request.return_value = TurbiniaRequest()
+    # pylint: disable=line-too-long
+    turbinia_processor.client.create_request.return_value = turbinia_message.TurbiniaRequest()
     turbinia_processor.PreProcess()
 
     out_containers = test_state.GetContainers(containers.GCEDiskEvidence)
