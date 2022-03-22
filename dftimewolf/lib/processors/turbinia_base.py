@@ -5,7 +5,7 @@ import getpass
 import random
 import tempfile
 import time
-from typing import Dict, List, Optional, Tuple, Any, Union
+from typing import Dict, List, Optional, Tuple, Any
 
 from turbinia import TurbiniaException
 from turbinia import client as turbinia_client

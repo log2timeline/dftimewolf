@@ -30,7 +30,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
     warned (bool): True if an error was encountered that prevents stopping
         instances when requested by stop_instances.
     failed_disks (list[str]): List of disks that failed.
-    at_least_one_success (bool): True if at least one disk copy suceeded.
+    at_least_one_success (bool): True if at least one disk copy succeeded.
   """
 
   def __init__(self,
