@@ -24,7 +24,6 @@ google-cloud-bigquery = {version = "*", extras = ["pandas"]}
 pyOpenSSL = "<20.0.0"  # GRR uses an older version of cryptography
 grr_api_client = "*"
 libcloudforensics = "*"
-networkx = "==2.6.3"
 pypdf2 = "*"
 pyyaml = "*"
 requests = "*"
