@@ -476,10 +476,23 @@ class OsqueryQuery(interface.AttributeContainer):
   """Attribute container for an Osquery query.
 
   Attributes:
-    query (str): The osquery query."""
+    query (str): The osquery query.
+    name (Optional[str]): A name for the osquery.
+    platforms (Optional[List[str]]): A constraint on the platform(s) the query
+        should be run.  Valid values are 'darwin', 'linux', 'windows',
+    description (Optional[str]): A description for the query.
+    """
 
   CONTAINER_TYPE = 'osquery_query'
 
-  def __init__(self, query: str) -> None:
+  def __init__(
+      self,
+      query: str,
+      name: Optional[str] = None,
+      platforms: Optional[List[str]] = None,
+      description: Optional[str] = None) -> None:
     super(OsqueryQuery, self).__init__()
+    self.description = description
+    self.name = name
+    self.platforms = platforms
     self.query = query

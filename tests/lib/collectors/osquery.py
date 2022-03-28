@@ -68,7 +68,7 @@ class OsqueryCollectorTest(unittest.TestCase):
     self.assertEqual(context.exception.message, 'No valid osquery collected.')
 
   @mock.patch('os.path.exists')
-  def testProcess(self, mock_exists) -> None:
+  def testProcessTextFile(self, mock_exists) -> None:
     """Tests the collector's Process() function."""
     test_state = state.DFTimewolfState(config.Config)
     osquery_collector = osquery.OsqueryCollector(test_state)
@@ -87,6 +87,55 @@ class OsqueryCollectorTest(unittest.TestCase):
     self.assertEqual(len(containers), 1)
     self.assertEqual(containers[0].query, "SELECT * FROM processes")
 
+  @mock.patch('os.path.exists')
+  def testProcessQueryPack(self, mock_exists) -> None:
+    """Tests the collector's Process() function."""
+    test_state = state.DFTimewolfState(config.Config)
+    osquery_collector = osquery.OsqueryCollector(test_state)
+    mock_exists.return_value = True
+
+    test_ok_data = """{
+      "platform": "darwin",
+      "queries": {
+        "query_1": {
+          "query" : "select * from launchd where path like '%System.plist';",
+          "interval" : "3600",
+          "version": "1.4.5",
+          "description" : "description",
+          "value" : "Artifact used by this malware"
+        },
+        "query_2": {
+          "query" : "select * from test where path like '%user32.dll';",
+          "interval" : "3600",
+          "version": "1.4.5",
+          "platform": "windows",
+          "description" : "description",
+          "value" : "Artifact used by this malware"
+        }
+      }
+    }"""
+
+    with mock.patch(
+        'builtins.open',
+        new=mock.mock_open(read_data=test_ok_data)) as _:
+      osquery_collector.SetUp(query='', paths='ok.json')
+
+    osquery_collector.Process()
+
+    containers = test_state.GetContainers(OsqueryQuery)
+    self.assertEqual(len(containers), 2)
+
+    self.assertEqual(containers[0].name, 'query_1')
+    self.assertEqual(containers[0].description, 'description')
+    self.assertEqual(containers[0].platforms, ['darwin'])
+    self.assertEqual(containers[0].query,
+                     'select * from launchd where path like \'%System.plist\';')
+
+    self.assertEqual(containers[1].name, 'query_2')
+    self.assertEqual(containers[1].description, 'description')
+    self.assertEqual(containers[1].platforms, ['windows'])
+    self.assertEqual(containers[1].query,
+                     'select * from test where path like \'%user32.dll\';')
 
 if __name__ == '__main__':
   unittest.main()
