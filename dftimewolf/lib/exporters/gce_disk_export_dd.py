@@ -185,7 +185,7 @@ class GoogleCloudDiskExportStream(GoogleCloudDiskExportBase):
               ('Disk "{0:s}" exported. Incident ID: {1:s} '
               'Output path: {2:s}. To import this disk as '
               'an image in a different project. Please use: \n'
-              'gcloud compute images import {0:s}'
+              'gcloud compute images import {0:s} '
               '--source-file {2:s} --data-disk '
               '--project={{PROJECT_ID}}').format(
               archived_disk, incident_id , disk_path_gcs))
