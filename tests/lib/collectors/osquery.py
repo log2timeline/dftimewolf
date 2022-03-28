@@ -69,7 +69,7 @@ class OsqueryCollectorTest(unittest.TestCase):
 
   @mock.patch('os.path.exists')
   def testProcessTextFile(self, mock_exists) -> None:
-    """Tests the collector's Process() function."""
+    """Tests the collector's Process() function with a text file."""
     test_state = state.DFTimewolfState(config.Config)
     osquery_collector = osquery.OsqueryCollector(test_state)
     mock_exists.return_value = True
@@ -89,7 +89,7 @@ class OsqueryCollectorTest(unittest.TestCase):
 
   @mock.patch('os.path.exists')
   def testProcessQueryPack(self, mock_exists) -> None:
-    """Tests the collector's Process() function."""
+    """Tests the collector's Process() function with a Osquery Pack file."""
     test_state = state.DFTimewolfState(config.Config)
     osquery_collector = osquery.OsqueryCollector(test_state)
     mock_exists.return_value = True
