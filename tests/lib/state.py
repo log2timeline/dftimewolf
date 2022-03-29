@@ -410,6 +410,21 @@ class StateTest(unittest.TestCase):
     for value in [c.value for c in conts]:
       self.assertIn(value, ['one', 'two'])
 
+  def testStatsLogging(self):
+    """Tests that the stats logging is working correctly."""
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.command_line_options = {}
+    test_state.LoadRecipe(test_recipe.contents, TEST_MODULES)
+    test_state.SetupModules()
+    test_state.RunModules()
+    stats = test_state.GetStats()
+    self.assertEqual(len(stats), 2)
+    self.assertIsInstance(stats[0], state.StatsEntry)
+    self.assertEqual(stats[0].module_name, 'DummyModule1')
+    self.assertEqual(stats[1].module_name, 'DummyModule2')
+    self.assertEqual(stats[0].stats, {'random_key1': 'random_value1'})
+    self.assertEqual(stats[1].stats, {'random_key2': 'random_value2'})
+
 
 if __name__ == '__main__':
   unittest.main()
