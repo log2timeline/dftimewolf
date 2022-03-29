@@ -489,7 +489,14 @@ class GRRHuntDownloaderBase(GRRHunt):
 
 
 class GRRHuntDownloader(GRRHuntDownloaderBase):
-  """Downloads a file archive from a GRR hunt."""
+  """Downloads a file archive from a GRR hunt.
+
+  Attributes:
+    reason (str): justification for GRR access.
+    approvers (str): comma-separated GRR approval recipients.
+    hunt_id (str): the GRR Hunt Id.
+    output_path (str): the path to store GRR Hunt results.
+  """
 
   def __init__(self,
                state: DFTimewolfState,
@@ -642,6 +649,17 @@ class GRRHuntDownloader(GRRHuntDownloaderBase):
     return fqdn_collection_paths
 
 class GRRHuntOsqueryDownloader(GRRHuntDownloaderBase):
+  """Downloads osquery results from a GRR hunt.
+
+  Attributes:
+    reason (str): justification for GRR access.
+    approvers (str): comma-separated GRR approval recipients.
+    hunt_id (str): the GRR Hunt Id.
+    output_path (str): the path to store GRR Hunt results.
+    results (List[Tuple[str, str]]): a list of results represented as a tuple,
+        comprising the hostname and the file path to the corresponding
+        results.
+  """
 
   def __init__(self,
                state: DFTimewolfState,
@@ -657,6 +675,7 @@ class GRRHuntOsqueryDownloader(GRRHuntDownloaderBase):
     """
     super(GRRHuntOsqueryDownloader, self).__init__(
         state, name=name, critical=critical)
+    self.results = []
 
   def _CollectHuntResults(self, hunt: Hunt) -> List[Tuple[str, str]]:
     """Downloads the current set of results.
@@ -672,18 +691,23 @@ class GRRHuntOsqueryDownloader(GRRHuntDownloaderBase):
     Raises:
       DFTimewolfError: if approval is needed and approvers were not specified.
     """
-    results = self._WrapGRRRequestWithApproval(
+    self._WrapGRRRequestWithApproval(
         hunt, self._GetAndWriteResults, self.logger, hunt, self.output_path)
 
     self.logger.success('Wrote results of {0:s} to {1:s}'.format(
         hunt.hunt_id, self.output_path))
-    return results
+    return self.results
 
   def _GetAndWriteResults(
       self, hunt: Hunt, output_path: str) -> List[Tuple[str, str]]:
-    """Retrieves and writes hunt results."""
-    results = []
+    """Retrieves and writes hunt results.
 
+    Function is necessary for the _WrapGRRRequestWithApproval to work.
+
+    Args:
+      hunt (object): GRR hunt object.
+      output_path (str): output path where to write the GRR Hunt results.
+    """
     for result in hunt.ListResults():
       payload = result.payload
       client_hostname = result.client.hostname
@@ -698,9 +722,9 @@ class GRRHuntOsqueryDownloader(GRRHuntDownloaderBase):
 
       output_filename = os.path.join(output_path, f'{client_hostname}.csv')
       data_frame.to_csv(output_filename)
-      results.append((client_hostname, output_filename))
+      self.results.append((client_hostname, output_filename))
 
-    return results
+    return self.results
 
 
 modules_manager.ModulesManager.RegisterModules([
