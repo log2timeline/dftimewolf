@@ -47,19 +47,19 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
   def SetUp(self,
             turbinia_config_file: str,
             project: str,
+            turbinia_recipe: str,
             turbinia_zone: str,
             output_directory: str,
-            sketch_id: int,
-            run_all_jobs: bool) -> None:
+            sketch_id: int) -> None:
     """Sets up the object attributes.
 
     Args:
       turbinia_config_file (str): Full path to the Turbinia config file to use.
       project (str): name of the GCP project containing the disk to process.
+      turbinia_recipe (str): Turbinia recipe name.
       turbinia_zone (str): GCP zone in which the Turbinia server is running.
       output_directory (str): Name of the directory to process.
       sketch_id (int): The Timesketch sketch ID.
-      run_all_jobs (bool): Whether to run all jobs instead of a faster subset.
     """
     self.turbinia_config_file = turbinia_config_file
     self.output_directory = output_directory
@@ -68,7 +68,7 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
       self.logger.success('Turbinia results will be dumped to {0:s}'.format(
           self.output_directory))
     try:
-      self.TurbiniaSetUp(project, turbinia_zone, sketch_id, run_all_jobs)
+      self.TurbiniaSetUp(project, turbinia_recipe, turbinia_zone, sketch_id)
     except TurbiniaException as exception:
       self.ModuleError(str(exception), critical=True)
       return

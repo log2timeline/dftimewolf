@@ -11,7 +11,6 @@ from turbinia import TurbiniaException
 from turbinia import client as turbinia_client
 from turbinia import config as turbinia_config
 from turbinia import evidence, output_manager
-from turbinia.message import TurbiniaRequest
 from dftimewolf.lib.logging_utils import WolfLogger
 
 
@@ -24,9 +23,8 @@ class TurbiniaProcessorBase(object):
     client (TurbiniaClient): Turbinia client.
     instance (str): name of the Turbinia instance
     project (str): name of the GCP project containing the disk to process.
-    run_all_jobs (bool): Whether to run all jobs or to remove slow-running jobs:
-        'StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob'.
     sketch_id (int): The Timesketch sketch id
+    turbinia_recipe (str): Turbinia recipe name.
     turbinia_region (str): GCP region in which the Turbinia server is running.
     turbinia_zone (str): GCP zone in which the Turbinia server is running.
   """
@@ -45,8 +43,8 @@ class TurbiniaProcessorBase(object):
     self.client = None  # type: turbinia_client.BaseTurbiniaClient
     self.instance = None
     self.project = str()
-    self.run_all_jobs = False
     self.sketch_id = int()
+    self.turbinia_recipe = str()
     self.turbinia_region = None
     self.turbinia_zone = str()
     self.parallel_count = 5  # Arbitrary, used by ThreadAwareModule
@@ -123,9 +121,9 @@ class TurbiniaProcessorBase(object):
 
   def TurbiniaSetUp(self,
                     project: str,
+                    turbinia_recipe: str,
                     turbinia_zone: str,
-                    sketch_id: int,
-                    run_all_jobs: bool) -> None:
+                    sketch_id: int) -> None:
     """Sets up the object attributes.
 
     Raises:
@@ -133,14 +131,14 @@ class TurbiniaProcessorBase(object):
 
     Args:
       project (str): name of the GCP project containing the disk to process.
+      turbinia_recipe (str): Turbinia recipe name.
       turbinia_zone (str): GCP zone in which the Turbinia server is running.
       sketch_id (int): The Timesketch sketch ID.
-      run_all_jobs (bool): Whether to run all jobs instead of a faster subset.
     """
     self.project = project
+    self.turbinia_recipe = turbinia_recipe
     self.turbinia_zone = turbinia_zone
     self.sketch_id = sketch_id
-    self.run_all_jobs = run_all_jobs
 
     turbinia_config.LoadConfig(config_file=self.turbinia_config_file)
     if not self.project:
@@ -150,7 +148,7 @@ class TurbiniaProcessorBase(object):
 
     if not self.project or not self.turbinia_zone:
       raise TurbiniaException(
-        'project or turbinia_zone are not all specified, bailing out')
+          'project or turbinia_zone are not all specified, bailing out')
 
     self.turbinia_region = turbinia_config.TURBINIA_REGION
     self.instance = turbinia_config.INSTANCE_ID
@@ -182,20 +180,33 @@ class TurbiniaProcessorBase(object):
     """
     evidence_.validate()
 
-    request = TurbiniaRequest(requester=getpass.getuser())
-    request.evidence.append(evidence_)
-    if self.sketch_id:
-      request.recipe['globals']['sketch_id'] = self.sketch_id
-    if not self.run_all_jobs:
-      request.recipe['globals']['jobs_denylist'] = [
-          'StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob']
+    recipe = None
+    jobs_denylist = None
+    yara_text = None
 
-    if threat_intel_indicators:
-      request.recipe['globals']['filter_patterns'] = threat_intel_indicators
+    jobs_denylist = [
+        'StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob'
+    ]
 
     if yara_rules:
       yara_text = '\n'.join(list(yara_rules))
-      request.recipe['globals']['yara_rules'] = yara_text
+
+    if self.turbinia_recipe:
+      # Use a pre-configured turbinia recipe
+      recipe = self.client.create_recipe(
+          recipe_name=self.turbinia_recipe,
+          sketch_id=self.sketch_id,
+          yara_rules=yara_text)
+    else:
+      # Use default recipe with custom parameters
+      recipe = self.client.create_recipe(
+          sketch_id=self.sketch_id,
+          filter_patterns=threat_intel_indicators,
+          jobs_denylist=jobs_denylist,
+          yara_rules=yara_text)
+
+    request = self.client.create_request(
+        requester=getpass.getuser(), recipe=recipe)
 
     request_dict = {
         'instance': self.instance,
@@ -209,8 +220,9 @@ class TurbiniaProcessorBase(object):
         'Creating Turbinia request {0:s} with Evidence {1!s}'.format(
             request.request_id, evidence_.name))
     self.client.send_request(request)
-    self.logger.info('Waiting for Turbinia request {0:s} to complete'.format(
-        request.request_id))
+    self.logger.info(
+        'Waiting for Turbinia request {0:s} to complete'.format(
+            request.request_id))
 
     # Workaround for rate limiting in turbinia when checking task status
     while True:
