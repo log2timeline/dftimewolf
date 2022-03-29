@@ -11,6 +11,7 @@ from grr_response_proto import flows_pb2 as grr_flows
 from grr_response_proto import osquery_pb2 as osquery_flows
 from grr_response_proto.flows_pb2 import ArtifactCollectorFlowArgs
 from grr_response_proto.flows_pb2 import FileFinderArgs
+import pandas as pd
 import yaml
 
 from dftimewolf.lib import module
@@ -404,12 +405,14 @@ class GRRHuntOsqueryCollector(GRRHunt):
       self._CreateHunt('OsqueryFlow', hunt_args)
 
 
-class GRRHuntDownloader(GRRHunt):
-  """Downloads results from a GRR Hunt.
+class GRRHuntDownloaderBase(GRRHunt):
+  """Base class for modules that download results from a GRR Hunt.
 
   Attributes:
     reason (str): justification for GRR access.
     approvers (str): comma-separated GRR approval recipients.
+    hunt_id (str): the GRR Hunt Id.
+    output_path (str): the path to store GRR Hunt results.
   """
 
   def __init__(self,
@@ -424,7 +427,8 @@ class GRRHuntDownloader(GRRHunt):
       critical (bool): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    super(GRRHuntDownloader, self).__init__(state, name=name, critical=critical)
+    super(GRRHuntDownloaderBase, self).__init__(
+        state, name=name, critical=critical)
     self.hunt_id = str()
     self.output_path = str()
 
@@ -454,6 +458,53 @@ class GRRHuntDownloader(GRRHunt):
         approvers=approvers, verify=verify)
     self.hunt_id = hunt_id
     self.output_path = tempfile.mkdtemp()
+
+  def _CollectHuntResults(self, hunt: Hunt) -> List[Tuple[str, str]]:
+    """Downloads the hunt results.
+
+    Args:
+      hunt (object): GRR hunt object to download from.
+
+    Returns:
+      list[tuple[str, str]]: pairs of human-readable description of the source
+          of the collection, for example the name of the source host, and
+          the path to the collected data.
+
+    Raises:
+      DFTimewolfError: if approval is needed and approvers were not specified.
+    """
+    raise NotImplementedError
+
+  def Process(self) -> None:
+    """Downloads the results of a GRR hunt.
+
+    Raises:
+      RuntimeError: if no items specified for collection.
+    """
+    hunt = self.grr_api.Hunt(self.hunt_id).Get()
+
+    for description, path in self._CollectHuntResults(hunt):
+      container = containers.File(name=description, path=path)
+      self.state.StoreContainer(container)
+
+
+class GRRHuntDownloader(GRRHuntDownloaderBase):
+  """Downloads a file archive from a GRR hunt."""
+
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str] = None,
+               critical: bool = False) -> None:
+    """Initializes a GRR hunt results downloader.
+
+    Args:
+      state (DFTimewolfState): recipe state.
+      name (Optional[str]): The module's runtime name.
+      critical (bool): True if the module is critical, which causes
+          the entire recipe to fail if the module encounters an error.
+    """
+    super(GRRHuntDownloader, self).__init__(
+        state, name=name, critical=critical)
 
   # TODO: change object to more specific GRR type information.
   def _CollectHuntResults(self, hunt: Hunt) -> List[Tuple[str, str]]:
@@ -590,20 +641,71 @@ class GRRHuntDownloader(GRRHunt):
 
     return fqdn_collection_paths
 
-  def Process(self) -> None:
-    """Downloads the results of a GRR hunt.
+class GRRHuntOsqueryDownloader(GRRHuntDownloaderBase):
+
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str] = None,
+               critical: bool = False) -> None:
+    """Initializes a GRR hunt results downloader.
+
+    Args:
+      state (DFTimewolfState): recipe state.
+      name (Optional[str]): The module's runtime name.
+      critical (bool): True if the module is critical, which causes
+          the entire recipe to fail if the module encounters an error.
+    """
+    super(GRRHuntOsqueryDownloader, self).__init__(
+        state, name=name, critical=critical)
+
+  def _CollectHuntResults(self, hunt: Hunt) -> List[Tuple[str, str]]:
+    """Downloads the current set of results.
+
+    Args:
+      hunt (object): GRR hunt object to download results from.
+
+    Returns:
+      list[tuple[str, str]]: pairs of human-readable description of the source
+          of the collection, for example the name of the source host, and
+          the path to the collected data.
 
     Raises:
-      RuntimeError: if no items specified for collection.
+      DFTimewolfError: if approval is needed and approvers were not specified.
     """
-    hunt = self.grr_api.Hunt(self.hunt_id).Get()
-    for description, path in self._CollectHuntResults(hunt):
-      container = containers.File(name=description, path=path)
-      self.state.StoreContainer(container)
+    results = self._WrapGRRRequestWithApproval(
+        hunt, self._GetAndWriteResults, self.logger, hunt, self.output_path)
+
+    self.logger.success('Wrote results of {0:s} to {1:s}'.format(
+        hunt.hunt_id, self.output_path))
+    return results
+
+  def _GetAndWriteResults(
+      self, hunt: Hunt, output_path: str) -> List[Tuple[str, str]]:
+    """Retrieves and writes hunt results."""
+    results = []
+
+    for result in hunt.ListResults():
+      payload = result.payload
+      client_hostname = result.client.hostname
+
+      if not isinstance(payload, osquery_flows.OsqueryResult):
+        self.logger.error(f'Incorrect results format from {result.client.id}')
+        continue
+
+      headers = [column.name for column in payload.table.header.columns]
+      data = [row.values for row in payload.table.rows]
+      data_frame = pd.DataFrame.from_records(data, columns=headers)
+
+      output_filename = os.path.join(output_path, f'{client_hostname}.csv')
+      data_frame.to_csv(output_filename)
+      results.append((client_hostname, output_filename))
+
+    return results
 
 
 modules_manager.ModulesManager.RegisterModules([
     GRRHuntArtifactCollector,
     GRRHuntFileCollector,
     GRRHuntOsqueryCollector,
-    GRRHuntDownloader])
+    GRRHuntDownloader,
+    GRRHuntOsqueryDownloader])

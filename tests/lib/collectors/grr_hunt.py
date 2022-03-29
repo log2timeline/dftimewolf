@@ -140,7 +140,7 @@ class GRRHuntOsqueryCollectorTest(unittest.TestCase):
     self.assertEqual(call_kwargs['hunt_runner_args'].description,
                      'random reason')
 
-class GRRFHuntDownloader(unittest.TestCase):
+class GRRHuntDownloader(unittest.TestCase):
   """Tests for the GRR hunt downloader."""
 
   @mock.patch('grr_api_client.api.InitHttp')
@@ -232,6 +232,42 @@ class GRRFHuntDownloader(unittest.TestCase):
         'Bad zipfile tests/lib/collectors/test_data/hunt.zip: ')
     self.assertTrue(error.exception.critical)
     mock_remove.assert_not_called()
+
+
+class GRRHuntOsqueryDownloader(unittest.TestCase):
+  """Tests for the GRR Osquery hunt downloader."""
+
+  @mock.patch('grr_api_client.api.InitHttp')
+  def setUp(self, mock_InitHttp):
+    self.mock_grr_api = mock.Mock()
+    mock_InitHttp.return_value = self.mock_grr_api
+    self.test_state = state.DFTimewolfState(config.Config)
+    self.grr_hunt_downloader = grr_hunt.GRRHuntOsqueryDownloader(
+        self.test_state)
+    self.grr_hunt_downloader.SetUp(
+        hunt_id='H:12345',
+        reason='random reason',
+        grr_server_url='http://fake/endpoint',
+        grr_username='admin',
+        grr_password='admin',
+        approvers='approver1,approver2',
+        verify=False
+    )
+    self.grr_hunt_downloader.output_path = '/tmp/test'
+
+  def testInitialization(self):
+    """Tests that the collector is correctly initialized."""
+    self.assertEqual(self.grr_hunt_downloader.hunt_id, 'H:12345')
+
+  @mock.patch('dftimewolf.lib.collectors.grr_hunt.GRRHuntOsqueryDownloader._GetAndWriteResults')  # pylint: disable=line-too-long
+  def testCollectHuntResults(self,
+                             mock_get_write_results):
+    """Tests that hunt results are downloaded to the correct path."""
+    self.mock_grr_api.Hunt.return_value.Get.return_value = \
+        mock_grr_hosts.MOCK_HUNT
+    self.grr_hunt_downloader.Process()
+    mock_get_write_results.assert_called_with(mock_grr_hosts.MOCK_HUNT,
+                                              '/tmp/test')
 
 
 if __name__ == '__main__':
