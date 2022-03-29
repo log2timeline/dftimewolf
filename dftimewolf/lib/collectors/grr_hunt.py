@@ -675,7 +675,7 @@ class GRRHuntOsqueryDownloader(GRRHuntDownloaderBase):
     """
     super(GRRHuntOsqueryDownloader, self).__init__(
         state, name=name, critical=critical)
-    self.results = []
+    self.results: List[Tuple[str, str]] = []
 
   def _CollectHuntResults(self, hunt: Hunt) -> List[Tuple[str, str]]:
     """Downloads the current set of results.
