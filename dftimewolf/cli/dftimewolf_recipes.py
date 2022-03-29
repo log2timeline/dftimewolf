@@ -299,8 +299,11 @@ class DFTimewolfTool(object):
 
     logger.info(f'{len(statentries)} stat entries collected during execution.')
     for entry in statentries:
-      logger.debug('[{0:s} ({1:s]})] {1!s}'.format(
-          entry.module_name, entry.module_type, entry.stats)
+      logger.debug(f'[{entry.module_name} ({entry.module_type})] {entry.stats}')
+
+  def ExportStats(self) -> None:
+    """Exports collected stats if existing. Default behavior is to log."""
+    self.PrintStats()
 
   def RecipesManager(self) -> recipes_manager.RecipesManager:
     """Returns the recipes manager."""
@@ -397,7 +400,7 @@ def Main() -> bool:
     return False
 
   tool.CleanUpPreflights()
-  tool.PrintStats()
+  tool.ExportStats()
 
   return True
 

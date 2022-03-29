@@ -13,6 +13,7 @@ from typing import Optional, TYPE_CHECKING, Type, cast, TypeVar, Dict, Any
 
 from dftimewolf.lib import errors
 from dftimewolf.lib import logging_utils
+from dftimewolf.lib import state
 from dftimewolf.lib.containers import interface
 
 if TYPE_CHECKING:
@@ -83,8 +84,7 @@ class BaseModule(object):
     """
     if not all (isinstance(key, str) for key in stats.keys()):
       raise ValueError("Stats keys must be strings.")
-    stastentry = self.state.StatsEntry(
-        type(self).__name__, self.state.runtime_name, stats)
+    stastentry = state.StatsEntry(type(self).__name__, self.name, stats)
     self.state.StoreStats(stastentry)
 
   def CleanUp(self) -> None:
