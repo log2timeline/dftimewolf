@@ -238,10 +238,11 @@ class ForensicsVM(interface.AttributeContainer):
   def __init__(
       self, name: str, evidence_disk: Union["GoogleComputeDisk", "AWSVol",
                                             "AZComputeDisk"],
-      platform: str) -> None:
+      project: str, platform: str) -> None:
     super(ForensicsVM, self).__init__()
     self.name = name
     self.evidence_disk = evidence_disk
+    self.project_id = project
     self.platform = platform
 
 
