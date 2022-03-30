@@ -33,7 +33,7 @@ class OsqueryCollector(module.BaseModule):
     """
     super(OsqueryCollector, self).__init__(
         state, name=name, critical=critical)
-    self.osqueries: List[str] = []
+    self.osqueries: List[containers.OsqueryQuery] = []
 
   def _ValidateOsquery(self, query: str) -> bool:
     """Validate Osquery query.
@@ -73,14 +73,14 @@ class OsqueryCollector(module.BaseModule):
 
     return list(unique_platforms)
 
-  def _LoadOsqueryPack(self, path: str):
-    """Loads osquery from an Osquery pack file.
+  def _LoadOsqueryPack(self, path: str) -> None:
+    """Loads osquery from an osquery pack file.
 
     Args:
       path: the path to the JSON file.
     """
     with open(path, mode='r') as fd:
-      global_platform = None
+      global_platform = []
 
       query_pack = json.load(fd)
 
@@ -106,7 +106,7 @@ class OsqueryCollector(module.BaseModule):
                 description=entry.get('description', ''),
                 platforms=platform))
 
-  def _LoadTextFile(self, path: str):
+  def _LoadTextFile(self, path: str) -> None:
     """Loads osquery from a text file.
 
     Args:
@@ -129,7 +129,7 @@ class OsqueryCollector(module.BaseModule):
   def SetUp(self,
             query: str,
             paths: str) -> None:
-    """Sets up the Osquery to collect.
+    """Sets up the osquery to collect.
 
     Supported files are:
     * text files that contain one Osquery
