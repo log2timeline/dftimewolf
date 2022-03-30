@@ -864,7 +864,7 @@ class GRRFlowCollector(GRRFlow):
     self.flow_id = str()
     self.host: containers.Host
 
-  # pylint: disable=arguments-differ
+  # pylint: disable=arguments-differ,arguments-renamed
   def SetUp(self,
             hostnames: str,
             flow_ids: str,
@@ -976,7 +976,7 @@ class GRRTimelineCollector(GRRFlow):
 
   # We're overriding the behavior of GRRFlow's SetUp function to include new
   # parameters.
-  # pylint: disable=arguments-differ,too-many-arguments
+  # pylint: disable=arguments-differ,too-many-arguments,arguments-renamed
   def SetUp(self,
             hostnames: str,
             root_path: str,
