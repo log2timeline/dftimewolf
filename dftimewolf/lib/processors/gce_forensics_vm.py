@@ -149,7 +149,6 @@ class GCEForensicsVM(module.BaseModule):
     self.state.StoreContainer(containers.ForensicsVM(
         name=self.analysis_vm.name,
         evidence_disk=None,
-        project=self.project.project_id,
         platform='gcp'))
 
     disks = self.state.GetContainers(containers.GCEDiskEvidence)

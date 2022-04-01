@@ -238,12 +238,17 @@ class ForensicsVM(interface.AttributeContainer):
   def __init__(
       self, name: str, evidence_disk: Union["GoogleComputeDisk", "AWSVol",
                                             "AZComputeDisk"],
-      project: str, platform: str) -> None:
+      platform: str) -> None:
     super(ForensicsVM, self).__init__()
     self.name = name
     self.evidence_disk = evidence_disk
-    self.project_id = project
     self.platform = platform
+
+  def __eq__(self, other: ForensicsVM) -> bool:
+    """Override __eq__() for this container."""
+    return (self.name == other.name and
+        self.evidence_disk == other.evidence_disk and
+        self.platform == other.platform)
 
 
 class URL(interface.AttributeContainer):

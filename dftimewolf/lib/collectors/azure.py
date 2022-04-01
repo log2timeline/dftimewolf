@@ -81,7 +81,6 @@ class AzureCollector(module.BaseModule):
       container = containers.ForensicsVM(
           name=self.analysis_vm.name,
           evidence_disk=new_disk,
-          project=self.analysis_profile_name,
           platform='azure')
       self.state.StoreContainer(container)
 

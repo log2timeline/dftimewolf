@@ -83,11 +83,12 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     """
     vm_containers = self.state.GetContainers(containers.ForensicsVM)
     for container in vm_containers:
-      if container.evidence_disk.name:
+      if container.evidence_disk and container.evidence_disk.name:
         self.state.StoreContainer(
             containers.GCEDiskEvidence(
                 name=container.evidence_disk.name,
                 project=self.project))
+    self.state.DedupeContainers(containers.ForensicsVM)
 
   # pylint: disable=arguments-renamed
   def Process(self, disk_container: containers.GCEDiskEvidence) -> None:

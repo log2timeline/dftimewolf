@@ -417,7 +417,6 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
                 name='disk-1',
                 project_id='turbinia-project',
                 zone='europe-west1'),
-            project='turbinia-project',
             platform='gcp'))
 
     turbinia_processor = turbinia_gcp.TurbiniaGCPProcessor(test_state)

@@ -85,7 +85,6 @@ class AWSCollector(module.BaseModule):
       container = containers.ForensicsVM(
           name=self.analysis_vm.name,
           evidence_disk=new_volume,
-          project=self.analysis_profile_name,
           platform='aws')
       self.state.StoreContainer(container)
 
