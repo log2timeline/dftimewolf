@@ -206,8 +206,9 @@ class TurbiniaProcessorBase(object):
           yara_rules=yara_text)
 
     request = self.client.create_request(
-        evidence_=evidence_, requester=getpass.getuser(), recipe=recipe)
-
+        requester=getpass.getuser(), recipe=recipe)
+    request.evidence.append(evidence_)
+    
     request_dict = {
         'instance': self.instance,
         'project': self.project,
