@@ -39,6 +39,7 @@ prettytable = "*"
 vt-py = "*"
 typing-extensions = "*"
 boto3 = "*"
+setuptools-rust = "*"
 
 # [requires]
 # python_version = "3.9"
