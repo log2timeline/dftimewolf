@@ -288,6 +288,10 @@ class GCEDiskEvidence(interface.AttributeContainer):
     self.name = name
     self.project = project
 
+  def __eq__(self, other: GCEDiskEvidence) -> bool:
+    """Override __eq__() for this container."""
+    return self.name == other.name and self.project == other.project
+
 
 class GCEImage(interface.AttributeContainer):
   """Attribute container definition for a GCE Image object.
