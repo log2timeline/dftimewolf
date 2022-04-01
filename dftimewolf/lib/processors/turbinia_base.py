@@ -208,7 +208,7 @@ class TurbiniaProcessorBase(object):
     request = self.client.create_request(
         requester=getpass.getuser(), recipe=recipe)
     request.evidence.append(evidence_)
-    
+
     request_dict = {
         'instance': self.instance,
         'project': self.project,
