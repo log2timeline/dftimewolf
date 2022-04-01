@@ -88,7 +88,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
             containers.GCEDiskEvidence(
                 name=container.evidence_disk.name,
                 project=self.project))
-    self.state.DedupeContainers(containers.ForensicsVM)
+    self.state.DedupeContainers(containers.GCEDiskEvidence)
 
   # pylint: disable=arguments-renamed
   def Process(self, disk_container: containers.GCEDiskEvidence) -> None:
