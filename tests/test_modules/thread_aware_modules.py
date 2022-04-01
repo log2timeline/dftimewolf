@@ -137,5 +137,5 @@ class Issue503Module(module.ThreadAwareModule):
   def PostProcess(self) -> None:
     pass
 
-  def KeepThreadedContainersInState(self) -> bool:
+  def KeepThreadedContainersInState(self) -> bool:  # pylint: disable=arguments-differ
     return False
