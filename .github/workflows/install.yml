@@ -64,7 +64,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        pip install setuptools-rust 
+        pip install setuptools-rust cython
         python setup.py install
     - name: Test dftimewolf shortcut
       run: |
