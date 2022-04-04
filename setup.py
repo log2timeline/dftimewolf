@@ -190,6 +190,7 @@ setup(
     ],
     include_package_data=True,
     zip_safe=False,
+    setup_requires=['setuptools-rust', 'cython', 'numpy'],
     install_requires=ParseRequirements('requirements.txt'),
     test_suite='nose.collector',
     test_require=ParseRequirements('requirements-dev.txt')
