@@ -337,6 +337,7 @@ class GRRHuntOsqueryCollector(GRRHunt):
                name: Optional[str] = None,
                critical: bool = False) -> None:
     """Initializes a GRR file collector hunt.
+
     Args:
       state (DFTimewolfState): recipe state.
       name (Optional[str]): The module's runtime name.
@@ -648,6 +649,7 @@ class GRRHuntDownloader(GRRHuntDownloaderBase):
 
     return fqdn_collection_paths
 
+
 class GRRHuntOsqueryDownloader(GRRHuntDownloaderBase):
   """Downloads osquery results from a GRR hunt.
 
@@ -684,7 +686,7 @@ class GRRHuntOsqueryDownloader(GRRHuntDownloaderBase):
       hunt (object): GRR hunt object to download results from.
 
     Returns:
-      list[tuple[str, str]]: pairs of human-readable description of the source
+      a list of pairs of a human-readable description of the source
           of the collection, for example the name of the source host, and
           the path to the collected data.
 
@@ -705,15 +707,25 @@ class GRRHuntOsqueryDownloader(GRRHuntDownloaderBase):
     Function is necessary for the _WrapGRRRequestWithApproval to work.
 
     Args:
-      hunt (object): GRR hunt object.
-      output_path (str): output path where to write the GRR Hunt results.
+      hunt: GRR hunt object.
+      output_path: output path where to write the GRR Hunt results.
+
+    Returns:
+      a list of pairs of a human-readable description of the source
+          of the collection, for example the name of the source host, and
+          the path to the collected data.
     """
     for result in hunt.ListResults():
       payload = result.payload
-      client_hostname = result.client.hostname
+
+      grr_client = list(self.grr_api.SearchClients(result.client.client_id))[0]
+      client_hostname = grr_client.data.os_info.fqdn.lower()
 
       if not isinstance(payload, osquery_flows.OsqueryResult):
-        self.logger.error(f'Incorrect results format from {result.client.id}')
+        self.ModuleError(
+            f'Incorrect results format from {result.client.client_id} '
+            f'({client_hostname}).  Possibly not an osquery hunt.',
+            critical=True)
         continue
 
       headers = [column.name for column in payload.table.header.columns]
