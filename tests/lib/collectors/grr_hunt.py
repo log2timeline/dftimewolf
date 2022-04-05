@@ -3,10 +3,12 @@
 """Tests the GRR hunt collectors."""
 
 import unittest
+from unittest.mock import MagicMock
 import zipfile
 import mock
 
 from grr_response_proto import flows_pb2
+from grr_response_proto import osquery_pb2 as osquery_flows
 
 from dftimewolf import config
 from dftimewolf.lib import state
@@ -260,8 +262,7 @@ class GRRHuntOsqueryDownloader(unittest.TestCase):
     self.assertEqual(self.grr_hunt_downloader.hunt_id, 'H:12345')
 
   @mock.patch('dftimewolf.lib.collectors.grr_hunt.GRRHuntOsqueryDownloader._GetAndWriteResults')  # pylint: disable=line-too-long
-  def testCollectHuntResults(self,
-                             mock_get_write_results):
+  def testProcess(self, mock_get_write_results):
     """Tests that hunt results are downloaded to the correct path."""
     self.mock_grr_api.Hunt.return_value.Get.return_value = \
         mock_grr_hosts.MOCK_HUNT
@@ -269,6 +270,22 @@ class GRRHuntOsqueryDownloader(unittest.TestCase):
     mock_get_write_results.assert_called_with(mock_grr_hosts.MOCK_HUNT,
                                               '/tmp/test')
 
+  @mock.patch('grr_api_client.hunt.Hunt.ListResults')
+  def testGetAndWriteResults(self, mock_list_results):
+    """Tests the GetAndWriteReslts function."""
+    mock_result = mock.MagicMock()
+    mock_result.payload = mock.MagicMock(spec=osquery_flows.OsqueryResult)
+    mock_list_results.return_value = [mock_result]
+    mock_client = mock.MagicMock()
+    mock_client.data.os_info.fqdn = 'TEST'
+    self.mock_grr_api.SearchClients.return_value = [mock_client]
+
+    results = self.grr_hunt_downloader._GetAndWriteResults(
+        mock_grr_hosts.MOCK_HUNT, '/tmp/test')
+
+    self.assertEqual(len(results), 1)
+    self.assertEqual(results[0][0], 'test')
+    self.assertEqual(results[0][1], '/tmp/test/test.csv')
 
 if __name__ == '__main__':
   unittest.main()
