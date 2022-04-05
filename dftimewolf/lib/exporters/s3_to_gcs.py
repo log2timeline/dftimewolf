@@ -127,7 +127,7 @@ class S3ToGCSCopy(module.ThreadAwareModule):
 
     See https://cloud.google.com/storage-transfer/docs/configure-access#sink"""
     request = self.dest_project.storagetransfer.GcstApi().\
-        googleServiceAccounts().get(projectId=self.dest_project_name)
+        googleServiceAccounts().get(projectId=self.dest_project_name)  # pylint: disable=no-member
     service_account = request.execute()['accountEmail']
 
     client = storage_client(project=self.dest_project_name)
