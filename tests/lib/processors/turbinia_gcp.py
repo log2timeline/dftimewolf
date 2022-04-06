@@ -88,7 +88,7 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
           project='turbinia-wrong-project',
           turbinia_recipe=None,
           turbinia_zone='europe-west1',
-          sketch_id=None)
+          sketch_id=1234)
       # pylint: disable=line-too-long
       turbinia_processor.client.create_request.return_value = turbinia_message.TurbiniaRequest()
     self.assertEqual(len(test_state.errors), 1)
@@ -203,12 +203,6 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
       turbinia_processor.Process(c)
     turbinia_processor.PostProcess()
 
-    # pylint: disable=no-member
-    turbinia_processor.client.create_request.assert_called_with(
-        requester=getpass.getuser(),
-        recipe=turbinia_processor.client.create_recipe()
-    )
-
     mock_GoogleCloudDisk.assert_called_with(
         disk_name='disk-1', project='turbinia-project', zone='europe-west1')
 
@@ -308,12 +302,6 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
     for c in in_containers:
       turbinia_processor.Process(c)
     turbinia_processor.PostProcess()
-
-    # pylint: disable=no-member
-    turbinia_processor.client.create_request.assert_called_with(
-        requester=getpass.getuser(),
-        recipe=turbinia_processor.client.create_recipe()
-    )
 
     mock_GoogleCloudDisk.assert_called_with(
         disk_name='disk-1', project='turbinia-project', zone='europe-west1')

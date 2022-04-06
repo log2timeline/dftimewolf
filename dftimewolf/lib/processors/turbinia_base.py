@@ -5,7 +5,7 @@ import getpass
 import random
 import tempfile
 import time
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Optional, Tuple, Any, Union
 
 from turbinia import TurbiniaException
 from turbinia import client as turbinia_client
@@ -121,7 +121,7 @@ class TurbiniaProcessorBase(object):
 
   def TurbiniaSetUp(self,
                     project: str,
-                    turbinia_recipe: str,
+                    turbinia_recipe: Union[str, None],
                     turbinia_zone: str,
                     sketch_id: int) -> None:
     """Sets up the object attributes.
