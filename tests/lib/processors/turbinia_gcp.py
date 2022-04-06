@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """Tests the Turbinia processor."""
 
+import getpass
 import os
 import unittest
 import mock
@@ -202,6 +203,12 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
       turbinia_processor.Process(c)
     turbinia_processor.PostProcess()
 
+    # pylint: disable=no-member
+    turbinia_processor.client.create_request.assert_called_with(
+        requester=getpass.getuser(),
+        recipe=turbinia_processor.client.create_recipe()
+    )
+
     mock_GoogleCloudDisk.assert_called_with(
         disk_name='disk-1', project='turbinia-project', zone='europe-west1')
 
@@ -301,6 +308,12 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
     for c in in_containers:
       turbinia_processor.Process(c)
     turbinia_processor.PostProcess()
+
+    # pylint: disable=no-member
+    turbinia_processor.client.create_request.assert_called_with(
+        requester=getpass.getuser(),
+        recipe=turbinia_processor.client.create_recipe()
+    )
 
     mock_GoogleCloudDisk.assert_called_with(
         disk_name='disk-1', project='turbinia-project', zone='europe-west1')
