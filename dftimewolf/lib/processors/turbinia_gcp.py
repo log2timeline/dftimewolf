@@ -43,7 +43,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
   def SetUp(self,
             turbinia_config_file: Union[str, None],
             project: str,
-            turbinia_recipe: str,
+            turbinia_recipe: Union[str, None],
             turbinia_zone: str,
             sketch_id: int,
             disk_names: str = '') -> None:
