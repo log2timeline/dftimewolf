@@ -87,7 +87,7 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
           project='turbinia-wrong-project',
           turbinia_recipe=None,
           turbinia_zone='europe-west1',
-          sketch_id=None)
+          sketch_id=1234)
       # pylint: disable=line-too-long
       turbinia_processor.client.create_request.return_value = turbinia_message.TurbiniaRequest()
     self.assertEqual(len(test_state.errors), 1)
