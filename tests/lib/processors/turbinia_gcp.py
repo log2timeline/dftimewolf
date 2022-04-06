@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """Tests the Turbinia processor."""
 
-import getpass
 import os
 import unittest
 import mock

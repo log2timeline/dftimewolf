@@ -38,13 +38,13 @@ class TurbiniaProcessorBase(object):
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    self.turbinia_config_file = ''
+    self.turbinia_config_file = ''  # type: Any
     self._output_path = str()
     self.client = None  # type: turbinia_client.BaseTurbiniaClient
     self.instance = None
     self.project = str()
     self.sketch_id = int()
-    self.turbinia_recipe = str()
+    self.turbinia_recipe = str()  # type: Any
     self.turbinia_region = None
     self.turbinia_zone = str()
     self.parallel_count = 5  # Arbitrary, used by ThreadAwareModule
