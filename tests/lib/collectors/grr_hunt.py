@@ -3,7 +3,6 @@
 """Tests the GRR hunt collectors."""
 
 import unittest
-from unittest.mock import MagicMock
 import zipfile
 import mock
 
@@ -281,7 +280,7 @@ class GRRHuntOsqueryDownloader(unittest.TestCase):
     self.mock_grr_api.SearchClients.return_value = [mock_client]
 
     results = self.grr_hunt_downloader._GetAndWriteResults(
-        mock_grr_hosts.MOCK_HUNT, '/tmp/test')
+        mock_grr_hosts.MOCK_HUNT, '/tmp/test')  # pylint: disable=protected-access
 
     self.assertEqual(len(results), 1)
     self.assertEqual(results[0][0], 'test')
