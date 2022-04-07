@@ -463,16 +463,19 @@ class GRRHuntDownloaderBase(GRRHunt):
   def _CollectHuntResults(self, hunt: Hunt) -> List[Tuple[str, str]]:
     """Downloads the hunt results.
 
+    To be implemented by concrete subclasses.  Requests to the GRR Api should be
+    wrapped with the _WrapGRRRequestWithApproval() function.
+
     Args:
       hunt (object): GRR hunt object to download from.
 
     Returns:
-      list[tuple[str, str]]: pairs of human-readable description of the source
-          of the collection, for example the name of the source host, and
-          the path to the collected data.
+      list[tuple[str, str]]: a list of pairs that are composed of human-readable
+          description of the collection source, for example the name of the
+          source host, and the path to the collected data.
 
     Raises:
-      DFTimewolfError: if approval is needed and approvers were not specified.
+      NotImplementedError as this class should not be used directly.
     """
     raise NotImplementedError
 
@@ -522,9 +525,9 @@ class GRRHuntDownloader(GRRHuntDownloaderBase):
       hunt (object): GRR hunt object to download files from.
 
     Returns:
-      list[tuple[str, str]]: pairs of human-readable description of the source
-          of the collection, for example the name of the source host, and
-          the path to the collected data.
+      list[tuple[str, str]]: a list of pairs that are composed of human-readable
+          description of the collection source, for example the name of the
+          source host, and the path to the collected data.
 
     Raises:
       DFTimewolfError: if approval is needed and approvers were not specified.
@@ -686,9 +689,9 @@ class GRRHuntOsqueryDownloader(GRRHuntDownloaderBase):
       hunt (object): GRR hunt object to download results from.
 
     Returns:
-      a list of pairs of a human-readable description of the source
-          of the collection, for example the name of the source host, and
-          the path to the collected data.
+      list[tuple[str, str]]: a list of pairs that are composed of human-readable
+          description of the collection source, for example the name of the
+          source host, and the path to the collected data.
 
     Raises:
       DFTimewolfError: if approval is needed and approvers were not specified.
@@ -711,9 +714,9 @@ class GRRHuntOsqueryDownloader(GRRHuntDownloaderBase):
       output_path: output path where to write the GRR Hunt results.
 
     Returns:
-      a list of pairs of a human-readable description of the source
-          of the collection, for example the name of the source host, and
-          the path to the collected data.
+      list[tuple[str, str]]: a list of pairs of a human-readable description of
+          the source of the collection, for example the name of the source host,
+          and the path to the collected data.
     """
     for result in hunt.ListResults():
       payload = result.payload
