@@ -463,7 +463,7 @@ class GRRHuntDownloaderBase(GRRHunt):
   def _CollectHuntResults(self, hunt: Hunt) -> List[Tuple[str, str]]:
     """Downloads the hunt results.
 
-    To be implemented by concrete subclasses.  Requests to the GRR Api should be
+    To be implemented by concrete subclasses. Requests to the GRR Api should be
     wrapped with the _WrapGRRRequestWithApproval() function.
 
     Args:
