@@ -5,7 +5,7 @@ import getpass
 import random
 import tempfile
 import time
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Optional, Tuple, Any, Union
 
 from turbinia import TurbiniaException
 from turbinia import client as turbinia_client
@@ -38,13 +38,13 @@ class TurbiniaProcessorBase(object):
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    self.turbinia_config_file = ''
+    self.turbinia_config_file = ''  # type: Any
     self._output_path = str()
     self.client = None  # type: turbinia_client.BaseTurbiniaClient
     self.instance = None
     self.project = str()
     self.sketch_id = int()
-    self.turbinia_recipe = str()
+    self.turbinia_recipe = str()  # type: Any
     self.turbinia_region = None
     self.turbinia_zone = str()
     self.parallel_count = 5  # Arbitrary, used by ThreadAwareModule
@@ -121,7 +121,7 @@ class TurbiniaProcessorBase(object):
 
   def TurbiniaSetUp(self,
                     project: str,
-                    turbinia_recipe: str,
+                    turbinia_recipe: Union[str, None],
                     turbinia_zone: str,
                     sketch_id: int) -> None:
     """Sets up the object attributes.
@@ -207,6 +207,7 @@ class TurbiniaProcessorBase(object):
 
     request = self.client.create_request(
         requester=getpass.getuser(), recipe=recipe)
+    request.evidence.append(evidence_)
 
     request_dict = {
         'instance': self.instance,
