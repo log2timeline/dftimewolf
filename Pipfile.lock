@@ -337,7 +337,7 @@
                 "sha256:2857e29ff0d34db842cd7ca3230549d1a697f96ee6d3fb071cfa6c7393832597",
                 "sha256:6881edbebdb17b39b4eaaa821b438bf6eddffb4468cf344f09f89def34a8b1df"
             ],
-            "markers": "python_version >= '3.5'",
+            "markers": "python_full_version >= '3.5.0'",
             "version": "==2.0.12"
         },
         "click": {
@@ -1065,7 +1065,7 @@
                 "sha256:fade0d4f4d292b6f39951b6836d7a3c7ef5b2347f3c420cd9820a1d90d794802",
                 "sha256:fdf3c08bce27132395d3c3ba1503cac12e17282358cb4bddc25cc46b0aca07aa"
             ],
-            "markers": "python_version < '3.10' and platform_machine != 'aarch64' and platform_machine != 'arm64'",
+            "markers": "python_version <= '3.10' and platform_machine != 'aarch64' and platform_machine != 'arm64'",
             "version": "==1.22.3"
         },
         "oauthlib": {
@@ -1116,7 +1116,7 @@
                 "sha256:a648ad761b8ea27370cb5915350122cd807b820d2193ed5c9cc28f163df637f4",
                 "sha256:b092f48e1e30a234ab3dd1cfd44f2f235e8a41f4e310e463fc8d6798d1c3c235"
             ],
-            "markers": "python_version >= '3.5' and platform_system != 'Windows'",
+            "markers": "python_full_version >= '3.5.0' and platform_system != 'Windows'",
             "version": "==2.4.0"
         },
         "prettytable": {
@@ -1154,6 +1154,7 @@
         "protobuf": {
             "hashes": [
                 "sha256:304e08440c4a41a0f3592d2a38934aad6919d692bb0edfb355548786728f9a5e",
+                "sha256:38fd9eb74b852e4ee14b16e9670cd401d147ee3f3ec0d4f7652e0c921d6227f8",
                 "sha256:49ef8ab4c27812a89a76fa894fe7a08f42f2147078392c0dee51d4a444ef6df5",
                 "sha256:50b5fee674878b14baea73b4568dc478c46a31dd50157a5b5d2f71138243b1a9",
                 "sha256:5524c7020eb1fb7319472cb75c4c3206ef18b34d6034d2ee420a60f99cddeb07",
@@ -1572,7 +1573,7 @@
                 "sha256:6b312d5e15138552f1bda8a4e66c30e236c831b612b2bf0005f8a1df10a4bc33",
                 "sha256:a5700ce83414c64514d82d60bcda8aabfde092d1c1a8663f9200c07fdcc6da8f"
             ],
-            "markers": "python_version >= '3.5'",
+            "markers": "python_full_version >= '3.5.0'",
             "version": "==0.11.2"
         },
         "turbinia": {
