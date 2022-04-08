@@ -1174,7 +1174,7 @@
                 "sha256:f4b73736108a416c76c17a8a09bc73af3d91edaa26c682aaa460ef91a47168d3"
             ],
             "markers": "python_version >= '3.1'",
-            "version": "==3.12.2"
+            "version": "==3.20"
         },
         "psq": {
             "hashes": [
