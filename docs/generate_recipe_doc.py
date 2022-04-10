@@ -7,7 +7,6 @@ import sys
 import json
 import graphviz
 
-# Test Comment
 # These are the first strings that will be generated in the file.
 HEADER = """
 # Recipe list
