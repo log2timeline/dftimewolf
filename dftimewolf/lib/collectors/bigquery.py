@@ -56,7 +56,7 @@ class BigQueryCollector(module.BaseModule):
           orient="records", lines=True, date_format="iso")
       output_file.write(records)
 
-    except google.cloud.exceptions.NotFound as exception:
+    except google.cloud.exceptions.NotFound as exception:  # pytype: disable=module-attr
       self.ModuleError(f"Error accessing project: {exception!s}",
           critical=True)
 

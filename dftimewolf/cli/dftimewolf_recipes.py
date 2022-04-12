@@ -75,6 +75,8 @@ logger = cast(logging_utils.WolfLogger, logging.getLogger('dftimewolf'))
 class DFTimewolfTool(object):
   """DFTimewolf tool."""
 
+  _state: "dftw_state.DFTimewolfState" # for pytype
+
   _DEFAULT_DATA_FILES_PATH = os.path.join(
       os.sep, 'usr', 'local', 'share', 'dftimewolf')
 
