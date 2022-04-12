@@ -33,7 +33,7 @@ class TimesketchExporter(module.ThreadAwareModule):
   # The name of a ticket attribute that contains the URL to a sketch.
   _SKETCH_ATTRIBUTE_NAME = 'Timesketch URL'
 
-  sketch: ts_sketch
+  sketch: ts_sketch.Sketch
 
   def __init__(self,
                state: DFTimewolfState,
