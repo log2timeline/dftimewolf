@@ -5,13 +5,13 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  pylint:
+  pytype:
 
     runs-on: ubuntu-latest
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: [3.9]
+        python-version: [3.8]
 
     steps:
     - uses: actions/checkout@v2
