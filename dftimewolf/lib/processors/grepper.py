@@ -26,6 +26,7 @@ class GrepperSearch(module.BaseModule):
   output: filepath and keyword match, to stdout (final_output).
   """
 
+  # For pytype
   _keywords: str
   _output_path: str
 
