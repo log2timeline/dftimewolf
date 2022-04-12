@@ -87,7 +87,6 @@ class DFTimewolfTool(object):
     self._data_files_path = ''
     self._recipes_manager = recipes_manager.RecipesManager()
     self._recipe = {}  # type: Dict[str, Any]
-    self._state: "dftw_state.DFTimewolfState"
 
     self._DetermineDataFilesPath()
 

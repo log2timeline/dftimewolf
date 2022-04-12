@@ -41,16 +41,17 @@ class TimesketchEnhancer(module.BaseModule):
   # Name given to all report containers.
   _REPORT_NAME = 'TimesketchEnhancer'
 
+  # For pytype
+  _formatter: utils.FormatterInterface
+  timesketch_api: "client.TimesketchApi"
+
   def __init__(self,
                state: "dftw_state.DFTimewolfState",
                name: Optional[str]=None,
                critical: bool=False):
     super(TimesketchEnhancer, self).__init__(
         state, name=name, critical=critical)
-    self.timesketch_api: "client.TimesketchApi"
-
     self._aggregations_to_skip = []  # type: List[str]
-    self._formatter: utils.FormatterInterface
     self._include_stories = False
     self._max_checks = self._ANALYZER_MAX_CHECKS
     self._wait_for_analyzers = True

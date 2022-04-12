@@ -26,14 +26,15 @@ class GrepperSearch(module.BaseModule):
   output: filepath and keyword match, to stdout (final_output).
   """
 
+  _keywords: str
+  _output_path: str
+
   def __init__(self,
                state: "state.DFTimewolfState",
                name: Optional[str]=None,
                critical: bool=False):
 
     super(GrepperSearch, self).__init__(state, name=name, critical=critical)
-    self._keywords: str
-    self._output_path: str
     self._final_output = ''
 
   def SetUp(self, keywords: str) -> None:  # pylint: disable=arguments-differ
