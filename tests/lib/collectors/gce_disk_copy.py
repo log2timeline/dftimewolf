@@ -351,12 +351,12 @@ class GCEDiskCopyTest(unittest.TestCase):
     collector.PreProcess()
     conts = test_state.GetContainers(collector.GetThreadOnContainerType())
     for d in conts:
-      collector.Process(d)
+      collector.Process(d)  # pytype: disable=wrong-arg-types
       mock_CreateDiskCopy.assert_called_with(
           'test-target-project-name',
           'test-analysis-project-name',
           FAKE_INSTANCE.zone,
-          disk_name=d.name)
+          disk_name=d.name)  # pytype: disable=attribute-error
     collector.PostProcess()
 
     FAKE_INSTANCE.Stop.assert_called_once()
@@ -388,12 +388,12 @@ class GCEDiskCopyTest(unittest.TestCase):
     collector.PreProcess()
     conts = test_state.GetContainers(collector.GetThreadOnContainerType())
     for d in conts:
-      collector.Process(d)
+      collector.Process(d)  # pytype: disable=wrong-arg-types
       mock_CreateDiskCopy.assert_called_with(
           'test-target-project-name',
           'test-analysis-project-name',
           FAKE_INSTANCE.zone,
-          disk_name=d.name)
+          disk_name=d.name)  # pytype: disable=attribute-error
     collector.PostProcess()
 
     FAKE_INSTANCE.Stop.assert_not_called()
@@ -428,7 +428,7 @@ class GCEDiskCopyTest(unittest.TestCase):
     collector.PreProcess()
     conts = test_state.GetContainers(collector.GetThreadOnContainerType())
     for d in conts:
-      collector.Process(d)
+      collector.Process(d)  # pytype: disable=wrong-arg-types
     with self.assertRaises(errors.DFTimewolfError) as error:
       collector.PostProcess()
     self.assertEqual(error.exception.message,
@@ -453,7 +453,7 @@ class GCEDiskCopyTest(unittest.TestCase):
     conts = test_state.GetContainers(collector.GetThreadOnContainerType())
     with self.assertRaises(errors.DFTimewolfError) as error:
       for d in conts:
-        collector.Process(d)
+        collector.Process(d)  # pytype: disable=wrong-arg-types
     self.assertEqual(error.exception.message,
         'Could not create disk. Permission denied.')
 

@@ -104,7 +104,7 @@ def ImportArgsFromDict(value: Any,
     return tuple(ImportArgsFromDict(val, args, config) for val in value)
   return value
 
-
+# pytype: disable=bad-return-type
 class FormatterInterface(object):
   """Interface to format text in reports."""
 
@@ -159,6 +159,7 @@ class FormatterInterface(object):
   def Paragraph(self, text: str) -> str:
     """Return a formatted paragraph."""
     pass
+# pytype: enable=bad-return-type
 
 
 class HTMLFormatter(FormatterInterface):

@@ -76,7 +76,9 @@ class RecipesManager(object):
     """
     with io.open(path, 'r', encoding='utf-8') as file_object:
       try:
+        # pytype: disable=wrong-arg-types
         recipe = self._ReadRecipeFromFileObject(file_object)
+        # pytype: enable=wrong-arg-types
       except json.decoder.JSONDecodeError as exception:
         raise errors.RecipeParseError(
             'Unable to parse recipe file: {0:s} with error: {1!s}'.format(
