@@ -15,7 +15,6 @@ types-filelock = "*"
 types-PyYAML = "*"
 mkdocs = "*"
 graphviz = "*"
-pytype = ">=2020.2.6"
 
 [packages]
 beautifulsoup4 = "*"
