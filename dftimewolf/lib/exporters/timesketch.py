@@ -51,7 +51,7 @@ class TimesketchExporter(module.ThreadAwareModule):
 
   def SetUp(self,  # pylint: disable=arguments-differ
             incident_id: None=None,
-            sketch_id: int=0,
+            sketch_id: Optional[int]=0,
             analyzers: None=None,
             token_password: str='',
             wait_for_timelines: bool=False) -> None:

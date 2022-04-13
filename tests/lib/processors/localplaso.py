@@ -68,7 +68,7 @@ class LocalPlasoTest(unittest.TestCase):
     self.assertIsNotNone(match)
     self.assertRegex(
         test_state.GetContainers(containers.File)[0].path,
-        f".*/{match.group(1)}")
+        f".*/{match.group(1)}")  # pytype: disable=attribute-error
 
   @mock.patch.dict('os.environ', {'PATH': '/fake/path:/fake/path/2'})
   @mock.patch('os.path.isfile')

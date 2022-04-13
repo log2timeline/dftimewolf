@@ -96,7 +96,7 @@ class TurbiniaArtifactProcessorTest(unittest.TestCase):
     in_containers = test_state.GetContainers(
         turbinia_processor.GetThreadOnContainerType(), pop=True)
     for c in in_containers:
-      turbinia_processor.Process(c)
+      turbinia_processor.Process(c)  # pytype: disable=wrong-arg-types
     turbinia_processor.PostProcess()
 
     conts = test_state.GetContainers(containers.RemoteFSPath)

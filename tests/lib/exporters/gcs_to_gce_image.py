@@ -100,7 +100,7 @@ class GCSToGCEImageTest(unittest.TestCase):
 
     exporter.PreProcess()
     for c in test_state.GetContainers(exporter.GetThreadOnContainerType()):
-      exporter.Process(c)
+      exporter.Process(c)  # pytype: disable=wrong-arg-types
     exporter.PostProcess()
 
     actual_output = [c.name for \
@@ -139,7 +139,7 @@ class GCSToGCEImageTest(unittest.TestCase):
 
     exporter.PreProcess()
     for c in test_state.GetContainers(exporter.GetThreadOnContainerType()):
-      exporter.Process(c)
+      exporter.Process(c)  # pytype: disable=wrong-arg-types
     exporter.PostProcess()
 
     actual_output = [c.name for \
