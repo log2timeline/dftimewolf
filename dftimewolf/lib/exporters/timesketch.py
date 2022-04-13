@@ -4,7 +4,7 @@ Threaded version of existing Timesketch module."""
 
 import re
 import time
-from typing import Optional, List, Type
+from typing import Optional, List, Type, Union
 
 from timesketch_import_client import importer
 from timesketch_api_client import sketch as ts_sketch
@@ -41,13 +41,13 @@ class TimesketchExporter(module.ThreadAwareModule):
                critical: bool=False) -> None:
     super(TimesketchExporter, self).__init__(
         state, name=name, critical=critical)
-    self.incident_id = None
-    self.sketch_id = 0
+    self.incident_id = None  # type: Union[str, None]
+    self.sketch_id = 0  # type: int
     self.timesketch_api = None  # type: ts_client.TimesketchApi
     self._analyzers = []  # type: List[str]
-    self.wait_for_timelines = False
-    self.host_url = None
-    self.sketch = None
+    self.wait_for_timelines = False  # type: bool
+    self.host_url = None  # type: Union[str, None]
+    self.sketch = None  # type: ts_sketch.Sketch
 
   def SetUp(self,  # pylint: disable=arguments-differ
             incident_id: None=None,

@@ -79,6 +79,8 @@ class GCEDiskFromImageTest(unittest.TestCase):
     exporter.PreProcess()
     for c in test_state.GetContainers(exporter.GetThreadOnContainerType()):
       exporter.Process(c)  # pytype: disable=wrong-arg-types
+      # GetContainers returns the abstract base class type, but process is 
+      # called with the instantiated child class.
     exporter.PostProcess()
 
     actual_output = [c.name for \
@@ -109,6 +111,8 @@ class GCEDiskFromImageTest(unittest.TestCase):
     exporter.PreProcess()
     for c in test_state.GetContainers(exporter.GetThreadOnContainerType()):
       exporter.Process(c)  # pytype: disable=wrong-arg-types
+      # GetContainers returns the abstract base class type, but process is 
+      # called with the instantiated child class.
     exporter.PostProcess()
 
     actual_output = [c.name for \

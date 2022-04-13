@@ -202,6 +202,8 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
         turbinia_processor.GetThreadOnContainerType())
     for c in in_containers:
       turbinia_processor.Process(c)  # pytype: disable=wrong-arg-types
+      # GetContainers returns the abstract base class type, but process is 
+      # called with the instantiated child class.
     turbinia_processor.PostProcess()
 
     mock_GoogleCloudDisk.assert_called_with(
@@ -302,6 +304,8 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
         turbinia_processor.GetThreadOnContainerType())
     for c in in_containers:
       turbinia_processor.Process(c)  # pytype: disable=wrong-arg-types
+      # GetContainers returns the abstract base class type, but process is 
+      # called with the instantiated child class.
     turbinia_processor.PostProcess()
 
     mock_GoogleCloudDisk.assert_called_with(
@@ -362,6 +366,8 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
         turbinia_processor.GetThreadOnContainerType())
     for c in in_containers:
       turbinia_processor.Process(c)  # pytype: disable=wrong-arg-types
+      # GetContainers returns the abstract base class type, but process is 
+      # called with the instantiated child class.
     turbinia_processor.PostProcess()
 
     file_containers = test_state.GetContainers(containers.File)

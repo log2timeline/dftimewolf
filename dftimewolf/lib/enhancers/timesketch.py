@@ -52,9 +52,9 @@ class TimesketchEnhancer(module.BaseModule):
     super(TimesketchEnhancer, self).__init__(
         state, name=name, critical=critical)
     self._aggregations_to_skip = []  # type: List[str]
-    self._include_stories = False
-    self._max_checks = self._ANALYZER_MAX_CHECKS
-    self._wait_for_analyzers = True
+    self._include_stories = False  # type: bool
+    self._max_checks = self._ANALYZER_MAX_CHECKS  # type: int
+    self._wait_for_analyzers = True  # type: bool
     self._searches_to_skip = []  # type: List[str]
 
   def SetUp(self,  # pylint: disable=arguments-differ

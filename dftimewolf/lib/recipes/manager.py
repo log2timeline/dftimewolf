@@ -6,7 +6,7 @@ import io
 import json
 import os
 from io import StringIO, TextIOWrapper
-from typing import List, Union, Dict
+from typing import List, Union, Dict, TextIO
 
 from dftimewolf.lib import errors, resources
 from dftimewolf.lib.resources import Recipe
@@ -21,7 +21,7 @@ class RecipesManager(object):
   _recipes = {}  # type: Dict[str, Recipe]
 
   def _ReadRecipeFromFileObject(
-      self, file_object: Union[StringIO, TextIOWrapper]) -> Recipe:
+      self, file_object: Union[StringIO, TextIOWrapper, TextIO]) -> Recipe:
     """Reads a recipe from a JSON file-like object.
 
     Args:
@@ -76,9 +76,7 @@ class RecipesManager(object):
     """
     with io.open(path, 'r', encoding='utf-8') as file_object:
       try:
-        # pytype: disable=wrong-arg-types
         recipe = self._ReadRecipeFromFileObject(file_object)
-        # pytype: enable=wrong-arg-types
       except json.decoder.JSONDecodeError as exception:
         raise errors.RecipeParseError(
             'Unable to parse recipe file: {0:s} with error: {1!s}'.format(
