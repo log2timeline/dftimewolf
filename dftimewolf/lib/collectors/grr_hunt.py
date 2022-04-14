@@ -180,9 +180,9 @@ class GRRHuntArtifactCollector(GRRHunt):
             max_file_size: str,
             approvers: str,
             verify: bool,
-            match_mode: str,
-            client_operating_systems: str,
-            client_labels: str) -> None:
+            match_mode: Optional[str],
+            client_operating_systems: Optional[str],
+            client_labels: Optional[str]) -> None:
     """Initializes a GRR Hunt artifact collector.
 
     Args:
@@ -266,9 +266,9 @@ class GRRHuntFileCollector(GRRHunt):
             max_file_size: str,
             approvers: str,
             verify: bool,
-            match_mode: str,
-            client_operating_systems: str,
-            client_labels: str) -> None:
+            match_mode: Optional[str],
+            client_operating_systems: Optional[str],
+            client_labels: Optional[str]) -> None:
     """Initializes a GRR Hunt file collector.
 
     Args:
@@ -357,9 +357,9 @@ class GRRHuntOsqueryCollector(GRRHunt):
             grr_password: str,
             approvers: str,
             verify: bool,
-            match_mode: str,
-            client_operating_systems: str,
-            client_labels: str) -> None:
+            match_mode: Optional[str],
+            client_operating_systems: Optional[str],
+            client_labels: Optional[str]) -> None:
     """Initializes a GRR Hunt Osquery collector.
 
     Args:

@@ -18,7 +18,7 @@ class TimesketchUtilsTest(unittest.TestCase):
 
   def testInitialization(self):
     """Tests that the processor can be initialized."""
-    wolf_config = config.Config()
+    wolf_config = config.Config
     wolf_state = state.DFTimewolfState(wolf_config)
     wolf_state.AddToCache('timesketch_client', FakeTimesketchApiClient())
 

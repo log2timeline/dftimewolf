@@ -27,6 +27,11 @@ from dftimewolf.lib.errors import DFTimewolfError
 class GRRFlowTests(unittest.TestCase):
   """Tests for the GRRFlow base class."""
 
+  # For pytype
+  grr_flow_module: grr_hosts.GRRFlow
+  mock_grr_api: mock.Mock
+  test_state: state.DFTimewolfState
+
   @mock.patch('grr_api_client.api.InitHttp')
   def setUp(self, mock_InitHttp):
     self.mock_grr_api = mock.Mock()
@@ -174,6 +179,11 @@ class GRRFlowTests(unittest.TestCase):
 class GRRArtifactCollectorTest(unittest.TestCase):
   """Tests for the GRR artifact collector."""
 
+  # For pytype
+  grr_artifact_collector: grr_hosts.GRRArtifactCollector
+  mock_grr_api: mock.Mock
+  test_state: state.DFTimewolfState
+
   @mock.patch('grr_api_client.api.InitHttp')
   def setUp(self, mock_InitHttp):
     self.mock_grr_api = mock.Mock()
@@ -202,9 +212,11 @@ class GRRArtifactCollectorTest(unittest.TestCase):
 
   def testSetup(self):
     """Tests that the module is setup properly."""
+    # pytype: disable=attribute-error
     actual_hosts = [h.hostname for h in \
         self.grr_artifact_collector.state.GetContainers(
             self.grr_artifact_collector.GetThreadOnContainerType())]
+    # pytype: enable=attribute-error
 
     self.assertEqual(self.grr_artifact_collector.artifacts, [])
     self.assertEqual(
@@ -240,7 +252,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
         grr_server_url='http://fake/endpoint',
         grr_username='user',
         grr_password='password',
-        max_file_size='1234',
+        max_file_size=1234,
         approvers='approver1,approver2',
         verify=False,
         skip_offline_clients=False
@@ -336,6 +348,10 @@ class GRRArtifactCollectorTest(unittest.TestCase):
 class GRRFileCollectorTest(unittest.TestCase):
   """Tests for the GRR file collector."""
 
+  # For pytype
+  grr_file_collector: grr_hosts.GRRFileCollector
+  mock_grr_api: mock.Mock
+
   @mock.patch('grr_api_client.api.InitHttp')
   def setUp(self, mock_InitHttp):
     self.mock_grr_api = mock.Mock()
@@ -358,9 +374,11 @@ class GRRFileCollectorTest(unittest.TestCase):
 
   def testInitialization(self):
     """Tests that the collector can be initialized."""
+    # pytype: disable=attribute-error
     actual_hosts = [h.hostname for h in \
         self.grr_file_collector.state.GetContainers(
             self.grr_file_collector.GetThreadOnContainerType())]
+    # pytype: enable=attribute-error
 
     self.assertIsNotNone(self.grr_file_collector)
     self.assertEqual(['C.0000000000000001'], actual_hosts)
@@ -442,6 +460,11 @@ class GRRFileCollectorTest(unittest.TestCase):
 
 class GRRFlowCollectorTest(unittest.TestCase):
   """Tests for the GRR flow collector."""
+
+  # For pytype
+  grr_flow_collector: grr_hosts.GRRFlowCollector
+  mock_grr_api: mock.Mock
+  test_state: state.DFTimewolfState
 
   @mock.patch('grr_api_client.client.Client.ListFlows')
   @mock.patch('grr_api_client.api.InitHttp')
@@ -593,6 +616,11 @@ class GRRFlowCollectorTest(unittest.TestCase):
 class GRRTimelineCollectorTest(unittest.TestCase):
   """Tests for the GRR flow collector."""
 
+  # For pytype
+  grr_timeline_collector: grr_hosts.GRRTimelineCollector
+  mock_grr_api: mock.Mock
+  test_state: state.DFTimewolfState
+
   @mock.patch('grr_api_client.api.InitHttp')
   def setUp(self, mock_InitHttp):
     self.mock_grr_api = mock.Mock()
@@ -614,9 +642,11 @@ class GRRTimelineCollectorTest(unittest.TestCase):
 
   def testInitialization(self):
     """Tests that the collector can be initialized."""
+    # pytype: disable=attribute-error
     actual_hosts = [h.hostname for h in \
         self.grr_timeline_collector.state.GetContainers(
             self.grr_timeline_collector.GetThreadOnContainerType())]
+    # pytype: enable=attribute-error
 
     self.assertIsNotNone(self.grr_timeline_collector)
     self.assertEqual(['C.0000000000000001'], actual_hosts)
@@ -692,6 +722,11 @@ class GRRTimelineCollectorTest(unittest.TestCase):
 
 class GRROsqueryCollectorTest(unittest.TestCase):
   """Tests for the GRR Osquery collector."""
+
+  # For pytype
+  grr_osquery_collector: grr_hosts.GRROsqueryCollector
+  mock_grr_api: mock.Mock
+  test_state: state.DFTimewolfState
 
   @mock.patch('grr_api_client.api.InitHttp')
   def setUp(self, mock_InitHttp):
