@@ -31,7 +31,7 @@ class AWSVolumeSnapshotCollector(module.BaseModule):
 
   # pylint: disable=arguments-differ
   def SetUp(self,
-            volumes: str = '',
+            volumes: Optional[str] = '',
             region: str = '') -> None:
     """Sets up the AWSVolumeToS3 collector.
 

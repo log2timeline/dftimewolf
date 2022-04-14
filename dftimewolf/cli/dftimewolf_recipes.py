@@ -76,6 +76,8 @@ logger = cast(logging_utils.WolfLogger, logging.getLogger('dftimewolf'))
 class DFTimewolfTool(object):
   """DFTimewolf tool."""
 
+  _state: "dftw_state.DFTimewolfState" # for pytype
+
   _DEFAULT_DATA_FILES_PATH = os.path.join(
       os.sep, 'usr', 'local', 'share', 'dftimewolf')
 
@@ -86,7 +88,6 @@ class DFTimewolfTool(object):
     self._data_files_path = ''
     self._recipes_manager = recipes_manager.RecipesManager()
     self._recipe = {}  # type: Dict[str, Any]
-    self._state: "dftw_state.DFTimewolfState"
 
     self._DetermineDataFilesPath()
 

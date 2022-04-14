@@ -80,7 +80,7 @@ class GoogleSheetsCollectorTest(unittest.TestCase):
     mock_spreadsheet_call = _mock_discovery.build.return_value.spreadsheets.return_value.values.return_value.get.return_value.execute # pylint: disable=line-too-long
 
     # Testing with column validation is True
-    collector.SetUp(spreadsheet_id, sheet_title, True)
+    collector.SetUp(spreadsheet_id, [sheet_title], True)
     mock_spreadsheet_call.return_value = VALID_SHEET
     self.assertIsNotNone(
         collector._ExtractEntriesFromSheet(spreadsheet_id, sheet_title))
@@ -89,7 +89,7 @@ class GoogleSheetsCollectorTest(unittest.TestCase):
         collector._ExtractEntriesFromSheet(spreadsheet_id, sheet_title))
 
     # Testing with column validation is False
-    collector.SetUp(spreadsheet_id, sheet_title, False)
+    collector.SetUp(spreadsheet_id, [sheet_title], False)
     mock_spreadsheet_call.return_value = VALID_SHEET
     self.assertIsNotNone(
         collector._ExtractEntriesFromSheet(spreadsheet_id, sheet_title))

@@ -22,6 +22,10 @@ from tests.lib.collectors.test_data import mock_grr_hosts
 class GRRHuntArtifactCollectorTest(unittest.TestCase):
   """Tests for the GRR artifact collector."""
 
+  # For pytype
+  grr_hunt_artifact_collector: grr_hunt.GRRHuntArtifactCollector
+  mock_grr_api: mock.Mock
+
   @mock.patch('grr_api_client.api.InitHttp')
   def setUp(self, mock_InitHttp):
     self.mock_grr_api = mock.Mock()
@@ -59,6 +63,10 @@ class GRRHuntArtifactCollectorTest(unittest.TestCase):
 
 class GRRHuntFileCollectorTest(unittest.TestCase):
   """Tests for the GRR file collector."""
+
+  # For pytype
+  grr_hunt_file_collector: grr_hunt.GRRHuntFileCollector
+  mock_grr_api: mock.Mock
 
   @mock.patch('grr_api_client.api.InitHttp')
   def setUp(self, mock_InitHttp):
@@ -105,6 +113,10 @@ class GRRHuntFileCollectorTest(unittest.TestCase):
 class GRRHuntOsqueryCollectorTest(unittest.TestCase):
   """Tests for the GRR osquery collector."""
 
+  # For pytype
+  grr_hunt_osquery_collector: grr_hunt.GRRHuntOsqueryCollector
+  mock_grr_api: mock.Mock
+
   @mock.patch('grr_api_client.api.InitHttp')
   def setUp(self, mock_InitHttp):
     self.mock_grr_api = mock.Mock()
@@ -143,6 +155,10 @@ class GRRHuntOsqueryCollectorTest(unittest.TestCase):
 
 class GRRHuntDownloader(unittest.TestCase):
   """Tests for the GRR hunt downloader."""
+
+  # For pytype
+  grr_hunt_downloader: grr_hunt.GRRHuntDownloader
+  mock_grr_api: mock.Mock
 
   @mock.patch('grr_api_client.api.InitHttp')
   def setUp(self, mock_InitHttp):

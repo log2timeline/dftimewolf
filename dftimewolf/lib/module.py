@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Class definition for DFTimewolf modules."""
+# pytype: disable=ignored-abstractmethod,bad-return-type
 
 import abc
 import logging

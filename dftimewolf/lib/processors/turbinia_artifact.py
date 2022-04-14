@@ -45,9 +45,9 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
 
   # pylint: disable=arguments-differ
   def SetUp(self,
-            turbinia_config_file: str,
+            turbinia_config_file: Optional[str],
             project: str,
-            turbinia_recipe: str,
+            turbinia_recipe: Optional[str],
             turbinia_zone: str,
             output_directory: str,
             sketch_id: int) -> None:
