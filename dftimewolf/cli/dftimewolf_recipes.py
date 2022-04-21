@@ -321,6 +321,7 @@ def SetupLogging() -> None:
   # We want all DEBUG messages and above.
   # TODO(tomchop): Consider making this a parameter in the future.
   logger.setLevel(logging.DEBUG)
+  logger.propagate = False
 
   # File handler needs go be added first because it doesn't format messages
   # with color
