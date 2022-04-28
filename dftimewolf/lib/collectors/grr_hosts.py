@@ -413,7 +413,7 @@ class GRRArtifactCollector(GRRFlow):
             grr_server_url: str,
             grr_username: str,
             grr_password: str,
-            max_file_size: str,
+            max_file_size: Optional[int],
             approvers: Optional[str]=None,
             verify: bool=True,
             skip_offline_clients: bool=False) -> None:
@@ -454,7 +454,7 @@ class GRRArtifactCollector(GRRFlow):
 
     self.use_tsk = use_tsk
     if max_file_size:
-      self.max_file_size = int(max_file_size)
+      self.max_file_size = max_file_size
 
   def Process(self, container: containers.Host) -> None:
     """Collects artifacts from a host with GRR.
@@ -864,7 +864,7 @@ class GRRFlowCollector(GRRFlow):
     self.flow_id = str()
     self.host: containers.Host
 
-  # pylint: disable=arguments-differ
+  # pylint: disable=arguments-differ, arguments-renamed
   def SetUp(self,
             hostnames: str,
             flow_ids: str,
@@ -976,7 +976,7 @@ class GRRTimelineCollector(GRRFlow):
 
   # We're overriding the behavior of GRRFlow's SetUp function to include new
   # parameters.
-  # pylint: disable=arguments-differ,too-many-arguments
+  # pylint: disable=arguments-differ,too-many-arguments, arguments-renamed
   def SetUp(self,
             hostnames: str,
             root_path: str,

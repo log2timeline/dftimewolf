@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Contains dummy modules used in thread aware tests."""
 
-from typing import Dict, Any
+from typing import Dict, Any, TypeVar
 import threading
 import time
 
@@ -10,6 +10,7 @@ from dftimewolf.lib.containers import interface
 from dftimewolf.lib.containers import containers
 
 
+_T = TypeVar('TestContainer')
 class TestContainer(interface.AttributeContainer):
   """Test attribute container."""
 
@@ -19,7 +20,7 @@ class TestContainer(interface.AttributeContainer):
     super(TestContainer, self).__init__()
     self.value = value
 
-  def __eq__(self, other: object) -> bool:
+  def __eq__(self, other: _T) -> bool:
     return self.value == other.value
 
 class TestContainerTwo(interface.AttributeContainer):
@@ -137,5 +138,5 @@ class Issue503Module(module.ThreadAwareModule):
   def PostProcess(self) -> None:
     pass
 
-  def KeepThreadedContainersInState(self) -> bool:
+  def KeepThreadedContainersInState(self) -> bool:  # pylint: disable=arguments-differ
     return False

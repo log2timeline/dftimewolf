@@ -47,5 +47,6 @@ class UtilsTest(unittest.TestCase):
     tar = tarfile.TarFile.open(output_file)
     member_name = tar.getmembers()[1].name
     self.assertIn(test_name, member_name)
-    member_data = tar.extractfile(member_name).read()
+    member_data = (
+        tar.extractfile(member_name).read())  # pytype: disable=attribute-error
     self.assertEqual(member_data, test_data.encode('utf-8'))

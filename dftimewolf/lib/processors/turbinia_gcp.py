@@ -41,11 +41,11 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
 
   # pylint: disable=arguments-differ
   def SetUp(self,
-            turbinia_config_file: str,
+            turbinia_config_file: Union[str, None],
             project: str,
+            turbinia_recipe: Union[str, None],
             turbinia_zone: str,
             sketch_id: int,
-            run_all_jobs: bool,
             disk_names: str = '') -> None:
     """Sets up the object attributes.
 
@@ -53,9 +53,9 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       turbinia_config_file (str): Full path to the Turbinia config file to use.
       disk_names (str): names of the disks to process.
       project (str): name of the GCP project containing the disk to process.
+      turbinia_recipe (str): Turbinia recipe name.
       turbinia_zone (str): GCP zone in which the Turbinia server is running.
       sketch_id (int): The Timesketch sketch ID.
-      run_all_jobs (bool): Whether to run all jobs instead of a faster subset.
     """
     self.turbinia_config_file = turbinia_config_file
 
@@ -68,7 +68,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
             project=project))
 
     try:
-      self.TurbiniaSetUp(project, turbinia_zone, sketch_id, run_all_jobs)
+      self.TurbiniaSetUp(project, turbinia_recipe, turbinia_zone, sketch_id)
     except TurbiniaException as exception:
       self.ModuleError(str(exception), critical=True)
       return
@@ -83,11 +83,12 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     """
     vm_containers = self.state.GetContainers(containers.ForensicsVM)
     for container in vm_containers:
-      if container.evidence_disk.name:
+      if container.evidence_disk and container.evidence_disk.name:
         self.state.StoreContainer(
             containers.GCEDiskEvidence(
                 name=container.evidence_disk.name,
                 project=self.project))
+    self.state.DedupeContainers(containers.GCEDiskEvidence)
 
   # pylint: disable=arguments-renamed
   def Process(self, disk_container: containers.GCEDiskEvidence) -> None:

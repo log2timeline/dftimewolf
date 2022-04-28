@@ -152,7 +152,9 @@ class DFTimewolfState(object):
       runtime_name = module_definition.get('runtime_name')
       if not runtime_name:
         runtime_name = module_name
+      # pytype: disable=wrong-arg-types
       self._module_pool[runtime_name] = module_class(self, name=runtime_name)
+      # pytype: enable=wrong-arg-types
 
   def FormatExecutionPlan(self) -> str:
     """Formats execution plan.
@@ -447,7 +449,9 @@ class DFTimewolfState(object):
     """
     module_class: Type["dftw_module.BaseModule"]
     module_class = modules_manager.ModulesManager.GetModuleByName(module_name)
+    # pytype: disable=wrong-arg-types
     return module_class(self)
+    # pytype: enable=wrong-arg-types
 
   def RunModules(self) -> None:
     """Performs the actual processing for each module in the module pool."""

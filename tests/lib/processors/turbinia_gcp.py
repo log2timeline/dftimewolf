@@ -24,6 +24,8 @@ from dftimewolf import config
 # Manually set TURBINIA_PROJECT to the value we expect.
 # pylint: disable=wrong-import-position, wrong-import-order
 from turbinia import config as turbinia_config
+from turbinia import message as turbinia_message
+
 turbinia_config.TURBINIA_PROJECT = 'turbinia-project'
 
 YARA_RULE = """rule dummy { condition: false }"""
@@ -48,27 +50,31 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
         turbinia_config_file=None,
         disk_names='disk-1',
         project='turbinia-project',
+        turbinia_recipe=None,
         turbinia_zone='europe-west1',
-        sketch_id=123,
-        run_all_jobs=False)
+        sketch_id=123)
+    # pylint: disable=line-too-long
+    turbinia_processor.client.create_request.return_value = turbinia_message.TurbiniaRequest()
     self.assertEqual(turbinia_processor.project, 'turbinia-project')
     self.assertEqual(turbinia_processor.turbinia_zone, 'europe-west1')
+    self.assertEqual(turbinia_processor.turbinia_recipe, None)
     self.assertEqual(turbinia_processor.sketch_id, 123)
-    self.assertEqual(turbinia_processor.run_all_jobs, False)
     self.assertEqual(test_state.errors, [])
+    # pytype: disable=attribute-error
     self.assertEqual(
         'disk-1',
         test_state.GetContainers(
             turbinia_processor.GetThreadOnContainerType())[0].name)
-
+    # pytype: enable=attribute-error
 
     # TURBINIA_REGION is dynamically generated
     # pylint: disable=no-member
-    self.assertEqual(turbinia_processor.turbinia_region,
-                     turbinia_gcp.turbinia_config.TURBINIA_REGION)
+    self.assertEqual(
+        turbinia_processor.turbinia_region,
+        turbinia_gcp.turbinia_config.TURBINIA_REGION)
     # pylint: disable=protected-access
-    six.assertRegex(self, turbinia_processor._output_path,
-                    '(/tmp/tmp|/var/folders).+')
+    six.assertRegex(
+        self, turbinia_processor._output_path, '(/tmp/tmp|/var/folders).+')
 
   @mock.patch('turbinia.client.get_turbinia_client')
   # pylint: disable=invalid-name
@@ -81,18 +87,20 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
           turbinia_config_file=None,
           disk_names='disk-1',
           project='turbinia-wrong-project',
+          turbinia_recipe=None,
           turbinia_zone='europe-west1',
-          sketch_id=None,
-          run_all_jobs=False)
-
+          sketch_id=1234)
+      # pylint: disable=line-too-long
+      turbinia_processor.client.create_request.return_value = turbinia_message.TurbiniaRequest()
     self.assertEqual(len(test_state.errors), 1)
     self.assertEqual(test_state.errors[0], error.exception)
     error_msg = error.exception.message
-    self.assertEqual(error_msg, 'Specified project turbinia-wrong-project does '
-                                'not match Turbinia configured project '
-                                'turbinia-project. Use '
-                                'gcp_turbinia_disk_copy_ts recipe to copy the '
-                                'disk into the same project.')
+    self.assertEqual(
+        error_msg, 'Specified project turbinia-wrong-project does '
+        'not match Turbinia configured project '
+        'turbinia-project. Use '
+        'gcp_turbinia_disk_copy_ts recipe to copy the '
+        'disk into the same project.')
     self.assertTrue(error.exception.critical)
 
   @mock.patch('dftimewolf.lib.processors.turbinia_base.turbinia_config')
@@ -100,26 +108,24 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
   # pylint: disable=invalid-name
   def testWrongSetup(self, _mock_TurbiniaClient, mock_turbinia_config):
     """Tests that invalid setup options generate errors."""
-    params = [
-        {
-            'turbinia_config_file': None,
-            'disk_names': 'disk-1',
-            'project': None,
-            'turbinia_zone': 'europe-west1',
-            'sketch_id': None,
-            'run_all_jobs': False,
-        },
-        {
-            'turbinia_config_file': None,
-            'disk_names': 'disk-1',
-            'project': 'turbinia-project',
-            'turbinia_zone': None,
-            'sketch_id': None,
-            'run_all_jobs': False
-        }
-    ]
-    expected_error = ('project or turbinia_zone are not all '
-                      'specified, bailing out')
+    params = [{
+        'turbinia_config_file': None,
+        'disk_names': 'disk-1',
+        'project': None,
+        'turbinia_recipe': None,
+        'turbinia_zone': 'europe-west1',
+        'sketch_id': None,
+    }, {
+        'turbinia_config_file': None,
+        'disk_names': 'disk-1',
+        'project': 'turbinia-project',
+        'turbinia_recipe': None,
+        'turbinia_zone': None,
+        'sketch_id': None,
+    }]
+    expected_error = (
+        'project or turbinia_zone are not all '
+        'specified, bailing out')
 
     for combination in params:
       mock_turbinia_config.TURBINIA_PROJECT = combination['project']
@@ -140,28 +146,40 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
   @mock.patch('turbinia.evidence.GoogleCloudDisk')
   @mock.patch('turbinia.client.get_turbinia_client')
   # pylint: disable=invalid-name
-  def testProcessFromParams(self,
-                  _mock_TurbiniaClient,
-                  mock_GoogleCloudDisk,
-                  mock_GCSOutputWriter,
-                  mock_exists):
+  def testProcessFromParams(
+      self, _mock_TurbiniaClient, mock_GoogleCloudDisk, mock_GCSOutputWriter,
+      mock_exists):
     """Tests that the processor processes data correctly when a disk name is
     passed in as a parameter."""
 
     test_state = state.DFTimewolfState(config.Config)
     test_state.StoreContainer(
-      containers.YaraRule(
-        name='dummy_yara', rule_text="rule dummy { condition: false }")
-    )
+        containers.YaraRule(
+            name='dummy_yara', rule_text="rule dummy { condition: false }"))
     turbinia_processor = turbinia_gcp.TurbiniaGCPProcessor(test_state)
     turbinia_processor.SetUp(
         turbinia_config_file=None,
         disk_names='disk-1',
         project='turbinia-project',
+        turbinia_recipe=None,
         turbinia_zone='europe-west1',
-        sketch_id=4567,
-        run_all_jobs=False)
+        sketch_id=4567)
 
+    recipe = {
+        'globals': {
+            'sketch_id':
+                4567,
+            'yara_rules':
+                YARA_RULE,
+            'jobs_denylist': [
+                'StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob',
+                'PhotorecJob'
+            ]
+        }
+    }
+    # pylint: disable=line-too-long
+    turbinia_processor.client.create_request.return_value = turbinia_message.TurbiniaRequest(
+        recipe=recipe)
     turbinia_processor.client.get_task_data.return_value = [{
         'saved_paths': [
             '/fake/data.plaso',
@@ -183,13 +201,13 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
     in_containers = test_state.GetContainers(
         turbinia_processor.GetThreadOnContainerType())
     for c in in_containers:
-      turbinia_processor.Process(c)
+      turbinia_processor.Process(c)  # pytype: disable=wrong-arg-types
+      # GetContainers returns the abstract base class type, but process is
+      # called with the instantiated child class.
     turbinia_processor.PostProcess()
 
     mock_GoogleCloudDisk.assert_called_with(
-        disk_name='disk-1',
-        project='turbinia-project',
-        zone='europe-west1')
+        disk_name='disk-1', project='turbinia-project', zone='europe-west1')
 
     # These are mock classes, so there is a member
     # pylint: disable=no-member
@@ -201,15 +219,13 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
         ['StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob'])
     turbinia_processor.client.get_task_data.assert_called()
     self.assertEqual(
-      request.recipe['globals']['yara_rules'],
-      "rule dummy { condition: false }"
-    )
+        request.recipe['globals']['yara_rules'],
+        "rule dummy { condition: false }")
 
     # pylint: disable=protected-access
     mock_GCSOutputWriter.assert_any_call(
         'gs://BinaryExtractorTask.tar.gz',
-        local_output_dir=turbinia_processor._output_path
-    )
+        local_output_dir=turbinia_processor._output_path)
     self.assertEqual(test_state.errors, [])
     ti_containers = test_state.GetContainers(containers.ThreatIntelligence)
     file_containers = test_state.GetContainers(containers.File)
@@ -230,11 +246,9 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
   @mock.patch('turbinia.evidence.GoogleCloudDisk')
   @mock.patch('turbinia.client.get_turbinia_client')
   # pylint: disable=invalid-name
-  def testProcessFromState(self,
-                  _mock_TurbiniaClient,
-                  mock_GoogleCloudDisk,
-                  mock_GCSOutputWriter,
-                  mock_exists):
+  def testProcessFromState(
+      self, _mock_TurbiniaClient, mock_GoogleCloudDisk, mock_GCSOutputWriter,
+      mock_exists):
     """Tests that the processor processes data correctly when a GCEDisk is
     received from the state.
     """
@@ -249,10 +263,25 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
     turbinia_processor.SetUp(
         turbinia_config_file=None,
         project='turbinia-project',
+        turbinia_recipe=None,
         turbinia_zone='europe-west1',
-        sketch_id=4567,
-        run_all_jobs=False)
+        sketch_id=4567)
 
+    recipe = {
+        'globals': {
+            'sketch_id':
+                4567,
+            'yara_rules':
+                YARA_RULE,
+            'jobs_denylist': [
+                'StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob',
+                'PhotorecJob'
+            ]
+        }
+    }
+    # pylint: disable=line-too-long
+    turbinia_processor.client.create_request.return_value = turbinia_message.TurbiniaRequest(
+        recipe=recipe)
     turbinia_processor.client.get_task_data.return_value = [{
         'saved_paths': [
             '/fake/data.plaso',
@@ -274,13 +303,13 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
     in_containers = test_state.GetContainers(
         turbinia_processor.GetThreadOnContainerType())
     for c in in_containers:
-      turbinia_processor.Process(c)
+      turbinia_processor.Process(c)  # pytype: disable=wrong-arg-types
+      # GetContainers returns the abstract base class type, but process is
+      # called with the instantiated child class.
     turbinia_processor.PostProcess()
 
     mock_GoogleCloudDisk.assert_called_with(
-        disk_name='disk-1',
-        project='turbinia-project',
-        zone='europe-west1')
+        disk_name='disk-1', project='turbinia-project', zone='europe-west1')
 
     # These are mock classes, so there is a member
     # pylint: disable=no-member
@@ -292,15 +321,13 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
         ['StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob'])
     turbinia_processor.client.get_task_data.assert_called()
     self.assertEqual(
-      request.recipe['globals']['yara_rules'],
-      "rule dummy { condition: false }"
-    )
+        request.recipe['globals']['yara_rules'],
+        "rule dummy { condition: false }")
 
     # pylint: disable=protected-access
     mock_GCSOutputWriter.assert_any_call(
         'gs://BinaryExtractorTask.tar.gz',
-        local_output_dir=turbinia_processor._output_path
-    )
+        local_output_dir=turbinia_processor._output_path)
     self.assertEqual(test_state.errors, [])
     ti_containers = test_state.GetContainers(containers.ThreatIntelligence)
     file_containers = test_state.GetContainers(containers.File)
@@ -331,14 +358,16 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
         turbinia_config_file=None,
         project='turbinia-project',
         turbinia_zone='europe-west1',
-        sketch_id=4567,
-        run_all_jobs=False)
+        turbinia_recipe=None,
+        sketch_id=4567)
 
     turbinia_processor.PreProcess()
     in_containers = test_state.GetContainers(
         turbinia_processor.GetThreadOnContainerType())
     for c in in_containers:
-      turbinia_processor.Process(c)
+      turbinia_processor.Process(c)  # pytype: disable=wrong-arg-types
+      # GetContainers returns the abstract base class type, but process is
+      # called with the instantiated child class.
     turbinia_processor.PostProcess()
 
     file_containers = test_state.GetContainers(containers.File)
@@ -352,6 +381,7 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
   # pylint: disable=invalid-name
   def testDownloadFilesFromGCS(self, mock_GCSOutputWriter):
     """Tests _DownloadFilesFromGCS"""
+
     def _fake_copy(filename):
       return '/fake/local/' + filename.rsplit('/')[-1]
 
@@ -361,10 +391,9 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
     fake_paths = ['gs://hashes.json', 'gs://results.plaso']
     # pylint: disable=protected-access
     local_paths = turbinia_processor._DownloadFilesFromGCS('fake', fake_paths)
-    self.assertEqual(local_paths, [
-        ('fake', '/fake/local/hashes.json'),
-        ('fake', '/fake/local/results.plaso')
-    ])
+    self.assertEqual(
+        local_paths, [('fake', '/fake/local/hashes.json'),
+                      ('fake', '/fake/local/results.plaso')])
 
   def testDeterminePaths(self):
     """Tests _DeterminePaths"""
@@ -389,21 +418,24 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
     We store a ForensicsVM container in the state, run PreProcess, then check
     that the state contains a GCEDisk as expected."""
     test_state = state.DFTimewolfState(config.Config)
-    test_state.StoreContainer(containers.ForensicsVM(
-         name='ForensicsVM',
-         evidence_disk=GoogleComputeDisk(
-           name='disk-1',
-           project_id='turbinia-project',
-           zone='europe-west1'),
-         platform = 'gcp'))
+    test_state.StoreContainer(
+        containers.ForensicsVM(
+            name='ForensicsVM',
+            evidence_disk=GoogleComputeDisk(
+                name='disk-1',
+                project_id='turbinia-project',
+                zone='europe-west1'),
+            platform='gcp'))
 
     turbinia_processor = turbinia_gcp.TurbiniaGCPProcessor(test_state)
     turbinia_processor.SetUp(
         turbinia_config_file=None,
         project='turbinia-project',
+        turbinia_recipe=None,
         turbinia_zone='europe-west1',
-        sketch_id=4567,
-        run_all_jobs=False)
+        sketch_id=4567)
+    # pylint: disable=line-too-long
+    turbinia_processor.client.create_request.return_value = turbinia_message.TurbiniaRequest()
     turbinia_processor.PreProcess()
 
     out_containers = test_state.GetContainers(containers.GCEDiskEvidence)
