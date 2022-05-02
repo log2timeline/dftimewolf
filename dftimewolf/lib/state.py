@@ -10,8 +10,7 @@ import importlib
 import logging
 import threading
 import traceback
-from typing import TYPE_CHECKING, Callable, Dict, List, Sequence, Tuple, Type, Any, TypeVar, cast
-from typing_extensions import runtime # pylint: disable=line-too-long
+from typing import TYPE_CHECKING, Callable, Dict, List, Sequence, Type, Any, TypeVar, cast  # pylint: disable=line-too-long
 
 from dftimewolf.config import Config
 from dftimewolf.lib import errors, utils
