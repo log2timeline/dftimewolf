@@ -29,6 +29,8 @@ class TurbiniaProcessorBase(object):
     turbinia_zone (str): GCP zone in which the Turbinia server is running.
   """
 
+  DEFAULT_YARA_MODULES = 'import "pe"\nimport "math"\nimport "hash"\n\n'
+
   def __init__(self, logger: WolfLogger) -> None:
     """Initializes a Turbinia base processor.
 
@@ -171,6 +173,9 @@ class TurbiniaProcessorBase(object):
 
     Args:
       evidence_(turbinia.evidence.Evidence): The evidence to process
+      threat_intel_indicator: list of strings used as regular expressions in
+          the Turbinia grepper module.
+      yara_rules: List of Yara rule strings to use in the Turbinia Yara module.
 
     Raises:
       TurbiniaException: Exceptions raised for turbinia errors.
@@ -189,7 +194,7 @@ class TurbiniaProcessorBase(object):
     ]
 
     if yara_rules:
-      yara_text = '\n'.join(list(yara_rules))
+      yara_text = self.DEFAULT_YARA_MODULES + '\n'.join(list(yara_rules))
 
     if self.turbinia_recipe:
       # Use a pre-configured turbinia recipe
