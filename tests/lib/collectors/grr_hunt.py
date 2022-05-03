@@ -274,7 +274,7 @@ class GRRHuntOsqueryDownloader(unittest.TestCase):
 
   def testInitialization(self):
     """Tests that the collector is correctly initialized."""
-    self.assertEqual(self.grr_hunt_downloader.hunt_id, 'H:12345')
+    self.assertEqual(self.grr_hunt_downloader.hunt_id, 'H:12345')  # pytype: disable=attribute-error
 
   @mock.patch('dftimewolf.lib.collectors.grr_hunt.GRRHuntOsqueryDownloader._GetAndWriteResults')  # pylint: disable=line-too-long
   def testProcess(self, mock_get_write_results):
