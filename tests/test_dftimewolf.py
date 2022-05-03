@@ -118,7 +118,7 @@ class DFTimewolfTest(unittest.TestCase):
         'arg1': 'I want whatever CLI says: CLI WINS!',
     }
 
-    config.Config.LoadExtraData('{"parameterone": "CONFIG WINS!"}')
+    config.Config.LoadExtraData(b'{"parameterone": "CONFIG WINS!"}')
     parser.set_defaults(**config.Config.GetExtra())
     args = parser.parse_args(['CLI WINS!', 'BOOM'])
     imported_args = dftw_utils.ImportArgsFromDict(
@@ -133,7 +133,7 @@ class DFTimewolfTest(unittest.TestCase):
         'arg1': 'This should remain intact',
         'arg2': 'A config arg',
     }
-    config.Config.LoadExtraData('{"config": "A config arg"}')
+    config.Config.LoadExtraData(b'{"config": "A config arg"}')
     parser.set_defaults(**config.Config.GetExtra())
     args = parser.parse_args(['a', 'b'])
     imported_args = dftw_utils.ImportArgsFromDict(

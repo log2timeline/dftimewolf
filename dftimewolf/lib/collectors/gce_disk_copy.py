@@ -60,11 +60,11 @@ class GCEDiskCopy(module.ThreadAwareModule):
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
-            destination_project_name: str,
+            destination_project_name: Optional[str],
             source_project_name: str,
             destination_zone: str,
-            remote_instance_names: str,
-            disk_names: str,
+            remote_instance_names: Optional[str],
+            disk_names: Optional[str],
             all_disks: bool,
             stop_instances: bool) -> None:
     """Sets up a GCEDiskCopyCollector.

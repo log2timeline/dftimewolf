@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Class definition for DFTimewolf modules."""
+# pytype: disable=ignored-abstractmethod,bad-return-type
 
 import abc
 import logging
@@ -52,6 +53,7 @@ class BaseModule(object):
     self.state = state
     self.logger = cast(logging_utils.WolfLogger,
                        logging.getLogger(name=self.name))
+    self.logger.propagate = False
     self.SetupLogging()
 
   def SetupLogging(self, threaded: bool = False) -> None:
@@ -66,8 +68,7 @@ class BaseModule(object):
 
     console_handler = logging.StreamHandler()
     formatter = logging_utils.WolfFormatter(
-        random_color=True,
-        threaded=threaded)
+        random_color=True)
     console_handler.setFormatter(formatter)
 
     self.logger.addHandler(console_handler)

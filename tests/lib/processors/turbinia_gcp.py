@@ -60,10 +60,12 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
     self.assertEqual(turbinia_processor.turbinia_recipe, None)
     self.assertEqual(turbinia_processor.sketch_id, 123)
     self.assertEqual(test_state.errors, [])
+    # pytype: disable=attribute-error
     self.assertEqual(
         'disk-1',
         test_state.GetContainers(
             turbinia_processor.GetThreadOnContainerType())[0].name)
+    # pytype: enable=attribute-error
 
     # TURBINIA_REGION is dynamically generated
     # pylint: disable=no-member
@@ -199,7 +201,9 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
     in_containers = test_state.GetContainers(
         turbinia_processor.GetThreadOnContainerType())
     for c in in_containers:
-      turbinia_processor.Process(c)
+      turbinia_processor.Process(c)  # pytype: disable=wrong-arg-types
+      # GetContainers returns the abstract base class type, but process is
+      # called with the instantiated child class.
     turbinia_processor.PostProcess()
 
     mock_GoogleCloudDisk.assert_called_with(
@@ -299,7 +303,9 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
     in_containers = test_state.GetContainers(
         turbinia_processor.GetThreadOnContainerType())
     for c in in_containers:
-      turbinia_processor.Process(c)
+      turbinia_processor.Process(c)  # pytype: disable=wrong-arg-types
+      # GetContainers returns the abstract base class type, but process is
+      # called with the instantiated child class.
     turbinia_processor.PostProcess()
 
     mock_GoogleCloudDisk.assert_called_with(
@@ -359,7 +365,9 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
     in_containers = test_state.GetContainers(
         turbinia_processor.GetThreadOnContainerType())
     for c in in_containers:
-      turbinia_processor.Process(c)
+      turbinia_processor.Process(c)  # pytype: disable=wrong-arg-types
+      # GetContainers returns the abstract base class type, but process is
+      # called with the instantiated child class.
     turbinia_processor.PostProcess()
 
     file_containers = test_state.GetContainers(containers.File)
