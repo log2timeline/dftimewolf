@@ -61,3 +61,11 @@ class DummyPreflightModule(module.PreflightModule):
   def CleanUp(self):
     """Dummy cleanup function."""
     print(self.name + 'CleanUp!')
+
+class DummyModule2BadLogging(DummyModule2):
+  """Dummy module that has bad logging."""
+
+  def Process(self):
+    """Dummy Process function with bad logging (int as key)."""
+    print(self.name + ' Process!')
+    self.LogStats({1234: 'random_value2'})

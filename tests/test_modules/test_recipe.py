@@ -19,6 +19,9 @@ contents = {
     }]
 }
 
+contents_bad_logging = contents.copy()
+contents_bad_logging['modules'][1]['name'] = 'DummyModule2BadLogging'
+
 contents_no_preflights = {
     'name':
         'dummy_recipe',
