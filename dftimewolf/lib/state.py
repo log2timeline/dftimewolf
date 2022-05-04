@@ -71,6 +71,7 @@ class DFTimewolfState(object):
     self._cache = {}  # type: Dict[str, str]
     self._module_pool = {}  # type: Dict[str, dftw_module.BaseModule]
     self._state_lock = threading.Lock()
+    self._stats_lock = threading.Lock()
     self._threading_event_per_module = {}  # type: Dict[str, threading.Event]
     self.config = config
     self.errors = []  # type: List[DFTimewolfError]
@@ -236,14 +237,14 @@ class DFTimewolfState(object):
     with self._state_lock:
       self.store.setdefault(container.CONTAINER_TYPE, []).append(container)
 
-  def StoreStats(self, statsentry: StatsEntry) -> None:
+  def StoreStats(self, stats_entry: StatsEntry) -> None:
     """Thread-safe method to store stats in the state's stats store.
 
     Args:
       statsentry: The stats object to store.
     """
-    with self._state_lock:
-      self.stats_store.append(statsentry)
+    with self._stats_lock:
+      self.stats_store.append(stats_entry)
 
   def GetStats(self) -> List[StatsEntry]:
     """Get stats entries that have been stored in the state.
@@ -251,7 +252,7 @@ class DFTimewolfState(object):
     Returns:
        The stats objects stored in the state's stats store.
     """
-    with self._state_lock:
+    with self._stats_lock:
       return self.stats_store
 
   def GetContainers(self,
