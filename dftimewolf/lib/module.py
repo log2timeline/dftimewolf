@@ -14,12 +14,9 @@ from typing import Optional, TYPE_CHECKING, Type, cast, TypeVar, Dict, Any
 
 from dftimewolf.lib import errors
 from dftimewolf.lib import logging_utils
-from dftimewolf.lib import state
+from dftimewolf.lib import state as state_lib  # pylint: disable=cyclic-import
 from dftimewolf.lib.containers import interface
 
-if TYPE_CHECKING:
-  # Import will only happen during type checking, disabling linter warning.
-  from dftimewolf.lib import state  # pylint: disable=cyclic-import
 T = TypeVar("T", bound="interface.AttributeContainer")  # pylint: disable=invalid-name,line-too-long
 
 
@@ -36,7 +33,7 @@ class BaseModule(object):
   """
 
   def __init__(self,
-               state: "state.DFTimewolfState",
+               state: "state_lib.DFTimewolfState",
                name:Optional[str]=None,
                critical: Optional[bool]=False):
     """Initialize a module.
@@ -85,7 +82,7 @@ class BaseModule(object):
     """
     if not all (isinstance(key, str) for key in stats.keys()):
       raise ValueError("Stats keys must be strings.")
-    stastentry = state.StatsEntry(type(self).__name__, self.name, stats)
+    stastentry = state_lib.StatsEntry(type(self).__name__, self.name, stats)
     self.state.StoreStats(stastentry)
 
   def CleanUp(self) -> None:
@@ -178,7 +175,7 @@ class ThreadAwareModule(BaseModule):
   """
 
   def __init__(self,
-               state: "state.DFTimewolfState",
+               state: "state_lib.DFTimewolfState",
                name: Optional[str]=None,
                critical: Optional[bool]=False) -> None:
     """Initializes a ThreadAwareModule.
