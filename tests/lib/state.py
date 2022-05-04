@@ -60,6 +60,8 @@ class StateTest(unittest.TestCase):
     modules_manager.ModulesManager.DeregisterModule(modules.DummyModule1)
     modules_manager.ModulesManager.DeregisterModule(modules.DummyModule2)
     modules_manager.ModulesManager.DeregisterModule(
+        modules.DummyModule2BadLogging)
+    modules_manager.ModulesManager.DeregisterModule(
         modules.DummyPreflightModule)
     modules_manager.ModulesManager.DeregisterModule(
         thread_aware_modules.ContainerGeneratorModule)
