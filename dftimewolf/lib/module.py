@@ -10,7 +10,7 @@ from logging import handlers
 import traceback
 import sys
 
-from typing import Optional, TYPE_CHECKING, Type, cast, TypeVar, Dict, Any
+from typing import Optional, Type, cast, TypeVar, Dict, Any
 
 from dftimewolf.lib import errors
 from dftimewolf.lib import logging_utils
