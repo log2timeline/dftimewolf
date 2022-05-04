@@ -19,8 +19,23 @@ contents = {
     }]
 }
 
-contents_bad_logging = contents.copy()
-contents_bad_logging['modules'][1]['name'] = 'DummyModule2BadLogging'
+contents_bad_logging = {
+    'name':
+        'dummy_recipe',
+    'short_description': 'Nothing to see here.',
+    'preflights': [{
+        'name': 'DummyPreflightModule'
+    }],
+    'modules': [{
+        'wants': [],
+        'name': 'DummyModule1',
+        'args': {},
+    }, {
+        'wants': ['DummyModule1'],
+        'name': 'DummyModule2BadLogging',
+        'args': {},
+    }]
+}
 
 contents_no_preflights = {
     'name':
