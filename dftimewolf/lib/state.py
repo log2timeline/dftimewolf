@@ -251,7 +251,8 @@ class DFTimewolfState(object):
     Returns:
        The stats objects stored in the state's stats store.
     """
-    return self.stats_store
+    with self._state_lock:
+      return self.stats_store
 
   def GetContainers(self,
                     container_class: Type[T],
