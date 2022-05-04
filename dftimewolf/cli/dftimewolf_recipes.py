@@ -294,12 +294,12 @@ class DFTimewolfTool(object):
 
   def PrintStats(self) -> None:
     """Prints collected stats if existing."""
-    statentries = self._state.GetStats()
-    if not statentries:
+    stat_entries = self._state.GetStats()
+    if not stat_entries:
       logger.info('No statistics collected during execution.')
 
-    logger.info(f'{len(statentries)} stat entries collected during execution.')
-    for entry in statentries:
+    logger.info(f'{len(stat_entries)} stat entries collected during execution.')
+    for entry in stat_entries:
       logger.debug(f'[{entry.module_name} ({entry.module_type})] {entry.stats}')
 
   def ExportStats(self) -> None:
