@@ -38,9 +38,9 @@ if [[ "$*" =~ "include-grr" ]]; then
       -p 127.0.0.1:8000:8000 -p 127.0.0.1:8080:8080 \
       -d grrdocker/grr:release grr
 
-    echo "Sleeping 120 seconds"
+    echo "Sleeping 180 seconds"
     # Wait for GRR to initialize.
-    /bin/sleep 120
+    /bin/sleep 180
 
     # Install the client.
     echo "Installing GRR client on $NODE_NAME"
