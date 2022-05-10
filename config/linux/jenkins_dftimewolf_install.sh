@@ -26,7 +26,9 @@ fi
 
 if [[ "$*" =~ "include-grr" ]]; then
     # Start the GRR server container.
+    echo "Running include-grr"
     mkdir ~/grr-docker
+    echo "Running the GRR docker container"
     sudo docker run \
       --name grr-server -v ~/grr-docker/db:/var/grr-datastore \
       -v ~/grr-docker/logs:/var/log \
@@ -36,12 +38,19 @@ if [[ "$*" =~ "include-grr" ]]; then
       -p 127.0.0.1:8000:8000 -p 127.0.0.1:8080:8080 \
       -d grrdocker/grr:release grr
 
+    echo "Sleeping 120 seconds"
     # Wait for GRR to initialize.
     /bin/sleep 120
 
     # Install the client.
+    echo "Installing GRR client on $NODE_NAME"
     sudo docker cp grr-server:/usr/share/grr-server/executables/installers .
-    sudo dpkg -i installers/*amd64.deb
+    if sudo dpkg -i installers/*amd64.deb; then
+        echo "GRR client installed successfully"
+    else
+        echo "GRR client installation failed"
+        exit 1
+    fi
 fi
 
 if [[ "$*" =~ "include-timesketch" ]]; then
