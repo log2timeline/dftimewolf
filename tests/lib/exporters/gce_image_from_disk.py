@@ -25,11 +25,11 @@ FAKE_GCP_DEST_PROJECT = gcp_project.GoogleCloudProject(
     FAKE_GCP_DEST_PROJECT_NAME)
 FAKE_DISK_CREATION_RESPONSES = [
   compute.GoogleComputeImage(
-    FAKE_GCP_SOURCE_PROJECT,
+    FAKE_GCP_DEST_PROJECT,
     FAKE_SOURCE_ZONE,
     'fake-image-one'),
   compute.GoogleComputeImage(
-    FAKE_GCP_SOURCE_PROJECT,
+    FAKE_GCP_DEST_PROJECT,
     FAKE_SOURCE_ZONE,
     'fake-image-two')
 ]
@@ -107,6 +107,10 @@ class GCEImageFromDiskTest(unittest.TestCase):
       'fake-image-one',
       'fake-image-two']))
 
+    for project in [c.project for \
+        c in test_state.GetContainers(containers.GCEImage)]:
+      self.assertEqual(project, FAKE_GCP_DEST_PROJECT_NAME)
+
   # pylint: disable=line-too-long,unused-argument
   @mock.patch('googleapiclient.discovery.Resource', return_value = FAKE_GCP_SOURCE_PROJECT)
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.CreateImageFromDisk')
@@ -142,6 +146,10 @@ class GCEImageFromDiskTest(unittest.TestCase):
     self.assertEqual(sorted(actual_output), sorted([
       'fake-image-one',
       'fake-image-two']))
+
+    for project in [c.project for \
+        c in test_state.GetContainers(containers.GCEImage)]:
+      self.assertEqual(project, FAKE_GCP_DEST_PROJECT_NAME)
 
 
 if __name__ == '__main__':
