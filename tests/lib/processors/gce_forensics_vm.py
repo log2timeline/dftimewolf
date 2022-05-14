@@ -168,7 +168,8 @@ class GCEForensicsVMTest(unittest.TestCase):
 
     test_state = state.DFTimewolfState(config.Config)
     for d in ['test-disk-1', 'test-disk-2', 'test-disk-3']:
-      test_state.StoreContainer(containers.GCEDisk(d))
+      test_state.StoreContainer(
+          containers.GCEDisk(d, 'test-analysis-project-name'))
 
     processor = GCEForensicsVM(test_state)
     processor.SetUp(

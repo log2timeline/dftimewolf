@@ -126,13 +126,15 @@ class GCEDiskCopy(module.ThreadAwareModule):
     try:
       # Disks from the csv list passed in
       for d in self.disk_names:
-        self.state.StoreContainer(containers.GCEDisk(d))
+        self.state.StoreContainer(
+            containers.GCEDisk(d, self.source_project.project_id))
 
       # Disks from the instances passed in
       for i in self.remote_instance_names:
         try:
           for d in self._GetDisksFromInstance(i, self.all_disks):
-            self.state.StoreContainer(containers.GCEDisk(d))
+            self.state.StoreContainer(
+                containers.GCEDisk(d, self.source_project.project_id))
 
         except lcf_errors.ResourceNotFoundError:
           self.ModuleError(

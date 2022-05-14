@@ -35,6 +35,7 @@ MODULES = {
   'GoogleCloudDiskExportStream': 'dftimewolf.lib.exporters.gce_disk_export_dd',
   'GCEDiskFromImage': 'dftimewolf.lib.exporters.gce_disk_from_image',
   'GCEForensicsVM': 'dftimewolf.lib.processors.gce_forensics_vm',
+  'GCEImageFromDisk': 'dftimewolf.lib.exporters.gce_image_from_disk',
   'GCPLoggingTimesketch': 'dftimewolf.lib.processors.gcp_logging_timesketch',
   'GCPLogsCollector': 'dftimewolf.lib.collectors.gcp_logging',
   'GCPTokenCheck': 'dftimewolf.lib.preflights.cloud_token',
