@@ -26,11 +26,11 @@ FAKE_GCP_DEST_PROJECT = gcp_project.GoogleCloudProject(
 FAKE_DISK_CREATION_RESPONSES = [
   compute.GoogleComputeImage(
     FAKE_GCP_DEST_PROJECT,
-    FAKE_SOURCE_ZONE,
+    FAKE_DEST_ZONE,
     'fake-image-one'),
   compute.GoogleComputeImage(
     FAKE_GCP_DEST_PROJECT,
-    FAKE_SOURCE_ZONE,
+    FAKE_DEST_ZONE,
     'fake-image-two')
 ]
 FAKE_STATE_OBJECT_LIST = [
