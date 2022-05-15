@@ -3,7 +3,6 @@
 
 import datetime
 import os
-import random
 import re
 import time
 import zipfile
@@ -923,13 +922,6 @@ class GRRFlowCollector(GRRFlow):
     Raises:
       DFTimewolfError: if no files specified
     """
-
-    time.sleep(random.randint(5,10))
-
-    self.PublishMessage('Helpful message published from grrflowcollector')
-#
-#    self.ModuleError('Test error from GrrFlowCollector', critical=True)
-
     # TODO (tomchop): Change the host attribute into something more appropriate
     # like 'selectors', and the corresponding recipes.
     client = self._GetClientBySelector(container.hostname)

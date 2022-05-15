@@ -195,7 +195,7 @@ class CursesDisplayManager:
 
       curr_line = 1
 
-      self.stdscr.addstr(curr_line, 0, f' self._recipe_name')
+      self.stdscr.addstr(curr_line, 0, f' {self._recipe_name}')
       curr_line += 1
 
       if self._preflights:

@@ -2,15 +2,6 @@
     "name": "grr_flow_collect",
     "short_description": "Download the result of a GRR flow to the local filesystem.",
     "description": "Download the result of a GRR flow to the local filesystem. Flow IDs are unique *per client*, so both need to be provided in sequence.",
-    "preflights": [{
-        "wants": [],
-        "name": "GCPTokenCheck",
-        "runtime_name": "GCPTokenCheck-analysis",
-        "args": {
-            "project_name": "ramoj-playground"
-        }
-      }
-    ],
     "modules": [{
         "wants": [],
         "name": "GRRFlowCollector",
