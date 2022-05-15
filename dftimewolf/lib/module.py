@@ -64,12 +64,13 @@ class BaseModule(object):
         threaded=threaded))
     self.logger.addHandler(file_handler)
 
-    console_handler = logging.StreamHandler()
-    formatter = logging_utils.WolfFormatter(
-        random_color=True)
-    console_handler.setFormatter(formatter)
+    if not self.state.cdm:
+      console_handler = logging.StreamHandler()
+      formatter = logging_utils.WolfFormatter(
+          random_color=True)
+      console_handler.setFormatter(formatter)
 
-    self.logger.addHandler(console_handler)
+      self.logger.addHandler(console_handler)
 
   def LogStats(self, stats: Dict[str, Any]) -> None:
     """Saves useful runtime statistics to the state for later processing.

@@ -29,7 +29,7 @@ class MainToolTest(unittest.TestCase):
 
   def testSetupLogging(self):
     """Tests the SetupLogging function."""
-    dftimewolf_recipes.SetupLogging()
+    dftimewolf_recipes.SetupLogging(True)
     logger = logging.getLogger('dftimewolf')
     root_logger = logging.getLogger()
     self.assertEqual(len(logger.handlers), 2)

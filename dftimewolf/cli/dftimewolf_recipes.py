@@ -8,6 +8,8 @@ import os
 import signal
 import sys
 from typing import TYPE_CHECKING, List, Optional, Dict, Any, cast
+from dftimewolf.cli import curses_display_manager
+from dftimewolf.cli.curses_display_manager import CursesDisplayManager
 
 # pylint: disable=wrong-import-position
 from dftimewolf.lib import logging_utils
@@ -80,13 +82,14 @@ class DFTimewolfTool(object):
   _DEFAULT_DATA_FILES_PATH = os.path.join(
       os.sep, 'usr', 'local', 'share', 'dftimewolf')
 
-  def __init__(self) -> None:
+  def __init__(self, cdm: Optional[CursesDisplayManager] = None) -> None:
     """Initializes a DFTimewolf tool."""
     super(DFTimewolfTool, self).__init__()
     self._command_line_options: Optional[argparse.Namespace]
     self._data_files_path = ''
     self._recipes_manager = recipes_manager.RecipesManager()
     self._recipe = {}  # type: Dict[str, Any]
+    self.cdm = cdm
 
     self._DetermineDataFilesPath()
 
@@ -249,7 +252,7 @@ class DFTimewolfTool(object):
 
     self._recipe = self._command_line_options.recipe
 
-    self._state = DFTimewolfState(config.Config)
+    self._state = DFTimewolfState(config.Config, self.cdm)
     logger.info('Loading recipe {0:s}...'.format(self._recipe['name']))
     # Raises errors.RecipeParseError on error.
     self._state.LoadRecipe(self._recipe, MODULES)
@@ -314,10 +317,16 @@ class DFTimewolfTool(object):
 def SignalHandler(*unused_argvs: Any) -> None:
   """Catches Ctrl + C to exit cleanly."""
   sys.stderr.write("\nCtrl^C caught, bailing...\n")
+  if no_curses:
+    cursesdisplaymanager.EnqueueMessage(curses_display_manager.Message(
+        'dftimewolf',
+        'Ctrl^C caught, bailing...'))
+    cursesdisplaymanager.CleanUp()
+    cursesdisplaymanager.PrintMessages()
   sys.exit(1)
 
 
-def SetupLogging() -> None:
+def SetupLogging(stdout_log: bool = False) -> None:
   """Sets up a logging handler with dftimewolf's custom formatter."""
   # Add a custom level name
   logging.addLevelName(logging_utils.SUCCESS, 'SUCCESS')
@@ -343,30 +352,33 @@ def SetupLogging() -> None:
   file_handler.setFormatter(logging_utils.WolfFormatter(colorize=False))
   logger.addHandler(file_handler)
 
-  console_handler = logging.StreamHandler(stream=sys.stdout)
-  colorize = not bool(os.environ.get('DFTIMEWOLF_NO_RAINBOW'))
-  console_handler.setFormatter(logging_utils.WolfFormatter(colorize=colorize))
-  logger.addHandler(console_handler)
-  logger.debug(
-      'Logging to stdout and {0:s}'.format(logging_utils.DEFAULT_LOG_FILE))
+  if stdout_log:
+    console_handler = logging.StreamHandler(stream=sys.stdout)
+    colorize = not bool(os.environ.get('DFTIMEWOLF_NO_RAINBOW'))
+    console_handler.setFormatter(logging_utils.WolfFormatter(colorize=colorize))
+    logger.addHandler(console_handler)
+    logger.debug(f'Logging to stdout and {logging_utils.DEFAULT_LOG_FILE}')
+  else:
+    logger.debug(f'Logging to {logging_utils.DEFAULT_LOG_FILE}')
+
   logger.success('Success!')
 
 
-def Main() -> bool:
+def Main(cdm: Optional[CursesDisplayManager] = None) -> int:
   """Main function for DFTimewolf.
 
+  Args:
+    com: A CursesOutputManager object.
   Returns:
-    bool: True if DFTimewolf could be run successfully, False otherwise.
+    bool: 0 if DFTimewolf could be run successfully, 1 otherwise.
   """
-  SetupLogging()
-
   version_tuple = (sys.version_info[0], sys.version_info[1])
   if version_tuple[0] != 3 or version_tuple < (3, 6):
     logger.critical(('Unsupported Python version: {0:s}, version 3.6 or higher '
                      'required.').format(sys.version))
-    return False
+    return 1
 
-  tool = DFTimewolfTool()
+  tool = DFTimewolfTool(cdm)
 
   # TODO: log errors if this fails.
   tool.LoadConfiguration()
@@ -375,7 +387,7 @@ def Main() -> bool:
     tool.ReadRecipes()
   except (KeyError, errors.RecipeParseError, errors.CriticalError) as exception:
     logger.critical(str(exception))
-    return False
+    return 1
 
   try:
     tool.ParseArguments(sys.argv[1:])
@@ -383,7 +395,7 @@ def Main() -> bool:
           errors.RecipeParseError,
           errors.CriticalError) as exception:
     logger.critical(str(exception))
-    return False
+    return 1
 
   tool.state.LogExecutionPlan()
 
@@ -393,23 +405,48 @@ def Main() -> bool:
     tool.SetupModules()
   except errors.CriticalError as exception:
     logger.critical(str(exception))
-    return False
+    return 1
 
   try:
     tool.RunModules()
   except errors.CriticalError as exception:
     logger.critical(str(exception))
-    return False
+    return 1
 
   tool.CleanUpPreflights()
   tool.ExportStats()
 
-  return True
+  return 0
 
 
 if __name__ == '__main__':
   signal.signal(signal.SIGINT, SignalHandler)
-  if Main():
-    sys.exit(0)
+
+  no_curses = bool(os.environ.get('DFTIMEWOLF_NO_CURSES'))
+
+  SetupLogging(no_curses)
+
+  if no_curses:
+    sys.exit(Main())
   else:
-    sys.exit(1)
+    cursesdisplaymanager = CursesDisplayManager()
+    cursesdisplaymanager.EnqueueMessage(curses_display_manager.Message(
+        'dftimewolf',
+        f'Debug log: {logging_utils.DEFAULT_LOG_FILE}'))
+    cursesdisplaymanager.Draw()
+
+    exit_code = 0
+
+    try:
+      exit_code = Main(cursesdisplaymanager)
+      raise Exception("Test exception")
+    except Exception as e:
+      cursesdisplaymanager.SetException(e)
+      cursesdisplaymanager.Draw()
+      cursesdisplaymanager.Pause()
+      raise e
+    finally:
+      cursesdisplaymanager.Draw()
+      cursesdisplaymanager.CleanUp()
+      cursesdisplaymanager.PrintMessages()
+      sys.exit(exit_code)
