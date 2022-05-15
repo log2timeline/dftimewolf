@@ -317,7 +317,7 @@ class DFTimewolfTool(object):
 def SignalHandler(*unused_argvs: Any) -> None:
   """Catches Ctrl + C to exit cleanly."""
   sys.stderr.write("\nCtrl^C caught, bailing...\n")
-  if no_curses:
+  if not no_curses:
     cursesdisplaymanager.EnqueueMessage(curses_display_manager.Message(
         'dftimewolf',
         'Ctrl^C caught, bailing...'))

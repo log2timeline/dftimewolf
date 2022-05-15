@@ -91,6 +91,7 @@ class CursesDisplayManager:
     self.preflights: Dict[str, Module] = {}
     self.modules: Dict[str, Module] = {}
     self.messages: List[Message] = []
+    self.messages_longest_source_len: int = 0
     self.lock = threading.Lock()
 
     self.stdscr = curses.initscr()
@@ -108,6 +109,8 @@ class CursesDisplayManager:
 
   def EnqueueMessage(self, m: Message) -> None:
     """Enqueue a message to be displayed."""
+    if self.messages_longest_source_len < len(m.source):
+      self.messages_longest_source_len = len(m.source)
     self.messages.append(m)
     self.Draw()
 
@@ -172,17 +175,17 @@ class CursesDisplayManager:
 
       self.stdscr.addstr(curr_line, 0, self.recipe_name)
       curr_line += 1
-      self.stdscr.addstr(curr_line, 0, '  Preflights:')
-      curr_line += 1
 
-      for _, module in self.preflights.items():
-        for line in module.Stringify():
-          self.stdscr.addstr(curr_line, 0, line)
-          curr_line += 1
+      if self.preflights:
+        self.stdscr.addstr(curr_line, 0, '  Preflights:')
+        curr_line += 1
+        for _, module in self.preflights.items():
+          for line in module.Stringify():
+            self.stdscr.addstr(curr_line, 0, line)
+            curr_line += 1
 
       self.stdscr.addstr(curr_line, 0, '  Modules:')
       curr_line += 1
-
       for _, module in self.modules.items():
         for line in module.Stringify():
           self.stdscr.addstr(curr_line, 0, line)
@@ -192,14 +195,9 @@ class CursesDisplayManager:
       self.stdscr.addstr(curr_line, 0, 'Messages:')
       curr_line += 1
 
-      module_line_source_len = 0
-      for m in self.messages:
-        if len(m.source) > module_line_source_len:
-          module_line_source_len = len(m.source)
-
       for m in self.messages[::-1]:
         self.stdscr.addstr(
-            curr_line, 0, f'  {m.Stringify(module_line_source_len)}')
+            curr_line, 0, f'  {m.Stringify(self.messages_longest_source_len)}')
         curr_line += 1
 
         if curr_line > x - 3:
