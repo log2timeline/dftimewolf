@@ -8,7 +8,6 @@ import os
 import signal
 import sys
 from typing import TYPE_CHECKING, List, Optional, Dict, Any, cast
-from dftimewolf.cli import curses_display_manager
 from dftimewolf.cli.curses_display_manager import CursesDisplayManager
 
 # pylint: disable=wrong-import-position
@@ -318,9 +317,8 @@ def SignalHandler(*unused_argvs: Any) -> None:
   """Catches Ctrl + C to exit cleanly."""
   sys.stderr.write("\nCtrl^C caught, bailing...\n")
   if not no_curses:
-    cursesdisplaymanager.EnqueueMessage(curses_display_manager.Message(
-        'dftimewolf',
-        'Ctrl^C caught, bailing...'))
+    cursesdisplaymanager.EnqueueMessage(
+        'dftimewolf','Ctrl^C caught, bailing...')
     cursesdisplaymanager.CleanUp()
     cursesdisplaymanager.PrintMessages()
   sys.exit(1)
@@ -430,16 +428,15 @@ if __name__ == '__main__':
     sys.exit(Main())
   else:
     cursesdisplaymanager = CursesDisplayManager()
-    cursesdisplaymanager.EnqueueMessage(curses_display_manager.Message(
-        'dftimewolf',
-        f'Debug log: {logging_utils.DEFAULT_LOG_FILE}'))
+    cursesdisplaymanager.EnqueueMessage(
+      'dftimewolf', f'Debug log: {logging_utils.DEFAULT_LOG_FILE}')
     cursesdisplaymanager.Draw()
 
     exit_code = 0
 
     try:
       exit_code = Main(cursesdisplaymanager)
-      raise Exception("Test exception")
+      #raise Exception("Test exception")
     except Exception as e:
       cursesdisplaymanager.SetException(e)
       cursesdisplaymanager.Draw()

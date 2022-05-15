@@ -383,6 +383,9 @@ class DFTimewolfState(object):
               module.name))
       self._threading_event_per_module[runtime_name].set()
       self.CleanUp()
+      if self.cdm:
+        self.cdm.UpdateModuleState(runtime_name, cdm.Status.CANCELLED)
+
       return
 
     logger.info('Running module: {0:s}'.format(runtime_name))
@@ -557,6 +560,10 @@ class DFTimewolfState(object):
     if error.critical:
       self._abort_execution = True
     self.errors.append(error)
+
+    if self.cdm:
+      name = error.name if error.name else 'no_module_name'
+      self.cdm.SetError(name, error.message)
 
   def CleanUp(self) -> None:
     """Cleans up after running a module.

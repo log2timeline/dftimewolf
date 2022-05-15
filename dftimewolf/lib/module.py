@@ -118,6 +118,12 @@ class BaseModule(object):
       raise error
     self.logger.error(error.message)
 
+  def PublishMessage(self, message: str) -> None:
+    """Published a message to be displayed."""
+    if self.state.cdm:
+      self.state.cdm.EnqueueMessage(self.name, message)
+    self.logger.info(message)
+
   @abc.abstractmethod
   def Process(self) -> None:
     """Processes input and builds the module's output attribute.
