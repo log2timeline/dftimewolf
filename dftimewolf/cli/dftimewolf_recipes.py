@@ -3,6 +3,7 @@
 """dftimewolf main entrypoint."""
 
 import argparse
+from contextlib import redirect_stderr, redirect_stdout
 import logging
 import os
 import signal
@@ -236,7 +237,6 @@ class DFTimewolfTool(object):
       CommandLineParseError: If arguments could not be parsed.
     """
     help_text = self._GenerateHelpText()
-
     argument_parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=help_text)
@@ -319,8 +319,8 @@ def SignalHandler(*unused_argvs: Any) -> None:
   if not no_curses:
     cursesdisplaymanager.EnqueueMessage(
         'dftimewolf','Ctrl^C caught, bailing...')
-    cursesdisplaymanager.CleanUp()
-    cursesdisplaymanager.PrintMessages()
+    cursesdisplaymanager.EndCurses()
+#    cursesdisplaymanager.PrintMessages()
   sys.exit(1)
 
 
@@ -395,6 +395,9 @@ def Main(cdm: Optional[CursesDisplayManager] = None) -> int:
     logger.critical(str(exception))
     return 1
 
+  if cdm:
+    cdm.StartCurses()
+
   tool.state.LogExecutionPlan()
 
   tool.RunPreflights()
@@ -430,20 +433,18 @@ if __name__ == '__main__':
     cursesdisplaymanager = CursesDisplayManager()
     cursesdisplaymanager.EnqueueMessage(
       'dftimewolf', f'Debug log: {logging_utils.DEFAULT_LOG_FILE}')
-    cursesdisplaymanager.Draw()
 
     exit_code = 0
 
     try:
       exit_code = Main(cursesdisplaymanager)
-      #raise Exception("Test exception")
+      raise Exception('Test exception')
     except Exception as e:
       cursesdisplaymanager.SetException(e)
       cursesdisplaymanager.Draw()
-      cursesdisplaymanager.Pause()
       raise e
     finally:
       cursesdisplaymanager.Draw()
-      cursesdisplaymanager.CleanUp()
+      cursesdisplaymanager.EndCurses()
       cursesdisplaymanager.PrintMessages()
       sys.exit(exit_code)

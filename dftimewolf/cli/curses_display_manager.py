@@ -2,6 +2,8 @@
 """Curses output management class."""
 
 from enum import Enum
+import os
+import sys
 import threading
 import traceback
 from typing import Any, Dict, List, Optional, Union
@@ -89,7 +91,7 @@ class CursesDisplayManager:
   """
 
   def __init__(self) -> None:
-    """Intiialises the CursesDisplayManager, including setting up curses."""
+    """Intiialises the CursesDisplayManager."""
     self._recipe_name: str = ''
     self._exception: Union[Exception, None] = None
     self._preflights: Dict[str, Module] = {}
@@ -97,11 +99,27 @@ class CursesDisplayManager:
     self._messages: List[Message] = []
     self._messages_longest_source_len: int = 0
     self._lock = threading.Lock()
+    self.stdscr = None
 
+  def StartCurses(self) -> None:
+    """Call the curses initialisation methods."""
     self.stdscr = curses.initscr()
     curses.noecho()
     curses.cbreak()
     self.stdscr.keypad(True)
+
+  def EndCurses(self):
+    """Curses finalisation actions."""
+    if True in [m.is_error for m in self._messages] or self._exception:
+      self.Pause()
+
+    if not self.stdscr:
+      return
+
+    curses.nocbreak()
+    self.stdscr.keypad(False)
+    curses.echo()
+    curses.endwin()
 
   def SetRecipe(self, recipe: str) -> None:
     """Set the recipe name."""
@@ -189,9 +207,12 @@ class CursesDisplayManager:
 
   def Draw(self) -> None:
     """Draws the window."""
+    if not self.stdscr:
+      return
+
     with self._lock:
       self.stdscr.clear()
-      x, _ = self.stdscr.getmaxyx()
+      y, x = self.stdscr.getmaxyx()
 
       curr_line = 1
 
@@ -222,21 +243,15 @@ class CursesDisplayManager:
             curr_line, 0, f'  {m.Stringify(self._messages_longest_source_len)}')
         curr_line += 1
 
-        if curr_line > x - 4:
+        if curr_line > y - 4:
           break
 
       if self._exception:
-        self.stdscr.addstr(x - 2, 0,
+        self.stdscr.addstr(y - 2, 0,
             f' Exception encountered: {self._exception.__str__()}')
 
+      self.stdscr.move(curr_line, 0)
       self.stdscr.refresh()
-
-  def CleanUp(self) -> None:
-    """Curses finalisation actions."""
-    curses.nocbreak()
-    self.stdscr.keypad(False)
-    curses.echo()
-    curses.endwin()
 
   def PrintMessages(self) -> None:
     """Dump all _messages to stdout. Intended to be used when exiting, after
