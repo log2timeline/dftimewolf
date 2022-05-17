@@ -35,9 +35,9 @@ class GCEImageFromDisk(module.ThreadAwareModule):
 
   # pylint: disable=arguments-differ
   def SetUp(self,
-      source_disks: Union[str, None] = '',
-      source_project: str = '',
-      source_zone: str = '',
+      source_disks: Union[str, None],
+      source_project: str,
+      source_zone: str,
       destination_project: str = '',
       destination_zone: str = '') -> None:
     """SetUp for creating disks in GCE from images.
