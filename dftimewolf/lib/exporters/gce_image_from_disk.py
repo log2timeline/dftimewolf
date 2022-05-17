@@ -58,7 +58,7 @@ class GCEImageFromDisk(module.ThreadAwareModule):
 
     if source_disks:
       for obj in source_disks.split(','):
-        if not obj == "":
+        if obj:
           self.state.StoreContainer(containers.GCEDisk(obj, source_project))
 
   def Process(self, container: containers.GCEDisk) -> None:
@@ -80,7 +80,7 @@ class GCEImageFromDisk(module.ThreadAwareModule):
                                     self.source_zone,
                                     container.name)
 
-    # We must create a project object for each thread, rather than craete and
+    # We must create a project object for each thread, rather than create and
     # use a class member due to an underlying thread safety issue in
     # httplib2: https://github.com/googleapis/google-cloud-python/issues/3501
     project = gcp_project.GoogleCloudProject(self.dest_project)
