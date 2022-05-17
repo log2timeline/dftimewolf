@@ -4,6 +4,7 @@
 
 import argparse
 from contextlib import redirect_stderr, redirect_stdout
+import io
 import logging
 import os
 import signal
@@ -395,8 +396,8 @@ def Main(cdm: Optional[CursesDisplayManager] = None) -> int:
     logger.critical(str(exception))
     return 1
 
-  if cdm:
-    cdm.StartCurses()
+#  if cdm:
+#    cdm.StartCurses()
 
   tool.state.LogExecutionPlan()
 
@@ -434,17 +435,24 @@ if __name__ == '__main__':
     cursesdisplaymanager.EnqueueMessage(
       'dftimewolf', f'Debug log: {logging_utils.DEFAULT_LOG_FILE}')
 
+    stdout_null = open(os.devnull, "w")
+    stderr_sio = io.StringIO()
     exit_code = 0
 
     try:
-      exit_code = Main(cursesdisplaymanager)
-      raise Exception('Test exception')
+      with redirect_stdout(stdout_null), redirect_stderr(stderr_sio):
+        exit_code = Main(cursesdisplaymanager)
     except Exception as e:
       cursesdisplaymanager.SetException(e)
       cursesdisplaymanager.Draw()
       raise e
     finally:
+      stderr_str = stderr_sio.getvalue()
+      if stderr_str:
+        cursesdisplaymanager.EnqueueMessage(
+            'stderr', stderr_str, is_error=True)
       cursesdisplaymanager.Draw()
       cursesdisplaymanager.EndCurses()
       cursesdisplaymanager.PrintMessages()
+
       sys.exit(exit_code)

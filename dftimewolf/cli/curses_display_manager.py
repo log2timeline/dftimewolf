@@ -2,8 +2,6 @@
 """Curses output management class."""
 
 from enum import Enum
-import os
-import sys
 import threading
 import traceback
 from typing import Any, Dict, List, Optional, Union
@@ -12,14 +10,14 @@ import curses
 
 class Status(Enum):
   """Enum class for module states."""
-  PENDING = 'Pending'
-  SETTINGUP = "Setting Up"
-  RUNNING = 'Running'
-  PREPROCESSING = 'Preprocessing'  # used for threaded _modules
-  PROCESSING = 'Processing'  # used for threaded _modules
-  POSTPROCESSING = 'Postprocessing'  # used for threaded _modules
   COMPLETED = 'Completed'
+  SETTINGUP = 'Setting Up'
   ERROR = 'Error'
+  RUNNING = 'Running'
+  PREPROCESSING = 'Preprocessing'
+  PROCESSING = 'Processing'
+  POSTPROCESSING = 'Postprocessing'
+  PENDING = 'Pending'
   CANCELLED = 'Cancelled'
 
 
@@ -99,16 +97,16 @@ class CursesDisplayManager:
     self._messages: List[Message] = []
     self._messages_longest_source_len: int = 0
     self._lock = threading.Lock()
-    self.stdscr = None
-
-  def StartCurses(self) -> None:
-    """Call the curses initialisation methods."""
+#    self.stdscr = None
+#
+#  def StartCurses(self) -> None:
+#    """Call the curses initialisation methods."""
     self.stdscr = curses.initscr()
     curses.noecho()
     curses.cbreak()
     self.stdscr.keypad(True)
 
-  def EndCurses(self):
+  def EndCurses(self) -> None:
     """Curses finalisation actions."""
     if True in [m.is_error for m in self._messages] or self._exception:
       self.Pause()
@@ -149,7 +147,11 @@ class CursesDisplayManager:
     """Enqueue a message to be displayed."""
     if self._messages_longest_source_len < len(source):
       self._messages_longest_source_len = len(source)
-    self._messages.append(Message(source, content, is_error))
+
+    for line in content.split('\n'):
+      if line:
+        self._messages.append(Message(source, line, is_error))
+
     self.Draw()
 
   def EnqueuePreflight(self,
@@ -212,7 +214,7 @@ class CursesDisplayManager:
 
     with self._lock:
       self.stdscr.clear()
-      y, x = self.stdscr.getmaxyx()
+      y, _ = self.stdscr.getmaxyx()
 
       curr_line = 1
 
@@ -229,10 +231,14 @@ class CursesDisplayManager:
 
       self.stdscr.addstr(curr_line, 0, '   Modules:')
       curr_line += 1
-      for _, module in self._modules.items():
-        for line in module.Stringify():
-          self.stdscr.addstr(curr_line, 0, line)
-          curr_line += 1
+
+      for status in Status:  # Print the modules in Status order
+        for _, module in self._modules.items():
+          if module.status != status:
+            continue
+          for line in module.Stringify():
+            self.stdscr.addstr(curr_line, 0, line)
+            curr_line += 1
 
       curr_line += 1
       self.stdscr.addstr(curr_line, 0, ' Messages:')
@@ -258,10 +264,12 @@ class CursesDisplayManager:
     removing the curses window."""
 
     if self._messages:
+      print('Messages')
       for m in self._messages:
         print(f'  {m.Stringify(self._messages_longest_source_len)}')
 
     if self._exception:
+      print('\nException encountered during execution:')
       traceback.print_exception(None,
                                 self._exception,
                                 self._exception.__traceback__)
