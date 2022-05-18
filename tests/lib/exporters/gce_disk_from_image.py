@@ -30,8 +30,8 @@ FAKE_DISK_CREATION_RESPONSES = [
     'fake-disk-two')
 ]
 FAKE_STATE_GCS_OBJECT_LIST = [
-  containers.GCEImage('fake-disk-one'),
-  containers.GCEImage('fake-disk-two')
+  containers.GCEImage('fake-disk-one', FAKE_GCP_PROJECT_NAME),
+  containers.GCEImage('fake-disk-two', FAKE_GCP_PROJECT_NAME)
 ]
 
 
