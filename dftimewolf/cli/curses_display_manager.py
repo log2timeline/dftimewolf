@@ -62,7 +62,7 @@ class Module:
 
 
 class Message:
-  """Helper class for managing _messages."""
+  """Helper class for managing messages."""
   source: str = ''
   content: str = ''
   is_error: bool = False  # used for colouring, maybe
