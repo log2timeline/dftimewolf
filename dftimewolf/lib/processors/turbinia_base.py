@@ -2,6 +2,7 @@
 """Base class for turbinia interactions."""
 
 import getpass
+import os
 import random
 import tempfile
 import time
@@ -51,6 +52,8 @@ class TurbiniaProcessorBase(object):
     self.turbinia_zone = str()
     self.parallel_count = 5  # Arbitrary, used by ThreadAwareModule
     self.logger = logger
+
+    os.environ['GRPC_POLL_STRATEGY'] = 'poll'
 
   def _DeterminePaths(
       self,
