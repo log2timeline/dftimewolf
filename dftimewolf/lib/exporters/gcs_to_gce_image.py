@@ -153,7 +153,8 @@ class GCSToGCEImage(module.ThreadAwareModule):
         guest_environment = False,
         image_name = name)
 
-    self.state.StoreContainer(containers.GCEImage(image.name))
+    self.state.StoreContainer(
+        containers.GCEImage(image.name, self.dest_project_name))
 
   def PostProcess(self) -> None:
     """Cleanup IAM after the fact.
