@@ -53,7 +53,7 @@ class TurbiniaProcessorBase(object):
     self.parallel_count = 5  # Arbitrary, used by ThreadAwareModule
     self.logger = logger
 
-    os.environ['GRPC_POLL_STRATEGY'] = "poll"
+    os.environ['GRPC_POLL_STRATEGY'] = 'poll'
 
   def _DeterminePaths(
       self,
