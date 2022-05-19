@@ -9,7 +9,9 @@ from typing import Any, Dict, List, Optional, Union
 import curses
 
 class Status(Enum):
-  """Enum class for module states."""
+  """Enum class for module states.
+
+  The order here is important, as it's the order modules will be displayed."""
   COMPLETED = 'Completed'
   SETTINGUP = 'Setting Up'
   ERROR = 'Error'
@@ -27,11 +29,11 @@ class Module:
   name: str = ''
   runtime_name: str = ''
   status: Status = Status.PENDING
-  dependencies: List[str] = []
-  error_message: str = ''
-  threads: Dict[str, Dict[str, Any]] = {}
-  threads_containers_max: int = 0
-  threads_containers_completed: int = 0
+  _dependencies: List[str] = []
+  _error_message: str = ''
+  _threads: Dict[str, Dict[str, Union[Status, str]]] = {}
+  _threads_containers_max: int = 0
+  _threads_containers_completed: int = 0
 
   def __init__(self,
                name: str,
@@ -40,25 +42,46 @@ class Module:
     """Initialise the Module object."""
     self.name = name
     self.runtime_name = runtime_name if runtime_name else name
-    self.dependencies = dependencies
+    self._dependencies = dependencies
 
   def Stringify(self) -> List[str]:
     """Returns an CursesDisplayManager friendly string describing the module."""
     module_line = f'     {self.runtime_name}: {self.status.value}'
     thread_lines = []
 
-    if self.status == Status.PENDING and len(self.dependencies):
-      module_line += f' ({", ".join(self.dependencies)})'
-    elif self.status == Status.ERROR and self.error_message:
-      module_line += f': {self.error_message}'
-    elif self.status in [Status.RUNNING, Status.PROCESSING] and self.threads:
-      module_line += (f' - {self.threads_containers_completed} of '
-          f'{self.threads_containers_max} containers completed')
-      for n, t in self.threads.items():
+    if self.status == Status.PENDING and len(self._dependencies):
+      module_line += f' ({", ".join(self._dependencies)})'
+    elif self.status == Status.ERROR:
+      module_line += f': {self._error_message}'
+    elif self.status in [Status.RUNNING, Status.PROCESSING] and self._threads:
+      module_line += (f' - {self._threads_containers_completed} of '
+          f'{self._threads_containers_max} containers completed')
+      for n, t in self._threads.items():
         thread_lines.append(
             f'       {n}: {t["status"].value} ({t["container"]})')
 
     return [module_line] + thread_lines
+
+  def SetStatus(self, status: Status) -> None:
+    """Set the status of the module."""
+    if self.status not in [Status.ERROR, Status.COMPLETED, Status.CANCELLED]:
+      self.status = status  
+
+  def SetThreadState(self, thread: str, status: Status, container: str) -> None:
+    """Set the state of a thread within a threaded module."""
+    self._threads[thread] = {'status': status,
+                             'container': container}
+    if status == Status.COMPLETED:
+      self._threads_containers_completed += 1
+
+  def SetError(self, message: str) -> None:
+    """Sets the error for the module."""
+    self._error_message = message
+    self.status = Status.ERROR
+
+  def SetContainerCount(self, count: int) -> None:
+    """Sets the maximum container count for the module."""
+    self._threads_containers_max = count
 
 
 class Message:
@@ -97,10 +120,7 @@ class CursesDisplayManager:
     self._messages: List[Message] = []
     self._messages_longest_source_len: int = 0
     self._lock = threading.Lock()
-#    self.stdscr = None
-#
-#  def StartCurses(self) -> None:
-#    """Call the curses initialisation methods."""
+
     self.stdscr = curses.initscr()
     curses.noecho()
     curses.cbreak()
@@ -110,9 +130,6 @@ class CursesDisplayManager:
     """Curses finalisation actions."""
     if True in [m.is_error for m in self._messages] or self._exception:
       self.Pause()
-
-    if not self.stdscr:
-      return
 
     curses.nocbreak()
     self.stdscr.keypad(False)
@@ -130,11 +147,9 @@ class CursesDisplayManager:
   def SetError(self, module: str, message: str) -> None:
     """Sets the error state ane message for a module."""
     if module in self._preflights:
-      self._preflights[module].error_message = message
-      self._preflights[module].status = Status.ERROR
+      self._preflights[module].SetError(message)
     if module in self._modules:
-      self._modules[module].error_message = message
-      self._modules[module].status = Status.ERROR
+      self._modules[module].SetError(message)
 
     self.EnqueueMessage(module, message, True)
 
@@ -173,20 +188,18 @@ class CursesDisplayManager:
   def UpdateModuleState(self, module: str, status: Status) -> None:
     """Update the state of a module for display."""
     if module in self._preflights:
-      if self._preflights[module].status != Status.ERROR:
-        self._preflights[module].status = status
+      self._preflights[module].SetStatus(status)
     if module in self._modules:
-      if self._modules[module].status != Status.ERROR:
-        self._modules[module].status = status
+      self._modules[module].SetStatus(status)
 
     self.Draw()
 
   def SetThreadedModuleContainerCount(self, module: str, count: int) -> None:
     """Set the container count that a threaded module will operate on."""
     if module in self._preflights:
-      self._preflights[module].threads_containers_max = count
+      self._preflights[module].SetContainerCount(count)
     if module in self._modules:
-      self._modules[module].threads_containers_max = count
+      self._modules[module].SetContainerCount(count)
 
   def UpdateModuleThreadState(self,
                               module: str,
@@ -195,15 +208,9 @@ class CursesDisplayManager:
                               container: str) -> None:
     """Update the state of a thread within a threaded module for display."""
     if module in self._preflights:
-      self._preflights[module].threads[thread] = {'status': status,
-                                                 'container': container}
-      if status == Status.COMPLETED:
-        self._preflights[module].threads_containers_completed += 1
+      self._preflights[module].SetThreadState(status, thread, container)
     if module in self._modules:
-      self._modules[module].threads[thread] = {'status': status,
-                                              'container': container}
-      if status == Status.COMPLETED:
-        self._modules[module].threads_containers_completed += 1
+      self._modules[module].SetThreadState(status, thread, container)
 
     self.Draw()
 
@@ -217,10 +224,10 @@ class CursesDisplayManager:
       y, _ = self.stdscr.getmaxyx()
 
       curr_line = 1
-
       self.stdscr.addstr(curr_line, 0, f' {self._recipe_name}')
       curr_line += 1
 
+      # Preflights
       if self._preflights:
         self.stdscr.addstr(curr_line, 0, '   Preflights:')
         curr_line += 1
@@ -229,9 +236,9 @@ class CursesDisplayManager:
             self.stdscr.addstr(curr_line, 0, line)
             curr_line += 1
 
+      # Modules
       self.stdscr.addstr(curr_line, 0, '   Modules:')
       curr_line += 1
-
       for status in Status:  # Print the modules in Status order
         for _, module in self._modules.items():
           if module.status != status:
@@ -240,18 +247,23 @@ class CursesDisplayManager:
             self.stdscr.addstr(curr_line, 0, line)
             curr_line += 1
 
+      # Messages
       curr_line += 1
       self.stdscr.addstr(curr_line, 0, ' Messages:')
       curr_line += 1
 
-      for m in self._messages[::-1]:
+      message_space = y - 4 - curr_line
+      start = len(self._messages) - message_space
+      start = 0 if start < 0 else start
+
+      for m in self._messages[start::]:
         self.stdscr.addstr(
             curr_line, 0, f'  {m.Stringify(self._messages_longest_source_len)}')
         curr_line += 1
-
         if curr_line > y - 4:
           break
 
+      # Exceptions
       if self._exception:
         self.stdscr.addstr(y - 2, 0,
             f' Exception encountered: {self._exception.__str__()}')
@@ -260,8 +272,8 @@ class CursesDisplayManager:
       self.stdscr.refresh()
 
   def PrintMessages(self) -> None:
-    """Dump all _messages to stdout. Intended to be used when exiting, after
-    removing the curses window."""
+    """Dump all messages to stdout. Intended to be used when exiting, after
+    calling EndCurses()."""
 
     if self._messages:
       print('Messages')
@@ -274,11 +286,13 @@ class CursesDisplayManager:
                                 self._exception,
                                 self._exception.__traceback__)
 
+    print('')
+
   def Pause(self) -> None:
     """Ask the user to press any key to continue."""
     with self._lock:
-      x, _ = self.stdscr.getmaxyx()
+      y, _ = self.stdscr.getmaxyx()
 
-      self.stdscr.addstr(x - 1, 0, "Press any key to continue")
+      self.stdscr.addstr(y - 1, 0, "Press any key to continue")
       self.stdscr.getkey()
-      self.stdscr.addstr(x - 1, 0, "                         ")
+      self.stdscr.addstr(y - 1, 0, "                         ")
