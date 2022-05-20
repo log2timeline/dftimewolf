@@ -26,30 +26,26 @@ class Status(Enum):
 class Module:
   """An object used by the CursesDisplayManager used to represent a DFTW module.
   """
-  name: str = ''
-  runtime_name: str = ''
-  status: Status = Status.PENDING
-  _dependencies: List[str] = []
-  _error_message: str = ''
-  _threads: Dict[str, Dict[str, Union[Status, str]]] = {}
-  _threads_containers_max: int = 0
-  _threads_containers_completed: int = 0
-
   def __init__(self,
                name: str,
                dependencies: List[str],
-               runtime_name: Optional[str]):
+               runtime_name: Optional[str] = None):
     """Initialise the Module object."""
     self.name = name
     self.runtime_name = runtime_name if runtime_name else name
-    self._dependencies = dependencies
+    self.status: Status = Status.PENDING
+    self._dependencies: List[str] = dependencies
+    self._error_message: str = ''
+    self._threads: Dict[str, Dict[str, Any]] = {}
+    self._threads_containers_max: int = 0
+    self._threads_containers_completed: int = 0
 
   def Stringify(self) -> List[str]:
     """Returns an CursesDisplayManager friendly string describing the module."""
     module_line = f'     {self.runtime_name}: {self.status.value}'
     thread_lines = []
 
-    if self.status == Status.PENDING and len(self._dependencies):
+    if self.status == Status.PENDING and len(self._dependencies) != 0:
       module_line += f' ({", ".join(self._dependencies)})'
     elif self.status == Status.ERROR:
       module_line += f': {self._error_message}'
@@ -65,7 +61,7 @@ class Module:
   def SetStatus(self, status: Status) -> None:
     """Set the status of the module."""
     if self.status not in [Status.ERROR, Status.COMPLETED, Status.CANCELLED]:
-      self.status = status  
+      self.status = status
 
   def SetThreadState(self, thread: str, status: Status, container: str) -> None:
     """Set the state of a thread within a threaded module."""
@@ -88,7 +84,7 @@ class Message:
   """Helper class for managing messages."""
   source: str = ''
   content: str = ''
-  is_error: bool = False  # used for colouring, maybe
+  is_error: bool = False
 
   def __init__(self, source: str, content: str, is_error: bool = False) -> None:
     """Initialise a Message object."""
@@ -96,16 +92,15 @@ class Message:
     self.content = content
     self.is_error = is_error
 
-  def Stringify(self, source_buff_len: int = 0) -> str:
+  def Stringify(self, source_buff_len: int = 0, colourise: bool = False) -> str:
     """Returns an CursesDisplayManager friendly string of the Message."""
     pad = (len(self.source) if len(self.source) > source_buff_len
         else source_buff_len)
 
-#    colour_code = '\u001b[31m' if self.is_error else ''
-#    reset_code = '\u001b[0m' if self.is_error else ''
-#
-#    return f'[ {self.source:{pad}} ] {colour_code}{self.content}{reset_code}'
-    return f'[ {self.source:{pad}} ] {self.content}'
+    colour_code = '\u001b[31m' if self.is_error and colourise else ''
+    reset_code = '\u001b[0m' if self.is_error and colourise else ''
+
+    return f'[ {self.source:{pad}} ] {colour_code}{self.content}{reset_code}'
 
 class CursesDisplayManager:
   """Handles the curses based console output, based on information passed in.
@@ -120,11 +115,14 @@ class CursesDisplayManager:
     self._messages: List[Message] = []
     self._messages_longest_source_len: int = 0
     self._lock = threading.Lock()
+    self._stdscr: curses.window = None  # type: ignore
 
-    self.stdscr = curses.initscr()
+  def StartCurses(self) -> None:
+    """Start the curses display."""
+    self._stdscr = curses.initscr()
     curses.noecho()
     curses.cbreak()
-    self.stdscr.keypad(True)
+    self._stdscr.keypad(True)
 
   def EndCurses(self) -> None:
     """Curses finalisation actions."""
@@ -132,7 +130,7 @@ class CursesDisplayManager:
       self.Pause()
 
     curses.nocbreak()
-    self.stdscr.keypad(False)
+    self._stdscr.keypad(False)
     curses.echo()
     curses.endwin()
 
@@ -185,8 +183,8 @@ class CursesDisplayManager:
     m = Module(name, dependencies, runtime_name)
     self._modules[m.runtime_name] = m
 
-  def UpdateModuleState(self, module: str, status: Status) -> None:
-    """Update the state of a module for display."""
+  def UpdateModuleStatus(self, module: str, status: Status) -> None:
+    """Update the status of a module for display."""
     if module in self._preflights:
       self._preflights[module].SetStatus(status)
     if module in self._modules:
@@ -208,48 +206,48 @@ class CursesDisplayManager:
                               container: str) -> None:
     """Update the state of a thread within a threaded module for display."""
     if module in self._preflights:
-      self._preflights[module].SetThreadState(status, thread, container)
+      self._preflights[module].SetThreadState(thread, status, container)
     if module in self._modules:
-      self._modules[module].SetThreadState(status, thread, container)
+      self._modules[module].SetThreadState(thread, status, container)
 
     self.Draw()
 
   def Draw(self) -> None:
     """Draws the window."""
-    if not self.stdscr:
+    if not self._stdscr:
       return
 
     with self._lock:
-      self.stdscr.clear()
-      y, _ = self.stdscr.getmaxyx()
+      self._stdscr.clear()
+      y, _ = self._stdscr.getmaxyx()
 
       curr_line = 1
-      self.stdscr.addstr(curr_line, 0, f' {self._recipe_name}')
+      self._stdscr.addstr(curr_line, 0, f' {self._recipe_name}')
       curr_line += 1
 
       # Preflights
       if self._preflights:
-        self.stdscr.addstr(curr_line, 0, '   Preflights:')
+        self._stdscr.addstr(curr_line, 0, '   Preflights:')
         curr_line += 1
         for _, module in self._preflights.items():
           for line in module.Stringify():
-            self.stdscr.addstr(curr_line, 0, line)
+            self._stdscr.addstr(curr_line, 0, line)
             curr_line += 1
 
       # Modules
-      self.stdscr.addstr(curr_line, 0, '   Modules:')
+      self._stdscr.addstr(curr_line, 0, '   Modules:')
       curr_line += 1
       for status in Status:  # Print the modules in Status order
         for _, module in self._modules.items():
           if module.status != status:
             continue
           for line in module.Stringify():
-            self.stdscr.addstr(curr_line, 0, line)
+            self._stdscr.addstr(curr_line, 0, line)
             curr_line += 1
 
       # Messages
       curr_line += 1
-      self.stdscr.addstr(curr_line, 0, ' Messages:')
+      self._stdscr.addstr(curr_line, 0, ' Messages:')
       curr_line += 1
 
       message_space = y - 4 - curr_line
@@ -257,19 +255,17 @@ class CursesDisplayManager:
       start = 0 if start < 0 else start
 
       for m in self._messages[start::]:
-        self.stdscr.addstr(
+        self._stdscr.addstr(
             curr_line, 0, f'  {m.Stringify(self._messages_longest_source_len)}')
         curr_line += 1
-        if curr_line > y - 4:
-          break
 
       # Exceptions
       if self._exception:
-        self.stdscr.addstr(y - 2, 0,
+        self._stdscr.addstr(y - 2, 0,
             f' Exception encountered: {self._exception.__str__()}')
 
-      self.stdscr.move(curr_line, 0)
-      self.stdscr.refresh()
+      self._stdscr.move(curr_line, 0)
+      self._stdscr.refresh()
 
   def PrintMessages(self) -> None:
     """Dump all messages to stdout. Intended to be used when exiting, after
@@ -282,17 +278,15 @@ class CursesDisplayManager:
 
     if self._exception:
       print('\nException encountered during execution:')
-      traceback.print_exception(None,
+      print(''.join(traceback.format_exception(None,
                                 self._exception,
-                                self._exception.__traceback__)
-
-    print('')
+                                self._exception.__traceback__)))
 
   def Pause(self) -> None:
     """Ask the user to press any key to continue."""
     with self._lock:
-      y, _ = self.stdscr.getmaxyx()
+      y, _ = self._stdscr.getmaxyx()
 
-      self.stdscr.addstr(y - 1, 0, "Press any key to continue")
-      self.stdscr.getkey()
-      self.stdscr.addstr(y - 1, 0, "                         ")
+      self._stdscr.addstr(y - 1, 0, "Press any key to continue")
+      self._stdscr.getkey()
+      self._stdscr.addstr(y - 1, 0, "                         ")

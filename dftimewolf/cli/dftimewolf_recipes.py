@@ -433,6 +433,7 @@ if __name__ == '__main__':
     sys.exit(Main())
   else:
     cursesdisplaymanager = CursesDisplayManager()
+    cursesdisplaymanager.StartCurses()
     cursesdisplaymanager.EnqueueMessage(
       'dftimewolf', f'Debug log: {logging_utils.DEFAULT_LOG_FILE}')
 

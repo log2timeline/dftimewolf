@@ -327,10 +327,10 @@ class DFTimewolfState(object):
 
     try:
       if self.cdm:
-        self.cdm.UpdateModuleState(runtime_name, cdm.Status.SETTINGUP)
+        self.cdm.UpdateModuleStatus(runtime_name, cdm.Status.SETTINGUP)
       module.SetUp(**new_args)
       if self.cdm:
-        self.cdm.UpdateModuleState(runtime_name, cdm.Status.PENDING)
+        self.cdm.UpdateModuleStatus(runtime_name, cdm.Status.PENDING)
     except errors.DFTimewolfError:
       msg = "A critical error occurred in module {0:s}, aborting execution."
       logger.critical(msg.format(module.name))
@@ -384,7 +384,7 @@ class DFTimewolfState(object):
       self._threading_event_per_module[runtime_name].set()
       self.CleanUp()
       if self.cdm:
-        self.cdm.UpdateModuleState(runtime_name, cdm.Status.CANCELLED)
+        self.cdm.UpdateModuleStatus(runtime_name, cdm.Status.CANCELLED)
 
       return
 
@@ -393,7 +393,7 @@ class DFTimewolfState(object):
     try:
       if isinstance(module, ThreadAwareModule):
         if self.cdm:
-          self.cdm.UpdateModuleState(runtime_name, cdm.Status.PREPROCESSING)
+          self.cdm.UpdateModuleStatus(runtime_name, cdm.Status.PREPROCESSING)
 
         module.PreProcess()
 
@@ -405,7 +405,7 @@ class DFTimewolfState(object):
 
         if self.cdm:
           self.cdm.SetThreadedModuleContainerCount(runtime_name, cont_count)
-          self.cdm.UpdateModuleState(runtime_name, cdm.Status.PROCESSING)
+          self.cdm.UpdateModuleStatus(runtime_name, cdm.Status.PROCESSING)
 
         with ThreadPoolExecutor(max_workers=module.GetThreadPoolSize()) \
             as executor:
@@ -415,22 +415,22 @@ class DFTimewolfState(object):
                 self.WrapProcessForCDM, module.Process, c, runtime_name))
 
         if self.cdm:
-          self.cdm.UpdateModuleState(runtime_name, cdm.Status.POSTPROCESSING)
+          self.cdm.UpdateModuleStatus(runtime_name, cdm.Status.POSTPROCESSING)
 
         module.PostProcess()
 
         if self.cdm:
-          self.cdm.UpdateModuleState(runtime_name, cdm.Status.COMPLETED)
+          self.cdm.UpdateModuleStatus(runtime_name, cdm.Status.COMPLETED)
 
         for fut in futures:
           if fut.exception():
             raise fut.exception() # type: ignore
       else:
         if self.cdm:
-          self.cdm.UpdateModuleState(runtime_name, cdm.Status.PROCESSING)
+          self.cdm.UpdateModuleStatus(runtime_name, cdm.Status.PROCESSING)
         module.Process()
         if self.cdm:
-          self.cdm.UpdateModuleState(runtime_name, cdm.Status.COMPLETED)
+          self.cdm.UpdateModuleStatus(runtime_name, cdm.Status.COMPLETED)
     except errors.DFTimewolfError:
       logger.critical(
           "Critical error in module {0:s}, aborting execution".format(
@@ -484,11 +484,11 @@ class DFTimewolfState(object):
       preflight = self._module_pool[runtime_name]
       try:
         if self.cdm:
-          self.cdm.UpdateModuleState(runtime_name, cdm.Status.RUNNING)
+          self.cdm.UpdateModuleStatus(runtime_name, cdm.Status.RUNNING)
         preflight.SetUp(**new_args)
         preflight.Process()
         if self.cdm:
-          self.cdm.UpdateModuleState(runtime_name, cdm.Status.COMPLETED)
+          self.cdm.UpdateModuleStatus(runtime_name, cdm.Status.COMPLETED)
       finally:
         self.CheckErrors(is_global=True)
 
