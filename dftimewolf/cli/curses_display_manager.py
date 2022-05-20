@@ -82,15 +82,12 @@ class Module:
 
 class Message:
   """Helper class for managing messages."""
-  source: str = ''
-  content: str = ''
-  is_error: bool = False
 
   def __init__(self, source: str, content: str, is_error: bool = False) -> None:
     """Initialise a Message object."""
-    self.source = source
-    self.content = content
-    self.is_error = is_error
+    self.source: str = source
+    self.content: str = content
+    self.is_error: bool = is_error
 
   def Stringify(self, source_buff_len: int = 0, colourise: bool = False) -> str:
     """Returns an CursesDisplayManager friendly string of the Message."""
@@ -101,6 +98,7 @@ class Message:
     reset_code = '\u001b[0m' if self.is_error and colourise else ''
 
     return f'[ {self.source:{pad}} ] {colour_code}{self.content}{reset_code}'
+
 
 class CursesDisplayManager:
   """Handles the curses based console output, based on information passed in.
@@ -139,7 +137,7 @@ class CursesDisplayManager:
     self._recipe_name = recipe
 
   def SetException(self, e: Exception) -> None:
-    """Set a Exception to be included in the display."""
+    """Set an Exception to be included in the display."""
     self._exception = e
 
   def SetError(self, module: str, message: str) -> None:
