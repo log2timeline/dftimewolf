@@ -63,7 +63,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       for disk in disk_names.strip().split(','):
         if not disk:
           continue
-        self.state.StoreContainer(containers.GCEDiskEvidence(
+        self.state.StoreContainer(containers.GCEDisk(
             name=disk,
             project=project))
 
@@ -85,13 +85,13 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     for container in vm_containers:
       if container.evidence_disk and container.evidence_disk.name:
         self.state.StoreContainer(
-            containers.GCEDiskEvidence(
+            containers.GCEDisk(
                 name=container.evidence_disk.name,
                 project=self.project))
-    self.state.DedupeContainers(containers.GCEDiskEvidence)
+    self.state.DedupeContainers(containers.GCEDisk)
 
   # pylint: disable=arguments-renamed
-  def Process(self, disk_container: containers.GCEDiskEvidence) -> None:
+  def Process(self, disk_container: containers.GCEDisk) -> None:
     """Process a GCE Disk with Turbinia."""
     if disk_container.project != self.project:
       self.logger.info(f'Found disk "{disk_container.name}" but skipping as it '
@@ -175,7 +175,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
 
   @staticmethod
   def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
-    return containers.GCEDiskEvidence
+    return containers.GCEDisk
 
   def GetThreadPoolSize(self) -> int:
     return self.parallel_count

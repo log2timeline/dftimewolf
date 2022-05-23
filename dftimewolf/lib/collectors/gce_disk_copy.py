@@ -156,6 +156,8 @@ class GCEDiskCopy(module.ThreadAwareModule):
     Args:
       container: GCEDisk container referencing the disk to copy.
     """
+    if container.project != self.source_project.project_id:
+      self.logger.info(f'Skipping {container.name} not in source project')
     self.logger.info(f'Disk copy of {container.name} started...')
 
     try:
@@ -167,7 +169,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
       self.at_least_one_success = True
       self.logger.success(f'Disk {container.name} successfully copied to '
           f'{new_disk.name}')
-      self.state.StoreContainer(containers.GCEDiskEvidence(
+      self.state.StoreContainer(containers.GCEDisk(
           new_disk.name, self.destination_project.project_id))
     except lcf_errors.ResourceNotFoundError as exception:
       self.logger.error(f'Could not find disk "{container.name}": {exception}')

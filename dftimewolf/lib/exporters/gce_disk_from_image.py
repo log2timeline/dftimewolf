@@ -73,7 +73,7 @@ class GCEDiskFromImage(module.ThreadAwareModule):
     disk = project.compute.CreateDiskFromImage(
       src_image = image,
       zone = self.dest_zone)
-    self.state.StoreContainer(containers.GCEDiskEvidence(
+    self.state.StoreContainer(containers.GCEDisk(
         disk.name,
         self.dest_project_name))
 

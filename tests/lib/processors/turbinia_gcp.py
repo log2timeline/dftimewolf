@@ -257,7 +257,7 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
       containers.YaraRule(
         name='dummy_yara', rule_text="rule dummy { condition: false }")
     )
-    test_state.StoreContainer(containers.GCEDiskEvidence(
+    test_state.StoreContainer(containers.GCEDisk(
         name='disk-1', project='turbinia-project'))
     turbinia_processor = turbinia_gcp.TurbiniaGCPProcessor(test_state)
     turbinia_processor.SetUp(
@@ -351,7 +351,7 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
                               mock_GoogleCloudDisk):
     """Tests that process does nothing if the disks are in another project."""
     test_state = state.DFTimewolfState(config.Config)
-    test_state.StoreContainer(containers.GCEDiskEvidence(
+    test_state.StoreContainer(containers.GCEDisk(
         name='disk-1', project='another-project'))
     turbinia_processor = turbinia_gcp.TurbiniaGCPProcessor(test_state)
     turbinia_processor.SetUp(
@@ -438,7 +438,7 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
     turbinia_processor.client.create_request.return_value = turbinia_message.TurbiniaRequest()
     turbinia_processor.PreProcess()
 
-    out_containers = test_state.GetContainers(containers.GCEDiskEvidence)
+    out_containers = test_state.GetContainers(containers.GCEDisk)
 
     self.assertEqual(len(out_containers), 1)
     self.assertEqual(out_containers[0].name, 'disk-1')

@@ -84,7 +84,7 @@ class GCEDiskFromImageTest(unittest.TestCase):
     exporter.PostProcess()
 
     actual_output = [c.name for \
-        c in test_state.GetContainers(containers.GCEDiskEvidence)]
+        c in test_state.GetContainers(containers.GCEDisk)]
 
     self.assertEqual(sorted(actual_output), sorted([
       'fake-disk-one',
@@ -116,7 +116,7 @@ class GCEDiskFromImageTest(unittest.TestCase):
     exporter.PostProcess()
 
     actual_output = [c.name for \
-        c in test_state.GetContainers(containers.GCEDiskEvidence)]
+        c in test_state.GetContainers(containers.GCEDisk)]
 
     self.assertEqual(sorted(actual_output), sorted([
       'fake-disk-one',
