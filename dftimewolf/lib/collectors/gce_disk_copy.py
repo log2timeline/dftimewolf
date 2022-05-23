@@ -213,7 +213,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
   def _GetDisksFromInstance(
       self,
       instance_name: str,
-      all_disks: bool) -> List[compute.GoogleComputeDisk]:
+      all_disks: bool) -> List[str]:
     """Gets disks to copy based on an instance name.
 
     Args:
@@ -222,8 +222,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
           False, get only the instance's boot disk.
 
     Returns:
-      list[compute.GoogleComputeDisk]: List of compute.GoogleComputeDisk
-          objects to copy.
+      list[str]: List of disk names to copy.
     """
     try:
       remote_instance = self.source_project.compute.GetInstance(instance_name)
