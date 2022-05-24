@@ -98,7 +98,7 @@ class OsqueryCollectorTest(unittest.TestCase):
       "platform": "darwin",
       "queries": {
         "query_1": {
-          "query" : "select * from launchd where path like '%System.plist';",
+          "query": "select * from launchd where path like '%System.plist';",
           "interval" : "3600",
           "version": "1.4.5",
           "description" : "description",
