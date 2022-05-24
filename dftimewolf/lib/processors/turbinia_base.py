@@ -187,6 +187,7 @@ class TurbiniaProcessorBase(object):
       list[dict]: The Turbinia task data
     """
     evidence_.validate()
+    process_client = turbinia_client.get_turbinia_client()  # issues/600
 
     recipe = None
     jobs_denylist = None
@@ -201,19 +202,19 @@ class TurbiniaProcessorBase(object):
 
     if self.turbinia_recipe:
       # Use a pre-configured turbinia recipe
-      recipe = self.client.create_recipe(
+      recipe = process_client.create_recipe(
           recipe_name=self.turbinia_recipe,
           sketch_id=self.sketch_id,
           yara_rules=yara_text)
     else:
       # Use default recipe with custom parameters
-      recipe = self.client.create_recipe(
+      recipe = process_client.create_recipe(
           sketch_id=self.sketch_id,
           filter_patterns=threat_intel_indicators,
           jobs_denylist=jobs_denylist,
           yara_rules=yara_text)
 
-    request = self.client.create_request(
+    request = process_client.create_request(
         requester=getpass.getuser(), recipe=recipe)
     request.evidence.append(evidence_)
 
@@ -228,7 +229,7 @@ class TurbiniaProcessorBase(object):
     self.logger.success(
         'Creating Turbinia request {0:s} with Evidence {1!s}'.format(
             request.request_id, evidence_.name))
-    self.client.send_request(request)
+    process_client.send_request(request)
     self.logger.info(
         'Waiting for Turbinia request {0:s} to complete'.format(
             request.request_id))
@@ -236,12 +237,12 @@ class TurbiniaProcessorBase(object):
     # Workaround for rate limiting in turbinia when checking task status
     while True:
       try:
-        self.client.wait_for_request(**request_dict)
-        task_data = self.client.get_task_data(**request_dict)
+        process_client.wait_for_request(**request_dict)
+        task_data = process_client.get_task_data(**request_dict)
 
-        message = self.client.format_task_status(
+        message = process_client.format_task_status(
             full_report=True, **request_dict)
-        short_message = self.client.format_task_status(**request_dict)
+        short_message = process_client.format_task_status(**request_dict)
         self.logger.info(short_message)
 
         return task_data, message
