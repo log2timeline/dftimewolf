@@ -151,7 +151,7 @@ class GCEForensicsVM(module.BaseModule):
         evidence_disk=None,
         platform='gcp'))
 
-    disks = self.state.GetContainers(containers.GCEDiskEvidence)
+    disks = self.state.GetContainers(containers.GCEDisk)
 
     for d in disks:
       if d.project != self.project.project_id:
