@@ -304,5 +304,26 @@ class GRRHuntOsqueryDownloader(unittest.TestCase):
     self.assertEqual(results[0][0], 'test')
     self.assertEqual(results[0][1], '/tmp/test/test.csv')
 
+  @mock.patch('grr_api_client.hunt.Hunt.ListResults')
+  def testGetAndWriteWrongResults(self, mock_list_results):
+    """Tests the GetAndWriteReslts function with wrong results."""
+    mock_result = mock.MagicMock()
+    mock_result.payload = mock.MagicMock(spec=flows_pb2.FileFinderResult)
+    mock_list_results.return_value = [mock_result]
+    mock_client = mock.MagicMock()
+    mock_client.data.os_info.fqdn = 'TEST'
+    self.mock_grr_api.SearchClients.return_value = [mock_client]
+
+    # pylint: disable=protected-access
+    with self.assertRaises(errors.DFTimewolfError) as error:
+      self.grr_hunt_downloader._GetAndWriteResults(
+          mock_grr_hosts.MOCK_HUNT, '/tmp/test')
+
+    self.assertEqual(1, len(self.test_state.errors))
+    self.assertIn('Incorrect results format from', error.exception.message)
+    self.assertIn('Possibly not an osquery hunt.', error.exception.message)
+    self.assertTrue(error.exception.critical)
+
+
 if __name__ == '__main__':
   unittest.main()
