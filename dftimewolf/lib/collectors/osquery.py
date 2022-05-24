@@ -54,7 +54,8 @@ class OsqueryCollector(module.BaseModule):
       platforms: the platforms value from an osquery pack.
 
     Returns:
-      a list of operating system platforms.
+      a list of operating system platforms.  Valid values in the list are
+      'darwin', 'freebsd', 'linux', 'windows'
     """
     if not platforms:
       return []
@@ -73,8 +74,8 @@ class OsqueryCollector(module.BaseModule):
 
     return list(unique_platforms)
 
-  def _LoadOsqueryPack(self, path: str) -> None:
-    """Loads osquery from an osquery pack file.
+  def _LoadOsqueryPackToState(self, path: str) -> None:
+    """Loads osquery from an osquery pack file and creates Osquery containers.
 
     Args:
       path: the path to the JSON file.
@@ -84,30 +85,31 @@ class OsqueryCollector(module.BaseModule):
 
       query_pack = json.load(fd)
 
-      # A 'global' platform value can be set at the root level
-      if 'platform' in query_pack:
-        global_platform = self._ParsePlatforms(query_pack.get('platform'))
+    # A 'global' platform value can be set at the root level
+    if 'platform' in query_pack:
+      global_platform = self._ParsePlatforms(query_pack.get('platform'))
 
-      for num, (name, entry) in enumerate(
-          query_pack.get('queries', {}).items()):
-        if not self._ValidateOsquery(entry.get('query', '')):
-          self.logger.warning(f'Entry {num} in query pack'
-                              f'{path} does not appear to be valid.')
-          continue
+    for num, (name, entry) in enumerate(
+        query_pack.get('queries', {}).items()):
+      query = entry['query']
+      if not self._ValidateOsquery(query):
+        self.logger.warning(f'Entry {num} in query pack'
+                            f'{path} does not appear to be valid.')
+        continue
 
-        if 'platform' in entry:
-          platform = self._ParsePlatforms(entry.get('platform'))
-        else:
-          platform = global_platform
-        self.osqueries.append(
-            containers.OsqueryQuery(
-                query=entry.get('query', ''),
-                name=name,
-                description=entry.get('description', ''),
-                platforms=platform))
+      if 'platform' in entry:
+        platform = self._ParsePlatforms(entry.get('platform'))
+      else:
+        platform = global_platform
+      self.osqueries.append(
+          containers.OsqueryQuery(
+              query=query,
+              name=name,
+              description=entry.get('description', ''),
+              platforms=platform))
 
-  def _LoadTextFile(self, path: str) -> None:
-    """Loads osquery from a text file.
+  def _LoadTextFileToState(self, path: str) -> None:
+    """Loads osquery from a text file and creates Osquery containers.
 
     Args:
       path: the path to the text file.
@@ -158,9 +160,9 @@ class OsqueryCollector(module.BaseModule):
           self.logger.warning(f'Path {path} does not exist.')
           continue
         if os.path.splitext(path)[1] == '.json':
-          self._LoadOsqueryPack(path)
+          self._LoadOsqueryPackToState(path)
         else:
-          self._LoadTextFile(path)
+          self._LoadTextFileToState(path)
 
     if not self.osqueries:
       self.ModuleError(
