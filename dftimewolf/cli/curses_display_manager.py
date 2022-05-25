@@ -78,7 +78,7 @@ class Module:
     Args:
       thread: The name of this thread (eg ThreadPoolExecutor-0_5).
       status: The current status of the thread.
-      container: Tha name of the container the thread is currently processing.
+      container: The name of the container the thread is currently processing.
     """
     self._threads[thread] = {'status': status,
                              'container': container}
