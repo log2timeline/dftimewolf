@@ -199,12 +199,12 @@ class AWSToGCPForensicsEndToEndTest(unittest.TestCase):
     self.assertGreaterEqual(
         len(self.test_state.GetContainers(containers.AWSVolume)), 1)
     self.assertEqual(len(self.test_state.GetContainers(containers.AWSVolume)),
-        len(self.test_state.GetContainers(containers.GCEDiskEvidence)))
+        len(self.test_state.GetContainers(containers.GCEDisk)))
 
     real_gce_disk_names = list(
         compute.GoogleCloudCompute(self.gcp_project_id).Disks().keys())
 
-    for d in self.test_state.GetContainers(containers.GCEDiskEvidence):
+    for d in self.test_state.GetContainers(containers.GCEDisk):
       self.assertIn(d.name, real_gce_disk_names)
       real_disk = compute.GoogleComputeDisk(
           self.gcp_project_id, self.gcp_zone, d.name)
@@ -215,7 +215,7 @@ class AWSToGCPForensicsEndToEndTest(unittest.TestCase):
     """Clean up after the test."""
     log.warning("Cleaning up after test...")
     # All of the following artefacts are created: AWSSnapshot, AWSS3Object,
-    # GCSObject, GCEImage, GCEDiskEvidence
+    # GCSObject, GCEImage, GCEDisk
     for c in self.test_state.GetContainers(containers.AWSSnapshot):
       self._removeAWSSnapshot(c.id)
     for c in self.test_state.GetContainers(containers.AWSS3Object):
@@ -224,8 +224,8 @@ class AWSToGCPForensicsEndToEndTest(unittest.TestCase):
       self._removeGCSObject(c.path)
     for c in self.test_state.GetContainers(containers.GCEImage):
       self._removeGCEImage(c.name)
-    for c in self.test_state.GetContainers(containers.GCEDiskEvidence):
-      self._removeGCEDiskEvidence(c.name)
+    for c in self.test_state.GetContainers(containers.GCEDisk):
+      self._removeGCEDisk(c.name)
 
   def _removeAWSSnapshot(self, snap_id: str):
     """Deletes an AWS EBS Snapshot with ID `id`."""
@@ -264,7 +264,7 @@ class AWSToGCPForensicsEndToEndTest(unittest.TestCase):
     except Exception as error:  # pylint: disable=broad-except
       log.error(f'Failed to delete GCE Image {name}: {str(error)}')
 
-  def _removeGCEDiskEvidence(self, name: str):
+  def _removeGCEDisk(self, name: str):
     """Remove the disk with name `name`."""
     log.warning(f'Deleting GCE Disk {name}')
     try:
