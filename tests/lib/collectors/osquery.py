@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """Tests the Osquery collector."""
 
+import json
 import unittest
 
 import mock
@@ -95,24 +96,24 @@ class OsqueryCollectorTest(unittest.TestCase):
     mock_exists.return_value = True
 
     test_ok_data = json.dumps({
-      "platform": "darwin",
-      "queries": {
-        "query_1": {
-          "query": "select * from launchd where path like '%System.plist';",
-          "interval": "3600",
-          "version": "1.4.5",
-          "description": "description",
-          "value": "Artifact used by this malware"
-        },
-        "query_2": {
-          "query": "select * from test where path like '%user32.dll';",
-          "interval": "3600",
-          "version": "1.4.5",
-          "platform": "windows",
-          "description": "description",
-          "value": "Artifact used by this malware"
+        "platform": "darwin",
+        "queries": {
+            "query_1": {
+                "query": "select * from launchd where path like '%System.plist';",
+                "interval": "3600",
+                "version": "1.4.5",
+                "description": "description",
+                "value": "Artifact used by this malware"
+            },
+            "query_2": {
+                "query": "select * from test where path like '%user32.dll';",
+                "interval": "3600",
+                "version": "1.4.5",
+                "platform": "windows",
+                "description": "description",
+                "value": "Artifact used by this malware"
+            }
         }
-      }
     }, indent=4)
 
     with mock.patch(
