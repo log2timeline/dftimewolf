@@ -337,7 +337,7 @@ class CursesDisplayManagerTest(unittest.TestCase):
         expected = '\n'.join([
           'Messages',
           '  [ source 1                  ] content 1',
-          '  [ a much longer source name ] error message',
+          '  [ a much longer source name ] \u001b[31merror message\u001b[0m',
           '  [ source 3                  ] this goes',
           '  [ source 3                  ] over multiple lines',
           '',

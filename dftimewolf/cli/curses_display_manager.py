@@ -30,7 +30,7 @@ class Module:
                name: str,
                dependencies: List[str],
                runtime_name: Optional[str] = None):
-    """Initialise the Module object.
+    """Initialize the Module object.
 
     Args:
       name: The module name of this module.
@@ -77,7 +77,7 @@ class Module:
 
     Args:
       thread: The name of this thread (eg ThreadPoolExecutor-0_5).
-      status: Th ecurrent status of the thread.
+      status: The current status of the thread.
       container: Tha name of the container the thread is currently processing.
     """
     self._threads[thread] = {'status': status,
@@ -105,7 +105,7 @@ class Message:
   """Helper class for managing messages."""
 
   def __init__(self, source: str, content: str, is_error: bool = False) -> None:
-    """Initialise a Message object.
+    """Initialize a Message object.
 
     Args:
       source: The source of the message, eg 'dftimewolf' or a runtime name.
@@ -115,20 +115,20 @@ class Message:
     self.content: str = content
     self.is_error: bool = is_error
 
-  def Stringify(self, source_len: int = 0, colourise: bool = False) -> str:
+  def Stringify(self, source_len: int = 0, colorise: bool = False) -> str:
     """Returns an CursesDisplayManager friendly string of the Message.
 
     Args:
-      source_len: The longest source length, used to unify the formatting of
+      source_len: The longest source length; used to unify the formatting of
           messages.
-      colourise: True if colours should be used."""
+      colorise: True if colors should be used."""
     pad = (len(self.source) if len(self.source) > source_len
         else source_len)
 
-    colour_code = '\u001b[31m' if self.is_error and colourise else ''
-    reset_code = '\u001b[0m' if self.is_error and colourise else ''
+    color_code = '\u001b[31m' if self.is_error and colorise else ''
+    reset_code = '\u001b[0m' if self.is_error and colorise else ''
 
-    return f'[ {self.source:{pad}} ] {colour_code}{self.content}{reset_code}'
+    return f'[ {self.source:{pad}} ] {color_code}{self.content}{reset_code}'
 
 
 class CursesDisplayManager:
@@ -342,7 +342,7 @@ class CursesDisplayManager:
     if self._messages:
       print('Messages')
       for m in self._messages:
-        print(f'  {m.Stringify(self._messages_longest_source_len)}')
+        print(f'  {m.Stringify(self._messages_longest_source_len, True)}')
 
     if self._exception:
       print('\nException encountered during execution:')
