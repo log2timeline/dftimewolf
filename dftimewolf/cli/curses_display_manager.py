@@ -115,18 +115,18 @@ class Message:
     self.content: str = content
     self.is_error: bool = is_error
 
-  def Stringify(self, source_len: int = 0, colorise: bool = False) -> str:
+  def Stringify(self, source_len: int = 0, colorize: bool = False) -> str:
     """Returns an CursesDisplayManager friendly string of the Message.
 
     Args:
       source_len: The longest source length; used to unify the formatting of
           messages.
-      colorise: True if colors should be used."""
+      colorize: True if colors should be used."""
     pad = (len(self.source) if len(self.source) > source_len
         else source_len)
 
-    color_code = '\u001b[31m' if self.is_error and colorise else ''
-    reset_code = '\u001b[0m' if self.is_error and colorise else ''
+    color_code = '\u001b[31m' if self.is_error and colorize else ''
+    reset_code = '\u001b[0m' if self.is_error and colorize else ''
 
     return f'[ {self.source:{pad}} ] {color_code}{self.content}{reset_code}'
 
