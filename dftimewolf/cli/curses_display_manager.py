@@ -30,7 +30,13 @@ class Module:
                name: str,
                dependencies: List[str],
                runtime_name: Optional[str] = None):
-    """Initialise the Module object."""
+    """Initialise the Module object.
+
+    Args:
+      name: The module name of this module.
+      dependencies: A list of Runtime names that this module is blocked on.
+      runtime_name: The runtime name of this module.
+    """
     self.name = name
     self.runtime_name = runtime_name if runtime_name else name
     self.status: Status = Status.PENDING
@@ -59,24 +65,39 @@ class Module:
     return [module_line] + thread_lines
 
   def SetStatus(self, status: Status) -> None:
-    """Set the status of the module."""
+    """Set the status of the module.
+
+    Args:
+      status: The status to set this module to."""
     if self.status not in [Status.ERROR, Status.COMPLETED, Status.CANCELLED]:
       self.status = status
 
   def SetThreadState(self, thread: str, status: Status, container: str) -> None:
-    """Set the state of a thread within a threaded module."""
+    """Set the state of a thread within a threaded module.
+
+    Args:
+      thread: The name of this thread (eg ThreadPoolExecutor-0_5).
+      status: Th ecurrent status of the thread.
+      container: Tha name of the container the thread is currently processing.
+    """
     self._threads[thread] = {'status': status,
                              'container': container}
     if status == Status.COMPLETED:
       self._threads_containers_completed += 1
 
   def SetError(self, message: str) -> None:
-    """Sets the error for the module."""
+    """Sets the error for the module.
+
+    Args:
+      message: The error message string."""
     self._error_message = message
     self.status = Status.ERROR
 
   def SetContainerCount(self, count: int) -> None:
-    """Sets the maximum container count for the module."""
+    """Sets the maximum container count for the module.
+
+    Args:
+      count: The total number of containers to be processed."""
     self._threads_containers_max = count
 
 
@@ -84,15 +105,25 @@ class Message:
   """Helper class for managing messages."""
 
   def __init__(self, source: str, content: str, is_error: bool = False) -> None:
-    """Initialise a Message object."""
+    """Initialise a Message object.
+
+    Args:
+      source: The source of the message, eg 'dftimewolf' or a runtime name.
+      content: The content of the message.
+      is_error: True if the message is an error message, False otherwise."""
     self.source: str = source
     self.content: str = content
     self.is_error: bool = is_error
 
-  def Stringify(self, source_buff_len: int = 0, colourise: bool = False) -> str:
-    """Returns an CursesDisplayManager friendly string of the Message."""
-    pad = (len(self.source) if len(self.source) > source_buff_len
-        else source_buff_len)
+  def Stringify(self, source_len: int = 0, colourise: bool = False) -> str:
+    """Returns an CursesDisplayManager friendly string of the Message.
+
+    Args:
+      source_len: The longest source length, used to unify the formatting of
+          messages.
+      colourise: True if colours should be used."""
+    pad = (len(self.source) if len(self.source) > source_len
+        else source_len)
 
     colour_code = '\u001b[31m' if self.is_error and colourise else ''
     reset_code = '\u001b[0m' if self.is_error and colourise else ''
@@ -105,7 +136,7 @@ class CursesDisplayManager:
   """
 
   def __init__(self) -> None:
-    """Intiialises the CursesDisplayManager."""
+    """Intializes the CursesDisplayManager."""
     self._recipe_name: str = ''
     self._exception: Union[Exception, None] = None
     self._preflights: Dict[str, Module] = {}
@@ -133,15 +164,25 @@ class CursesDisplayManager:
     curses.endwin()
 
   def SetRecipe(self, recipe: str) -> None:
-    """Set the recipe name."""
+    """Set the recipe name.
+
+    Args:
+      recipe: The recipe name"""
     self._recipe_name = recipe
 
   def SetException(self, e: Exception) -> None:
-    """Set an Exception to be included in the display."""
+    """Set an Exception to be included in the display.
+
+    Args:
+      e: The exception object."""
     self._exception = e
 
   def SetError(self, module: str, message: str) -> None:
-    """Sets the error state ane message for a module."""
+    """Sets the error state ane message for a module.
+
+    Args:
+      module: The module name generating the error.
+      message: The error message content."""
     if module in self._preflights:
       self._preflights[module].SetError(message)
     if module in self._modules:
@@ -155,7 +196,12 @@ class CursesDisplayManager:
                      source: str,
                      content: str,
                      is_error: bool = False) -> None:
-    """Enqueue a message to be displayed."""
+    """Enqueue a message to be displayed.
+
+    Args:
+      source: The source of the message, eg 'dftimewolf' or a runtime name.
+      content: The message content.
+      is_error: True if the message is an error message, False otherwise."""
     if self._messages_longest_source_len < len(source):
       self._messages_longest_source_len = len(source)
 
@@ -169,7 +215,12 @@ class CursesDisplayManager:
                        name: str,
                        dependencies: List[str],
                        runtime_name: Optional[str]) -> None:
-    """Enqueue a preflight module object for display."""
+    """Enqueue a preflight module object for display.
+
+    Args:
+      name: The name of the preflight module.
+      dependencies: runtime names of blocking modules.
+      runtime_name: the runtime name of the preflight module."""
     m = Module(name, dependencies, runtime_name)
     self._preflights[m.runtime_name] = m
 
@@ -177,12 +228,21 @@ class CursesDisplayManager:
                        name: str,
                        dependencies: List[str],
                        runtime_name: Optional[str]) -> None:
-    """Enqueue a module object for display."""
+    """Enqueue a module object for display.
+
+    Args:
+      name: The name of the module.
+      dependencies: runtime names of blocking modules.
+      runtime_name: the runtime name of the module."""
     m = Module(name, dependencies, runtime_name)
     self._modules[m.runtime_name] = m
 
   def UpdateModuleStatus(self, module: str, status: Status) -> None:
-    """Update the status of a module for display."""
+    """Update the status of a module for display.
+
+    Args:
+      module: The runtime name of the module.
+      status: the status of the module."""
     if module in self._preflights:
       self._preflights[module].SetStatus(status)
     if module in self._modules:
@@ -191,7 +251,11 @@ class CursesDisplayManager:
     self.Draw()
 
   def SetThreadedModuleContainerCount(self, module: str, count: int) -> None:
-    """Set the container count that a threaded module will operate on."""
+    """Set the container count that a threaded module will operate on.
+
+    Args:
+      module: The runtime name of the threaded module.
+      count: The total number of containers the module will process."""
     if module in self._preflights:
       self._preflights[module].SetContainerCount(count)
     if module in self._modules:
@@ -202,7 +266,13 @@ class CursesDisplayManager:
                               status: Status,
                               thread: str,
                               container: str) -> None:
-    """Update the state of a thread within a threaded module for display."""
+    """Update the state of a thread within a threaded module for display.
+
+    Args:
+      module: The runtime name of the module.
+      status: The status of the thread.
+      thread: The name of the thread, eg 'ThreadPoolExecutor-0_0'.
+      container: The name of the container being processed."""
     if module in self._preflights:
       self._preflights[module].SetThreadState(thread, status, container)
     if module in self._modules:
@@ -252,7 +322,7 @@ class CursesDisplayManager:
       start = len(self._messages) - message_space
       start = 0 if start < 0 else start
 
-      for m in self._messages[start::]:
+      for m in self._messages[start:]:
         self._stdscr.addstr(
             curr_line, 0, f'  {m.Stringify(self._messages_longest_source_len)}')
         curr_line += 1
