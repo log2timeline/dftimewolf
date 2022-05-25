@@ -322,7 +322,7 @@ class CursesDisplayManager:
       start = len(self._messages) - message_space
       start = 0 if start < 0 else start
 
-      # Slice the aray, we may not be able to fit all messages on the screen  
+      # Slice the aray, we may not be able to fit all messages on the screen
       for m in self._messages[start:]:
         self._stdscr.addstr(
             curr_line, 0, f'  {m.Stringify(self._messages_longest_source_len)}')
