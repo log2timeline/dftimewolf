@@ -123,7 +123,7 @@ class GRRHuntOsqueryCollectorTest(unittest.TestCase):
     mock_InitHttp.return_value = self.mock_grr_api
     self.test_state = state.DFTimewolfState(config.Config)
     self.test_state.StoreContainer(
-        containers.OsqueryQuery('SELECT * FROM processes'))
+        containers.OsqueryQuery(query='SELECT * FROM processes'))
     self.grr_hunt_osquery_collector = grr_hunt.GRRHuntOsqueryCollector(
         self.test_state)
     self.grr_hunt_osquery_collector.SetUp(
