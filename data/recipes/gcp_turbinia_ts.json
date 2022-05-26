@@ -14,7 +14,7 @@
         "name": "TurbiniaGCPProcessor",
         "args": {
             "turbinia_config_file": null,
-            "disk_names": "@disk_name",
+            "disk_names": "@disk_names",
             "project": "@analysis_project_name",
             "turbinia_recipe": "@turbinia_recipe",
             "turbinia_zone": "@turbinia_zone",
