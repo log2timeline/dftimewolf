@@ -322,7 +322,7 @@ def SignalHandler(*unused_argvs: Any) -> None:
     cursesdisplaymanager.EnqueueMessage(
         'dftimewolf','Ctrl^C caught, bailing...')
     cursesdisplaymanager.EndCurses()
-#    cursesdisplaymanager.PrintMessages()
+    cursesdisplaymanager.PrintMessages()
   sys.exit(1)
 
 
@@ -396,9 +396,6 @@ def Main(cdm: Optional[CursesDisplayManager] = None) -> int:
           errors.CriticalError) as exception:
     logger.critical(str(exception))
     return 1
-
-#  if cdm:
-#    cdm.StartCurses()
 
   tool.state.LogExecutionPlan()
 

@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 """Curses output management class."""
 
+from email import message
 from enum import Enum
+import sys
+import textwrap
 import threading
 import traceback
 from typing import Any, Dict, List, Optional, Union
@@ -97,7 +100,7 @@ class Message:
     pad = (len(self.source) if len(self.source) > source_buff_len
         else source_buff_len)
 
-    colour_code = '\u001b[31m' if self.is_error and colourise else ''
+    colour_code = '\u001b[31;1m' if self.is_error and colourise else ''
     reset_code = '\u001b[0m' if self.is_error and colourise else ''
 
     return f'[ {self.source:{pad}} ] {colour_code}{self.content}{reset_code}'
@@ -143,7 +146,7 @@ class CursesDisplayManager:
     self._exception = e
 
   def SetError(self, module: str, message: str) -> None:
-    """Sets the error state ane message for a module."""
+    """Sets the error state and message for a module."""
     if module in self._preflights:
       self._preflights[module].SetError(message)
     if module in self._modules:
@@ -160,6 +163,15 @@ class CursesDisplayManager:
     """Enqueue a message to be displayed."""
     if self._messages_longest_source_len < len(source):
       self._messages_longest_source_len = len(source)
+
+    _, x = self._stdscr.getmaxyx()
+
+    content = '\n'.join(
+        textwrap.wrap(
+            content,
+            x - self._messages_longest_source_len - 8,
+            subsequent_indent='  ',
+            replace_whitespace=False))
 
     for line in content.split('\n'):
       if line:
@@ -274,7 +286,7 @@ class CursesDisplayManager:
     if self._messages:
       print('Messages')
       for m in self._messages:
-        print(f'  {m.Stringify(self._messages_longest_source_len)}')
+        print(f'  {m.Stringify(self._messages_longest_source_len, True)}')
 
     if self._exception:
       print('\nException encountered during execution:')
