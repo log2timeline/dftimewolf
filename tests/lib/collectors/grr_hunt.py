@@ -73,6 +73,7 @@ class GRRHuntFileCollectorTest(unittest.TestCase):
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
     self.test_state = state.DFTimewolfState(config.Config)
+    self.test_state.StoreContainer(containers.FSPath(path='/etc/hosts'))
     self.grr_hunt_file_collector = grr_hunt.GRRHuntFileCollector(
         self.test_state)
     self.grr_hunt_file_collector.SetUp(
@@ -93,7 +94,7 @@ class GRRHuntFileCollectorTest(unittest.TestCase):
     """Tests that the collector can be initialized."""
     self.assertEqual(
         self.grr_hunt_file_collector.file_path_list,
-        ['/etc/passwd', '/etc/shadow']
+        ['/etc/passwd', '/etc/shadow', '/etc/hosts']
     )
 
   def testProcess(self):
@@ -102,7 +103,7 @@ class GRRHuntFileCollectorTest(unittest.TestCase):
     # extract call kwargs
     call_kwargs = self.mock_grr_api.CreateHunt.call_args[1]
     self.assertEqual(call_kwargs['flow_args'].paths,
-                     ['/etc/passwd', '/etc/shadow'])
+                     ['/etc/passwd', '/etc/shadow', '/etc/hosts'])
     self.assertEqual(call_kwargs['flow_args'].action.action_type,
                      flows_pb2.FileFinderAction.DOWNLOAD)
     self.assertEqual(call_kwargs['flow_name'], 'FileFinder')
