@@ -393,7 +393,8 @@ class GRRFileCollectorTest(unittest.TestCase):
     """Tests that processing launches appropriate flows."""
     self.mock_grr_api.SearchClients.return_value = \
         mock_grr_hosts.MOCK_CLIENT_LIST
-    mock_DownloadFiles.return_value = ['/tmp/something', '/tmp/otherthing']
+    mock_DownloadFiles.return_value = ','.join(
+        ['/tmp/something', '/tmp/otherthing'])
 
     self.grr_file_collector.PreProcess()
     in_containers = self.test_state.GetContainers(
