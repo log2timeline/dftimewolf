@@ -99,7 +99,7 @@ class GRRHuntFileCollectorTest(unittest.TestCase):
 
   def testProcess(self):
     """Tests that the process method invokes the correct GRR API calls."""
-    self.PreProcess()
+    self.grr_hunt_file_collector.PreProcess()
     self.grr_hunt_file_collector.Process()
     # extract call kwargs
     call_kwargs = self.mock_grr_api.CreateHunt.call_args[1]
