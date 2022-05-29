@@ -393,7 +393,7 @@ class GRRFileCollectorTest(unittest.TestCase):
     """Tests that processing launches appropriate flows."""
     self.mock_grr_api.SearchClients.return_value = \
         mock_grr_hosts.MOCK_CLIENT_LIST
-    mock_DownloadFiles.return_value = ['/tmp/something', '/tmp/otherthing']
+    mock_DownloadFiles.return_value = '/tmp/something'
 
     self.grr_file_collector.PreProcess()
     in_containers = self.test_state.GetContainers(
@@ -415,11 +415,9 @@ class GRRFileCollectorTest(unittest.TestCase):
         )
     )
     results = self.test_state.GetContainers(containers.File)
-    self.assertEqual(len(results), 2)
+    self.assertEqual(len(results), 1)
     self.assertEqual(results[0].name, 'tomchop')
     self.assertEqual(results[0].path, '/tmp/something')
-    self.assertEqual(results[1].name, 'tomchop')
-    self.assertEqual(results[1].path, '/tmp/otherthing')
 
   @mock.patch('grr_api_client.api.InitHttp')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow')
