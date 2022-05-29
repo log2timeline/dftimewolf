@@ -293,12 +293,19 @@ class GRRHuntFileCollector(GRRHunt):
         approvers=approvers, verify=verify)
     self.file_path_list = [item.strip() for item
                            in file_path_list.strip().split(',')]
-    if not file_path_list:
-      self.ModuleError('Files must be specified for hunts', critical=True)
     if max_file_size:
       self.max_file_size = int(max_file_size)
 
     self.HuntSetup(match_mode, client_operating_systems, client_labels)
+
+  def PreProcess(self) -> None:
+    """Load File paths from containers and check there are files to download."""
+    for file_container in self.state.GetContainers(
+        container_class=containers.FSPath):
+      self.file_path_list.append(file_container.path)
+
+    if not self.file_path_list:
+      self.ModuleError('Files must be specified for hunts', critical=True)
 
   # TODO: this method does not raise itself, indicate what function call does.
   def Process(self) -> None:
@@ -307,6 +314,7 @@ class GRRHuntFileCollector(GRRHunt):
     Raises:
       RuntimeError: if no items specified for collection.
     """
+
     self.logger.info(
         'Hunt to collect {0:d} items'.format(len(self.file_path_list)))
     self.logger.info(

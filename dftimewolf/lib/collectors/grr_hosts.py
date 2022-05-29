@@ -633,6 +633,10 @@ class GRRFileCollector(GRRFlow):
 
   def PreProcess(self) -> None:
     """Check that we're actually doing something, and it's not a no-op."""
+    for file_container in self.state.GetContainers(
+        container_class=containers.FSPath):
+      self.files.append(file_container.path)
+
     if not self.files:
       message = 'Would fetch 0 files - bailing out instead.'
       self.logger.critical(message)
