@@ -94,11 +94,12 @@ class GRRHuntFileCollectorTest(unittest.TestCase):
     """Tests that the collector can be initialized."""
     self.assertEqual(
         self.grr_hunt_file_collector.file_path_list,
-        ['/etc/passwd', '/etc/shadow', '/etc/hosts']
+        ['/etc/passwd', '/etc/shadow']
     )
 
   def testProcess(self):
     """Tests that the process method invokes the correct GRR API calls."""
+    self.PreProcess()
     self.grr_hunt_file_collector.Process()
     # extract call kwargs
     call_kwargs = self.mock_grr_api.CreateHunt.call_args[1]

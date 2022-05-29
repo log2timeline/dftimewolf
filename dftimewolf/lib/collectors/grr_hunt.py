@@ -314,7 +314,6 @@ class GRRHuntFileCollector(GRRHunt):
     Raises:
       RuntimeError: if no items specified for collection.
     """
-
     self.logger.info(
         'Hunt to collect {0:d} items'.format(len(self.file_path_list)))
     self.logger.info(

@@ -384,7 +384,7 @@ class GRRFileCollectorTest(unittest.TestCase):
     self.assertIsNotNone(self.grr_file_collector)
     self.assertEqual(['C.0000000000000001'], actual_hosts)
     self.assertEqual(
-        self.grr_file_collector.files, ['/etc/passwd', '/etc/hosts'])
+        self.grr_file_collector.files, ['/etc/passwd'])
 
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
