@@ -322,7 +322,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       flow_id (str): GRR identifier of the flow.
 
     Returns:
-      str: path of downloaded files.
+      str: path of the zipfile containing downloaded files.
     """
     output_file_path = os.path.join(
         self.output_path, '.'.join((flow_id, 'zip')))
