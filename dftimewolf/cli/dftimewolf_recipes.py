@@ -319,11 +319,6 @@ class DFTimewolfTool(object):
 def SignalHandler(*unused_argvs: Any) -> None:
   """Catches Ctrl + C to exit cleanly."""
   sys.stderr.write("\nCtrl^C caught, bailing...\n")
-  if not no_curses:
-    cursesdisplaymanager.EnqueueMessage(
-        'dftimewolf','Ctrl^C caught, bailing...')
-    cursesdisplaymanager.EndCurses()
-    cursesdisplaymanager.PrintMessages()
   sys.exit(1)
 
 
@@ -442,10 +437,9 @@ if __name__ == '__main__':
     try:
       with redirect_stdout(stdout_null), redirect_stderr(stderr_sio):
         exit_code = Main(cursesdisplaymanager)
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-except
       cursesdisplaymanager.SetException(e)
       cursesdisplaymanager.Draw()
-      raise e
     finally:
       stderr_str = stderr_sio.getvalue()
       if stderr_str:
@@ -455,4 +449,4 @@ if __name__ == '__main__':
       cursesdisplaymanager.EndCurses()
       cursesdisplaymanager.PrintMessages()
 
-      sys.exit(exit_code)
+    sys.exit(exit_code)

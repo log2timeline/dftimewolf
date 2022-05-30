@@ -81,8 +81,7 @@ class Module:
       status: The current status of the thread.
       container: The name of the container the thread is currently processing.
     """
-    self._threads[thread] = {'status': status,
-                             'container': container}
+    self._threads[thread] = {'status': status, 'container': container}
     if status == Status.COMPLETED:
       self._threads_containers_completed += 1
 

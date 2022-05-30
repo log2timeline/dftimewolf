@@ -341,7 +341,7 @@ class DFTimewolfState(object):
       # We're catching any exception that is not a DFTimewolfError, so we want
       # to generate an error for further reporting.
       error = errors.DFTimewolfError(
-          message=msg, name='state', stacktrace=traceback.format_exc(),
+          message=msg, name='dftimewolf', stacktrace=traceback.format_exc(),
           critical=True, unexpected=True)
       self.AddError(error)
 
@@ -419,12 +419,15 @@ class DFTimewolfState(object):
 
         module.PostProcess()
 
+        for fut in futures:
+          if fut.exception():
+            if self.cdm:
+              self.cdm.SetError(runtime_name, str(fut.exception()))
+            raise fut.exception() # type: ignore
+
         if self.cdm:
           self.cdm.UpdateModuleStatus(runtime_name, cdm.Status.COMPLETED)
 
-        for fut in futures:
-          if fut.exception():
-            raise fut.exception() # type: ignore
       else:
         if self.cdm:
           self.cdm.UpdateModuleStatus(runtime_name, cdm.Status.PROCESSING)
@@ -442,7 +445,7 @@ class DFTimewolfState(object):
       # We're catching any exception that is not a DFTimewolfError, so we want
       # to generate an error for further reporting.
       error = errors.DFTimewolfError(
-          message=msg, name='state', stacktrace=traceback.format_exc(),
+          message=msg, name='dftimewolf', stacktrace=traceback.format_exc(),
           critical=True, unexpected=True)
       self.AddError(error)
 

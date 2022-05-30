@@ -118,10 +118,10 @@ class BaseModule(object):
       raise error
     self.logger.error(error.message)
 
-  def PublishMessage(self, message: str) -> None:
+  def PublishMessage(self, message: str, is_error: bool = False) -> None:
     """Published a message to be displayed."""
     if self.state.cdm:
-      self.state.cdm.EnqueueMessage(self.name, message)
+      self.state.cdm.EnqueueMessage(self.name, message, is_error)
     self.logger.info(message)
 
   @abc.abstractmethod
