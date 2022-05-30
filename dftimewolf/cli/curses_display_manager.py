@@ -2,6 +2,7 @@
 """Curses output management class."""
 
 from enum import Enum
+import textwrap
 import threading
 import traceback
 from typing import Any, Dict, List, Optional, Union
@@ -80,8 +81,7 @@ class Module:
       status: The current status of the thread.
       container: The name of the container the thread is currently processing.
     """
-    self._threads[thread] = {'status': status,
-                             'container': container}
+    self._threads[thread] = {'status': status, 'container': container}
     if status == Status.COMPLETED:
       self._threads_containers_completed += 1
 
@@ -125,7 +125,7 @@ class Message:
     pad = (len(self.source) if len(self.source) > source_len
         else source_len)
 
-    color_code = '\u001b[31m' if self.is_error and colorize else ''
+    color_code = '\u001b[31;1m' if self.is_error and colorize else ''
     reset_code = '\u001b[0m' if self.is_error and colorize else ''
 
     return f'[ {self.source:{pad}} ] {color_code}{self.content}{reset_code}'
@@ -205,7 +205,18 @@ class CursesDisplayManager:
     if self._messages_longest_source_len < len(source):
       self._messages_longest_source_len = len(source)
 
+    _, x = self._stdscr.getmaxyx()
+
+    lines = []
+
+    # textwrap.wrap behaves strangely if there are newlines in the content
     for line in content.split('\n'):
+      lines += textwrap.wrap(line,
+                             width=x - self._messages_longest_source_len - 8,
+                             subsequent_indent='  ',
+                             replace_whitespace=False)
+
+    for line in lines:
       if line:
         self._messages.append(Message(source, line, is_error))
 
@@ -331,8 +342,7 @@ class CursesDisplayManager:
       # Exceptions
       if self._exception:
         self._stdscr.addstr(y - 2, 0,
-            f' Exception encountered: {self._exception.__str__()}')
-
+            f' Exception encountered: {str(self._exception)}')
       self._stdscr.move(curr_line, 0)
       self._stdscr.refresh()
 

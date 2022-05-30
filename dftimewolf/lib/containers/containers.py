@@ -31,6 +31,10 @@ class FSPath(interface.AttributeContainer):
     super(FSPath, self).__init__()
     self.path = path
 
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return self.path
+
 
 class RemoteFSPath(FSPath):
   """Remote Filesystem path container.
@@ -50,6 +54,10 @@ class RemoteFSPath(FSPath):
     """
     super(RemoteFSPath, self).__init__(path=path)
     self.hostname = hostname
+
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return f'{self.hostname}:{self.path}'
 
 
 class Report(interface.AttributeContainer):
@@ -84,6 +92,10 @@ class Report(interface.AttributeContainer):
     self.text = text
     self.text_format = text_format
 
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return f'{self.module_name} Report'
+
 
 class GCPLogs(interface.AttributeContainer):
   """Google Cloud Platform logs container.
@@ -109,6 +121,10 @@ class GCPLogs(interface.AttributeContainer):
     self.filter_expression = filter_expression
     self.path = path
     self.project_name = project_name
+
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return f'{self.project_name}:{self.path}'
 
 
 class ThreatIntelligence(interface.AttributeContainer):
@@ -257,6 +273,10 @@ class URL(interface.AttributeContainer):
     super(URL, self).__init__()
     self.path = path
 
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return self.path
+
 
 class GCEDisk(interface.AttributeContainer):
   """Attribute container definition for a GCE Disk object.
@@ -276,6 +296,10 @@ class GCEDisk(interface.AttributeContainer):
     """Override __eq__() for this container."""
     return self.name == other.name and self.project == other.project
 
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return f'{self.project}:{self.name}'
+
 
 class GCEImage(interface.AttributeContainer):
   """Attribute container definition for a GCE Image object.
@@ -289,6 +313,10 @@ class GCEImage(interface.AttributeContainer):
     super(GCEImage, self).__init__()
     self.name = name
     self.project = project
+
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return f'{self.project}:{self.name}'
 
 
 class DataFrame(interface.AttributeContainer):
@@ -331,6 +359,10 @@ class Host(interface.AttributeContainer):
     self.hostname = hostname
     self.platform = platform
 
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return self.hostname
+
 
 class GrrFlow(interface.AttributeContainer):
   """Attribute container definition for a host.
@@ -346,6 +378,10 @@ class GrrFlow(interface.AttributeContainer):
     super(GrrFlow, self).__init__()
     self.hostname = hostname
     self.flow_id = flow
+
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return f'{self.hostname}:{self.flow_id}'
 
 
 class WorkspaceLogs(interface.AttributeContainer):
@@ -391,6 +427,10 @@ class WorkspaceLogs(interface.AttributeContainer):
     self.start_time = start_time
     self.end_time = end_time
 
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return f'{self.application_name}:{self.path}'
+
 
 class GCSObject(interface.AttributeContainer):
   """GCS Objects container.
@@ -411,6 +451,10 @@ class GCSObject(interface.AttributeContainer):
       self.path = path
     else:
       self.path = 'gs://' + path
+
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return self.path
 
 
 class AWSS3Object(interface.AttributeContainer):
@@ -434,6 +478,10 @@ class AWSS3Object(interface.AttributeContainer):
     else:
       self.path = 's3://' + path
 
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return self.path
+
 
 class AWSVolume(interface.AttributeContainer):
   """Attribute container for an AWS Volume.
@@ -447,6 +495,10 @@ class AWSVolume(interface.AttributeContainer):
     super(AWSVolume, self).__init__()
     self.id = vol_id
 
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return self.id
+
 
 class AWSSnapshot(interface.AttributeContainer):
   """Attribute container for an AWS Snapshot.
@@ -459,6 +511,10 @@ class AWSSnapshot(interface.AttributeContainer):
   def __init__(self, snap_id: str) -> None:
     super(AWSSnapshot, self).__init__()
     self.id = snap_id
+
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return self.id
 
 
 class OsqueryQuery(interface.AttributeContainer):

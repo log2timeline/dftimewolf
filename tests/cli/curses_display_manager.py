@@ -178,13 +178,14 @@ class CursesDisplayManagerMessageTest(unittest.TestCase):
         self.error_message.Stringify(), '[ error_source ] error content')
     self.assertEqual(
         self.error_message.Stringify(0, True),
-        '[ error_source ] \x1b[31merror content\x1b[0m')
+        '[ error_source ] \x1b[31;1merror content\x1b[0m')
 
 
 class CursesDisplayManagerTest(unittest.TestCase):
   """Tests for the CursesDisplayManager."""
 
   def setUp(self):
+    self.maxDiff = None  # pylint: disable=invalid-name
     self.cdm = CursesDisplayManager()
 
   def tearDown(self):
@@ -228,9 +229,11 @@ class CursesDisplayManagerTest(unittest.TestCase):
     with mock.patch('curses.nocbreak') as mock_nocbreak, \
         mock.patch('curses.echo') as mock_echo, \
         mock.patch('curses.endwin') as mock_endwin, \
-        mock.patch.object(self.cdm, 'Pause') as mock_pause:
+        mock.patch.object(self.cdm, 'Pause') as mock_pause, \
+        mock.patch.object(self.cdm._stdscr, 'getmaxyx') as mock_getmaxyx:
 
       self.cdm.Draw = mock.MagicMock()
+      mock_getmaxyx.return_value = 30, 140
 
       self.cdm.EnqueueMessage('source', 'content', True)
       self.cdm.EndCurses()
@@ -244,6 +247,11 @@ class CursesDisplayManagerTest(unittest.TestCase):
     """Tests the various Set* methods."""
     self.cdm.Draw = mock.MagicMock()
 
+    with mock.patch('curses.cbreak'), \
+        mock.patch('curses.noecho'), \
+        mock.patch('curses.initscr'):
+      self.cdm.StartCurses()
+
     # Set an exception
     e = Exception('test exception')
     self.cdm.SetException(e)
@@ -254,8 +262,11 @@ class CursesDisplayManagerTest(unittest.TestCase):
     self.assertEqual(self.cdm._recipe_name, 'Recipe name')
 
     # Set error
-    self.cdm.EnqueueModule('module_name', [], None)
-    self.cdm.SetError('module_name', 'Error message')
+    with mock.patch.object(self.cdm._stdscr, 'getmaxyx') as mock_getmaxyx:
+      mock_getmaxyx.return_value = 30, 140
+      self.cdm.EnqueueModule('module_name', [], None)
+      self.cdm.SetError('module_name', 'Error message')
+
     self.assertEqual(self.cdm._modules['module_name'].status, Status.ERROR)
     self.assertEqual(
         self.cdm._modules['module_name']._error_message, 'Error message')
@@ -321,9 +332,17 @@ class CursesDisplayManagerTest(unittest.TestCase):
     """Tests messages usage."""
     self.cdm.Draw = mock.MagicMock()
 
-    self.cdm.EnqueueMessage('source 1', 'content 1')
-    self.cdm.EnqueueMessage('a much longer source name', 'error message', True)
-    self.cdm.EnqueueMessage('source 3', 'this goes\nover multiple lines')
+    with mock.patch('curses.cbreak'), \
+        mock.patch('curses.noecho'), \
+        mock.patch('curses.initscr'):
+      self.cdm.StartCurses()
+
+    with mock.patch.object(self.cdm._stdscr, 'getmaxyx') as mock_getmaxyx:
+      mock_getmaxyx.return_value = 30, 60
+      self.cdm.EnqueueMessage('source 1', 'content 1')
+      self.cdm.EnqueueMessage('a longer source name', 'error message', True)
+      self.cdm.EnqueueMessage('source 2', 'this message is longer than the screen width, 60 characters, and will need to be printed on multiple lines.')  # pylint: disable=line-too-long
+      self.cdm.EnqueueMessage('source 3', 'this message\nhas a newline in it')
 
     try:
       raise RuntimeError('Test Exception')
@@ -336,10 +355,14 @@ class CursesDisplayManagerTest(unittest.TestCase):
         self.cdm.PrintMessages()
         expected = '\n'.join([
           'Messages',
-          '  [ source 1                  ] content 1',
-          '  [ a much longer source name ] \u001b[31merror message\u001b[0m',
-          '  [ source 3                  ] this goes',
-          '  [ source 3                  ] over multiple lines',
+          '  [ source 1             ] content 1',
+          '  [ a longer source name ] \u001b[31;1merror message\u001b[0m',
+          '  [ source 2             ] this message is longer than the',
+          '  [ source 2             ]   screen width, 60 characters,',
+          '  [ source 2             ]   and will need to be printed on',
+          '  [ source 2             ]   multiple lines.',
+          '  [ source 3             ] this message',
+          '  [ source 3             ] has a newline in it',
           '',
           'Exception encountered during execution:',
           'line 1',
@@ -354,7 +377,10 @@ class CursesDisplayManagerTest(unittest.TestCase):
         mock.patch('curses.initscr'):
       self.cdm.StartCurses()
 
-    with mock.patch.object(self.cdm, 'Draw'):
+    with mock.patch.object(self.cdm._stdscr, 'getmaxyx') as mock_getmaxyx, \
+        mock.patch.object(self.cdm, 'Draw'):
+      mock_getmaxyx.return_value = 30, 140
+
       self.cdm.SetRecipe('Recipe name')
       self.cdm.EnqueuePreflight('First Preflight', [], '1st Preflight')
       self.cdm.EnqueuePreflight('Second Preflight', [], '2nd Preflight')
