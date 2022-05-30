@@ -39,6 +39,6 @@ prettytable = "*"
 vt-py = "*"
 typing-extensions = "*"
 boto3 = "*"
+
 # [requires]
 # python_version = "3.9"
-dftimewolf = {path = "."}
