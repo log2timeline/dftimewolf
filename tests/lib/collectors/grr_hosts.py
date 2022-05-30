@@ -401,6 +401,7 @@ class GRRFileCollectorTest(unittest.TestCase):
         mock_grr_hosts.MOCK_CLIENT_LIST
     mock_DownloadFiles.return_value = '/tmp/something'
 
+    self.grr_file_collector.PreProcess()
     in_containers = self.test_state.GetContainers(
         self.grr_file_collector.GetThreadOnContainerType())
     for c in in_containers:

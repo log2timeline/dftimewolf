@@ -97,6 +97,13 @@ class GRRHuntFileCollectorTest(unittest.TestCase):
         ['/etc/passwd', '/etc/shadow']
     )
 
+  def testPreProcess(self):
+    """Tests the preprocess method."""
+    self.grr_hunt_file_collector.PreProcess()
+    self.assertEqual(
+        self.grr_hunt_file_collector.file_path_list,
+        ['/etc/passwd', '/etc/shadow', '/etc/hosts'])
+
   def testProcess(self):
     """Tests that the process method invokes the correct GRR API calls."""
     self.grr_hunt_file_collector.PreProcess()
