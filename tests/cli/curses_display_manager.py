@@ -185,6 +185,7 @@ class CursesDisplayManagerTest(unittest.TestCase):
   """Tests for the CursesDisplayManager."""
 
   def setUp(self):
+    self.maxDiff = None  # pylint: disable=invalid-name
     self.cdm = CursesDisplayManager()
 
   def tearDown(self):
@@ -337,10 +338,11 @@ class CursesDisplayManagerTest(unittest.TestCase):
       self.cdm.StartCurses()
 
     with mock.patch.object(self.cdm._stdscr, 'getmaxyx') as mock_getmaxyx:
-      mock_getmaxyx.return_value = 30, 140
+      mock_getmaxyx.return_value = 30, 60
       self.cdm.EnqueueMessage('source 1', 'content 1')
       self.cdm.EnqueueMessage('a longer source name', 'error message', True)
-      self.cdm.EnqueueMessage('source 3', 'this goes\nover multiple lines')
+      self.cdm.EnqueueMessage('source 2', 'this message is longer than the screen width, 60 characters, and will need to be printed on multiple lines.')  # pylint: disable=line-too-long
+      self.cdm.EnqueueMessage('source 3', 'this message\nhas a newline in it')
 
     try:
       raise RuntimeError('Test Exception')
@@ -355,8 +357,12 @@ class CursesDisplayManagerTest(unittest.TestCase):
           'Messages',
           '  [ source 1             ] content 1',
           '  [ a longer source name ] \u001b[31;1merror message\u001b[0m',
-          '  [ source 3             ] this goes',
-          '  [ source 3             ] over multiple lines',
+          '  [ source 2             ] this message is longer than the',
+          '  [ source 2             ]   screen width, 60 characters,',
+          '  [ source 2             ]   and will need to be printed on',
+          '  [ source 2             ]   multiple lines.',
+          '  [ source 3             ] this message',
+          '  [ source 3             ] has a newline in it',
           '',
           'Exception encountered during execution:',
           'line 1',

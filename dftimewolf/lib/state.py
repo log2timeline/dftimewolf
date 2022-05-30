@@ -457,7 +457,12 @@ class DFTimewolfState(object):
                         container: AttributeContainer,
                         module_name: str) -> None:
     """Wraps a ThreadPoolExecutor call to module.process with the
-    CursesDisplayManager status update methods."""
+    CursesDisplayManager status update methods.
+
+    Args:
+      process: A callable method: Process, belonging to a ThreadAwareModule.
+      container: The Container being processed by the thread.
+      module_name: The runtime name of the module."""
     if not self.cdm:
       process(container)
       return

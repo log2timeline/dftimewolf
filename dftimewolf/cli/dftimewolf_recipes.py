@@ -363,6 +363,8 @@ def SetupLogging(stdout_log: bool = False) -> None:
 
 def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
   """
+  Runs DFTimewolfTool.
+
   Returns:
     bool: True if DFTimewolf could be run successfully, False otherwise.
   """
@@ -422,7 +424,10 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
 
 
 def Main() -> bool:
-  """Main function for DFTimewolf."""
+  """Main function for DFTimewolf.
+
+  Returns:
+    bool: True if DFTimewolf could be run successfully, False otherwise."""
   no_curses = bool(os.environ.get('DFTIMEWOLF_NO_CURSES'))
 
   SetupLogging(no_curses)

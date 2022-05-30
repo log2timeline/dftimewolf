@@ -119,7 +119,11 @@ class BaseModule(object):
     self.logger.error(error.message)
 
   def PublishMessage(self, message: str, is_error: bool = False) -> None:
-    """Sends a message to the CDM to disaply."""
+    """Sends a message to the CDM to disaply.
+
+    Args:
+      message: The message content.
+      is_error: True if the message is an error message, False otherwise."""
     if self.state.cdm:
       self.state.cdm.EnqueueMessage(self.name, message, is_error)
     self.logger.info(message)

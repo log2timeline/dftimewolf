@@ -2,7 +2,6 @@
 """Curses output management class."""
 
 from enum import Enum
-import sys
 import textwrap
 import threading
 import traceback
