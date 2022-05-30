@@ -491,8 +491,10 @@ class DFTimewolfState(object):
       preflight = self._module_pool[runtime_name]
       try:
         if self.cdm:
-          self.cdm.UpdateModuleStatus(runtime_name, cdm.Status.RUNNING)
+          self.cdm.UpdateModuleStatus(runtime_name, cdm.Status.SETTINGUP)
         preflight.SetUp(**new_args)
+        if self.cdm:
+          self.cdm.UpdateModuleStatus(runtime_name, cdm.Status.RUNNING)
         preflight.Process()
         if self.cdm:
           self.cdm.UpdateModuleStatus(runtime_name, cdm.Status.COMPLETED)

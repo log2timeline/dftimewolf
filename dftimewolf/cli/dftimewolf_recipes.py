@@ -453,6 +453,9 @@ def Main() -> bool:
   finally:
     stderr_str = stderr_sio.getvalue()
     if stderr_str:
+      # TODO(ramo-j) This currently takes all stdout duing the life of the
+      # execution and outputs it upon exit. Perhaps there's a way to stream it
+      # to EnqueueMessage in realtime?
       cursesdisplaymanager.EnqueueMessage(
           'stderr', stderr_str, is_error=True)
     cursesdisplaymanager.Draw()
