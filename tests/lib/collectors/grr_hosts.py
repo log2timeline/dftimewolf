@@ -357,6 +357,7 @@ class GRRFileCollectorTest(unittest.TestCase):
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
     self.test_state = state.DFTimewolfState(config.Config)
+    self.test_state.StoreContainer(containers.FSPath(path='/etc/hosts'))
     self.grr_file_collector = grr_hosts.GRRFileCollector(self.test_state)
     self.grr_file_collector.SetUp(
         hostnames='C.0000000000000001',
@@ -382,7 +383,14 @@ class GRRFileCollectorTest(unittest.TestCase):
 
     self.assertIsNotNone(self.grr_file_collector)
     self.assertEqual(['C.0000000000000001'], actual_hosts)
-    self.assertEqual(self.grr_file_collector.files, ['/etc/passwd'])
+    self.assertEqual(
+        self.grr_file_collector.files, ['/etc/passwd'])
+
+  def testPreProcess(self):
+    """Tests the preprocess method."""
+    self.grr_file_collector.PreProcess()
+    self.assertEqual(
+        self.grr_file_collector.files, ['/etc/passwd', '/etc/hosts'])
 
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
@@ -404,7 +412,7 @@ class GRRFileCollectorTest(unittest.TestCase):
         mock_grr_hosts.MOCK_CLIENT_RECENT,
         'FileFinder',
         flows_pb2.FileFinderArgs(
-            paths=['/etc/passwd'],
+            paths=['/etc/passwd', '/etc/hosts'],
             action=flows_pb2.FileFinderAction(
                 action_type=flows_pb2.FileFinderAction.STAT,
                 download=flows_pb2.FileFinderDownloadActionOptions(
@@ -414,9 +422,8 @@ class GRRFileCollectorTest(unittest.TestCase):
     )
     results = self.test_state.GetContainers(containers.File)
     self.assertEqual(len(results), 1)
-    result = results[0]
-    self.assertEqual(result.name, 'tomchop')
-    self.assertEqual(result.path, '/tmp/something')
+    self.assertEqual(results[0].name, 'tomchop')
+    self.assertEqual(results[0].path, '/tmp/something')
 
   @mock.patch('grr_api_client.api.InitHttp')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow')
