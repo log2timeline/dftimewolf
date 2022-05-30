@@ -361,19 +361,16 @@ def SetupLogging(stdout_log: bool = False) -> None:
   logger.success('Success!')
 
 
-def Main(cdm: Optional[CursesDisplayManager] = None) -> int:
-  """Main function for DFTimewolf.
-
-  Args:
-    com: A CursesOutputManager object.
+def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
+  """
   Returns:
-    bool: 0 if DFTimewolf could be run successfully, 1 otherwise.
+    bool: True if DFTimewolf could be run successfully, False otherwise.
   """
   version_tuple = (sys.version_info[0], sys.version_info[1])
   if version_tuple[0] != 3 or version_tuple < (3, 6):
     logger.critical(('Unsupported Python version: {0:s}, version 3.6 or higher '
                      'required.').format(sys.version))
-    return 1
+    return False
 
   tool = DFTimewolfTool(cdm)
 
@@ -383,16 +380,20 @@ def Main(cdm: Optional[CursesDisplayManager] = None) -> int:
   try:
     tool.ReadRecipes()
   except (KeyError, errors.RecipeParseError, errors.CriticalError) as exception:
+    if cdm:
+      cdm.EnqueueMessage('dftimewolf', str(exception), True)
     logger.critical(str(exception))
-    return 1
+    return False
 
   try:
     tool.ParseArguments(sys.argv[1:])
   except (errors.CommandLineParseError,
           errors.RecipeParseError,
           errors.CriticalError) as exception:
+    if cdm:
+      cdm.EnqueueMessage('dftimewolf', str(exception), True)
     logger.critical(str(exception))
-    return 1
+    return False
 
   tool.state.LogExecutionPlan()
 
@@ -401,53 +402,63 @@ def Main(cdm: Optional[CursesDisplayManager] = None) -> int:
   try:
     tool.SetupModules()
   except errors.CriticalError as exception:
+    if cdm:
+      cdm.EnqueueMessage('dftimewolf', str(exception), True)
     logger.critical(str(exception))
-    return 1
+    return False
 
   try:
     tool.RunModules()
   except errors.CriticalError as exception:
+    if cdm:
+      cdm.EnqueueMessage('dftimewolf', str(exception), True)
     logger.critical(str(exception))
-    return 1
+    return False
 
   tool.CleanUpPreflights()
   tool.ExportStats()
 
-  return 0
+  return True
 
 
-if __name__ == '__main__':
-  signal.signal(signal.SIGINT, SignalHandler)
-
+def Main() -> bool:
+  """Main function for DFTimewolf."""
   no_curses = bool(os.environ.get('DFTIMEWOLF_NO_CURSES'))
 
   SetupLogging(no_curses)
 
   if no_curses:
-    sys.exit(Main())
+    return RunTool()
+
+  cursesdisplaymanager = CursesDisplayManager()
+  cursesdisplaymanager.StartCurses()
+  cursesdisplaymanager.EnqueueMessage(
+    'dftimewolf', f'Debug log: {logging_utils.DEFAULT_LOG_FILE}')
+
+  stdout_null = open(os.devnull, "w")
+  stderr_sio = io.StringIO()
+  exit_code = False
+
+  try:
+    with redirect_stdout(stdout_null), redirect_stderr(stderr_sio):
+      exit_code = RunTool(cursesdisplaymanager)
+  except Exception as e:  # pylint: disable=broad-except
+    cursesdisplaymanager.SetException(e)
+    cursesdisplaymanager.Draw()
+  finally:
+    stderr_str = stderr_sio.getvalue()
+    if stderr_str:
+      cursesdisplaymanager.EnqueueMessage(
+          'stderr', stderr_str, is_error=True)
+    cursesdisplaymanager.Draw()
+    cursesdisplaymanager.EndCurses()
+    cursesdisplaymanager.PrintMessages()
+
+  return exit_code
+
+if __name__ == '__main__':
+  signal.signal(signal.SIGINT, SignalHandler)
+  if Main():
+    sys.exit(0)
   else:
-    cursesdisplaymanager = CursesDisplayManager()
-    cursesdisplaymanager.StartCurses()
-    cursesdisplaymanager.EnqueueMessage(
-      'dftimewolf', f'Debug log: {logging_utils.DEFAULT_LOG_FILE}')
-
-    stdout_null = open(os.devnull, "w")
-    stderr_sio = io.StringIO()
-    exit_code = 0
-
-    try:
-      with redirect_stdout(stdout_null), redirect_stderr(stderr_sio):
-        exit_code = Main(cursesdisplaymanager)
-    except Exception as e:  # pylint: disable=broad-except
-      cursesdisplaymanager.SetException(e)
-      cursesdisplaymanager.Draw()
-    finally:
-      stderr_str = stderr_sio.getvalue()
-      if stderr_str:
-        cursesdisplaymanager.EnqueueMessage(
-            'stderr', stderr_str, is_error=True)
-      cursesdisplaymanager.Draw()
-      cursesdisplaymanager.EndCurses()
-      cursesdisplaymanager.PrintMessages()
-
-    sys.exit(exit_code)
+    sys.exit(1)

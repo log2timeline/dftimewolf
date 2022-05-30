@@ -2,6 +2,7 @@
 """Curses output management class."""
 
 from enum import Enum
+import sys
 import textwrap
 import threading
 import traceback
@@ -207,14 +208,16 @@ class CursesDisplayManager:
 
     _, x = self._stdscr.getmaxyx()
 
-    content = '\n'.join(
-        textwrap.wrap(
-            content,
-            x - self._messages_longest_source_len - 8,
-            subsequent_indent='  ',
-            replace_whitespace=False))
+    lines = []
 
+    # textwrap.wrap behaves strangely if there are newlines in the content
     for line in content.split('\n'):
+      lines += textwrap.wrap(line,
+                             width=x - self._messages_longest_source_len - 8,
+                             subsequent_indent='  ',
+                             replace_whitespace=False)
+
+    for line in lines:
       if line:
         self._messages.append(Message(source, line, is_error))
 
@@ -339,9 +342,9 @@ class CursesDisplayManager:
 
       # Exceptions
       if self._exception:
+        print(str(self._exception), file=sys.stderr)
         self._stdscr.addstr(y - 2, 0,
-            f' Exception encountered: {self._exception.__str__()}')
-
+            f' Exception encountered: {str(self._exception)}')
       self._stdscr.move(curr_line, 0)
       self._stdscr.refresh()
 
