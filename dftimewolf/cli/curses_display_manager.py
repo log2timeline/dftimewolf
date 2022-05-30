@@ -342,7 +342,6 @@ class CursesDisplayManager:
 
       # Exceptions
       if self._exception:
-        print(str(self._exception), file=sys.stderr)
         self._stdscr.addstr(y - 2, 0,
             f' Exception encountered: {str(self._exception)}')
       self._stdscr.move(curr_line, 0)
