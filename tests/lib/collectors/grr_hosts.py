@@ -386,6 +386,12 @@ class GRRFileCollectorTest(unittest.TestCase):
     self.assertEqual(
         self.grr_file_collector.files, ['/etc/passwd'])
 
+  def testPreProcess(self):
+    """Tests the preprocess method."""
+    self.grr_file_collector.PreProcess()
+    self.assertEqual(
+        self.grr_file_collector.files, ['/etc/passwd', '/etc/hosts'])
+
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._LaunchFlow')
@@ -395,7 +401,6 @@ class GRRFileCollectorTest(unittest.TestCase):
         mock_grr_hosts.MOCK_CLIENT_LIST
     mock_DownloadFiles.return_value = '/tmp/something'
 
-    self.grr_file_collector.PreProcess()
     in_containers = self.test_state.GetContainers(
         self.grr_file_collector.GetThreadOnContainerType())
     for c in in_containers:
