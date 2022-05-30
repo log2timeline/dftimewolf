@@ -240,6 +240,7 @@ class DFTimewolfTool(object):
       CommandLineParseError: If arguments could not be parsed.
     """
     help_text = self._GenerateHelpText()
+
     argument_parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=help_text)

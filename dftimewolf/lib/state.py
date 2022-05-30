@@ -10,8 +10,7 @@ import importlib
 import logging
 import threading
 import traceback
-from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Sequence, \
-    Type, Any, TypeVar, cast
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Sequence, Type, Any, TypeVar, cast  # pylint: disable=line-too-long
 from dftimewolf.cli import curses_display_manager as cdm
 
 from dftimewolf.config import Config
@@ -465,7 +464,7 @@ class DFTimewolfState(object):
 
     thread_id = threading.current_thread().getName()
     container_name = (container.name  # type: ignore[attr-defined]
-        if hasattr(container, 'name') else container.__str__())
+        if hasattr(container, 'name') else str(container))
     self.cdm.UpdateModuleThreadState(
         module_name, cdm.Status.RUNNING, thread_id, container_name)
 
