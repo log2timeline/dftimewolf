@@ -65,14 +65,20 @@ class GCEForensicsVMTest(unittest.TestCase):
   @mock.patch('libcloudforensics.providers.gcp.internal.compute_base_resource.GoogleComputeBaseResource.AddLabels')
   @mock.patch('libcloudforensics.providers.gcp.forensics.StartAnalysisVm')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.AttachDisk')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.GetPowerState')
+  @mock.patch('time.sleep')
   # pylint: enable=line-too-long
   def testProcess(self,
+                  mock_sleep,
+                  mock_GetPowerState,
                   mock_AttachDisk,
                   mock_StartAnalysisVm,
                   mock_AddLabels,
                   mock_GetBootDisk,
                   mock_DiskInit):
     """Tests the collector's Process() function."""
+    mock_sleep.return_value = None
+    mock_GetPowerState.return_value = 'RUNNING'
     mock_StartAnalysisVm.return_value = (FAKE_ANALYSIS_VM, None)
     FAKE_ANALYSIS_VM.AddLabels = mock_AddLabels
     FAKE_ANALYSIS_VM.GetBootDisk = mock_GetBootDisk

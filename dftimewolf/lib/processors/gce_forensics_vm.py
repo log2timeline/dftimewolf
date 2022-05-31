@@ -154,7 +154,8 @@ class GCEForensicsVM(module.BaseModule):
 
     disks = self.state.GetContainers(containers.GCEDisk)
 
-    # Sleep until status is RUNNING before attaching disks. Possible status values:
+    # Sleep until status is RUNNING before attaching disks. Possible status
+    # values:
     # https://cloud.google.com/compute/docs/reference/rest/v1/instances/get
     if disks and self.analysis_vm.GetPowerState() != 'RUNNING':
       self.logger.info('Pausing 10 seconds to allow OS to boot before attaching'
