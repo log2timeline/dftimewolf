@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Creates an analysis VM and attaches GCP disks to it for analysis."""
 
+import time
 from typing import List, Optional, Dict
 
 from libcloudforensics import errors as lcf_errors
@@ -152,6 +153,13 @@ class GCEForensicsVM(module.BaseModule):
         platform='gcp'))
 
     disks = self.state.GetContainers(containers.GCEDisk)
+
+    # Sleep until status is RUNNING before attaching disks. Possible values:
+    # https://cloud.google.com/compute/docs/reference/rest/v1/instances/get
+    if disks and self.analysis_vm.GetPowerState() != 'RUNNING':
+      self.logger.info('Pausing 10 seconds to allow OS to boot before attaching'
+          ' evidence disks')
+      time.sleep(10)
 
     for d in disks:
       if d.project != self.project.project_id:
