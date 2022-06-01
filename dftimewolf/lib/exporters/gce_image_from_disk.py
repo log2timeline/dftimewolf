@@ -89,8 +89,7 @@ class GCEImageFromDisk(module.ThreadAwareModule):
     # use a class member due to an underlying thread safety issue in
     # httplib2: https://github.com/googleapis/google-cloud-python/issues/3501
     project = gcp_project.GoogleCloudProject(self.dest_project)
-    timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-    image_name = f'{self.name_prefix}-{source_disk.name}-{timestamp}'
+    image_name = f'{self.name_prefix}-{source_disk.name}'
     image = project.compute.CreateImageFromDisk(source_disk, name=image_name)
     self.state.StoreContainer(
         containers.GCEImage(image.name, self.dest_project))

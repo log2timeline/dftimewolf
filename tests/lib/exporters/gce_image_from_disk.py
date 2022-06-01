@@ -115,10 +115,12 @@ class GCEImageFromDiskTest(unittest.TestCase):
         c in test_state.GetContainers(containers.GCEImage)]:
       self.assertEqual(project, FAKE_GCP_DEST_PROJECT_NAME)
 
-    for call in mock_lcf_create_image_from_disk.call_args_list:
-      self.assertRegex(
-        call[1]['name'],
-        f'fake-name-prefix-{call[0][0].name}-[0-9]{{14}}')
+    # Using mock.ANY since we don't have access to the
+    # gcp.internal.compute.GoogleComputeDisk from tests.
+    mock_lcf_create_image_from_disk.assert_has_calls([
+      mock.call(mock.ANY, name='fake-name-prefix-fake-disk-one'),
+      mock.call(mock.ANY, name='fake-name-prefix-fake-disk-two'),
+    ])
 
   # pylint: disable=line-too-long,unused-argument
   @mock.patch('googleapiclient.discovery.Resource', return_value = FAKE_GCP_SOURCE_PROJECT)
