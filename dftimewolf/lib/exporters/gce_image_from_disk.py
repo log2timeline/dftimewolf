@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 """Create disks in GCE from disk images."""
 
-import datetime
-
-from typing import Any, Optional, Type, Union
+from typing import Optional, Type, Union
 
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk
@@ -34,6 +32,7 @@ class GCEImageFromDisk(module.ThreadAwareModule):
     self.source_zone: str = ''
     self.dest_project: str = ''
     self.dest_zone: str = ''
+    self.name_prefix: str = ''
 
   # pylint: disable=arguments-differ
   def SetUp(self,
