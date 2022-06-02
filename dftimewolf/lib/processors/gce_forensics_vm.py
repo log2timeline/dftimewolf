@@ -164,11 +164,19 @@ class GCEForensicsVM(module.BaseModule):
     for d in disks:
       if d.project != self.project.project_id:
         continue
-      self.logger.info(f'Attaching {d.name} to {analysis_vm_name}')
-      self.analysis_vm.AttachDisk(compute.GoogleComputeDisk(
-          self.project.project_id,
-          self.project.default_zone,
-          d.name))
+      try:
+        self.logger.info(f'Attaching {d.name} to {analysis_vm_name}')
+        self.analysis_vm.AttachDisk(compute.GoogleComputeDisk(
+            self.project.project_id,
+            self.project.default_zone,
+            d.name))
+      except RuntimeError as error:
+        if 'RESOURCE_IN_USE_BY_ANOTHER_RESOURCE' in str(error):
+          self.logger.warning(
+              f'Attaching {d.name} to {analysis_vm_name} failed, as it is '
+              'already attached to another instance.')
+        else:
+          raise error
 
 
 modules_manager.ModulesManager.RegisterModule(GCEForensicsVM)
