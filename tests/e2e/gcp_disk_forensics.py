@@ -188,9 +188,11 @@ class GCEForensicsEndToEndTest(unittest.TestCase):
     request.execute()  # Throws exception if not found.
 
     # Check the disks are attached as expected
+    # Actual disk attached, according to the GCP control API
     actual_disks = compute.GoogleComputeInstance(
       self.project_id, self.zone, for_vm.name).ListDisks().keys()
-    expected_disks = self.test_state.GetContainers(containers.GCEDisk)
+    # The source disk will be the first in the container list, so exclude it.
+    expected_disks = self.test_state.GetContainers(containers.GCEDisk)[1:]
 
     # Length should differ by 1 for the boot disk
     self.assertEqual(len(actual_disks), len(expected_disks) + 1)
@@ -233,9 +235,11 @@ class GCEForensicsEndToEndTest(unittest.TestCase):
     request.execute()  # Throws exception if not found.
 
     # Check the disks are attached as expected
+    # Actual disk attached, according to the GCP control API
     actual_disks = compute.GoogleComputeInstance(
       self.project_id, self.zone, for_vm.name).ListDisks().keys()
-    expected_disks = self.test_state.GetContainers(containers.GCEDisk)
+    # The source disk will be the first in the container list, so exclude it.
+    expected_disks = self.test_state.GetContainers(containers.GCEDisk)[1:]
 
     # Length should differ by 1 for the boot disk
     self.assertEqual(len(actual_disks), len(expected_disks) + 1)
