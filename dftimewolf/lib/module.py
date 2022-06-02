@@ -126,7 +126,10 @@ class BaseModule(object):
       is_error: True if the message is an error message, False otherwise."""
     if self.state.cdm:
       self.state.cdm.EnqueueMessage(self.name, message, is_error)
-    self.logger.info(message)
+    if is_error:
+      self.logger.error(message)
+    else:
+      self.logger.info(message)
 
   @abc.abstractmethod
   def Process(self) -> None:
