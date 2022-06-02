@@ -19,6 +19,7 @@ FAKE_GCP_SOURCE_PROJECT_NAME = 'fake-source-project'
 FAKE_SOURCE_ZONE = 'fake-zone-source'
 FAKE_GCP_DEST_PROJECT_NAME = 'fake-source-dest'
 FAKE_DEST_ZONE = 'fake-zone-dest'
+FAKE_NAME_PREFIX = 'fake-name-prefix'
 FAKE_GCP_SOURCE_PROJECT = gcp_project.GoogleCloudProject(
     FAKE_GCP_SOURCE_PROJECT_NAME)
 FAKE_GCP_DEST_PROJECT = gcp_project.GoogleCloudProject(
@@ -57,12 +58,14 @@ class GCEImageFromDiskTest(unittest.TestCase):
                    'source-project',
                    'source-zone',
                    'destination-project',
-                   'destination-zone')
+                   'destination-zone',
+                   'fake-prefix')
 
     self.assertEqual('source-project', exporter.source_project)
     self.assertEqual('source-zone', exporter.source_zone)
     self.assertEqual('destination-project', exporter.dest_project)
     self.assertEqual('destination-zone', exporter.dest_zone)
+    self.assertEqual('fake-prefix', exporter.name_prefix)
 
     actual_names = [c.name for \
         c in test_state.GetContainers(containers.GCEDisk)]
@@ -91,7 +94,8 @@ class GCEImageFromDiskTest(unittest.TestCase):
                    FAKE_GCP_SOURCE_PROJECT_NAME,
                    FAKE_SOURCE_ZONE,
                    FAKE_GCP_DEST_PROJECT_NAME,
-                   FAKE_DEST_ZONE)
+                   FAKE_DEST_ZONE,
+                   FAKE_NAME_PREFIX)
 
     exporter.PreProcess()
     for c in test_state.GetContainers(exporter.GetThreadOnContainerType()):
@@ -110,6 +114,13 @@ class GCEImageFromDiskTest(unittest.TestCase):
     for project in [c.project for \
         c in test_state.GetContainers(containers.GCEImage)]:
       self.assertEqual(project, FAKE_GCP_DEST_PROJECT_NAME)
+
+    # Using mock.ANY since we don't have access to the
+    # gcp.internal.compute.GoogleComputeDisk from tests.
+    mock_lcf_create_image_from_disk.assert_has_calls([
+      mock.call(mock.ANY, name='fake-name-prefix-fake-disk-one'),
+      mock.call(mock.ANY, name='fake-name-prefix-fake-disk-two'),
+    ])
 
   # pylint: disable=line-too-long,unused-argument
   @mock.patch('googleapiclient.discovery.Resource', return_value = FAKE_GCP_SOURCE_PROJECT)
@@ -131,7 +142,8 @@ class GCEImageFromDiskTest(unittest.TestCase):
                    FAKE_GCP_SOURCE_PROJECT_NAME,
                    FAKE_SOURCE_ZONE,
                    FAKE_GCP_DEST_PROJECT_NAME,
-                   FAKE_DEST_ZONE)
+                   FAKE_DEST_ZONE,
+                   FAKE_NAME_PREFIX)
 
     exporter.PreProcess()
     for c in test_state.GetContainers(exporter.GetThreadOnContainerType()):

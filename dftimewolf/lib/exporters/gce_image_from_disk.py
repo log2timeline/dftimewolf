@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Create disks in GCE from disk images."""
 
-from typing import Any, Optional, Type, Union
+from typing import Optional, Type, Union
 
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk
@@ -32,6 +32,7 @@ class GCEImageFromDisk(module.ThreadAwareModule):
     self.source_zone: str = ''
     self.dest_project: str = ''
     self.dest_zone: str = ''
+    self.name_prefix: str = ''
 
   # pylint: disable=arguments-differ
   def SetUp(self,
@@ -39,7 +40,8 @@ class GCEImageFromDisk(module.ThreadAwareModule):
       source_project: str,
       source_zone: str,
       destination_project: str,
-      destination_zone: str) -> None:
+      destination_zone: str,
+      name_prefix: str) -> None:
     """SetUp for creating disks in GCE from images.
 
     GCE Images to use are sourced from either the state, or passed in here.
@@ -49,12 +51,14 @@ class GCEImageFromDisk(module.ThreadAwareModule):
       source_zone: The source zone of the disks.
       destination_project: The project in which to create the images.
       destination_zone: The zone in which to create the images.
+      name_prefix: An optional prefix for the final image name.
     """
     self.source_project = source_project
     self.source_zone = source_zone
     self.dest_zone = (destination_zone if destination_zone else source_zone)
     self.dest_project = (destination_project if destination_project
         else source_project)
+    self.name_prefix = name_prefix
 
     if source_disks:
       for obj in source_disks.split(','):
@@ -84,7 +88,8 @@ class GCEImageFromDisk(module.ThreadAwareModule):
     # use a class member due to an underlying thread safety issue in
     # httplib2: https://github.com/googleapis/google-cloud-python/issues/3501
     project = gcp_project.GoogleCloudProject(self.dest_project)
-    image = project.compute.CreateImageFromDisk(source_disk)
+    image_name = f'{self.name_prefix}-{source_disk.name}'
+    image = project.compute.CreateImageFromDisk(source_disk, name=image_name)
     self.state.StoreContainer(
         containers.GCEImage(image.name, self.dest_project))
 
