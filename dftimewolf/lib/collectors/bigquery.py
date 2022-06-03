@@ -70,7 +70,7 @@ class BigQueryCollector(module.BaseModule):
         )
       self.ModuleError(exception, critical=True)
 
-    self.logger.success(f"Downloaded logs to {output_path}")
+    self.PublishMessage(f'Downloaded logs to {output_path}')
     output_file.close()
 
     bq_report = containers.File(name=self._description, path=output_path)

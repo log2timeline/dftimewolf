@@ -135,7 +135,7 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
     hunt = self.grr_api.CreateHunt(
         flow_name=name, flow_args=args, hunt_runner_args=runner_args)
 
-    self.logger.success('{0!s}: Hunt created'.format(hunt.hunt_id))
+    self.PublishMessage(f'{hunt.hunt_id}: Hunt created')
     self._WrapGRRRequestWithApproval(hunt, hunt.Start, self.logger)
     return hunt
 
@@ -554,8 +554,8 @@ class GRRHuntDownloader(GRRHuntDownloaderBase):
         hunt, self._GetAndWriteArchive, self.logger, hunt, output_file_path)
 
     results = self._ExtractHuntResults(output_file_path)
-    self.logger.success('Wrote results of {0:s} to {1:s}'.format(
-        hunt.hunt_id, output_file_path))
+    self.PublishMessage(
+        f'Wrote results of {hunt.hunt_id} to {output_file_path}')
     return results
 
   # TODO: change object to more specific GRR type information.
@@ -706,8 +706,8 @@ class GRRHuntOsqueryDownloader(GRRHuntDownloaderBase):
     self._WrapGRRRequestWithApproval(
         hunt, self._GetAndWriteResults, self.logger, hunt, self.output_path)
 
-    self.logger.success('Wrote results of {0:s} to {1:s}'.format(
-        hunt.hunt_id, self.output_path))
+    self.PublishMessage(
+        f'Wrote results of {hunt.hunt_id} to {self.output_path}')
     return self.results
 
   def _GetAndWriteResults(

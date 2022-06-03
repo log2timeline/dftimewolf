@@ -167,7 +167,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
           self.destination_project.default_zone,
           disk_name=container.name)
       self.at_least_one_success = True
-      self.logger.success(f'Disk {container.name} successfully copied to '
+      self.PublishMessage(f'Disk {container.name} successfully copied to '
           f'{new_disk.name}')
       self.state.StoreContainer(containers.GCEDisk(
           new_disk.name, self.destination_project.project_id))
@@ -208,7 +208,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
         remote_instance.Stop()
       except lcf_errors.InstanceStateChangeError as exception:
         self.ModuleError(str(exception), critical=False)
-      self.logger.success(f'Stopped instance {i}')
+      self.PublishMessage(f'Stopped instance {i}')
 
   def _GetDisksFromInstance(
       self,
