@@ -13,7 +13,7 @@ class ReportDataTest(unittest.TestCase):
     attribute_container = containers.Report(module_name='name', text='text')
 
     expected_attribute_names = [
-        'attributes', 'module_name', 'text', 'text_format']
+        'container_meta', 'module_name', 'text', 'text_format']
 
     attribute_names = sorted(attribute_container.GetAttributeNames())
 
@@ -30,7 +30,7 @@ class ThreatIntelligenceDataTest(unittest.TestCase):
         indicator='.*',
         path='/')
 
-    expected_attribute_names = ['attributes', 'indicator', 'name', 'path']
+    expected_attribute_names = ['container_meta', 'indicator', 'name', 'path']
 
     attribute_names = sorted(attribute_container.GetAttributeNames())
 
@@ -44,7 +44,7 @@ class FSPathDataTest(unittest.TestCase):
     """Tests the GetAttributeNames function."""
     attribute_container = containers.FSPath(path='name')
 
-    expected_attribute_names = ['attributes', 'path']
+    expected_attribute_names = ['container_meta', 'path']
 
     attribute_names = sorted(attribute_container.GetAttributeNames())
 
@@ -58,7 +58,7 @@ class RemoteFSPathDataTest(unittest.TestCase):
     """Tests the GetAttributeNames function."""
     attribute_container = containers.RemoteFSPath(path='name', hostname='host')
 
-    expected_attribute_names = ['attributes', 'hostname', 'path']
+    expected_attribute_names = ['container_meta', 'hostname', 'path']
 
     attribute_names = sorted(attribute_container.GetAttributeNames())
 
@@ -74,7 +74,7 @@ class OsqueryQueryDataTest(unittest.TestCase):
         query='', name='', description='', platforms=[])
 
     expected_attribute_names = [
-        'attributes', 'description', 'name', 'platforms', 'query']
+        'container_meta', 'description', 'name', 'platforms', 'query']
 
     attribute_names = sorted(attribute_container.GetAttributeNames())
 

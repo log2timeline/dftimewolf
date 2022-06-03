@@ -17,23 +17,23 @@ class AttributeContainer():
   and private class members are not to be serialized.
 
   Attributes:
-    attributes: A list of generic attributes that can be used for passing
+    container_meta: A dict of container metadata that can be used for passing
       metadata between collection/processing module and output modules.
   """
   CONTAINER_TYPE = None  # type: str
-  attributes = []  # type: List[Dict[str, Any]]
+  container_meta = {}  # type: Dict[str, Any]
 
-  def __init__(self, attributes: Optional[List[Dict[str, Any]]] = None):
+  def __init__(self, container_meta: Optional[Dict[str, Any]] = None):
     """Initializes an AttributeContainer.
 
     Args:
-      attributes: A list of generic attributes that can be used for passing
-        metadata between collection/processing module and output modules.
+    container_meta: A dict of container metadata that can be used for passing
+      metadata between collection/processing module and output modules.
     """
-    if attributes is None:
-      self.attributes = []
+    if container_meta is None:
+      self.container_meta = {}
     else:
-      self.attributes = attributes
+      self.container_meta = container_meta
 
   # TODO: note that this method is only used by tests.
   def GetAttributeNames(self) -> List[str]:

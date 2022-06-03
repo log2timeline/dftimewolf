@@ -68,7 +68,7 @@ class Report(interface.AttributeContainer):
       module_name: str,
       text: str,
       text_format: str = 'plaintext',
-      attributes: Optional[List[Dict[str, Any]]] = None) -> None:
+      container_meta: Optional[Dict[str, Any]] = None) -> None:
     """Initializes the analysis report.
 
     Args:
@@ -76,10 +76,10 @@ class Report(interface.AttributeContainer):
       text (str): report text.
       text_format (str): format of text in the report. Must be either
         'plaintext' or 'markdown'.
-      attributes (list): attribute list of dicts that must contain 'name',
-        'type', 'values' keys.
+      container_meta (dict): a dict for optional report metadata to be used by
+        exporter modules.
     """
-    super(Report, self).__init__(attributes=attributes)
+    super(Report, self).__init__(container_meta=container_meta)
     self.module_name = module_name
     self.text = text
     self.text_format = text_format
