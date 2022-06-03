@@ -474,10 +474,10 @@ class TimesketchEnhancer(module.BaseModule):
         completed_ids.add(result.id)
       summary_lines.append(self._formatter.IndentEnd())
 
-    report_attributes = [{'update_comment': True}]
+    report_attributes = {'update_comment': True}
     self.state.StoreContainer(containers.Report(
         module_name='TimesketchEnhancer', text_format=self._formatter.FORMAT,
-        text='\n'.join(summary_lines), attributes=report_attributes))
+        text='\n'.join(summary_lines), container_meta=report_attributes))
     self.logger.info('Analyzer reports generated')
 
 
