@@ -477,7 +477,7 @@ class TimesketchEnhancer(module.BaseModule):
     report_attributes = {'update_comment': True}
     self.state.StoreContainer(containers.Report(
         module_name='TimesketchEnhancer', text_format=self._formatter.FORMAT,
-        text='\n'.join(summary_lines), container_meta=report_attributes))
+        text='\n'.join(summary_lines), metadata=report_attributes))
     self.logger.info('Analyzer reports generated')
 
 
