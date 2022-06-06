@@ -367,7 +367,7 @@ class DFTimewolfState(object):
     futures = []
 
     with ThreadPoolExecutor(max_workers=module.GetThreadPoolSize()) \
-       as executor:
+        as executor:
       pop = not module.KeepThreadedContainersInState()
       for c in self.GetContainers(module.GetThreadOnContainerType(), pop):
         futures.append(
