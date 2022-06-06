@@ -310,7 +310,7 @@ class DFTimewolfState(object):
     module = self._module_pool[runtime_name]
 
     try:
-      self.RunModuleSetUp(module, **new_args)
+      self._RunModuleSetUp(module, **new_args)
     except errors.DFTimewolfError:
       msg = "A critical error occurred in module {0:s}, aborting execution."
       logger.critical(msg.format(module.name))
@@ -328,26 +328,37 @@ class DFTimewolfState(object):
     self._threading_event_per_module[runtime_name] = threading.Event()
     self.CleanUp()
 
-  def RunModuleSetUp(self,
+  def _RunModuleSetUp(self,
                      module: BaseModule,
                      **new_args: Dict[str, object]) -> None:
     """Runs SetUp of a single module.
 
-    Designed to be wrapped by an output handling subclass."""
+    Designed to be wrapped by an output handling subclass.
+
+    Args:
+      module: The modulke that will have SetUp called.
+      new_args: kwargs to pass to SetUp."""
     module.SetUp(**new_args)
 
-  def RunModuleProcess(self, module: BaseModule) -> None:
+  def _RunModuleProcess(self, module: BaseModule) -> None:
     """Runs Process of a single module.
 
-    Designed to be wrapped by an output handling subclass."""
+    Designed to be wrapped by an output handling subclass.
+
+    Args:
+      module: The module to run Process() on."""
     module.Process()
 
-  def RunModuleProcessThreaded(
+  def _RunModuleProcessThreaded(
       self, module: ThreadAwareModule
     ) -> List[Future]: # type: ignore
     """Runs Process of a single ThreadAwareModule module.
 
-    Designed to be wrapped by an output handling subclass."""
+    Designed to be wrapped by an output handling subclass.
+
+    Args:
+      module: The module that will have Process(container) called in a threaded
+          fashion."""
     cont_count = len(self.GetContainers(module.GetThreadOnContainerType()))
     logger.info(
        f'Running {cont_count} threads, max {module.GetThreadPoolSize()} '
@@ -364,24 +375,34 @@ class DFTimewolfState(object):
 
     return futures
 
-  def RunModulePreProcess(self, module: ThreadAwareModule) -> None:
+  def _RunModulePreProcess(self, module: ThreadAwareModule) -> None:
     """Runs PreProcess of a single module.
 
-    Designed to be wrapped by an output handling subclass."""
+    Designed to be wrapped by an output handling subclass.
+
+    Args:
+      module: The module that will have PreProcess() called."""
     module.PreProcess()
 
-  def RunModulePostProcess(self, module: ThreadAwareModule) -> None:
+  def _RunModulePostProcess(self, module: ThreadAwareModule) -> None:
     """Runs PostProcess of a single module.
 
-    Designed to be wrapped by an output handling subclass."""
+    Designed to be wrapped by an output handling subclass.
+
+    Args:
+      module: The module that will have PostProcess() called."""
     module.PostProcess()
 
   # pylint: disable=unused-argument
-  def HandleFuturesFromThreadedModule(
+  def _HandleFuturesFromThreadedModule(
       self,
       futures: List[Future],  # type: ignore
       runtime_name: str) -> None:
-    """Handles any futures raised by the async processing of a module."""
+    """Handles any futures raised by the async processing of a module.
+
+    Args:
+      futures: A list of futures, returned by RunModuleProcessThreaded().
+      runtime_name: runtime name of the module."""
     for fut in futures:
       if fut.exception():
         raise fut.exception() # type: ignore
@@ -428,12 +449,12 @@ class DFTimewolfState(object):
 
     try:
       if isinstance(module, ThreadAwareModule):
-        self.RunModulePreProcess(module)
-        futures = self.RunModuleProcessThreaded(module)
-        self.RunModulePostProcess(module)
-        self.HandleFuturesFromThreadedModule(futures, runtime_name)
+        self._RunModulePreProcess(module)
+        futures = self._RunModuleProcessThreaded(module)
+        self._RunModulePostProcess(module)
+        self._HandleFuturesFromThreadedModule(futures, runtime_name)
       else:
-        self.RunModuleProcess(module)
+        self._RunModuleProcess(module)
     except errors.DFTimewolfError:
       logger.critical(
           "Critical error in module {0:s}, aborting execution".format(
@@ -465,8 +486,8 @@ class DFTimewolfState(object):
           args, self.command_line_options, self.config)
       preflight = self._module_pool[runtime_name]
       try:
-        self.RunModuleSetUp(preflight, **new_args)
-        self.RunModuleProcess(preflight)
+        self._RunModuleSetUp(preflight, **new_args)
+        self._RunModuleProcess(preflight)
       finally:
         self.CheckErrors(is_global=True)
 
@@ -619,28 +640,35 @@ class DFTimewolfStateWithCDM(DFTimewolfState):
                                   module_definition.get('runtime_name'))
     self.cursesdm.Draw()
 
-  def RunModuleSetUp(self,
+  def _RunModuleSetUp(self,
                      module: BaseModule,
                      **new_args: Dict[str, object]) -> None:
-    """Runs SetUp of a single module."""
+    """Runs SetUp of a single module.
+
+    Args:
+      module: The modulke that will have SetUp called.
+      new_args: kwargs to pass to SetUp."""
     self.cursesdm.UpdateModuleStatus(module.name, cdm.Status.SETTINGUP)
     module.SetUp(**new_args)
     self.cursesdm.UpdateModuleStatus(module.name, cdm.Status.PENDING)
 
-  def RunModuleProcess(self, module: BaseModule) -> None:
+  def _RunModuleProcess(self, module: BaseModule) -> None:
     """Runs Process of a single module.
 
-    Designed to be wrapped by an output handling subclass."""
+    Args:
+      module: The module to run Process() on."""
     self.cursesdm.UpdateModuleStatus(module.name, cdm.Status.PROCESSING)
     module.Process()
     self.cursesdm.UpdateModuleStatus(module.name, cdm.Status.COMPLETED)
 
-  def RunModuleProcessThreaded(
+  def _RunModuleProcessThreaded(
       self, module: ThreadAwareModule
     ) -> List[Future]: # type: ignore
     """Runs Process of a single ThreadAwareModule module.
 
-    Designed to be wrapped by an output handling subclass."""
+    Args:
+      module: The module that will have Process(container) called in a threaded
+          fashion."""
     cont_count = len(self.GetContainers(module.GetThreadOnContainerType()))
     logger.info(
        f'Running {cont_count} threads, max {module.GetThreadPoolSize()} '
@@ -657,37 +685,43 @@ class DFTimewolfStateWithCDM(DFTimewolfState):
       for c in self.GetContainers(module.GetThreadOnContainerType(), pop):
         futures.append(
             executor.submit(
-                self.WrapThreads, module.Process, c, module.name))
+                self._WrapThreads, module.Process, c, module.name))
 
     return futures
 
-  def RunModulePreProcess(self, module: ThreadAwareModule) -> None:
+  def _RunModulePreProcess(self, module: ThreadAwareModule) -> None:
     """Runs PreProcess of a single module.
 
-    Designed to be wrapped by an output handling subclass."""
+    Args:
+      module: The module that will have PreProcess() called."""
     self.cursesdm.UpdateModuleStatus(module.name, cdm.Status.PREPROCESSING)
     module.PreProcess()
     self.cursesdm.UpdateModuleStatus(module.name, cdm.Status.PENDING)
 
-  def RunModulePostProcess(self, module: ThreadAwareModule) -> None:
+  def _RunModulePostProcess(self, module: ThreadAwareModule) -> None:
     """Runs PostProcess of a single module.
 
-    Designed to be wrapped by an output handling subclass."""
+    Args:
+      module: The module that will have PostProcess() called."""
     self.cursesdm.UpdateModuleStatus(module.name, cdm.Status.POSTPROCESSING)
     module.PostProcess()
     self.cursesdm.UpdateModuleStatus(module.name, cdm.Status.COMPLETED)
 
-  def HandleFuturesFromThreadedModule(
+  def _HandleFuturesFromThreadedModule(
       self,
       futures: List[Future],  # type: ignore
       runtime_name: str) -> None:
-    """Handles any futures raised by the async processing of a module."""
+    """Handles any futures raised by the async processing of a module.
+
+    Args:
+      futures: A list of futures, returned by RunModuleProcessThreaded().
+      runtime_name: runtime name of the module."""
     for fut in futures:
       if fut.exception():
         self.cursesdm.SetError(runtime_name, str(fut.exception()))
         raise fut.exception()  # type: ignore
 
-  def WrapThreads(self,
+  def _WrapThreads(self,
                   process: Callable[[AttributeContainer], None],
                   container: AttributeContainer,
                   module_name: str) -> None:
