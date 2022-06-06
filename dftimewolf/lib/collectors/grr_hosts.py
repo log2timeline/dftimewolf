@@ -931,7 +931,8 @@ class GRRFlowCollector(GRRFlow):
     self._CheckSkippedFlows()
     collected_flow_data = self._DownloadFiles(client, container.flow_id)
     if collected_flow_data:
-      self.PublishMessage(f'{self.flow_id}: Downloaded: {collected_flow_data}')
+      self.PublishMessage(
+          f'{container.flow_id}: Downloaded: {collected_flow_data}')
       cont = containers.File(
           name=client.data.os_info.fqdn.lower(),
           path=collected_flow_data

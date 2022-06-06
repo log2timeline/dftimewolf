@@ -23,6 +23,9 @@ class TestContainer(interface.AttributeContainer):
   def __eq__(self, other: _T) -> bool:
     return self.value == other.value
 
+  def __str__(self) -> bool:
+    return self.value
+
 class TestContainerTwo(interface.AttributeContainer):
   """Test attribute container."""
 

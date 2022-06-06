@@ -4,6 +4,7 @@
 
 import argparse
 from contextlib import redirect_stderr, redirect_stdout
+import curses
 import io
 import logging
 import os
@@ -73,7 +74,7 @@ MODULES = {
 # pylint: enable=line-too-long
 
 from dftimewolf.lib.recipes import manager as recipes_manager
-from dftimewolf.lib.state import DFTimewolfState
+from dftimewolf.lib.state import DFTimewolfState, DFTimewolfStateWithCDM
 
 logger = cast(logging_utils.WolfLogger, logging.getLogger('dftimewolf'))
 
@@ -255,7 +256,10 @@ class DFTimewolfTool(object):
 
     self._recipe = self._command_line_options.recipe
 
-    self._state = DFTimewolfState(config.Config, self.cdm)
+    if self.cdm:
+      self._state = DFTimewolfStateWithCDM(config.Config, self.cdm)
+    else:
+      self._state = DFTimewolfState(config.Config)
     logger.info('Loading recipe {0:s}...'.format(self._recipe['name']))
     # Raises errors.RecipeParseError on error.
     self._state.LoadRecipe(self._recipe, MODULES)
@@ -320,6 +324,14 @@ class DFTimewolfTool(object):
 def SignalHandler(*unused_argvs: Any) -> None:
   """Catches Ctrl + C to exit cleanly."""
   sys.stderr.write("\nCtrl^C caught, bailing...\n")
+
+  try:
+    curses.nocbreak()
+    curses.echo()
+    curses.endwin()
+  except curses.error:
+    pass
+
   sys.exit(1)
 
 

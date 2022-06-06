@@ -7,6 +7,7 @@ import unittest
 import mock
 
 from dftimewolf import config
+from dftimewolf.cli.curses_display_manager import CursesDisplayManager, Status
 from dftimewolf.lib import resources
 from dftimewolf.lib import state
 from dftimewolf.lib.containers import containers
@@ -27,6 +28,7 @@ TEST_MODULES = {
   'ThreadAwareConsumerModule': 'tests.test_modules.thread_aware_modules',
   'Issue503Module': 'tests.test_modules.thread_aware_modules'
 }
+
 
 class StateTest(unittest.TestCase):
   """Tests for the DFTimewolfState class."""
@@ -442,6 +444,304 @@ class StateTest(unittest.TestCase):
       test_state.global_errors[0].message,
       'An unknown error occurred in module DummyModule2BadLogging:'
       ' Stats keys must be strings.')
+
+
+class StateWithCDMTest(unittest.TestCase):
+  """Tests for the DFTimewolfStateWithCDM class.
+
+  We're only testing methods that were overridden from the base class."""
+
+  def setUp(self):
+    """Registers the dummy modules and recipe to be used in tests."""
+    modules_manager.ModulesManager.RegisterModules([
+        modules.DummyModule1,
+        modules.DummyModule2,
+        modules.DummyModule2BadLogging,
+        modules.DummyPreflightModule,
+        thread_aware_modules.ContainerGeneratorModule,
+        thread_aware_modules.ThreadAwareConsumerModule,
+        thread_aware_modules.Issue503Module])
+
+    self._recipe = resources.Recipe(
+        test_recipe.__doc__, test_recipe.contents, test_recipe.args)
+    self._threaded_recipe = resources.Recipe(
+        test_recipe.__doc__,
+        test_recipe.threaded_no_preflights,
+        test_recipe.args)
+    self._recipes_manager = recipes_manager.RecipesManager()
+    self._recipes_manager.RegisterRecipe(self._recipe)
+    self._recipes_manager.RegisterRecipe(self._threaded_recipe)
+
+  def tearDown(self):
+    """Deregister the recipe used in tests."""
+    self._recipes_manager.DeregisterRecipe(self._recipe)
+    self._recipes_manager.DeregisterRecipe(self._threaded_recipe)
+
+    modules_manager.ModulesManager.DeregisterModule(modules.DummyModule1)
+    modules_manager.ModulesManager.DeregisterModule(modules.DummyModule2)
+    modules_manager.ModulesManager.DeregisterModule(
+        modules.DummyModule2BadLogging)
+    modules_manager.ModulesManager.DeregisterModule(
+        modules.DummyPreflightModule)
+    modules_manager.ModulesManager.DeregisterModule(
+        thread_aware_modules.ContainerGeneratorModule)
+    modules_manager.ModulesManager.DeregisterModule(
+        thread_aware_modules.ThreadAwareConsumerModule)
+    modules_manager.ModulesManager.DeregisterModule(
+        thread_aware_modules.Issue503Module)
+
+  def testLoadRecipe(self):
+    """Tests Loading a recipe."""
+    cdm = CursesDisplayManager()
+    test_state = state.DFTimewolfStateWithCDM(config.Config, cdm)
+
+    with mock.patch.object(cdm, 'EnqueuePreflight') as mock_enqueue_preflight, \
+        mock.patch.object(cdm, 'EnqueueModule') as mock_enqueue_module, \
+        mock.patch.object(cdm, 'Draw') as mock_draw:
+      test_state.LoadRecipe(test_recipe.contents, TEST_MODULES)
+    # pylint: disable=protected-access
+    self.assertIn('DummyModule1', test_state._module_pool)
+    self.assertIn('DummyModule2', test_state._module_pool)
+    self.assertIn('DummyPreflightModule', test_state._module_pool)
+    self.assertEqual(len(test_state._module_pool), 3)
+
+    mock_enqueue_preflight.assert_has_calls([
+        mock.call('DummyPreflightModule', [], None)])
+    self.assertEqual(mock_enqueue_preflight.call_count, 1)
+
+    mock_enqueue_module.assert_has_calls([
+        mock.call('DummyModule1', [], None),
+        mock.call('DummyModule2', ['DummyModule1'], None)])
+    self.assertEqual(mock_enqueue_module.call_count, 2)
+
+    mock_draw.assert_called_once_with()
+
+  @mock.patch('tests.test_modules.modules.DummyPreflightModule.Process')
+  @mock.patch('tests.test_modules.modules.DummyPreflightModule.SetUp')
+  def testProcessPreflightModules(self, mock_setup, mock_process):
+    """Tests that preflight's process function is called correctly."""
+    cdm = CursesDisplayManager()
+    test_state = state.DFTimewolfStateWithCDM(config.Config, cdm)
+    test_state.command_line_options = {}
+    test_state.LoadRecipe(test_recipe.contents, TEST_MODULES)
+
+    with mock.patch.object(cdm, 'UpdateModuleStatus') as mock_update_status:
+      test_state.RunPreflights()
+
+    mock_setup.assert_called_with()
+    mock_process.assert_called_with()
+    mock_update_status.assert_has_calls([
+        mock.call('DummyPreflightModule', Status.SETTINGUP),
+        mock.call('DummyPreflightModule', Status.PENDING),
+        mock.call('DummyPreflightModule', Status.PROCESSING),
+        mock.call('DummyPreflightModule', Status.COMPLETED)])
+    self.assertEqual(mock_update_status.call_count, 4)
+
+  @mock.patch('tests.test_modules.modules.DummyPreflightModule.Process')
+  @mock.patch('tests.test_modules.modules.DummyPreflightModule.SetUp')
+  def testProcessNamedPreflightModules(self, mock_setup, mock_process):
+    """Tests that preflight's process function is called correctly."""
+    cdm = CursesDisplayManager()
+    test_state = state.DFTimewolfStateWithCDM(config.Config, cdm)
+    test_state.command_line_options = {}
+    test_state.LoadRecipe(test_recipe.named_modules_contents, TEST_MODULES)
+
+    with mock.patch.object(cdm, 'UpdateModuleStatus') as mock_update_status:
+      test_state.RunPreflights()
+
+    mock_setup.assert_called_with()
+    mock_process.assert_called_with()
+
+    mock_setup.assert_called_with()
+    mock_process.assert_called_with()
+    mock_update_status.assert_has_calls([
+        mock.call('DummyPreflightModule-runtime', Status.SETTINGUP),
+        mock.call('DummyPreflightModule-runtime', Status.PENDING),
+        mock.call('DummyPreflightModule-runtime', Status.PROCESSING),
+        mock.call('DummyPreflightModule-runtime', Status.COMPLETED)])
+    self.assertEqual(mock_update_status.call_count, 4)
+
+  @mock.patch('tests.test_modules.modules.DummyModule2.Process')
+  @mock.patch('tests.test_modules.modules.DummyModule1.Process')
+  def testProcessModules(self, mock_process1, mock_process2):
+    """Tests that modules' process functions are correctly called."""
+    cdm = CursesDisplayManager()
+    test_state = state.DFTimewolfStateWithCDM(config.Config, cdm)
+    test_state.command_line_options = {}
+    test_state.LoadRecipe(test_recipe.contents, TEST_MODULES)
+
+    with mock.patch.object(cdm, 'UpdateModuleStatus') as mock_update_status:
+      test_state.SetupModules()
+      test_state.RunModules()
+    mock_update_status.assert_has_calls([
+        mock.call('DummyModule1', Status.SETTINGUP),
+        mock.call('DummyModule1', Status.PENDING),
+        mock.call('DummyModule2', Status.SETTINGUP),
+        mock.call('DummyModule2', Status.PENDING),
+        mock.call('DummyModule1', Status.PROCESSING),
+        mock.call('DummyModule1', Status.COMPLETED),
+        mock.call('DummyModule2', Status.PROCESSING),
+        mock.call('DummyModule2', Status.COMPLETED)], True)
+    self.assertEqual(mock_update_status.call_count, 8)
+
+    mock_process1.assert_called_with()
+    mock_process2.assert_called_with()
+
+  @mock.patch('tests.test_modules.modules.DummyModule2.Process')
+  @mock.patch('tests.test_modules.modules.DummyModule1.Process')
+  def testProcessNamedModules(self, mock_process1, mock_process2):
+    """Tests that modules' process functions are correctly called."""
+    cdm = CursesDisplayManager()
+    test_state = state.DFTimewolfStateWithCDM(config.Config, cdm)
+    test_state.command_line_options = {}
+    test_state.LoadRecipe(test_recipe.named_modules_contents, TEST_MODULES)
+
+    with mock.patch.object(cdm, 'UpdateModuleStatus') as mock_update_status:
+      test_state.SetupModules()
+      test_state.RunModules()
+    mock_update_status.assert_has_calls([
+        mock.call('DummyModule1', Status.SETTINGUP),
+        mock.call('DummyModule1', Status.PENDING),
+        mock.call('DummyModule2', Status.SETTINGUP),
+        mock.call('DummyModule2', Status.PENDING),
+        mock.call('DummyModule1-2', Status.SETTINGUP),
+        mock.call('DummyModule1-2', Status.PENDING),
+        mock.call('DummyModule2-2', Status.SETTINGUP),
+        mock.call('DummyModule2-2', Status.PENDING),
+        mock.call('DummyModule1', Status.PROCESSING),
+        mock.call('DummyModule1', Status.COMPLETED),
+        mock.call('DummyModule2', Status.PROCESSING),
+        mock.call('DummyModule2', Status.COMPLETED),
+        mock.call('DummyModule1-2', Status.PROCESSING),
+        mock.call('DummyModule1-2', Status.COMPLETED),
+        mock.call('DummyModule2-2', Status.PROCESSING),
+        mock.call('DummyModule2-2', Status.COMPLETED)], True)
+    self.assertEqual(mock_update_status.call_count, 16)
+
+    # pylint: disable=protected-access
+    self.assertIn('DummyModule1', test_state._threading_event_per_module)
+    self.assertIn('DummyModule2', test_state._threading_event_per_module)
+    self.assertIn('DummyModule1-2', test_state._threading_event_per_module)
+    self.assertIn('DummyModule2-2', test_state._threading_event_per_module)
+    self.assertEqual(mock_process1.call_count, 2)
+    self.assertEqual(mock_process2.call_count, 2)
+
+  # pylint: disable=line-too-long
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.Process')
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PreProcess')
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PostProcess')
+  # pylint: enable=line-too-long
+  def testProcessThreadAwareModule(self,
+      mock_post_process,
+      mock_pre_process,
+      mock_threaded_process):
+    """Tests the ThreadAwareModules process functions are correctly called."""
+    cdm = CursesDisplayManager()
+    test_state = state.DFTimewolfStateWithCDM(config.Config, cdm)
+    test_state.command_line_options = {}
+    test_state.LoadRecipe(test_recipe.threaded_no_preflights, TEST_MODULES)
+
+    # pylint: disable=line-too-long
+    with mock.patch('threading.current_thread') as mock_current_thread, \
+        mock.patch.object(cdm, 'UpdateModuleStatus') as mock_update_status, \
+        mock.patch.object(cdm, 'UpdateModuleThreadState') as module_update_thread_state:
+      mock_current_thread.return_value.getName.return_value = 'ThreadName'
+      test_state.SetupModules()
+      test_state.RunModules()
+    # pylint: enable=line-too-long
+
+    mock_update_status.assert_has_calls([
+        mock.call('ContainerGeneratorModule', Status.PENDING),
+        mock.call('ThreadAwareConsumerModule', Status.SETTINGUP),
+        mock.call('ThreadAwareConsumerModule', Status.PENDING),
+        mock.call('ContainerGeneratorModule', Status.PROCESSING),
+        mock.call('ContainerGeneratorModule', Status.COMPLETED),
+        mock.call('ThreadAwareConsumerModule', Status.PREPROCESSING),
+        mock.call('ThreadAwareConsumerModule', Status.PENDING),
+        mock.call('ThreadAwareConsumerModule', Status.PROCESSING),
+        mock.call('ThreadAwareConsumerModule', Status.POSTPROCESSING),
+        mock.call('ThreadAwareConsumerModule', Status.COMPLETED)], True)
+    self.assertEqual(mock_update_status.call_count, 11)
+
+    module_update_thread_state.assert_has_calls([
+        mock.call('ThreadAwareConsumerModule', Status.RUNNING,
+            'ThreadName', 'one'),
+        mock.call('ThreadAwareConsumerModule', Status.COMPLETED,
+            'ThreadName', 'one'),
+        mock.call('ThreadAwareConsumerModule', Status.RUNNING,
+            'ThreadName', 'two'),
+        mock.call('ThreadAwareConsumerModule', Status.COMPLETED,
+            'ThreadName', 'two'),
+        mock.call('ThreadAwareConsumerModule', Status.RUNNING,
+            'ThreadName', 'three'),
+        mock.call('ThreadAwareConsumerModule', Status.COMPLETED,
+            'ThreadName', 'three')], True)
+    self.assertEqual(module_update_thread_state.call_count, 6)
+
+    self.assertEqual(mock_threaded_process.call_count, 3)
+    self.assertEqual(mock_post_process.call_count, 1)
+    self.assertEqual(mock_pre_process.call_count, 1)
+    self.assertEqual(3,
+        len(test_state.GetContainers(thread_aware_modules.TestContainer)))
+
+  @mock.patch('tests.test_modules.modules.DummyModule2.Process')
+  @mock.patch('tests.test_modules.modules.DummyModule1.Process')
+  def testProcessErrors(self, mock_process1, mock_process2):
+    """Tests that module's errors are correctly caught."""
+    cdm = CursesDisplayManager()
+    with mock.patch.object(cdm, 'EnqueueMessage') as mock_enqueue_message:
+      test_state = state.DFTimewolfStateWithCDM(config.Config, cdm)
+      test_state.command_line_options = {}
+      test_state.LoadRecipe(test_recipe.contents, TEST_MODULES)
+      mock_process1.side_effect = Exception('asd')
+      test_state.SetupModules()
+      with self.assertRaises(errors.CriticalError):
+        test_state.RunModules()
+      mock_process1.assert_called_with()
+
+    mock_enqueue_message.assert_has_calls([
+        mock.call('dftimewolf',
+            'An unknown error occurred in module DummyModule1: asd', True)])
+    mock_enqueue_message.assert_called_once()
+
+    # Process() in module 2 is never called since the failure in Module1
+    # will abort execution
+    mock_process2.assert_not_called()
+    self.assertEqual(len(test_state.global_errors), 1)
+    error = test_state.global_errors[0]
+    self.assertIn('An unknown error occurred in module DummyModule1: asd',
+                  error.message)
+    self.assertTrue(error.critical)
+
+  # pylint: disable=line-too-long
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PreProcess')
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.Process')
+  @mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PostProcess')
+  # pylint: enable=line-too-long
+  def testThreadAwareModuleProcessFailure(self,
+      mock_post_process,
+      mock_process,
+      mock_pre_process):
+    """Tests that if Process exceptions, PostProcess is still called."""
+    mock_process.side_effect = \
+        errors.DFTimewolfError('Exception thrown', critical=False)
+
+    cdm = CursesDisplayManager()
+    with mock.patch.object(cdm, 'EnqueueMessage') as mock_enqueue_message:
+      test_state = state.DFTimewolfStateWithCDM(config.Config, cdm)
+      test_state.command_line_options = {}
+      test_state.LoadRecipe(test_recipe.threaded_no_preflights, TEST_MODULES)
+      test_state.SetupModules()
+      test_state.RunModules()
+
+    mock_enqueue_message.assert_has_calls([
+        mock.call('ThreadAwareConsumerModule', 'Exception thrown', True)])
+    mock_enqueue_message.assert_called_once()
+
+    self.assertEqual(mock_pre_process.call_count, 1)
+    self.assertEqual(mock_process.call_count, 3)
+    self.assertEqual(mock_post_process.call_count, 1)
+
 
 if __name__ == '__main__':
   unittest.main()
