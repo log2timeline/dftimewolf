@@ -83,6 +83,7 @@ class DFTimewolfState(object):
     self.stats_store = [] # type: List[StatsEntry]
     self.streaming_callbacks = {}  # type: Dict[Type[interface.AttributeContainer], List[Callable[[Any], Any]]]  # pylint: disable=line-too-long
     self._abort_execution = False
+    self.stdout_log = True
 
   def _InvokeModulesInThreads(self, callback: Callable[[Any], Any]) -> None:
     """Invokes the callback function on all the modules in separate threads.
@@ -601,6 +602,19 @@ class DFTimewolfState(object):
     if critical_errors:
       raise errors.CriticalError('Critical error found. Aborting.')
 
+  def PublishMessage(self,
+                     source: str,
+                     message: str,
+                     is_error: bool = False) -> None:
+    """Receives a message for publishing.
+
+    The base class does nothing with this (as the method in module also logs the
+    message). This method exists to be overriden for other UIs.
+
+    Args:
+      source: The source of the message.
+      message: The message content.
+      is_error: True if the message is an error message, False otherwise."""
 
 class DFTimewolfStateWithCDM(DFTimewolfState):
   """The main state class, extended to wrap methods with updates to a
@@ -612,6 +626,7 @@ class DFTimewolfStateWithCDM(DFTimewolfState):
     """Initializes a state."""
     super(DFTimewolfStateWithCDM, self).__init__(config)
     self.cursesdm = cursesdm
+    self.stdout_log = False
 
   def LoadRecipe(self,
                  recipe: Dict[str, Any],
@@ -734,15 +749,13 @@ class DFTimewolfStateWithCDM(DFTimewolfState):
       module_name: The runtime name of the module."""
 
     thread_id = threading.current_thread().getName()
-    container_name = (container.name  # type: ignore[attr-defined]
-        if hasattr(container, 'name') else str(container))
     self.cursesdm.UpdateModuleThreadState(
-        module_name, cdm.Status.RUNNING, thread_id, container_name)
+        module_name, cdm.Status.RUNNING, thread_id, str(container))
 
     process(container)
 
     self.cursesdm.UpdateModuleThreadState(
-        module_name, cdm.Status.COMPLETED, thread_id, container_name)
+        module_name, cdm.Status.COMPLETED, thread_id, str(container))
 
   def AddError(self, error: DFTimewolfError) -> None:
     """Adds an error to the state.
@@ -754,3 +767,15 @@ class DFTimewolfStateWithCDM(DFTimewolfState):
 
     name = error.name if error.name else 'no_module_name'
     self.cursesdm.SetError(name, error.message)
+
+  def PublishMessage(self,
+                     source: str,
+                     message: str,
+                     is_error: bool = False) -> None:
+    """Receives a message for publishing to the list of messages.
+
+    Args:
+      source: The source of the message.
+      message: The message content.
+      is_error: True if the message is an error message, False otherwise."""
+    self.cursesdm.EnqueueMessage(source, message, is_error)

@@ -64,7 +64,7 @@ class BaseModule(object):
         threaded=threaded))
     self.logger.addHandler(file_handler)
 
-    if not isinstance(self.state, state_lib.DFTimewolfStateWithCDM):
+    if self.state.stdout_log:
       console_handler = logging.StreamHandler()
       formatter = logging_utils.WolfFormatter(
           random_color=True)
@@ -119,17 +119,16 @@ class BaseModule(object):
     self.logger.error(error.message)
 
   def PublishMessage(self, message: str, is_error: bool = False) -> None:
-    """Sends a message to the CDM to display.
+    """Logs a message, and sends the message to the state.
 
     Args:
       message: The message content.
       is_error: True if the message is an error message, False otherwise."""
-    if isinstance(self.state, state_lib.DFTimewolfStateWithCDM):
-      self.state.cursesdm.EnqueueMessage(self.name, message, is_error)
     if is_error:
       self.logger.error(message)
     else:
       self.logger.info(message)
+    self.state.PublishMessage(self.name, message, is_error)
 
   @abc.abstractmethod
   def Process(self) -> None:
