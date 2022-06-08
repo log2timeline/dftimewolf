@@ -5,18 +5,20 @@ Use it to track errors, abort on global failures, clean up after modules, etc.
 """
 
 from dataclasses import dataclass
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, Future
 import importlib
 import logging
 import threading
 import traceback
 from typing import TYPE_CHECKING, Callable, Dict, List, Sequence, Type, Any, TypeVar, cast  # pylint: disable=line-too-long
+from dftimewolf.cli import curses_display_manager as cdm
 
 from dftimewolf.config import Config
 from dftimewolf.lib import errors, utils
+from dftimewolf.lib.containers.interface import AttributeContainer
 from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.module import ThreadAwareModule
+from dftimewolf.lib.module import ThreadAwareModule, BaseModule
 
 if TYPE_CHECKING:
   from dftimewolf.lib import module as dftw_module
@@ -69,7 +71,7 @@ class DFTimewolfState(object):
     super(DFTimewolfState, self).__init__()
     self.command_line_options = {}  # type: Dict[str, Any]
     self._cache = {}  # type: Dict[str, str]
-    self._module_pool = {}  # type: Dict[str, dftw_module.BaseModule]
+    self._module_pool = {}  # type: Dict[str, BaseModule]
     self._state_lock = threading.Lock()
     self._stats_lock = threading.Lock()
     self._threading_event_per_module = {}  # type: Dict[str, threading.Event]
@@ -81,6 +83,7 @@ class DFTimewolfState(object):
     self.stats_store = [] # type: List[StatsEntry]
     self.streaming_callbacks = {}  # type: Dict[Type[interface.AttributeContainer], List[Callable[[Any], Any]]]  # pylint: disable=line-too-long
     self._abort_execution = False
+    self.stdout_log = True
 
   def _InvokeModulesInThreads(self, callback: Callable[[Any], Any]) -> None:
     """Invokes the callback function on all the modules in separate threads.
@@ -308,7 +311,7 @@ class DFTimewolfState(object):
     module = self._module_pool[runtime_name]
 
     try:
-      module.SetUp(**new_args)
+      self._RunModuleSetUp(module, **new_args)
     except errors.DFTimewolfError:
       msg = "A critical error occurred in module {0:s}, aborting execution."
       logger.critical(msg.format(module.name))
@@ -319,12 +322,92 @@ class DFTimewolfState(object):
       # We're catching any exception that is not a DFTimewolfError, so we want
       # to generate an error for further reporting.
       error = errors.DFTimewolfError(
-          message=msg, name='state', stacktrace=traceback.format_exc(),
+          message=msg, name='dftimewolf', stacktrace=traceback.format_exc(),
           critical=True, unexpected=True)
       self.AddError(error)
 
     self._threading_event_per_module[runtime_name] = threading.Event()
     self.CleanUp()
+
+  def _RunModuleSetUp(self,
+                     module: BaseModule,
+                     **new_args: Dict[str, object]) -> None:
+    """Runs SetUp of a single module.
+
+    Designed to be wrapped by an output handling subclass.
+
+    Args:
+      module: The modulke that will have SetUp called.
+      new_args: kwargs to pass to SetUp."""
+    module.SetUp(**new_args)
+
+  def _RunModuleProcess(self, module: BaseModule) -> None:
+    """Runs Process of a single module.
+
+    Designed to be wrapped by an output handling subclass.
+
+    Args:
+      module: The module to run Process() on."""
+    module.Process()
+
+  def _RunModuleProcessThreaded(
+      self, module: ThreadAwareModule
+    ) -> List[Future]: # type: ignore
+    """Runs Process of a single ThreadAwareModule module.
+
+    Designed to be wrapped by an output handling subclass.
+
+    Args:
+      module: The module that will have Process(container) called in a threaded
+          fashion."""
+    cont_count = len(self.GetContainers(module.GetThreadOnContainerType()))
+    logger.info(
+       f'Running {cont_count} threads, max {module.GetThreadPoolSize()} '
+       f'simultaneous for module {module.name}')
+
+    futures = []
+
+    with ThreadPoolExecutor(max_workers=module.GetThreadPoolSize()) \
+        as executor:
+      pop = not module.KeepThreadedContainersInState()
+      for c in self.GetContainers(module.GetThreadOnContainerType(), pop):
+        futures.append(
+            executor.submit(module.Process, c))
+
+    return futures
+
+  def _RunModulePreProcess(self, module: ThreadAwareModule) -> None:
+    """Runs PreProcess of a single module.
+
+    Designed to be wrapped by an output handling subclass.
+
+    Args:
+      module: The module that will have PreProcess() called."""
+    module.PreProcess()
+
+  def _RunModulePostProcess(self, module: ThreadAwareModule) -> None:
+    """Runs PostProcess of a single module.
+
+    Designed to be wrapped by an output handling subclass.
+
+    Args:
+      module: The module that will have PostProcess() called."""
+    module.PostProcess()
+
+  # pylint: disable=unused-argument
+  def _HandleFuturesFromThreadedModule(
+      self,
+      futures: List[Future],  # type: ignore
+      runtime_name: str) -> None:
+    """Handles any futures raised by the async processing of a module.
+
+    Args:
+      futures: A list of futures, returned by RunModuleProcessThreaded().
+      runtime_name: runtime name of the module."""
+    for fut in futures:
+      if fut.exception():
+        raise fut.exception() # type: ignore
+  # pylint: disable=unused-argument
 
   def SetupModules(self) -> None:
     """Performs setup tasks for each module in the module pool.
@@ -367,30 +450,12 @@ class DFTimewolfState(object):
 
     try:
       if isinstance(module, ThreadAwareModule):
-        module.PreProcess()
-
-        futures = []
-        logger.info(
-            'Running {0:d} threads, max {1:d} simultaneous for module {2:s}'\
-            .format(
-                len(self.GetContainers(module.GetThreadOnContainerType())),
-                module.GetThreadPoolSize(),
-                runtime_name))
-
-        with ThreadPoolExecutor(max_workers=module.GetThreadPoolSize()) \
-            as executor:
-          pop = not module.KeepThreadedContainersInState()
-          for c in self.GetContainers(module.GetThreadOnContainerType(), pop):
-            futures.append(
-                executor.submit(module.Process, c))
-
-        module.PostProcess()
-
-        for fut in futures:
-          if fut.exception():
-            raise fut.exception() # type: ignore
+        self._RunModulePreProcess(module)
+        futures = self._RunModuleProcessThreaded(module)
+        self._RunModulePostProcess(module)
+        self._HandleFuturesFromThreadedModule(futures, runtime_name)
       else:
-        module.Process()
+        self._RunModuleProcess(module)
     except errors.DFTimewolfError:
       logger.critical(
           "Critical error in module {0:s}, aborting execution".format(
@@ -402,7 +467,7 @@ class DFTimewolfState(object):
       # We're catching any exception that is not a DFTimewolfError, so we want
       # to generate an error for further reporting.
       error = errors.DFTimewolfError(
-          message=msg, name='state', stacktrace=traceback.format_exc(),
+          message=msg, name='dftimewolf', stacktrace=traceback.format_exc(),
           critical=True, unexpected=True)
       self.AddError(error)
 
@@ -422,8 +487,8 @@ class DFTimewolfState(object):
           args, self.command_line_options, self.config)
       preflight = self._module_pool[runtime_name]
       try:
-        preflight.SetUp(**new_args)
-        preflight.Process()
+        self._RunModuleSetUp(preflight, **new_args)
+        self._RunModuleProcess(preflight)
       finally:
         self.CheckErrors(is_global=True)
 
@@ -438,7 +503,7 @@ class DFTimewolfState(object):
       finally:
         self.CheckErrors(is_global=True)
 
-  def InstantiateModule(self, module_name: str) -> "dftw_module.BaseModule":
+  def InstantiateModule(self, module_name: str) -> "BaseModule":
     """Instantiates an arbitrary dfTimewolf module.
 
     Args:
@@ -448,7 +513,7 @@ class DFTimewolfState(object):
       BaseModule: An instance of a dftimewolf Module, which is a subclass of
           BaseModule.
     """
-    module_class: Type["dftw_module.BaseModule"]
+    module_class: Type["BaseModule"]
     module_class = modules_manager.ModulesManager.GetModuleByName(module_name)
     # pytype: disable=wrong-arg-types
     return module_class(self)
@@ -536,3 +601,181 @@ class DFTimewolfState(object):
 
     if critical_errors:
       raise errors.CriticalError('Critical error found. Aborting.')
+
+  def PublishMessage(self,
+                     source: str,
+                     message: str,
+                     is_error: bool = False) -> None:
+    """Receives a message for publishing.
+
+    The base class does nothing with this (as the method in module also logs the
+    message). This method exists to be overriden for other UIs.
+
+    Args:
+      source: The source of the message.
+      message: The message content.
+      is_error: True if the message is an error message, False otherwise."""
+
+class DFTimewolfStateWithCDM(DFTimewolfState):
+  """The main state class, extended to wrap methods with updates to a
+  CursesDisplayManager object."""
+
+  def __init__(self,
+               config: Type[Config],
+               cursesdm: cdm.CursesDisplayManager) -> None:
+    """Initializes a state."""
+    super(DFTimewolfStateWithCDM, self).__init__(config)
+    self.cursesdm = cursesdm
+    self.stdout_log = False
+
+  def LoadRecipe(self,
+                 recipe: Dict[str, Any],
+                 module_locations: Dict[str, str]) -> None:
+    """Populates the internal module pool with modules declared in a recipe.
+
+    Args:
+      recipe (dict[str, Any]): recipe declaring modules to load.
+
+    Raises:
+      RecipeParseError: if a module in the recipe has not been declared.
+    """
+    super(DFTimewolfStateWithCDM, self).LoadRecipe(recipe, module_locations)
+
+    module_definitions = recipe.get('modules', [])
+    preflight_definitions = recipe.get('preflights', [])
+
+    self.cursesdm.SetRecipe(self.recipe['name'])
+    for module_definition in preflight_definitions:
+      self.cursesdm.EnqueuePreflight(module_definition['name'],
+                                     module_definition.get('wants', []),
+                                     module_definition.get('runtime_name'))
+    for module_definition in module_definitions:
+      self.cursesdm.EnqueueModule(module_definition['name'],
+                                  module_definition.get('wants', []),
+                                  module_definition.get('runtime_name'))
+    self.cursesdm.Draw()
+
+  def _RunModuleSetUp(self,
+                     module: BaseModule,
+                     **new_args: Dict[str, object]) -> None:
+    """Runs SetUp of a single module.
+
+    Args:
+      module: The modulke that will have SetUp called.
+      new_args: kwargs to pass to SetUp."""
+    self.cursesdm.UpdateModuleStatus(module.name, cdm.Status.SETTINGUP)
+    module.SetUp(**new_args)
+    self.cursesdm.UpdateModuleStatus(module.name, cdm.Status.PENDING)
+
+  def _RunModuleProcess(self, module: BaseModule) -> None:
+    """Runs Process of a single module.
+
+    Args:
+      module: The module to run Process() on."""
+    self.cursesdm.UpdateModuleStatus(module.name, cdm.Status.PROCESSING)
+    module.Process()
+    self.cursesdm.UpdateModuleStatus(module.name, cdm.Status.COMPLETED)
+
+  def _RunModuleProcessThreaded(
+      self, module: ThreadAwareModule
+    ) -> List[Future]: # type: ignore
+    """Runs Process of a single ThreadAwareModule module.
+
+    Args:
+      module: The module that will have Process(container) called in a threaded
+          fashion."""
+    cont_count = len(self.GetContainers(module.GetThreadOnContainerType()))
+    logger.info(
+       f'Running {cont_count} threads, max {module.GetThreadPoolSize()} '
+       f'simultaneous for module {module.name}')
+
+    self.cursesdm.SetThreadedModuleContainerCount(module.name, cont_count)
+    self.cursesdm.UpdateModuleStatus(module.name, cdm.Status.PROCESSING)
+
+    futures = []
+
+    with ThreadPoolExecutor(max_workers=module.GetThreadPoolSize()) \
+        as executor:
+      pop = not module.KeepThreadedContainersInState()
+      for c in self.GetContainers(module.GetThreadOnContainerType(), pop):
+        futures.append(
+            executor.submit(
+                self._WrapThreads, module.Process, c, module.name))
+
+    return futures
+
+  def _RunModulePreProcess(self, module: ThreadAwareModule) -> None:
+    """Runs PreProcess of a single module.
+
+    Args:
+      module: The module that will have PreProcess() called."""
+    self.cursesdm.UpdateModuleStatus(module.name, cdm.Status.PREPROCESSING)
+    module.PreProcess()
+    self.cursesdm.UpdateModuleStatus(module.name, cdm.Status.PENDING)
+
+  def _RunModulePostProcess(self, module: ThreadAwareModule) -> None:
+    """Runs PostProcess of a single module.
+
+    Args:
+      module: The module that will have PostProcess() called."""
+    self.cursesdm.UpdateModuleStatus(module.name, cdm.Status.POSTPROCESSING)
+    module.PostProcess()
+    self.cursesdm.UpdateModuleStatus(module.name, cdm.Status.COMPLETED)
+
+  def _HandleFuturesFromThreadedModule(
+      self,
+      futures: List[Future],  # type: ignore
+      runtime_name: str) -> None:
+    """Handles any futures raised by the async processing of a module.
+
+    Args:
+      futures: A list of futures, returned by RunModuleProcessThreaded().
+      runtime_name: runtime name of the module."""
+    for fut in futures:
+      if fut.exception():
+        self.cursesdm.SetError(runtime_name, str(fut.exception()))
+        raise fut.exception()  # type: ignore
+
+  def _WrapThreads(self,
+                  process: Callable[[AttributeContainer], None],
+                  container: AttributeContainer,
+                  module_name: str) -> None:
+    """Wraps a ThreadPoolExecutor call to module.process with the
+    CursesDisplayManager status update methods.
+
+    Args:
+      process: A callable method: Process, belonging to a ThreadAwareModule.
+      container: The Container being processed by the thread.
+      module_name: The runtime name of the module."""
+
+    thread_id = threading.current_thread().getName()
+    self.cursesdm.UpdateModuleThreadState(
+        module_name, cdm.Status.RUNNING, thread_id, str(container))
+
+    process(container)
+
+    self.cursesdm.UpdateModuleThreadState(
+        module_name, cdm.Status.COMPLETED, thread_id, str(container))
+
+  def AddError(self, error: DFTimewolfError) -> None:
+    """Adds an error to the state.
+
+    Args:
+      error (errors.DFTimewolfError): The dfTimewolf error to add.
+    """
+    super(DFTimewolfStateWithCDM, self).AddError(error)
+
+    name = error.name if error.name else 'no_module_name'
+    self.cursesdm.SetError(name, error.message)
+
+  def PublishMessage(self,
+                     source: str,
+                     message: str,
+                     is_error: bool = False) -> None:
+    """Receives a message for publishing to the list of messages.
+
+    Args:
+      source: The source of the message.
+      message: The message content.
+      is_error: True if the message is an error message, False otherwise."""
+    self.cursesdm.EnqueueMessage(source, message, is_error)

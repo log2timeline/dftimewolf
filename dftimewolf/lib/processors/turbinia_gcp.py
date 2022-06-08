@@ -160,15 +160,15 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     container: Union[containers.File, containers.ThreatIntelligence]
     for description, path in all_local_paths:
       if path.endswith('BinaryExtractorTask.tar.gz'):
-        self.logger.success(f'Found BinaryExtractorTask result: {path}')
+        self.PublishMessage(f'Found BinaryExtractorTask result: {path}')
         container = containers.ThreatIntelligence(
             name='BinaryExtractorResults', indicator=None, path=path)
       if path.endswith('hashes.json'):
-        self.logger.success(f'Found hashes.json: {path}')
+        self.PublishMessage(f'Found hashes.json: {path}')
         container = containers.ThreatIntelligence(
             name='ImageExportHashes', indicator=None, path=path)
       if path.endswith('.plaso'):
-        self.logger.success(f'Found plaso result: {path}')
+        self.PublishMessage(f'Found plaso result: {path}')
         container = containers.File(name=description, path=path)
       self.state.StoreContainer(container)
   # pylint: enable=arguments-renamed

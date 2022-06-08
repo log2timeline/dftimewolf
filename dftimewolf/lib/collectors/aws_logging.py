@@ -110,7 +110,7 @@ class AWSLogsCollector(module.BaseModule):
         'are correct https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_LookupEvents.html')  # pylint: disable=line-too-long
         self.ModuleError(str(exception), critical=True)
 
-    self.logger.success('Downloaded logs to {0:s}'.format(output_path))
+    self.PublishMessage(f'Downloaded logs to {output_path}')
     output_file.close()
 
     logs_report = containers.File('AWSLogsCollector result', output_path)

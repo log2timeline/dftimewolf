@@ -65,8 +65,8 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
     self.output_directory = output_directory
     if not self.output_directory:
       self.output_directory = tempfile.mkdtemp(prefix='turbinia-results')
-      self.logger.success('Turbinia results will be dumped to {0:s}'.format(
-          self.output_directory))
+      self.PublishMessage(
+          f'Turbinia results will be dumped to {self.output_directory}')
     try:
       self.TurbiniaSetUp(project, turbinia_recipe, turbinia_zone, sketch_id)
     except TurbiniaException as exception:
@@ -99,7 +99,7 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
 
         # We're only interested in plaso files for the time being.
         if path.endswith('.plaso'):
-          self.logger.success('  {0:s}: {1:s}'.format(task['name'], path))
+          self.PublishMessage(f'  {task["name"]}: {path}')
           container = containers.RemoteFSPath(
               path=path, hostname=container.hostname)
           self.state.StoreContainer(container)

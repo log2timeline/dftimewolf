@@ -64,12 +64,13 @@ class BaseModule(object):
         threaded=threaded))
     self.logger.addHandler(file_handler)
 
-    console_handler = logging.StreamHandler()
-    formatter = logging_utils.WolfFormatter(
-        random_color=True)
-    console_handler.setFormatter(formatter)
+    if self.state.stdout_log:
+      console_handler = logging.StreamHandler()
+      formatter = logging_utils.WolfFormatter(
+          random_color=True)
+      console_handler.setFormatter(formatter)
 
-    self.logger.addHandler(console_handler)
+      self.logger.addHandler(console_handler)
 
   def LogStats(self, stats: Dict[str, Any]) -> None:
     """Saves useful runtime statistics to the state for later processing.
@@ -116,6 +117,18 @@ class BaseModule(object):
       self.logger.critical(error.message)
       raise error
     self.logger.error(error.message)
+
+  def PublishMessage(self, message: str, is_error: bool = False) -> None:
+    """Logs a message, and sends the message to the state.
+
+    Args:
+      message: The message content.
+      is_error: True if the message is an error message, False otherwise."""
+    if is_error:
+      self.logger.error(message)
+    else:
+      self.logger.info(message)
+    self.state.PublishMessage(self.name, message, is_error)
 
   @abc.abstractmethod
   def Process(self) -> None:

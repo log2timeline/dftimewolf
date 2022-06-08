@@ -185,7 +185,7 @@ class WorkspaceAuditCollector(module.BaseModule):
         application_name=self._application_name, path=output_path,
         filter_expression=self._filter_expression, user_key=self._user_key,
         start_time=self._start_time, end_time=self._end_time)
-    self.logger.success('Downloaded logs to {0:s}'.format(output_path))
+    self.PublishMessage(f'Downloaded logs to {output_path}')
     self.state.StoreContainer(logs_report)
 
 

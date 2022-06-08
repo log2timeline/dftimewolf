@@ -117,9 +117,9 @@ class GCEForensicsVM(module.BaseModule):
       analysis_vm_name = common.GenerateUniqueInstanceName(
           'gcp-forensics-vm',
           common.COMPUTE_NAME_LIMIT)
-    self.logger.success(f'Your analysis VM will be: {analysis_vm_name}')
-    self.logger.info('Complimentary gcloud command:')
-    self.logger.info(
+    self.PublishMessage(f'Your analysis VM will be: {analysis_vm_name}')
+    self.PublishMessage('Complimentary gcloud command:')
+    self.PublishMessage(
         f'gcloud compute ssh --project {self.project.project_id} '
         f'{analysis_vm_name} --zone {self.project.default_zone}')
     self.state.StoreContainer(
@@ -143,7 +143,7 @@ class GCEForensicsVM(module.BaseModule):
       self.logger.error(f'Could not create VM: {exception}')
       self.ModuleError(str(exception), critical=True)
     if not created:
-      self.logger.info(f'Instance {analysis_vm_name} exists: reusing.')
+      self.PublishMessage(f'Instance {analysis_vm_name} exists: reusing.')
     if self._gcp_label:
       self.analysis_vm.AddLabels(self._gcp_label)
       self.analysis_vm.GetBootDisk().AddLabels(self._gcp_label)
