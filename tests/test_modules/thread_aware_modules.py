@@ -23,7 +23,7 @@ class TestContainer(interface.AttributeContainer):
   def __eq__(self, other: _T) -> bool:
     return self.value == other.value
 
-  def __str__(self) -> bool:
+  def __str__(self) -> str:
     return self.value
 
 class TestContainerTwo(interface.AttributeContainer):
