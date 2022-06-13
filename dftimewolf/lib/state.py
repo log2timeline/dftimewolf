@@ -609,7 +609,7 @@ class DFTimewolfState(object):
     """Receives a message for publishing.
 
     The base class does nothing with this (as the method in module also logs the
-    message). This method exists to be overriden for other UIs.
+    message). This method exists to be overridden for other UIs.
 
     Args:
       source: The source of the message.
