@@ -30,7 +30,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
     warned (bool): True if an error was encountered that prevents stopping
         instances when requested by stop_instances.
     failed_disks (list[str]): List of disks that failed.
-    at_least_one_success (bool): True if at least one disk copy suceeded.
+    at_least_one_success (bool): True if at least one disk copy succeeded.
   """
 
   def __init__(self,
@@ -60,11 +60,11 @@ class GCEDiskCopy(module.ThreadAwareModule):
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
-            destination_project_name: str,
+            destination_project_name: Optional[str],
             source_project_name: str,
             destination_zone: str,
-            remote_instance_names: str,
-            disk_names: str,
+            remote_instance_names: Optional[str],
+            disk_names: Optional[str],
             all_disks: bool,
             stop_instances: bool) -> None:
     """Sets up a GCEDiskCopyCollector.
@@ -126,19 +126,23 @@ class GCEDiskCopy(module.ThreadAwareModule):
     try:
       # Disks from the csv list passed in
       for d in self.disk_names:
-        self.state.StoreContainer(containers.GCEDisk(d))
+        self.state.StoreContainer(
+            containers.GCEDisk(d, self.source_project.project_id))
 
       # Disks from the instances passed in
       for i in self.remote_instance_names:
         try:
           for d in self._GetDisksFromInstance(i, self.all_disks):
-            self.state.StoreContainer(containers.GCEDisk(d))
+            self.state.StoreContainer(
+                containers.GCEDisk(d, self.source_project.project_id))
 
         except lcf_errors.ResourceNotFoundError:
           self.ModuleError(
             message=f'Instance "{i}" in {self.source_project.project_id} not '
                 'found or insufficient permissions',
             critical=True)
+
+      self.state.DedupeContainers(containers.GCEDisk)
     except HttpError as exception:
       if exception.resp.status == 403:
         self.ModuleError(
@@ -152,6 +156,8 @@ class GCEDiskCopy(module.ThreadAwareModule):
     Args:
       container: GCEDisk container referencing the disk to copy.
     """
+    if container.project != self.source_project.project_id:
+      self.logger.info(f'Skipping {container.name} not in source project')
     self.logger.info(f'Disk copy of {container.name} started...')
 
     try:
@@ -161,9 +167,9 @@ class GCEDiskCopy(module.ThreadAwareModule):
           self.destination_project.default_zone,
           disk_name=container.name)
       self.at_least_one_success = True
-      self.logger.success(f'Disk {container.name} successfully copied to '
+      self.PublishMessage(f'Disk {container.name} successfully copied to '
           f'{new_disk.name}')
-      self.state.StoreContainer(containers.GCEDiskEvidence(
+      self.state.StoreContainer(containers.GCEDisk(
           new_disk.name, self.destination_project.project_id))
     except lcf_errors.ResourceNotFoundError as exception:
       self.logger.error(f'Could not find disk "{container.name}": {exception}')
@@ -202,12 +208,12 @@ class GCEDiskCopy(module.ThreadAwareModule):
         remote_instance.Stop()
       except lcf_errors.InstanceStateChangeError as exception:
         self.ModuleError(str(exception), critical=False)
-      self.logger.success(f'Stopped instance {i}')
+      self.PublishMessage(f'Stopped instance {i}')
 
   def _GetDisksFromInstance(
       self,
       instance_name: str,
-      all_disks: bool) -> List[compute.GoogleComputeDisk]:
+      all_disks: bool) -> List[str]:
     """Gets disks to copy based on an instance name.
 
     Args:
@@ -216,8 +222,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
           False, get only the instance's boot disk.
 
     Returns:
-      list[compute.GoogleComputeDisk]: List of compute.GoogleComputeDisk
-          objects to copy.
+      list[str]: List of disk names to copy.
     """
     try:
       remote_instance = self.source_project.compute.GetInstance(instance_name)

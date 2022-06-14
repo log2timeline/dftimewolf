@@ -86,7 +86,7 @@ class MetawolfUtilsTest(unittest.TestCase):
   def testGetType(self) -> None:
     """Test that the type of a string is inferred correctly."""
     self.assertEqual(bool, utils.GetType('y'))
-    self.assertEqual(int, utils.GetType('0'))
+    self.assertEqual(bool, utils.GetType('0'))
     self.assertEqual(float, utils.GetType('1.'))
 
   def testCastToType(self) -> None:
@@ -152,8 +152,10 @@ class MetawolfUtilsTest(unittest.TestCase):
                                 'metawolf-full-session.json')
     self.utils = utils.MetawolfUtils(session_path=session_path)
     sessions = self.utils.ReadSessionFromFile()
+    # pytype: disable=attribute-error
     session_settables = sessions.get(sessions.get(
         'last_active_session')).get('aws_forensics')
+    # pytype: enable=attribute-error
     cmd = utils.MetawolfUtils().PrepareDFTimewolfCommand(
         'aws_forensics', session_settables)
     self.assertEqual(

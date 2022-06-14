@@ -30,8 +30,8 @@ FAKE_DISK_CREATION_RESPONSES = [
     'fake-disk-two')
 ]
 FAKE_STATE_GCS_OBJECT_LIST = [
-  containers.GCEImage('fake-disk-one'),
-  containers.GCEImage('fake-disk-two')
+  containers.GCEImage('fake-disk-one', FAKE_GCP_PROJECT_NAME),
+  containers.GCEImage('fake-disk-two', FAKE_GCP_PROJECT_NAME)
 ]
 
 
@@ -78,11 +78,13 @@ class GCEDiskFromImageTest(unittest.TestCase):
 
     exporter.PreProcess()
     for c in test_state.GetContainers(exporter.GetThreadOnContainerType()):
-      exporter.Process(c)
+      exporter.Process(c)  # pytype: disable=wrong-arg-types
+      # GetContainers returns the abstract base class type, but process is
+      # called with the instantiated child class.
     exporter.PostProcess()
 
     actual_output = [c.name for \
-        c in test_state.GetContainers(containers.GCEDiskEvidence)]
+        c in test_state.GetContainers(containers.GCEDisk)]
 
     self.assertEqual(sorted(actual_output), sorted([
       'fake-disk-one',
@@ -108,11 +110,13 @@ class GCEDiskFromImageTest(unittest.TestCase):
 
     exporter.PreProcess()
     for c in test_state.GetContainers(exporter.GetThreadOnContainerType()):
-      exporter.Process(c)
+      exporter.Process(c)  # pytype: disable=wrong-arg-types
+      # GetContainers returns the abstract base class type, but process is
+      # called with the instantiated child class.
     exporter.PostProcess()
 
     actual_output = [c.name for \
-        c in test_state.GetContainers(containers.GCEDiskEvidence)]
+        c in test_state.GetContainers(containers.GCEDisk)]
 
     self.assertEqual(sorted(actual_output), sorted([
       'fake-disk-one',

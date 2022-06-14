@@ -62,8 +62,8 @@ class SSHMultiplexer(module.PreflightModule):
     if self.extra_ssh_options:
       command.extend(self.extra_ssh_options)
     command.extend([self.hostname, 'true'])  # execute `true` and return
-    self.logger.debug(
-        'Opening shared SSH connection to: {0:s}'.format(' '.join(command)))
+    self.PublishMessage(
+        f'Opening shared SSH connection to: {" ".join(command)}')
     ret = subprocess.call(command)
     if ret != 0:
       self.ModuleError(

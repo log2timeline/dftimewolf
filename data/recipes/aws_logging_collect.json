@@ -1,7 +1,7 @@
 {
     "name": "aws_logging_collect",
     "short_description": "Collects logs from an AWS account and dumps the results to the filesystem.",
-    "description": "Collects logs from an AWS account using a specified query filter and date ranges, and dumps them on the filesystem.",
+    "description": "Collects logs from an AWS account using a specified query filter and date ranges, and dumps them on the filesystem. If no args are provided this recipe will collect 90 days of logs for the default AWS profile.",
     "preflights": [{
         "wants": [],
         "name": "AWSAccountCheck",
@@ -13,7 +13,6 @@
         "wants": [],
         "name": "AWSLogsCollector",
         "args": {
-          "zone": "@zone",
           "profile_name": "@profile_name",
           "query_filter": "@query_filter",
           "start_time": "@start_time",
@@ -21,7 +20,6 @@
         }
     }],
     "args": [
-        ["zone", "Default availability zone for API queries.", null],
         ["--profile_name", "Name of the AWS profile to collect logs from.", "default"],
         ["--query_filter", "Filter expression to use to query logs.", null],
         ["--start_time", "Start time for the query.", null],

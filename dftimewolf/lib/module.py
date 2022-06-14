@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Class definition for DFTimewolf modules."""
+# pytype: disable=ignored-abstractmethod,bad-return-type
 
 import abc
 import logging
@@ -9,15 +10,13 @@ from logging import handlers
 import traceback
 import sys
 
-from typing import Optional, TYPE_CHECKING, Type, cast, TypeVar, Dict, Any
+from typing import Optional, Type, cast, TypeVar, Dict, Any
 
 from dftimewolf.lib import errors
 from dftimewolf.lib import logging_utils
+from dftimewolf.lib import state as state_lib  # pylint: disable=cyclic-import
 from dftimewolf.lib.containers import interface
 
-if TYPE_CHECKING:
-  # Import will only happen during type checking, disabling linter warning.
-  from dftimewolf.lib import state  # pylint: disable=cyclic-import
 T = TypeVar("T", bound="interface.AttributeContainer")  # pylint: disable=invalid-name,line-too-long
 
 
@@ -34,7 +33,7 @@ class BaseModule(object):
   """
 
   def __init__(self,
-               state: "state.DFTimewolfState",
+               state: "state_lib.DFTimewolfState",
                name:Optional[str]=None,
                critical: Optional[bool]=False):
     """Initialize a module.
@@ -52,7 +51,7 @@ class BaseModule(object):
     self.state = state
     self.logger = cast(logging_utils.WolfLogger,
                        logging.getLogger(name=self.name))
-
+    self.logger.propagate = False
     self.SetupLogging()
 
   def SetupLogging(self, threaded: bool = False) -> None:
@@ -60,16 +59,32 @@ class BaseModule(object):
     self.logger.setLevel(logging.DEBUG)
 
     file_handler = handlers.RotatingFileHandler(logging_utils.DEFAULT_LOG_FILE)
-    file_handler.setFormatter(logging_utils.WolfFormatter(colorize=False))
+    file_handler.setFormatter(logging_utils.WolfFormatter(
+        colorize=False,
+        threaded=threaded))
     self.logger.addHandler(file_handler)
 
-    console_handler = logging.StreamHandler()
-    formatter = logging_utils.WolfFormatter(
-        random_color=True,
-        threaded=threaded)
-    console_handler.setFormatter(formatter)
+    if self.state.stdout_log:
+      console_handler = logging.StreamHandler()
+      formatter = logging_utils.WolfFormatter(
+          random_color=True)
+      console_handler.setFormatter(formatter)
 
-    self.logger.addHandler(console_handler)
+      self.logger.addHandler(console_handler)
+
+  def LogStats(self, stats: Dict[str, Any]) -> None:
+    """Saves useful runtime statistics to the state for later processing.
+
+    Args:
+      stats: Stats to store. Contents are arbitrary, but keys must be strings.
+
+    Raises:
+      ValueError: If the keys in the stats dict are not strings.
+    """
+    if not all (isinstance(key, str) for key in stats.keys()):
+      raise ValueError("Stats keys must be strings.")
+    stastentry = state_lib.StatsEntry(type(self).__name__, self.name, stats)
+    self.state.StoreStats(stastentry)
 
   def CleanUp(self) -> None:
     """Cleans up module output to prepare it for the next module."""
@@ -102,6 +117,18 @@ class BaseModule(object):
       self.logger.critical(error.message)
       raise error
     self.logger.error(error.message)
+
+  def PublishMessage(self, message: str, is_error: bool = False) -> None:
+    """Logs a message, and sends the message to the state.
+
+    Args:
+      message: The message content.
+      is_error: True if the message is an error message, False otherwise."""
+    if is_error:
+      self.logger.error(message)
+    else:
+      self.logger.info(message)
+    self.state.PublishMessage(self.name, message, is_error)
 
   @abc.abstractmethod
   def Process(self) -> None:
@@ -161,7 +188,7 @@ class ThreadAwareModule(BaseModule):
   """
 
   def __init__(self,
-               state: "state.DFTimewolfState",
+               state: "state_lib.DFTimewolfState",
                name: Optional[str]=None,
                critical: Optional[bool]=False) -> None:
     """Initializes a ThreadAwareModule.

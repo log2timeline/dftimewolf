@@ -56,9 +56,11 @@ class BigQueryCollector(module.BaseModule):
           orient="records", lines=True, date_format="iso")
       output_file.write(records)
 
+    # pytype: disable=module-attr
     except google.cloud.exceptions.NotFound as exception:
       self.ModuleError(f"Error accessing project: {exception!s}",
           critical=True)
+    # pytype: enable=module-attr
 
     except (google_auth_exceptions.DefaultCredentialsError) as exception:
       self.ModuleError(
@@ -68,7 +70,7 @@ class BigQueryCollector(module.BaseModule):
         )
       self.ModuleError(exception, critical=True)
 
-    self.logger.success(f"Downloaded logs to {output_path}")
+    self.PublishMessage(f'Downloaded logs to {output_path}')
     output_file.close()
 
     bq_report = containers.File(name=self._description, path=output_path)

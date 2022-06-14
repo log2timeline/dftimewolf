@@ -101,12 +101,10 @@ class AzureLogsCollector(module.BaseModule):
             'Resource not found, ensure that subscription_id is correct.')
       self.ModuleError(str(exception), critical=True)
 
-    self.logger.success('Downloaded logs to {0:s}'.format(output_path))
+    self.PublishMessage('Downloaded logs to {output_path}')
     output_file.close()
 
-    logs_report = containers.AzureLogs(
-        path=output_path, filter_expression=self._filter_expression,
-        subscription_id=self._subscription_id)
+    logs_report = containers.File('AzureLogsCollector result', output_path)
     self.state.StoreContainer(logs_report)
 
 

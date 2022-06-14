@@ -65,14 +65,20 @@ class GCEForensicsVMTest(unittest.TestCase):
   @mock.patch('libcloudforensics.providers.gcp.internal.compute_base_resource.GoogleComputeBaseResource.AddLabels')
   @mock.patch('libcloudforensics.providers.gcp.forensics.StartAnalysisVm')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.AttachDisk')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.GetPowerState')
+  @mock.patch('time.sleep')
   # pylint: enable=line-too-long
   def testProcess(self,
+                  mock_sleep,
+                  mock_GetPowerState,
                   mock_AttachDisk,
                   mock_StartAnalysisVm,
                   mock_AddLabels,
                   mock_GetBootDisk,
                   mock_DiskInit):
     """Tests the collector's Process() function."""
+    mock_sleep.return_value = None
+    mock_GetPowerState.return_value = 'RUNNING'
     mock_StartAnalysisVm.return_value = (FAKE_ANALYSIS_VM, None)
     FAKE_ANALYSIS_VM.AddLabels = mock_AddLabels
     FAKE_ANALYSIS_VM.GetBootDisk = mock_GetBootDisk
@@ -86,11 +92,11 @@ class GCEForensicsVMTest(unittest.TestCase):
     mock_DiskInit.side_effect = [disk1, disk2, disk3]
 
     test_state = state.DFTimewolfState(config.Config)
-    test_state.StoreContainer(containers.GCEDiskEvidence(
+    test_state.StoreContainer(containers.GCEDisk(
         'test-disk-1', 'test-analysis-project-name'))
-    test_state.StoreContainer(containers.GCEDiskEvidence(
+    test_state.StoreContainer(containers.GCEDisk(
         'test-disk-2', 'test-analysis-project-name'))
-    test_state.StoreContainer(containers.GCEDiskEvidence(
+    test_state.StoreContainer(containers.GCEDisk(
         'test-disk-3', 'test-analysis-project-name'))
 
     processor = GCEForensicsVM(test_state)
@@ -131,7 +137,7 @@ class GCEForensicsVMTest(unittest.TestCase):
       mock.call(disk3),
     ])
 
-    actual_disks = test_state.GetContainers(containers.GCEDiskEvidence)
+    actual_disks = test_state.GetContainers(containers.GCEDisk)
     actual_disk_names = [d.name for d in actual_disks]
 
     self.assertEqual(3, len(actual_disks))
@@ -168,7 +174,8 @@ class GCEForensicsVMTest(unittest.TestCase):
 
     test_state = state.DFTimewolfState(config.Config)
     for d in ['test-disk-1', 'test-disk-2', 'test-disk-3']:
-      test_state.StoreContainer(containers.GCEDisk(d))
+      test_state.StoreContainer(
+          containers.GCEDisk(d, 'test-analysis-project-name'))
 
     processor = GCEForensicsVM(test_state)
     processor.SetUp(

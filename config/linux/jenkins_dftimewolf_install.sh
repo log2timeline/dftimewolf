@@ -12,11 +12,13 @@ sudo apt-get install -y python3-pip
 
 
 if [[ "$*" =~ "include-docker" ]]; then
+    echo "Adding docker key"
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
     sudo add-apt-repository \
        "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
        $(lsb_release -cs) \
        stable"
+    echo "apt update and install docker-ce"
     sudo apt-get update -qq
     sudo apt-get install -qq -y docker-ce
     curl -L https://github.com/docker/compose/releases/download/1.26.1/docker-compose-$(uname -s)-$(uname -m) -o docker-compose
@@ -26,7 +28,9 @@ fi
 
 if [[ "$*" =~ "include-grr" ]]; then
     # Start the GRR server container.
+    echo "Running include-grr"
     mkdir ~/grr-docker
+    echo "Running the GRR docker container"
     sudo docker run \
       --name grr-server -v ~/grr-docker/db:/var/grr-datastore \
       -v ~/grr-docker/logs:/var/log \
@@ -36,23 +40,33 @@ if [[ "$*" =~ "include-grr" ]]; then
       -p 127.0.0.1:8000:8000 -p 127.0.0.1:8080:8080 \
       -d grrdocker/grr:release grr
 
+    echo "Sleeping 180 seconds"
     # Wait for GRR to initialize.
-    /bin/sleep 120
+    /bin/sleep 180
 
     # Install the client.
+    echo "Installing GRR client on $NODE_NAME"
     sudo docker cp grr-server:/usr/share/grr-server/executables/installers .
-    sudo dpkg -i installers/*amd64.deb
+    if sudo dpkg -i installers/*amd64.deb; then
+        echo "GRR client installed successfully"
+    else
+        echo "GRR client installation failed"
+        exit 1
+    fi
 fi
 
 if [[ "$*" =~ "include-timesketch" ]]; then
     # Start the Timesketch server container.
      export OPENSEARCH_VERSION=1.2.2
+     echo "Cloning Timesketch from Github"
      git clone https://github.com/google/timesketch.git
      cd timesketch
      cd docker
      cd e2e
+     echo "Running the Timesketch docker-compose script"
      sudo -E docker-compose up -d
      # Wait for Timesketch to initialize
+     echo "Sleeping 300 seconds..."
      /bin/sleep 300
      cd ../../..
      cp config/linux/timesketchrc ~/.timesketchrc
@@ -60,6 +74,7 @@ if [[ "$*" =~ "include-timesketch" ]]; then
 fi
 
 if [[ "$*" =~ "include-plaso" ]]; then
+    echo "Installing plaso"
     sudo apt-get -qq -y install plaso-tools
 fi
 

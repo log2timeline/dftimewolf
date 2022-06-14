@@ -95,9 +95,12 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
     """Set up for the snapshot copy operation."""
     if not self.bucket_exists:
       self.logger.info('Creating AWS bucket {0:s}'.format(self.bucket))
-      self.s3.create_bucket(
-        Bucket=self.bucket,
-        CreateBucketConfiguration={'LocationConstraint': self.region})
+
+      create_bucket_args = {'Bucket': self.bucket}
+      # us-east-1 is the default, but throws an error if actually specified.
+      if self.region != 'us-east-1':
+        create_bucket_args['LocationConstraint'] = self.region
+      self.s3.create_bucket(**create_bucket_args)
 
     # Check the snapshots exist
     snap_ids = [snap.id for snap in \

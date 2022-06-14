@@ -101,7 +101,8 @@ class SCPExporter(module.BaseModule):
       self._paths = [fspath.path for fspath in fspaths]
 
     if not self._paths:
-      self.ModuleError('No paths specified to SCP module.', critical=True)
+      self.ModuleError(
+          'No files found for copying with SCP module.', critical=True)
 
     self._CreateDestinationDirectory(remote=self._upload)
 
@@ -137,11 +138,11 @@ class SCPExporter(module.BaseModule):
       file_name = os.path.basename(path_)
       full_path = os.path.join(self._destination, file_name)
       if self._upload:
-        self.logger.success('Remote filesystem path {0:s}'.format(full_path))
+        self.PublishMessage(f'Remote filesystem path {full_path}')
         fspath = containers.RemoteFSPath(
             path=full_path, hostname=self._hostname)
       else:
-        self.logger.success('Local filesystem path {0:s}'.format(full_path))
+        self.PublishMessage(f'Local filesystem path {full_path}')
         fspath = containers.File(name=file_name, path=full_path)
 
       self.state.StoreContainer(fspath)

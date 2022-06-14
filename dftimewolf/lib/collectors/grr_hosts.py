@@ -235,7 +235,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       return ''
 
     flow_id = flow.flow_id  # type: str
-    self.logger.success('{0:s}: Scheduled'.format(flow_id))
+    self.PublishMessage(f'{flow_id}: Scheduled')
 
     if self.keepalive:
       keepalive_flow = client.CreateFlow(
@@ -264,8 +264,8 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       try:
         status = client.Flow(flow_id).Get().data
       except grr_errors.UnknownError:
-        msg = 'Unable to stat flow {0:s} for host {1:s}'.format(
-            flow_id, client.data.os_info.fqdn.lower())
+        msg = (f'Unknown error retrieving flow {flow_id} for host '
+            f'{client.data.os_info.fqdn.lower()}')
         self.ModuleError(msg, critical=True)
 
       if status.state == flows_pb2.FlowContext.ERROR:
@@ -322,7 +322,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       flow_id (str): GRR identifier of the flow.
 
     Returns:
-      str: path of downloaded files.
+      str: path of the zipfile containing downloaded files.
     """
     output_file_path = os.path.join(
         self.output_path, '.'.join((flow_id, 'zip')))
@@ -413,7 +413,7 @@ class GRRArtifactCollector(GRRFlow):
             grr_server_url: str,
             grr_username: str,
             grr_password: str,
-            max_file_size: str,
+            max_file_size: Optional[int],
             approvers: Optional[str]=None,
             verify: bool=True,
             skip_offline_clients: bool=False) -> None:
@@ -454,7 +454,7 @@ class GRRArtifactCollector(GRRFlow):
 
     self.use_tsk = use_tsk
     if max_file_size:
-      self.max_file_size = int(max_file_size)
+      self.max_file_size = max_file_size
 
   def Process(self, container: containers.Host) -> None:
     """Collects artifacts from a host with GRR.
@@ -504,8 +504,7 @@ class GRRArtifactCollector(GRRFlow):
       collected_flow_data = self._DownloadFiles(client, flow_id)
 
       if collected_flow_data:
-        self.logger.success(
-            '{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
+        self.PublishMessage(f'{flow_id}: Downloaded: {collected_flow_data}')
         cont = containers.File(
             name=client.data.os_info.fqdn.lower(),
             path=collected_flow_data
@@ -623,8 +622,7 @@ class GRRFileCollector(GRRFlow):
       self._AwaitFlow(client, flow_id)
       collected_flow_data = self._DownloadFiles(client, flow_id)
       if collected_flow_data:
-        self.logger.success(
-            '{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
+        self.PublishMessage(f'{flow_id}: Downloaded: {collected_flow_data}')
         cont = containers.File(
             name=client.data.os_info.fqdn.lower(),
             path=collected_flow_data
@@ -633,6 +631,10 @@ class GRRFileCollector(GRRFlow):
 
   def PreProcess(self) -> None:
     """Check that we're actually doing something, and it's not a no-op."""
+    for file_container in self.state.GetContainers(
+        container_class=containers.FSPath):
+      self.files.append(file_container.path)
+
     if not self.files:
       message = 'Would fetch 0 files - bailing out instead.'
       self.logger.critical(message)
@@ -723,7 +725,7 @@ class GRROsqueryCollector(GRRFlow):
   def _DownloadResults(self,
                        client: Client,
                        flow_id: str) -> List[pd.DataFrame]:
-    """Process osquery results.
+    """Download osquery results.
 
     Args:
       client (Client): the GRR Client.
@@ -736,8 +738,8 @@ class GRROsqueryCollector(GRRFlow):
     list_results = list(flow.ListResults())
 
     if not list_results:
-      self.logger.info(f'No results for flow ID {str(flow)}')
-      return []
+      self.logger.info(f'No rows returned for flow ID {str(flow)}')
+      return list_results
 
     results = []
     for result in list_results:
@@ -769,11 +771,25 @@ class GRROsqueryCollector(GRRFlow):
             timeout_millis=self.timeout_millis,
             ignore_stderr_errors=self.ignore_stderr_errors)
 
-        flow_id = self._LaunchFlow(client, 'OsqueryFlow', hunt_args)
+        try:
+          flow_id = self._LaunchFlow(client, 'OsqueryFlow', hunt_args)
+          self._AwaitFlow(client, flow_id)
+        except DFTimewolfError as error:
+          self.ModuleError(
+              f'Error raised while launching/awaiting flow: {error.message}')
+          continue
 
-        self._AwaitFlow(client, flow_id)
+        results = self._DownloadResults(client, flow_id)
+        if not results:
+          dataframe_container = containers.DataFrame(
+              data_frame=pd.DataFrame(),
+              description=osquery_container.query,
+              name=f'Osquery flow:{flow_id}',
+              source=f'{container.hostname}:{client.client_id}')
+          self.state.StoreContainer(dataframe_container)
+          continue
 
-        for data_frame in self._DownloadResults(client, flow_id):
+        for data_frame in results:
           self.logger.info(
               f'{str(flow_id)} ({container.hostname}): {len(data_frame)} rows '
               'collected')
@@ -850,7 +866,7 @@ class GRRFlowCollector(GRRFlow):
     self.flow_id = str()
     self.host: containers.Host
 
-  # pylint: disable=arguments-differ
+  # pylint: disable=arguments-differ, arguments-renamed
   def SetUp(self,
             hostnames: str,
             flow_ids: str,
@@ -882,6 +898,7 @@ class GRRFlowCollector(GRRFlow):
         skip_offline_clients=skip_offline_clients)
 
     flows = flow_ids.strip().split(',')
+    found_flows = []
 
     # For each host specified, list their flows
     for item in hostnames.strip().split(','):
@@ -893,6 +910,13 @@ class GRRFlowCollector(GRRFlow):
         for f in flows:
           if f in client_flows:
             self.state.StoreContainer(containers.GrrFlow(host, f))
+            found_flows.append(f)
+
+    missing_flows = sorted([f for f in flows if f not in found_flows])
+    if missing_flows:
+      self.logger.warning('The following flows were not found: '
+          f'{", ".join(missing_flows)}')
+      self.logger.warning('Did you specify a child flow instead of a parent?')
 
   def Process(self, container: containers.GrrFlow) -> None:
     """Downloads the results of a GRR collection flow.
@@ -907,16 +931,21 @@ class GRRFlowCollector(GRRFlow):
     self._CheckSkippedFlows()
     collected_flow_data = self._DownloadFiles(client, container.flow_id)
     if collected_flow_data:
-      self.logger.success('{0:s}: Downloaded: {1:s}'.format(
-          self.flow_id, collected_flow_data))
+      self.PublishMessage(
+          f'{container.flow_id}: Downloaded: {collected_flow_data}')
       cont = containers.File(
           name=client.data.os_info.fqdn.lower(),
           path=collected_flow_data
       )
       self.state.StoreContainer(cont)
+    else:
+      self.logger.warning('No flow data collected for '
+          f'{container.hostname}:{container.flow_id}')
 
   def PreProcess(self) -> None:
-    """Not implemented."""
+    """Check that we're actually about to collect anything."""
+    if len(self.state.GetContainers(self.GetThreadOnContainerType())) == 0:
+      self.ModuleError('No flows found for collection.', critical=True)
 
   def PostProcess(self) -> None:
     # TODO(ramoj) check if this should be per client in process
@@ -924,7 +953,7 @@ class GRRFlowCollector(GRRFlow):
     self._CheckSkippedFlows()
 
   def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
-    """This module works on host containers."""
+    """This module works on GrrFlow containers."""
     return containers.GrrFlow
 
 
@@ -949,7 +978,7 @@ class GRRTimelineCollector(GRRFlow):
 
   # We're overriding the behavior of GRRFlow's SetUp function to include new
   # parameters.
-  # pylint: disable=arguments-differ,too-many-arguments
+  # pylint: disable=arguments-differ,too-many-arguments, arguments-renamed
   def SetUp(self,
             hostnames: str,
             root_path: str,
@@ -1012,8 +1041,7 @@ class GRRTimelineCollector(GRRFlow):
       self._AwaitFlow(client, flow_id)
       collected_flow_data = self._DownloadTimeline(client, flow_id)
       if collected_flow_data:
-        self.logger.success(
-            '{0!s}: Downloaded: {1:s}'.format(flow_id, collected_flow_data))
+        self.PublishMessage(f'{flow_id}: Downloaded: {collected_flow_data}')
         cont = containers.File(
             name=client.data.os_info.fqdn.lower(),
             path=collected_flow_data

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Creates an analysis VM and attaches GCP disks to it for analysis."""
 
+import time
 from typing import List, Optional, Dict
 
 from libcloudforensics import errors as lcf_errors
@@ -116,9 +117,9 @@ class GCEForensicsVM(module.BaseModule):
       analysis_vm_name = common.GenerateUniqueInstanceName(
           'gcp-forensics-vm',
           common.COMPUTE_NAME_LIMIT)
-    self.logger.success(f'Your analysis VM will be: {analysis_vm_name}')
-    self.logger.info('Complimentary gcloud command:')
-    self.logger.info(
+    self.PublishMessage(f'Your analysis VM will be: {analysis_vm_name}')
+    self.PublishMessage('Complimentary gcloud command:')
+    self.PublishMessage(
         f'gcloud compute ssh --project {self.project.project_id} '
         f'{analysis_vm_name} --zone {self.project.default_zone}')
     self.state.StoreContainer(
@@ -142,7 +143,7 @@ class GCEForensicsVM(module.BaseModule):
       self.logger.error(f'Could not create VM: {exception}')
       self.ModuleError(str(exception), critical=True)
     if not created:
-      self.logger.info(f'Instance {analysis_vm_name} exists: reusing.')
+      self.PublishMessage(f'Instance {analysis_vm_name} exists: reusing.')
     if self._gcp_label:
       self.analysis_vm.AddLabels(self._gcp_label)
       self.analysis_vm.GetBootDisk().AddLabels(self._gcp_label)
@@ -151,16 +152,31 @@ class GCEForensicsVM(module.BaseModule):
         evidence_disk=None,
         platform='gcp'))
 
-    disks = self.state.GetContainers(containers.GCEDiskEvidence)
+    disks = self.state.GetContainers(containers.GCEDisk)
+
+    # Sleep until status is RUNNING before attaching disks. Possible values:
+    # https://cloud.google.com/compute/docs/reference/rest/v1/instances/get
+    if disks and self.analysis_vm.GetPowerState() != 'RUNNING':
+      self.logger.info('Pausing 10 seconds to allow OS to boot before attaching'
+          ' evidence disks')
+      time.sleep(10)
 
     for d in disks:
       if d.project != self.project.project_id:
         continue
-      self.logger.info(f'Attaching {d.name} to {analysis_vm_name}')
-      self.analysis_vm.AttachDisk(compute.GoogleComputeDisk(
-          self.project.project_id,
-          self.project.default_zone,
-          d.name))
+      try:
+        self.logger.info(f'Attaching {d.name} to {analysis_vm_name}')
+        self.analysis_vm.AttachDisk(compute.GoogleComputeDisk(
+            self.project.project_id,
+            self.project.default_zone,
+            d.name))
+      except RuntimeError as error:
+        if 'RESOURCE_IN_USE_BY_ANOTHER_RESOURCE' in str(error):
+          self.logger.warning(
+              f'Attaching {d.name} to {analysis_vm_name} failed, as it is '
+              'already attached to another instance.')
+        else:
+          raise error
 
 
 modules_manager.ModulesManager.RegisterModule(GCEForensicsVM)

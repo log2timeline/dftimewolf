@@ -7,6 +7,7 @@ import zipfile
 import mock
 
 from grr_response_proto import flows_pb2
+from grr_response_proto import osquery_pb2 as osquery_flows
 
 from dftimewolf import config
 from dftimewolf.lib import state
@@ -20,6 +21,10 @@ from tests.lib.collectors.test_data import mock_grr_hosts
 # pylint: disable=invalid-name,arguments-differ
 class GRRHuntArtifactCollectorTest(unittest.TestCase):
   """Tests for the GRR artifact collector."""
+
+  # For pytype
+  grr_hunt_artifact_collector: grr_hunt.GRRHuntArtifactCollector
+  mock_grr_api: mock.Mock
 
   @mock.patch('grr_api_client.api.InitHttp')
   def setUp(self, mock_InitHttp):
@@ -59,11 +64,16 @@ class GRRHuntArtifactCollectorTest(unittest.TestCase):
 class GRRHuntFileCollectorTest(unittest.TestCase):
   """Tests for the GRR file collector."""
 
+  # For pytype
+  grr_hunt_file_collector: grr_hunt.GRRHuntFileCollector
+  mock_grr_api: mock.Mock
+
   @mock.patch('grr_api_client.api.InitHttp')
   def setUp(self, mock_InitHttp):
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
     self.test_state = state.DFTimewolfState(config.Config)
+    self.test_state.StoreContainer(containers.FSPath(path='/etc/hosts'))
     self.grr_hunt_file_collector = grr_hunt.GRRHuntFileCollector(
         self.test_state)
     self.grr_hunt_file_collector.SetUp(
@@ -87,13 +97,21 @@ class GRRHuntFileCollectorTest(unittest.TestCase):
         ['/etc/passwd', '/etc/shadow']
     )
 
+  def testPreProcess(self):
+    """Tests the preprocess method."""
+    self.grr_hunt_file_collector.PreProcess()
+    self.assertEqual(
+        self.grr_hunt_file_collector.file_path_list,
+        ['/etc/passwd', '/etc/shadow', '/etc/hosts'])
+
   def testProcess(self):
     """Tests that the process method invokes the correct GRR API calls."""
+    self.grr_hunt_file_collector.PreProcess()
     self.grr_hunt_file_collector.Process()
     # extract call kwargs
     call_kwargs = self.mock_grr_api.CreateHunt.call_args[1]
     self.assertEqual(call_kwargs['flow_args'].paths,
-                     ['/etc/passwd', '/etc/shadow'])
+                     ['/etc/passwd', '/etc/shadow', '/etc/hosts'])
     self.assertEqual(call_kwargs['flow_args'].action.action_type,
                      flows_pb2.FileFinderAction.DOWNLOAD)
     self.assertEqual(call_kwargs['flow_name'], 'FileFinder')
@@ -104,13 +122,17 @@ class GRRHuntFileCollectorTest(unittest.TestCase):
 class GRRHuntOsqueryCollectorTest(unittest.TestCase):
   """Tests for the GRR osquery collector."""
 
+  # For pytype
+  grr_hunt_osquery_collector: grr_hunt.GRRHuntOsqueryCollector
+  mock_grr_api: mock.Mock
+
   @mock.patch('grr_api_client.api.InitHttp')
   def setUp(self, mock_InitHttp):
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
     self.test_state = state.DFTimewolfState(config.Config)
     self.test_state.StoreContainer(
-        containers.OsqueryQuery('SELECT * FROM processes'))
+        containers.OsqueryQuery(query='SELECT * FROM processes'))
     self.grr_hunt_osquery_collector = grr_hunt.GRRHuntOsqueryCollector(
         self.test_state)
     self.grr_hunt_osquery_collector.SetUp(
@@ -140,8 +162,12 @@ class GRRHuntOsqueryCollectorTest(unittest.TestCase):
     self.assertEqual(call_kwargs['hunt_runner_args'].description,
                      'random reason')
 
-class GRRFHuntDownloader(unittest.TestCase):
+class GRRHuntDownloader(unittest.TestCase):
   """Tests for the GRR hunt downloader."""
+
+  # For pytype
+  grr_hunt_downloader: grr_hunt.GRRHuntDownloader
+  mock_grr_api: mock.Mock
 
   @mock.patch('grr_api_client.api.InitHttp')
   def setUp(self, mock_InitHttp):
@@ -232,6 +258,80 @@ class GRRFHuntDownloader(unittest.TestCase):
         'Bad zipfile tests/lib/collectors/test_data/hunt.zip: ')
     self.assertTrue(error.exception.critical)
     mock_remove.assert_not_called()
+
+
+class GRRHuntOsqueryDownloader(unittest.TestCase):
+  """Tests for the GRR Osquery hunt downloader."""
+
+  @mock.patch('grr_api_client.api.InitHttp')
+  def setUp(self, mock_InitHttp):
+    self.mock_grr_api = mock.Mock()
+    mock_InitHttp.return_value = self.mock_grr_api
+    self.test_state = state.DFTimewolfState(config.Config)
+    self.grr_hunt_downloader = grr_hunt.GRRHuntOsqueryDownloader(
+        self.test_state)
+    self.grr_hunt_downloader.SetUp(
+        hunt_id='H:12345',
+        reason='random reason',
+        grr_server_url='http://fake/endpoint',
+        grr_username='admin',
+        grr_password='admin',
+        approvers='approver1,approver2',
+        verify=False
+    )
+    self.grr_hunt_downloader.output_path = '/tmp/test'
+
+  def testInitialization(self):
+    """Tests that the collector is correctly initialized."""
+    # pytype: disable=attribute-error
+    self.assertEqual(self.grr_hunt_downloader.hunt_id, 'H:12345')
+    # pytype: enable=attribute-error
+
+  @mock.patch('dftimewolf.lib.collectors.grr_hunt.GRRHuntOsqueryDownloader._GetAndWriteResults')  # pylint: disable=line-too-long
+  def testProcess(self, mock_get_write_results):
+    """Tests that hunt results are downloaded to the correct path."""
+    self.mock_grr_api.Hunt.return_value.Get.return_value = \
+        mock_grr_hosts.MOCK_HUNT
+    self.grr_hunt_downloader.Process()
+    mock_get_write_results.assert_called_with(mock_grr_hosts.MOCK_HUNT,
+                                              '/tmp/test')
+
+  @mock.patch('grr_api_client.hunt.Hunt.ListResults')
+  def testGetAndWriteResults(self, mock_list_results):
+    """Tests the GetAndWriteReslts function."""
+    mock_result = mock.MagicMock()
+    mock_result.payload = mock.MagicMock(spec=osquery_flows.OsqueryResult)
+    mock_list_results.return_value = [mock_result]
+    mock_client = mock.MagicMock()
+    mock_client.data.os_info.fqdn = 'TEST'
+    self.mock_grr_api.SearchClients.return_value = [mock_client]
+
+    results = self.grr_hunt_downloader._GetAndWriteResults(  # pylint: disable=protected-access
+        mock_grr_hosts.MOCK_HUNT, '/tmp/test')
+
+    self.assertEqual(len(results), 1)
+    self.assertEqual(results[0][0], 'test')
+    self.assertEqual(results[0][1], '/tmp/test/test.csv')
+
+  @mock.patch('grr_api_client.hunt.Hunt.ListResults')
+  def testGetAndWriteWrongResults(self, mock_list_results):
+    """Tests the GetAndWriteReslts function with wrong results."""
+    mock_result = mock.MagicMock()
+    mock_result.payload = mock.MagicMock(spec=flows_pb2.FileFinderResult)
+    mock_list_results.return_value = [mock_result]
+    mock_client = mock.MagicMock()
+    mock_client.data.os_info.fqdn = 'TEST'
+    self.mock_grr_api.SearchClients.return_value = [mock_client]
+
+    # pylint: disable=protected-access
+    with self.assertRaises(errors.DFTimewolfError) as error:
+      self.grr_hunt_downloader._GetAndWriteResults(
+          mock_grr_hosts.MOCK_HUNT, '/tmp/test')
+
+    self.assertEqual(1, len(self.test_state.errors))
+    self.assertIn('Incorrect results format from', error.exception.message)
+    self.assertIn('Possibly not an osquery hunt.', error.exception.message)
+    self.assertTrue(error.exception.critical)
 
 
 if __name__ == '__main__':

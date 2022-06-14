@@ -22,6 +22,7 @@ REQUIRED_PERMS = [
   'compute.disks.delete',
   'compute.disks.get',
   'compute.disks.list',
+  'compute.disks.setLabels',
   'compute.disks.use',
   'compute.disks.use',
   'compute.disks.use',
@@ -35,6 +36,7 @@ REQUIRED_PERMS = [
   'compute.instances.get',
   'compute.instances.getSerialPortOutput',
   'compute.instances.list',
+  'compute.instances.setLabels',
   'compute.instances.setMetadata',
   'compute.instances.setServiceAccount',
   'compute.machineTypes.list',
@@ -128,7 +130,7 @@ class GCSToGCEImage(module.ThreadAwareModule):
       self._AssignRolesToCloudBuild(self.role_name)
 
       self.logger.info("Pausing 30 seconds to allow permissions to propagate")
-      time.sleep(30) # Leave some time for permissions to propagate
+      time.sleep(30)
     except HttpError as exception:
       # IAM service raises googleapiclient.errors.HttpError
       self.ModuleError(str(exception), critical=True)
@@ -151,7 +153,8 @@ class GCSToGCEImage(module.ThreadAwareModule):
         guest_environment = False,
         image_name = name)
 
-    self.state.StoreContainer(containers.GCEImage(image.name))
+    self.state.StoreContainer(
+        containers.GCEImage(image.name, self.dest_project_name))
 
   def PostProcess(self) -> None:
     """Cleanup IAM after the fact.

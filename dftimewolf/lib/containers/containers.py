@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Optional, Union, List, TYPE_CHECKING, Dict, Any
 
 from dftimewolf.lib.containers import interface
@@ -32,6 +31,10 @@ class FSPath(interface.AttributeContainer):
     super(FSPath, self).__init__()
     self.path = path
 
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return self.path
+
 
 class RemoteFSPath(FSPath):
   """Remote Filesystem path container.
@@ -52,6 +55,10 @@ class RemoteFSPath(FSPath):
     super(RemoteFSPath, self).__init__(path=path)
     self.hostname = hostname
 
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return f'{self.hostname}:{self.path}'
+
 
 class Report(interface.AttributeContainer):
   """Report attribute container.
@@ -69,7 +76,7 @@ class Report(interface.AttributeContainer):
       module_name: str,
       text: str,
       text_format: str = 'plaintext',
-      attributes: Optional[List[Dict[str, Any]]] = None) -> None:
+      metadata: Optional[Dict[str, Any]] = None) -> None:
     """Initializes the analysis report.
 
     Args:
@@ -77,13 +84,17 @@ class Report(interface.AttributeContainer):
       text (str): report text.
       text_format (str): format of text in the report. Must be either
         'plaintext' or 'markdown'.
-      attributes (list): attribute list of dicts that must contain 'name',
-        'type', 'values' keys.
+      metadata (dict): a dict for optional report metadata to be used by
+        exporter modules.
     """
-    super(Report, self).__init__(attributes=attributes)
+    super(Report, self).__init__(metadata=metadata)
     self.module_name = module_name
     self.text = text
     self.text_format = text_format
+
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return f'{self.module_name} Report'
 
 
 class GCPLogs(interface.AttributeContainer):
@@ -111,65 +122,9 @@ class GCPLogs(interface.AttributeContainer):
     self.path = path
     self.project_name = project_name
 
-
-class AWSLogs(interface.AttributeContainer):
-  """AWS logs container.
-
-  Attributes:
-      path (str): path to a AWS log file.
-      profile_name (str): the profile used to collect logs.
-      query_filter (str): the query filter used in the log query.
-      start_time (str): the start time used in the log query in format
-        'YYYY-MM-DD HH:MM:SS.US'.
-      end_time (str): the end time used in the log query in format
-        'YYYY-MM-DD HH:MM:SS.US'.
-  """
-  CONTAINER_TYPE = 'aws_logs'
-
-  def __init__(
-      self, path: str, profile_name: Optional[str], query_filter: Optional[str],
-      start_time: Optional[datetime], end_time: Optional[datetime]) -> None:
-    """Initializes the AWS logs container.
-
-    Args:
-      path (str): path to a AWS log file.
-      profile_name (str): the profile used to collect logs.
-      query_filter (str): the query filter used in the log query.
-      start_time (datetime): the start time used in the log query.
-      end_time (datetime): the end time used in the log query.
-    """
-    super(AWSLogs, self).__init__()
-    self.path = path
-    self.profile_name = profile_name
-    self.query_filter = query_filter
-    self.start_time = str(start_time)
-    self.end_time = str(end_time)
-
-
-class AzureLogs(interface.AttributeContainer):
-  """Azure logs container.
-
-  Attributes:
-      path (str): path to an Azure log file.
-      filter_expression (str): the filter_expression used in the log query.
-      subscription_id (str): the subscription_id of the queried subscription.
-  """
-  CONTAINER_TYPE = 'azure_logs'
-
-  def __init__(
-      self, path: str, filter_expression: Optional[str],
-      subscription_id: Optional[str]) -> None:
-    """Initializes the Azure logs container.
-
-    Args:
-      path (str): path to a Azure log file.
-      filter_expression (str): the filter used in the log query.
-      subscription_id (str): the subscription_id of the queried subscription.
-    """
-    super(AzureLogs, self).__init__()
-    self.path = path
-    self.filter_expression = filter_expression
-    self.subscription_id = subscription_id
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return f'{self.project_name}:{self.path}'
 
 
 class ThreatIntelligence(interface.AttributeContainer):
@@ -318,32 +273,32 @@ class URL(interface.AttributeContainer):
     super(URL, self).__init__()
     self.path = path
 
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return self.path
+
 
 class GCEDisk(interface.AttributeContainer):
   """Attribute container definition for a GCE Disk object.
 
   Attributes:
     name (str): The disk name.
+    project (str): The project the disk lives in.
   """
   CONTAINER_TYPE = 'gcedisk'
 
-  def __init__(self, name: str) -> None:
+  def __init__(self, name: str, project: str) -> None:
     super(GCEDisk, self).__init__()
     self.name = name
-
-class GCEDiskEvidence(interface.AttributeContainer):
-  """Attribute container definition for a GCE Disk that has been copied.
-
-  Attributes:
-    name (str): The disk name.
-    project (str): The project the disk was copied to.
-  """
-  CONTAINER_TYPE = 'gcediskevidence'
-
-  def __init__(self, name: str, project: str) -> None:
-    super(GCEDiskEvidence, self).__init__()
-    self.name = name
     self.project = project
+
+  def __eq__(self, other: GCEDisk) -> bool:
+    """Override __eq__() for this container."""
+    return self.name == other.name and self.project == other.project
+
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return f'{self.project}:{self.name}'
 
 
 class GCEImage(interface.AttributeContainer):
@@ -354,9 +309,14 @@ class GCEImage(interface.AttributeContainer):
   """
   CONTAINER_TYPE = 'gceimage'
 
-  def __init__(self, name: str) -> None:
+  def __init__(self, name: str, project: str) -> None:
     super(GCEImage, self).__init__()
     self.name = name
+    self.project = project
+
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return f'{self.project}:{self.name}'
 
 
 class DataFrame(interface.AttributeContainer):
@@ -399,6 +359,10 @@ class Host(interface.AttributeContainer):
     self.hostname = hostname
     self.platform = platform
 
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return self.hostname
+
 
 class GrrFlow(interface.AttributeContainer):
   """Attribute container definition for a host.
@@ -414,6 +378,10 @@ class GrrFlow(interface.AttributeContainer):
     super(GrrFlow, self).__init__()
     self.hostname = hostname
     self.flow_id = flow
+
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return f'{self.hostname}:{self.flow_id}'
 
 
 class WorkspaceLogs(interface.AttributeContainer):
@@ -459,6 +427,10 @@ class WorkspaceLogs(interface.AttributeContainer):
     self.start_time = start_time
     self.end_time = end_time
 
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return f'{self.application_name}:{self.path}'
+
 
 class GCSObject(interface.AttributeContainer):
   """GCS Objects container.
@@ -479,6 +451,10 @@ class GCSObject(interface.AttributeContainer):
       self.path = path
     else:
       self.path = 'gs://' + path
+
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return self.path
 
 
 class AWSS3Object(interface.AttributeContainer):
@@ -502,6 +478,10 @@ class AWSS3Object(interface.AttributeContainer):
     else:
       self.path = 's3://' + path
 
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return self.path
+
 
 class AWSVolume(interface.AttributeContainer):
   """Attribute container for an AWS Volume.
@@ -514,6 +494,10 @@ class AWSVolume(interface.AttributeContainer):
   def __init__(self, vol_id: str) -> None:
     super(AWSVolume, self).__init__()
     self.id = vol_id
+
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return self.id
 
 
 class AWSSnapshot(interface.AttributeContainer):
@@ -528,15 +512,32 @@ class AWSSnapshot(interface.AttributeContainer):
     super(AWSSnapshot, self).__init__()
     self.id = snap_id
 
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return self.id
+
 
 class OsqueryQuery(interface.AttributeContainer):
   """Attribute container for an Osquery query.
 
   Attributes:
-    query (str): The osquery query."""
+    query (str): The osquery query.
+    name (Optional[str]): A name for the osquery.
+    platforms (Optional[List[str]]): A constraint on the platform(s) the query
+        should be run.  Valid values are 'darwin', 'linux', 'windows',
+    description (Optional[str]): A description for the query.
+    """
 
   CONTAINER_TYPE = 'osquery_query'
 
-  def __init__(self, query: str) -> None:
+  def __init__(
+      self,
+      query: str,
+      name: Optional[str] = None,
+      platforms: Optional[List[str]] = None,
+      description: Optional[str] = None) -> None:
     super(OsqueryQuery, self).__init__()
+    self.description = description
+    self.name = name
+    self.platforms = platforms
     self.query = query

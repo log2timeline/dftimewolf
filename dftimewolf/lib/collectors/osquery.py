@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Collects osquery from the command line and the local file system."""
 
+import json
 import os
 from typing import Optional, List
 
@@ -9,12 +10,13 @@ from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 
+_ALL_PLATFORMS = ['darwin', 'freebsd', 'linux', 'windows']
 
 class OsqueryCollector(module.BaseModule):
   """Osquey query collector.
 
   Attributes:
-      osqueries (List[str]): list of osquery queries.
+      osqueries (List[containers.OsqueryQuery]): list of osquery containers.
   """
 
   def __init__(self,
@@ -31,7 +33,7 @@ class OsqueryCollector(module.BaseModule):
     """
     super(OsqueryCollector, self).__init__(
         state, name=name, critical=critical)
-    self.osqueries: List[str] = []
+    self.osqueries: List[containers.OsqueryQuery] = []
 
   def _ValidateOsquery(self, query: str) -> bool:
     """Validate Osquery query.
@@ -45,11 +47,97 @@ class OsqueryCollector(module.BaseModule):
     # TODO(sydp): add more checks.
     return query.upper().startswith('SELECT ')
 
+  def _ParsePlatforms(self, platforms: str) -> List[str]:
+    """Parse and normalise the platforms value from an osquery pack.
+
+    Arguments:
+      platforms: the platforms value from an osquery pack.
+
+    Returns:
+      a list of operating system platforms.  Valid values in the list are
+      'darwin', 'freebsd', 'linux', 'windows'
+    """
+    if not platforms:
+      return []
+
+    unique_platforms = set()
+    for platform in platforms.split(','):
+      platform = platform.strip()
+      if platform in ('all', 'any'):
+        unique_platforms.update(_ALL_PLATFORMS)
+      elif platform == 'posix':
+        unique_platforms.update(['darwin', 'freebsd', 'linux'])
+      elif platform in _ALL_PLATFORMS:
+        unique_platforms.add(platform)
+      else:
+        self.logger.warning(f'Unexpected value {platform} in platform value.')
+
+    return list(unique_platforms)
+
+  def _LoadOsqueryPackToState(self, path: str) -> None:
+    """Loads osquery from an osquery pack file and creates Osquery containers.
+
+    Args:
+      path: the path to the JSON file.
+    """
+    with open(path, mode='r') as fd:
+      global_platform = []
+
+      query_pack = json.load(fd)
+
+    # A 'global' platform value can be set at the root level
+    if 'platform' in query_pack:
+      global_platform = self._ParsePlatforms(query_pack.get('platform'))
+
+    for num, (name, entry) in enumerate(
+        query_pack.get('queries', {}).items()):
+      query = entry['query']
+      if not self._ValidateOsquery(query):
+        self.logger.warning(f'Entry {num} in query pack'
+                            f'{path} does not appear to be valid.')
+        continue
+
+      if 'platform' in entry:
+        platform = self._ParsePlatforms(entry.get('platform'))
+      else:
+        platform = global_platform
+      self.osqueries.append(
+          containers.OsqueryQuery(
+              query=query,
+              name=name,
+              description=entry.get('description', ''),
+              platforms=platform))
+
+  def _LoadTextFileToState(self, path: str) -> None:
+    """Loads osquery from a text file and creates Osquery containers.
+
+    Args:
+      path: the path to the text file.
+    """
+    with open(path, mode='r') as fd:
+      for line_number, line in enumerate(fd.readlines()):
+        if self._ValidateOsquery(line):
+          self.osqueries.append(
+              containers.OsqueryQuery(
+                  query=line,
+                  name='',
+                  description='',
+                  platforms=None))
+        else:
+          self.logger.warning(f'Osquery on line {line_number} of {path} '
+                              'does not appear to be valid.')
+
   # pylint: disable=arguments-differ
   def SetUp(self,
             query: str,
             paths: str) -> None:
-    """Sets up the paths to collect.
+    """Sets up the osquery to collect.
+
+    Supported files are:
+    * text files that contain one Osquery
+    * json files containing an osquery pack. See https://osquery.readthedocs.io
+          /en/stable/deployment/configuration/#query-packs for details and
+          https://github.com/osquery/osquery/tree/master/packs for examples.
 
     Args:
       query (str): osquery query.
@@ -59,9 +147,10 @@ class OsqueryCollector(module.BaseModule):
       self.ModuleError('Both query and paths cannot be empty.', critical=True)
 
     if query and self._ValidateOsquery(query):
-      self.osqueries.append(query)
+      self.osqueries.append(containers.OsqueryQuery(query=query))
     else:
-      self.logger.warning('Osquery parameter does not appear to be valid.')
+      self.logger.warning(
+          'Osquery parameter not set or does not appear to be valid.')
 
     if paths:
       split_paths = [path.strip() for path in paths.split(',')]
@@ -70,14 +159,10 @@ class OsqueryCollector(module.BaseModule):
         if not os.path.exists(path):
           self.logger.warning(f'Path {path} does not exist.')
           continue
-
-        with open(path, mode='r') as fd:
-          for line_number, line in enumerate(fd.readlines()):
-            if self._ValidateOsquery(line):
-              self.osqueries.append(line)
-            else:
-              self.logger.warning(f'Osquery on line {line_number} of {path} '
-                                  'does not appear to be valid.')
+        if os.path.splitext(path)[1] == '.json':
+          self._LoadOsqueryPackToState(path)
+        else:
+          self._LoadTextFileToState(path)
 
     if not self.osqueries:
       self.ModuleError(
@@ -86,8 +171,7 @@ class OsqueryCollector(module.BaseModule):
   def Process(self) -> None:
     """Collects osquery from the command line and local file system."""
     for osquery in self.osqueries:
-      container = containers.OsqueryQuery(osquery)
-      self.state.StoreContainer(container)
+      self.state.StoreContainer(osquery)
 
 
 modules_manager.ModulesManager.RegisterModule(OsqueryCollector)

@@ -24,7 +24,6 @@ class AWSLogsCollector(module.BaseModule):
                critical: bool=False) -> None:
     """Initializes an AWS logs collector."""
     super(AWSLogsCollector, self).__init__(state, name=name, critical=critical)
-    self._zone: str = ''
     self._profile_name: Optional[str] = None
     self._query_filter: Optional[str] = None
     self._start_time: Optional[datetime] = None
@@ -32,7 +31,6 @@ class AWSLogsCollector(module.BaseModule):
 
   # pylint: disable=arguments-differ
   def SetUp(self,
-            zone: str,
             profile_name: Optional[str]=None,
             query_filter: Optional[str]=None,
             start_time: Optional[str]=None,
@@ -40,7 +38,6 @@ class AWSLogsCollector(module.BaseModule):
     """Sets up an AWS logs collector
 
     Args:
-      zone (str): default availability zone for libcloudforensics AWSAccount.
       profile_name (str): Optional. The profile name to collect logs with.
       query_filter (str): Optional. The CloudTrail query filter in the form
         'key,value'
@@ -49,7 +46,6 @@ class AWSLogsCollector(module.BaseModule):
       end_time (str): Optional. The end time for the query in the format
         'YYYY-MM-DD HH:MM:SS'
     """
-    self._zone = zone
     self._profile_name = profile_name
     self._query_filter = query_filter
     if start_time:
@@ -114,13 +110,10 @@ class AWSLogsCollector(module.BaseModule):
         'are correct https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_LookupEvents.html')  # pylint: disable=line-too-long
         self.ModuleError(str(exception), critical=True)
 
-    self.logger.success('Downloaded logs to {0:s}'.format(output_path))
+    self.PublishMessage(f'Downloaded logs to {output_path}')
     output_file.close()
 
-    logs_report = containers.AWSLogs(
-        path=output_path, profile_name=self._profile_name,
-        query_filter=self._query_filter, start_time=self._start_time,
-        end_time=self._end_time)
+    logs_report = containers.File('AWSLogsCollector result', output_path)
     self.state.StoreContainer(logs_report)
 
 

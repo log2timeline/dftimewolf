@@ -4,7 +4,7 @@ Threaded version of existing Timesketch module."""
 
 import re
 import time
-from typing import Optional, List, Type
+from typing import Optional, List, Type, Union
 
 from timesketch_import_client import importer
 from timesketch_api_client import sketch as ts_sketch
@@ -33,23 +33,25 @@ class TimesketchExporter(module.ThreadAwareModule):
   # The name of a ticket attribute that contains the URL to a sketch.
   _SKETCH_ATTRIBUTE_NAME = 'Timesketch URL'
 
+  sketch: ts_sketch.Sketch
+
   def __init__(self,
                state: DFTimewolfState,
                name: Optional[str]=None,
                critical: bool=False) -> None:
     super(TimesketchExporter, self).__init__(
         state, name=name, critical=critical)
-    self.incident_id = None
-    self.sketch_id = 0
+    self.incident_id = None  # type: Union[str, None]
+    self.sketch_id = 0  # type: int
     self.timesketch_api = None  # type: ts_client.TimesketchApi
     self._analyzers = []  # type: List[str]
-    self.wait_for_timelines = False
-    self.host_url = None
-    self.sketch = None  #type: ts_sketch
+    self.wait_for_timelines = False  # type: bool
+    self.host_url = None  # type: Union[str, None]
+    self.sketch = None  # type: ts_sketch.Sketch
 
   def SetUp(self,  # pylint: disable=arguments-differ
             incident_id: None=None,
-            sketch_id: int=0,
+            sketch_id: Optional[int]=0,
             analyzers: None=None,
             token_password: str='',
             wait_for_timelines: bool=False) -> None:
@@ -242,7 +244,7 @@ class TimesketchExporter(module.ThreadAwareModule):
     host_url = api_root.partition('api/v1')[0]
     sketch_url = '{0:s}sketches/{1:d}/'.format(host_url, self.sketch.id)
     message = 'Your Timesketch URL is: {0:s}'.format(sketch_url)
-    self.logger.success(message)
+    self.PublishMessage(message)
 
     report_container = containers.Report(
         module_name='TimesketchExporter',

@@ -50,7 +50,7 @@ class GCEDiskFromImage(module.ThreadAwareModule):
     if source_images:
       for obj in source_images.split(','):
         if not obj == "":
-          self.state.StoreContainer(containers.GCEImage(obj))
+          self.state.StoreContainer(containers.GCEImage(obj, dest_project))
 
 
   def Process(self, container: containers.GCEImage) -> None:
@@ -73,7 +73,7 @@ class GCEDiskFromImage(module.ThreadAwareModule):
     disk = project.compute.CreateDiskFromImage(
       src_image = image,
       zone = self.dest_zone)
-    self.state.StoreContainer(containers.GCEDiskEvidence(
+    self.state.StoreContainer(containers.GCEDisk(
         disk.name,
         self.dest_project_name))
 

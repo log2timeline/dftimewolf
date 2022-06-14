@@ -45,30 +45,30 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
 
   # pylint: disable=arguments-differ
   def SetUp(self,
-            turbinia_config_file: str,
+            turbinia_config_file: Optional[str],
             project: str,
+            turbinia_recipe: Optional[str],
             turbinia_zone: str,
             output_directory: str,
-            sketch_id: int,
-            run_all_jobs: bool) -> None:
+            sketch_id: int) -> None:
     """Sets up the object attributes.
 
     Args:
       turbinia_config_file (str): Full path to the Turbinia config file to use.
       project (str): name of the GCP project containing the disk to process.
+      turbinia_recipe (str): Turbinia recipe name.
       turbinia_zone (str): GCP zone in which the Turbinia server is running.
       output_directory (str): Name of the directory to process.
       sketch_id (int): The Timesketch sketch ID.
-      run_all_jobs (bool): Whether to run all jobs instead of a faster subset.
     """
     self.turbinia_config_file = turbinia_config_file
     self.output_directory = output_directory
     if not self.output_directory:
       self.output_directory = tempfile.mkdtemp(prefix='turbinia-results')
-      self.logger.success('Turbinia results will be dumped to {0:s}'.format(
-          self.output_directory))
+      self.PublishMessage(
+          f'Turbinia results will be dumped to {self.output_directory}')
     try:
-      self.TurbiniaSetUp(project, turbinia_zone, sketch_id, run_all_jobs)
+      self.TurbiniaSetUp(project, turbinia_recipe, turbinia_zone, sketch_id)
     except TurbiniaException as exception:
       self.ModuleError(str(exception), critical=True)
       return
@@ -99,7 +99,7 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
 
         # We're only interested in plaso files for the time being.
         if path.endswith('.plaso'):
-          self.logger.success('  {0:s}: {1:s}'.format(task['name'], path))
+          self.PublishMessage(f'  {task["name"]}: {path}')
           container = containers.RemoteFSPath(
               path=path, hostname=container.hostname)
           self.state.StoreContainer(container)

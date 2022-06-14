@@ -111,7 +111,7 @@ class GoogleSheetsCollector(module.BaseModule):
 
         df.to_csv(index=False, na_rep='NaN', path_or_buf=output_file)
 
-        self.logger.success(
+        self.PublishMessage(
             f'Downloaded results of sheet "{sheet_title}" to {output_path}')
         output_file.close()
         sheet_csv_file = containers.File(

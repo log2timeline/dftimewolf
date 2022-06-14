@@ -22,8 +22,9 @@ from dftimewolf import config
 # Manually set TURBINIA_PROJECT to the value we expect.
 # pylint: disable=wrong-import-position, wrong-import-order
 from turbinia import config as turbinia_config
-turbinia_config.TURBINIA_PROJECT = 'turbinia-project'
+from turbinia import message as turbinia_message
 
+turbinia_config.TURBINIA_PROJECT = 'turbinia-project'
 YARA_RULE = """rule dummy { condition: false }"""
 
 
@@ -45,40 +46,42 @@ class TurbiniaArtifactProcessorTest(unittest.TestCase):
     turbinia_processor.SetUp(
         turbinia_config_file=None,
         project='turbinia-project',
+        turbinia_recipe=None,
         turbinia_zone='europe-west1',
         output_directory='/tmp/outputdir',
-        sketch_id=123,
-        run_all_jobs=False)
+        sketch_id=123)
+    # pylint: disable=line-too-long
+    turbinia_processor.client.create_request.return_value = turbinia_message.TurbiniaRequest()
     self.assertEqual(turbinia_processor.project, 'turbinia-project')
+    self.assertEqual(turbinia_processor.turbinia_recipe, None)
     self.assertEqual(turbinia_processor.turbinia_zone, 'europe-west1')
     self.assertEqual(turbinia_processor.sketch_id, 123)
-    self.assertEqual(turbinia_processor.run_all_jobs, False)
     self.assertEqual(turbinia_processor.output_directory, '/tmp/outputdir')
     self.assertEqual(test_state.errors, [])
 
     # pylint: disable=protected-access
-    six.assertRegex(self, turbinia_processor._output_path,
-                    '(/tmp/tmp|/var/folders).+')
+    six.assertRegex(
+        self, turbinia_processor._output_path, '(/tmp/tmp|/var/folders).+')
 
   @mock.patch('turbinia.client.get_turbinia_client')
   # pylint: disable=invalid-name
-  def testProcess(self,
-                  _mock_TurbiniaClient):
+  def testProcess(self, _mock_TurbiniaClient):
     """Tests that the processor processes data correctly when a GCEDisk is
-    received from the state.
+        received from the state.
     """
     test_state = state.DFTimewolfState(config.Config)
-    test_state.StoreContainer(containers.RemoteFSPath(hostname='remotehost',
-                                                      path='/tmp/file.ext'))
+    test_state.StoreContainer(
+        containers.RemoteFSPath(hostname='remotehost', path='/tmp/file.ext'))
     turbinia_processor = turbinia_artifact.TurbiniaArtifactProcessor(test_state)
     turbinia_processor.SetUp(
         turbinia_config_file=None,
         project='turbinia-project',
+        turbinia_recipe=None,
         turbinia_zone='europe-west1',
         output_directory='/tmp/outputdir',
-        sketch_id=123,
-        run_all_jobs=False)
-
+        sketch_id=123)
+    # pylint: disable=line-too-long
+    turbinia_processor.client.create_request.return_value = turbinia_message.TurbiniaRequest()
     turbinia_processor.client.get_task_data.return_value = [{
         'saved_paths': [
             '/fake/data.plaso',
@@ -93,15 +96,16 @@ class TurbiniaArtifactProcessorTest(unittest.TestCase):
     in_containers = test_state.GetContainers(
         turbinia_processor.GetThreadOnContainerType(), pop=True)
     for c in in_containers:
-      turbinia_processor.Process(c)
+      turbinia_processor.Process(c)  # pytype: disable=wrong-arg-types
+      # GetContainers returns the abstract base class type, but process is
+      # called with the instantiated child class.
     turbinia_processor.PostProcess()
 
     conts = test_state.GetContainers(containers.RemoteFSPath)
     self.assertEqual(len(conts), 2)
     for c in conts:
       self.assertEqual(c.hostname, 'remotehost')
-      self.assertIn(c.path, ['/fake/data.plaso',
-                             '/fake/data2.plaso'])
+      self.assertIn(c.path, ['/fake/data.plaso', '/fake/data2.plaso'])
 
 
 if __name__ == '__main__':
