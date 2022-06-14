@@ -2,10 +2,11 @@
 """Curses output management class."""
 
 from enum import Enum
+import io
 import textwrap
 import threading
 import traceback
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import curses
 
@@ -369,3 +370,28 @@ class CursesDisplayManager:
       self._stdscr.addstr(y - 1, 0, "Press any key to continue")
       self._stdscr.getkey()
       self._stdscr.addstr(y - 1, 0, "                         ")
+
+
+class CDMStringIOWrapper(io.StringIO):
+  """Subclass of io.StringIO, adds a callback to write().
+
+  This wrapped IO class will send lines it receives via write() to the callback,
+  intended to be EnqueueMessage of a CDM instance."""
+  def __init__(self,
+               source: str,
+               is_error: bool,
+               callback: Callable[[str, str, bool], None]) -> None:
+    """Initialise the object."""
+    super(CDMStringIOWrapper, self).__init__()
+    self._source = source
+    self._is_error = is_error
+    self._callback = callback
+
+  def write(self, s: str) -> int:
+    """Writes the bytes to the internal buffer, and uses the callback on any
+    lines received."""
+    for line in s.split('\n'):
+      if line != '':
+        self._callback(self._source, line, self._is_error)
+
+    return super(CDMStringIOWrapper, self).write(s)

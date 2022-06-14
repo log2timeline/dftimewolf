@@ -5,13 +5,13 @@
 import argparse
 from contextlib import redirect_stderr, redirect_stdout
 import curses
-import io
 import logging
 import os
 import signal
 import sys
 from typing import TYPE_CHECKING, List, Optional, Dict, Any, cast
 from dftimewolf.cli.curses_display_manager import CursesDisplayManager
+from dftimewolf.cli.curses_display_manager import CDMStringIOWrapper
 
 # pylint: disable=wrong-import-position
 from dftimewolf.lib import logging_utils
@@ -453,7 +453,8 @@ def Main() -> bool:
     'dftimewolf', f'Debug log: {logging_utils.DEFAULT_LOG_FILE}')
 
   stdout_null = open(os.devnull, "w")
-  stderr_sio = io.StringIO()
+  stderr_sio = CDMStringIOWrapper(
+      'stderr', True, cursesdisplaymanager.EnqueueMessage)
   exit_code = False
 
   try:
@@ -463,13 +464,6 @@ def Main() -> bool:
     cursesdisplaymanager.SetException(e)
     cursesdisplaymanager.Draw()
   finally:
-    stderr_str = stderr_sio.getvalue()
-    if stderr_str:
-      # TODO(ramo-j) This currently takes all stderr duing the life of the
-      # execution and outputs it upon exit. Perhaps there's a way to stream it
-      # to EnqueueMessage in realtime?
-      cursesdisplaymanager.EnqueueMessage(
-          'stderr', stderr_str, is_error=True)
     cursesdisplaymanager.Draw()
     cursesdisplaymanager.EndCurses()
     cursesdisplaymanager.PrintMessages()

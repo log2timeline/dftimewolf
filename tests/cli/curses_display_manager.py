@@ -7,8 +7,8 @@ import io
 import unittest
 from unittest import mock
 
-from dftimewolf.cli.curses_display_manager import CursesDisplayManager, \
-    Message, Module, Status
+from dftimewolf.cli.curses_display_manager import CDMStringIOWrapper, \
+    CursesDisplayManager, Message, Module, Status
 
 # pylint: disable=protected-access
 
@@ -464,3 +464,36 @@ class CursesDisplayManagerTest(unittest.TestCase):
           mock.call(28, 0, ' Exception encountered: Test Exception')])
       self.assertEqual(mock_addstr.call_count, 25)
       # pylint: enable=line-too-long
+
+class CDMStringIOWrapperTest(unittest.TestCase):
+  """Tests for the CDMStringIOWrapper class."""
+
+  def testInit(self):
+    """Tests initialisation."""
+    mock_callback = mock.MagicMock()
+    wrapper = CDMStringIOWrapper('source', True, mock_callback)
+
+    self.assertEqual(wrapper._source, 'source')
+    self.assertEqual(wrapper._is_error, True)
+    self.assertEqual(wrapper._callback, mock_callback)
+
+  def testWrite(self):
+    """Tests writing to the wrapper."""
+    mock_callback = mock.MagicMock()
+    wrapper = CDMStringIOWrapper('source', True, mock_callback)
+
+    with redirect_stdout(wrapper):
+      print('Message 1')
+      print('Message 2')
+      print('Message 3')
+
+    mock_callback.assert_has_calls([
+      mock.call('source', 'Message 1', True),
+      mock.call('source', 'Message 2', True),
+      mock.call('source', 'Message 3', True),
+    ])
+    self.assertEqual(mock_callback.call_count, 3)
+
+
+if __name__ == '__main__':
+  unittest.main()
