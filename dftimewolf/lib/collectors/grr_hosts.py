@@ -85,8 +85,8 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     """
     self.skip_offline_clients = skip_offline_clients
     self.GrrSetUp(
-        reason, grr_server_url, grr_username, grr_password, approvers=approvers,
-        verify=verify, message_callback=self.PublishMessage)
+        reason, grr_server_url, grr_username, grr_password,
+        approvers=approvers, verify=verify)
 
   def _SeenLastMonth(self, timestamp: int) -> bool:
     """Take a UTC timestamp and check if it is in the last month.
@@ -366,15 +366,15 @@ class GRRArtifactCollector(GRRFlow):
 
   _DEFAULT_ARTIFACTS_LINUX = [
       'LinuxAuditLogs', 'LinuxAuthLogs', 'LinuxCronLogs', 'LinuxWtmp',
-      'AllUsersShellHistory', 'ZeitgeistDatabase'
+      'ShellHistoryFile', 'ZeitgeistDatabase'
   ]
 
   _DEFAULT_ARTIFACTS_DARWIN = [
-      'MacOSRecentItems', 'MacOSBashHistory', 'MacOSLaunchAgentsPlistFiles',
-      'MacOSAuditLogFiles', 'MacOSSystemLogFiles', 'MacOSAppleSystemLogFiles',
-      'MacOSMiscLogs', 'MacOSSystemInstallationTime', 'MacOSQuarantineEvents',
-      'MacOSLaunchDaemonsPlistFiles', 'MacOSInstallationHistory',
-      'MacOSUserApplicationLogs', 'MacOSInstallationLogFile'
+      'MacOSRecentItemsPlistFile', 'BashShellHistoryFile', 'MacOSLaunchAgentsPlistFile',
+      'MacOSAuditLogFile', 'MacOSSystemLogFile', 'MacOSAppleSystemLogFile',
+      'MacOSLogFile', 'MacOSAppleSetupDoneFile', 'MacOSQuarantineEventsSQLiteDatabaseFile',
+      'MacOSLaunchDaemonsPlistFile', 'MacOSInstallationHistoryPlistFile',
+      'MacOSUserApplicationLogFile', 'MacOSInstallationLogFile'
   ]
 
   _DEFAULT_ARTIFACTS_WINDOWS = [
