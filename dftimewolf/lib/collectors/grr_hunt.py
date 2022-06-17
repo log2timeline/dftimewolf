@@ -203,8 +203,9 @@ class GRRHuntArtifactCollector(GRRHunt):
           client OS types (win, osx or linux).
       client_labels (str): a comma separated list of client labels.
     """
-    self.GrrSetUp(reason, grr_server_url, grr_username, grr_password,
-        approvers=approvers, verify=verify)
+    self.GrrSetUp(
+        reason, grr_server_url, grr_username, grr_password, approvers=approvers,
+        verify=verify, message_callback=self.PublishMessage)
 
     self.artifacts = [item.strip() for item in artifacts.strip().split(',')]
     if not artifacts:
@@ -289,8 +290,8 @@ class GRRHuntFileCollector(GRRHunt):
       client_labels (str): a comma separated list of client labels.
     """
     self.GrrSetUp(
-        reason, grr_server_url, grr_username, grr_password,
-        approvers=approvers, verify=verify)
+        reason, grr_server_url, grr_username, grr_password, approvers=approvers,
+        verify=verify, message_callback=self.PublishMessage)
     self.file_path_list = [item.strip() for item
                            in file_path_list.strip().split(',')]
     if max_file_size:
@@ -388,12 +389,8 @@ class GRRHuntOsqueryCollector(GRRHunt):
       client_labels (str): a comma separated list of client labels.
     """
     self.GrrSetUp(
-        reason=reason,
-        grr_server_url=grr_server_url,
-        grr_username=grr_username,
-        grr_password=grr_password,
-        approvers=approvers,
-        verify=verify)
+        reason, grr_server_url, grr_username, grr_password, approvers=approvers,
+        verify=verify, message_callback=self.PublishMessage)
 
     self.HuntSetup(match_mode, client_operating_systems, client_labels)
 
@@ -462,8 +459,8 @@ class GRRHuntDownloaderBase(GRRHunt):
           should be verified.
     """
     self.GrrSetUp(
-        reason, grr_server_url, grr_username, grr_password,
-        approvers=approvers, verify=verify)
+        reason, grr_server_url, grr_username, grr_password, approvers=approvers,
+        verify=verify, message_callback=self.PublishMessage)
     self.hunt_id = hunt_id
     self.output_path = tempfile.mkdtemp()
 
