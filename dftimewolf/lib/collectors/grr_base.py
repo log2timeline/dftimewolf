@@ -23,6 +23,8 @@ class GRRBaseModule(object):
     grr_url: GRR HTTP URL.
     reason (str): justification for GRR access.
     approvers: list of GRR approval recipients.
+    message_callback: Callback method used to notify the operator of approval
+        URLs.
   """
 
   _CHECK_APPROVAL_INTERVAL_SEC = 10
@@ -60,6 +62,8 @@ class GRRBaseModule(object):
       grr_server_url (str): GRR server URL.
       grr_username (str): GRR username.
       grr_password (str): GRR password.
+      message_callback: Callback method used to notify the operator of approval
+          URLs.
       approvers (Optional[str]): comma-separated GRR approval recipients.
       verify (Optional[bool]): True to indicate GRR server's x509 certificate
           should be verified.
