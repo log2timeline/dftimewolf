@@ -85,8 +85,8 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     """
     self.skip_offline_clients = skip_offline_clients
     self.GrrSetUp(
-        reason, grr_server_url, grr_username, grr_password,
-        approvers=approvers, verify=verify)
+        reason, grr_server_url, grr_username, grr_password, approvers=approvers,
+        verify=verify, message_callback=self.PublishMessage)
 
   def _SeenLastMonth(self, timestamp: int) -> bool:
     """Take a UTC timestamp and check if it is in the last month.
