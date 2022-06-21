@@ -370,9 +370,10 @@ class GRRArtifactCollector(GRRFlow):
   ]
 
   _DEFAULT_ARTIFACTS_DARWIN = [
-      'MacOSRecentItemsPlistFile', 'BashShellHistoryFile', 'MacOSLaunchAgentsPlistFile',
-      'MacOSAuditLogFile', 'MacOSSystemLogFile', 'MacOSAppleSystemLogFile',
-      'MacOSLogFile', 'MacOSAppleSetupDoneFile', 'MacOSQuarantineEventsSQLiteDatabaseFile',
+      'MacOSRecentItemsPlistFile', 'BashShellHistoryFile',
+      'MacOSLaunchAgentsPlistFile', 'MacOSAuditLogFile', 'MacOSSystemLogFile',
+      'MacOSAppleSystemLogFile', 'MacOSLogFile', 'MacOSAppleSetupDoneFile',
+      'MacOSQuarantineEventsSQLiteDatabaseFile',
       'MacOSLaunchDaemonsPlistFile', 'MacOSInstallationHistoryPlistFile',
       'MacOSUserApplicationLogFile', 'MacOSInstallationLogFile'
   ]
