@@ -23,6 +23,8 @@ class GRRBaseModule(object):
     grr_url: GRR HTTP URL.
     reason (str): justification for GRR access.
     approvers: list of GRR approval recipients.
+    message_callback: Callback method used to notify the operator of approval
+        URLs.
   """
 
   _CHECK_APPROVAL_INTERVAL_SEC = 10
@@ -41,6 +43,7 @@ class GRRBaseModule(object):
     self.grr_url = str()
     self.approvers = []  # type: List[str]
     self.output_path = str()
+    self.message_callback: Callable[[str, bool], None] = None  # type: ignore
 
   # pylint: disable=arguments-differ
   def GrrSetUp(
@@ -49,6 +52,7 @@ class GRRBaseModule(object):
       grr_server_url: str,
       grr_username: str,
       grr_password: str,
+      message_callback: Callable[[str, bool], None],
       approvers: Optional[str]=None,
       verify: bool=True) -> None:
     """Initializes a GRR hunt result collector.
@@ -58,6 +62,8 @@ class GRRBaseModule(object):
       grr_server_url (str): GRR server URL.
       grr_username (str): GRR username.
       grr_password (str): GRR password.
+      message_callback: Callback method used to notify the operator of approval
+          URLs.
       approvers (Optional[str]): comma-separated GRR approval recipients.
       verify (Optional[bool]): True to indicate GRR server's x509 certificate
           should be verified.
@@ -71,6 +77,7 @@ class GRRBaseModule(object):
     self.grr_url = grr_server_url
     self.output_path = tempfile.mkdtemp()
     self.reason = reason
+    self.message_callback = message_callback
 
   # TODO: change object to more specific GRR type information.
   def _WrapGRRRequestWithApproval(
@@ -100,6 +107,7 @@ class GRRBaseModule(object):
     """
     approval_sent = False
     approval_url = None
+    approval_url_shown = False
 
     while True:
       try:
@@ -111,7 +119,11 @@ class GRRBaseModule(object):
         if approval_sent:
           logger.info('Approval not yet granted, waiting {0:d}s'.format(
               self._CHECK_APPROVAL_INTERVAL_SEC))
-          logger.info(approval_url)
+          if not approval_url_shown:
+            self.message_callback(f'Approval needed at: {approval_url}', False)
+            approval_url_shown = True
+          else:
+            logger.info(f'Approval needed at: {approval_url}')
           time.sleep(self._CHECK_APPROVAL_INTERVAL_SEC)
           continue
 
@@ -129,6 +141,5 @@ class GRRBaseModule(object):
                         format(self.grr_url, approval.username,
                                approval.client_id,
                                approval.approval_id))
-        logger.info(
-            '{0!s}: approval request sent to: {1!s} (reason: {2:s})'.format(
-                grr_object, self.approvers, self.reason))
+        logger.info(f'{grr_object}: approval request sent to: '
+            f'{self.approvers} (reason: {self.reason})')
