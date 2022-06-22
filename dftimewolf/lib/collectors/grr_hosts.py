@@ -366,15 +366,16 @@ class GRRArtifactCollector(GRRFlow):
 
   _DEFAULT_ARTIFACTS_LINUX = [
       'LinuxAuditLogs', 'LinuxAuthLogs', 'LinuxCronLogs', 'LinuxWtmp',
-      'AllUsersShellHistory', 'ZeitgeistDatabase'
+      'ShellHistoryFile', 'ZeitgeistDatabase'
   ]
 
   _DEFAULT_ARTIFACTS_DARWIN = [
-      'MacOSRecentItems', 'MacOSBashHistory', 'MacOSLaunchAgentsPlistFiles',
-      'MacOSAuditLogFiles', 'MacOSSystemLogFiles', 'MacOSAppleSystemLogFiles',
-      'MacOSMiscLogs', 'MacOSSystemInstallationTime', 'MacOSQuarantineEvents',
-      'MacOSLaunchDaemonsPlistFiles', 'MacOSInstallationHistory',
-      'MacOSUserApplicationLogs', 'MacOSInstallationLogFile'
+      'MacOSRecentItemsPlistFile', 'BashShellHistoryFile',
+      'MacOSLaunchAgentsPlistFile', 'MacOSAuditLogFile', 'MacOSSystemLogFile',
+      'MacOSAppleSystemLogFile', 'MacOSLogFile', 'MacOSAppleSetupDoneFile',
+      'MacOSQuarantineEventsSQLiteDatabaseFile',
+      'MacOSLaunchDaemonsPlistFile', 'MacOSInstallationHistoryPlistFile',
+      'MacOSUserApplicationLogFile', 'MacOSInstallationLogFile'
   ]
 
   _DEFAULT_ARTIFACTS_WINDOWS = [
