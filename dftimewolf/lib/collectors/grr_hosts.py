@@ -12,7 +12,7 @@ import pandas as pd
 
 from grr_api_client import errors as grr_errors
 from grr_api_client.client import Client
-from grr_response_proto import flows_pb2, timeline_pb2
+from grr_response_proto import flows_pb2, jobs_pb2, timeline_pb2
 from grr_response_proto import osquery_pb2 as osquery_flows
 
 from dftimewolf.lib import module
@@ -612,6 +612,9 @@ class GRRFileCollector(GRRFlow):
     Raises:
       DFTimewolfError: if no files specified.
     """
+    path_type = jobs_pb2.PathSpec.OS
+    if self.use_tsk:
+        path_type = jobs_pb2.PathSpec.TSK
     for client in self._FindClients([container.hostname]):
       flow_action = flows_pb2.FileFinderAction(
         action_type=self.action,
@@ -620,6 +623,7 @@ class GRRFileCollector(GRRFlow):
         ))
       flow_args = flows_pb2.FileFinderArgs(
           paths=self.files,
+          pathtype=path_type,
           action=flow_action)
       flow_id = self._LaunchFlow(client, 'FileFinder', flow_args)
       self._AwaitFlow(client, flow_id)
