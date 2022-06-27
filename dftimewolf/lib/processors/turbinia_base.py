@@ -172,7 +172,7 @@ class TurbiniaProcessorBase(object):
       threat_intel_indicators: Optional[List[Optional[str]]] = None,
       yara_rules: Optional[List[str]] = None,
       wait: Optional[bool] = True
-      ) -> Union[None, Tuple[List[Dict[str, str]], Any]]:
+      ) -> Union[Tuple[List[Dict[str, str]], Any], str]:
     """Creates, sends and waits-on a Turbinia processing request.
 
     Args:
@@ -220,12 +220,12 @@ class TurbiniaProcessorBase(object):
       'Creating Turbinia request {0:s} with Evidence {1!s}'.format(
           request.request_id, evidence_.name))
     process_client.send_request(request)
-
     self.logger.info(
-        'Waiting for Turbinia request {0:s} to complete'.format(
+        'Started Turbinia request {0:s}'.format(
             request.request_id))
     if wait:
       return self.TurbiniaWait(request.request_id)
+    return request.request_id
 
   def TurbiniaWait(self, request_id: str) -> Tuple[List[Dict[str, str]], Any]:
     """Wait for Turbinia Request to finish.
