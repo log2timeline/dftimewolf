@@ -225,7 +225,7 @@ class TurbiniaProcessorBase(object):
         'Waiting for Turbinia request {0:s} to complete'.format(
             request.request_id))
     if wait:
-      self.TurbiniaWait(request.request_id)
+      return self.TurbiniaWait(request.request_id)
 
   def TurbiniaWait(self, request_id: str) -> Tuple[List[Dict[str, str]], Any]:
     """Wait for Turbinia Request to finish.
