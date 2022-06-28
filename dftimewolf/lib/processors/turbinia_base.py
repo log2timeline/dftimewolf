@@ -167,12 +167,11 @@ class TurbiniaProcessorBase(object):
     self.client = turbinia_client.get_turbinia_client()
 
   def TurbiniaProcess(
-      self,
-      evidence_: evidence.Evidence,
-      threat_intel_indicators: Optional[List[Optional[str]]] = None,
-      yara_rules: Optional[List[str]] = None,
-      wait: Optional[bool] = True
-      ) -> Union[Tuple[List[Dict[str, str]], Any], str]:
+    self,
+    evidence_: evidence.Evidence,
+    threat_intel_indicators: Optional[List[Optional[str]]] = None,
+    yara_rules: Optional[List[str]] = None
+      ) -> Tuple[List[Dict[str, str]], Any]:
     """Creates, sends and waits-on a Turbinia processing request.
 
     Args:
@@ -183,7 +182,28 @@ class TurbiniaProcessorBase(object):
       wait: Wait until the Turbinia request is done.
 
     Returns:
-      The Turbinia task data. None if wait is False.
+      The Turbinia task data.
+    """
+    return self.TurbiniaWait(
+      self.TurbiniaStart(evidence_, threat_intel_indicators, yara_rules)
+      )
+
+  def TurbiniaStart(
+    self,
+    evidence_: evidence.Evidence,
+    threat_intel_indicators: Optional[List[Optional[str]]] = None,
+    yara_rules: Optional[List[str]] = None) -> str:
+    """Creates and sends a Turbinia processing request.
+
+    Args:
+      evidence_: The evidence to process.
+      threat_intel_indicator: list of strings used as regular expressions in
+          the Turbinia grepper module.
+      yara_rules: List of Yara rule strings to use in the Turbinia Yara module.
+      wait: Wait until the Turbinia request is done.
+
+    Returns:
+      Turbinia request ID.
     """
     evidence_.validate()
     process_client = turbinia_client.get_turbinia_client()  # issues/600
@@ -216,19 +236,18 @@ class TurbiniaProcessorBase(object):
       request = process_client.create_request(
           requester=getpass.getuser(), recipe=recipe)
       request.evidence.append(evidence_)
+      request_id = request.request_id  # type: str
     self.logger.success(
       'Creating Turbinia request {0:s} with Evidence {1!s}'.format(
-          request.request_id, evidence_.name))
+          request_id, evidence_.name))
     process_client.send_request(request)
     self.logger.info(
         'Started Turbinia request {0:s}'.format(
-            request.request_id))
-    if wait:
-      return self.TurbiniaWait(request.request_id)
-    return request.request_id
+            request_id))
+    return request_id
 
   def TurbiniaWait(self, request_id: str) -> Tuple[List[Dict[str, str]], Any]:
-    """Wait for Turbinia Request to finish.
+    """Waits for Turbinia Request to finish.
 
     Args:
       request_id: Request ID for the Turbinia Job.
