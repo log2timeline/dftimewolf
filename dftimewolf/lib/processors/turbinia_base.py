@@ -182,7 +182,8 @@ class TurbiniaProcessorBase(object):
     Returns:
       The Turbinia task data.
     """
-    request_id = self.TurbiniaStart(evidence_, threat_intel_indicators, yara_rules)
+    request_id = self.TurbiniaStart(
+        evidence_, threat_intel_indicators, yara_rules)
     return self.TurbiniaWait(request_id)
 
   def TurbiniaStart(
