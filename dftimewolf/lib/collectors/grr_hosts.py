@@ -614,7 +614,7 @@ class GRRFileCollector(GRRFlow):
     """
     path_type = jobs_pb2.PathSpec.OS
     if self.use_tsk:
-        path_type = jobs_pb2.PathSpec.TSK
+      path_type = jobs_pb2.PathSpec.TSK
     for client in self._FindClients([container.hostname]):
       flow_action = flows_pb2.FileFinderAction(
         action_type=self.action,
