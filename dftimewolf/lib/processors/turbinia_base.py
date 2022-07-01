@@ -167,24 +167,39 @@ class TurbiniaProcessorBase(object):
     self.client = turbinia_client.get_turbinia_client()
 
   def TurbiniaProcess(
-      self,
-      evidence_: evidence.Evidence,
-      threat_intel_indicators: Optional[List[Optional[str]]] = None,
-      yara_rules: Optional[List[str]] = None
+    self,
+    evidence_: evidence.Evidence,
+    threat_intel_indicators: Optional[List[Optional[str]]] = None,
+    yara_rules: Optional[List[str]] = None
       ) -> Tuple[List[Dict[str, str]], Any]:
-    """Creates and sends a Turbinia processing request.
+    """Creates, sends and waits-on a Turbinia processing request.
 
     Args:
-      evidence_(turbinia.evidence.Evidence): The evidence to process
+      evidence_: The evidence to process.
       threat_intel_indicator: list of strings used as regular expressions in
           the Turbinia grepper module.
       yara_rules: List of Yara rule strings to use in the Turbinia Yara module.
-
-    Raises:
-      TurbiniaException: Exceptions raised for turbinia errors.
-
     Returns:
-      list[dict]: The Turbinia task data
+      The Turbinia task data.
+    """
+    request_id = self.TurbiniaStart(
+        evidence_, threat_intel_indicators, yara_rules)
+    return self.TurbiniaWait(request_id)
+
+  def TurbiniaStart(
+    self,
+    evidence_: evidence.Evidence,
+    threat_intel_indicators: Optional[List[Optional[str]]] = None,
+    yara_rules: Optional[List[str]] = None) -> str:
+    """Creates and sends a Turbinia processing request.
+
+    Args:
+      evidence_: The evidence to process.
+      threat_intel_indicator: list of strings used as regular expressions in
+          the Turbinia grepper module.
+      yara_rules: List of Yara rule strings to use in the Turbinia Yara module.
+    Returns:
+      Turbinia request ID.
     """
     evidence_.validate()
     process_client = turbinia_client.get_turbinia_client()  # issues/600
@@ -214,26 +229,35 @@ class TurbiniaProcessorBase(object):
           jobs_denylist=jobs_denylist,
           yara_rules=yara_text)
 
-    request = process_client.create_request(
-        requester=getpass.getuser(), recipe=recipe)
-    request.evidence.append(evidence_)
+      request = process_client.create_request(
+          requester=getpass.getuser(), recipe=recipe)
+      request.evidence.append(evidence_)
+      request_id = request.request_id  # type: str
+    self.logger.success(
+      'Creating Turbinia request {0:s} with Evidence {1!s}'.format(
+          request_id, evidence_.name))
+    process_client.send_request(request)
+    self.logger.info(
+        'Started Turbinia request {0:s}'.format(
+            request_id))
+    return request_id
 
+  def TurbiniaWait(self, request_id: str) -> Tuple[List[Dict[str, str]], Any]:
+    """Waits for Turbinia Request to finish.
+
+    Args:
+      request_id: Request ID for the Turbinia Job.
+    Returns:
+      The Turbinia task data.
+    """
     request_dict = {
         'instance': self.instance,
         'project': self.project,
         'region': self.turbinia_region,
-        'request_id': request.request_id
+        'request_id': request_id
     }
-
     task_data = []  # type: List[Dict[str, str]]
-    self.logger.success(
-        'Creating Turbinia request {0:s} with Evidence {1!s}'.format(
-            request.request_id, evidence_.name))
-    process_client.send_request(request)
-    self.logger.info(
-        'Waiting for Turbinia request {0:s} to complete'.format(
-            request.request_id))
-
+    process_client = turbinia_client.get_turbinia_client()
     # Workaround for rate limiting in turbinia when checking task status
     while True:
       try:
