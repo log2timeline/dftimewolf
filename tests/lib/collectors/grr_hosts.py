@@ -10,6 +10,7 @@ import six
 import pandas as pd
 from grr_api_client import errors as grr_errors
 from grr_response_proto import flows_pb2
+from grr_response_proto import jobs_pb2
 from grr_response_proto import osquery_pb2
 from tests.lib.collectors.test_data import mock_grr_hosts
 
@@ -413,6 +414,7 @@ class GRRFileCollectorTest(unittest.TestCase):
         'FileFinder',
         flows_pb2.FileFinderArgs(
             paths=['/etc/passwd', '/etc/hosts'],
+            pathtype=jobs_pb2.PathSpec.TSK,
             action=flows_pb2.FileFinderAction(
                 action_type=flows_pb2.FileFinderAction.STAT,
                 download=flows_pb2.FileFinderDownloadActionOptions(
