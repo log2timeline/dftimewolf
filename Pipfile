@@ -42,3 +42,6 @@ boto3 = "*"
 
 # [requires]
 # python_version = "3.9"
+
+[scripts]
+dftimewolf = python -c "import dftimewolf.cli.dftimewolf_recipes as dftw; dftw.Main()"

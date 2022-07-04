@@ -47,7 +47,7 @@ jobs:
         pipenv install --skip-lock
     - name: Test dftimewolf shortcut
       run: |
-        pipenv run dftimewolf
+        pipenv run dftimewolf -h
 
   setuppy:
     runs-on: ubuntu-latest
