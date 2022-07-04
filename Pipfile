@@ -44,4 +44,4 @@ boto3 = "*"
 # python_version = "3.9"
 
 [scripts]
-dftimewolf = python -c "import dftimewolf.cli.dftimewolf_recipes as dftw; dftw.Main()"
+dftimewolf = "python -c \"import dftimewolf.cli.dftimewolf_recipes as dftw; dftw.Main()\""
