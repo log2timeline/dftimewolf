@@ -44,7 +44,7 @@ jobs:
       run: |
         pip install pipenv
         pipenv install
-        pipenv install . --skip-lock
+        pipenv install --skip-lock
     - name: Test dftimewolf shortcut
       run: |
         pipenv run dftimewolf
@@ -64,7 +64,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        pip install --upgrade pip setuptools 
+        pip install --upgrade pip setuptools
         python setup.py install
     - name: Test dftimewolf shortcut
       run: |
