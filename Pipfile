@@ -18,7 +18,27 @@ graphviz = "*"
 
 [packages]
 grr_response_proto = { git = "https://github.com/tomchop/grr", ref="master", subdirectory="grr/proto"}
-
+beautifulsoup4 = "*"
+docker = "*"
+google-cloud-logging = ">=2.0"
+google-cloud-bigquery = {version = "*", extras = ["pandas"]}
+pyOpenSSL = "<20.0.0"  # GRR uses an older version of cryptography
+grr_api_client = { git = "https://github.com/tomchop/grr", ref="master", subdirectory="api_client/python"}
+libcloudforensics = "*"
+pypdf2 = "*"
+pyyaml = "*"
+requests = "*"
+six = "*"
+timesketch-api-client = "*"
+timesketch-import-client = "*"
+turbinia = "*"
+pandas = "*"
+cmd2 = "*"
+psutil = "*"
+prettytable = "*"
+vt-py = "*"
+typing-extensions = "*"
+boto3 = "*"
 
 # [requires]
 # python_version = "3.9"

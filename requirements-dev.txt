@@ -9,17 +9,89 @@
 # requirements. To emit only development requirements, pass "--dev-only".
 
 -i https://pypi.org/simple
+adal==1.2.7
+aiohttp==3.8.1; python_version >= '3.6'
+aiosignal==1.2.0; python_version >= '3.6'
+altair==4.2.0; python_version >= '3.7'
+amqp==5.1.1; python_version >= '3.6'
 astroid==2.11.6; python_full_version >= '3.6.2'
+async-timeout==4.0.2; python_version >= '3.6'
+asynctest==0.13.0; python_version < '3.8'
+attrs==21.4.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
+azure-common==1.1.28
+azure-core==1.24.2; python_version >= '3.6'
+azure-identity==1.10.0; python_version >= '3.6'
+azure-mgmt-compute==23.1.0
+azure-mgmt-core==1.3.1; python_version >= '3.6'
+azure-mgmt-monitor==3.1.0; python_version >= '3.6'
+azure-mgmt-network==20.0.0; python_version >= '3.6'
+azure-mgmt-resource==21.1.0; python_version >= '3.6'
+azure-mgmt-storage==20.0.0; python_version >= '3.6'
+azure-storage-blob==12.12.0; python_version >= '3.6'
+beautifulsoup4==4.11.1
+billiard==3.6.4.0
+boto3==1.24.22
+botocore==1.27.22; python_version >= '3.7'
+cached-property==1.5.2; python_version < '3.8'
+cachetools==4.2.4; python_version ~= '3.5'
+celery==5.2.7; python_version >= '3.7'
+certifi==2022.6.15
+cffi==1.15.1
+chardet==4.0.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
+charset-normalizer==2.1.0; python_version >= '3.6'
+click-didyoumean==0.3.0; python_full_version >= '3.6.2' and python_full_version < '4.0.0'
+click-plugins==1.1.1
+click-repl==0.2.0
 click==8.1.3; python_version >= '3.7'
+cmd2==2.4.1
+colorlog==2.10.0
 coverage==6.4.1
+cryptography==3.3.2
+db-dtypes==1.0.2
+deprecated==1.2.13; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 dill==0.3.5.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6'
+docker==5.0.3
+ecdsa==0.17.0; python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'
+entrypoints==0.4; python_version >= '3.6'
+filelock==3.7.1; python_version >= '3.7'
+frozenlist==1.3.0; python_version >= '3.7'
 ghp-import==2.1.0
-git+https://github.com/tomchop/grr@3da11a07c8c1d9861d8a1b91341bf5af97db74e6#egg=grr-response-proto&subdirectory=grr/proto
+git+https://github.com/tomchop/grr@a204e17f33d4cbb755c3cb6360ea087fa164a35f#egg=grr-api-client&subdirectory=api_client/python
+git+https://github.com/tomchop/grr@a204e17f33d4cbb755c3cb6360ea087fa164a35f#egg=grr-response-proto&subdirectory=grr/proto
+google-api-core[grpc]==1.31.6; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5'
+google-api-python-client==2.52.0; python_version >= '3.6'
+google-auth-httplib2==0.1.0
+google-auth-oauthlib==0.5.2; python_version >= '3.6'
+google-auth==1.35.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5'
+google-cloud-appengine-logging==1.1.2; python_version >= '3.6'
+google-cloud-audit-log==0.2.2; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+google-cloud-bigquery-storage==2.13.2; python_version >= '3.6'
+google-cloud-bigquery[pandas]==3.2.0
+google-cloud-core==1.7.2; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5'
+google-cloud-datastore==2.0.0; python_version >= '3.6'
+google-cloud-error-reporting==1.5.3; python_version >= '3.6'
+google-cloud-logging==2.7.2
+google-cloud-pubsub==1.7.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
+google-cloud-storage==2.2.1; python_version >= '3.7'
+google-crc32c==1.3.0; python_version >= '3.6'
+google-resumable-media==2.3.3; python_version >= '3.6'
+googleapis-common-protos[grpc]==1.56.3; python_version >= '3.6'
 graphviz==0.20
-importlib-metadata==4.11.4; python_version < '3.10'
+grpc-google-iam-v1==0.12.4; python_version >= '3.6'
+grpcio==1.47.0
+httplib2==0.20.4; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+idna==2.10
+importlib-metadata==4.12.0; python_version < '3.8'
+importlib-resources==5.8.0; python_version < '3.9'
+isodate==0.6.1
 isort==5.10.1; python_version < '4.0' and python_full_version >= '3.6.1'
 jinja2==3.1.2; python_version >= '3.7'
+jmespath==1.0.1; python_version >= '3.7'
+jsonschema==4.6.1; python_version >= '3.7'
+kombu==5.2.4; python_version >= '3.7'
+kubernetes==24.2.0; python_version >= '3.6'
 lazy-object-proxy==1.7.1; python_version >= '3.6'
+libcloudforensics==20220405
 libcst==0.4.5; python_version >= '3.7'
 markdown==3.3.7; python_version >= '3.6'
 markupsafe==2.1.1; python_version >= '3.7'
@@ -28,25 +100,75 @@ mergedeep==1.3.4; python_version >= '3.6'
 mkdocs==1.3.0
 mock==4.0.3
 monkeytype==22.2.0
+msal-extensions==1.0.0
+msal==1.18.0
+msrest==0.7.1; python_version >= '3.6'
+msrestazure==0.6.4
+multidict==6.0.2; python_version >= '3.7'
 mypy-extensions==0.4.3
 mypy==0.961
+netaddr==0.8.0
+networkx==2.6.3; python_version >= '3.7'
+numpy==1.21.6; python_version < '3.10' and platform_machine != 'aarch64' and platform_machine != 'arm64'
+oauthlib==3.2.0; python_version >= '3.6'
 packaging==21.3; python_version >= '3.6'
+pandas==1.3.5
 platformdirs==2.5.2; python_version >= '3.7'
-protobuf==4.21.1; python_version >= '3.7'
-pylint==2.14.3
-pyparsing==3.0.9; python_full_version >= '3.6.8'
+portalocker==2.4.0; python_version >= '3.5' and platform_system != 'Windows'
+prettytable==3.3.0
+prometheus-client==0.14.1; python_version >= '3.6'
+prompt-toolkit==3.0.30; python_full_version >= '3.6.2'
+proto-plus==1.19.6; python_version >= '3.6'
+protobuf==3.20.1; python_version >= '3.1'
+psq==0.8.0
+psutil==5.9.1
+pyarrow==8.0.0; python_version >= '3.7'
+pyasn1-modules==0.2.8
+pyasn1==0.4.8
+pycparser==2.21
+pycryptodome==3.15.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
+pycryptodomex==3.15.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
+pyjwt[crypto]==1.7.1
+pylint==2.14.4
+pyopenssl==19.1.0
+pyparsing==2.4.7; python_version >= '3.1'
+pypdf2==2.4.1
+pyperclip==1.8.2
+pyrsistent==0.18.1; python_version >= '3.7'
 python-dateutil==2.8.2; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+pytz==2022.1
 pyyaml-env-tag==0.1; python_version >= '3.6'
-pyyaml==6.0; python_version >= '3.6'
-six==1.16.0; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+pyyaml==6.0
+redis==4.3.4; python_version >= '3.6'
+requests-oauthlib==1.3.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
+requests==2.25.1
+rsa==4.8; python_version >= '3.6'
+s3transfer==0.6.0; python_version >= '3.7'
+six==1.16.0
+soupsieve==2.3.2.post1; python_version >= '3.6'
+sshpubkeys==3.3.1; python_version >= '3'
+timesketch-api-client==20210602
+timesketch-import-client==20210602
 tomli==2.0.1; python_version < '3.11'
 tomlkit==0.11.0; python_version >= '3.6' and python_version < '4.0'
+toolz==0.11.2; python_version >= '3.5'
+turbinia==20220701
+typed-ast==1.5.4; python_version < '3.8' and implementation_name == 'cpython'
 types-filelock==3.2.7
 types-protobuf==3.19.22
-types-pyyaml==6.0.8
-typing-extensions==4.2.0; python_version < '3.10'
+types-pyyaml==6.0.9
+typing-extensions==4.3.0
 typing-inspect==0.7.1
+uritemplate==4.1.1; python_version >= '3.6'
+urllib3[secure]==1.26.9; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_full_version < '4.0.0'
+vine==5.0.0; python_version >= '3.6'
+vt-py==0.14.0
 watchdog==2.1.9; python_version >= '3.6'
+wcwidth==0.2.5
+websocket-client==1.3.3; python_version >= '3.7'
+werkzeug==0.16.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'
 wrapt==1.14.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'
+xlrd==2.0.1; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5'
 yapf==0.32.0
-zipp==3.8.0; python_version >= '3.7'
+yarl==1.7.2; python_version >= '3.6'
+zipp==3.8.0; python_version < '3.10'
