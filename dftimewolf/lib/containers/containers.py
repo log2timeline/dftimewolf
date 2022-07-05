@@ -363,6 +363,10 @@ class Host(interface.AttributeContainer):
     """Override __str()__."""
     return self.hostname
 
+  def __eq__(self, other: Host) -> bool:
+    """Override __eq__() for this container."""
+    return self.hostname == other.hostname and self.platform == other.platform
+
 
 class GrrFlow(interface.AttributeContainer):
   """Attribute container definition for a host.
@@ -382,6 +386,10 @@ class GrrFlow(interface.AttributeContainer):
   def __str__(self) -> str:
     """Override __str()__."""
     return f'{self.hostname}:{self.flow_id}'
+
+  def __eq__(self, other: GrrFlow) -> bool:
+    """Override __eq__() for this container."""
+    return self.hostname == other.hostname and self.flow_id == other.flow_id
 
 
 class WorkspaceLogs(interface.AttributeContainer):

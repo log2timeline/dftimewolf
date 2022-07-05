@@ -12,7 +12,7 @@ import pandas as pd
 
 from grr_api_client import errors as grr_errors
 from grr_api_client.client import Client
-from grr_response_proto import flows_pb2, timeline_pb2
+from grr_response_proto import flows_pb2, jobs_pb2, timeline_pb2
 from grr_response_proto import osquery_pb2 as osquery_flows
 
 from dftimewolf.lib import module
@@ -366,15 +366,16 @@ class GRRArtifactCollector(GRRFlow):
 
   _DEFAULT_ARTIFACTS_LINUX = [
       'LinuxAuditLogs', 'LinuxAuthLogs', 'LinuxCronLogs', 'LinuxWtmp',
-      'AllUsersShellHistory', 'ZeitgeistDatabase'
+      'ShellHistoryFile', 'ZeitgeistDatabase'
   ]
 
   _DEFAULT_ARTIFACTS_DARWIN = [
-      'MacOSRecentItems', 'MacOSBashHistory', 'MacOSLaunchAgentsPlistFiles',
-      'MacOSAuditLogFiles', 'MacOSSystemLogFiles', 'MacOSAppleSystemLogFiles',
-      'MacOSMiscLogs', 'MacOSSystemInstallationTime', 'MacOSQuarantineEvents',
-      'MacOSLaunchDaemonsPlistFiles', 'MacOSInstallationHistory',
-      'MacOSUserApplicationLogs', 'MacOSInstallationLogFile'
+      'MacOSRecentItemsPlistFile', 'BashShellHistoryFile',
+      'MacOSLaunchAgentsPlistFile', 'MacOSAuditLogFile', 'MacOSSystemLogFile',
+      'MacOSAppleSystemLogFile', 'MacOSLogFile', 'MacOSAppleSetupDoneFile',
+      'MacOSQuarantineEventsSQLiteDatabaseFile',
+      'MacOSLaunchDaemonsPlistFile', 'MacOSInstallationHistoryPlistFile',
+      'MacOSUserApplicationLogFile', 'MacOSInstallationLogFile'
   ]
 
   _DEFAULT_ARTIFACTS_WINDOWS = [
@@ -451,6 +452,7 @@ class GRRArtifactCollector(GRRFlow):
       hostname = item.strip()
       if hostname:
         self.state.StoreContainer(containers.Host(hostname=hostname))
+    self.state.DedupeContainers(containers.Host)
 
     self.use_tsk = use_tsk
     if max_file_size:
@@ -592,6 +594,7 @@ class GRRFileCollector(GRRFlow):
       hostname = item.strip()
       if hostname:
         self.state.StoreContainer(containers.Host(hostname=hostname))
+    self.state.DedupeContainers(containers.Host)
 
     self.use_tsk = use_tsk
 
@@ -609,6 +612,9 @@ class GRRFileCollector(GRRFlow):
     Raises:
       DFTimewolfError: if no files specified.
     """
+    path_type = jobs_pb2.PathSpec.OS
+    if self.use_tsk:
+      path_type = jobs_pb2.PathSpec.TSK
     for client in self._FindClients([container.hostname]):
       flow_action = flows_pb2.FileFinderAction(
         action_type=self.action,
@@ -617,6 +623,7 @@ class GRRFileCollector(GRRFlow):
         ))
       flow_args = flows_pb2.FileFinderArgs(
           paths=self.files,
+          pathtype=path_type,
           action=flow_action)
       flow_id = self._LaunchFlow(client, 'FileFinder', flow_args)
       self._AwaitFlow(client, flow_id)
@@ -718,6 +725,7 @@ class GRROsqueryCollector(GRRFlow):
 
     for hostname in hosts:
       self.state.StoreContainer(containers.Host(hostname=hostname))
+    self.state.DedupeContainers(containers.Host)
 
     self.timeout_millis = timeout_millis
     self.ignore_stderr_errors = ignore_stderr_errors
@@ -911,6 +919,7 @@ class GRRFlowCollector(GRRFlow):
           if f in client_flows:
             self.state.StoreContainer(containers.GrrFlow(host, f))
             found_flows.append(f)
+    self.state.DedupeContainers(containers.GrrFlow)
 
     missing_flows = sorted([f for f in flows if f not in found_flows])
     if missing_flows:
@@ -1017,6 +1026,7 @@ class GRRTimelineCollector(GRRFlow):
       hostname = item.strip()
       if hostname:
         self.state.StoreContainer(containers.Host(hostname=hostname))
+    self.state.DedupeContainers(containers.Host)
 
     self._timeline_format = int(timeline_format)
     if self._timeline_format not in [1, 2]:
