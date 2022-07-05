@@ -102,6 +102,8 @@ existing modules such as the
 [LocalPlasoProcessor](https://github.com/log2timeline/dftimewolf/blob/main/dftimewolf/lib/processors/localplaso.py)
 module for an example of simple Module.
 
+Additionally, a guide on implementing a module exists [here](module-writing-basics)
+
 ### Register a new module
 
 There are two locations to register new modules:
