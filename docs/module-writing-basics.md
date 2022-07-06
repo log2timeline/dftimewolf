@@ -125,7 +125,7 @@ Two methods are used as part of module initialisation: The python class `__init_
 		self.destination_dir = ''
 ```
 
-`SetUp()` is called by the orchestration with parameters as defined by the recipe file. Our module is going to receive two parameters: a comma separated list of files and a comma separated list of hashes. 
+`SetUp()` is called by the orchestration with parameters as defined by the recipe file. Our module is going to receive two parameters: a comma separated list of files and a comma separated list of hashes. For any module that can take input in this manner should expect comma seperated values in a string rather than a `list` because it will likely come from a human on the CLI. 
 
 ```python
 	def SetUp(self, paths, hashes, destination_directory):
