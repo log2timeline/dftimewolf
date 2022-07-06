@@ -9,7 +9,7 @@ The purpose of this guide is to walk a contributor through the basics of how to 
 
 ## 0 - An empty template
 
-Each module will be a subclass of either a `BaseModule` or `ThreadAwareModule`. The latter supports running multiple actions in parallel, and so you should use a `ThreadAwareModule` when you will be processing multiple inputs that don't interact. For example, you may perform the same operation on multiple files in your local filesystem, or multiple disk snapshots in a cloud computing environment. Alternatively, you should use a `BaseModule` if you intend to only operate on a single entity, or if a system you interact with can handle it's own parallel processing.
+Each module will be a subclass of either a `BaseModule` or `ThreadAwareModule`. The latter supports running multiple actions in parallel, and so you should use a `ThreadAwareModule` when you will be processing multiple inputs that don't interact. For example, you may perform the same operation on multiple files in your local filesystem, or multiple disk snapshots in a cloud computing environment. Alternatively, you should use a `BaseModule` if you intend to only operate on a single entity, or if a system you interact with can handle its own parallel processing.
 
 A third type of module available is the `PreflightModule`. While functionaly identical to `BaseModule` the orchestration runs all `PreflightModule`s before standard modules. For example, you could use a `PreflightModule` to check for access to a cloud environment.
 
@@ -143,7 +143,7 @@ Two methods are used as part of module initialisation: The python class `__init_
 
 Now we arrive at the heavy lifting of our module, we have 3 methods remaining to implement.
 
-PreProcess is used for any actions that aren't considered part of the `SetUp()` but also need to be taken before processing. In an example that operates on a cloud platform, you could use this to create IAM permissions needed to perform the work. 
+`PreProcess` is used for any actions that aren't considered part of the `SetUp()` but also need to be taken before processing. In an example that operates on a cloud platform, you could use this to create IAM permissions needed to perform the work. 
 
 ```python
 	def PreProcess(self):
@@ -157,7 +157,7 @@ PreProcess is used for any actions that aren't considered part of the `SetUp()` 
 
 In our contrived example, we're going to test we have write permissions on the destination directory, and if not, we are raising a module error that will be handled by the orchestration. 
 
-Our module can receive file containers from two sources: Parameters passed in via the recipe, which have been added to the state in `SetUp()` or from other modules in the recipe that adds File containers to the state. Since we may end up with duplicates, we call `DedupeContainers` on our container type.
+Our module can receive file containers from two sources: parameters passed in via the recipe, which have been added to the state in `SetUp()` or from other modules in the recipe that adds `File` containers to the state. Since we may end up with duplicates, we call `DedupeContainers` on our container type.
 
 Next up is `Process(container)`. This method will receive one `File` container (as per `GetThreadOnContainerType()`) and perform the check.
 
