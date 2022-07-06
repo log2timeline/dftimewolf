@@ -150,6 +150,10 @@ class ThreatIntelligence(interface.AttributeContainer):
     self.indicator = indicator
     self.path = path
 
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return f'{self.name}:{self.indicator}:{self.path}'
+
 
 class YaraRule(interface.AttributeContainer):
   """Attribute container representing Yara rules.
@@ -162,6 +166,10 @@ class YaraRule(interface.AttributeContainer):
     super(YaraRule, self).__init__()
     self.name = name
     self.rule_text = rule_text
+
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return self.name
 
 
 class TicketAttribute(interface.AttributeContainer):
@@ -186,6 +194,10 @@ class TicketAttribute(interface.AttributeContainer):
     self.type = type_
     self.name = name
     self.value = value
+
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return self.name
 
 
 class File(interface.AttributeContainer):
@@ -212,6 +224,10 @@ class File(interface.AttributeContainer):
     self.path = path
     self.description = description
 
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return self.path
+
 
 class Directory(interface.AttributeContainer):
   """Attribute container definition for generic directories.
@@ -237,6 +253,10 @@ class Directory(interface.AttributeContainer):
     self.path = path
     self.description = description
 
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return self.path
+
 
 class ForensicsVM(interface.AttributeContainer):
   """Attribute container definition for a forensics virtual machine.
@@ -259,6 +279,10 @@ class ForensicsVM(interface.AttributeContainer):
     self.name = name
     self.evidence_disk = evidence_disk
     self.platform = platform
+
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return self.name
 
 
 class URL(interface.AttributeContainer):
@@ -342,6 +366,10 @@ class DataFrame(interface.AttributeContainer):
     self.description = description
     self.name = name
     self.source = source
+
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return self.name
 
 
 class Host(interface.AttributeContainer):
