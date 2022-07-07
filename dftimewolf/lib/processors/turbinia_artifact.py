@@ -86,7 +86,9 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
     evidence_ = evidence.CompressedDirectory(
         compressed_directory=container.path, source_path=container.path)
     try:
-      task_data, _ = self.TurbiniaProcess(evidence_)
+      request_id = self.TurbiniaStart(evidence_)
+      self.PublishMessage(f'Turbinia request ID: {request_id}')
+      task_data, _ = self.TurbiniaWait(request_id)
     except TurbiniaException as exception:
       self.ModuleError(str(exception), critical=True)
 
