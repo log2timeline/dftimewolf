@@ -101,7 +101,7 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
 
         # We're only interested in plaso files for the time being.
         if path.endswith('.plaso'):
-          self.PublishMessage(f'  {task["name"]}: {path}')
+          self.logger.info(f'  {task["name"]}: {path}')
           container = containers.RemoteFSPath(
               path=path, hostname=container.hostname)
           self.state.StoreContainer(container)
