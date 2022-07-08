@@ -315,25 +315,35 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
 
   # TODO: change object to more specific GRR type information.
   def _DownloadFiles(self, client: Client, flow_id: str) -> Optional[str]:
-    """Download files from the specified flow.
+    """Download files/results from the specified flow.
 
     Args:
       client (object): GRR Client object to which to download flow data from.
       flow_id (str): GRR identifier of the flow.
 
     Returns:
-      str: path of the zipfile containing downloaded files.
+      str: path containing the downloaded files.
     """
-    output_file_path = os.path.join(
-        self.output_path, '.'.join((flow_id, 'zip')))
+    flow = client.Flow(flow_id)
+    is_timeline_flow = False
+    if flow.Get().data.name == 'TimelineFlow':
+      is_timeline_flow = True
+      output_file_path = os.path.join(
+          self.output_path, '.'.join((flow_id, 'body')))
+    else:
+      output_file_path = os.path.join(
+          self.output_path, '.'.join((flow_id, 'zip')))
 
     if os.path.exists(output_file_path):
       self.logger.info(
           '{0:s} already exists: Skipping'.format(output_file_path))
       return None
 
-    flow = client.Flow(flow_id)
-    file_archive = flow.GetFilesArchive()
+    if is_timeline_flow:
+      file_archive = flow.GetCollectedTimelineBody()
+    else:
+      file_archive = flow.GetFilesArchive()
+
     file_archive.WriteToFile(output_file_path)
 
     # Unzip archive for processing and remove redundant zip
@@ -342,8 +352,11 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     if not os.path.isdir(client_output_file):
       os.makedirs(client_output_file)
 
-    with zipfile.ZipFile(output_file_path) as archive:
-      archive.extractall(path=client_output_file)
+    if is_timeline_flow:
+      shutil.copy2(output_file_path, client_output_file)
+    else:
+      with zipfile.ZipFile(output_file_path) as archive:
+        archive.extractall(path=client_output_file)
     os.remove(output_file_path)
 
     return client_output_file
