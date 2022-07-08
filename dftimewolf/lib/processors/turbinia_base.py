@@ -166,26 +166,6 @@ class TurbiniaProcessorBase(object):
     self._output_path = tempfile.mkdtemp()
     self.client = turbinia_client.get_turbinia_client()
 
-  def TurbiniaProcess(
-    self,
-    evidence_: evidence.Evidence,
-    threat_intel_indicators: Optional[List[Optional[str]]] = None,
-    yara_rules: Optional[List[str]] = None
-      ) -> Tuple[List[Dict[str, str]], Any]:
-    """Creates, sends and waits-on a Turbinia processing request.
-
-    Args:
-      evidence_: The evidence to process.
-      threat_intel_indicator: list of strings used as regular expressions in
-          the Turbinia grepper module.
-      yara_rules: List of Yara rule strings to use in the Turbinia Yara module.
-    Returns:
-      The Turbinia task data.
-    """
-    request_id = self.TurbiniaStart(
-        evidence_, threat_intel_indicators, yara_rules)
-    return self.TurbiniaWait(request_id)
-
   def TurbiniaStart(
     self,
     evidence_: evidence.Evidence,
