@@ -6,13 +6,11 @@ import tempfile
 from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
-from typing import Dict, List, Optional, Any, Type
+from typing import Dict, List, Optional, Any, Type, Set
+from enum import Enum, auto
 
 from dateutil import parser
-from google.cloud import asset_v1
-from libcloudforensics import errors
 from libcloudforensics.providers.gcp.internal.common import CreateService
-from libcloudforensics.providers.gcp.internal.compute import GoogleCloudCompute
 from libcloudforensics.providers.gcp.internal.log import GoogleCloudLog
 
 from dftimewolf.lib import module
@@ -20,6 +18,11 @@ from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 
+class OperatingMode(Enum):
+  """Enum represent operational mode (Online or Offline)."""
+
+  ONLINE = auto()
+  OFFLINE = auto()
 
 class Resource:
   """A Class that represent a resource (Instance, Disk, Image...etc)."""
@@ -37,20 +40,26 @@ class Resource:
     self.zone = ''
 
     self.created_by = ''
+    self.creator_ip_address = ''
+    self.creator_useragent = ''
     self.deleted_by = ''
+    self.deleter_ip_address = ''
+    self.deleter_useragent = ''
     self.parent: Optional[Resource] = None
-    self.children: List[Resource] = []
+    self.children: Set[Resource] = set()
     self.disks: List[Resource] = []
     self.deleted = False
     self._resource_name = ''
     self._creation_timestamp: Optional[datetime] = None
     self._deletion_timestamp: Optional[datetime] = None
 
-  def set_resource_name(self, value: str) -> None:
-    """Property resource_name Sette."""
-    if value:
-      value = '/projects/' + value.split('/projects/')[-1]
+  def __hash__(self) -> int:
+    """For object comparison."""
+    return hash(self.id + self.resource_name)
 
+  def set_resource_name(self, value: str) -> None:
+    """Property resource_name Setter."""
+    if value:
       values = value.split('/')
 
       self.name = values[-1]
@@ -71,12 +80,12 @@ class Resource:
       else:
         self.type = resource_type
 
-      self.project_id = values[2]
-
-      if value.find('zone'):
+      if '/zones/' in value:
         self.zone = values[-3]
-      elif value.find('global'):
+        self.project_id = values[-5]
+      elif '/global/' in value:
         self.zone = 'global'
+        self.project_id = values[-4]
 
     self._resource_name = value
 
@@ -169,7 +178,7 @@ class Resource:
       their names indented based on their location in the tree
     """
     result: List[Dict[str, Resource]] = []
-    tab = '\t'
+    tab = '    '
 
     for child in self.children:
       entry: Dict[str, Any] = {}
@@ -185,12 +194,12 @@ class Resource:
   def __str__(self) -> str:
     """Return a string representation of the resource tree."""
     output = '\n'
-    dashes = '-' * 150
+    dashes = '-' * 200
 
     # Draw table header
     output = output + dashes + '\n'
-    output = output + '{:<25s}{:<25s}{:<25s}{:<25s}{:<25s}{:<100s}\n'.format(
-        'ID', 'Type', 'Creation TimeStamp', 'Deletion Timestamp', 'Creator',
+    output = output + '{:<20s}|{:<18s}|{:<20s}|{:<25s}|{:<18s}|{:<20s}|{:<25s}|{:<18s}|{:<100s}\n'.format(
+        'Resource ID', 'Resource Type', 'Creation TimeStamp', 'Created By', 'Creator IP Addr', 'Deletion Timestamp', 'Deleted By', 'Deleter IP Addr',
         'Tree')
     output = output + dashes + '\n'
 
@@ -199,8 +208,10 @@ class Resource:
       resource: Optional[Resource] = i.get('resource_object')
       if resource:
         output = output + \
-            ('{:<25s}{:<25s}{:<25s}{:<25s}{:<25s}{:<100s} \n'.format(resource.id, resource.type, resource.creation_timestamp.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S") if resource.creation_timestamp else "",
-            resource.deletion_timestamp.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S") if resource.deletion_timestamp else "", resource.created_by, i.get('graph')))
+            ('{:<20s}|{:<18s}|{:<20s}|{:<25s}|{:<18s}|{:<20s}|{:<25s}|{:<18s}|{:<100s}\n'.format( resource.id if ('-' not in resource.id) else "" , resource.type, resource.creation_timestamp.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S") if resource.creation_timestamp else "",
+            resource.created_by, resource.creator_ip_address,  resource.deletion_timestamp.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S") if resource.deletion_timestamp else "", resource.deleted_by, resource.deleter_ip_address,  i.get('graph')))
+
+    output = output + dashes + '\n'
 
     return output
 
@@ -231,11 +242,10 @@ class GCPCloudResourceTree(module.BaseModule):
     self._project_id = ''
     self._resource_name = ''
     self._resource_type = ''
-    self._mode = ''
+    self._mode: OperatingMode = OperatingMode.ONLINE
     self._start_date = ''
     self._end_date = ''
-    # TODO Initialize this
-    self._period_covered_by_retrieved_logs: Dict[str, Any] = {}
+    self._period_covered_by_retrieved_logs: Dict[str, datetime] = {}
     self._resources_dict: Dict[str, Resource] = {}
 
   # pylint: disable=arguments-differ
@@ -253,11 +263,14 @@ class GCPCloudResourceTree(module.BaseModule):
     self._project_id = project_id
     self._resource_name = resource_name
     self._resource_type = resource_type
-    self._mode = mode
+    if 'offline' in mode:
+      self._mode = OperatingMode.OFFLINE
+    elif 'online' in mode:
+      self._mode = OperatingMode.ONLINE
 
   def Process(self) -> None:
     """Create the GCP Cloud Resource Tree."""
-    if self._mode == 'offline':
+    if self._mode == OperatingMode.OFFLINE:
       self.logger.info('Starting module in offline mode.')
       # Get the file containers created by the previous module in the recipe
       file_containers = self.state.GetContainers(containers.File)
@@ -269,35 +282,24 @@ class GCPCloudResourceTree(module.BaseModule):
             f'Loading file from file system container: {file_container.path}')
         self._ParseLogMessagesFromFileContainer(file_container)
 
-      # Fix mapping caused by the lack of log entry for disks created
-      # automatically with instances
-      self._FixDisksMapping()
-
-    else:
+    elif self._mode == OperatingMode.ONLINE:
       self.logger.info('Starting module in online mode.')
       self._GetListOfResources(self._project_id)
+      self._GetResourcesMetaDataFromLogs(self._project_id)
+
+    else:
+      self.PublishMessage('Invalid operating mode. Supported modes are "online" or "offline"')
 
     self._BuildResourcesParentRelationships()
-    #self._BuildResourcesChildrenRelationships()
 
-    matched_resources = self._GetResourceInfoByName(self._resource_name,
-                                                    self._resource_type)
+    matched_resource = self._FindResource(self._resource_name,
+                                                    self._resource_type, None, self._project_id)
 
-    if not matched_resources:
+    if not matched_resource:
       self.logger.error('Resource not found')
       return
-
-    if len(matched_resources) > 1:
-      # TODO Ask the user which one should we work with or find a way to choose
-      # to chose automatically. If online check the logs
-      self.logger.warning(
-          f'There are multiple resources with the same name: {self._resource_name}'
-      )
     else:
-      resource = matched_resources[0]
-
-    # Build resource children tree
-    resource.children = self._GetResourceChildrenTree(resource)
+      resource = matched_resource
 
     # Save resource tree to temp file
     output_file = tempfile.NamedTemporaryFile(mode='w',
@@ -305,12 +307,19 @@ class GCPCloudResourceTree(module.BaseModule):
                                               encoding='utf-8',
                                               suffix='.txt')
     output_path = output_file.name
-    self.logger.info(f'Saving resource tree to {output_path}')
+
+    self.PublishMessage(f'Saving resource tree to {output_path}')
     with open(output_path, 'w') as out_file:
-      out_file.write(str(resource))
+      if resource.parent:
+        out_file.write(str(resource.parent))
+      else:
+        out_file.write(str(resource))
 
     # Dump the resource tree to CLI
-    self.logger.info(str(resource))
+    if resource.parent:
+      self.PublishMessage(str(resource.parent))
+    else:
+      self.PublishMessage(str(resource))
 
   def _GetListOfResources(self, project_id: str) -> None:
     """Acquire a list of resources under a project.
@@ -321,21 +330,69 @@ class GCPCloudResourceTree(module.BaseModule):
     # Retrieve list of disks in a project
     self._resources_dict.update(self._RetrieveListOfDisks(project_id))
 
-    # Retrieve list of snapshots in a project
-    self._resources_dict.update(self._RetrieveListOfSnapshots(project_id))
-
     # Retrieve list of disk images in a project
     self._resources_dict.update(self._RetrieveListOfDiskImages(project_id))
+
+    # Retrieve list of snapshots in a project
+    self._resources_dict.update(self._RetrieveListOfSnapshots(project_id))
 
     # Retrieve list of instances in a project
     self._resources_dict.update(self._RetrieveListOfInstances(project_id))
 
-    # Retrieve list of machine images in a project
-    self._resources_dict.update(self._RetrieveListOfMachineImages(project_id))
-
     # Retrieve list of instance templates in a project
     self._resources_dict.update(
         self._RetrieveListOfInstanceTemplate(project_id))
+
+    # Retrieve list of machine images in a project
+    self._resources_dict.update(self._RetrieveListOfMachineImages(project_id))
+
+  def _GetResourcesMetaDataFromLogs(self, project_id: str) -> None:
+    """Enrich resources with meta data from GCP Logs.
+
+    Args:
+      project_id: Project id to get list of resources from.
+    """
+    time_ranges: List[Dict[str,datetime]] = []
+
+    all_active_resources= sorted(self._resources_dict.values(), key=lambda resource:  resource.creation_timestamp) # type: ignore
+
+    # Building list of timestamp ranges to query
+    time_range = {}
+    time_range['start_timestamp'] = all_active_resources[0].creation_timestamp - timedelta(hours=1)
+    time_range['end_timestamp'] = all_active_resources[0].creation_timestamp + timedelta(hours=1)
+    time_ranges.append(time_range)
+
+    idx = 1
+    while idx < len(all_active_resources) - 1:
+      time_range = {}
+
+      resource_creation_timestamp = all_active_resources[idx].creation_timestamp
+
+      index_of_last_timestamp = len(time_ranges)-1
+      end_timestamp_of_last_time_range = time_ranges[index_of_last_timestamp].get('end_timestamp') #parser.parse(all_active_resources[idx-1].get('creationTimestamp'))
+
+      timeDiff = resource_creation_timestamp - end_timestamp_of_last_time_range
+      # To optimize calls to retrieve logs, we attempt to group resources that have
+      # a creation timestamp within 30 days.
+      if (timeDiff.total_seconds() / 60 / 60 / 24) <= 30:
+        time_range['start_timestamp'] = time_ranges[index_of_last_timestamp].get('start_timestamp')
+        time_range['end_timestamp'] = resource_creation_timestamp + timedelta(hours=1)
+        time_ranges[index_of_last_timestamp] = time_range
+      else:
+        time_range['start_timestamp'] = resource_creation_timestamp - timedelta(hours=1)
+        time_range['end_timestamp'] = resource_creation_timestamp + timedelta(hours=1)
+        time_ranges.append(time_range)
+
+      idx = idx + 1
+
+    for time_range in time_ranges:
+      start_timestamp = time_range['start_timestamp']
+      end_timestamp = time_range['end_timestamp']
+      timeDiff = datetime.now(timezone.utc) - end_timestamp
+      if (timeDiff.total_seconds() / 60 / 60 / 24 ) > 400:
+        continue
+      log_messages = self._GetLogMessages(self._project_id, start_timestamp, end_timestamp)
+      self._ParseLogMessages(log_messages)
 
   def _GetResourceParentTree(self, resource: Resource) -> Optional[Resource]:
     """Return parent of a given resource.
@@ -353,37 +410,27 @@ class GCPCloudResourceTree(module.BaseModule):
 
     # The resource should at least have the name and type of the parent resource. This is
     # filled during the parsing of log messages in _ParesLogMessages() and/or _GetListOfResources
-    if resource and resource.parent and resource.parent.name and resource.parent.type:
+    if resource.parent and resource.parent.name and resource.parent.type:
       if resource.parent.id:
         parent_resource = self._resources_dict.get(resource.parent.id)
+        # If the parent resource is deleted or it's one of the stock disk images
+        # (for ex Debian), we will have the parent id but it's not in the list
+        # of resources we parsed.
         if not parent_resource:
           parent_resource = resource.parent
       else:
-        matched_parent_resources = self._GetResourceInfoByName(
-            resource.parent.name, resource.parent.type)
-        if matched_parent_resources:
-          parent_resource = matched_parent_resources[0]
+        matched_parent_resource = self._FindResource(
+            resource.parent.name, resource.parent.type, resource.parent.zone, resource.parent.project_id)
+        if matched_parent_resource:
+          parent_resource = matched_parent_resource
         else:
           parent_resource = resource.parent
 
-    elif resource and resource.disks:
-      for disk in resource.disks:
-        if disk and disk.name and disk.type:
-          if disk.id:
-            parent_resource = self._resources_dict.get(disk.id)
-          else:
-            matched_disks = self._GetResourceInfoByName(disk.name, disk.type)
-            if not matched_disks:
-              parent_resource = disk
-            for matched_disk in matched_disks:
-              if matched_disk.project_id == disk.project_id and matched_disk.zone == disk.zone:
-                parent_resource = matched_disk
-                break
 
     if parent_resource:
-      if parent_resource.IsDeleted() and self._mode == 'online':
+      if parent_resource.IsDeleted() and self._mode == OperatingMode.ONLINE:
         found_resource = self._SearchForDeletedResource(
-            parent_resource, resource.creation_timestamp, 'backward')
+            parent_resource, resource.creation_timestamp)
         if found_resource:
           if found_resource.id:
             self._resources_dict[found_resource.id] = found_resource
@@ -391,117 +438,50 @@ class GCPCloudResourceTree(module.BaseModule):
 
       # Recursively obtain parents for each resource in the chain
       parent_resource.parent = self._GetResourceParentTree(parent_resource)
+      parent_resource.children.add(resource)
 
     # Return the resource with all the parent chain filled
     return parent_resource
 
-  def _FixDisksMapping(self) -> None:
-    for resource in self._resources_dict.values():
-
-      if not resource.disks:
-        continue
-
-      for disk in resource.disks:
-        if not disk.id:
-          matched_resources = self._GetResourceInfoByName(
-              disk.name, disk.type, disk.project_id, disk.zone)
-          if matched_resources:
-            disk.id = matched_resources[0].id
-
-          # Automatically created disks will have the same name as the instance
-          if disk.name == resource.name:
-            resource.parent = disk
-            disk.children.append(resource)
-
-  def _GetResourceChildrenTree(self, resource: Resource) -> List[Resource]:
-    """Return the children of a given resource.
-
-    Args:
-      resource: The resource object to get children of
-
-    Returns:
-      List of resource objects
-    """
-    if not resource:
-      return []
-
-    children_resources: List[Resource] = []
-
-    # Check if the child_resource has the same parent name as the resource we want
-    # to obtain the children for. If true then add the child_resource to the
-    # children_resources and recursively obtain children for the child_resource
-    # itself.
-    for child_resource in self._resources_dict.values():
-
-      # skip if of the current resource returned by the loop is the
-      # same as the resource we want to find the children for
-      if child_resource.id == resource.id:
-        continue
-
-      # Check if the parent name of the current resource returned by the loop
-      # is the same as the name of the resource we want to find the children for
-      if child_resource and child_resource.parent:
-        if child_resource.parent.id == resource.id:
-          child_resource.children = self._GetResourceChildrenTree(
-              child_resource)
-          children_resources.append(child_resource)
-
-        elif child_resource.parent.name == resource.name and child_resource.parent.zone == resource.zone:
-          child_resource.children = self._GetResourceChildrenTree(
-              child_resource)
-          children_resources.append(child_resource)
-
-      # If the current resource returned by the loop has disks (gce_instance,
-      # gce_instance_template, gce_machine_image) and doesn't have a parent set
-      # and the disk id is not set, and the parent resource name of the disk is
-      # the name of the resource then we add the disk as a child to this
-      # resource. This is due the disk create with no log entry issue
-      if child_resource and child_resource.disks:
-        for disk in child_resource.disks:
-          if not disk.id and disk.parent and disk.parent.name == resource.name:
-            children_resources.append(disk)
-
-    return children_resources
-
-  def _GetResourceInfoByName(self,
+  def _FindResource(self,
                              resource_name: str,
                              resource_type: str,
-                             project_id: Optional[str] = None,
-                             zone: Optional[str] = None) -> List[Resource]:
-    """Search for a resource by name and type in the _resource_dict dictionary.
+                             zone: Optional[str] = None,
+                             project_id: Optional[str] = None) -> Optional[Resource]:
+    """Search for a resource in the _resource_dict dictionary.
 
     Args:
       resource_name: Resource name.
       resource_type: Resource type (currently supported types: gce_instance,
-        gce_disk, gce_image, gce_machine_image, gce_instance_template, gce_snapshot)
+        gce_disk, gce_image, gce_machine_image, gce_instance_template,
+        gce_snapshot)
+      zone (Optional): Zone where resource is located
 
     Return:
-      List of Resource object that match the name and type or None if a matching
+      Resource object that match the name and type or None if a matching
       resource is not found
 
     """
-    resources: List[Resource] = []
-
     # Search for the resource with the same name and type in the parsed logs.
     for resource in self._resources_dict.values():
+
       if resource.name == resource_name and resource.type == resource_type:
-        resources.append(resource)
+        # Filter list by zone if it is supplied
+        if zone is not None and resource.zone != zone:
+          continue
+        # Check is project id match if project id was supplied as a filter criteria
+        if project_id is not None and resource.project_id != project_id:
+          continue
 
-    # Filter list by project_id if it is supplied
-    if project_id is not None:
-      resources = [x for x in resources if x.project_id == project_id]
+        return resource
 
-    # Filter list by zone if it is supplied
-    if zone is not None:
-      resources = [x for x in resources if x.zone in (zone, 'global')]
-
-    return resources
+    return None
 
   def _GetLogMessages(
       self,
       project_id: str,
-      start_timestamp: str,
-      end_timestamp: str,
+      start_timestamp: datetime,
+      end_timestamp: datetime,
       resource_id: Optional[str] = None) -> List[Dict[str, Any]]:
     """Acquire log messages from GCP logs for a specific project id and between a start and end timestamps.
 
@@ -513,13 +493,42 @@ class GCPCloudResourceTree(module.BaseModule):
     Return:
       List of log messages
     """
+    if not project_id or not start_timestamp or not end_timestamp:
+      return []
+
     gcl = GoogleCloudLog(project_ids=[project_id])
+
+
+
+    if not self._period_covered_by_retrieved_logs.get('start') or not self._period_covered_by_retrieved_logs.get('end'):
+      self._period_covered_by_retrieved_logs['start'] = start_timestamp
+      self._period_covered_by_retrieved_logs['end'] = end_timestamp
+    else:
+      # If the required time range is within the time range already retrieved
+      # before return an empty list
+      if start_timestamp >= self._period_covered_by_retrieved_logs['start'] and end_timestamp <= self._period_covered_by_retrieved_logs['end']:
+        return []
+
+
+    # Make sure we only request the period that was not retrieved before, for optimization
+    if start_timestamp < self._period_covered_by_retrieved_logs['start']:
+      if end_timestamp < self._period_covered_by_retrieved_logs['end']:
+        end_timestamp = self._period_covered_by_retrieved_logs['start']
+      self._period_covered_by_retrieved_logs['start'] = start_timestamp
+
+    if end_timestamp > self._period_covered_by_retrieved_logs['end']:
+      if start_timestamp > self._period_covered_by_retrieved_logs['start']:
+        start_timestamp = self._period_covered_by_retrieved_logs['end']
+      self._period_covered_by_retrieved_logs['end'] = end_timestamp
+
+
+    self.PublishMessage(f'Retrieving logs from { start_timestamp.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")} to {end_timestamp.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}.')
 
     query_filter = f'resource.type = ("gce_instance" OR "api" OR "gce_disk" OR "gce_image" OR "gce_instance_template" OR "gce_snapshot") \
     AND logName = "projects/{project_id}/logs/cloudaudit.googleapis.com%2Factivity" \
     AND operation.first = "true" \
-    AND timestamp >= "{start_timestamp}" \
-    AND timestamp <= "{end_timestamp}" \
+    AND timestamp >= "{start_timestamp.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}" \
+    AND timestamp <= "{end_timestamp.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}" \
     AND severity=NOTICE \
     AND protoPayload.methodName : ("insert" OR "create" OR "delete")'
 
@@ -573,6 +582,7 @@ class GCPCloudResourceTree(module.BaseModule):
       if not proto_payload:
         continue
 
+      requestMetadata = proto_payload.get('requestMetadata')
       request = proto_payload.get('request')
       response = proto_payload.get('response')
       if not request or not response:
@@ -589,21 +599,20 @@ class GCPCloudResourceTree(module.BaseModule):
         if response.get('@type').split('/')[-1] != 'operation':
           continue
 
-        resource = self._resources_dict.get(response.get('targetId'))
-
         # Check if a resource with the same ID already exist in the
         # self._resources_dict dictionary
+        resource = self._resources_dict.get(response.get('targetId'))
+
         if not resource:
           resource = Resource()
-
-        resource.id = response.get('targetId')
-        resource.state = response.get('status')
+          resource.id = response.get('targetId')
 
         # compute.disks.createSnapshot is a special case where the
         # "resourceName" is just the name and not the full name with the
         # project, zone, type and name
         if log_message_type.startswith('compute.disks.createSnapshot'):
-          # TODO Build the resource_name in the Resource class.
+          resource = Resource()
+          source_disk_id = response.get('targetId')
           resource.name = request.get('name')
           # GCP Log issue, the resource.type is set to 'gce_disk' so i am
           # setting it manually to gce_snapshot
@@ -611,30 +620,50 @@ class GCPCloudResourceTree(module.BaseModule):
           resource.project_id = log_message.get('resource',
                                                 {}).get('labels',
                                                         {}).get('project_id')
-          resource.zone = log_message.get('resource', {}).get('labels',
-                                                              {}).get('zone')
+          resource.zone = 'global'
+
+          # For creation of a snapshot, its a special case where the targetId is of
+          # the source disk and not the snapshot being created. And the
+          # targetLink points to the source disk. The id of the snapshot
+          # is not present in the log message.
+          # We need to unset the id which was set earlier to targetId
+          #resource.id = ''
+          matched_resource = self._FindResource(resource.name, resource.type)
+          if matched_resource:
+            resource = matched_resource
+          else:
+            resource.id = source_disk_id + "-snapshot"
 
         else:
-          resource.resource_name = proto_payload.get('resourceName')
+          resource.resource_name = resource.resource_name or proto_payload.get('resourceName')
+          resource.state = resource.state or response.get('status')
 
         # In case the message is an insert message
         if log_message_type.endswith('insert') or log_message_type.endswith(
             'createSnapshot'):
-          resource = self._ParseInsertLogMessage(resource, request, response)
+          if requestMetadata:
+            resource.creator_ip_address = requestMetadata.get('callerIp')
+            resource.creator_useragent = requestMetadata.get('callerSuppliedUserAgent')
+          self._ParseInsertLogMessage(resource, request, response)
+
 
         elif log_message_type.endswith('delete'):
           resource.deletion_timestamp = response.get('insertTime')
           resource.deleted_by = response.get('user')
+          if requestMetadata:
+            resource.deleter_ip_address = requestMetadata.get('callerIp')
+            resource.deleter_useragent = requestMetadata.get('callerSuppliedUserAgent')
 
       else:
-        self.logger.info(f'Type {log_message_type} not supported')
+        self.PublishMessage(f'Type {log_message_type} not supported')
         resource = None
 
-      if resource and resource.id:
-        self._resources_dict[resource.id] = resource
+      if resource:
+        if resource.id:
+          self._resources_dict[resource.id] = resource
 
   def _ParseInsertLogMessage(self, resource: Resource, request: Dict[str, Any],
-                             response: Dict[str, Any]) -> Resource:
+                             response: Dict[str, Any]) -> None:
     """Parse a GCP log message where the operation is insert or create.
 
     Args:
@@ -651,87 +680,100 @@ class GCPCloudResourceTree(module.BaseModule):
     if 'sourceDisk' in request:
       if not resource.parent:
         resource.parent = Resource()
-      resource.parent.resource_name = request.get('sourceDisk')
+        resource.parent.resource_name = request.get('sourceDisk')
 
-    if 'sourceMachineImage' in request:  # When creating an instance from a machine image
+    elif 'sourceInstance' in request:  # When creating machine image from an instance
       if not resource.parent:
         resource.parent = Resource()
-      resource.parent.resource_name = request.get('sourceMachineImage')
+        resource.parent.resource_name = request.get('sourceInstance')
 
-    elif 'sourceInstance' in request:  # Source of image
+    elif 'sourceSnapshot' in request: # When creating a disk image from another disk
       if not resource.parent:
         resource.parent = Resource()
-      resource.parent.resource_name = request.get('sourceInstance')
+        resource.parent.resource_name = request.get('sourceSnapshot')
 
-    elif 'sourceSnapshot' in request:
-      if not resource.parent:
-        resource.parent = Resource()
-      resource.parent.resource_name = request.get('sourceSnapshot')
+    # When creating a new instance, one of
+    # initializeParams.sourceImage or initializeParams.sourceSnapshot or
+    # disks.source is required except for local SSD.
+    if request.get('disks'):
+      for disk in request.get('disks', {}):
+        disk_resource = Resource()
+        disk_resource.project_id = resource.project_id
+        disk_resource.created_by = resource.created_by
+        disk_resource.creator_ip_address = resource.creator_ip_address
+        disk_resource.creator_useragent = resource.creator_useragent
+        disk_resource.zone = resource.zone
+        disk_resource.name = disk.get('deviceName')
+        disk_resource.type = 'gce_disk'
 
-    else:
-      # When creating a new instance, one of
-      # initializeParams.sourceImage or initializeParams.sourceSnapshot or
-      # disks.source is required except for local SSD.
-      if request.get('disks'):
-        for disk in request.get('disks', {}):
-          disk_resource = Resource()
-          disk_resource.name = disk.get('deviceName')
-          disk_resource.type = 'gce_disk'
-          disk_resource.zone = resource.zone
-          disk_resource.project_id = resource.project_id
+        if 'sourceMachineImage' in request: # When creating an instance from a machine image
+          disk_resource.parent = Resource()
+          disk_resource.parent.resource_name = request.get('sourceMachineImage')
 
-          # Check if we already have the disk in the _resources_dict. If true
-          # then add it to the resource disks list and continue to next disk.
-          matched_resources = self._GetResourceInfoByName(
-              disk_resource.name, disk_resource.type, disk_resource.project_id,
-              disk_resource.zone)
-          if matched_resources:
-            resource.disks.append(matched_resources[0])
-            continue
+        # Check if we already have the disk in the _resources_dict. If true
+        # then add it to the resource disks list and continue to next disk.
+        matched_resource = self._FindResource(
+            disk_resource.name, disk_resource.type, disk_resource.zone, disk_resource.project_id)
 
-          initialize_params = disk.get('initializeParams')
-          if initialize_params:
+        if matched_resource:
+          matched_resource.created_by = matched_resource.created_by or resource.created_by
+          matched_resource.creator_ip_address = matched_resource.creator_ip_address or resource.creator_ip_address
+          matched_resource.creator_useragent = matched_resource.creator_useragent or resource.creator_useragent
+          matched_resource.parent = matched_resource.parent or disk_resource.parent
+          resource.disks.append(matched_resource)
+          continue
 
-            if 'sourceImage' in initialize_params:
-              if not disk_resource.parent:
-                disk_resource.parent = Resource()
-              disk_resource.parent.resource_name = initialize_params.get(
-                  'sourceImage')
+        initialize_params = disk.get('initializeParams')
+        if initialize_params:
 
-            elif 'sourceSnapshot' in initialize_params:
-              if not disk_resource.parent:
-                disk_resource.parent = Resource()
-              disk_resource.parent.resource_name = initialize_params.get(
-                  'sourceSnapshot')
-
-          elif 'source' in disk:  # cloned disk falls here
+          if 'sourceImage' in initialize_params: # When instance is created using an existing disk image, machine image or template
             if not disk_resource.parent:
               disk_resource.parent = Resource()
-            disk_resource.parent.resource_name = disk.get('source')
+            disk_resource.parent.resource_name = initialize_params.get(
+                'sourceImage')
 
-          # This is an exceptional case cause the logs don't have an entry
-          # for disks being created automatically when a gce_instance is
-          # created. The automatically created disk has the same name as the gce_instance
-          if disk_resource.name == resource.name:
-            disk_resource.creation_timestamp = resource.creation_timestamp
+          elif 'sourceSnapshot' in initialize_params: # When instance is created using an existing disk snapshot
+            if not disk_resource.parent:
+              disk_resource.parent = Resource()
+            disk_resource.parent.resource_name = initialize_params.get(
+                'sourceSnapshot')
 
-          resource.disks.append(disk_resource)
+        elif 'source' in disk:  # When instance is created using an existing cloned disk
+          if not disk_resource.parent:
+            disk_resource.parent = Resource()
+          disk_resource.parent.resource_name = disk.get('source')
 
-          if disk_resource.parent:
-            matched_resources = self._GetResourceInfoByName(
-                disk_resource.parent.name, disk_resource.parent.type,
-                disk_resource.parent.project_id, disk_resource.parent.zone)
-            if matched_resources:
-              disk_resource.parent = matched_resources[0]
+        # This is an exceptional case cause the logs don't have an entry
+        # for disks being created automatically when a gce_instance is
+        # created. The automatically created disk has the same name as the gce_instance
+        if disk_resource.name == resource.name:
+          disk_resource.creation_timestamp = resource.creation_timestamp
+          resource.parent = disk_resource
+          disk_resource.id = resource.id + '-disk'
 
-    if resource.parent:
-      matched_resources = self._GetResourceInfoByName(
+
+        resource.disks.append(disk_resource)
+
+        if disk_resource.parent and not disk_resource.parent.id:
+          matched_resource = self._FindResource(
+              disk_resource.parent.name, disk_resource.parent.type,
+               disk_resource.parent.zone, disk_resource.parent.project_id)
+          if matched_resource:
+            disk_resource.parent = matched_resource
+
+
+        if disk_resource and not resource.parent:
+          resource.parent = disk_resource
+
+        if disk_resource.id:
+          self._resources_dict[disk_resource.id] = disk_resource
+
+    if resource.parent and not resource.parent.id:
+      matched_resource = self._FindResource(
           resource.parent.name, resource.parent.type,
-          resource.parent.project_id, resource.parent.zone)
-      if matched_resources:
-        resource.parent = matched_resources[0]
-
-    return resource
+          resource.parent.zone, resource.parent.project_id)
+      if matched_resource:
+        resource.parent = matched_resource
 
   def _BuildResourcesParentRelationships(self) -> None:
     """Build parent relationship for all resources."""
@@ -742,79 +784,41 @@ class GCPCloudResourceTree(module.BaseModule):
       if resource:
         resource.parent = self._GetResourceParentTree(resource)
 
-  def _BuildResourcesChildrenRelationships(self) -> None:
-    """Build children relationship for all resources."""
-    for resource in self._resources_dict.values():
-      resource.children = self._GetResourceChildrenTree(resource)
 
   def _SearchForDeletedResource(self, resource: Resource,
-                                start_timestamp: datetime,
-                                direction: str) -> Optional[Resource]:
+                                start_timestamp: datetime) -> Optional[Resource]:
     """Search for deleted resource in GCP Logs.
 
     Args:
       resource: resource to search for.
       start_timestamp: the initial point of time to start the search
-      direction: whether to go backwards or forwards in time
 
     Return:
       Found resource or None
     """
-    if not resource or not start_timestamp or not direction:
+    if not resource or not start_timestamp:
       return None
 
     if resource.project_id != self._project_id:
       return None
 
-    if not self._period_covered_by_retrieved_logs.get('start'):
-      self._period_covered_by_retrieved_logs['start'] = start_timestamp
-    if not self._period_covered_by_retrieved_logs.get('end'):
-      self._period_covered_by_retrieved_logs['end'] = start_timestamp
+    while start_timestamp > (datetime.now(timezone.utc) -
+                              timedelta(days=400)):
 
-    if direction == 'backward':
+      end_timestamp = start_timestamp + timedelta(minutes=20)
+      start_timestamp = start_timestamp - timedelta(days=30)
 
-      while start_timestamp > (datetime.now(timezone.utc) -
-                               timedelta(days=400)):
+      log_messages = self._GetLogMessages(
+          resource.project_id,
+          start_timestamp,
+          end_timestamp, resource.id)
+      self._ParseLogMessages(log_messages)
 
-        end_timestamp = start_timestamp + timedelta(minutes=20)
-        start_timestamp = start_timestamp - timedelta(days=30)
-
-        if start_timestamp < self._period_covered_by_retrieved_logs.get(
-            'start', {}):
-          self._period_covered_by_retrieved_logs['start'] = start_timestamp
-          if end_timestamp < self._period_covered_by_retrieved_logs.get(
-              'end', {}):
-            end_timestamp = self._period_covered_by_retrieved_logs.get(
-                'start', {})
-
-        if end_timestamp > self._period_covered_by_retrieved_logs.get(
-            'end', {}):
-          self._period_covered_by_retrieved_logs['end'] = end_timestamp
-          if start_timestamp > self._period_covered_by_retrieved_logs.get(
-              'start', {}):
-            start_timestamp = self._period_covered_by_retrieved_logs.get(
-                'end', {})
-
-        else:
-          continue
-
-        print(
-            f'Searching between {start_timestamp.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")} and {end_timestamp.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")} for {resource.name} {resource.type}'
-        )
-        log_messages = self._GetLogMessages(
-            resource.project_id,
-            start_timestamp.astimezone(
-                timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-            end_timestamp.astimezone(
-                timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), resource.id)
-        self._ParseLogMessages(log_messages)
-
-        matched_resource = self._GetResourceInfoByName(resource.name,
-                                                       resource.type)
-        if matched_resource:
-          if matched_resource[0].deletion_timestamp and matched_resource[
-              0].creation_timestamp:
-            return matched_resource[0]
+      matched_resource = self._FindResource(resource.name,
+                                                      resource.type)
+      if matched_resource:
+        if matched_resource.deletion_timestamp and matched_resource.creation_timestamp:
+          return matched_resource
 
     return None
 
@@ -839,28 +843,22 @@ class GCPCloudResourceTree(module.BaseModule):
       response = request.execute()
 
       for zone in response['items'].values():
-        # If the zone doesn't have any disks, move to next one.
-        if not zone.get('disks'):
-          continue
 
-        for disk in zone.get('disks'):
+        for disk in zone.get('disks',{}):
           resource = Resource()
           resource.id = disk.get('id')
           resource.resource_name = disk.get('selfLink')
           resource.creation_timestamp = disk.get('creationTimestamp')
           if disk.get('sourceDisk'):
-            if not resource.parent:
-              resource.parent = Resource()
+            resource.parent = Resource()
             resource.parent.resource_name = disk.get('sourceDisk')
             resource.parent.id = disk.get('sourceDiskId')
           elif disk.get('sourceSnapshot'):
-            if not resource.parent:
-              resource.parent = Resource()
+            resource.parent = Resource()
             resource.parent.resource_name = disk.get('sourceSnapshot')
             resource.parent.id = disk.get('sourceSnapshotId')
           elif disk.get('sourceImage'):
-            if not resource.parent:
-              resource.parent = Resource()
+            resource.parent = Resource()
             resource.parent.resource_name = disk.get('sourceImage')
             resource.parent.id = disk.get('sourceImageId')
 
@@ -892,25 +890,62 @@ class GCPCloudResourceTree(module.BaseModule):
     while request is not None:
       response = request.execute()
 
-      if response and response.get('items'):
-        for image in response.get('items'):
+      if response:
+        for image in response.get('items',{}):
           resource = Resource()
           resource.id = image.get('id')
           resource.resource_name = image.get('selfLink')
           resource.creation_timestamp = image.get('creationTimestamp')
           if image.get('sourceDisk'):
-            if not resource.parent:
-              resource.parent = Resource()
+            resource.parent = Resource()
             resource.parent.resource_name = image.get('sourceDisk')
             resource.parent.id = image.get('sourceDiskId')
           elif image.get('sourceSnapshot'):
-            if not resource.parent:
-              resource.parent = Resource()
+            resource.parent = Resource()
             resource.parent.resource_name = image.get('sourceSnapshot')
             resource.parent.id = image.get('sourceSnapshotId')
+
           result[resource.id] = resource
 
       request = compute_api_client.images().list_next(
+          previous_request=request, previous_response=response)
+
+    return result
+
+  def _RetrieveListOfSnapshots(self, project_id: str) -> Dict[str, Resource]:
+    """Retrieve list of snapshots in a project.
+
+    Args:
+      project_id: Project Id to retrieve the list of snapshots for
+
+    Returns:
+      Dict of snapshots
+    """
+    result: Dict[str, Resource] = {}
+
+    # Using beta version of the API because v1 did not have important
+    # information when creating this script
+    compute_api_client = CreateService('compute', 'beta')
+
+    request = compute_api_client.snapshots().list(project=project_id)
+
+    while request is not None:
+      response = request.execute()
+
+      if response:
+        for snapshot in response.get('items',{}):
+          resource = Resource()
+          resource.id = snapshot.get('id')
+          resource.resource_name = snapshot.get('selfLink')
+          resource.creation_timestamp = snapshot.get('creationTimestamp')
+          if snapshot.get('sourceDisk'):
+            resource.parent = Resource()
+            resource.parent.resource_name = snapshot.get('sourceDisk')
+            resource.parent.id = snapshot.get('sourceDiskId')
+
+          result[resource.id] = resource
+
+      request = compute_api_client.snapshots().list_next(
           previous_request=request, previous_response=response)
 
     return result
@@ -936,74 +971,55 @@ class GCPCloudResourceTree(module.BaseModule):
       response = request.execute()
 
       for zone in response['items'].values():
-        # If the zone doesn't have any instances, move to next one.
-        if not zone.get('instances'):
-          continue
 
-        for instance in zone.get('instances'):
+        for instance in zone.get('instances',{}):
           resource = Resource()
           resource.id = instance.get('id')
           resource.resource_name = instance.get('selfLink')
           resource.creation_timestamp = instance.get('creationTimestamp')
 
-          if instance.get('sourceMachineImage'):
-            if not resource.parent:
-              resource.parent = Resource()
-            resource.parent.resource_name = instance.get('sourceMachineImage')
-          else:
-            for disk in instance.get('disks'):
-              temp_disk = Resource()
-              if disk.get('source'):
-                temp_disk.resource_name = disk.get('source')
-                matched_disks = self._GetResourceInfoByName(
-                    temp_disk.name, temp_disk.type)
-                for matched_disk in matched_disks:
-                  if matched_disk.resource_name == temp_disk.resource_name:
-                    temp_disk = matched_disk
+          for disk in instance.get('disks',{}):
+            disk_resource = Resource()
+            # 'source' here is just the full resouce name of the disk. It should
+            # be present for all disks
+            if disk.get('source'):
+              disk_resource.resource_name = disk.get('source')
+              # the disk ID is not present so we have to search for it in the
+              # list of processed resources
+              matched_disk = self._FindResource(
+                  disk_resource.name, disk_resource.type, disk_resource.zone, disk_resource.project_id)
+              if matched_disk:
+                disk_resource = matched_disk
 
-              resource.disks.append(temp_disk)
+              # Adding the instance as a child to the disk
+              disk_resource.children.add(resource)
+
+              # If the instance has a sourceMachineImage set, it means that this
+              # instance is created from a Machine Image. So we add this as a
+              # parent to the disk
+              if (instance.get('sourceMachineImage') and not disk_resource.parent):
+                disk_resource.parent = Resource()
+                disk_resource.parent.resource_name = instance.get('sourceMachineImage')
+
+              # If the disk resource name is the same name as the instance name
+              # then this disk is the one created automatically with the
+              # incident so we set it as its parent. There is a exceptional case
+              # here where if a disk with the same name as the instance already
+              # created in the same zone, GCP will alter the default name. This
+              # is not handled here yet.
+              if disk_resource.name == resource.name:
+                if not resource.parent:
+                  resource.parent = disk_resource
+
+              if disk_resource.id:
+                self._resources_dict[disk_resource.id] = disk_resource
+
+
+            resource.disks.append(disk_resource)
 
           result[resource.id] = resource
 
       request = compute_api_client.instances().aggregatedList_next(
-          previous_request=request, previous_response=response)
-
-    return result
-
-  def _RetrieveListOfSnapshots(self, project_id: str) -> Dict[str, Resource]:
-    """Retrieve list of snapshots in a project.
-
-    Args:
-      project_id: Project Id to retrieve the list of snapshots for
-
-    Returns:
-      Dict of snapshots
-    """
-    result: Dict[str, Resource] = {}
-
-    # Using beta version of the API because v1 did not have important
-    # information when creating this script
-    compute_api_client = CreateService('compute', 'beta')
-
-    request = compute_api_client.snapshots().list(project=project_id)
-
-    while request is not None:
-      response = request.execute()
-
-      if response and response.get('items'):
-        for snapshot in response['items']:
-          resource = Resource()
-          resource.id = snapshot.get('id')
-          resource.resource_name = snapshot.get('selfLink')
-          resource.creation_timestamp = snapshot.get('creationTimestamp')
-          if snapshot.get('sourceDisk'):
-            if not resource.parent:
-              resource.parent = Resource()
-            resource.parent.resource_name = snapshot.get('sourceDisk')
-            resource.parent.id = snapshot.get('sourceDiskId')
-          result[resource.id] = resource
-
-      request = compute_api_client.snapshots().list_next(
           previous_request=request, previous_response=response)
 
     return result
@@ -1030,8 +1046,8 @@ class GCPCloudResourceTree(module.BaseModule):
     while request is not None:
       response = request.execute()
 
-      if response and response.get('items'):
-        for instance_template in response.get('items'):
+      if response:
+        for instance_template in response.get('items',{}):
           resource = Resource()
           resource.id = instance_template.get('id')
           resource.resource_name = instance_template.get('selfLink')
@@ -1042,14 +1058,39 @@ class GCPCloudResourceTree(module.BaseModule):
             disk_resource = Resource()
             if disk.get('source'):
               disk_resource.resource_name = disk.get('source')
+              # the disk ID is not present so we have to search for it in the
+              # list of processed resources
+              matched_disk = self._FindResource(
+                  disk_resource.name, disk_resource.type, disk_resource.zone, disk_resource.project_id)
+              if matched_disk:
+                disk_resource = matched_disk
+
+              # Adding the instance as a child to the disk
+              disk_resource.children.add(resource)
             elif disk.get('deviceName'):
               disk_resource.name = disk.get('deviceName')
+              disk_resource.type = 'gce_disk'
+              # the disk ID is not present so we have to search for it in the
+              # list of processed resources
+              matched_disk = self._FindResource(
+                  disk_resource.name, disk_resource.type)
+              if matched_disk:
+                disk_resource = matched_disk
+
+              # Adding the instance as a child to the disk
+              disk_resource.children.add(resource)
+
               if disk.get('initializeParams'):
                 if disk.get('initializeParams').get('sourceImage'):
                   disk_resource.parent = Resource()
                   disk_resource.parent.resource_name = disk.get(
                       'initializeParams').get('sourceImage')
+
+            if disk_resource.id:
+              self._resources_dict[disk_resource.id] = disk_resource
+
             resource.disks.append(disk_resource)
+
           result[resource.id] = resource
 
       request = compute_api_client.instanceTemplates().list_next(
@@ -1078,23 +1119,25 @@ class GCPCloudResourceTree(module.BaseModule):
     while request is not None:
       response = request.execute()
 
-      if response and response.get('items'):
-        for machine_image in response.get('items'):
-          # Parse disks
+      if response:
+        for machine_image in response.get('items', {}):
           resource = Resource()
           resource.id = machine_image.get('id')
           resource.resource_name = machine_image.get('selfLink')
           resource.creation_timestamp = machine_image.get('creationTimestamp')
+
           if machine_image.get('sourceInstance'):
-            if not resource.parent:
-              resource.parent = Resource()
+            resource.parent = Resource()
             resource.parent.resource_name = machine_image.get('sourceInstance')
+            matched_resource_parent = self._FindResource(resource.parent.name, resource.parent.type, resource.parent.zone, resource.parent.project_id)
+            if matched_resource_parent:
+              resource.parent = matched_resource_parent
+
           result[resource.id] = resource
 
       request = compute_api_client.machineImages().list_next(
           previous_request=request, previous_response=response)
 
     return result
-
 
 modules_manager.ModulesManager.RegisterModule(GCPCloudResourceTree)
