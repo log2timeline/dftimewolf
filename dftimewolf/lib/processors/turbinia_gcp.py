@@ -125,8 +125,10 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       yara_rules = [rule.rule_text for rule in yara_containers]
 
     try:
-      task_data, report = self.TurbiniaProcess(
+      request_id = self.TurbiniaStart(
           evidence_, threat_intel_indicators, yara_rules)
+      self.PublishMessage(f'Turbinia request ID: {request_id}')
+      task_data, report = self.TurbiniaWait(request_id)
     except TurbiniaException as exception:
       self.ModuleError(str(exception), critical=True)
 
