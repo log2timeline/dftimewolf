@@ -354,7 +354,10 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       os.makedirs(client_output_folder)
 
     if is_timeline_flow:
-      shutil.copy2(output_file_path, os.path.join(client_output_folder, '{}_timeline.body'.format(flow_id)))
+      shutil.copy2(
+          output_file_path,
+          os.path.join(client_output_folder,
+                       '{}_timeline.body'.format(flow_id)))
     else:
       with zipfile.ZipFile(output_file_path) as archive:
         archive.extractall(path=client_output_folder)
