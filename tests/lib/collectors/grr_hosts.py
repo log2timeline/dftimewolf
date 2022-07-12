@@ -148,7 +148,7 @@ class GRRFlowTests(unittest.TestCase):
   def testDownloadArtifactFilesForFlow(self, mock_Get, mock_GetFilesArchive,
                                        mock_ZipFile, mock_makedirs, mock_isdir,
                                        mock_remove):
-    """Tests that ArtifactFiles are downloaded and unzipped in the correct directories."""
+    """Test if results are downloaded & unzipped in the correct directories."""
     # Change output_path to something constant so we can easily assert
     # if calls were done correctly.
     self.grr_flow_module.output_path = '/tmp/random'
@@ -177,7 +177,7 @@ class GRRFlowTests(unittest.TestCase):
                                       mock_GetFilesArchive, mock_copy2,
                                       mock_ZipFile, mock_makedirs, mock_isdir,
                                       mock_remove):
-    """Tests that timeline flow results are downloaded in the correct directories."""
+    """Tests if timeline results are downloaded in the correct directories."""
     # Change output_path to something constant so we can easily assert
     # if calls were done correctly.
     self.grr_flow_module.output_path = '/tmp/random'
@@ -204,7 +204,7 @@ class GRRFlowTests(unittest.TestCase):
   def testNotDownloadFilesForExistingFlow(self, _mock_Get,
                                           mock_GetCollectedTimelineBody,
                                           mock_GetFilesArchive, mock_exists):
-    """Tests that flow results are not downloaded if the directory already exists."""
+    """Tests if results are not downloaded if the directory already exists."""
     # Change output_path to something constant so we can easily assert
     # if calls were done correctly.
     self.grr_flow_module.output_path = '/tmp/random'
