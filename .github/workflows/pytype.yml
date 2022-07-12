@@ -23,7 +23,7 @@ jobs:
       run: |
         pip install pipenv
         pipenv install -d
-        pipenv install pytype
+        pipenv install pytype --skip-lock
     - name: Run pytype on dftimewolf and tests
       run: |
         pipenv run pytype --config pytype.conf
