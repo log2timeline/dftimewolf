@@ -144,17 +144,19 @@ class GRRFlowTests(unittest.TestCase):
   @mock.patch('os.makedirs')
   @mock.patch('zipfile.ZipFile')
   @mock.patch('grr_api_client.flow.FlowBase.GetFilesArchive')
-  def testDownloadFilesForFlow(self, mock_GetFilesArchive, mock_ZipFile,
-                               mock_makedirs, mock_isdir, mock_remove):
-    """Tests that files are downloaded and unzipped in the correct
-    directories."""
+  @mock.patch('grr_api_client.flow.FlowBase.Get')
+  def testDownloadArtifactFilesForFlow(self, mock_Get, mock_GetFilesArchive,
+                                       mock_ZipFile, mock_makedirs, mock_isdir,
+                                       mock_remove):
+    """Test if results are downloaded & unzipped in the correct directories."""
     # Change output_path to something constant so we can easily assert
     # if calls were done correctly.
     self.grr_flow_module.output_path = '/tmp/random'
     mock_isdir.return_value = False  # Return false so makedirs is called
+    mock_Get.return_value.data.name = 'ArtifactFlow'
 
     return_value = self.grr_flow_module._DownloadFiles(
-        mock_grr_hosts.MOCK_CLIENT, "F:12345")
+        mock_grr_hosts.MOCK_CLIENT, 'F:12345')
     self.assertEqual(return_value, '/tmp/random/tomchop/F:12345')
     mock_GetFilesArchive.assert_called_once()
     mock_ZipFile.assert_called_once_with('/tmp/random/F:12345.zip')
@@ -162,20 +164,55 @@ class GRRFlowTests(unittest.TestCase):
     mock_makedirs.assert_called_once_with('/tmp/random/tomchop/F:12345')
     mock_remove.assert_called_once_with('/tmp/random/F:12345.zip')
 
+  @mock.patch('os.remove')
+  @mock.patch('os.path.isdir')
+  @mock.patch('os.makedirs')
+  @mock.patch('zipfile.ZipFile')
+  @mock.patch('shutil.copy2')
+  @mock.patch('grr_api_client.flow.FlowBase.GetFilesArchive')
+  @mock.patch('grr_api_client.flow.FlowBase.GetCollectedTimelineBody')
+  @mock.patch('grr_api_client.flow.FlowBase.Get')
+  def testDownloadTimelineBodyForFlow(self, mock_Get,
+                                      mock_GetCollectedTimelineBody,
+                                      mock_GetFilesArchive, mock_copy2,
+                                      mock_ZipFile, mock_makedirs, mock_isdir,
+                                      mock_remove):
+    """Tests if timeline results are downloaded in the correct directories."""
+    # Change output_path to something constant so we can easily assert
+    # if calls were done correctly.
+    self.grr_flow_module.output_path = '/tmp/random'
+    mock_isdir.return_value = False  # Return false so makedirs is called
+    mock_Get.return_value.data.name = 'TimelineFlow'
+
+    return_value = self.grr_flow_module._DownloadFiles(
+        mock_grr_hosts.MOCK_CLIENT, 'F:12345')
+    self.assertEqual(return_value, '/tmp/random/tomchop/F:12345')
+    mock_GetCollectedTimelineBody.assert_called_once()
+    mock_GetFilesArchive.assert_not_called()
+    mock_ZipFile.assert_not_called()
+    mock_copy2.assert_called_once_with(
+        '/tmp/random/F:12345.body',
+        '/tmp/random/tomchop/F:12345/F:12345_timeline.body')
+    mock_isdir.assert_called_once_with('/tmp/random/tomchop/F:12345')
+    mock_makedirs.assert_called_once_with('/tmp/random/tomchop/F:12345')
+    mock_remove.assert_called_once_with('/tmp/random/F:12345.body')
+
   @mock.patch('os.path.exists')
   @mock.patch('grr_api_client.flow.FlowBase.GetFilesArchive')
-  def testNotDownloadFilesForExistingFlow(self, mock_GetFilesArchive,
-                                          mock_exists):
-    """Tests that files are downloaded and unzipped in the correct
-    directories."""
+  @mock.patch('grr_api_client.flow.FlowBase.GetCollectedTimelineBody')
+  @mock.patch('grr_api_client.flow.FlowBase.Get')
+  def testNotDownloadFilesForExistingFlow(self, _mock_Get,
+                                          mock_GetCollectedTimelineBody,
+                                          mock_GetFilesArchive, mock_exists):
+    """Tests if results are not downloaded if the directory already exists."""
     # Change output_path to something constant so we can easily assert
     # if calls were done correctly.
     self.grr_flow_module.output_path = '/tmp/random'
     mock_exists.return_value = True  # Simulate existing flow directory
 
-    self.grr_flow_module._DownloadFiles(mock_grr_hosts.MOCK_CLIENT, "F:12345")
+    self.grr_flow_module._DownloadFiles(mock_grr_hosts.MOCK_CLIENT, 'F:12345')
     mock_GetFilesArchive.assert_not_called()
-
+    mock_GetCollectedTimelineBody.assert_not_called()
 
 class GRRArtifactCollectorTest(unittest.TestCase):
   """Tests for the GRR artifact collector."""
