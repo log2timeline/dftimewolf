@@ -201,7 +201,7 @@ class GRRFlowTests(unittest.TestCase):
   @mock.patch('grr_api_client.flow.FlowBase.GetFilesArchive')
   @mock.patch('grr_api_client.flow.FlowBase.GetCollectedTimelineBody')
   @mock.patch('grr_api_client.flow.FlowBase.Get')
-  def testNotDownloadFilesForExistingFlow(self, mock_Get,
+  def testNotDownloadFilesForExistingFlow(self, _mock_Get,
                                           mock_GetCollectedTimelineBody,
                                           mock_GetFilesArchive, mock_exists):
     """Tests that flow results are not downloaded if the directory already exists."""
