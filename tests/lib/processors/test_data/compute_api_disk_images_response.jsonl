@@ -1,0 +1,38 @@
+{
+    "id": "projects/test-project-hkhalifa/global/images",
+    "items": [
+        {
+            "archiveSizeBytes": "393282112",
+            "creationTimestamp": "2021-09-30T03:01:35.664-07:00",
+            "diskSizeGb": "10",
+            "guestOsFeatures": [
+                {
+                    "type": "UEFI_COMPATIBLE"
+                },
+                {
+                    "type": "VIRTIO_SCSI_MULTIQUEUE"
+                }
+            ],
+            "id": "3532694798424618000",
+            "kind": "compute#image",
+            "labelFingerprint": "42WmSpB8rSM=",
+            "licenseCodes": [
+                "5543610867827062957"
+            ],
+            "licenses": [
+                "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/licenses/debian-10-buster"
+            ],
+            "name": "dm-1",
+            "selfLink": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/global/images/dm-1",
+            "sourceDisk": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/disks/vm3",
+            "sourceDiskId": "8096052277174395644",
+            "sourceType": "RAW",
+            "status": "READY",
+            "storageLocations": [
+                "us"
+            ]
+        }
+    ],
+    "kind": "compute#imageList",
+    "selfLink": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/global/images"
+}

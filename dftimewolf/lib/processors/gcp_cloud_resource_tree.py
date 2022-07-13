@@ -26,6 +26,10 @@ class GCPCloudResourceTree(module.BaseModule):
     project_id (str): Id of the project where the resource is located.
     resource_name (str): Name of the resource to build the tree for.
     resource_type (str): Resource type.
+    resources_dict (Dict[str, Resource]): Dictionary of resources
+    period_covered_by_retrieved_logs (Dict[str, datetime]): Dictionary of the time
+        range of logs retrieved and processed
+
   """
 
   def __init__(self,
@@ -144,7 +148,7 @@ class GCPCloudResourceTree(module.BaseModule):
 
     # Retrieve list of instance templates in a project
     self.resources_dict.update(
-        self._RetrieveListOfInstanceTemplate(project_id))
+        self._RetrieveListOfInstanceTemplates(project_id))
 
     # Retrieve list of machine images in a project
     self.resources_dict.update(self._RetrieveListOfMachineImages(project_id))
@@ -673,7 +677,7 @@ class GCPCloudResourceTree(module.BaseModule):
     while request is not None:
       response = request.execute()
 
-      for zone in response['items'].values():
+      for zone in response.get('items',{}).values():
 
         for disk in zone.get('disks', {}):
           resource = Resource()
@@ -862,7 +866,7 @@ class GCPCloudResourceTree(module.BaseModule):
 
     return result
 
-  def _RetrieveListOfInstanceTemplate(self,
+  def _RetrieveListOfInstanceTemplates(self,
                                       project_id: str) -> Dict[str, Resource]:
     """Retrieves list of instance templates in a project.
 
@@ -925,6 +929,16 @@ class GCPCloudResourceTree(module.BaseModule):
                   disk_resource.parent = Resource()
                   disk_resource.parent.resource_name = disk.get(
                       'initializeParams').get('sourceImage')
+
+            # If the disk resource name is the same name as the instance name
+            # then this disk is the one created automatically with the
+            # incident so we set it as its parent. There is a exceptional case
+            # here where if a disk with the same name as the instance already
+            # created in the same zone, GCP will alter the default name. This
+            # is not handled here yet.
+            if disk_resource.name == resource.name:
+              if not resource.parent:
+                resource.parent = disk_resource
 
             if disk_resource.id:
               self.resources_dict[disk_resource.id] = disk_resource

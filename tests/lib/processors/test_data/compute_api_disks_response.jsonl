@@ -1,0 +1,285 @@
+{
+    "id": "projects/test-project-hkhalifa/aggregated/disks",
+    "items": {
+        "regions/asia-east1": {
+            "warning": {
+                "code": "NO_RESULTS_ON_PAGE",
+                "data": [
+                    {
+                        "key": "scope",
+                        "value": "regions/asia-east1"
+                    }
+                ],
+                "message": "There are no results for scope 'regions/asia-east1' on this page."
+            }
+        },
+        "zones/us-central1-a": {
+            "disks": [
+                {
+                    "creationTimestamp": "2021-09-30T03:03:28.981-07:00",
+                    "guestOsFeatures": [
+                        {
+                            "type": "UEFI_COMPATIBLE"
+                        },
+                        {
+                            "type": "VIRTIO_SCSI_MULTIQUEUE"
+                        }
+                    ],
+                    "id": "3984203342790800799",
+                    "interface": "SCSI",
+                    "kind": "compute#disk",
+                    "labelFingerprint": "42WmSpB8rSM=",
+                    "lastAttachTimestamp": "2021-09-30T03:06:16.701-07:00",
+                    "licenseCodes": [
+                        "5543610867827062957"
+                    ],
+                    "licenses": [
+                        "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/licenses/debian-10-buster"
+                    ],
+                    "locked": false,
+                    "multiWriter": false,
+                    "name": "dc-1",
+                    "physicalBlockSizeBytes": "4096",
+                    "selfLink": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/disks/dc-1",
+                    "sizeGb": "10",
+                    "sourceDisk": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/disks/vm1",
+                    "sourceDiskId": "220309178143008111",
+                    "status": "READY",
+                    "type": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/diskTypes/pd-balanced",
+                    "users": [
+                        "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/instances/vm6"
+                    ],
+                    "zone": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a"
+                },
+                {
+                    "creationTimestamp": "2021-09-29T23:38:57.068-07:00",
+                    "guestOsFeatures": [
+                        {
+                            "type": "UEFI_COMPATIBLE"
+                        },
+                        {
+                            "type": "VIRTIO_SCSI_MULTIQUEUE"
+                        }
+                    ],
+                    "id": "220309178143008111",
+                    "interface": "SCSI",
+                    "kind": "compute#disk",
+                    "labelFingerprint": "42WmSpB8rSM=",
+                    "lastAttachTimestamp": "2021-09-29T23:38:57.069-07:00",
+                    "licenseCodes": [
+                        "5543610867827062957"
+                    ],
+                    "licenses": [
+                        "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/licenses/debian-10-buster"
+                    ],
+                    "locked": false,
+                    "multiWriter": false,
+                    "name": "vm1",
+                    "physicalBlockSizeBytes": "4096",
+                    "selfLink": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/disks/vm1",
+                    "sizeGb": "10",
+                    "sourceImage": "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/images/debian-10-buster-v20210916",
+                    "sourceImageId": "test-project-hkhalifa",
+                    "status": "READY",
+                    "type": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/diskTypes/pd-balanced",
+                    "users": [
+                        "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/instances/vm1"
+                    ],
+                    "zone": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a"
+                },
+                {
+                    "creationTimestamp": "2021-11-09T09:35:16.598-08:00",
+                    "guestOsFeatures": [
+                        {
+                            "type": "UEFI_COMPATIBLE"
+                        },
+                        {
+                            "type": "VIRTIO_SCSI_MULTIQUEUE"
+                        }
+                    ],
+                    "id": "7411262450968235963",
+                    "interface": "SCSI",
+                    "kind": "compute#disk",
+                    "labelFingerprint": "42WmSpB8rSM=",
+                    "lastAttachTimestamp": "2021-11-09T09:35:16.599-08:00",
+                    "licenseCodes": [
+                        "5543610867827062957"
+                    ],
+                    "licenses": [
+                        "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/licenses/debian-10-buster"
+                    ],
+                    "locked": false,
+                    "multiWriter": false,
+                    "name": "vm10",
+                    "physicalBlockSizeBytes": "4096",
+                    "selfLink": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/disks/vm10",
+                    "sizeGb": "10",
+                    "sourceImage": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/global/images/dm-2",
+                    "sourceImageId": "402477020533427818",
+                    "status": "READY",
+                    "type": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/diskTypes/pd-balanced",
+                    "users": [
+                        "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/instances/vm10"
+                    ],
+                    "zone": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a"
+                },
+                {
+                    "creationTimestamp": "2021-09-29T23:41:23.680-07:00",
+                    "guestOsFeatures": [
+                        {
+                            "type": "UEFI_COMPATIBLE"
+                        },
+                        {
+                            "type": "VIRTIO_SCSI_MULTIQUEUE"
+                        }
+                    ],
+                    "id": "8096052277174395644",
+                    "interface": "SCSI",
+                    "kind": "compute#disk",
+                    "labelFingerprint": "42WmSpB8rSM=",
+                    "lastAttachTimestamp": "2021-09-29T23:41:23.681-07:00",
+                    "licenseCodes": [
+                        "5543610867827062957"
+                    ],
+                    "licenses": [
+                        "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/licenses/debian-10-buster"
+                    ],
+                    "locked": false,
+                    "multiWriter": false,
+                    "name": "vm3",
+                    "physicalBlockSizeBytes": "4096",
+                    "selfLink": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/disks/vm3",
+                    "sizeGb": "10",
+                    "status": "READY",
+                    "type": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/diskTypes/pd-balanced",
+                    "users": [
+                        "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/instances/vm3"
+                    ],
+                    "zone": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a"
+                },
+                {
+                    "creationTimestamp": "2021-09-30T03:05:26.782-07:00",
+                    "guestOsFeatures": [
+                        {
+                            "type": "UEFI_COMPATIBLE"
+                        },
+                        {
+                            "type": "VIRTIO_SCSI_MULTIQUEUE"
+                        }
+                    ],
+                    "id": "1084829998259909897",
+                    "interface": "SCSI",
+                    "kind": "compute#disk",
+                    "labelFingerprint": "42WmSpB8rSM=",
+                    "lastAttachTimestamp": "2021-09-30T03:05:26.783-07:00",
+                    "licenseCodes": [
+                        "5543610867827062957"
+                    ],
+                    "licenses": [
+                        "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/licenses/debian-10-buster"
+                    ],
+                    "locked": false,
+                    "multiWriter": false,
+                    "name": "vm5",
+                    "physicalBlockSizeBytes": "4096",
+                    "selfLink": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/disks/vm5",
+                    "sizeGb": "10",
+                    "sourceSnapshot": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/global/snapshots/ds-1",
+                    "sourceSnapshotId": "9044040911901176879",
+                    "status": "READY",
+                    "type": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/diskTypes/pd-balanced",
+                    "users": [
+                        "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/instances/vm5"
+                    ],
+                    "zone": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a"
+                },
+                {
+                    "creationTimestamp": "2021-09-30T03:07:04.914-07:00",
+                    "guestOsFeatures": [
+                        {
+                            "type": "UEFI_COMPATIBLE"
+                        },
+                        {
+                            "type": "VIRTIO_SCSI_MULTIQUEUE"
+                        }
+                    ],
+                    "id": "2546719759240016551",
+                    "interface": "SCSI",
+                    "kind": "compute#disk",
+                    "labelFingerprint": "42WmSpB8rSM=",
+                    "lastAttachTimestamp": "2021-09-30T03:07:04.915-07:00",
+                    "licenseCodes": [
+                        "5543610867827062957"
+                    ],
+                    "licenses": [
+                        "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/licenses/debian-10-buster"
+                    ],
+                    "locked": false,
+                    "multiWriter": false,
+                    "name": "vm7",
+                    "physicalBlockSizeBytes": "4096",
+                    "selfLink": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/disks/vm7",
+                    "sizeGb": "10",
+                    "sourceImage": "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/images/debian-10-buster-v20210916",
+                    "sourceImageId": "2427010555319344057",
+                    "status": "READY",
+                    "type": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/diskTypes/pd-balanced",
+                    "users": [
+                        "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/instances/vm7"
+                    ],
+                    "zone": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a"
+                },
+                {
+                    "creationTimestamp": "2021-10-18T22:32:07.120-07:00",
+                    "guestOsFeatures": [
+                        {
+                            "type": "UEFI_COMPATIBLE"
+                        },
+                        {
+                            "type": "VIRTIO_SCSI_MULTIQUEUE"
+                        }
+                    ],
+                    "id": "8329700761521088185",
+                    "interface": "SCSI",
+                    "kind": "compute#disk",
+                    "labelFingerprint": "42WmSpB8rSM=",
+                    "lastAttachTimestamp": "2021-10-18T22:32:07.121-07:00",
+                    "licenseCodes": [
+                        "5543610867827062957"
+                    ],
+                    "licenses": [
+                        "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/licenses/debian-10-buster"
+                    ],
+                    "locked": false,
+                    "multiWriter": false,
+                    "name": "vm9",
+                    "physicalBlockSizeBytes": "4096",
+                    "selfLink": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/disks/vm9",
+                    "sizeGb": "10",
+                    "sourceImage": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/global/images/dm-1",
+                    "sourceImageId": "3532694798424618000",
+                    "status": "READY",
+                    "type": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/diskTypes/pd-balanced",
+                    "users": [
+                        "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/instances/vm9"
+                    ],
+                    "zone": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a"
+                }
+            ]
+        },
+        "zones/us-central1-b": {
+            "warning": {
+                "code": "NO_RESULTS_ON_PAGE",
+                "data": [
+                    {
+                        "key": "scope",
+                        "value": "zones/us-central1-b"
+                    }
+                ],
+                "message": "There are no results for scope 'zones/us-central1-b' on this page."
+            }
+        }
+    },
+    "kind": "compute#diskAggregatedList",
+    "selfLink": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/aggregated/disks"
+}
