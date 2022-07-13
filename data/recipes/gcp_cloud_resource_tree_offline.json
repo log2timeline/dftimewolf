@@ -24,7 +24,7 @@
       ["project_id", "ID of the project where the resource is located", null],
       ["zone", "Zone where the resource is located", null],
       ["resource_type","Resource type (currently supported types: gce_instance, gce_disk, gce_image, gce_machine_image, gce_instance_template, gce_snapshot)", null],
-      ["paths", "Comma-separated paths to GCP log files", null],
+      ["paths", "Comma-separated paths to GCP log files. Log files should contain log entiries in json format.", null],
       ["--resource_id","Resource id", null],
       ["--resource_name","Resource name", null]
 

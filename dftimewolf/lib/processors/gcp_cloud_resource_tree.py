@@ -208,11 +208,9 @@ class GCPCloudResourceTree(module.BaseModule):
           # To optimize calls to retrieve logs, we attempt to group resources
           # that have a creation timestamp within 30 days.
           if (time_diff.total_seconds() / 60 / 60 / 24) <= 30:
-            time_range['start_timestamp'] = time_ranges[-1]['start_timestamp']
-            time_range[
+            time_ranges[-1][
                 'end_timestamp'] = resource.creation_timestamp + timedelta(
                     hours=1)
-            time_ranges[-1] = time_range
           # Else if resource doesn't fall within 30 days, add a new time range
           # entry
           else:
@@ -343,12 +341,11 @@ class GCPCloudResourceTree(module.BaseModule):
         'start') or not self.period_covered_by_retrieved_logs.get('end'):
       self.period_covered_by_retrieved_logs['start'] = start_timestamp
       self.period_covered_by_retrieved_logs['end'] = end_timestamp
-    else:
-      # If the required time range is within the time range already retrieved
-      # before return an empty list
-      if start_timestamp >= self.period_covered_by_retrieved_logs[
+    elif start_timestamp >= self.period_covered_by_retrieved_logs[
           'start'] and end_timestamp <= self.period_covered_by_retrieved_logs[
               'end']:
+      # If the required time range is within the time range already retrieved
+      # before return an empty list
         return []
 
     # Make sure we only request the period that was not retrieved before, for
@@ -393,11 +390,12 @@ class GCPCloudResourceTree(module.BaseModule):
       file_container: file container
     """
     if not file_container:
-      self.logger.error('File container is null')
+      self.ModuleError('File container is null')
       return
 
     if not file_container.path:
       self.logger.error('File container path is null or empty')
+      return
 
     with open(file_container.path, 'r') as input_file:
       log_messages = []
@@ -512,6 +510,9 @@ class GCPCloudResourceTree(module.BaseModule):
   def _ParseInsertLogMessage(self, resource: gcp_crt_helper.Resource, request: Dict[str, Any],
                              response: Dict[str, Any]) -> None:
     """Parses a GCP log message where the operation is insert or create.
+
+    The function changes the passed resource object based on the input in the request
+    and response arguments.
 
     Args:
       resource: Resource object to update with parsed information.
