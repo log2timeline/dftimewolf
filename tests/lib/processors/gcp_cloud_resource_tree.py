@@ -9,9 +9,10 @@ from datetime import timedelta
 import mock
 
 from dftimewolf.lib import state
-from dftimewolf.lib.processors import gcp_cloud_resource_tree
+from dftimewolf.lib.processors import gcp_cloud_resource_tree as gcp_crt
+from dftimewolf.lib.processors import gcp_cloud_resource_tree_helper as gcp_crt_helper
+
 from dftimewolf import config
-from dftimewolf.lib.processors.gcp_cloud_resource_tree_helper import OperatingMode, Resource  # pylint: disable=line-too-long
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -22,13 +23,13 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
   def testInitialization(self) -> None:
     """Tests that the processor can be initialized."""
     test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_cloud_resource_tree.GCPCloudResourceTree(test_state)
+    processor = gcp_crt.GCPCloudResourceTree(test_state)
     self.assertIsNotNone(processor)
 
   def testSetup(self) -> None:
     """Tests that the processor is set up correctly."""
     test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_cloud_resource_tree.GCPCloudResourceTree(test_state)
+    processor = gcp_crt.GCPCloudResourceTree(test_state)
     processor.SetUp(project_id='test-project-hkhalifa',
                     resource_name='vm1',
                     resource_type='gcp_instance',
@@ -36,19 +37,19 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
     self.assertEqual(processor.project_id, 'test-project-hkhalifa')
     self.assertEqual(processor.resource_name, 'vm1')
     self.assertEqual(processor.resource_type, 'gcp_instance')
-    self.assertEqual(processor.mode, OperatingMode.OFFLINE)
+    self.assertEqual(processor.mode, gcp_crt_helper.OperatingMode.OFFLINE)
 
   @mock.patch('dftimewolf.lib.processors.gcp_cloud_resource_tree.GCPCloudResourceTree._GetLogMessages') # pylint: disable=line-too-long
   # pylint: disable=invalid-name
   def testGetResourcesMetaDataFromLogs(self, _mock_GetLogMessages) -> None:
     """Tests creation of time ranges for logs query."""
     test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_cloud_resource_tree.GCPCloudResourceTree(test_state)
-    r1 = Resource()
+    processor = gcp_crt.GCPCloudResourceTree(test_state)
+    r1 = gcp_crt_helper.Resource()
     r1.creation_timestamp = '2021-09-30 03:00:00'
-    r2 = Resource()
+    r2 = gcp_crt_helper.Resource()
     r2.creation_timestamp = '2021-09-15 01:00:00'
-    r3 = Resource()
+    r3 = gcp_crt_helper.Resource()
     r3.creation_timestamp = '2021-11-01 06:00:00'
     #r1 and r2 are within 30 days
     processor.resources_dict['1'] = r1
@@ -74,7 +75,7 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
   def testRetrieveListOfSnapshots(self, _mock_CreateService) -> None:
     """Tests retrieval of project snapshots."""
     test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_cloud_resource_tree.GCPCloudResourceTree(test_state)
+    processor = gcp_crt.GCPCloudResourceTree(test_state)
     file_path = os.path.join(current_dir, 'test_data',
                              'compute_api_snapshots_response.jsonl')
     with open(file_path) as json_file:
@@ -106,7 +107,7 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
   def testRetrieveListOfInstanceTemplates(self, _mock_CreateService) -> None:
     """Tests retrieval of project instance templates."""
     test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_cloud_resource_tree.GCPCloudResourceTree(test_state)
+    processor = gcp_crt.GCPCloudResourceTree(test_state)
     file_path = os.path.join(current_dir, 'test_data',
                              'compute_api_instance_templates_response.jsonl')
     with open(file_path) as json_file:
@@ -138,7 +139,7 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
   def testRetrieveListOfMachineImages(self, _mock_CreateService) -> None:
     """Tests retrieval of project machine images."""
     test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_cloud_resource_tree.GCPCloudResourceTree(test_state)
+    processor = gcp_crt.GCPCloudResourceTree(test_state)
     file_path = os.path.join(current_dir, 'test_data',
                              'compute_api_machine_images_response.jsonl')
     with open(file_path) as json_file:
@@ -170,7 +171,7 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
   def testRetrieveListOfDisks(self, _mock_CreateService) -> None:
     """Tests retrieval of project disks."""
     test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_cloud_resource_tree.GCPCloudResourceTree(test_state)
+    processor = gcp_crt.GCPCloudResourceTree(test_state)
     file_path = os.path.join(current_dir, 'test_data',
                              'compute_api_disks_response.jsonl')
     with open(file_path) as json_file:
@@ -203,7 +204,7 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
   def testRetrieveListOfDiskImages(self, _mock_CreateService) -> None:
     """Tests retrieval of project disk images."""
     test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_cloud_resource_tree.GCPCloudResourceTree(test_state)
+    processor = gcp_crt.GCPCloudResourceTree(test_state)
     file_path = os.path.join(current_dir, 'test_data',
                              'compute_api_disk_images_response.jsonl')
     with open(file_path) as json_file:
@@ -235,7 +236,7 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
   def testRetrieveListOfInstances(self, _mock_CreateService) -> None:
     """Tests retrieval of project instances."""
     test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_cloud_resource_tree.GCPCloudResourceTree(test_state)
+    processor = gcp_crt.GCPCloudResourceTree(test_state)
     file_path = os.path.join(current_dir, 'test_data',
                              'compute_api_instances_response.jsonl')
     with open(file_path) as json_file:
@@ -260,3 +261,74 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
         self.assertEqual(sample_instance.parent.name, 'vm1')
         self.assertEqual(sample_instance.parent.type, 'gce_disk')
         self.assertEqual(sample_instance.parent.resource_name, 'https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/disks/vm1') # pylint: disable=line-too-long
+
+
+  @mock.patch.object(gcp_crt.GCPCloudResourceTree, "_SearchForDeletedResource")
+  @mock.patch('dftimewolf.lib.processors.gcp_cloud_resource_tree.CreateService') # pylint: disable=line-too-long
+  # pylint: disable=invalid-name
+  def testGetResourceParentTree(self, _mock_CreateService, _mock_SearchForDeletedResource) -> None:
+    """Tests retrieval of resource parent tree."""
+    test_state = state.DFTimewolfState(config.Config)
+    processor = gcp_crt.GCPCloudResourceTree(test_state)
+    file_path = os.path.join(current_dir, 'test_data',
+                             'gcp-project-logs.jsonl')
+    _mock_SearchForDeletedResource.return_value = None
+    log_messages = []
+    with open(file_path) as log_file:
+      for line in log_file:
+        log_messages.append(json.loads(line))
+    # pylint: disable=protected-access
+    processor._ParseLogMessages(log_messages)
+
+    parent_resource_of_vm1 = processor._GetResourceParentTree(processor.resources_dict['1809669853321684335'])
+
+    self.assertIsNotNone(parent_resource_of_vm1)
+    if parent_resource_of_vm1:
+      self.assertEqual(parent_resource_of_vm1.name, 'vm1')
+      self.assertEqual(parent_resource_of_vm1.type, 'gce_disk')
+      self.assertEqual(parent_resource_of_vm1.resource_name, 'projects/test-project-hkhalifa/zones/us-central1-a/disks/vm1') # pylint: disable=line-too-long
+      self.assertIsNotNone(parent_resource_of_vm1.parent)
+      if parent_resource_of_vm1.parent:
+        self.assertEqual(parent_resource_of_vm1.parent.name, 'debian-10-buster-v20210916')
+        self.assertEqual(parent_resource_of_vm1.parent.type, 'gce_image')
+        self.assertEqual(parent_resource_of_vm1.parent.resource_name, 'projects/debian-cloud/global/images/debian-10-buster-v20210916') # pylint: disable=line-too-long
+        self.assertIsNone(parent_resource_of_vm1.parent.parent)
+      # check if resource is in children
+      self.assertEqual(len(parent_resource_of_vm1.children), 1)
+      self.assertIn(processor.resources_dict['1809669853321684335'], parent_resource_of_vm1.children)
+
+    # Test if deleted resource is detected while building parent tree
+    parent_resource_of_vm10 = processor._GetResourceParentTree(processor.resources_dict['963895663494893499'])
+    _mock_SearchForDeletedResource.assert_called()
+
+
+  @mock.patch('dftimewolf.lib.processors.gcp_cloud_resource_tree.CreateService') # pylint: disable=line-too-long
+  # pylint: disable=invalid-name
+  def testParseLogMessages(self, _mock_CreateService) -> None:
+    """Tests parse log messages."""
+    test_state = state.DFTimewolfState(config.Config)
+    processor = gcp_crt.GCPCloudResourceTree(test_state)
+    file_path_resources_dict = os.path.join(current_dir, 'test_data',
+                             'resources_dict_dump.jsonl')
+    with open(file_path_resources_dict) as resources_dict_file:
+      stored_resources_dict = json.loads(resources_dict_file.read())
+
+    file_path_logs = os.path.join(current_dir, 'test_data',
+                             'gcp-project-logs.jsonl')
+    log_messages = []
+    with open(file_path_logs) as log_file:
+      for line in log_file:
+        log_messages.append(json.loads(line))
+
+    # pylint: disable=protected-access
+    processor._ParseLogMessages(log_messages)
+
+    current_resources_dict = json.dumps(processor.resources_dict, default=gcp_crt_helper.Resource.to_json) # pylint: disable=line-too-long
+    current_resources_dict = json.loads(current_resources_dict)
+    self.assertEqual(len(processor.resources_dict), 32)
+    self.assertEqual(stored_resources_dict, current_resources_dict)
+
+
+
+
+
