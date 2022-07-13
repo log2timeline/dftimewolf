@@ -24,6 +24,8 @@ class GCPCloudResourceTree(module.BaseModule):
 
   Attributes:
     project_id (str): Id of the project where the resource is located.
+    zone (str): zone where the resource is located.
+    resource_id (str): Id of the the resource to build the tree for.
     resource_name (str): Name of the resource to build the tree for.
     resource_type (str): Resource type.
     mode (gcp_crt_helper.OperatingMode): Module operation mode
@@ -49,33 +51,43 @@ class GCPCloudResourceTree(module.BaseModule):
                                                name=name,
                                                critical=critical)
 
-    self.project_id: str = ''
-    self.resource_name: str = ''
-    self.resource_type: str = ''
+    self.project_id: str = None
+    self.zone: str = None
+    self.resource_id: str = str()
+    self.resource_name: str = str()
+    self.resource_type: str = None
     self.mode: gcp_crt_helper.OperatingMode = gcp_crt_helper.OperatingMode.ONLINE
     self.period_covered_by_retrieved_logs: Dict[str, datetime] = {}
     self.resources_dict: Dict[str, gcp_crt_helper.Resource] = {}
 
   # pylint: disable=arguments-differ
-  def SetUp(self, project_id: str, resource_name: str, resource_type: str,
+  def SetUp(self, project_id: str, zone: str, resource_id: str, resource_name: str, resource_type: str,
             mode: str) -> None:
     """Sets up the resource we want to build the tree for.
 
     Args:
-      project_id: Project id where the resources are located.
+      project_id: Project id where the resource are located.
+      zone: zone where the resource are located.
+      resource_id: Resource id.
       resource_name: Resource name.
       resource_type: Resource type (currently supported types: gce_instance,
           gce_disk, gce_image, gce_machine_image, gce_instance_template,
           gce_snapshot)
       mode: operational mode (online or offline)
     """
+    if not resource_id and not resource_name:
+      self.ModuleError("Please supply resource_id or resource_name.", critical=True)
     self.project_id = project_id
+    self.zone = zone
+    self.resource_id = resource_id
     self.resource_name = resource_name
     self.resource_type = resource_type
     if 'offline' in mode:
       self.mode = gcp_crt_helper.OperatingMode.OFFLINE
     elif 'online' in mode:
       self.mode = gcp_crt_helper.OperatingMode.ONLINE
+    else:
+      self.ModuleError("Operational mode not set.")
 
   def Process(self) -> None:
     """Creates the GCP Cloud Resource Tree."""
@@ -102,8 +114,11 @@ class GCPCloudResourceTree(module.BaseModule):
 
     self._BuildResourcesParentRelationships()
 
-    resource = self._FindResource(self.resource_name, self.resource_type, None,
-                                  self.project_id)
+    if self.resource_id:
+      resource = self.resources_dict.get(self.resource_id)
+    elif self.resource_name:
+      resource = self._FindResource(self.resource_name, self.resource_type,
+                                    self.zone, self.project_id)
 
     if not resource:
       self.logger.error('Resource not found')
@@ -322,9 +337,6 @@ class GCPCloudResourceTree(module.BaseModule):
     Return:
       List of log messages
     """
-    if not project_id or not start_timestamp or not end_timestamp:
-      return []
-
     gcl = gcp_log.GoogleCloudLog(project_ids=[project_id])
 
     if not self.period_covered_by_retrieved_logs.get(

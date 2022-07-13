@@ -31,7 +31,9 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     processor = gcp_crt.GCPCloudResourceTree(test_state)
     processor.SetUp(project_id='test-project-hkhalifa',
+                    zone='us-central1-a',
                     resource_name='vm1',
+                    resource_id='1809669853321684335',
                     resource_type='gcp_instance',
                     mode='offline')
     self.assertEqual(processor.project_id, 'test-project-hkhalifa')

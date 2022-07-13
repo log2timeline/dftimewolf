@@ -48,22 +48,22 @@ class Resource():
 
   def __init__(self) -> None:
     """Initializes the Resource object."""
-    self.id: str = ''
-    self.name: str = ''
-    self.type: str = ''
-    self.project_id: str = ''
-    self.zone: str = ''
-    self.created_by: str = ''
-    self.creator_ip_address: str = ''
-    self.creator_useragent: str = ''
-    self.deleted_by: str = ''
-    self.deleter_ip_address: str = ''
-    self.deleter_useragent: str = ''
+    self.id: str = str()
+    self.name: str = str()
+    self.type: str = str()
+    self.project_id: str = str()
+    self.zone: str = str()
+    self.created_by: str = str()
+    self.creator_ip_address: str = str()
+    self.creator_useragent: str = str()
+    self.deleted_by: str = str()
+    self.deleter_ip_address: str = str()
+    self.deleter_useragent: str = str()
     self.parent: Optional[Resource] = None
     self.children: Set[Resource] = set()
     self.disks: List[Resource] = []
     self.deleted: bool = False
-    self._resource_name: str = ''
+    self._resource_name: str = str()
     self._creation_timestamp: Optional[datetime] = None
     self._deletion_timestamp: Optional[datetime] = None
 
@@ -76,7 +76,7 @@ class Resource():
   def resource_name(self) -> str:
     """Property resource_name Getter."""
     if not self._resource_name and self.name and self.project_id and self.zone:
-      tmp_type = ''
+      tmp_type = str()
       if self.type == 'gce_disk':
         tmp_type = 'disks'
       elif self.type == 'gce_instance':

@@ -13,6 +13,8 @@
       "name": "GCPCloudResourceTree",
       "args": {
           "project_id": "@project_id",
+          "zone": "@zone",
+          "resource_id": "@resource_id",
           "resource_name": "@resource_name",
           "resource_type": "@resource_type",
           "mode": "offline"
@@ -20,8 +22,11 @@
   }],
   "args": [
       ["project_id", "ID of the project where the resource is located", null],
-      ["resource_name","Resource name", null],
+      ["zone", "Zone where the resource is located", null],
       ["resource_type","Resource type (currently supported types: gce_instance, gce_disk, gce_image, gce_machine_image, gce_instance_template, gce_snapshot)", null],
-      ["paths", "Comma-separated paths to GCP log files", null]
+      ["paths", "Comma-separated paths to GCP log files", null],
+      ["--resource_id","Resource id", null],
+      ["--resource_name","Resource name", null]
+
   ]
 }
