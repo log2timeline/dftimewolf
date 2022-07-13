@@ -8,15 +8,15 @@ from datetime import timedelta
 from datetime import timezone
 from typing import Dict, List, Optional, Any
 
-from libcloudforensics.providers.gcp.internal.common import CreateService
-from libcloudforensics.providers.gcp.internal.log import GoogleCloudLog
+from libcloudforensics.providers.gcp.internal import common as gcp_common
+from libcloudforensics.providers.gcp.internal import log as gcp_log
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.state import DFTimewolfState
+from dftimewolf.lib import state
 
-from dftimewolf.lib.processors.gcp_cloud_resource_tree_helper import OperatingMode, Resource  # pylint: disable=line-too-long
+from dftimewolf.lib.processors import gcp_cloud_resource_tree_helper as gcp_crt_helper # pylint: disable=line-too-long
 
 
 class GCPCloudResourceTree(module.BaseModule):
@@ -26,6 +26,7 @@ class GCPCloudResourceTree(module.BaseModule):
     project_id (str): Id of the project where the resource is located.
     resource_name (str): Name of the resource to build the tree for.
     resource_type (str): Resource type.
+    mode (gcp_crt_helper.OperatingMode): Module operation mode
     resources_dict (Dict[str, Resource]): Dictionary of resources
     period_covered_by_retrieved_logs (Dict[str, datetime]): Dictionary of the time
         range of logs retrieved and processed
@@ -33,7 +34,7 @@ class GCPCloudResourceTree(module.BaseModule):
   """
 
   def __init__(self,
-               state: DFTimewolfState,
+               state: state.DFTimewolfState,
                name: Optional[str] = None,
                critical: bool = True) -> None:
     """Initializes the Cloud Resource Tree Processor.
@@ -51,9 +52,9 @@ class GCPCloudResourceTree(module.BaseModule):
     self.project_id: str = ''
     self.resource_name: str = ''
     self.resource_type: str = ''
-    self.mode: OperatingMode = OperatingMode.ONLINE
+    self.mode: gcp_crt_helper.OperatingMode = gcp_crt_helper.OperatingMode.ONLINE
     self.period_covered_by_retrieved_logs: Dict[str, datetime] = {}
-    self.resources_dict: Dict[str, Resource] = {}
+    self.resources_dict: Dict[str, gcp_crt_helper.Resource] = {}
 
   # pylint: disable=arguments-differ
   def SetUp(self, project_id: str, resource_name: str, resource_type: str,
@@ -72,13 +73,13 @@ class GCPCloudResourceTree(module.BaseModule):
     self.resource_name = resource_name
     self.resource_type = resource_type
     if 'offline' in mode:
-      self.mode = OperatingMode.OFFLINE
+      self.mode = gcp_crt_helper.OperatingMode.OFFLINE
     elif 'online' in mode:
-      self.mode = OperatingMode.ONLINE
+      self.mode = gcp_crt_helper.OperatingMode.ONLINE
 
   def Process(self) -> None:
     """Creates the GCP Cloud Resource Tree."""
-    if self.mode == OperatingMode.OFFLINE:
+    if self.mode == gcp_crt_helper.OperatingMode.OFFLINE:
       self.logger.info('Starting module in offline mode.')
       # Get the file containers created by the previous module in the recipe
       file_containers = self.state.GetContainers(containers.File)
@@ -90,7 +91,7 @@ class GCPCloudResourceTree(module.BaseModule):
             f'Loading file from file system container: {file_container.path}')
         self._ParseLogMessagesFromFileContainer(file_container)
 
-    elif self.mode == OperatingMode.ONLINE:
+    elif self.mode == gcp_crt_helper.OperatingMode.ONLINE:
       self.logger.info('Starting module in online mode.')
       self._GetListOfResources(self.project_id)
       self._GetResourcesMetaDataFromLogs(self.project_id)
@@ -215,7 +216,7 @@ class GCPCloudResourceTree(module.BaseModule):
                                           time_range['end_timestamp'])
       self._ParseLogMessages(log_messages)
 
-  def _GetResourceParentTree(self, resource: Resource) -> Optional[Resource]:
+  def _GetResourceParentTree(self, resource: gcp_crt_helper.Resource) -> Optional[gcp_crt_helper.Resource]:
     """Returns parent tree of a given resource.
 
     Args:
@@ -227,7 +228,7 @@ class GCPCloudResourceTree(module.BaseModule):
     if not resource:
       return None
 
-    parent_resource: Optional[Resource] = None
+    parent_resource: Optional[gcp_crt_helper.Resource] = None
 
     # The resource should at least have the name and type of the parent
     # resource. This is filled during the parsing of log messages in
@@ -251,7 +252,7 @@ class GCPCloudResourceTree(module.BaseModule):
 
     if parent_resource:
       if parent_resource.IsDeleted(
-      ) and self.mode == OperatingMode.ONLINE and resource.creation_timestamp:
+      ) and self.mode == gcp_crt_helper.OperatingMode.ONLINE and resource.creation_timestamp:
         found_resource = self._SearchForDeletedResource(
             parent_resource, resource.creation_timestamp)
         if found_resource:
@@ -270,7 +271,7 @@ class GCPCloudResourceTree(module.BaseModule):
                     resource_name: str,
                     resource_type: str,
                     zone: Optional[str] = None,
-                    project_id: Optional[str] = None) -> Optional[Resource]:
+                    project_id: Optional[str] = None) -> Optional[gcp_crt_helper.Resource]:
     """Searches for a resource in the _resource_dict dictionary.
 
     Args:
@@ -307,7 +308,9 @@ class GCPCloudResourceTree(module.BaseModule):
       start_timestamp: datetime,
       end_timestamp: datetime,
       resource_id: Optional[str] = None) -> List[Dict[str, Any]]:
-    """Acquires log messages from GCP logs for a specific project id and time
+    """Acquires log messages from GCP logs.
+
+    Acquires log messages from GCP logs for a specific project id and time
     range.
 
     Args:
@@ -322,7 +325,7 @@ class GCPCloudResourceTree(module.BaseModule):
     if not project_id or not start_timestamp or not end_timestamp:
       return []
 
-    gcl = GoogleCloudLog(project_ids=[project_id])
+    gcl = gcp_log.GoogleCloudLog(project_ids=[project_id])
 
     if not self.period_covered_by_retrieved_logs.get(
         'start') or not self.period_covered_by_retrieved_logs.get('end'):
@@ -372,8 +375,7 @@ class GCPCloudResourceTree(module.BaseModule):
 
   def _ParseLogMessagesFromFileContainer(
       self, file_container: containers.File) -> None:
-    """Parses GCP Cloud log messages supplied in the file container and fill
-    the self._resource_dict with the result.
+    """Parses GCP Cloud log messages supplied in the file container.
 
     Args:
       file_container: file container
@@ -400,7 +402,9 @@ class GCPCloudResourceTree(module.BaseModule):
       self._ParseLogMessages(log_messages)
 
   def _ParseLogMessages(self, log_messages: List[Dict[str, Any]]) -> None:
-    """Parses supplied GCP Cloud log messages and fills self._resource_dict with
+    """Parses supplied GCP Cloud log messages.
+
+    Parses supplied GCP Cloud log messages and fills self._resource_dict with
     the result.
 
     Args:
@@ -431,18 +435,18 @@ class GCPCloudResourceTree(module.BaseModule):
           continue
 
         # Check if a resource with the same ID already exist in the
-        # self._resources_dict dictionary
+        # self.resources_dict dictionary
         resource = self.resources_dict.get(response.get('targetId'))
 
         if not resource:
-          resource = Resource()
+          resource = gcp_crt_helper.Resource()
           resource.id = response.get('targetId')
 
         # compute.disks.createSnapshot is a special case where the
         # "resourceName" is just the name and not the full name with the
         # project, zone, type and name
         if log_message_type.startswith('compute.disks.createSnapshot'):
-          resource = Resource()
+          resource = gcp_crt_helper.Resource()
           source_disk_id = response.get('targetId')
           resource.name = request.get('name')
           # GCP Log issue, the resource.type is set to 'gce_disk' so i am
@@ -493,33 +497,33 @@ class GCPCloudResourceTree(module.BaseModule):
         if resource.id:
           self.resources_dict[resource.id] = resource
 
-  def _ParseInsertLogMessage(self, resource: Resource, request: Dict[str, Any],
+  def _ParseInsertLogMessage(self, resource: gcp_crt_helper.Resource, request: Dict[str, Any],
                              response: Dict[str, Any]) -> None:
     """Parses a GCP log message where the operation is insert or create.
 
     Args:
-      resource: Resource object to update with parsed information
-      request: Request portion of the log message
-      response: Response portion of the log message
+      resource: Resource object to update with parsed information.
+      request: Request portion of the log message.
+      response: Response portion of the log message.
     """
     resource.creation_timestamp = response.get('insertTime')
     resource.created_by = response.get('user', '')
 
     if 'sourceDisk' in request:
       if not resource.parent:
-        resource.parent = Resource()
+        resource.parent = gcp_crt_helper.Resource()
         resource.parent.resource_name = request.get('sourceDisk', '')
 
     # When creating machine image from an instance
     elif 'sourceInstance' in request:
       if not resource.parent:
-        resource.parent = Resource()
+        resource.parent = gcp_crt_helper.Resource()
         resource.parent.resource_name = request.get('sourceInstance', '')
 
     # When creating a disk image from another disk
     elif 'sourceSnapshot' in request:
       if not resource.parent:
-        resource.parent = Resource()
+        resource.parent = gcp_crt_helper.Resource()
         resource.parent.resource_name = request.get('sourceSnapshot', '')
 
     # When creating a new instance, one of
@@ -527,7 +531,7 @@ class GCPCloudResourceTree(module.BaseModule):
     # disks.source is required except for local SSD.
     if request.get('disks'):
       for disk in request.get('disks', {}):
-        disk_resource = Resource()
+        disk_resource = gcp_crt_helper.Resource()
         disk_resource.project_id = resource.project_id
         disk_resource.created_by = resource.created_by
         disk_resource.creator_ip_address = resource.creator_ip_address
@@ -538,11 +542,11 @@ class GCPCloudResourceTree(module.BaseModule):
 
         # When creating an instance from a machine image
         if 'sourceMachineImage' in request:
-          disk_resource.parent = Resource()
+          disk_resource.parent = gcp_crt_helper.Resource()
           disk_resource.parent.resource_name = request.get(
               'sourceMachineImage', '')
 
-        # Check if we already have the disk in the _resources_dict. If true
+        # Check if we already have the disk in the resources_dict. If true
         # then add it to the resource disks list and continue to next disk.
         matched_resource = self._FindResource(disk_resource.name,
                                               disk_resource.type,
@@ -565,21 +569,21 @@ class GCPCloudResourceTree(module.BaseModule):
           # or template
           if 'sourceImage' in initialize_params:
             if not disk_resource.parent:
-              disk_resource.parent = Resource()
+              disk_resource.parent = gcp_crt_helper.Resource()
             disk_resource.parent.resource_name = initialize_params.get(
                 'sourceImage')
 
           # When instance is created using an existing disk snapshot
           elif 'sourceSnapshot' in initialize_params:
             if not disk_resource.parent:
-              disk_resource.parent = Resource()
+              disk_resource.parent = gcp_crt_helper.Resource()
             disk_resource.parent.resource_name = initialize_params.get(
                 'sourceSnapshot')
 
         # When instance is created using an existing cloned disk
         elif 'source' in disk:
           if not disk_resource.parent:
-            disk_resource.parent = Resource()
+            disk_resource.parent = gcp_crt_helper.Resource()
           disk_resource.parent.resource_name = disk.get('source')
 
         # This is an exceptional case cause the logs don't have an entry
@@ -616,7 +620,7 @@ class GCPCloudResourceTree(module.BaseModule):
 
   def _BuildResourcesParentRelationships(self) -> None:
     """Builds parent relationship for all resources."""
-    # Using resource_keys because self._resources_dict changes during the loop
+    # Using resource_keys because self.resources_dict changes during the loop
     resource_keys = list(self.resources_dict.keys())
     for resource_key in resource_keys:
       resource = self.resources_dict.get(resource_key)
@@ -624,8 +628,8 @@ class GCPCloudResourceTree(module.BaseModule):
         resource.parent = self._GetResourceParentTree(resource)
 
   def _SearchForDeletedResource(
-      self, resource: Resource,
-      start_timestamp: datetime) -> Optional[Resource]:
+      self, resource: gcp_crt_helper.Resource,
+      start_timestamp: datetime) -> Optional[gcp_crt_helper.Resource]:
     """Searches for deleted resource in GCP Logs.
 
     Args:
@@ -657,7 +661,7 @@ class GCPCloudResourceTree(module.BaseModule):
 
     return None
 
-  def _RetrieveListOfDisks(self, project_id: str) -> Dict[str, Resource]:
+  def _RetrieveListOfDisks(self, project_id: str) -> Dict[str, gcp_crt_helper.Resource]:
     """Retrieves list of disks in a project.
 
     Args:
@@ -666,11 +670,11 @@ class GCPCloudResourceTree(module.BaseModule):
     Returns:
       Dict of disks
     """
-    result: Dict[str, Resource] = {}
+    result: Dict[str, gcp_crt_helper.Resource] = {}
 
     # Using beta version of the API because v1 did not have important
     # information when creating this script
-    compute_api_client = CreateService('compute', 'beta')
+    compute_api_client = gcp_common.CreateService('compute', 'beta')
 
     request = compute_api_client.disks().aggregatedList(project=project_id)  # pylint: disable=no-member
 
@@ -680,20 +684,20 @@ class GCPCloudResourceTree(module.BaseModule):
       for zone in response.get('items',{}).values():
 
         for disk in zone.get('disks', {}):
-          resource = Resource()
+          resource = gcp_crt_helper.Resource()
           resource.id = disk.get('id')
           resource.resource_name = disk.get('selfLink')
           resource.creation_timestamp = disk.get('creationTimestamp')
           if disk.get('sourceDisk'):
-            resource.parent = Resource()
+            resource.parent = gcp_crt_helper.Resource()
             resource.parent.resource_name = disk.get('sourceDisk')
             resource.parent.id = disk.get('sourceDiskId')
           elif disk.get('sourceSnapshot'):
-            resource.parent = Resource()
+            resource.parent = gcp_crt_helper.Resource()
             resource.parent.resource_name = disk.get('sourceSnapshot')
             resource.parent.id = disk.get('sourceSnapshotId')
           elif disk.get('sourceImage'):
-            resource.parent = Resource()
+            resource.parent = gcp_crt_helper.Resource()
             resource.parent.resource_name = disk.get('sourceImage')
             resource.parent.id = disk.get('sourceImageId')
 
@@ -705,7 +709,7 @@ class GCPCloudResourceTree(module.BaseModule):
 
     return result
 
-  def _RetrieveListOfDiskImages(self, project_id: str) -> Dict[str, Resource]:
+  def _RetrieveListOfDiskImages(self, project_id: str) -> Dict[str, gcp_crt_helper.Resource]:
     """Retrieves list of disk images in a project.
 
     Args:
@@ -714,11 +718,11 @@ class GCPCloudResourceTree(module.BaseModule):
     Return:
       Dict of disk images
     """
-    result: Dict[str, Resource] = {}
+    result: Dict[str, gcp_crt_helper.Resource] = {}
 
     # Using beta version of the API because v1 did not have important
     # information when creating this script
-    compute_api_client = CreateService('compute', 'beta')
+    compute_api_client = gcp_common.CreateService('compute', 'beta')
 
     # Disk images are not tied to a zone, so there is no aggregatedList
     request = compute_api_client.images().list(project=project_id)  # pylint: disable=no-member
@@ -728,16 +732,16 @@ class GCPCloudResourceTree(module.BaseModule):
 
       if response:
         for image in response.get('items', {}):
-          resource = Resource()
+          resource = gcp_crt_helper.Resource()
           resource.id = image.get('id')
           resource.resource_name = image.get('selfLink')
           resource.creation_timestamp = image.get('creationTimestamp')
           if image.get('sourceDisk'):
-            resource.parent = Resource()
+            resource.parent = gcp_crt_helper.Resource()
             resource.parent.resource_name = image.get('sourceDisk')
             resource.parent.id = image.get('sourceDiskId')
           elif image.get('sourceSnapshot'):
-            resource.parent = Resource()
+            resource.parent = gcp_crt_helper.Resource()
             resource.parent.resource_name = image.get('sourceSnapshot')
             resource.parent.id = image.get('sourceSnapshotId')
 
@@ -749,7 +753,7 @@ class GCPCloudResourceTree(module.BaseModule):
 
     return result
 
-  def _RetrieveListOfSnapshots(self, project_id: str) -> Dict[str, Resource]:
+  def _RetrieveListOfSnapshots(self, project_id: str) -> Dict[str, gcp_crt_helper.Resource]:
     """Retrieves list of snapshots in a project.
 
     Args:
@@ -758,11 +762,11 @@ class GCPCloudResourceTree(module.BaseModule):
     Returns:
       Dict of snapshots
     """
-    result: Dict[str, Resource] = {}
+    result: Dict[str, gcp_crt_helper.Resource] = {}
 
     # Using beta version of the API because v1 did not have important
     # information when creating this script
-    compute_api_client = CreateService('compute', 'beta')
+    compute_api_client = gcp_common.CreateService('compute', 'beta')
 
     request = compute_api_client.snapshots().list(project=project_id)  # pylint: disable=no-member
 
@@ -771,12 +775,12 @@ class GCPCloudResourceTree(module.BaseModule):
 
       if response:
         for snapshot in response.get('items', {}):
-          resource = Resource()
+          resource = gcp_crt_helper.Resource()
           resource.id = snapshot.get('id')
           resource.resource_name = snapshot.get('selfLink')
           resource.creation_timestamp = snapshot.get('creationTimestamp')
           if snapshot.get('sourceDisk'):
-            resource.parent = Resource()
+            resource.parent = gcp_crt_helper.Resource()
             resource.parent.resource_name = snapshot.get('sourceDisk')
             resource.parent.id = snapshot.get('sourceDiskId')
 
@@ -788,7 +792,7 @@ class GCPCloudResourceTree(module.BaseModule):
 
     return result
 
-  def _RetrieveListOfInstances(self, project_id: str) -> Dict[str, Resource]:
+  def _RetrieveListOfInstances(self, project_id: str) -> Dict[str, gcp_crt_helper.Resource]:
     """Retrieves list of instances in a project.
 
     Args:
@@ -797,11 +801,11 @@ class GCPCloudResourceTree(module.BaseModule):
     Returns:
       Dict of instances
     """
-    result: Dict[str, Resource] = {}
+    result: Dict[str, gcp_crt_helper.Resource] = {}
 
     # Using beta version of the API because v1 did not have important
     # information when creating this script
-    compute_api_client = CreateService('compute', 'beta')
+    compute_api_client = gcp_common.CreateService('compute', 'beta')
 
     request = compute_api_client.instances().aggregatedList(project=project_id)  # pylint: disable=no-member
 
@@ -811,14 +815,14 @@ class GCPCloudResourceTree(module.BaseModule):
       for zone in response['items'].values():
 
         for instance in zone.get('instances', {}):
-          resource = Resource()
+          resource = gcp_crt_helper.Resource()
           resource.id = instance.get('id')
           resource.resource_name = instance.get('selfLink')
           resource.creation_timestamp = instance.get('creationTimestamp')
 
           for disk in instance.get('disks', {}):
-            disk_resource = Resource()
-            # 'source' here is just the full resouce name of the disk. It should
+            disk_resource = gcp_crt_helper.Resource()
+            # 'source' here is just the full resource name of the disk. It should
             # be present for all disks
             if disk.get('source'):
               disk_resource.resource_name = disk.get('source')
@@ -839,7 +843,7 @@ class GCPCloudResourceTree(module.BaseModule):
               # parent to the disk
               if (instance.get('sourceMachineImage')
                   and not disk_resource.parent):
-                disk_resource.parent = Resource()
+                disk_resource.parent = gcp_crt_helper.Resource()
                 disk_resource.parent.resource_name = instance.get(
                     'sourceMachineImage')
 
@@ -867,7 +871,7 @@ class GCPCloudResourceTree(module.BaseModule):
     return result
 
   def _RetrieveListOfInstanceTemplates(self,
-                                      project_id: str) -> Dict[str, Resource]:
+                                      project_id: str) -> Dict[str, gcp_crt_helper.Resource]:
     """Retrieves list of instance templates in a project.
 
     Args:
@@ -876,11 +880,11 @@ class GCPCloudResourceTree(module.BaseModule):
     Returns:
       Dict of instance templates
     """
-    result: Dict[str, Resource] = {}
+    result: Dict[str, gcp_crt_helper.Resource] = {}
 
     # Using beta version of the API because v1 did not have important
     # information when creating this script
-    compute_api_client = CreateService('compute', 'beta')
+    compute_api_client = gcp_common.CreateService('compute', 'beta')
 
     # Retrieve list of instance templates in a project
     request = compute_api_client.instanceTemplates().list(project=project_id)  # pylint: disable=no-member
@@ -890,14 +894,14 @@ class GCPCloudResourceTree(module.BaseModule):
 
       if response:
         for instance_template in response.get('items', {}):
-          resource = Resource()
+          resource = gcp_crt_helper.Resource()
           resource.id = instance_template.get('id')
           resource.resource_name = instance_template.get('selfLink')
           resource.creation_timestamp = instance_template.get(
               'creationTimestamp')
 
           for disk in instance_template.get('properties', {}).get('disks', {}):
-            disk_resource = Resource()
+            disk_resource = gcp_crt_helper.Resource()
             if disk.get('source'):
               disk_resource.resource_name = disk.get('source')
               # the disk ID is not present so we have to search for it in the
@@ -926,7 +930,7 @@ class GCPCloudResourceTree(module.BaseModule):
 
               if disk.get('initializeParams'):
                 if disk.get('initializeParams').get('sourceImage'):
-                  disk_resource.parent = Resource()
+                  disk_resource.parent = gcp_crt_helper.Resource()
                   disk_resource.parent.resource_name = disk.get(
                       'initializeParams').get('sourceImage')
 
@@ -954,7 +958,7 @@ class GCPCloudResourceTree(module.BaseModule):
     return result
 
   def _RetrieveListOfMachineImages(self,
-                                   project_id: str) -> Dict[str, Resource]:
+                                   project_id: str) -> Dict[str, gcp_crt_helper.Resource]:
     """Retrieves list of machine images in a project.
 
     Args:
@@ -963,11 +967,11 @@ class GCPCloudResourceTree(module.BaseModule):
     Returns:
       Dict of machine images
     """
-    result: Dict[str, Resource] = {}
+    result: Dict[str, gcp_crt_helper.Resource] = {}
 
     # Using beta version of the API because v1 did not have important
     # information when creating this script
-    compute_api_client = CreateService('compute', 'beta')
+    compute_api_client = gcp_common.CreateService('compute', 'beta')
 
     request = compute_api_client.machineImages().list(project=project_id)  # pylint: disable=no-member
 
@@ -976,13 +980,13 @@ class GCPCloudResourceTree(module.BaseModule):
 
       if response:
         for machine_image in response.get('items', {}):
-          resource = Resource()
+          resource = gcp_crt_helper.Resource()
           resource.id = machine_image.get('id')
           resource.resource_name = machine_image.get('selfLink')
           resource.creation_timestamp = machine_image.get('creationTimestamp')
 
           if machine_image.get('sourceInstance'):
-            resource.parent = Resource()
+            resource.parent = gcp_crt_helper.Resource()
             resource.parent.resource_name = machine_image.get('sourceInstance')
             matched_resource_parent = self._FindResource(
                 resource.parent.name, resource.parent.type,

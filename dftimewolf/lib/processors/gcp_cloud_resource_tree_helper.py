@@ -277,7 +277,7 @@ class Resource():
 
 
   def to_json(obj) -> Dict[str, str]:
-    """Generate a JSON serializable dictionary from the Resource object"""
+    """Generate a JSON serializable dictionary from the Resource object."""
     if isinstance(obj, Resource):
       dict = {
         "id": obj.id,
