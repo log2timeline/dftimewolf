@@ -3,8 +3,8 @@
 from enum import Enum, auto
 from typing import Dict, List, Optional, Any, Set, Union
 from datetime import datetime, timezone
+import json
 from dateutil import parser
-
 
 class OperatingMode(Enum):
   """Enum represent operational mode (Online or Offline)."""
@@ -14,6 +14,7 @@ class OperatingMode(Enum):
 
 
 class Resource():
+  # pylint: disable=line-too-long
   """A Class that represents a resource (Instance, Disk, Image...etc).
 
   Attributes:
@@ -38,7 +39,7 @@ class Resource():
     deleted (bool): Whether the resource is deleted or not.
     _resource_name (str): Full resource name. Maps to protoPayload.resourceName
     in
-    http://cloud/compute/docs/logging/migrating-from-activity-logs-to-audit-logs#fields.     # pylint: disable=line-too-long
+    http://cloud/compute/docs/logging/migrating-from-activity-logs-to-audit-logs#fields.
     _creation_timestamp (Optional[datetime]): Resource creation timestamp.
     _deletion_timestamp (Optional[datetime]): Resource deletion timestamp.
 
@@ -71,7 +72,6 @@ class Resource():
     """For object comparison."""
     return hash(self.id + self.resource_name)
 
-
   @property
   def resource_name(self) -> str:
     """Property resource_name Getter."""
@@ -94,8 +94,8 @@ class Resource():
 
       if self.zone == 'global':
         return f'projects/{self.project_id}/global/{tmp_type}/{self.name}'
-      else:
-        return f'projects/{self.project_id}/zones/{self.zone}/{tmp_type}/{self.name}'
+
+      return f'projects/{self.project_id}/zones/{self.zone}/{tmp_type}/{self.name}'  # pylint: disable=line-too-long
 
     return self._resource_name
 
@@ -276,27 +276,29 @@ class Resource():
     return output
 
 
-  def to_json(obj) -> Dict[str, str]:
-    """Generate a JSON serializable dictionary from the Resource object."""
-    if isinstance(obj, Resource):
+class ResourceEncoder(json.JSONEncoder):
+  """A Class that implements custom json encoding for Resource object."""
+
+  def default(self, o: Resource) -> Dict[str, str]:
+    """Returns a dictionary representation of the resource object."""
+    if isinstance(o, Resource):
+      # pylint: disable=redefined-builtin
       dict = {
-        "id": obj.id,
-        "name": obj.name,
-        "type": obj.type,
-        "project_id": obj.project_id,
-        "zone": obj.zone,
-        "created_by": obj.created_by,
-        "creator_ip_address": obj.creator_ip_address,
-        "creator_useragent": obj.creator_useragent,
-        "deleted_by": obj.deleted_by,
-        "deleter_ip_address": obj.deleter_ip_address,
-        "deleter_useragent": obj.deleter_useragent,
-        "resource_name": obj.resource_name,
-        "creation_timestamp": obj.creation_timestamp.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S") if obj.creation_timestamp else "",
-        "deletion_timestamp": obj.deletion_timestamp.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S") if obj.deletion_timestamp else ""
+          "id": o.id,
+          "name": o.name,
+          "type": o.type,
+          "project_id": o.project_id,
+          "zone": o.zone,
+          "created_by": o.created_by,
+          "creator_ip_address": o.creator_ip_address,
+          "creator_useragent": o.creator_useragent,
+          "deleted_by": o.deleted_by,
+          "deleter_ip_address": o.deleter_ip_address,
+          "deleter_useragent": o.deleter_useragent,
+          "resource_name": o.resource_name,
+          "creation_timestamp": o.creation_timestamp.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S") if o.creation_timestamp else "",  # pylint: disable=line-too-long
+          "deletion_timestamp": o.deletion_timestamp.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S") if o.deletion_timestamp else ""  # pylint: disable=line-too-long
       }
       return dict
-    else:
-      type_name = obj.__class__.__name__
-      raise TypeError("Unexpected type {0}".format(type_name))
 
+    return super().default(o)

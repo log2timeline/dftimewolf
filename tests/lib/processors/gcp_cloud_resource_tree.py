@@ -10,7 +10,7 @@ import mock
 
 from dftimewolf.lib import state
 from dftimewolf.lib.processors import gcp_cloud_resource_tree as gcp_crt
-from dftimewolf.lib.processors import gcp_cloud_resource_tree_helper as gcp_crt_helper
+from dftimewolf.lib.processors import gcp_cloud_resource_tree_helper as gcp_crt_helper # pylint: disable=line-too-long
 
 from dftimewolf import config
 
@@ -72,7 +72,7 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
     ],
                                           any_order=True)
 
-  @mock.patch('dftimewolf.lib.processors.gcp_cloud_resource_tree.gcp_common') # pylint: disable=line-too-long
+  @mock.patch('dftimewolf.lib.processors.gcp_cloud_resource_tree.gcp_common')
   # pylint: disable=invalid-name
   def testRetrieveListOfSnapshots(self, _mock_GCPCommon) -> None:
     """Tests retrieval of project snapshots."""
@@ -83,7 +83,7 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
     with open(file_path) as json_file:
       response = json.load(json_file)
     _mock_GCPCommon.CreateService().snapshots().list_next.return_value = None
-    _mock_GCPCommon.CreateService().snapshots().list().execute.return_value = response
+    _mock_GCPCommon.CreateService().snapshots().list().execute.return_value = response     # pylint: disable=line-too-long
 
     # pylint: disable=protected-access
     result = processor._RetrieveListOfSnapshots('test-project-hkhalifa')
@@ -104,7 +104,7 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
         self.assertEqual(sample_snapshot.parent.type, 'gce_disk')
         self.assertEqual(sample_snapshot.parent.resource_name, 'https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/disks/vm1') # pylint: disable=line-too-long
 
-  @mock.patch('dftimewolf.lib.processors.gcp_cloud_resource_tree.gcp_common') # pylint: disable=line-too-long
+  @mock.patch('dftimewolf.lib.processors.gcp_cloud_resource_tree.gcp_common')
   # pylint: disable=invalid-name
   def testRetrieveListOfInstanceTemplates(self, _mock_GCPCommon) -> None:
     """Tests retrieval of project instance templates."""
@@ -114,7 +114,7 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
                              'compute_api_instance_templates_response.jsonl')
     with open(file_path) as json_file:
       response = json.load(json_file)
-    _mock_GCPCommon.CreateService().instanceTemplates().list_next.return_value = None
+    _mock_GCPCommon.CreateService().instanceTemplates().list_next.return_value = None # pylint: disable=line-too-long
     _mock_GCPCommon.CreateService().instanceTemplates().list(
     ).execute.return_value = response
 
@@ -136,7 +136,7 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
         self.assertEqual(sample_instance_template.parent.name, 'vm4')
         self.assertEqual(sample_instance_template.parent.type, 'gce_disk')
 
-  @mock.patch('dftimewolf.lib.processors.gcp_cloud_resource_tree.gcp_common') # pylint: disable=line-too-long
+  @mock.patch('dftimewolf.lib.processors.gcp_cloud_resource_tree.gcp_common')
   # pylint: disable=invalid-name
   def testRetrieveListOfMachineImages(self, _mock_GCPCommon) -> None:
     """Tests retrieval of project machine images."""
@@ -146,6 +146,7 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
                              'compute_api_machine_images_response.jsonl')
     with open(file_path) as json_file:
       response = json.load(json_file)
+    # pylint: disable=line-too-long
     _mock_GCPCommon.CreateService().machineImages().list_next.return_value = None
     _mock_GCPCommon.CreateService().machineImages().list(
     ).execute.return_value = response
@@ -168,7 +169,7 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
         self.assertEqual(sample_machine_image.parent.type, 'gce_instance')
         self.assertEqual(sample_machine_image.parent.resource_name, 'https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/instances/vm1') # pylint: disable=line-too-long
 
-  @mock.patch('dftimewolf.lib.processors.gcp_cloud_resource_tree.gcp_common') # pylint: disable=line-too-long
+  @mock.patch('dftimewolf.lib.processors.gcp_cloud_resource_tree.gcp_common')
   # pylint: disable=invalid-name
   def testRetrieveListOfDisks(self, _mock_GCPCommon) -> None:
     """Tests retrieval of project disks."""
@@ -178,9 +179,9 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
                              'compute_api_disks_response.jsonl')
     with open(file_path) as json_file:
       response = json.load(json_file)
+    # pylint: disable=line-too-long
     _mock_GCPCommon.CreateService().disks().aggregatedList_next.return_value = None
-    _mock_GCPCommon.CreateService().disks().aggregatedList(
-    ).execute.return_value = response
+    _mock_GCPCommon.CreateService().disks().aggregatedList().execute.return_value = response
 
     # pylint: disable=protected-access
     result = processor._RetrieveListOfDisks('test-project-hkhalifa')
@@ -201,7 +202,7 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
         self.assertEqual(sample_disk.parent.type, 'gce_disk')
         self.assertEqual(sample_disk.parent.resource_name, 'https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/disks/vm1') # pylint: disable=line-too-long
 
-  @mock.patch('dftimewolf.lib.processors.gcp_cloud_resource_tree.gcp_common') # pylint: disable=line-too-long
+  @mock.patch('dftimewolf.lib.processors.gcp_cloud_resource_tree.gcp_common')
   # pylint: disable=invalid-name
   def testRetrieveListOfDiskImages(self, _mock_GCPCommon) -> None:
     """Tests retrieval of project disk images."""
@@ -212,7 +213,7 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
     with open(file_path) as json_file:
       response = json.load(json_file)
     _mock_GCPCommon.CreateService().images().list_next.return_value = None
-    _mock_GCPCommon.CreateService().images().list().execute.return_value = response
+    _mock_GCPCommon.CreateService().images().list().execute.return_value = response # pylint: disable=line-too-long
 
     # pylint: disable=protected-access
     result = processor._RetrieveListOfDiskImages('test-project-hkhalifa')
@@ -233,7 +234,7 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
         self.assertEqual(sample_disk_image.parent.type, 'gce_disk')
         self.assertEqual(sample_disk_image.parent.resource_name, 'https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/disks/vm3') # pylint: disable=line-too-long
 
-  @mock.patch('dftimewolf.lib.processors.gcp_cloud_resource_tree.gcp_common') # pylint: disable=line-too-long
+  @mock.patch('dftimewolf.lib.processors.gcp_cloud_resource_tree.gcp_common')
   # pylint: disable=invalid-name
   def testRetrieveListOfInstances(self, _mock_GCPCommon) -> None:
     """Tests retrieval of project instances."""
@@ -243,8 +244,9 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
                              'compute_api_instances_response.jsonl')
     with open(file_path) as json_file:
       response = json.load(json_file)
+    # pylint: disable=line-too-long
     _mock_GCPCommon.CreateService().instances().aggregatedList_next.return_value = None
-    _mock_GCPCommon.CreateService().instances().aggregatedList().execute.return_value = response # pylint: disable=line-too-long
+    _mock_GCPCommon.CreateService().instances().aggregatedList().execute.return_value = response
 
     # pylint: disable=protected-access
     result = processor._RetrieveListOfInstances('test-project-hkhalifa')
@@ -281,25 +283,27 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
     # pylint: disable=protected-access
     processor._ParseLogMessages(log_messages)
 
+    # pylint: disable=line-too-long
     parent_resource_of_vm1 = processor._GetResourceParentTree(processor.resources_dict['1809669853321684335'])
 
     self.assertIsNotNone(parent_resource_of_vm1)
     if parent_resource_of_vm1:
       self.assertEqual(parent_resource_of_vm1.name, 'vm1')
       self.assertEqual(parent_resource_of_vm1.type, 'gce_disk')
-      self.assertEqual(parent_resource_of_vm1.resource_name, 'projects/test-project-hkhalifa/zones/us-central1-a/disks/vm1') # pylint: disable=line-too-long
+      self.assertEqual(parent_resource_of_vm1.resource_name, 'projects/test-project-hkhalifa/zones/us-central1-a/disks/vm1')
       self.assertIsNotNone(parent_resource_of_vm1.parent)
       if parent_resource_of_vm1.parent:
         self.assertEqual(parent_resource_of_vm1.parent.name, 'debian-10-buster-v20210916')
         self.assertEqual(parent_resource_of_vm1.parent.type, 'gce_image')
-        self.assertEqual(parent_resource_of_vm1.parent.resource_name, 'projects/debian-cloud/global/images/debian-10-buster-v20210916') # pylint: disable=line-too-long
+        self.assertEqual(parent_resource_of_vm1.parent.resource_name, 'projects/debian-cloud/global/images/debian-10-buster-v20210916')
         self.assertIsNone(parent_resource_of_vm1.parent.parent)
       # check if resource is in children
       self.assertEqual(len(parent_resource_of_vm1.children), 1)
       self.assertIn(processor.resources_dict['1809669853321684335'], parent_resource_of_vm1.children)
 
     # Test if deleted resource is detected while building parent tree
-    parent_resource_of_vm10 = processor._GetResourceParentTree(processor.resources_dict['963895663494893499'])
+    parent_resource_of_vm10 = processor._GetResourceParentTree(processor.resources_dict['963895663494893499']) # pylint: disable=line-too-long
+    self.assertIsNotNone(parent_resource_of_vm10)
     _mock_SearchForDeletedResource.assert_called()
 
   def testParseLogMessages(self) -> None:
@@ -321,12 +325,7 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
     # pylint: disable=protected-access
     processor._ParseLogMessages(log_messages)
 
-    current_resources_dict = json.dumps(processor.resources_dict, default=gcp_crt_helper.Resource.to_json) # pylint: disable=line-too-long
+    current_resources_dict = json.dumps(processor.resources_dict, cls=gcp_crt_helper.ResourceEncoder) # pylint: disable=line-too-long
     current_resources_dict = json.loads(current_resources_dict)
     self.assertEqual(len(processor.resources_dict), 32)
     self.assertEqual(stored_resources_dict, current_resources_dict)
-
-
-
-
-
