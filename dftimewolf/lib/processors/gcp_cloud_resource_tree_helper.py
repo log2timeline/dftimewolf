@@ -22,24 +22,23 @@ class Resource():
     name (str): Name of the resource.
     type (str): Resource type.
     project_id (str): Id of the project where the resource is located.
-    zone (str): Zone where the resource is located.
+    zone (str): Zone/region where the resource is located.
     created_by (str): account that created the resource.
     creator_ip_address (str): IP address of the resource creator at time of
-    creation request.
+        creation request.
     creator_useragent (str): Useragent of the resource creator at time of
-    creation request.
+        creation request.
     deleted_by (str): account that deleted the resource.
     deleter_ip_address (str): IP address of the resource deleter at time of
-    deletion request.
+        deletion request.
     deleter_useragent (str): Useragent of the resource deleter at time of
-    deletion request.
+        deletion request.
     parent (Optional[Resource]): Parent resource.
     children (Set[Resource]): Children resources.
     disks (List[Resource]): Disks attached to the resource.
     deleted (bool): Whether the resource is deleted or not.
     _resource_name (str): Full resource name. Maps to protoPayload.resourceName
-    in
-    http://cloud/compute/docs/logging/migrating-from-activity-logs-to-audit-logs#fields.
+        in http://cloud/compute/docs/logging/migrating-from-activity-logs-to-audit-logs#fields.
     _creation_timestamp (Optional[datetime]): Resource creation timestamp.
     _deletion_timestamp (Optional[datetime]): Resource deletion timestamp.
 
@@ -135,7 +134,7 @@ class Resource():
       else:
         self.type = resource_type
 
-      if '/zones/' in value:
+      if '/zones/' in value or '/regions/' in value:
         self.zone = values[-3]
         self.project_id = values[-5]
       elif '/global/' in value:
