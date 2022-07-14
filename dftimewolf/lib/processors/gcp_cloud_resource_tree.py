@@ -94,7 +94,7 @@ class GCPCloudResourceTree(module.BaseModule):
     elif 'online' in mode:
       self.mode = gcp_crt_helper.OperatingMode.ONLINE
     else:
-      self.ModuleError("Operational mode not set.")
+      self.ModuleError("Operational mode not set.", critical=True)
 
   def Process(self) -> None:
     """Creates the GCP Cloud Resource Tree."""
