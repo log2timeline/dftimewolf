@@ -63,11 +63,12 @@ class GCPCloudResourceTree(module.BaseModule):
 
   # pylint: disable=arguments-differ
   def SetUp(self,
-                     project_id: str, zone: str,
-                     resource_type: str,
-                     mode: str,
-                     resource_id: Optional[str] = None,
-                     resource_name: Optional[str] = None) -> None:
+            project_id: str,
+            zone: str,
+            resource_type: str,
+            mode: str,
+            resource_id: Optional[str] = None,
+            resource_name: Optional[str] = None) -> None:
     """Sets up the resource we want to build the tree for.
 
     Args:
