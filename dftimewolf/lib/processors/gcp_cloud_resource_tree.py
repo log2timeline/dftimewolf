@@ -62,19 +62,23 @@ class GCPCloudResourceTree(module.BaseModule):
     self.resources_dict: Dict[str, gcp_crt_helper.Resource] = {}
 
   # pylint: disable=arguments-differ
-  def SetUp(self, project_id: str, zone: str, resource_id: str,
-            resource_name: str, resource_type: str, mode: str) -> None:
+  def SetUp(self,
+                     project_id: str, zone: str,
+                     resource_type: str,
+                     mode: str,
+                     resource_id: Optional[str] = None,
+                     resource_name: Optional[str] = None) -> None:
     """Sets up the resource we want to build the tree for.
 
     Args:
       project_id: Project id where the resource are located.
       zone: zone where the resource are located.
-      resource_id: Resource id.
-      resource_name: Resource name.
       resource_type: Resource type (currently supported types: gce_instance,
           gce_disk, gce_image, gce_machine_image, gce_instance_template,
           gce_snapshot)
-      mode: operational mode (online or offline)
+      mode: operational mode (online or offline).
+      resource_id: Resource id.
+      resource_name: Resource name.
     """
     if not resource_id and not resource_name:
       self.ModuleError("Please supply resource_id or resource_name.",
