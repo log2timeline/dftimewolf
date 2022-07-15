@@ -145,16 +145,17 @@ class GCPCloudResourceTree(module.BaseModule):
     output_path = output_file.name
 
     self.PublishMessage(f'Saving resource tree to {output_path}')
-    resource_tree = ''
-    if resource.parent:
-      resource_tree = str(resource.parent)
-    else:
-      resource_tree = str(resource)
     with open(output_path, 'w') as out_file:
-      out_file.write(resource_tree)
+      if resource.parent:
+        out_file.write(str(resource.parent))
+      else:
+        out_file.write(str(resource))
 
     # Dump the resource tree to CLI
-    PublishMessage(resource_tree)
+    if resource.parent:
+      self.PublishMessage(str(resource.parent))
+    else:
+      self.PublishMessage(str(resource))
 
   def _GetListOfResources(self, project_id: str) -> None:
     """Acquires a list of resources under a project.
@@ -262,11 +263,12 @@ class GCPCloudResourceTree(module.BaseModule):
     # _ParesLogMessages() and/or _GetListOfResources
     if resource.parent and resource.parent.name and resource.parent.type:
       if resource.parent.id:
+        parent_resource = self.resources_dict.get(resource.parent.id)
         # If the parent resource is deleted or it's one of the stock disk images
         # (for ex Debian), we will have the parent id but it's not in the list
         # of resources we parsed.
-        parent_resource = self.resources_dict.get(resource.parent.id,
-            resource.parent)
+        if not parent_resource:
+          parent_resource = resource.parent
       else:
         matched_parent_resource = self._FindResource(
             resource.parent.name, resource.parent.type, resource.parent.zone,
@@ -318,7 +320,7 @@ class GCPCloudResourceTree(module.BaseModule):
 
       if resource.name == resource_name and resource.type == resource_type:
         # Filter list by zone if it is supplied
-        if zone and resource.zone != zone:
+        if zone is not None and resource.zone != zone:
           continue
         # Check is project id match if project id was supplied as a filter
         # criteria
@@ -416,7 +418,7 @@ class GCPCloudResourceTree(module.BaseModule):
       file_content = input_file.readline()
 
       if not file_content:
-        self.logger.warning(f'The supplied file {file_container.path} is empty')
+        self.logger.error(f'The supplied file {file_container.path} is empty')
         return
 
       while file_content:
@@ -556,14 +558,14 @@ class GCPCloudResourceTree(module.BaseModule):
     # disks.source is required except for local SSD.
     if request.get('disks'):
       for disk in request.get('disks', {}):
-        disk_resource = gcp_crt_helper.Resource(
-            project_id=resource.project_id,
-            created_by=resource.created_by,
-            creator_ip_address=resource.creator_ip_address,
-            creator_useragent=resource.creator_useragent,
-            zone=resource.zone,
-            name=disk.get('deviceName'),
-            type='gce_disk')
+        disk_resource = gcp_crt_helper.Resource()
+        disk_resource.project_id = resource.project_id
+        disk_resource.created_by = resource.created_by
+        disk_resource.creator_ip_address = resource.creator_ip_address
+        disk_resource.creator_useragent = resource.creator_useragent
+        disk_resource.zone = resource.zone
+        disk_resource.name = disk.get('deviceName')
+        disk_resource.type = 'gce_disk'
 
         # When creating an instance from a machine image
         if 'sourceMachineImage' in request:
