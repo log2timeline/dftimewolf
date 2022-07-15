@@ -322,7 +322,7 @@ class GCPCloudResourceTree(module.BaseModule):
           continue
         # Check is project id match if project id was supplied as a filter
         # criteria
-        if project_id and resource.project_id != project_id:
+        if project_id is not None and resource.project_id != project_id:
           continue
 
         return resource
