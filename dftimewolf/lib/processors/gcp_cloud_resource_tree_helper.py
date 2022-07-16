@@ -12,6 +12,13 @@ class OperatingMode(Enum):
   ONLINE = auto()
   OFFLINE = auto()
 
+class LocationType(Enum):
+  """Enum represent location type (Zone or Region or Global)."""
+
+  ZONE = auto()
+  REGION = auto()
+  GLOBAL = auto()
+
 
 class Resource():
   # pylint: disable=line-too-long
@@ -22,7 +29,8 @@ class Resource():
     name (str): Name of the resource.
     type (str): Resource type.
     project_id (str): Id of the project where the resource is located.
-    zone (str): Zone/region where the resource is located.
+    location (str): Resource location (zone/region) or 'global'.
+    location_type (LocationType): Location type (ZONE/REGION/GLOBAL)
     created_by (str): account that created the resource.
     creator_ip_address (str): IP address of the resource creator at time of
         creation request.
@@ -52,7 +60,8 @@ class Resource():
     self.name: str = str()
     self.type: str = str()
     self.project_id: str = str()
-    self.zone: str = str()
+    self.location: str = str()
+    self.location_type: Optional[LocationType] = None
     self.created_by: str = str()
     self.creator_ip_address: str = str()
     self.creator_useragent: str = str()
@@ -74,7 +83,7 @@ class Resource():
   @property
   def resource_name(self) -> str:
     """Property resource_name Getter."""
-    if not self._resource_name and self.name and self.project_id and self.zone:
+    if not self._resource_name and self.name and self.project_id and self.location:
       tmp_type = str()
       if self.type == 'gce_disk':
         tmp_type = 'disks'
@@ -91,10 +100,12 @@ class Resource():
       else:
         tmp_type = self.type
 
-      if self.zone == 'global':
+      if self.location_type == LocationType.GLOBAL:
         return f'projects/{self.project_id}/global/{tmp_type}/{self.name}'
-
-      return f'projects/{self.project_id}/zones/{self.zone}/{tmp_type}/{self.name}'  # pylint: disable=line-too-long
+      if self.location_type == LocationType.REGION:
+        return f'projects/{self.project_id}/regions/{self.location}/{tmp_type}/{self.name}'  # pylint: disable=line-too-long
+      if self.location_type == LocationType.ZONE:
+        return f'projects/{self.project_id}/zones/{self.location}/{tmp_type}/{self.name}'  # pylint: disable=line-too-long
 
     return self._resource_name
 
@@ -103,15 +114,15 @@ class Resource():
     """Property resource_name Setter.
 
        This property setter function will split the resource_name and set the
-       "type", "zone", "project_id" and "name" of the resource.
+       "type", "location", "project_id" and "name" of the resource.
 
     Args:
       value: value to set resource_name to.
     """
     # pylint: disable=line-too-long
     # value example:
-    # 1- If parsing logs: projects/test-project-hkhalifa/zones/us-central1-a/disks/vm1
-    # 2- If querying resource through API call: //www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/disks/vm1
+    # 1- If parsing logs: projects/test-project/zones/us-central1-a/disks/vm1
+    # 2- If querying resource through API call: //www.googleapis.com/compute/beta/projects/test-project/zones/us-central1-a/disks/vm1
     # pylint: enable=line-too-long
     if value:
       values = value.split('/')
@@ -134,12 +145,17 @@ class Resource():
       else:
         self.type = resource_type
 
-      if '/zones/' in value or '/regions/' in value:
-        self.zone = values[-3]
-        self.project_id = values[-5]
-      elif '/global/' in value:
-        self.zone = 'global'
+      if '/global/' in value:
+        self.location = 'global'
+        self.location_type = LocationType.GLOBAL
         self.project_id = values[-4]
+      else:
+        self.location = values[-3]
+        self.project_id = values[-5]
+        if '/zones/' in value:
+          self.location_type = LocationType.ZONE
+        elif '/regions/' in value:
+          self.location_type = LocationType.REGION
 
     self._resource_name = value
 
@@ -253,11 +269,12 @@ class Resource():
     """Returns a string representation of the resource tree."""
     output = '\n'
     dashes = '-' * 200
+    # pylint: disable=line-too-long
+    output_format = '{:<20s}|{:<18s}|{:<20s}|{:<25s}|{:<18s}|{:<20s}|{:<25s}|{:<18s}|{:<100s}\n'
 
     # Draw table header
     output = output + dashes + '\n'
-    # pylint: disable=line-too-long
-    output = output + '{:<20s}|{:<18s}|{:<20s}|{:<25s}|{:<18s}|{:<20s}|{:<25s}|{:<18s}|{:<100s}\n'.format(
+    output = output + output_format.format(
         'Resource ID', 'Resource Type', 'Creation TimeStamp', 'Created By',
         'Creator IP Addr', 'Deletion Timestamp', 'Deleted By',
         'Deleter IP Addr', 'Tree')
@@ -268,7 +285,7 @@ class Resource():
       resource: Optional[Resource] = i.get('resource_object')
       if resource:
         output = output + \
-            ('{:<20s}|{:<18s}|{:<20s}|{:<25s}|{:<18s}|{:<20s}|{:<25s}|{:<18s}|{:<100s}\n'.format( resource.id if ('-' not in resource.id) else "" , resource.type, resource.creation_timestamp.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S") if resource.creation_timestamp else "",
+            (output_format.format( resource.id if ('-' not in resource.id) else "" , resource.type, resource.creation_timestamp.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S") if resource.creation_timestamp else "",
             resource.created_by, resource.creator_ip_address,  resource.deletion_timestamp.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S") if resource.deletion_timestamp else "", resource.deleted_by, resource.deleter_ip_address,  i.get('graph')))
     output = output + dashes + '\n'
 
@@ -287,7 +304,7 @@ class ResourceEncoder(json.JSONEncoder):
           "name": o.name,
           "type": o.type,
           "project_id": o.project_id,
-          "zone": o.zone,
+          "location": o.location,
           "created_by": o.created_by,
           "creator_ip_address": o.creator_ip_address,
           "creator_useragent": o.creator_useragent,
