@@ -84,7 +84,7 @@ jsonschema==4.4.0; python_version >= '3.7'
 kombu==5.2.4; python_version >= '3.7'
 kubernetes==23.3.0; python_version >= '3.6'
 lazy-object-proxy==1.7.1; python_version >= '3.6'
-libcloudforensics==20220321
+libcloudforensics==20220718
 libcst==0.4.1; python_version >= '3.6'
 markdown==3.3.6; python_version >= '3.6'
 markupsafe==2.1.1; python_version >= '3.7'
