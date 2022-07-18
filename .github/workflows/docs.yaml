@@ -16,6 +16,7 @@ jobs:
         run: |
           sudo apt install graphviz
           pip install poetry
+          poetry install
       - name: Generate recipe doc
         run: poetry run python docs/generate_recipe_doc.py data/recipes docs
       - name: Build doc

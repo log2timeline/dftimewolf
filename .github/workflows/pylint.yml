@@ -22,7 +22,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install poetry
-        poetry
+        poetry install
     - name: Run pylint on dftimewolf and tests
       run: |
         poetry run pylint --rcfile=.pylintrc setup.py dftimewolf tests
