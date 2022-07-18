@@ -302,7 +302,7 @@ class GCPCloudResourceTree(module.BaseModule):
 
       # Recursively obtain parents for each resource in the chain
       parent_resource.parent = self._GetResourceParentTree(parent_resource)
-      parent_resource.children.add(resource)
+      parent_resource.children.add(resource) # pytype: disable=attribute-error
 
     # Return the resource with all the parent chain filled
     return parent_resource
