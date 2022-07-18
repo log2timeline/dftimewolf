@@ -4,7 +4,6 @@ from enum import Enum, auto
 from typing import Dict, List, Optional, Any, Set, Union
 from datetime import datetime, timezone
 import json
-from dateutil import parser
 
 class OperatingMode(Enum):
   """Enum represent operational mode (Online or Offline)."""
@@ -174,7 +173,7 @@ class Resource():
     if isinstance(value, datetime):
       self._creation_timestamp = value
     else:
-      self._creation_timestamp = parser.parse(value)
+      self._creation_timestamp = datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f%z')
 
   @property
   def deletion_timestamp(self) -> Optional[datetime]:
@@ -191,7 +190,7 @@ class Resource():
     if isinstance(value, datetime):
       self._deletion_timestamp = value
     else:
-      self._deletion_timestamp = parser.parse(value)
+      self._deletion_timestamp = datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f%z')
 
   def IsDeleted(self) -> bool:
     """Checks if resource is deleted."""

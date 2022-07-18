@@ -39,7 +39,6 @@ prettytable = "*"
 vt-py = "*"
 typing-extensions = "*"
 boto3 = "*"
-dateutil = "*"
 
 # [requires]
 # python_version = "3.9"

@@ -48,11 +48,11 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     processor = gcp_crt.GCPCloudResourceTree(test_state)
     r1 = gcp_crt_helper.Resource()
-    r1.creation_timestamp = '2021-09-30 03:00:00'
+    r1.creation_timestamp = '2021-09-30T03:00:00.000+07:00'
     r2 = gcp_crt_helper.Resource()
-    r2.creation_timestamp = '2021-09-15 01:00:00'
+    r2.creation_timestamp = '2021-09-15T01:00:00.000+07:00'
     r3 = gcp_crt_helper.Resource()
-    r3.creation_timestamp = '2021-11-01 06:00:00'
+    r3.creation_timestamp = '2021-11-01T06:00:00.000+07:00'
     #r1 and r2 are within 30 days
     processor.resources_dict['1'] = r1
     processor.resources_dict['2'] = r2
