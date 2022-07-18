@@ -1,0 +1,31 @@
+{
+    "id": "projects/test-project-hkhalifa/global/snapshots",
+    "items": [
+        {
+            "creationTimestamp": "2021-09-30T03:00:32.720-07:00",
+            "diskSizeGb": "10",
+            "downloadBytes": "393399974",
+            "id": "9044040911901176879",
+            "kind": "compute#snapshot",
+            "labelFingerprint": "42WmSpB8rSM=",
+            "licenseCodes": [
+                "5543610867827062957"
+            ],
+            "licenses": [
+                "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/licenses/debian-10-buster"
+            ],
+            "name": "ds-1",
+            "selfLink": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/global/snapshots/ds-1",
+            "sourceDisk": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/disks/vm1",
+            "sourceDiskId": "220309178143008111",
+            "status": "READY",
+            "storageBytes": "12944576",
+            "storageBytesStatus": "UP_TO_DATE",
+            "storageLocations": [
+                "us"
+            ]
+        }
+    ],
+    "kind": "compute#snapshotList",
+    "selfLink": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/global/snapshots"
+}

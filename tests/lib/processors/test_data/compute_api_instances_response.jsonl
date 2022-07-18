@@ -1,0 +1,852 @@
+{
+    "id": "projects/test-project-hkhalifa/aggregated/instances",
+    "items": {
+        "zones/southamerica-west1-c": {
+            "warning": {
+                "code": "NO_RESULTS_ON_PAGE",
+                "data": [
+                    {
+                        "key": "scope",
+                        "value": "zones/southamerica-west1-c"
+                    }
+                ],
+                "message": "There are no results for scope 'zones/southamerica-west1-c' on this page."
+            }
+        },
+        "zones/us-central1-a": {
+            "instances": [
+                {
+                    "canIpForward": false,
+                    "confidentialInstanceConfig": {
+                        "enableConfidentialCompute": false
+                    },
+                    "cpuPlatform": "Intel Broadwell",
+                    "creationTimestamp": "2021-09-29T23:38:57.062-07:00",
+                    "deletionProtection": false,
+                    "description": "",
+                    "disks": [
+                        {
+                            "autoDelete": true,
+                            "boot": true,
+                            "deviceName": "vm1",
+                            "diskSizeGb": "10",
+                            "guestOsFeatures": [
+                                {
+                                    "type": "UEFI_COMPATIBLE"
+                                },
+                                {
+                                    "type": "VIRTIO_SCSI_MULTIQUEUE"
+                                }
+                            ],
+                            "index": 0,
+                            "interface": "SCSI",
+                            "kind": "compute#attachedDisk",
+                            "licenses": [
+                                "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/licenses/debian-10-buster"
+                            ],
+                            "mode": "READ_WRITE",
+                            "source": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/disks/vm1",
+                            "type": "PERSISTENT"
+                        }
+                    ],
+                    "displayDevice": {
+                        "enableDisplay": false
+                    },
+                    "fingerprint": "kOh8ASSVSJM=",
+                    "id": "1809669853321684335",
+                    "kind": "compute#instance",
+                    "labelFingerprint": "42WmSpB8rSM=",
+                    "lastStartTimestamp": "2021-09-29T23:39:04.816-07:00",
+                    "machineType": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/machineTypes/e2-medium",
+                    "metadata": {
+                        "fingerprint": "-4CDYdM1pZg=",
+                        "items": [
+                            {
+                                "key": "ssh-keys",
+                                "value": "ise-cloud-log4j-scanner:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC4p3ldkR5MaD4WVSutVFhBMXSRfBlrlOP934yrciuS1346jb96WvZZhMunQJ8S4ZQtQbUbLyW3JRw80zy69iZScy4gKePwEWZvqz1hFtOhv6nKnas2a1o6yQ4h6HM2DVBliHjgoPjtGPiVhdO9wGinhNo0wb2pEiDJ1BMNIx+cr6T2SoHb8gPVoyFvRRqxxoAqLcJ1uLEzHVrK908VBlR//svAKJwF48/7bAj5agxEYNjFOSP8cSIu0U9ZBHkJ39qDQRDsHPvRWa/EoC7x5J9Nt95R1XA/IqR6Fajix9KUt3YSEALQ/bp4xbPm7p2s9yPu2xSSE2ce9hHQLDCzlWyr google-ssh {\"userName\":\"ise-cloud-log4j-scanner\",\"expireOn\":\"2021-12-21T02:38:19+0000\"}"
+                            }
+                        ],
+                        "kind": "compute#metadata"
+                    },
+                    "name": "vm1",
+                    "networkInterfaces": [
+                        {
+                            "accessConfigs": [
+                                {
+                                    "kind": "compute#accessConfig",
+                                    "name": "External NAT",
+                                    "natIP": "34.135.204.153",
+                                    "networkTier": "PREMIUM",
+                                    "type": "ONE_TO_ONE_NAT"
+                                }
+                            ],
+                            "fingerprint": "Uh8DsKZ8ZaQ=",
+                            "kind": "compute#networkInterface",
+                            "name": "nic0",
+                            "network": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/global/networks/default",
+                            "networkIP": "10.128.0.9",
+                            "stackType": "IPV4_ONLY",
+                            "subnetwork": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/regions/us-central1/subnetworks/default"
+                        }
+                    ],
+                    "reservationAffinity": {
+                        "consumeReservationType": "ANY_RESERVATION"
+                    },
+                    "scheduling": {
+                        "automaticRestart": true,
+                        "onHostMaintenance": "MIGRATE",
+                        "preemptible": false,
+                        "provisioningModel": "STANDARD"
+                    },
+                    "selfLink": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/instances/vm1",
+                    "serviceAccounts": [
+                        {
+                            "email": "139493789884-compute@developer.gserviceaccount.com",
+                            "scopes": [
+                                "https://www.googleapis.com/auth/devstorage.read_only",
+                                "https://www.googleapis.com/auth/logging.write",
+                                "https://www.googleapis.com/auth/monitoring.write",
+                                "https://www.googleapis.com/auth/servicecontrol",
+                                "https://www.googleapis.com/auth/service.management.readonly",
+                                "https://www.googleapis.com/auth/trace.append"
+                            ]
+                        }
+                    ],
+                    "shieldedInstanceConfig": {
+                        "enableIntegrityMonitoring": true,
+                        "enableSecureBoot": false,
+                        "enableVtpm": true
+                    },
+                    "shieldedInstanceIntegrityPolicy": {
+                        "updateAutoLearnPolicy": true
+                    },
+                    "shieldedVmConfig": {
+                        "enableIntegrityMonitoring": true,
+                        "enableSecureBoot": false,
+                        "enableVtpm": true
+                    },
+                    "shieldedVmIntegrityPolicy": {
+                        "updateAutoLearnPolicy": true
+                    },
+                    "startRestricted": false,
+                    "status": "RUNNING",
+                    "tags": {
+                        "fingerprint": "42WmSpB8rSM="
+                    },
+                    "zone": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a"
+                },
+                {
+                    "canIpForward": false,
+                    "confidentialInstanceConfig": {
+                        "enableConfidentialCompute": false
+                    },
+                    "cpuPlatform": "Intel Broadwell",
+                    "creationTimestamp": "2021-11-09T09:35:16.583-08:00",
+                    "deletionProtection": false,
+                    "description": "",
+                    "disks": [
+                        {
+                            "autoDelete": true,
+                            "boot": true,
+                            "deviceName": "vm10",
+                            "diskSizeGb": "10",
+                            "guestOsFeatures": [
+                                {
+                                    "type": "UEFI_COMPATIBLE"
+                                },
+                                {
+                                    "type": "VIRTIO_SCSI_MULTIQUEUE"
+                                }
+                            ],
+                            "index": 0,
+                            "interface": "SCSI",
+                            "kind": "compute#attachedDisk",
+                            "licenses": [
+                                "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/licenses/debian-10-buster"
+                            ],
+                            "mode": "READ_WRITE",
+                            "source": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/disks/vm10",
+                            "type": "PERSISTENT"
+                        }
+                    ],
+                    "displayDevice": {
+                        "enableDisplay": false
+                    },
+                    "fingerprint": "EL2nXZ45gRE=",
+                    "id": "963895663494893499",
+                    "kind": "compute#instance",
+                    "labelFingerprint": "42WmSpB8rSM=",
+                    "lastStartTimestamp": "2021-11-09T09:35:27.255-08:00",
+                    "machineType": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/machineTypes/e2-micro",
+                    "metadata": {
+                        "fingerprint": "WRXM1Qwxhd0=",
+                        "items": [
+                            {
+                                "key": "ssh-keys",
+                                "value": "ise-cloud-log4j-scanner:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC4p3ldkR5MaD4WVSutVFhBMXSRfBlrlOP934yrciuS1346jb96WvZZhMunQJ8S4ZQtQbUbLyW3JRw80zy69iZScy4gKePwEWZvqz1hFtOhv6nKnas2a1o6yQ4h6HM2DVBliHjgoPjtGPiVhdO9wGinhNo0wb2pEiDJ1BMNIx+cr6T2SoHb8gPVoyFvRRqxxoAqLcJ1uLEzHVrK908VBlR//svAKJwF48/7bAj5agxEYNjFOSP8cSIu0U9ZBHkJ39qDQRDsHPvRWa/EoC7x5J9Nt95R1XA/IqR6Fajix9KUt3YSEALQ/bp4xbPm7p2s9yPu2xSSE2ce9hHQLDCzlWyr google-ssh {\"userName\":\"ise-cloud-log4j-scanner\",\"expireOn\":\"2021-12-21T01:24:05+0000\"}"
+                            }
+                        ],
+                        "kind": "compute#metadata"
+                    },
+                    "name": "vm10",
+                    "networkInterfaces": [
+                        {
+                            "accessConfigs": [
+                                {
+                                    "kind": "compute#accessConfig",
+                                    "name": "External NAT",
+                                    "natIP": "35.232.194.68",
+                                    "networkTier": "PREMIUM",
+                                    "type": "ONE_TO_ONE_NAT"
+                                }
+                            ],
+                            "fingerprint": "1KDQVqlXCRk=",
+                            "kind": "compute#networkInterface",
+                            "name": "nic0",
+                            "network": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/global/networks/default",
+                            "networkIP": "10.128.0.16",
+                            "stackType": "IPV4_ONLY",
+                            "subnetwork": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/regions/us-central1/subnetworks/default"
+                        }
+                    ],
+                    "reservationAffinity": {
+                        "consumeReservationType": "ANY_RESERVATION"
+                    },
+                    "scheduling": {
+                        "automaticRestart": true,
+                        "onHostMaintenance": "MIGRATE",
+                        "preemptible": false,
+                        "provisioningModel": "STANDARD"
+                    },
+                    "selfLink": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/instances/vm10",
+                    "serviceAccounts": [
+                        {
+                            "email": "139493789884-compute@developer.gserviceaccount.com",
+                            "scopes": [
+                                "https://www.googleapis.com/auth/devstorage.read_only",
+                                "https://www.googleapis.com/auth/logging.write",
+                                "https://www.googleapis.com/auth/monitoring.write",
+                                "https://www.googleapis.com/auth/servicecontrol",
+                                "https://www.googleapis.com/auth/service.management.readonly",
+                                "https://www.googleapis.com/auth/trace.append"
+                            ]
+                        }
+                    ],
+                    "shieldedInstanceConfig": {
+                        "enableIntegrityMonitoring": true,
+                        "enableSecureBoot": false,
+                        "enableVtpm": true
+                    },
+                    "shieldedInstanceIntegrityPolicy": {
+                        "updateAutoLearnPolicy": true
+                    },
+                    "shieldedVmConfig": {
+                        "enableIntegrityMonitoring": true,
+                        "enableSecureBoot": false,
+                        "enableVtpm": true
+                    },
+                    "shieldedVmIntegrityPolicy": {
+                        "updateAutoLearnPolicy": true
+                    },
+                    "startRestricted": false,
+                    "status": "RUNNING",
+                    "tags": {
+                        "fingerprint": "42WmSpB8rSM="
+                    },
+                    "zone": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a"
+                },
+                {
+                    "canIpForward": false,
+                    "confidentialInstanceConfig": {
+                        "enableConfidentialCompute": false
+                    },
+                    "cpuPlatform": "Intel Broadwell",
+                    "creationTimestamp": "2021-09-29T23:41:23.672-07:00",
+                    "deletionProtection": false,
+                    "description": "",
+                    "disks": [
+                        {
+                            "autoDelete": true,
+                            "boot": true,
+                            "deviceName": "vm1",
+                            "diskSizeGb": "10",
+                            "guestOsFeatures": [
+                                {
+                                    "type": "UEFI_COMPATIBLE"
+                                },
+                                {
+                                    "type": "VIRTIO_SCSI_MULTIQUEUE"
+                                }
+                            ],
+                            "index": 0,
+                            "interface": "SCSI",
+                            "kind": "compute#attachedDisk",
+                            "licenses": [
+                                "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/licenses/debian-10-buster"
+                            ],
+                            "mode": "READ_WRITE",
+                            "source": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/disks/vm3",
+                            "type": "PERSISTENT"
+                        }
+                    ],
+                    "displayDevice": {
+                        "enableDisplay": false
+                    },
+                    "fingerprint": "QOMX-U9UyhA=",
+                    "id": "6282328875594212092",
+                    "kind": "compute#instance",
+                    "labelFingerprint": "42WmSpB8rSM=",
+                    "lastStartTimestamp": "2021-09-29T23:41:41.290-07:00",
+                    "machineType": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/machineTypes/e2-medium",
+                    "metadata": {
+                        "fingerprint": "E36Kj_NsogA=",
+                        "kind": "compute#metadata"
+                    },
+                    "name": "vm3",
+                    "networkInterfaces": [
+                        {
+                            "accessConfigs": [
+                                {
+                                    "kind": "compute#accessConfig",
+                                    "name": "External NAT",
+                                    "natIP": "34.67.125.200",
+                                    "networkTier": "PREMIUM",
+                                    "type": "ONE_TO_ONE_NAT"
+                                }
+                            ],
+                            "fingerprint": "-VSKCTMLZbY=",
+                            "kind": "compute#networkInterface",
+                            "name": "nic0",
+                            "network": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/global/networks/default",
+                            "networkIP": "10.128.0.10",
+                            "stackType": "IPV4_ONLY",
+                            "subnetwork": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/regions/us-central1/subnetworks/default"
+                        }
+                    ],
+                    "reservationAffinity": {
+                        "consumeReservationType": "ANY_RESERVATION"
+                    },
+                    "scheduling": {
+                        "automaticRestart": true,
+                        "onHostMaintenance": "MIGRATE",
+                        "preemptible": false,
+                        "provisioningModel": "STANDARD"
+                    },
+                    "selfLink": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/instances/vm3",
+                    "serviceAccounts": [
+                        {
+                            "email": "139493789884-compute@developer.gserviceaccount.com",
+                            "scopes": [
+                                "https://www.googleapis.com/auth/devstorage.read_only",
+                                "https://www.googleapis.com/auth/logging.write",
+                                "https://www.googleapis.com/auth/monitoring.write",
+                                "https://www.googleapis.com/auth/servicecontrol",
+                                "https://www.googleapis.com/auth/service.management.readonly",
+                                "https://www.googleapis.com/auth/trace.append"
+                            ]
+                        }
+                    ],
+                    "shieldedInstanceConfig": {
+                        "enableIntegrityMonitoring": true,
+                        "enableSecureBoot": false,
+                        "enableVtpm": true
+                    },
+                    "shieldedInstanceIntegrityPolicy": {
+                        "updateAutoLearnPolicy": true
+                    },
+                    "shieldedVmConfig": {
+                        "enableIntegrityMonitoring": true,
+                        "enableSecureBoot": false,
+                        "enableVtpm": true
+                    },
+                    "shieldedVmIntegrityPolicy": {
+                        "updateAutoLearnPolicy": true
+                    },
+                    "sourceMachineImage": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/global/machineImages/vm2",
+                    "startRestricted": false,
+                    "status": "RUNNING",
+                    "tags": {
+                        "fingerprint": "42WmSpB8rSM="
+                    },
+                    "zone": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a"
+                },
+                {
+                    "canIpForward": false,
+                    "confidentialInstanceConfig": {
+                        "enableConfidentialCompute": false
+                    },
+                    "cpuPlatform": "Intel Broadwell",
+                    "creationTimestamp": "2021-09-30T03:05:26.775-07:00",
+                    "deletionProtection": false,
+                    "description": "",
+                    "disks": [
+                        {
+                            "autoDelete": true,
+                            "boot": true,
+                            "deviceName": "vm5",
+                            "diskSizeGb": "10",
+                            "guestOsFeatures": [
+                                {
+                                    "type": "UEFI_COMPATIBLE"
+                                },
+                                {
+                                    "type": "VIRTIO_SCSI_MULTIQUEUE"
+                                }
+                            ],
+                            "index": 0,
+                            "interface": "SCSI",
+                            "kind": "compute#attachedDisk",
+                            "licenses": [
+                                "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/licenses/debian-10-buster"
+                            ],
+                            "mode": "READ_WRITE",
+                            "source": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/disks/vm5",
+                            "type": "PERSISTENT"
+                        }
+                    ],
+                    "displayDevice": {
+                        "enableDisplay": false
+                    },
+                    "fingerprint": "e0OSUamxxY4=",
+                    "id": "7323852066847733001",
+                    "kind": "compute#instance",
+                    "labelFingerprint": "42WmSpB8rSM=",
+                    "lastStartTimestamp": "2021-09-30T03:05:38.702-07:00",
+                    "machineType": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/machineTypes/e2-medium",
+                    "metadata": {
+                        "fingerprint": "E36Kj_NsogA=",
+                        "kind": "compute#metadata"
+                    },
+                    "name": "vm5",
+                    "networkInterfaces": [
+                        {
+                            "accessConfigs": [
+                                {
+                                    "kind": "compute#accessConfig",
+                                    "name": "External NAT",
+                                    "natIP": "35.238.52.135",
+                                    "networkTier": "PREMIUM",
+                                    "type": "ONE_TO_ONE_NAT"
+                                }
+                            ],
+                            "fingerprint": "3dr3SelB2x8=",
+                            "kind": "compute#networkInterface",
+                            "name": "nic0",
+                            "network": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/global/networks/default",
+                            "networkIP": "10.128.0.11",
+                            "stackType": "IPV4_ONLY",
+                            "subnetwork": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/regions/us-central1/subnetworks/default"
+                        }
+                    ],
+                    "reservationAffinity": {
+                        "consumeReservationType": "ANY_RESERVATION"
+                    },
+                    "scheduling": {
+                        "automaticRestart": true,
+                        "onHostMaintenance": "MIGRATE",
+                        "preemptible": false,
+                        "provisioningModel": "STANDARD"
+                    },
+                    "selfLink": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/instances/vm5",
+                    "serviceAccounts": [
+                        {
+                            "email": "139493789884-compute@developer.gserviceaccount.com",
+                            "scopes": [
+                                "https://www.googleapis.com/auth/devstorage.read_only",
+                                "https://www.googleapis.com/auth/logging.write",
+                                "https://www.googleapis.com/auth/monitoring.write",
+                                "https://www.googleapis.com/auth/servicecontrol",
+                                "https://www.googleapis.com/auth/service.management.readonly",
+                                "https://www.googleapis.com/auth/trace.append"
+                            ]
+                        }
+                    ],
+                    "shieldedInstanceConfig": {
+                        "enableIntegrityMonitoring": true,
+                        "enableSecureBoot": false,
+                        "enableVtpm": true
+                    },
+                    "shieldedVmConfig": {
+                        "enableIntegrityMonitoring": true,
+                        "enableSecureBoot": false,
+                        "enableVtpm": true
+                    },
+                    "startRestricted": false,
+                    "status": "RUNNING",
+                    "tags": {
+                        "fingerprint": "42WmSpB8rSM="
+                    },
+                    "zone": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a"
+                },
+                {
+                    "canIpForward": false,
+                    "confidentialInstanceConfig": {
+                        "enableConfidentialCompute": false
+                    },
+                    "cpuPlatform": "Intel Broadwell",
+                    "creationTimestamp": "2021-09-30T03:06:16.693-07:00",
+                    "deletionProtection": false,
+                    "description": "",
+                    "disks": [
+                        {
+                            "autoDelete": false,
+                            "boot": true,
+                            "deviceName": "dc-1",
+                            "diskSizeGb": "10",
+                            "guestOsFeatures": [
+                                {
+                                    "type": "UEFI_COMPATIBLE"
+                                },
+                                {
+                                    "type": "VIRTIO_SCSI_MULTIQUEUE"
+                                }
+                            ],
+                            "index": 0,
+                            "interface": "SCSI",
+                            "kind": "compute#attachedDisk",
+                            "licenses": [
+                                "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/licenses/debian-10-buster"
+                            ],
+                            "mode": "READ_WRITE",
+                            "source": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/disks/dc-1",
+                            "type": "PERSISTENT"
+                        }
+                    ],
+                    "displayDevice": {
+                        "enableDisplay": false
+                    },
+                    "fingerprint": "bq20H_yUkdU=",
+                    "id": "2028272611967382263",
+                    "kind": "compute#instance",
+                    "labelFingerprint": "42WmSpB8rSM=",
+                    "lastStartTimestamp": "2021-09-30T03:06:24.851-07:00",
+                    "machineType": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/machineTypes/e2-medium",
+                    "metadata": {
+                        "fingerprint": "kT2pFxbvfss=",
+                        "items": [
+                            {
+                                "key": "ssh-keys",
+                                "value": "ise-cloud-log4j-scanner:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC4p3ldkR5MaD4WVSutVFhBMXSRfBlrlOP934yrciuS1346jb96WvZZhMunQJ8S4ZQtQbUbLyW3JRw80zy69iZScy4gKePwEWZvqz1hFtOhv6nKnas2a1o6yQ4h6HM2DVBliHjgoPjtGPiVhdO9wGinhNo0wb2pEiDJ1BMNIx+cr6T2SoHb8gPVoyFvRRqxxoAqLcJ1uLEzHVrK908VBlR//svAKJwF48/7bAj5agxEYNjFOSP8cSIu0U9ZBHkJ39qDQRDsHPvRWa/EoC7x5J9Nt95R1XA/IqR6Fajix9KUt3YSEALQ/bp4xbPm7p2s9yPu2xSSE2ce9hHQLDCzlWyr google-ssh {\"userName\":\"ise-cloud-log4j-scanner\",\"expireOn\":\"2021-12-21T00:51:02+0000\"}"
+                            }
+                        ],
+                        "kind": "compute#metadata"
+                    },
+                    "name": "vm6",
+                    "networkInterfaces": [
+                        {
+                            "accessConfigs": [
+                                {
+                                    "kind": "compute#accessConfig",
+                                    "name": "External NAT",
+                                    "natIP": "35.238.124.191",
+                                    "networkTier": "PREMIUM",
+                                    "type": "ONE_TO_ONE_NAT"
+                                }
+                            ],
+                            "fingerprint": "Ckttsg1Xk7w=",
+                            "kind": "compute#networkInterface",
+                            "name": "nic0",
+                            "network": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/global/networks/default",
+                            "networkIP": "10.128.0.12",
+                            "stackType": "IPV4_ONLY",
+                            "subnetwork": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/regions/us-central1/subnetworks/default"
+                        }
+                    ],
+                    "reservationAffinity": {
+                        "consumeReservationType": "ANY_RESERVATION"
+                    },
+                    "scheduling": {
+                        "automaticRestart": true,
+                        "onHostMaintenance": "MIGRATE",
+                        "preemptible": false,
+                        "provisioningModel": "STANDARD"
+                    },
+                    "selfLink": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/instances/vm6",
+                    "serviceAccounts": [
+                        {
+                            "email": "139493789884-compute@developer.gserviceaccount.com",
+                            "scopes": [
+                                "https://www.googleapis.com/auth/devstorage.read_only",
+                                "https://www.googleapis.com/auth/logging.write",
+                                "https://www.googleapis.com/auth/monitoring.write",
+                                "https://www.googleapis.com/auth/servicecontrol",
+                                "https://www.googleapis.com/auth/service.management.readonly",
+                                "https://www.googleapis.com/auth/trace.append"
+                            ]
+                        }
+                    ],
+                    "shieldedInstanceConfig": {
+                        "enableIntegrityMonitoring": true,
+                        "enableSecureBoot": false,
+                        "enableVtpm": true
+                    },
+                    "shieldedVmConfig": {
+                        "enableIntegrityMonitoring": true,
+                        "enableSecureBoot": false,
+                        "enableVtpm": true
+                    },
+                    "startRestricted": false,
+                    "status": "RUNNING",
+                    "tags": {
+                        "fingerprint": "42WmSpB8rSM="
+                    },
+                    "zone": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a"
+                },
+                {
+                    "canIpForward": false,
+                    "confidentialInstanceConfig": {
+                        "enableConfidentialCompute": false
+                    },
+                    "cpuPlatform": "Intel Broadwell",
+                    "creationTimestamp": "2021-09-30T03:07:04.906-07:00",
+                    "deletionProtection": false,
+                    "description": "",
+                    "disks": [
+                        {
+                            "autoDelete": true,
+                            "boot": true,
+                            "deviceName": "vm4",
+                            "diskSizeGb": "10",
+                            "guestOsFeatures": [
+                                {
+                                    "type": "UEFI_COMPATIBLE"
+                                },
+                                {
+                                    "type": "VIRTIO_SCSI_MULTIQUEUE"
+                                }
+                            ],
+                            "index": 0,
+                            "interface": "SCSI",
+                            "kind": "compute#attachedDisk",
+                            "licenses": [
+                                "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/licenses/debian-10-buster"
+                            ],
+                            "mode": "READ_WRITE",
+                            "source": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/disks/vm7",
+                            "type": "PERSISTENT"
+                        }
+                    ],
+                    "displayDevice": {
+                        "enableDisplay": false
+                    },
+                    "fingerprint": "7s6RZa_doPU=",
+                    "id": "495438478112731815",
+                    "kind": "compute#instance",
+                    "labelFingerprint": "42WmSpB8rSM=",
+                    "lastStartTimestamp": "2021-09-30T03:07:13.778-07:00",
+                    "machineType": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/machineTypes/e2-medium",
+                    "metadata": {
+                        "fingerprint": "9Jo8TlrkvDI=",
+                        "items": [
+                            {
+                                "key": "ssh-keys",
+                                "value": "ise-cloud-log4j-scanner:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC4p3ldkR5MaD4WVSutVFhBMXSRfBlrlOP934yrciuS1346jb96WvZZhMunQJ8S4ZQtQbUbLyW3JRw80zy69iZScy4gKePwEWZvqz1hFtOhv6nKnas2a1o6yQ4h6HM2DVBliHjgoPjtGPiVhdO9wGinhNo0wb2pEiDJ1BMNIx+cr6T2SoHb8gPVoyFvRRqxxoAqLcJ1uLEzHVrK908VBlR//svAKJwF48/7bAj5agxEYNjFOSP8cSIu0U9ZBHkJ39qDQRDsHPvRWa/EoC7x5J9Nt95R1XA/IqR6Fajix9KUt3YSEALQ/bp4xbPm7p2s9yPu2xSSE2ce9hHQLDCzlWyr google-ssh {\"userName\":\"ise-cloud-log4j-scanner\",\"expireOn\":\"2021-12-21T03:18:44+0000\"}"
+                            }
+                        ],
+                        "kind": "compute#metadata"
+                    },
+                    "name": "vm7",
+                    "networkInterfaces": [
+                        {
+                            "accessConfigs": [
+                                {
+                                    "kind": "compute#accessConfig",
+                                    "name": "External NAT",
+                                    "natIP": "34.121.136.68",
+                                    "networkTier": "PREMIUM",
+                                    "type": "ONE_TO_ONE_NAT"
+                                }
+                            ],
+                            "fingerprint": "YImGlgGkXLc=",
+                            "kind": "compute#networkInterface",
+                            "name": "nic0",
+                            "network": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/global/networks/default",
+                            "networkIP": "10.128.0.13",
+                            "stackType": "IPV4_ONLY",
+                            "subnetwork": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/regions/us-central1/subnetworks/default"
+                        }
+                    ],
+                    "reservationAffinity": {
+                        "consumeReservationType": "ANY_RESERVATION"
+                    },
+                    "scheduling": {
+                        "automaticRestart": true,
+                        "onHostMaintenance": "MIGRATE",
+                        "preemptible": false,
+                        "provisioningModel": "STANDARD"
+                    },
+                    "selfLink": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/instances/vm7",
+                    "serviceAccounts": [
+                        {
+                            "email": "139493789884-compute@developer.gserviceaccount.com",
+                            "scopes": [
+                                "https://www.googleapis.com/auth/devstorage.read_only",
+                                "https://www.googleapis.com/auth/logging.write",
+                                "https://www.googleapis.com/auth/monitoring.write",
+                                "https://www.googleapis.com/auth/servicecontrol",
+                                "https://www.googleapis.com/auth/service.management.readonly",
+                                "https://www.googleapis.com/auth/trace.append"
+                            ]
+                        }
+                    ],
+                    "shieldedInstanceConfig": {
+                        "enableIntegrityMonitoring": true,
+                        "enableSecureBoot": false,
+                        "enableVtpm": true
+                    },
+                    "shieldedInstanceIntegrityPolicy": {
+                        "updateAutoLearnPolicy": true
+                    },
+                    "shieldedVmConfig": {
+                        "enableIntegrityMonitoring": true,
+                        "enableSecureBoot": false,
+                        "enableVtpm": true
+                    },
+                    "shieldedVmIntegrityPolicy": {
+                        "updateAutoLearnPolicy": true
+                    },
+                    "startRestricted": false,
+                    "status": "RUNNING",
+                    "tags": {
+                        "fingerprint": "42WmSpB8rSM="
+                    },
+                    "zone": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a"
+                },
+                {
+                    "canIpForward": false,
+                    "confidentialInstanceConfig": {
+                        "enableConfidentialCompute": false
+                    },
+                    "cpuPlatform": "Intel Broadwell",
+                    "creationTimestamp": "2021-10-18T22:32:07.113-07:00",
+                    "deletionProtection": false,
+                    "description": "",
+                    "disks": [
+                        {
+                            "autoDelete": true,
+                            "boot": true,
+                            "deviceName": "vm9",
+                            "diskSizeGb": "10",
+                            "guestOsFeatures": [
+                                {
+                                    "type": "UEFI_COMPATIBLE"
+                                },
+                                {
+                                    "type": "VIRTIO_SCSI_MULTIQUEUE"
+                                }
+                            ],
+                            "index": 0,
+                            "interface": "SCSI",
+                            "kind": "compute#attachedDisk",
+                            "licenses": [
+                                "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/licenses/debian-10-buster"
+                            ],
+                            "mode": "READ_WRITE",
+                            "source": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/disks/vm9",
+                            "type": "PERSISTENT"
+                        }
+                    ],
+                    "displayDevice": {
+                        "enableDisplay": false
+                    },
+                    "fingerprint": "lBDZ28rUYhc=",
+                    "id": "902057703629907641",
+                    "kind": "compute#instance",
+                    "labelFingerprint": "42WmSpB8rSM=",
+                    "lastStartTimestamp": "2021-10-18T22:32:16.088-07:00",
+                    "machineType": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/machineTypes/e2-micro",
+                    "metadata": {
+                        "fingerprint": "OtnUmGTU5-s=",
+                        "items": [
+                            {
+                                "key": "ssh-keys",
+                                "value": "ise-cloud-log4j-scanner:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC4p3ldkR5MaD4WVSutVFhBMXSRfBlrlOP934yrciuS1346jb96WvZZhMunQJ8S4ZQtQbUbLyW3JRw80zy69iZScy4gKePwEWZvqz1hFtOhv6nKnas2a1o6yQ4h6HM2DVBliHjgoPjtGPiVhdO9wGinhNo0wb2pEiDJ1BMNIx+cr6T2SoHb8gPVoyFvRRqxxoAqLcJ1uLEzHVrK908VBlR//svAKJwF48/7bAj5agxEYNjFOSP8cSIu0U9ZBHkJ39qDQRDsHPvRWa/EoC7x5J9Nt95R1XA/IqR6Fajix9KUt3YSEALQ/bp4xbPm7p2s9yPu2xSSE2ce9hHQLDCzlWyr google-ssh {\"userName\":\"ise-cloud-log4j-scanner\",\"expireOn\":\"2021-12-21T06:23:31+0000\"}"
+                            }
+                        ],
+                        "kind": "compute#metadata"
+                    },
+                    "name": "vm9",
+                    "networkInterfaces": [
+                        {
+                            "accessConfigs": [
+                                {
+                                    "kind": "compute#accessConfig",
+                                    "name": "External NAT",
+                                    "natIP": "104.154.155.16",
+                                    "networkTier": "PREMIUM",
+                                    "type": "ONE_TO_ONE_NAT"
+                                }
+                            ],
+                            "fingerprint": "hJb9iK1xPLI=",
+                            "kind": "compute#networkInterface",
+                            "name": "nic0",
+                            "network": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/global/networks/default",
+                            "networkIP": "10.128.0.15",
+                            "stackType": "IPV4_ONLY",
+                            "subnetwork": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/regions/us-central1/subnetworks/default"
+                        }
+                    ],
+                    "reservationAffinity": {
+                        "consumeReservationType": "ANY_RESERVATION"
+                    },
+                    "scheduling": {
+                        "automaticRestart": true,
+                        "onHostMaintenance": "MIGRATE",
+                        "preemptible": false,
+                        "provisioningModel": "STANDARD"
+                    },
+                    "selfLink": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a/instances/vm9",
+                    "serviceAccounts": [
+                        {
+                            "email": "139493789884-compute@developer.gserviceaccount.com",
+                            "scopes": [
+                                "https://www.googleapis.com/auth/devstorage.read_only",
+                                "https://www.googleapis.com/auth/logging.write",
+                                "https://www.googleapis.com/auth/monitoring.write",
+                                "https://www.googleapis.com/auth/servicecontrol",
+                                "https://www.googleapis.com/auth/service.management.readonly",
+                                "https://www.googleapis.com/auth/trace.append"
+                            ]
+                        }
+                    ],
+                    "shieldedInstanceConfig": {
+                        "enableIntegrityMonitoring": true,
+                        "enableSecureBoot": false,
+                        "enableVtpm": true
+                    },
+                    "shieldedInstanceIntegrityPolicy": {
+                        "updateAutoLearnPolicy": true
+                    },
+                    "shieldedVmConfig": {
+                        "enableIntegrityMonitoring": true,
+                        "enableSecureBoot": false,
+                        "enableVtpm": true
+                    },
+                    "shieldedVmIntegrityPolicy": {
+                        "updateAutoLearnPolicy": true
+                    },
+                    "startRestricted": false,
+                    "status": "RUNNING",
+                    "tags": {
+                        "fingerprint": "42WmSpB8rSM="
+                    },
+                    "zone": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/zones/us-central1-a"
+                }
+            ]
+        },
+        "zones/us-central1-b": {
+            "warning": {
+                "code": "NO_RESULTS_ON_PAGE",
+                "data": [
+                    {
+                        "key": "scope",
+                        "value": "zones/us-central1-b"
+                    }
+                ],
+                "message": "There are no results for scope 'zones/us-central1-b' on this page."
+            }
+        }
+    },
+    "kind": "compute#instanceAggregatedList",
+    "selfLink": "https://www.googleapis.com/compute/beta/projects/test-project-hkhalifa/aggregated/instances"
+}
