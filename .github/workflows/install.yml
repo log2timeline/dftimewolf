@@ -6,12 +6,12 @@ on:
 
 jobs:
 
-  pip:
+  poetry:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: [3.9, "3.10"]
+        python-version: [3.9]
     env:
       DFTIMEWOLF_NO_CURSES: 1
       PYTHONPATH: "."
