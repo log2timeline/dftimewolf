@@ -209,10 +209,10 @@ class TurbiniaProcessorBase(object):
           jobs_denylist=jobs_denylist,
           yara_rules=yara_text)
 
-      request = process_client.create_request(
-          requester=getpass.getuser(), recipe=recipe)
-      request.evidence.append(evidence_)
-      request_id = request.request_id  # type: str
+    request = process_client.create_request(
+        requester=getpass.getuser(), recipe=recipe)
+    request.evidence.append(evidence_)
+    request_id = request.request_id  # type: str
     self.logger.success(
       'Creating Turbinia request {0:s} with Evidence {1!s}'.format(
           request_id, evidence_.name))
