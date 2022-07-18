@@ -7,7 +7,6 @@ name = "pypi"
 mock = "*"
 pylint = "*"
 coverage = "*"
-monkeytype = "*"
 mypy = "*"
 yapf = "*"
 types-protobuf = "*"
@@ -42,3 +41,10 @@ boto3 = "*"
 
 # [requires]
 # python_version = "3.9"
+
+
+
+docker google-cloud-logging google-cloud-bigquery grr_api_client libcloudforensics pypdf2 six timesketch-import-client turbinia pandas google-cloud-error-reporting cmd2 psutil prettytable vt-py boto3
+
+
+mock pylint coverage mypy yapf types-protobuf types-filelock types-PyYAML mkdocs graphviz
