@@ -21,8 +21,8 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        pip install pipenv
-        pipenv install -d
+        pip install poetry
+        poetry install
     - name: Run pylint on dftimewolf and tests
       run: |
-        pipenv run pylint --rcfile=.pylintrc setup.py dftimewolf tests
+        poetry run pylint --rcfile=.pylintrc setup.py dftimewolf tests

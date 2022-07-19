@@ -18,9 +18,9 @@ jobs:
       - name: Install mkdocs & deps
         run: |
           sudo apt install graphviz
-          pip install pipenv
-          pipenv install mkdocs graphviz  --skip-lock
+          pip install poetry
+          poetry install
       - name: Generate recipe doc
-        run: pipenv run python docs/generate_recipe_doc.py data/recipes docs
+        run: poetry run python docs/generate_recipe_doc.py data/recipes docs
       - name: Build doc
-        run: pipenv run  mkdocs gh-deploy --force
+        run: poetry run  mkdocs gh-deploy --force

@@ -6,7 +6,7 @@ on:
 
 jobs:
 
-  pipenv:
+  poetry:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -22,30 +22,8 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        pip install pipenv
-        pipenv install -d
+        pip install poetry
+        poetry install
     - name: Test with unittest
       run: |
-        pipenv run python -m unittest discover -s tests -p '*.py'
-
-  pip:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-        python-version: [3.9, "3.10"]
-    env:
-      DFTIMEWOLF_NO_CURSES: 1
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
-        pip install -r requirements-dev.txt
-    - name: Test with unittest
-      run: |
-        python -m unittest discover -s tests -p '*.py'
+        poetry run python -m unittest discover -s tests -p '*.py'

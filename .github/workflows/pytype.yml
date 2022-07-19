@@ -21,9 +21,8 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        pip install pipenv
-        pipenv install -d
-        pipenv install pytype --skip-lock
+        pip install poetry
+        poetry install
     - name: Run pytype on dftimewolf and tests
       run: |
-        pipenv run pytype --config pytype.conf
+        poetry run pytype --config pytype.conf
