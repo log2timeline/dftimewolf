@@ -122,7 +122,11 @@ class Message:
     Args:
       source_len: The longest source length; used to unify the formatting of
           messages.
-      colorize: True if colors should be used."""
+      colorize: True if colors should be used.
+
+    Returns:
+      A string representation of the Message.
+    """
     pad = (len(self.source) if len(self.source) > source_len
         else source_len)
 

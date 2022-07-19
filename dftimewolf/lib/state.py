@@ -107,7 +107,7 @@ class DFTimewolfState(object):
     """Dynamically loads the modules declared in a recipe.
 
     Args:
-      module_location (dict[str, str]): A dfTimewolf module name - Python module
+      module_locations: A dfTimewolf module name - Python module
           mapping. e.g.:
             {'GRRArtifactCollector': 'dftimewolf.lib.collectors.grr_hosts'}
 
@@ -244,7 +244,7 @@ class DFTimewolfState(object):
     """Thread-safe method to store stats in the state's stats store.
 
     Args:
-      statsentry: The stats object to store.
+      stats_entry: The stats object to store.
     """
     with self._stats_lock:
       self.stats_store.append(stats_entry)
@@ -359,7 +359,11 @@ class DFTimewolfState(object):
 
     Args:
       module: The module that will have Process(container) called in a threaded
-          fashion."""
+          fashion.
+
+    Returns:
+      List of futures for the threads that were started.
+    """
     cont_count = len(self.GetContainers(module.GetThreadOnContainerType()))
     logger.info(
        f'Running {cont_count} threads, max {module.GetThreadPoolSize()} '
@@ -578,6 +582,9 @@ class DFTimewolfState(object):
     Args:
       is_global (Optional[bool]): True if the global_errors attribute should
           be checked. False if the error attribute should be checked.
+
+    Raises:
+      errors.CriticalError: If any critical errors were found.
     """
     error_objects = self.global_errors if is_global else self.errors
     critical_errors = False
@@ -683,7 +690,11 @@ class DFTimewolfStateWithCDM(DFTimewolfState):
 
     Args:
       module: The module that will have Process(container) called in a threaded
-          fashion."""
+          fashion.
+
+    Returns:
+      List of futures for the threads that were started.
+    """
     cont_count = len(self.GetContainers(module.GetThreadOnContainerType()))
     logger.info(
        f'Running {cont_count} threads, max {module.GetThreadPoolSize()} '

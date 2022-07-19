@@ -134,6 +134,10 @@ def CastToType(value: str, value_type: Any) -> Any:
   Args:
     value (str): The string to cast.
     value_type (Any): The type to cast the string to.
+
+  Returns:
+    The value cast to the specified type, or the value itself if no type
+    was found.
   """
   if value_type == int:
     if not IsInt(value):

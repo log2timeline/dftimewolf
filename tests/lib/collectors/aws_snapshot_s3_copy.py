@@ -3,11 +3,11 @@
 """Tests the GoogleCloudCollector."""
 
 import unittest
+from typing import Any
 
 import mock
 import botocore
 
-from libcloudforensics.providers.aws.internal import ec2
 from libcloudforensics.providers.aws.internal import account as aws_account
 from dftimewolf import config
 from dftimewolf.lib import state
@@ -105,12 +105,15 @@ FAKE_CREATE_BUCKET_RESPONSE = None
 # pylint: disable=protected-access
 orig = botocore.client.BaseClient._make_api_call
 
-def MockMakeAPICall(self, operation_name, kwarg):
+def MockMakeAPICall(self, operation_name: str, kwarg: Any) -> Any:
   """Mock the boto3 api calls for specified client methods.
 
   Args:
     operation_name: The AWS API operation.
     kwarg: Args to pass to the method.
+
+  Returns:
+    The result of a mock API call, if available.
   """
   if operation_name == 'DescribeSnapshots':
     return FAKE_DESCRIBE_SNAPSHOTS

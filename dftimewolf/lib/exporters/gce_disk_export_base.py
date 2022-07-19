@@ -151,5 +151,8 @@ class GoogleCloudDiskExportBase(module.BaseModule):
 
     Args:
       disks: compute disks.
+
+    Returns:
+      Whether all disks are in the same zone.
     """
     return all(disk.zone == disks[0].zone for disk in disks)

@@ -200,10 +200,12 @@ class GCSToGCEImage(module.ThreadAwareModule):
     ImportImageFromStorage uses CloudBuild, which creates an image from the disk
     image in GCS.
 
-    Returns (str):
+    Returns:
       The name of the role.
+
     Raises:
-      googleapiclient.errors.HttpError: On IAM API errors."""
+      googleapiclient.errors.HttpError: On IAM API errors.
+    """
     role = self.iam_service.projects().roles().create(#pylint: disable=no-member
         parent='projects/' + self.dest_project_name,
         body={
@@ -242,7 +244,11 @@ class GCSToGCEImage(module.ThreadAwareModule):
     """Undelete the role.
 
     Raises:
-      googleapiclient.errors.HttpError: On IAM API errors."""
+      googleapiclient.errors.HttpError: On IAM API errors.
+
+    Returns:
+      The name of the role that was undeleted.
+    """
     role = self.iam_service.projects().roles().undelete( #pylint: disable=no-member
        name='projects/{0:s}/roles/{1:s}'.format(
           self.dest_project_name, IMAGE_BUILD_ROLE_NAME)

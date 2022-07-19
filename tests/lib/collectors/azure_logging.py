@@ -3,7 +3,7 @@
 """Tests the Azure logging collector."""
 
 import unittest
-import unittest.mock as mock
+from unittest import mock
 
 from azure.core import exceptions as az_exceptions
 
