@@ -122,7 +122,20 @@ disable=assignment-from-none,
         unsubscriptable-object,
         useless-object-inheritance,
         useless-suppression,
-        consider-using-with
+        consider-using-with,
+ # Re-enable the below warnings as part of https://github.com/log2timeline/dftimewolf/issues/637
+        useless-param-doc,
+        useless-type-doc,
+        unspecified-encoding,
+        missing-return-doc,
+        missing-return-type-doc,
+        missing-type-doc,
+        no-member,
+        missing-raises-doc,
+        differing-param-doc,
+        differing-type-doc,
+        consider-using-with,
+        consider-using-from-import
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
