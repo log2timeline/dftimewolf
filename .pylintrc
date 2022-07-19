@@ -135,7 +135,8 @@ disable=assignment-from-none,
         differing-param-doc,
         differing-type-doc,
         consider-using-with,
-        consider-using-from-import
+        consider-using-from-import,
+        unused-import
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
