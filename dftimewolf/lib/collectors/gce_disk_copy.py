@@ -7,7 +7,6 @@ from googleapiclient.errors import HttpError
 from libcloudforensics import errors as lcf_errors
 from libcloudforensics.providers.gcp import forensics as gcp_forensics
 from libcloudforensics.providers.gcp.internal import project as gcp_project
-from libcloudforensics.providers.gcp.internal import compute
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers, interface

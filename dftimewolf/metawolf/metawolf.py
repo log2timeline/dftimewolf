@@ -184,11 +184,7 @@ class Metawolf(cmd2.Cmd):
     return super(Metawolf, self).postcmd(stop, statement)
 
   def do_new(self, _: cmd2.Statement) -> None:
-    """Create a new session.
-
-    Args:
-      _ (Statement): Unused.
-    """
+    """Create a new session."""
     session_id = utils.CreateNewSessionID()
     self.recipe_settable.SetValue(None)
     self.reload_settables = False
@@ -203,11 +199,7 @@ class Metawolf(cmd2.Cmd):
         break
 
   def do_ls(self, _: cmd2.Statement) -> None:
-    """Print the current recipe and its arguments.
-
-    Args:
-      _ (Statement): Unused.
-    """
+    """Print the current recipe and its arguments."""
     t = PrettyTable(['Name', 'Description', 'Type', 'Current Value'],
                     align='l')
     for _, settable in self.session_settables.items():  # type: ignore
@@ -360,11 +352,7 @@ class Metawolf(cmd2.Cmd):
   def do_run(self, _: cmd2.Statement) -> None:
     """Run a DFTimewolf recipe. Show running recipes: `show -rn[running]`.
 
-    This will run whatever recipe is currently being used in the session.
-
-    Args:
-      _ (Statement): Unused.
-    """
+    This will run whatever recipe is currently being used in the session."""
     if not self.session_id or not self.recipe:
       self.poutput(self.metawolf_output.Color(
           'No session/recipe detected, nothing to run.', output.RED))
@@ -429,7 +417,7 @@ class Metawolf(cmd2.Cmd):
     the output of the matching output_id to STDOUT. Autocomplete is available.
 
     Args:
-      st (Statement): The user's input.
+      args: Arguments from the command line.
     """
     if not args.cmd2_statement.get():
       self.poutput('Usage of show (autocompletion is enabled.): `{0:s}`'.format(
@@ -615,20 +603,12 @@ class Metawolf(cmd2.Cmd):
         metawolf_process.Send(inp)
 
   def do_reload(self, _: cmd2.Statement) -> None:
-    """Reload the default recipe arguments.
-
-    Args:
-      _ (Statement): Unused.
-    """
+    """Reload the default recipe arguments."""
     self.reload_settables = True
     self.reload_default = True
 
   def do_clear(self, _: cmd2.Statement) -> None:
-    """Clear the screen.
-
-    Args:
-      _ (Statement): Unused.
-    """
+    """Clear the screen."""
     self.do_shell('clear')
 
   def do_clean(self, _: cmd2.Statement) -> None:
@@ -636,11 +616,7 @@ class Metawolf(cmd2.Cmd):
 
     - Delete output files
     - Remove metawolf's runs from session file
-    - Reset output counter
-
-    Args:
-      _ (Statement): Unused.
-    """
+    - Reset output counter"""
     for metawolf_process in self.processes:
       if metawolf_process.Poll() is None:
         termination_msg = metawolf_process.Terminate()
@@ -675,9 +651,6 @@ class Metawolf(cmd2.Cmd):
   def do_quit(self, _: argparse.Namespace) -> Optional[bool]:
     """Quit Metawolf.
 
-    Args:
-      _ (argparse.Namespace): Unused.
-
     Returns:
       Optional[bool]: True if the shell should be stopped.
     """
@@ -692,9 +665,6 @@ class Metawolf(cmd2.Cmd):
   def do_exit(self, _: argparse.Namespace) -> Optional[bool]:
     """Exit Metawolf.
 
-    Args:
-      _ (argparse.Namespace): Unused.
-
     Returns:
       Optional[bool]: True if the shell should be stopped.
     """
@@ -705,7 +675,6 @@ class Metawolf(cmd2.Cmd):
 
     Args:
       signum (int): Signal number.
-      _ (FrameType): Unused.
     """
 
     if signum == signal.SIGINT:

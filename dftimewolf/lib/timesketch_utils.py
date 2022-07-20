@@ -37,7 +37,7 @@ def GetApiClient(state: "state.DFTimewolfState",
     object: A timesketch API object (instance of TimesketchApi).
 
   Raises:
-    RuntimeError: If the configuration file cannot be modified.
+    DFTimewolfError: If the configuration file cannot be modified.
   """
   with LOCK:
     ts_client = state.GetFromCache('timesketch_client', default_value=None)

@@ -3,7 +3,7 @@
 """Tests the AWS logging collector."""
 
 import unittest
-import unittest.mock as mock
+from unittest import mock
 from datetime import datetime as dt
 
 from botocore import exceptions as boto_exceptions

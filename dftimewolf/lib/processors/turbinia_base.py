@@ -175,7 +175,7 @@ class TurbiniaProcessorBase(object):
 
     Args:
       evidence_: The evidence to process.
-      threat_intel_indicator: list of strings used as regular expressions in
+      threat_intel_indicators: list of strings used as regular expressions in
           the Turbinia grepper module.
       yara_rules: List of Yara rule strings to use in the Turbinia Yara module.
     Returns:
@@ -227,8 +227,13 @@ class TurbiniaProcessorBase(object):
 
     Args:
       request_id: Request ID for the Turbinia Job.
+
     Returns:
       The Turbinia task data.
+
+    Raises:
+      RuntimeError: If the Turbinia request fails for reasons not linked to
+          rate limiting.
     """
     request_dict = {
         'instance': self.instance,
