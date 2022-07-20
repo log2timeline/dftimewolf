@@ -9,9 +9,9 @@ set -e
 sudo add-apt-repository ppa:gift/dev -y
 sudo apt-get update -qq
 sudo apt-get install -y python3-pip python3.9
-sudo rm /usr/bin/python3 && ln -s /usr/bin/python3.9 /usr/bin/python3
+sudo apt-get install --reinstall python3-apt
 python3 --version
-pip3 install poetry
+/usr/bin/python3.9 -m pip install poetry
 
 
 if [[ "$*" =~ "include-docker" ]]; then
@@ -84,7 +84,7 @@ fi
 # pending resolution of https://github.com/log2timeline/l2tdevtools/issues/595
 if [[ "$*" =~ "include-turbinia" ]]; then
     echo "Installing Turbinia"
-    sudo pip3 install turbinia
+    /usr/bin/python3.9 -m pip install turbinia
 fi
 
 echo "Installing dftimewolf requirements via Poetry"
