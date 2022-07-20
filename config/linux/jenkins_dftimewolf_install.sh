@@ -9,7 +9,8 @@ set -e
 sudo add-apt-repository ppa:gift/dev -y
 sudo apt-get update -qq
 sudo apt-get install -y python3-pip python3.9
-sudo ln -s /usr/bin/python3.9 /usr/bin/python3
+sudo rm /usr/bin/python3 && ln -s /usr/bin/python3.9 /usr/bin/python3
+python3 --version
 pip3 install poetry
 
 
