@@ -9,6 +9,7 @@ set -e
 sudo add-apt-repository ppa:gift/dev -y
 sudo apt-get update -qq
 sudo apt-get install -y python3-pip
+pip3 install poetry
 
 
 if [[ "$*" =~ "include-docker" ]]; then
@@ -84,6 +85,6 @@ if [[ "$*" =~ "include-turbinia" ]]; then
     sudo pip3 install turbinia
 fi
 
-echo "Installing dftimewolf requirements"
+echo "Installing dftimewolf requirements via Poetry"
 # Install dftimewolf's pinned requirements
-pip3 install -r requirements.txt
+poetry install
