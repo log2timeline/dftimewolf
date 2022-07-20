@@ -8,7 +8,8 @@ set -e
 
 sudo add-apt-repository ppa:gift/dev -y
 sudo apt-get update -qq
-sudo apt-get install -y python3-pip
+sudo apt-get install -y python3-pip python3.9
+sudo ln -s /usr/bin/python3.9 /usr/bin/python3
 pip3 install poetry
 
 
