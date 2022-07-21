@@ -8,7 +8,7 @@ set -e
 
 sudo add-apt-repository ppa:gift/dev -y
 sudo apt-get update -qq
-# Ubuntu 20.04 comes with python 3.8, we only support > 3.9
+# Ubuntu 20.04 comes with python 3.8, we only support >= 3.9
 sudo apt-get install -y python3-pip python3.9
 sudo apt-get install --reinstall python3-apt
 python3 --version
