@@ -241,9 +241,9 @@ class CursesDisplayManager:
     self._preflights[m.runtime_name] = m
 
   def EnqueueModule(self,
-                       name: str,
-                       dependencies: List[str],
-                       runtime_name: Optional[str]) -> None:
+                    name: str,
+                    dependencies: List[str],
+                    runtime_name: Optional[str]) -> None:
     """Enqueue a module object for display.
 
     Args:
@@ -302,53 +302,59 @@ class CursesDisplayManager:
       return
 
     with self._lock:
-      self._stdscr.clear()
-      y, _ = self._stdscr.getmaxyx()
+      try:
+        self._stdscr.clear()
+        y, _ = self._stdscr.getmaxyx()
 
-      curr_line = 1
-      self._stdscr.addstr(curr_line, 0, f' {self._recipe_name}')
-      curr_line += 1
-
-      # Preflights
-      if self._preflights:
-        self._stdscr.addstr(curr_line, 0, '   Preflights:')
-        curr_line += 1
-        for _, module in self._preflights.items():
-          for line in module.Stringify():
-            self._stdscr.addstr(curr_line, 0, line)
-            curr_line += 1
-
-      # Modules
-      self._stdscr.addstr(curr_line, 0, '   Modules:')
-      curr_line += 1
-      for status in Status:  # Print the modules in Status order
-        for _, module in self._modules.items():
-          if module.status != status:
-            continue
-          for line in module.Stringify():
-            self._stdscr.addstr(curr_line, 0, line)
-            curr_line += 1
-
-      # Messages
-      curr_line += 1
-      self._stdscr.addstr(curr_line, 0, ' Messages:')
-      curr_line += 1
-
-      message_space = y - 4 - curr_line
-      start = len(self._messages) - message_space
-      start = 0 if start < 0 else start
-
-      # Slice the aray, we may not be able to fit all messages on the screen
-      for m in self._messages[start:]:
-        self._stdscr.addstr(
-            curr_line, 0, f'  {m.Stringify(self._messages_longest_source_len)}')
+        curr_line = 1
+        self._stdscr.addstr(curr_line, 0, f' {self._recipe_name}')
         curr_line += 1
 
-      # Exceptions
-      if self._exception:
-        self._stdscr.addstr(y - 2, 0,
-            f' Exception encountered: {str(self._exception)}')
-      self._stdscr.move(curr_line, 0)
+        # Preflights
+        if self._preflights:
+          self._stdscr.addstr(curr_line, 0, '   Preflights:')
+          curr_line += 1
+          for _, module in self._preflights.items():
+            for line in module.Stringify():
+              self._stdscr.addstr(curr_line, 0, line)
+              curr_line += 1
+
+        # Modules
+        self._stdscr.addstr(curr_line, 0, '   Modules:')
+        curr_line += 1
+        for status in Status:  # Print the modules in Status order
+          for _, module in self._modules.items():
+            if module.status != status:
+              continue
+            for line in module.Stringify():
+              self._stdscr.addstr(curr_line, 0, line)
+              curr_line += 1
+
+        # Messages
+        curr_line += 1
+        self._stdscr.addstr(curr_line, 0, ' Messages:')
+        curr_line += 1
+
+        message_space = y - 4 - curr_line
+        start = len(self._messages) - message_space
+        start = 0 if start < 0 else start
+
+        # Slice the aray, we may not be able to fit all messages on the screen
+        for m in self._messages[start:]:
+          self._stdscr.addstr(
+              curr_line, 0, f'  {m.Stringify(self._messages_longest_source_len)}')
+          curr_line += 1
+
+        # Exceptions
+        if self._exception:
+          self._stdscr.addstr(y - 2, 0,
+              f' Exception encountered: {str(self._exception)}')
+      except curses.error as e:
+        self._stdscr.addstr(y - 3, 0, '*********************************************************************** ')
+        self._stdscr.addstr(y - 2, 0, '*** Terminal not large enough, consider increasing your window size *** ')
+        self._stdscr.addstr(y - 1, 0, '*********************************************************************** ')
+
+      self._stdscr.move(y - 1, 0)
       self._stdscr.refresh()
 
   def PrintMessages(self) -> None:
