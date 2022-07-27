@@ -350,11 +350,11 @@ class CursesDisplayManager:
           self._stdscr.addstr(y - 2, 0,
               f' Exception encountered: {str(self._exception)}')
       except curses.error:
-        # pylint: disable=line-too-long
+#        # pylint: disable=line-too-long
         self._stdscr.addstr(y - 3, 0, '*********************************************************************** ')
         self._stdscr.addstr(y - 2, 0, '*** Terminal not large enough, consider increasing your window size *** ')
         self._stdscr.addstr(y - 1, 0, '*********************************************************************** ')
-        # pylint: enable=line-too-long
+#        # pylint: enable=line-too-long
 
       self._stdscr.move(y - 1, 0)
       self._stdscr.refresh()
