@@ -302,11 +302,11 @@ class CursesDisplayManager:
       return
 
     with self._lock:
-      try:
-        self._stdscr.clear()
-        y, _ = self._stdscr.getmaxyx()
+      self._stdscr.clear()
+      y, _ = self._stdscr.getmaxyx()
 
-        curr_line = 1
+      try:
+        curr_line = 0
         self._stdscr.addstr(curr_line, 0, f' {self._recipe_name}')
         curr_line += 1
 
@@ -341,18 +341,20 @@ class CursesDisplayManager:
 
         # Slice the aray, we may not be able to fit all messages on the screen
         for m in self._messages[start:]:
-          self._stdscr.addstr(
-              curr_line, 0, f'  {m.Stringify(self._messages_longest_source_len)}')
+          self._stdscr.addstr(curr_line, 0,
+              f'  {m.Stringify(self._messages_longest_source_len)}')
           curr_line += 1
 
         # Exceptions
         if self._exception:
           self._stdscr.addstr(y - 2, 0,
               f' Exception encountered: {str(self._exception)}')
-      except curses.error as e:
+      except curses.error:
+        # pylint: disable=line-too-long
         self._stdscr.addstr(y - 3, 0, '*********************************************************************** ')
         self._stdscr.addstr(y - 2, 0, '*** Terminal not large enough, consider increasing your window size *** ')
         self._stdscr.addstr(y - 1, 0, '*********************************************************************** ')
+        # pylint: enable=line-too-long
 
       self._stdscr.move(y - 1, 0)
       self._stdscr.refresh()

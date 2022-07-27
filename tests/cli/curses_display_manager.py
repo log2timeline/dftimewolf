@@ -437,23 +437,24 @@ class CursesDisplayManagerTest(unittest.TestCase):
       mock_clear.assert_called_once_with()
       # pylint: disable=line-too-long
       mock_addstr.assert_has_calls([
-          mock.call(1, 0,  ' Recipe name'),
-          mock.call(2, 0,  '   Preflights:'),
-          mock.call(3, 0,  '     1st Preflight: Completed'),
-          mock.call(4, 0,  '     2nd Preflight: Completed'),
-          mock.call(5, 0,  '   Modules:'),
-          mock.call(6, 0,  '     1st Module: Completed'),
-          mock.call(7, 0,  '     2nd Module: Running'),
-          mock.call(8, 0,  '     3rd Module: Processing - 1 of 5 containers completed'),
-          mock.call(9, 0,  '       thread_3_0: Running (container_3_4)'),
-          mock.call(10, 0, '       thread_3_1: Running (container_3_1)'),
-          mock.call(11, 0, '       thread_3_2: Running (container_3_2)'),
-          mock.call(12, 0, '     4th Module: Processing - 1 of 8 containers completed'),
-          mock.call(13, 0, '       thread_4_0: Running (container_4_4)'),
-          mock.call(14, 0, '       thread_4_1: Running (container_4_1)'),
-          mock.call(15, 0, '       thread_4_2: Running (container_4_2)'),
-          mock.call(16, 0, '     5th Module: Pending (2nd Module, 3rd Module, 4th Module)'),
-          mock.call(18, 0, ' Messages:'),
+          mock.call(0, 0,  ' Recipe name'),
+          mock.call(1, 0,  '   Preflights:'),
+          mock.call(2, 0,  '     1st Preflight: Completed'),
+          mock.call(3, 0,  '     2nd Preflight: Completed'),
+          mock.call(4, 0,  '   Modules:'),
+          mock.call(5, 0,  '     1st Module: Completed'),
+          mock.call(6, 0,  '     2nd Module: Running'),
+          mock.call(7, 0,  '     3rd Module: Processing - 1 of 5 containers completed'),
+          mock.call(8, 0,  '       thread_3_0: Running (container_3_4)'),
+          mock.call(9, 0, '       thread_3_1: Running (container_3_1)'),
+          mock.call(10, 0, '       thread_3_2: Running (container_3_2)'),
+          mock.call(11, 0, '     4th Module: Processing - 1 of 8 containers completed'),
+          mock.call(12, 0, '       thread_4_0: Running (container_4_4)'),
+          mock.call(13, 0, '       thread_4_1: Running (container_4_1)'),
+          mock.call(14, 0, '       thread_4_2: Running (container_4_2)'),
+          mock.call(15, 0, '     5th Module: Pending (2nd Module, 3rd Module, 4th Module)'),
+          mock.call(17, 0, ' Messages:'),
+          mock.call(18, 0, '  [ source ] Message 2'),
           mock.call(19, 0, '  [ source ] Message 3'),
           mock.call(20, 0, '  [ source ] Message 4'),
           mock.call(21, 0, '  [ source ] Message 5'),
@@ -462,7 +463,7 @@ class CursesDisplayManagerTest(unittest.TestCase):
           mock.call(24, 0, '  [ source ] Message 8'),
           mock.call(25, 0, '  [ source ] Message 9'),
           mock.call(28, 0, ' Exception encountered: Test Exception')])
-      self.assertEqual(mock_addstr.call_count, 25)
+      self.assertEqual(mock_addstr.call_count, 26)
       # pylint: enable=line-too-long
 
 class CDMStringIOWrapperTest(unittest.TestCase):
