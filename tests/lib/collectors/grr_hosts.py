@@ -233,7 +233,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
         hostnames='C.0000000000000001',
         artifacts=None,
         extra_artifacts=None,
-        raw_disk_access=True,
+        use_raw_filesystem_access=True,
         reason='Random reason',
         grr_server_url='http://fake/endpoint',
         grr_username='user',
@@ -260,7 +260,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     self.assertEqual(
         self.grr_artifact_collector.extra_artifacts, [])
     self.assertEqual(['C.0000000000000001'], actual_hosts)
-    self.assertTrue(self.grr_artifact_collector.raw_disk_access)
+    self.assertTrue(self.grr_artifact_collector.use_raw_filesystem_access)
 
   @mock.patch('grr_api_client.api.InitHttp')
   @mock.patch('grr_api_client.flow.FlowRef.Get')
@@ -285,7 +285,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
         hostnames='C.0000000000000001',
         artifacts='RandomArtifact',
         extra_artifacts='AnotherArtifact',
-        raw_disk_access=True,
+        use_raw_filesystem_access=True,
         reason='Random reason',
         grr_server_url='http://fake/endpoint',
         grr_username='user',
@@ -306,7 +306,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     kwargs = mock_ArtifactCollectorFlowArgs.call_args[1]
     self.assertFalse(kwargs['apply_parsers'])  # default argument
     self.assertTrue(kwargs['ignore_interpolation_errors'])  # default argument
-    self.assertTrue(kwargs['raw_disk_access'])
+    self.assertTrue(kwargs['use_raw_filesystem_access'])
     self.assertEqual(kwargs['max_file_size'], 1234)
     sorted_artifacts = sorted(['AnotherArtifact', 'RandomArtifact'])
     self.assertEqual(sorted(kwargs['artifact_list']), sorted_artifacts)
@@ -361,7 +361,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
         hostnames='',
         artifacts='RandomArtifact',
         extra_artifacts='AnotherArtifact',
-        raw_disk_access=True,
+        use_raw_filesystem_access=True,
         reason='Random reason',
         grr_server_url='http://fake/endpoint',
         grr_username='user',
@@ -400,7 +400,7 @@ class GRRFileCollectorTest(unittest.TestCase):
     self.grr_file_collector.SetUp(
         hostnames='C.0000000000000001',
         files='/etc/passwd',
-        raw_disk_access=True,
+        use_raw_filesystem_access=True,
         reason='random reason',
         grr_server_url='http://fake/endpoint',
         grr_username='admin',
@@ -482,7 +482,7 @@ class GRRFileCollectorTest(unittest.TestCase):
     self.grr_file_collector.SetUp(
         hostnames='',
         files='/etc/passwd',
-        raw_disk_access=True,
+        use_raw_filesystem_access=True,
         reason='random reason',
         grr_server_url='http://fake/endpoint',
         grr_username='admin',
