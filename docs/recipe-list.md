@@ -589,7 +589,7 @@ Parameter|Default value|Description
 `keywords`|`None`|Pipe-separated list of keywords to search for (e.g. key1|key2|key3.
 `--artifacts`|`None`|Comma-separated list of artifacts to fetch (override default artifacts).
 `--extra_artifacts`|`None`|Comma-separated list of artifacts to append to the default artifact list.
-`--use_tsk`|`False`|Use TSK to fetch artifacts.
+`--raw_disk_access`|`False`|Use TSK to fetch artifacts.
 `--approvers`|`None`|Emails for GRR approval request.
 `--grr_server_url`|`'http://localhost:8000'`|GRR endpoint.
 `--verify`|`True`|Whether to verify the GRR TLS certificate.
@@ -631,7 +631,7 @@ Parameter|Default value|Description
 `reason`|`None`|Reason for collection.
 `--artifacts`|`None`|Comma-separated list of artifacts to fetch (override default artifacts).
 `--extra_artifacts`|`None`|Comma-separated list of artifacts to append to the default artifact list.
-`--use_tsk`|`False`|Use TSK to fetch artifacts.
+`--raw_disk_access`|`False`|Use TSK to fetch artifacts.
 `--approvers`|`None`|Emails for GRR approval request.
 `--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
 `--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
@@ -672,7 +672,7 @@ Parameter|Default value|Description
 `reason`|`None`|Reason for collection.
 `files`|`None`|Comma-separated list of files to fetch (supports globs and GRR variable interpolation).
 `directory`|`None`|Directory in which to export files.
-`--use_tsk`|`False`|Use TSK to fetch artifacts.
+`--raw_disk_access`|`False`|Use TSK to fetch artifacts.
 `--approvers`|`None`|Emails for GRR approval request.
 `--verify`|`True`|Whether to verify the GRR TLS certificate.
 `--skip_offline_clients`|`False`|Whether to skip clients that are offline.
@@ -741,7 +741,7 @@ Parameter|Default value|Description
 ---------|-------------|-----------
 `artifacts`|`None`|Comma-separated list of artifacts to hunt for.
 `reason`|`None`|Reason for collection.
-`--use_tsk`|`False`|Use TSK to fetch artifacts.
+`--raw_disk_access`|`False`|Use TSK to fetch artifacts.
 `--approvers`|`None`|Emails for GRR approval request.
 `--grr_server_url`|`'http://localhost:8000'`|GRR endpoint
 `--verify`|`True`|Whether to verify the GRR TLS certificate.
@@ -1354,4 +1354,3 @@ Modules: `WorkspaceAuditCollector`, `WorkspaceAuditTimesketch`, `TimesketchExpor
 ![workspace_user_login_ts](_static/graphviz/workspace_user_login_ts.png)
 
 ----
-

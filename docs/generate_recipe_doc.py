@@ -16,7 +16,7 @@ This is an auto-generated list of dfTimewolf recipes.
 To regenerate this list, from the repository root, run:
 
 ```
-pipenv install --dev
+poetry install -d
 python docs/generate_recipe_doc.py data/recipes
 ```
 
@@ -159,8 +159,8 @@ def generate_graph(recipe):
 
 
 if __name__ == '__main__':
-  recipedir = os.path.abspath(sys.argv[1])
-  outputdir = os.path.abspath(sys.argv[2])
+  recipedir = os.path.abspath(sys.argv[0])
+  outputdir = os.path.abspath(sys.argv[1])
   if not os.path.exists(recipedir):
     print(f'Recipe directory does not exist: {recipedir}')
     sys.exit(1)

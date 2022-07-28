@@ -12,7 +12,7 @@
             "grr_username": "@grr_username",
             "grr_password": "@grr_password",
             "max_file_size": "@max_file_size",
-            "use_tsk": "@use_tsk",
+            "raw_disk_access": "@raw_disk_access",
             "approvers": "@approvers",
             "verify": "@verify",
             "match_mode": "@match_mode",
@@ -23,7 +23,7 @@
     "args": [
         ["artifacts", "Comma-separated list of artifacts to hunt for.", null],
         ["reason", "Reason for collection.", null],
-        ["--use_tsk", "Use TSK to fetch artifacts.", false],
+        ["--raw_disk_access", "Use raw disk access to fetch artifacts.", false],
         ["--approvers", "Emails for GRR approval request.", null],
         ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
         ["--verify", "Whether to verify the GRR TLS certificate.", true],
