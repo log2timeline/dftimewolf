@@ -159,7 +159,6 @@ def generate_graph(recipe):
 
 
 if __name__ == '__main__':
-  print(sys.argv)
   recipedir = os.path.abspath(sys.argv[1])
   outputdir = os.path.abspath(sys.argv[2])
   if not os.path.exists(recipedir):
