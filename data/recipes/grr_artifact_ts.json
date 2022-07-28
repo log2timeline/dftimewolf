@@ -41,7 +41,7 @@
         ["reason", "Reason for collection.", null],
         ["--artifacts", "Comma-separated list of artifacts to fetch (override default artifacts).", null],
         ["--extra_artifacts", "Comma-separated list of artifacts to append to the default artifact list.", null],
-        ["--raw_disk_access", "Use raw disk access to fetch artifacts.", false],
+        ["--raw_disk_access", "Use raw disk access to fetch artifacts.", true],
         ["--approvers", "Emails for GRR approval request.", null],
         ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null],
         ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true],
