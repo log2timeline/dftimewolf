@@ -159,8 +159,9 @@ def generate_graph(recipe):
 
 
 if __name__ == '__main__':
-  recipedir = os.path.abspath(sys.argv[0])
-  outputdir = os.path.abspath(sys.argv[1])
+  print(sys.argv)
+  recipedir = os.path.abspath(sys.argv[1])
+  outputdir = os.path.abspath(sys.argv[2])
   if not os.path.exists(recipedir):
     print(f'Recipe directory does not exist: {recipedir}')
     sys.exit(1)
