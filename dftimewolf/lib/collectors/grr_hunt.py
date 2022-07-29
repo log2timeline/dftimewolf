@@ -147,8 +147,8 @@ class GRRHuntArtifactCollector(GRRHunt):
     reason (str): justification for GRR access.
     approvers (str): comma-separated GRR approval recipients.
     artifacts (str): comma-separated list of GRR-defined artifacts.
-    use_raw_filesystem_access (bool): True if GRR should use raw disk access to collect file
-        system artifacts.
+    use_raw_filesystem_access (bool): True if GRR should use raw disk access
+        to collect file system artifacts.
   """
 
   def __init__(self,
@@ -188,8 +188,8 @@ class GRRHuntArtifactCollector(GRRHunt):
 
     Args:
       artifacts (str): comma-separated list of GRR-defined artifacts.
-      use_raw_filesystem_access (bool): True if GRR should use raw disk access to collect file
-          system artifacts.
+      use_raw_filesystem_access (bool): True if GRR should use raw disk access
+          to collect file system artifacts.
       reason (str): justification for GRR access.
       grr_server_url (str): GRR server URL.
       grr_username (str): GRR username.

@@ -377,8 +377,8 @@ class GRRArtifactCollector(GRRFlow):
     artifacts (list[str]): artifact definition names.
     extra_artifacts (list[str]): extra artifact definition names.
     hosts (list[containers.Host]): Hosts to collect artifacts from.
-    use_raw_filesystem_access (bool): True if GRR should use raw disk access to collect file
-        system artifacts.
+    use_raw_filesystem_access (bool): True if GRR should use raw disk access to
+        collect file system artifacts.
   """
 
   _DEFAULT_ARTIFACTS_LINUX = [
@@ -441,8 +441,8 @@ class GRRArtifactCollector(GRRFlow):
       hostnames (str): comma-separated hostnames to launch the flow on.
       artifacts (str): comma-separated artifact definition names.
       extra_artifacts (str): comma-separated extra artifact definition names.
-      use_raw_filesystem_access (bool): True if GRR should use raw disk access to collect file
-          system artifacts.
+      use_raw_filesystem_access (bool): True if GRR should use raw disk access
+          to collect file system artifacts.
       reason (str): justification for GRR access.
       grr_server_url (str): GRR server URL.
       grr_username (str): GRR username.
@@ -547,7 +547,8 @@ class GRRFileCollector(GRRFlow):
   Attributes:
     files (list[str]): file paths.
     hosts (list[containers.Host]): Hosts to collect artifacts from.
-    use_raw_filesystem_access (bool): True if GRR should use raw disk access to collect files.
+    use_raw_filesystem_access (bool): True if GRR should use raw disk access to
+        collect files.
     action (FileFinderAction): Enum denoting action to take.
   """
   _ACTIONS = {'download': flows_pb2.FileFinderAction.DOWNLOAD,
@@ -586,7 +587,8 @@ class GRRFileCollector(GRRFlow):
     Args:
       hostnames (str): comma-separated hostnames to launch the flow on.
       files (str): comma-separated file paths.
-      use_raw_filesystem_access (bool): True if GRR should use raw disk access to collect files.
+      use_raw_filesystem_access (bool): True if GRR should use raw disk access
+          to collect files.
       reason (str): justification for GRR access.
       grr_server_url (str): GRR server URL.
       grr_username (str): GRR username.
