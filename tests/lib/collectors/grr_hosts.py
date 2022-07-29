@@ -260,7 +260,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     self.assertEqual(
         self.grr_artifact_collector.extra_artifacts, [])
     self.assertEqual(['C.0000000000000001'], actual_hosts)
-    self.assertTrue(self.grr_artifact_collector.use_raw_filesystem_access)
+    self.assertFalse(self.grr_artifact_collector.use_raw_filesystem_access)
 
   @mock.patch('grr_api_client.api.InitHttp')
   @mock.patch('grr_api_client.flow.FlowRef.Get')
@@ -541,7 +541,7 @@ class GRRFileCollectorTest(unittest.TestCase):
         'FileFinder',
         flows_pb2.FileFinderArgs(
             paths=['/etc/passwd', '/etc/hosts'],
-            pathtype=jobs_pb2.PathSpec.NTFS,
+            pathtype=jobs_pb2.PathSpec.OS,
             action=flows_pb2.FileFinderAction(
                 action_type=flows_pb2.FileFinderAction.STAT,
                 download=flows_pb2.FileFinderDownloadActionOptions(
