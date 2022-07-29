@@ -558,13 +558,68 @@ class GRRFileCollectorTest(unittest.TestCase):
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._LaunchFlow')
+  def testWindowsProcess(self, mock_LaunchFlow, mock_DownloadFiles, unused_await, mock_InitHttp):
+    """Tests that processing launches appropriate flows."""
+    self.mock_grr_api = mock.Mock()
+    mock_InitHttp.return_value = self.mock_grr_api
+    self.test_state = state.DFTimewolfState(config.Config)
+    self.test_state.StoreContainer(containers.FSPath(path='/etc/hosts'))
+    self.grr_file_collector = grr_hosts.GRRFileCollector(self.test_state)
+
+    self.grr_file_collector.SetUp(
+        hostnames='C.0000000000000002',
+        files='/etc/passwd',
+        use_raw_filesystem_access=False,
+        reason='random reason',
+        grr_server_url='http://fake/endpoint',
+        grr_username='admin',
+        grr_password='admin',
+        max_file_size='1234',
+        approvers='approver1,approver2',
+        skip_offline_clients=False,
+        action='stat',
+    )
+    self.mock_grr_api.SearchClients.return_value = \
+        [mock_grr_hosts.MOCK_WINDOWS_CLIENT]
+    mock_DownloadFiles.return_value = '/tmp/something'
+
+    self.grr_file_collector.PreProcess()
+    in_containers = self.test_state.GetContainers(
+        self.grr_file_collector.GetThreadOnContainerType())
+    for c in in_containers:
+      self.grr_file_collector.Process(c)
+    self.grr_file_collector.PostProcess()
+
+    mock_LaunchFlow.assert_called_with(
+        mock_grr_hosts.MOCK_WINDOWS_CLIENT,
+        'FileFinder',
+        flows_pb2.FileFinderArgs(
+            paths=['/etc/passwd', '/etc/hosts'],
+            pathtype=jobs_pb2.PathSpec.NTFS,
+            action=flows_pb2.FileFinderAction(
+                action_type=flows_pb2.FileFinderAction.STAT,
+                download=flows_pb2.FileFinderDownloadActionOptions(
+                    max_size=1234)
+            )
+        )
+    )
+    results = self.test_state.GetContainers(containers.File)
+    self.assertEqual(len(results), 1)
+    self.assertEqual(results[0].name, 'tomchop')
+    self.assertEqual(results[0].path, '/tmp/something')
+
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow')
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._LaunchFlow')
+  @mock.patch('grr_api_client.api.InitHttp')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._FindClients')
   def testProcessFromContainers(self,
                                 mock_FindClients,
+                                mock_InitHttp,
                                 unused_LaunchFlow,
                                 unused_DownloadFiles,
-                                unused_AwaitFlow,
-                                mock_InitHttp):
+                                unused_AwaitFlow
+                                ):
     """Tests that processing works when only containers are passed."""
     mock_InitHttp.return_value = self.mock_grr_api
     self.grr_file_collector = grr_hosts.GRRFileCollector(

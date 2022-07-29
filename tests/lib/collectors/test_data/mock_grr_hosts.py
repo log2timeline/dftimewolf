@@ -93,12 +93,12 @@ MOCK_CLIENT = client.Client(
     data=text_format.Parse(client_proto1, client_pb2.ApiClient()), context=True)
 MOCK_CLIENT_RECENT = client.Client(
     data=text_format.Parse(client_proto2, client_pb2.ApiClient()), context=True)
-MICK_WINDOWS_CLIENT = client.Client(
+MOCK_WINDOWS_CLIENT = client.Client(
     data=text_format.Parse(client_windows_1, client_pb2.ApiClient()), context=True)
 MOCK_CLIENT_LIST = [
     MOCK_CLIENT,
     MOCK_CLIENT_RECENT,
-    MICK_WINDOWS_CLIENT
+    MOCK_WINDOWS_CLIENT
 ]
 
 MOCK_CLIENT_REF = client.ClientRef(MOCK_CLIENT.client_id, context=True)
