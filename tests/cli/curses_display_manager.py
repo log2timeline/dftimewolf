@@ -3,6 +3,7 @@
 """Tests the CursesDisplayManager."""
 
 from contextlib import redirect_stdout
+import curses
 import io
 import unittest
 from unittest import mock
@@ -437,23 +438,24 @@ class CursesDisplayManagerTest(unittest.TestCase):
       mock_clear.assert_called_once_with()
       # pylint: disable=line-too-long
       mock_addstr.assert_has_calls([
-          mock.call(1, 0,  ' Recipe name'),
-          mock.call(2, 0,  '   Preflights:'),
-          mock.call(3, 0,  '     1st Preflight: Completed'),
-          mock.call(4, 0,  '     2nd Preflight: Completed'),
-          mock.call(5, 0,  '   Modules:'),
-          mock.call(6, 0,  '     1st Module: Completed'),
-          mock.call(7, 0,  '     2nd Module: Running'),
-          mock.call(8, 0,  '     3rd Module: Processing - 1 of 5 containers completed'),
-          mock.call(9, 0,  '       thread_3_0: Running (container_3_4)'),
-          mock.call(10, 0, '       thread_3_1: Running (container_3_1)'),
-          mock.call(11, 0, '       thread_3_2: Running (container_3_2)'),
-          mock.call(12, 0, '     4th Module: Processing - 1 of 8 containers completed'),
-          mock.call(13, 0, '       thread_4_0: Running (container_4_4)'),
-          mock.call(14, 0, '       thread_4_1: Running (container_4_1)'),
-          mock.call(15, 0, '       thread_4_2: Running (container_4_2)'),
-          mock.call(16, 0, '     5th Module: Pending (2nd Module, 3rd Module, 4th Module)'),
-          mock.call(18, 0, ' Messages:'),
+          mock.call(0, 0,  ' Recipe name'),
+          mock.call(1, 0,  '   Preflights:'),
+          mock.call(2, 0,  '     1st Preflight: Completed'),
+          mock.call(3, 0,  '     2nd Preflight: Completed'),
+          mock.call(4, 0,  '   Modules:'),
+          mock.call(5, 0,  '     1st Module: Completed'),
+          mock.call(6, 0,  '     2nd Module: Running'),
+          mock.call(7, 0,  '     3rd Module: Processing - 1 of 5 containers completed'),
+          mock.call(8, 0,  '       thread_3_0: Running (container_3_4)'),
+          mock.call(9, 0,  '       thread_3_1: Running (container_3_1)'),
+          mock.call(10, 0, '       thread_3_2: Running (container_3_2)'),
+          mock.call(11, 0, '     4th Module: Processing - 1 of 8 containers completed'),
+          mock.call(12, 0, '       thread_4_0: Running (container_4_4)'),
+          mock.call(13, 0, '       thread_4_1: Running (container_4_1)'),
+          mock.call(14, 0, '       thread_4_2: Running (container_4_2)'),
+          mock.call(15, 0, '     5th Module: Pending (2nd Module, 3rd Module, 4th Module)'),
+          mock.call(17, 0, ' Messages:'),
+          mock.call(18, 0, '  [ source ] Message 2'),
           mock.call(19, 0, '  [ source ] Message 3'),
           mock.call(20, 0, '  [ source ] Message 4'),
           mock.call(21, 0, '  [ source ] Message 5'),
@@ -462,8 +464,93 @@ class CursesDisplayManagerTest(unittest.TestCase):
           mock.call(24, 0, '  [ source ] Message 8'),
           mock.call(25, 0, '  [ source ] Message 9'),
           mock.call(28, 0, ' Exception encountered: Test Exception')])
-      self.assertEqual(mock_addstr.call_count, 25)
+      self.assertEqual(mock_addstr.call_count, 26)
       # pylint: enable=line-too-long
+
+  def testShortWindowDraw(self):
+    """Tests drawing to the console via curses. The terminal is too small."""
+    with mock.patch('curses.cbreak'), \
+        mock.patch('curses.noecho'), \
+        mock.patch('curses.initscr'):
+      self.cdm.StartCurses()
+
+    with mock.patch.object(self.cdm._stdscr, 'getmaxyx') as mock_getmaxyx, \
+        mock.patch.object(self.cdm, 'Draw'):
+      mock_getmaxyx.return_value = 10, 140
+
+      self.cdm.SetRecipe('Recipe name')
+      self.cdm.EnqueuePreflight('First Preflight', [], '1st Preflight')
+      self.cdm.EnqueuePreflight('Second Preflight', [], '2nd Preflight')
+      self.cdm.EnqueueModule('First Module', [], '1st Module')
+      self.cdm.EnqueueModule('Second Module', ['1st Module'], '2nd Module')
+      self.cdm.EnqueueModule('Third Module', ['1st Module'], '3rd Module')
+      self.cdm.EnqueueModule('Fourth Module', ['1st Module'], '4th Module')
+      self.cdm.EnqueueModule('Fifth Module',
+          ['2nd Module', '3rd Module', '4th Module'], '5th Module')
+      self.cdm.UpdateModuleStatus('1st Preflight', Status.COMPLETED)
+      self.cdm.UpdateModuleStatus('2nd Preflight', Status.COMPLETED)
+      self.cdm.UpdateModuleStatus('1st Module', Status.COMPLETED)
+      self.cdm.UpdateModuleStatus('2nd Module', Status.RUNNING)
+      self.cdm.UpdateModuleStatus('3rd Module', Status.PROCESSING)
+      self.cdm.UpdateModuleStatus('4th Module', Status.PROCESSING)
+      self.cdm.SetThreadedModuleContainerCount('3rd Module', 5)
+      self.cdm.SetThreadedModuleContainerCount('4th Module', 8)
+      self.cdm.UpdateModuleThreadState('3rd Module', Status.RUNNING,
+          'thread_3_0', 'container_3_0')
+      self.cdm.UpdateModuleThreadState('3rd Module', Status.RUNNING,
+          'thread_3_1', 'container_3_1')
+      self.cdm.UpdateModuleThreadState('3rd Module', Status.RUNNING,
+          'thread_3_2', 'container_3_2')
+      self.cdm.UpdateModuleThreadState('3rd Module', Status.COMPLETED,
+          'thread_3_0', 'container_3_0')
+      self.cdm.UpdateModuleThreadState('3rd Module', Status.RUNNING,
+          'thread_3_0', 'container_3_4')
+      self.cdm.UpdateModuleThreadState('4th Module', Status.RUNNING,
+          'thread_4_0', 'container_4_0')
+      self.cdm.UpdateModuleThreadState('4th Module', Status.RUNNING,
+          'thread_4_1', 'container_4_1')
+      self.cdm.UpdateModuleThreadState('4th Module', Status.RUNNING,
+          'thread_4_2', 'container_4_2')
+      self.cdm.UpdateModuleThreadState('4th Module', Status.COMPLETED,
+          'thread_4_0', 'container_4_0')
+      self.cdm.UpdateModuleThreadState('4th Module', Status.RUNNING,
+          'thread_4_0', 'container_4_4')
+
+      try:
+        raise RuntimeError('Test Exception')
+      except RuntimeError as e:
+        self.cdm.SetException(e)
+
+      for i in range(10):
+        self.cdm.EnqueueMessage('source', f'Message {i}')
+
+    with mock.patch.object(self.cdm._stdscr, 'getmaxyx') as mock_getmaxyx, \
+        mock.patch.object(self.cdm._stdscr, 'clear') as mock_clear, \
+        mock.patch.object(self.cdm._stdscr, 'addstr') as mock_addstr:
+      mock_getmaxyx.return_value = 10, 140
+      mock_addstr.side_effect = [None, None, None, None, None, None, None, None,
+                                 curses.error(), None, None, None]
+
+      self.cdm.Draw()
+
+      mock_clear.assert_called_once_with()
+      # pylint: disable=line-too-long
+      mock_addstr.assert_has_calls([
+          mock.call(0, 0, ' Recipe name'),
+          mock.call(1, 0, '   Preflights:'),
+          mock.call(2, 0, '     1st Preflight: Completed'),
+          mock.call(3, 0, '     2nd Preflight: Completed'),
+          mock.call(4, 0, '   Modules:'),
+          mock.call(5, 0, '     1st Module: Completed'),
+          mock.call(6, 0, '     2nd Module: Running'),
+          mock.call(7, 0, '     3rd Module: Processing - 1 of 5 containers completed'),
+          mock.call(8, 0, '       thread_3_0: Running (container_3_4)'),
+          mock.call(7, 0, '*********************************************************************** '),
+          mock.call(8, 0, '*** Terminal not large enough, consider increasing your window size *** '),
+          mock.call(9, 0, '*********************************************************************** ')])
+      self.assertEqual(mock_addstr.call_count, 12)
+      # pylint: enable=line-too-long
+
 
 class CDMStringIOWrapperTest(unittest.TestCase):
   """Tests for the CDMStringIOWrapper class."""
