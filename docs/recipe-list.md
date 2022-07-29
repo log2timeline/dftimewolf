@@ -6,7 +6,7 @@ This is an auto-generated list of dfTimewolf recipes.
 To regenerate this list, from the repository root, run:
 
 ```
-pipenv install --dev
+poetry install -d
 python docs/generate_recipe_doc.py data/recipes
 ```
 
@@ -17,7 +17,7 @@ Copies EBS volumes from within AWS, and transfers them to GCP.
 
 **Details:**
 
-Copies EBS volumes from within AWS by pushing them to an AWS S3 bucket. The S3 bucket is then copied to a Google Cloud Storage bucket, from which a GCP Disk Image and fnially a GCP Persistent Disk are created. This operation happens in the cloud and doesn't touch the local workstation on which the recipe is run.
+Copies EBS volumes from within AWS by pushing them to an AWS S3 bucket. The S3 bucket is then copied to a Google Cloud Storage bucket, from which a GCP Disk Image and finally a GCP Persistent Disk are created. This operation happens in the cloud and doesn't touch the local workstation on which the recipe is run.
 
 **CLI parameters:**
 
@@ -87,13 +87,12 @@ Collects logs from an AWS account and dumps the results to the filesystem.
 
 **Details:**
 
-Collects logs from an AWS account using a specified query filter and date ranges, and dumps them on the filesystem.
+Collects logs from an AWS account using a specified query filter and date ranges, and dumps them on the filesystem. If no args are provided this recipe will collect 90 days of logs for the default AWS profile.
 
 **CLI parameters:**
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`zone`|`None`|Default availability zone for API queries.
 `--profile_name`|`'default'`|Name of the AWS profile to collect logs from.
 `--query_filter`|`None`|Filter expression to use to query logs.
 `--start_time`|`None`|Start time for the query.
@@ -107,6 +106,38 @@ Modules: `AWSLogsCollector`
 **Module graph**
 
 ![aws_logging_collect](_static/graphviz/aws_logging_collect.png)
+
+----
+
+## `aws_logging_ts`
+
+Collects logs from an AWS account, processes the logs with Plaso and uploads the result to Timesketch.
+
+**Details:**
+
+Collects logs from an AWS account using a specified query filter and date ranges, processes the logs with plaso and uploads the result to Timesketch. If no args are provided this recipe will collect 90 days of logs for the default AWS profile.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`--profile_name`|`'default'`|Name of the AWS profile to collect logs from.
+`--query_filter`|`None`|Filter expression to use to query logs.
+`--start_time`|`None`|Start time for the query.
+`--end_time`|`None`|End time for the query.
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+
+
+
+
+Modules: `AWSLogsCollector`, `LocalPlasoProcessor`, `TimesketchExporter`
+
+**Module graph**
+
+![aws_logging_ts](_static/graphviz/aws_logging_ts.png)
 
 ----
 
@@ -131,9 +162,9 @@ Parameter|Default value|Description
 `--gcp_project`|`None`|Destination GCP project.
 `--aws_profile`|`None`|Source AWS profile.
 `--incident_id`|`None`|Incident ID (used for Timesketch description).
-`--run_all_jobs`|`False`|Run all Turbinia processing jobs instead of a faster subset.
 `--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
 `--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--turbinia_recipe`|`None`|The Turbinia recipe name to use for evidence processing.
 `--turbinia_zone`|`'us-central1-f'`|Zone Turbinia is located in
 `--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
 
@@ -209,6 +240,37 @@ Modules: `AzureLogsCollector`
 
 ----
 
+## `azure_logging_ts`
+
+Collects logs from an Azure subscription, processes the logs with Plaso and uploads the result to Timesketch.
+
+**Details:**
+
+Collects logs from an Azure subscription using a specified query filter and date ranges, processes the logs with plaso and uploads the result to Timesketch.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`subscription_id`|`None`|Subscription ID for the subscription to collect logs from.
+`filter_expression`|`None`|A filter expression to use for the log query, must specify at least a start date like "eventTimestamp ge '2022-02-01'"
+`--profile_name`|`None`|A profile name to use when looking for Azure credentials.
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+
+
+
+
+Modules: `AzureLogsCollector`, `LocalPlasoProcessor`, `TimesketchExporter`
+
+**Module graph**
+
+![azure_logging_ts](_static/graphviz/azure_logging_ts.png)
+
+----
+
 ## `bigquery_collect`
 
 Collects results from BigQuery and dumps them on the filesystem.
@@ -267,6 +329,37 @@ Modules: `BigQueryCollector`, `TimesketchExporter`
 
 ----
 
+## `gce_disk_copy`
+
+Copy disks from one project to another.
+
+**Details:**
+
+Copies disks from one project to another. The disks can be specified individually, or instances can be specified, to copy all their disks or boot disks.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`source_project_name`|`None`|Source project containing the disks to export.
+`--destination_project_name`|`None`|Project to where the disk images are exported. If not provided, source_project_name is used.
+`--source_disk_names`|`None`|Comma-separated list of disk names to export. If not provided, disks attached to `remote_instance_name` will be used.
+`--remote_instance_names`|`None`|Comma-separated list of instances in source project from which to copy disks. If not provided, `disk_names` will be used.
+`--all_disks`|`False`|If True, copy all disks attached to the `remote_instance_names` instances. If False and `remote_instance_name` is provided, it will select the instance's boot disk.
+`--zone`|`'us-central1-f'`|Destination zone for the disks to be copied to.
+`--stop_instances`|`False`|Stop instances after disks have been copied
+
+
+
+
+Modules: `GCEDiskCopy`
+
+**Module graph**
+
+![gce_disk_copy](_static/graphviz/gce_disk_copy.png)
+
+----
+
 ## `gce_disk_export`
 
 Export a disk image from a GCP project to a Google Cloud Storage bucket.
@@ -302,6 +395,100 @@ Modules: `GoogleCloudDiskExport`
 
 ----
 
+## `gce_disk_export_dd`
+
+Stream the disk bytes from a GCP project to a Google Cloud Storage bucket.
+
+**Details:**
+
+The export is performed via bit streaming the the disk bytes to GCS. This will allow getting a disk image out of the project in case both organization policies `constraints/compute.storageResourceUseRestrictions` and `constraints/compute.trustedImageProjects` are enforced and in case OsLogin is allowed only for the organization users while the analyst is an external user with no roles/`compute.osLoginExternalUser` role.
+
+The exported images names are appended by `.tar.gz.`
+
+The compute engine default service account in the source project must have sufficient permissions to Create and List Storage objects on the corresponding storage bucket/folder.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`source_project_name`|`None`|Source project containing the disk to export.
+`gcs_output_location`|`None`|Google Cloud Storage parent bucket/folder to which to export the image.
+`--source_disk_names`|`None`|Comma-separated list of disk names to export. If not provided, disks attached to `remote_instance_name` will be used.
+`--remote_instance_name`|`None`|Instance in source project to export its disks. If not provided, `source_disk_names ` will be used.
+`--all_disks`|`False`|If True, copy all disks attached to the `remote_instance_name` instance. If False and `remote_instance_name` is provided, it will select the instance's boot disk.
+`--boot_image_project`|`'debian-cloud'`|Name of the project where the boot disk image of the export VM is stored.
+`--boot_image_family`|`'debian-10'`|Name of the image to use to create the boot disk of the export VM.
+
+
+
+
+Modules: `GoogleCloudDiskExportStream`
+
+**Module graph**
+
+![gce_disk_export_dd](_static/graphviz/gce_disk_export_dd.png)
+
+----
+
+## `gcp_cloud_resource_tree`
+
+Generates a parent/children tree for given GCP resource.
+
+**Details:**
+
+Generates a parent/children tree for given GCP resource by enumerating all the currently available resources. It also will attempt to fill any gaps identified in the tree through querying the GCP logs
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`project_id`|`None`|ID of the project where the resource is located
+`location`|`None`|Resource location (zone/region) or 'global'
+`resource_type`|`None`|Resource type (currently supported types: gce_instance, gce_disk, gce_image, gce_machine_image, gce_instance_template, gce_snapshot)
+`--resource_id`|`None`|Resource id
+`--resource_name`|`None`|Resource name
+
+
+
+
+Modules: `GCPCloudResourceTree`
+
+**Module graph**
+
+![gcp_cloud_resource_tree](_static/graphviz/gcp_cloud_resource_tree.png)
+
+----
+
+## `gcp_cloud_resource_tree_offline`
+
+Generates a parent/children tree for given GCP resource using the supplied exported GCP logs
+
+**Details:**
+
+Generates a parent/children tree for given GCP resource using the supplied exported GCP logs
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`project_id`|`None`|ID of the project where the resource is located
+`location`|`None`|Resource location (zone/region) or 'global'
+`resource_type`|`None`|Resource type (currently supported types: gce_instance, gce_disk, gce_image, gce_machine_image, gce_instance_template, gce_snapshot)
+`paths`|`None`|Comma-separated paths to GCP log files. Log files should contain log entiries in json format.
+`--resource_id`|`None`|Resource id
+`--resource_name`|`None`|Resource name
+
+
+
+
+Modules: `FilesystemCollector`, `GCPCloudResourceTree`
+
+**Module graph**
+
+![gcp_cloud_resource_tree_offline](_static/graphviz/gcp_cloud_resource_tree_offline.png)
+
+----
+
 ## `gcp_forensics`
 
 Copies disk from a GCP project to an analysis VM.
@@ -314,13 +501,13 @@ Copies a persistent disk from a GCP project to another, creates an analysis VM (
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`remote_project_name`|`None`|Name of the project containing the instance / disks to copy.
-`--analysis_project_name`|`None`|Name of the project where the analysis VM will be created and disks copied to.
+`source_project_name`|`None`|Name of the project containing the instance / disks to copy.
+`analysis_project_name`|`None`|Name of the project where the analysis VM will be created and disks copied to.
 `--incident_id`|`None`|Incident ID to label the VM with.
-`--instance`|`None`|Name of the instance to analyze.
+`--instances`|`None`|Name of the instance to analyze.
 `--disks`|`None`|Comma-separated list of disks to copy from the source GCP project (if `instance` not provided).
 `--all_disks`|`False`|Copy all disks in the designated instance. Overrides `disk_names` if specified.
-`--stop_instance`|`False`|Stop the designated instance after copying disks.
+`--stop_instances`|`False`|Stop the designated instance after copying disks.
 `--create_analysis_vm`|`True`|Create an analysis VM in the destination project.
 `--cpu_cores`|`4`|Number of CPU cores of the analysis VM.
 `--boot_disk_size`|`50.0`|The size of the analysis VM boot disk (in GB).
@@ -330,7 +517,7 @@ Parameter|Default value|Description
 
 
 
-Modules: `GoogleCloudCollector`
+Modules: `GCEDiskCopy`, `GCEForensicsVM`
 
 **Module graph**
 
@@ -505,19 +692,19 @@ This recipe will also start an analysis VM in the destination project with the a
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`remote_project_name`|`None`|Name of the project containing the instance / disks to copy.
+`source_project_name`|`None`|Name of the project containing the instance / disks to copy.
 `analysis_project_name`|`None`|Name of the project containing the Turbinia instance.
-`--turbinia_zone`|`None`|The GCP zone the disk to process and Turbinia workers are in.
+`--turbinia_recipe`|`None`|The Turbinia recipe name to use for evidence processing.
+`--turbinia_zone`|`'us-central1-f'`|The GCP zone the disk to process and Turbinia workers are in.
 `--incident_id`|`None`|Incident ID (used for Timesketch description and to label the VM with).
-`--run_all_jobs`|`False`|Run all Turbinia processing jobs instead of a faster subset.
 `--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
 `--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
-`--analysis_vm`|`True`|Create an analysis VM in the destination project.
+`--create_analysis_vm`|`True`|Create an analysis VM in the destination project.
 `--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
-`--instance`|`None`|Name of the instance to analyze.
+`--instances`|`None`|Name of the instances to analyze.
 `--disks`|`None`|Comma-separated list of disks to copy from the source GCP project (if `instance` not provided).
 `--all_disks`|`False`|Copy all disks in the designated instance. Overrides disk_names if specified.
-`--stop_instance`|`False`|Stop the designated instance after copying disks.
+`--stop_instances`|`False`|Stop the designated instances after copying disks.
 `--cpu_cores`|`4`|Number of CPU cores of the analysis VM.
 `--boot_disk_size`|`50.0`|The size of the analysis VM boot disk (in GB).
 `--boot_disk_type`|`'pd-standard'`|Disk type to use [pd-standard, pd-ssd]
@@ -527,7 +714,7 @@ Parameter|Default value|Description
 
 
 
-Modules: `GoogleCloudCollector`, `TurbiniaGCPProcessor`, `TimesketchExporter`
+Modules: `GCEDiskCopy`, `GCEForensicsVM`, `TurbiniaGCPProcessor`, `TimesketchExporter`
 
 **Module graph**
 
@@ -553,9 +740,9 @@ Parameter|Default value|Description
 `turbinia_zone`|`None`|The GCP zone the disk to process (and Turbinia workers) are in.
 `disk_names`|`None`|Names of GCP persistent disks to process.
 `--incident_id`|`None`|Incident ID (used for Timesketch description).
-`--run_all_jobs`|`False`|Run all Turbinia processing jobs instead of a faster subset.
 `--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
 `--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--turbinia_recipe`|`None`|The Turbinia recipe name to use for evidence processing.
 `--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
 
 
@@ -589,7 +776,7 @@ Parameter|Default value|Description
 `keywords`|`None`|Pipe-separated list of keywords to search for (e.g. key1|key2|key3.
 `--artifacts`|`None`|Comma-separated list of artifacts to fetch (override default artifacts).
 `--extra_artifacts`|`None`|Comma-separated list of artifacts to append to the default artifact list.
-`--use_tsk`|`False`|Use TSK to fetch artifacts.
+`--use_raw_filesystem_access`|`True`|Use raw disk access to fetch artifacts.
 `--approvers`|`None`|Emails for GRR approval request.
 `--grr_server_url`|`'http://localhost:8000'`|GRR endpoint.
 `--verify`|`True`|Whether to verify the GRR TLS certificate.
@@ -631,11 +818,11 @@ Parameter|Default value|Description
 `reason`|`None`|Reason for collection.
 `--artifacts`|`None`|Comma-separated list of artifacts to fetch (override default artifacts).
 `--extra_artifacts`|`None`|Comma-separated list of artifacts to append to the default artifact list.
-`--use_tsk`|`False`|Use TSK to fetch artifacts.
+`--use_raw_filesystem_access`|`True`|Use raw disk access to fetch artifacts.
 `--approvers`|`None`|Emails for GRR approval request.
 `--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
 `--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
-`--analyzers`|`None`|Timesketch analysers to run
+`--analyzers`|`None`|Timesketch analyzers to run
 `--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
 `--incident_id`|`None`|Incident ID (used for Timesketch description).
 `--grr_server_url`|`'http://localhost:8000'`|GRR endpoint.
@@ -672,7 +859,7 @@ Parameter|Default value|Description
 `reason`|`None`|Reason for collection.
 `files`|`None`|Comma-separated list of files to fetch (supports globs and GRR variable interpolation).
 `directory`|`None`|Directory in which to export files.
-`--use_tsk`|`False`|Use TSK to fetch artifacts.
+`--use_raw_filesystem_access`|`True`|Use raw disk access to fetch artifacts.
 `--approvers`|`None`|Emails for GRR approval request.
 `--verify`|`True`|Whether to verify the GRR TLS certificate.
 `--skip_offline_clients`|`False`|Whether to skip clients that are offline.
@@ -741,7 +928,7 @@ Parameter|Default value|Description
 ---------|-------------|-----------
 `artifacts`|`None`|Comma-separated list of artifacts to hunt for.
 `reason`|`None`|Reason for collection.
-`--use_tsk`|`False`|Use TSK to fetch artifacts.
+`--use_raw_filesystem_access`|`True`|Use raw disk access to fetch artifacts.
 `--approvers`|`None`|Emails for GRR approval request.
 `--grr_server_url`|`'http://localhost:8000'`|GRR endpoint
 `--verify`|`True`|Whether to verify the GRR TLS certificate.
@@ -839,7 +1026,7 @@ Modules: `OsqueryCollector`, `GRRHuntOsqueryCollector`
 
 ## `grr_huntresults_ts`
 
-Fetches the ersults of a GRR hunt, processes them with Plaso, and exports the results to Timesketch.
+Fetches the results of a GRR hunt, processes them with Plaso, and exports the results to Timesketch.
 
 **Details:**
 
@@ -981,7 +1168,7 @@ Modules: `GoogleSheetsCollector`, `TimesketchExporter`
 
 ## `plaso_ts`
 
-Processes a list of file paths using a Plaso and epxort results to Timesketch.
+Processes a list of file paths using a Plaso and export results to Timesketch.
 
 **Details:**
 
@@ -1025,7 +1212,7 @@ Uploads a CSV or Plaso file to Timesketch.
 Parameter|Default value|Description
 ---------|-------------|-----------
 `files`|`None`|Comma-separated list of paths to CSV files or Plaso storage files.
-`--analyzers`|`None`|Timesketch analysers to run.
+`--analyzers`|`None`|Timesketch analyzers to run.
 `--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
 `--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
 `--incident_id`|`None`|Incident ID (used for Timesketch description).
@@ -1055,6 +1242,7 @@ Uploads arbitrary files to Turbinia for processing. The recipe will wait for Tur
 Parameter|Default value|Description
 ---------|-------------|-----------
 `files`|`None`|Paths to process.
+`--turbinia_recipe`|`None`|The Turbinia recipe name to use for evidence processing.
 `--destination_turbinia_dir`|`None`|Destination path in Turbinia host to write the files to.
 `--hostname`|`None`|Remote host.
 `--directory`|`None`|Directory in which to copy and compress files.
@@ -1172,7 +1360,7 @@ Downloads the PCAP from VirusTotal for a specific hash.
 
 **Details:**
 
-Downloads the PCAP files generated from VirusTotal sandboxs run for a specific hash.
+Downloads the PCAP files generated from VirusTotal sandbox's run for a specific hash.
 
 **CLI parameters:**
 
@@ -1201,7 +1389,7 @@ Collects Workspace Audit logs and dumps them on the filesystem.
 
 Collects logs from Workspace Audit log and dumps them on the filesystem.
 
-See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#ApplicationName for a list of application mames.
+See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#ApplicationName for a list of application names.
 
 For filters, see https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list.
 
@@ -1354,4 +1542,3 @@ Modules: `WorkspaceAuditCollector`, `WorkspaceAuditTimesketch`, `TimesketchExpor
 ![workspace_user_login_ts](_static/graphviz/workspace_user_login_ts.png)
 
 ----
-

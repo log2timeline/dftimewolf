@@ -147,8 +147,8 @@ class GRRHuntArtifactCollector(GRRHunt):
     reason (str): justification for GRR access.
     approvers (str): comma-separated GRR approval recipients.
     artifacts (str): comma-separated list of GRR-defined artifacts.
-    use_tsk (bool): True if GRR should use Sleuthkit (TSK) to collect file
-        system artifacts.
+    use_raw_filesystem_access (bool): True if GRR should use raw disk access
+        to collect file system artifacts.
   """
 
   def __init__(self,
@@ -166,14 +166,14 @@ class GRRHuntArtifactCollector(GRRHunt):
     super(GRRHuntArtifactCollector, self).__init__(
         state, name=name, critical=critical)
     self.artifacts = []  # type: List[str]
-    self.use_tsk = False
+    self.use_raw_filesystem_access = False
     self.hunt = None  # type: Hunt
     self.max_file_size = 5*1024*1024*1024  # 5 GB
 
   # pylint: disable=arguments-differ,disable=too-many-arguments
   def SetUp(self,
             artifacts: str,
-            use_tsk: bool,
+            use_raw_filesystem_access: bool,
             reason: str,
             grr_server_url: str,
             grr_username: str,
@@ -188,8 +188,8 @@ class GRRHuntArtifactCollector(GRRHunt):
 
     Args:
       artifacts (str): comma-separated list of GRR-defined artifacts.
-      use_tsk (bool): True if GRR should use Sleuthkit (TSK) to collect file
-          system artifacts.
+      use_raw_filesystem_access (bool): True if GRR should use raw disk access
+          to collect file system artifacts.
       reason (str): justification for GRR access.
       grr_server_url (str): GRR server URL.
       grr_username (str): GRR username.
@@ -210,7 +210,7 @@ class GRRHuntArtifactCollector(GRRHunt):
     self.artifacts = [item.strip() for item in artifacts.strip().split(',')]
     if not artifacts:
       self.ModuleError('No artifacts were specified.', critical=True)
-    self.use_tsk = use_tsk
+    self.use_raw_filesystem_access = use_raw_filesystem_access
     if max_file_size:
       self.max_file_size = int(max_file_size)
 
@@ -225,7 +225,7 @@ class GRRHuntArtifactCollector(GRRHunt):
     self.logger.info('Artifacts to be collected: {0!s}'.format(self.artifacts))
     hunt_args = grr_flows.ArtifactCollectorFlowArgs(
         artifact_list=self.artifacts,
-        use_tsk=self.use_tsk,
+        use_raw_filesystem_access=self.use_raw_filesystem_access,
         ignore_interpolation_errors=True,
         apply_parsers=False,
         max_file_size=self.max_file_size)

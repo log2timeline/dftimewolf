@@ -14,7 +14,7 @@
             "max_file_size": "@max_file_size",
             "artifacts": "@artifacts",
             "extra_artifacts": "@extra_artifacts",
-            "use_tsk": "@use_tsk",
+            "use_raw_filesystem_access": "@use_raw_filesystem_access",
             "approvers": "@approvers",
             "skip_offline_clients": "@skip_offline_clients",
             "verify": "@verify"
@@ -41,7 +41,7 @@
         ["reason", "Reason for collection.", null],
         ["--artifacts", "Comma-separated list of artifacts to fetch (override default artifacts).", null],
         ["--extra_artifacts", "Comma-separated list of artifacts to append to the default artifact list.", null],
-        ["--use_tsk", "Use TSK to fetch artifacts.", false],
+        ["--use_raw_filesystem_access", "Use raw disk access to fetch artifacts.", true],
         ["--approvers", "Emails for GRR approval request.", null],
         ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null],
         ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true],

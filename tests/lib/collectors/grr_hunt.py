@@ -35,7 +35,7 @@ class GRRHuntArtifactCollectorTest(unittest.TestCase):
         self.test_state)
     self.grr_hunt_artifact_collector.SetUp(
         artifacts='RandomArtifact',
-        use_tsk=True,
+        use_raw_filesystem_access=True,
         reason='random reason',
         grr_server_url='http://fake/endpoint',
         grr_username='admin',
@@ -55,7 +55,7 @@ class GRRHuntArtifactCollectorTest(unittest.TestCase):
     call_kwargs = self.mock_grr_api.CreateHunt.call_args[1]
     self.assertEqual(call_kwargs['flow_args'].artifact_list,
                      ['RandomArtifact'])
-    self.assertEqual(call_kwargs['flow_args'].use_tsk, True)
+    self.assertEqual(call_kwargs['flow_args'].use_raw_filesystem_access, True)
     self.assertEqual(call_kwargs['flow_name'], 'ArtifactCollectorFlow')
     self.assertEqual(call_kwargs['hunt_runner_args'].description,
                      'random reason')

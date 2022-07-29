@@ -377,8 +377,8 @@ class GRRArtifactCollector(GRRFlow):
     artifacts (list[str]): artifact definition names.
     extra_artifacts (list[str]): extra artifact definition names.
     hosts (list[containers.Host]): Hosts to collect artifacts from.
-    use_tsk (bool): True if GRR should use Sleuthkit (TSK) to collect file
-        system artifacts.
+    use_raw_filesystem_access (bool): True if GRR should use raw disk access to
+        collect file system artifacts.
   """
 
   _DEFAULT_ARTIFACTS_LINUX = [
@@ -418,7 +418,7 @@ class GRRArtifactCollector(GRRFlow):
     self.artifacts = []  # type: List[str]
     self.extra_artifacts = [] # type: List[str]
     self.hosts = [] # type: List[containers.Host]
-    self.use_tsk = False
+    self.use_raw_filesystem_access = False
     self.max_file_size = 5*1024*1024*1024  # 5 GB
 
   # pylint: disable=arguments-differ,too-many-arguments
@@ -426,7 +426,7 @@ class GRRArtifactCollector(GRRFlow):
             hostnames: str,
             artifacts: Optional[str],
             extra_artifacts: Optional[str],
-            use_tsk: bool,
+            use_raw_filesystem_access: bool,
             reason: str,
             grr_server_url: str,
             grr_username: str,
@@ -441,8 +441,8 @@ class GRRArtifactCollector(GRRFlow):
       hostnames (str): comma-separated hostnames to launch the flow on.
       artifacts (str): comma-separated artifact definition names.
       extra_artifacts (str): comma-separated extra artifact definition names.
-      use_tsk (bool): True if GRR should use Sleuthkit (TSK) to collect file
-          system artifacts.
+      use_raw_filesystem_access (bool): True if GRR should use raw disk access
+          to collect file system artifacts.
       reason (str): justification for GRR access.
       grr_server_url (str): GRR server URL.
       grr_username (str): GRR username.
@@ -471,7 +471,7 @@ class GRRArtifactCollector(GRRFlow):
         self.state.StoreContainer(containers.Host(hostname=hostname))
     self.state.DedupeContainers(containers.Host)
 
-    self.use_tsk = use_tsk
+    self.use_raw_filesystem_access = use_raw_filesystem_access
     if max_file_size:
       self.max_file_size = max_file_size
 
@@ -510,7 +510,7 @@ class GRRArtifactCollector(GRRFlow):
 
       flow_args = flows_pb2.ArtifactCollectorFlowArgs(
           artifact_list=artifact_list,
-          use_tsk=self.use_tsk,
+          use_raw_filesystem_access=self.use_raw_filesystem_access,
           ignore_interpolation_errors=True,
           apply_parsers=False,
           max_file_size=self.max_file_size)
@@ -547,7 +547,8 @@ class GRRFileCollector(GRRFlow):
   Attributes:
     files (list[str]): file paths.
     hosts (list[containers.Host]): Hosts to collect artifacts from.
-    use_tsk (bool): True if GRR should use Sleuthkit (TSK) to collect files.
+    use_raw_filesystem_access (bool): True if GRR should use raw disk access to
+        collect files.
     action (FileFinderAction): Enum denoting action to take.
   """
   _ACTIONS = {'download': flows_pb2.FileFinderAction.DOWNLOAD,
@@ -563,7 +564,7 @@ class GRRFileCollector(GRRFlow):
     self._clients = []  # type: List[Client]
     self.files = []  # type: List[str]
     self.hosts = []  # type: List[containers.Host]
-    self.use_tsk = False
+    self.use_raw_filesystem_access = False
     self.action = None
     self.max_file_size = 5*1024*1024*1024  # 5 GB
 
@@ -571,7 +572,7 @@ class GRRFileCollector(GRRFlow):
   def SetUp(self,
             hostnames: str,
             files: str,
-            use_tsk: bool,
+            use_raw_filesystem_access: bool,
             reason: str,
             grr_server_url: str,
             grr_username: str,
@@ -586,7 +587,8 @@ class GRRFileCollector(GRRFlow):
     Args:
       hostnames (str): comma-separated hostnames to launch the flow on.
       files (str): comma-separated file paths.
-      use_tsk (bool): True if GRR should use Sleuthkit (TSK) to collect files.
+      use_raw_filesystem_access (bool): True if GRR should use raw disk access
+          to collect files.
       reason (str): justification for GRR access.
       grr_server_url (str): GRR server URL.
       grr_username (str): GRR username.
@@ -613,7 +615,7 @@ class GRRFileCollector(GRRFlow):
         self.state.StoreContainer(containers.Host(hostname=hostname))
     self.state.DedupeContainers(containers.Host)
 
-    self.use_tsk = use_tsk
+    self.use_raw_filesystem_access = use_raw_filesystem_access
 
     if action.lower() in self._ACTIONS:
       self.action = self._ACTIONS[action.lower()]
@@ -630,8 +632,8 @@ class GRRFileCollector(GRRFlow):
       DFTimewolfError: if no files specified.
     """
     path_type = jobs_pb2.PathSpec.OS
-    if self.use_tsk:
-      path_type = jobs_pb2.PathSpec.TSK
+    if self.use_raw_filesystem_access:
+      path_type = jobs_pb2.PathSpec.NTFS
     for client in self._FindClients([container.hostname]):
       flow_action = flows_pb2.FileFinderAction(
         action_type=self.action,
