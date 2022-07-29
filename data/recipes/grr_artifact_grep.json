@@ -32,7 +32,7 @@
         ["keywords", "Pipe-separated list of keywords to search for (e.g. key1|key2|key3.", null],
         ["--artifacts", "Comma-separated list of artifacts to fetch (override default artifacts).", null],
         ["--extra_artifacts", "Comma-separated list of artifacts to append to the default artifact list.", null],
-        ["--use_raw_filesystem_access", "Use raw disk access to fetch artifacts.", true],
+        ["--use_raw_filesystem_access", "Use raw disk access to fetch artifacts.", false],
         ["--approvers", "Emails for GRR approval request.", null],
         ["--grr_server_url", "GRR endpoint.", "http://localhost:8000"],
         ["--verify", "Whether to verify the GRR TLS certificate.", true],

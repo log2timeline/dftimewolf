@@ -405,7 +405,7 @@ The export is performed via bit streaming the the disk bytes to GCS. This will a
 
 The exported images names are appended by `.tar.gz.`
 
-The compute engine default service account in the source project must have sufficient permissions to Create and List Storage objects on the corresponding storage bucket/folder.
+The compute engine default service account in the source project must have sufficient permissions to Create and List Storage objects on the corresponding storage bucket/folder. 
 
 **CLI parameters:**
 
@@ -776,7 +776,7 @@ Parameter|Default value|Description
 `keywords`|`None`|Pipe-separated list of keywords to search for (e.g. key1|key2|key3.
 `--artifacts`|`None`|Comma-separated list of artifacts to fetch (override default artifacts).
 `--extra_artifacts`|`None`|Comma-separated list of artifacts to append to the default artifact list.
-`--use_raw_filesystem_access`|`True`|Use raw disk access to fetch artifacts.
+`--use_raw_filesystem_access`|`False`|Use raw disk access to fetch artifacts.
 `--approvers`|`None`|Emails for GRR approval request.
 `--grr_server_url`|`'http://localhost:8000'`|GRR endpoint.
 `--verify`|`True`|Whether to verify the GRR TLS certificate.
@@ -818,7 +818,7 @@ Parameter|Default value|Description
 `reason`|`None`|Reason for collection.
 `--artifacts`|`None`|Comma-separated list of artifacts to fetch (override default artifacts).
 `--extra_artifacts`|`None`|Comma-separated list of artifacts to append to the default artifact list.
-`--use_raw_filesystem_access`|`True`|Use raw disk access to fetch artifacts.
+`--use_raw_filesystem_access`|`False`|Use raw disk access to fetch artifacts.
 `--approvers`|`None`|Emails for GRR approval request.
 `--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
 `--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
@@ -849,7 +849,7 @@ Collects specific files from one or more GRR hosts.
 
 **Details:**
 
-Collects specific files from one or more GRR hosts. Files can be a glob pattern (e.g. `/tmp/*.so`) and support GRR variable interpolation (e.g. `%%users.localappdata%%/Directory/`)
+Collects specific files from one or more GRR hosts. Files can be a glob pattern (e.g. `/tmp/*.so`) and support GRR variable interpolation (e.g. `%%users.localappdata%%/Directory/`) 
 
 **CLI parameters:**
 
@@ -859,7 +859,7 @@ Parameter|Default value|Description
 `reason`|`None`|Reason for collection.
 `files`|`None`|Comma-separated list of files to fetch (supports globs and GRR variable interpolation).
 `directory`|`None`|Directory in which to export files.
-`--use_raw_filesystem_access`|`True`|Use raw disk access to fetch artifacts.
+`--use_raw_filesystem_access`|`False`|Use raw disk access to fetch artifacts.
 `--approvers`|`None`|Emails for GRR approval request.
 `--verify`|`True`|Whether to verify the GRR TLS certificate.
 `--skip_offline_clients`|`False`|Whether to skip clients that are offline.
@@ -928,7 +928,7 @@ Parameter|Default value|Description
 ---------|-------------|-----------
 `artifacts`|`None`|Comma-separated list of artifacts to hunt for.
 `reason`|`None`|Reason for collection.
-`--use_raw_filesystem_access`|`True`|Use raw disk access to fetch artifacts.
+`--use_raw_filesystem_access`|`False`|Use raw disk access to fetch artifacts.
 `--approvers`|`None`|Emails for GRR approval request.
 `--grr_server_url`|`'http://localhost:8000'`|GRR endpoint
 `--verify`|`True`|Whether to verify the GRR TLS certificate.
@@ -1542,3 +1542,4 @@ Modules: `WorkspaceAuditCollector`, `WorkspaceAuditTimesketch`, `TimesketchExpor
 ![workspace_user_login_ts](_static/graphviz/workspace_user_login_ts.png)
 
 ----
+
