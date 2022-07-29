@@ -554,11 +554,15 @@ class GRRFileCollectorTest(unittest.TestCase):
     self.assertEqual(results[0].name, 'tomchop')
     self.assertEqual(results[0].path, '/tmp/something')
 
-  @mock.patch('grr_api_client.api.InitHttp')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow')
+  @mock.patch('grr_api_client.api.InitHttp')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._LaunchFlow')
-  def testWindowsProcess(self, mock_LaunchFlow, mock_DownloadFiles, unused_await, mock_InitHttp):
+  def testWindowsProcess(self,
+                         mock_LaunchFlow,
+                         mock_DownloadFiles,
+                         mock_InitHttp,
+                         unused_await):
     """Tests that processing launches appropriate flows."""
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
