@@ -566,7 +566,11 @@ class GRRFileCollectorTest(unittest.TestCase):
     """Tests that processing launches appropriate flows."""
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
-    self.test_state = state.DFTimewolfState(config.Config)
+    self.mock_grr_api.SearchClients.return_value = \
+        [mock_grr_hosts.MOCK_WINDOWS_CLIENT]
+    mock_DownloadFiles.return_value = '/tmp/something'
+
+    self.test_state.store = {}
     self.test_state.StoreContainer(containers.FSPath(path='/etc/hosts'))
     self.grr_file_collector = grr_hosts.GRRFileCollector(self.test_state)
 
@@ -583,9 +587,7 @@ class GRRFileCollectorTest(unittest.TestCase):
         skip_offline_clients=False,
         action='stat',
     )
-    self.mock_grr_api.SearchClients.return_value = \
-        [mock_grr_hosts.MOCK_WINDOWS_CLIENT]
-    mock_DownloadFiles.return_value = '/tmp/something'
+
 
     self.grr_file_collector.PreProcess()
     in_containers = self.test_state.GetContainers(
