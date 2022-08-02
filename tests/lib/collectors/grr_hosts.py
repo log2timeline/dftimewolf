@@ -233,7 +233,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
         hostnames='C.0000000000000001',
         artifacts=None,
         extra_artifacts=None,
-        use_raw_filesystem_access=True,
+        use_raw_filesystem_access=False,
         reason='Random reason',
         grr_server_url='http://fake/endpoint',
         grr_username='user',
@@ -260,7 +260,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     self.assertEqual(
         self.grr_artifact_collector.extra_artifacts, [])
     self.assertEqual(['C.0000000000000001'], actual_hosts)
-    self.assertTrue(self.grr_artifact_collector.use_raw_filesystem_access)
+    self.assertFalse(self.grr_artifact_collector.use_raw_filesystem_access)
 
   @mock.patch('grr_api_client.api.InitHttp')
   @mock.patch('grr_api_client.flow.FlowRef.Get')
@@ -285,7 +285,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
         hostnames='C.0000000000000001',
         artifacts='RandomArtifact',
         extra_artifacts='AnotherArtifact',
-        use_raw_filesystem_access=True,
+        use_raw_filesystem_access=False,
         reason='Random reason',
         grr_server_url='http://fake/endpoint',
         grr_username='user',
@@ -306,10 +306,100 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     kwargs = mock_ArtifactCollectorFlowArgs.call_args[1]
     self.assertFalse(kwargs['apply_parsers'])  # default argument
     self.assertTrue(kwargs['ignore_interpolation_errors'])  # default argument
-    self.assertTrue(kwargs['use_raw_filesystem_access'])
+    self.assertFalse(kwargs['use_raw_filesystem_access'])
     self.assertEqual(kwargs['max_file_size'], 1234)
     sorted_artifacts = sorted(['AnotherArtifact', 'RandomArtifact'])
     self.assertEqual(sorted(kwargs['artifact_list']), sorted_artifacts)
+
+  @mock.patch('grr_api_client.api.InitHttp')
+  @mock.patch('grr_api_client.flow.FlowRef.Get')
+  @mock.patch('grr_api_client.client.ClientBase.CreateFlow')
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
+  @mock.patch('grr_response_proto.flows_pb2.ArtifactCollectorFlowArgs')
+  def testProcessWindowsArtifacts(self,
+                                   mock_ArtifactCollectorFlowArgs,
+                                   mock_DownloadFiles,
+                                   mock_CreateFlow,
+                                   mock_Get,
+                                   mock_InitHttp):
+    """Tests that artifacts are obtained in raw mode depending on OS."""
+    mock_DownloadFiles.return_value = '/tmp/tmpRandom/tomchop'
+    mock_InitHttp.return_value.SearchClients.return_value = \
+        mock_grr_hosts.MOCK_CLIENT_LIST
+    mock_CreateFlow.return_value = mock_grr_hosts.MOCK_FLOW
+    mock_Get.return_value = mock_grr_hosts.MOCK_FLOW
+    self.grr_artifact_collector = grr_hosts.GRRArtifactCollector(
+        self.test_state)
+    self.grr_artifact_collector.SetUp(
+        hostnames='C.0000000000000002',  # A windows host
+        artifacts='RandomArtifact',
+        extra_artifacts='AnotherArtifact',
+        use_raw_filesystem_access=False,
+        reason='Random reason',
+        grr_server_url='http://fake/endpoint',
+        grr_username='user',
+        grr_password='password',
+        max_file_size=1234,
+        approvers='approver1,approver2',
+        verify=False,
+        skip_offline_clients=False
+    )
+
+    self.grr_artifact_collector.PreProcess()
+    in_containers = self.test_state.GetContainers(
+        self.grr_artifact_collector.GetThreadOnContainerType())
+    for c in in_containers:
+      self.grr_artifact_collector.Process(c)
+    self.grr_artifact_collector.PostProcess()
+
+    kwargs = mock_ArtifactCollectorFlowArgs.call_args[1]
+    # Raw access for Windows
+    self.assertTrue(kwargs['use_raw_filesystem_access'])
+
+  @mock.patch('grr_api_client.api.InitHttp')
+  @mock.patch('grr_api_client.flow.FlowRef.Get')
+  @mock.patch('grr_api_client.client.ClientBase.CreateFlow')
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
+  @mock.patch('grr_response_proto.flows_pb2.ArtifactCollectorFlowArgs')
+  def testProcessLinuxArtifacts(self,
+                                   mock_ArtifactCollectorFlowArgs,
+                                   mock_DownloadFiles,
+                                   mock_CreateFlow,
+                                   mock_Get,
+                                   mock_InitHttp):
+    """Tests that artifacts are obtained in raw mode depending on OS."""
+    mock_DownloadFiles.return_value = '/tmp/tmpRandom/tomchop'
+    mock_InitHttp.return_value.SearchClients.return_value = \
+        mock_grr_hosts.MOCK_CLIENT_LIST
+    mock_CreateFlow.return_value = mock_grr_hosts.MOCK_FLOW
+    mock_Get.return_value = mock_grr_hosts.MOCK_FLOW
+    self.grr_artifact_collector = grr_hosts.GRRArtifactCollector(
+        self.test_state)
+    self.grr_artifact_collector.SetUp(
+        hostnames='C.0000000000000001',  # A Linux host
+        artifacts='RandomArtifact',
+        extra_artifacts='AnotherArtifact',
+        use_raw_filesystem_access=False,
+        reason='Random reason',
+        grr_server_url='http://fake/endpoint',
+        grr_username='user',
+        grr_password='password',
+        max_file_size=1234,
+        approvers='approver1,approver2',
+        verify=False,
+        skip_offline_clients=False
+    )
+
+    self.grr_artifact_collector.PreProcess()
+    in_containers = self.test_state.GetContainers(
+        self.grr_artifact_collector.GetThreadOnContainerType())
+    for c in in_containers:
+      self.grr_artifact_collector.Process(c)
+    self.grr_artifact_collector.PostProcess()
+
+    kwargs = mock_ArtifactCollectorFlowArgs.call_args[1]
+    # No raw access for Linux
+    self.assertFalse(kwargs['use_raw_filesystem_access'])
 
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
   @mock.patch('grr_api_client.flow.FlowBase.Get')
@@ -361,7 +451,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
         hostnames='',
         artifacts='RandomArtifact',
         extra_artifacts='AnotherArtifact',
-        use_raw_filesystem_access=True,
+        use_raw_filesystem_access=False,
         reason='Random reason',
         grr_server_url='http://fake/endpoint',
         grr_username='user',
@@ -400,7 +490,7 @@ class GRRFileCollectorTest(unittest.TestCase):
     self.grr_file_collector.SetUp(
         hostnames='C.0000000000000001',
         files='/etc/passwd',
-        use_raw_filesystem_access=True,
+        use_raw_filesystem_access=False,
         reason='random reason',
         grr_server_url='http://fake/endpoint',
         grr_username='admin',
@@ -451,6 +541,66 @@ class GRRFileCollectorTest(unittest.TestCase):
         'FileFinder',
         flows_pb2.FileFinderArgs(
             paths=['/etc/passwd', '/etc/hosts'],
+            pathtype=jobs_pb2.PathSpec.OS,
+            action=flows_pb2.FileFinderAction(
+                action_type=flows_pb2.FileFinderAction.STAT,
+                download=flows_pb2.FileFinderDownloadActionOptions(
+                    max_size=1234)
+            )
+        )
+    )
+    results = self.test_state.GetContainers(containers.File)
+    self.assertEqual(len(results), 1)
+    self.assertEqual(results[0].name, 'tomchop')
+    self.assertEqual(results[0].path, '/tmp/something')
+
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow')
+  @mock.patch('grr_api_client.api.InitHttp')
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._LaunchFlow')
+  def testWindowsProcess(self,
+                         mock_LaunchFlow,
+                         mock_DownloadFiles,
+                         mock_InitHttp,
+                         unused_await):
+    """Tests that processing launches appropriate flows."""
+    self.mock_grr_api = mock.Mock()
+    mock_InitHttp.return_value = self.mock_grr_api
+    self.mock_grr_api.SearchClients.return_value = \
+        [mock_grr_hosts.MOCK_WINDOWS_CLIENT]
+    mock_DownloadFiles.return_value = '/tmp/something'
+
+    self.test_state.store = {}
+    self.test_state.StoreContainer(containers.FSPath(path='/etc/hosts'))
+    self.grr_file_collector = grr_hosts.GRRFileCollector(self.test_state)
+
+    self.grr_file_collector.SetUp(
+        hostnames='C.0000000000000002',
+        files='/etc/passwd',
+        use_raw_filesystem_access=False,
+        reason='random reason',
+        grr_server_url='http://fake/endpoint',
+        grr_username='admin',
+        grr_password='admin',
+        max_file_size='1234',
+        approvers='approver1,approver2',
+        skip_offline_clients=False,
+        action='stat',
+    )
+
+
+    self.grr_file_collector.PreProcess()
+    in_containers = self.test_state.GetContainers(
+        self.grr_file_collector.GetThreadOnContainerType())
+    for c in in_containers:
+      self.grr_file_collector.Process(c)
+    self.grr_file_collector.PostProcess()
+
+    mock_LaunchFlow.assert_called_with(
+        mock_grr_hosts.MOCK_WINDOWS_CLIENT,
+        'FileFinder',
+        flows_pb2.FileFinderArgs(
+            paths=['/etc/passwd', '/etc/hosts'],
             pathtype=jobs_pb2.PathSpec.NTFS,
             action=flows_pb2.FileFinderAction(
                 action_type=flows_pb2.FileFinderAction.STAT,
@@ -464,17 +614,18 @@ class GRRFileCollectorTest(unittest.TestCase):
     self.assertEqual(results[0].name, 'tomchop')
     self.assertEqual(results[0].path, '/tmp/something')
 
-  @mock.patch('grr_api_client.api.InitHttp')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._LaunchFlow')
+  @mock.patch('grr_api_client.api.InitHttp')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._FindClients')
   def testProcessFromContainers(self,
                                 mock_FindClients,
+                                mock_InitHttp,
                                 unused_LaunchFlow,
                                 unused_DownloadFiles,
-                                unused_AwaitFlow,
-                                mock_InitHttp):
+                                unused_AwaitFlow
+                                ):
     """Tests that processing works when only containers are passed."""
     mock_InitHttp.return_value = self.mock_grr_api
     self.grr_file_collector = grr_hosts.GRRFileCollector(
@@ -482,7 +633,7 @@ class GRRFileCollectorTest(unittest.TestCase):
     self.grr_file_collector.SetUp(
         hostnames='',
         files='/etc/passwd',
-        use_raw_filesystem_access=True,
+        use_raw_filesystem_access=False,
         reason='random reason',
         grr_server_url='http://fake/endpoint',
         grr_username='admin',

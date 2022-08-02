@@ -508,6 +508,10 @@ class GRRArtifactCollector(GRRFlow):
       if not artifact_list:
         return
 
+      if client.data.os_info.system.lower() == 'windows':
+        self.logger.info('Switching to raw filesystem access for Windows.')
+        self.use_raw_filesystem_access = True
+
       flow_args = flows_pb2.ArtifactCollectorFlowArgs(
           artifact_list=artifact_list,
           use_raw_filesystem_access=self.use_raw_filesystem_access,
@@ -631,15 +635,18 @@ class GRRFileCollector(GRRFlow):
     Raises:
       DFTimewolfError: if no files specified.
     """
-    path_type = jobs_pb2.PathSpec.OS
-    if self.use_raw_filesystem_access:
-      path_type = jobs_pb2.PathSpec.NTFS
     for client in self._FindClients([container.hostname]):
       flow_action = flows_pb2.FileFinderAction(
         action_type=self.action,
         download=flows_pb2.FileFinderDownloadActionOptions(
             max_size=self.max_file_size
         ))
+
+      path_type = jobs_pb2.PathSpec.OS
+      # Default to NTFS pathspec to get Windows system-protected files.
+      if client.data.os_info.system.lower() == 'windows':
+        path_type = jobs_pb2.PathSpec.NTFS
+
       flow_args = flows_pb2.FileFinderArgs(
           paths=self.files,
           pathtype=path_type,

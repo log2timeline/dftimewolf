@@ -64,13 +64,42 @@ client_proto2 = """
     )*1000000)
 )
 
+client_windows_1 = """
+  urn: "aff4:/C.0000000000000002"
+  os_info {{
+    system: "Windows"
+    release: "10"
+    version: "10.0.19041"
+    machine: "x86_64"
+    kernel: "10.0.19041"
+    fqdn: "tomchop"
+    install_date: 1480414461000000
+  }}
+  first_seen_at: 1480416002507491
+  last_seen_at: {0:d}
+  last_booted_at: 1507912328000000
+  last_clock: 1511174989272124
+  age: 1510710503319681
+  client_id: "C.0000000000000002"
+  users {{
+      username: "tomchop_username1"
+  }}
+""".format(int(
+    (datetime.datetime.utcnow() - datetime.timedelta(20)).timestamp(
+    )*1000000)
+)
+
 MOCK_CLIENT = client.Client(
     data=text_format.Parse(client_proto1, client_pb2.ApiClient()), context=True)
 MOCK_CLIENT_RECENT = client.Client(
     data=text_format.Parse(client_proto2, client_pb2.ApiClient()), context=True)
+MOCK_WINDOWS_CLIENT = client.Client(
+    data=text_format.Parse(client_windows_1, client_pb2.ApiClient()),
+    context=True)
 MOCK_CLIENT_LIST = [
     MOCK_CLIENT,
-    MOCK_CLIENT_RECENT
+    MOCK_CLIENT_RECENT,
+    MOCK_WINDOWS_CLIENT
 ]
 
 MOCK_CLIENT_REF = client.ClientRef(MOCK_CLIENT.client_id, context=True)
