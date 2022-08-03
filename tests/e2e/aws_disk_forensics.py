@@ -201,8 +201,8 @@ class AWSToGCPForensicsEndToEndTest(unittest.TestCase):
     self.assertEqual(len(self.test_state.GetContainers(containers.AWSVolume)),
         len(self.test_state.GetContainers(containers.GCEDisk)))
 
-    real_gce_disk_names = list(
-        compute.GoogleCloudCompute(self.gcp_project_id).Disks().keys())
+    disks = compute.GoogleCloudCompute(self.gcp_project_id).Disks()
+    real_gce_disk_names = [disks[k].name for k in disks.keys()]
 
     for d in self.test_state.GetContainers(containers.GCEDisk):
       self.assertIn(d.name, real_gce_disk_names)
