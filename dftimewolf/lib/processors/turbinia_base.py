@@ -81,7 +81,9 @@ class TurbiniaProcessorBase(object):
 
         if path.endswith('.plaso') or \
             path.endswith('BinaryExtractorTask.tar.gz') or \
-            path.endswith('hashes.json'):
+            path.endswith('hashes.json') or \
+            path.endswith('fraken_stdout.log') or \
+            path.endswith('loki_stdout.log'):
 
           if path.startswith('gs://'):
             gs_paths.append(path)
