@@ -813,9 +813,10 @@ class GRROsqueryCollector(GRRFlow):
               f'Error raised while launching/awaiting flow: {error.message}')
           continue
 
-        
         name = f'Osquery flow:{flow_id}'
-        description = f'{osquery_container.name}:{osquery_container.description}:{osquery_container.query}'
+        description = (f'{osquery_container.name}:'
+                       f'{osquery_container.description}:'
+                       f'{osquery_container.query}')
         source = f'{container.hostname}:{client.client_id}'
 
         results = self._DownloadResults(client, flow_id)
