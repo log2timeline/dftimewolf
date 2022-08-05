@@ -815,7 +815,7 @@ class GRROsqueryCollector(GRRFlow):
 
         
         name = f'Osquery flow:{flow_id}'
-        description = f'{containers.name}:{containers.description}:{osquery_container.query}'
+        description = f'{osquery_container.name}:{osquery_container.description}:{osquery_container.query}'
         source = f'{container.hostname}:{client.client_id}'
 
         results = self._DownloadResults(client, flow_id)
