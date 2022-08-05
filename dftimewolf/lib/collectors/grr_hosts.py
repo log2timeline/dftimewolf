@@ -813,13 +813,18 @@ class GRROsqueryCollector(GRRFlow):
               f'Error raised while launching/awaiting flow: {error.message}')
           continue
 
+        
+        name = f'Osquery flow:{flow_id}'
+        description = f'{containers.name}:{containers.description}:{osquery_container.query}'
+        source = f'{container.hostname}:{client.client_id}'
+
         results = self._DownloadResults(client, flow_id)
         if not results:
           dataframe_container = containers.DataFrame(
               data_frame=pd.DataFrame(),
-              description=osquery_container.query,
-              name=f'Osquery flow:{flow_id}',
-              source=f'{container.hostname}:{client.client_id}')
+              description=description,
+              name=name,
+              source=source)
           self.state.StoreContainer(dataframe_container)
           continue
 
@@ -830,9 +835,9 @@ class GRROsqueryCollector(GRRFlow):
 
           dataframe_container = containers.DataFrame(
               data_frame=data_frame,
-              description=osquery_container.query,
-              name=f'Osquery flow:{flow_id}',
-              source=f'{container.hostname}:{client.client_id}')
+              description=description,
+              name=name,
+              source=source)
 
           self.state.StoreContainer(dataframe_container)
 
