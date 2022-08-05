@@ -814,8 +814,8 @@ class GRROsqueryCollector(GRRFlow):
           continue
 
         name = f'Osquery flow:{flow_id}'
-        description = (f'{osquery_container.name}:'
-                       f'{osquery_container.description}:'
+        description = (f'{osquery_container.name or ''}:'
+                       f'{osquery_container.description or ''}:'
                        f'{osquery_container.query}')
         source = f'{container.hostname}:{client.client_id}'
 
