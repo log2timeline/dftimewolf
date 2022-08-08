@@ -986,8 +986,8 @@ class GRROsqueryCollectorTest(unittest.TestCase):
     self.assertEqual(results[0].description, None)
     self.assertEqual(results[0].hostname, 'C.0000000000000001')
     self.assertEqual(results[0].client_identifier, 'C.0000000000000001')
-    self.assertEqual(results[0].flow_identifier, 'F:12345')
-    
+    self.assertEqual(results[0].flow_identifier.id, '139703664550640')
+
 
 if __name__ == '__main__':
   unittest.main()
