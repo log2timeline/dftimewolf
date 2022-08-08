@@ -3,6 +3,7 @@
 
 import unittest
 
+import pandas
 from dftimewolf.lib.containers import containers
 
 class ReportDataTest(unittest.TestCase):
@@ -75,6 +76,24 @@ class OsqueryQueryDataTest(unittest.TestCase):
 
     expected_attribute_names = [
         'description', 'metadata', 'name', 'platforms', 'query']
+
+    attribute_names = sorted(attribute_container.GetAttributeNames())
+
+    self.assertEqual(attribute_names, expected_attribute_names)
+
+
+class OsqueryResultDataTest(unittest.TestCase):
+  """Tests for the OsqueryResult attribute container."""
+
+  def testGetAttributeNames(self):
+    """Tests the GetAttributeNames function."""
+    attribute_container = containers.OsqueryResult(
+        name='', description='', hostname='', query=''
+        data_frame=pandas.DataFrame(), flow_identifier='', client_identifier='')
+
+    expected_attribute_names = [
+        'client_identifier', 'data_frame', 'description', 'flow_identifier',
+        'hostname', 'metadata', 'name', 'query']
 
     attribute_names = sorted(attribute_container.GetAttributeNames())
 

@@ -562,7 +562,7 @@ class OsqueryQuery(interface.AttributeContainer):
     platforms (Optional[List[str]]): A constraint on the platform(s) the query
         should be run.  Valid values are 'darwin', 'linux', 'windows',
     description (Optional[str]): A description for the query.
-    """
+  """
 
   CONTAINER_TYPE = 'osquery_query'
 
@@ -577,3 +577,38 @@ class OsqueryQuery(interface.AttributeContainer):
     self.name = name
     self.platforms = platforms
     self.query = query
+
+
+
+class OsqueryResult(interface.AttributeContainer):
+  """Attribute container for an Osquery result.
+  
+  Attributes:
+    name (str): Name for the osquery.
+    description (str): A description for the query. 
+    query (str): The osquery query.
+    hostname (str): The hostname.
+    data_frame (pandas.DataFrame): A dataframe containing the result.
+    flow_identifier (Optional[str]): The source GRR Flow Identifier.
+    client_identifier (Optional[str]): The source GRR client identifier.
+  """
+
+  CONTAINER_TYPE = 'osquery_result'
+
+  def __init__(
+      self,
+      name: str,
+      description: str,
+      query: str,
+      hostname: str,
+      data_frame: pandas.DataFrame,
+      flow_identifier: Optional[str] = None,
+      client_identifier: Optional[str] = None) -> None:
+    super(OsqueryResult, self).__init__()
+    self.name = name
+    self.description = description
+    self.query = query
+    self.hostname = hostname
+    self.data_frame = data_frame
+    self.flow_identifier = flow_identifier
+    self.client_identifier = client_identifier

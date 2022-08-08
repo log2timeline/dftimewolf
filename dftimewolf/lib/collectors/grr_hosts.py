@@ -813,19 +813,23 @@ class GRROsqueryCollector(GRRFlow):
               f'Error raised while launching/awaiting flow: {error.message}')
           continue
 
-        name = f'Osquery flow:{flow_id}'
-        description = (f'{osquery_container.name or ""}:'
-                       f'{osquery_container.description or ""}:'
-                       f'{osquery_container.query}')
-        source = f'{container.hostname}:{client.client_id}'
+        name = osquery_container.name
+        description = osquery_container.description
+        query=osquery_container.query
+        hostname=container.hostname
+        flow_identifier=flow_id
+        client_identifier=client.client_id
 
         results = self._DownloadResults(client, flow_id)
         if not results:
-          dataframe_container = containers.DataFrame(
-              data_frame=pd.DataFrame(),
-              description=description,
+          results_container = containers.OsqueryResult(
               name=name,
-              source=source)
+              description=description,
+              query=query,
+              hostname=hostname
+              data_frame=pd.DataFrame(),
+              flow_identifier=flow_identifier,
+              client_identifier=client_identifier)
           self.state.StoreContainer(dataframe_container)
           continue
 
@@ -834,11 +838,14 @@ class GRROsqueryCollector(GRRFlow):
               f'{str(flow_id)} ({container.hostname}): {len(data_frame)} rows '
               'collected')
 
-          dataframe_container = containers.DataFrame(
-              data_frame=data_frame,
-              description=description,
+          dataframe_container = containers.OsqueryResult(
               name=name,
-              source=source)
+              description=description,
+              query=query,
+              hostname=hostname
+              data_frame=data_frame,
+              flow_identifier=flow_identifier,
+              client_identifier=client_identifier)
 
           self.state.StoreContainer(dataframe_container)
 
@@ -864,13 +871,14 @@ class GRROsqueryCollector(GRRFlow):
     with open(manifest_file_path, mode='w') as manifest_fd:
       manifest_fd.write('"Flow ID","Hostname","GRR Client Id","Osquery"\n')
 
-      for container in self.state.GetContainers(containers.DataFrame):
+      for container in self.state.GetContainers(containers.OsqueryResult):
         if not container.source:
           self.logger.error('Source attribute in container is empty.')
           continue
-        hostname, client_id = container.source.split(':')
-        flow_id = container.name.split(':')[1]
-        query = container.description
+        hostname = container.hostname
+        client_identifier = container.client_identifier
+        flow_identifier = container.client_identifier
+        query = container.query
 
         output_file_path = os.path.join(
             self.directory, '.'.join(
