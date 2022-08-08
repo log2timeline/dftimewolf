@@ -88,7 +88,7 @@ class OsqueryResultDataTest(unittest.TestCase):
   def testGetAttributeNames(self):
     """Tests the GetAttributeNames function."""
     attribute_container = containers.OsqueryResult(
-        name='', description='', hostname='', query=''
+        name='', description='', hostname='', query='',
         data_frame=pandas.DataFrame(), flow_identifier='', client_identifier='')
 
     expected_attribute_names = [

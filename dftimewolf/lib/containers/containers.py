@@ -582,10 +582,10 @@ class OsqueryQuery(interface.AttributeContainer):
 
 class OsqueryResult(interface.AttributeContainer):
   """Attribute container for an Osquery result.
-  
+
   Attributes:
     name (str): Name for the osquery.
-    description (str): A description for the query. 
+    description (str): A description for the query.
     query (str): The osquery query.
     hostname (str): The hostname.
     data_frame (pandas.DataFrame): A dataframe containing the result.

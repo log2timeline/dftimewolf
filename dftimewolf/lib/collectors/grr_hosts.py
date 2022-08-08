@@ -826,7 +826,7 @@ class GRROsqueryCollector(GRRFlow):
               name=name,
               description=description,
               query=query,
-              hostname=hostname
+              hostname=hostname,
               data_frame=pd.DataFrame(),
               flow_identifier=flow_identifier,
               client_identifier=client_identifier)
@@ -842,7 +842,7 @@ class GRROsqueryCollector(GRRFlow):
               name=name,
               description=description,
               query=query,
-              hostname=hostname
+              hostname=hostname,
               data_frame=data_frame,
               flow_identifier=flow_identifier,
               client_identifier=client_identifier)
