@@ -830,7 +830,7 @@ class GRROsqueryCollector(GRRFlow):
               data_frame=pd.DataFrame(),
               flow_identifier=flow_identifier,
               client_identifier=client_identifier)
-          self.state.StoreContainer(dataframe_container)
+          self.state.StoreContainer(results_container)
           continue
 
         for data_frame in results:
@@ -876,8 +876,8 @@ class GRROsqueryCollector(GRRFlow):
           self.logger.error('Source attribute in container is empty.')
           continue
         hostname = container.hostname
-        client_identifier = container.client_identifier
-        flow_identifier = container.client_identifier
+        client_id = container.client_identifier
+        flow_id = container.client_identifier
         query = container.query
 
         output_file_path = os.path.join(
