@@ -815,10 +815,10 @@ class GRROsqueryCollector(GRRFlow):
 
         name = osquery_container.name
         description = osquery_container.description
-        query=osquery_container.query
-        hostname=container.hostname
-        flow_identifier=flow_id
-        client_identifier=client.client_id
+        query = osquery_container.query
+        hostname = container.hostname
+        flow_identifier = flow_id
+        client_identifier = client.client_id
 
         results = self._DownloadResults(client, flow_id)
         if not results:
