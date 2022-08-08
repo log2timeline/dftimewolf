@@ -872,8 +872,8 @@ class GRROsqueryCollector(GRRFlow):
       manifest_fd.write('"Flow ID","Hostname","GRR Client Id","Osquery"\n')
 
       for container in self.state.GetContainers(containers.OsqueryResult):
-        if not container.source:
-          self.logger.error('Source attribute in container is empty.')
+        if not container.query:
+          self.logger.error('Query attribute in container is empty.')
           continue
         hostname = container.hostname
         client_id = container.client_identifier
