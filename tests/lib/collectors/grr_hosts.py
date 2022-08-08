@@ -984,8 +984,8 @@ class GRROsqueryCollectorTest(unittest.TestCase):
     self.assertEqual(results[0].query, 'SELECT * FROM processes')
     self.assertEqual(results[0].name, None)
     self.assertEqual(results[0].description, None)
-    self.assertEqual(results[0].hostname, None)
-    self.assertEqual(results[0].client_identifier, 'C.0000000000000001')
+    self.assertEqual(results[0].hostname, 'C.0000000000000001')
+    self.assertEqual(results[0].client_identifier, None)
     self.assertEqual(results[0].flow_identifier, 'F:12345')
     
 
