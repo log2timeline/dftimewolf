@@ -979,12 +979,15 @@ class GRROsqueryCollectorTest(unittest.TestCase):
         )
     )
 
-    results = self.test_state.GetContainers(containers.DataFrame)
+    results = self.test_state.GetContainers(containers.OsqueryResult)
     self.assertEqual(len(results), 1)
-    self.assertEqual(results[0].description, '::SELECT * FROM processes')
-    self.assertIn('Osquery flow:', results[0].name)
-    self.assertIn('C.0000000000000001', results[0].source)
-
+    self.assertEqual(results[0].query, 'SELECT * FROM processes')
+    self.assertEqual(results[0].name, None)
+    self.assertEqual(results[0].description, None)
+    self.assertEqual(results[0].hostname, None)
+    self.assertEqual(results[0].client_identifier, 'C.0000000000000001')
+    self.assertEqual(results[0].flow_identifier, 'F:12345')
+    
 
 if __name__ == '__main__':
   unittest.main()

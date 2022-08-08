@@ -597,18 +597,18 @@ class OsqueryResult(interface.AttributeContainer):
 
   def __init__(
       self,
-      name: str,
-      description: str,
-      query: str,
-      hostname: str,
       data_frame: pandas.DataFrame,
+      hostname: str,
+      query: str,
+      client_identifier: Optional[str] = None,
+      description: Optional[str] = None,
       flow_identifier: Optional[str] = None,
-      client_identifier: Optional[str] = None) -> None:
+      name: Optional[str] = None) -> None:
     super(OsqueryResult, self).__init__()
-    self.name = name
-    self.description = description
-    self.query = query
-    self.hostname = hostname
     self.data_frame = data_frame
-    self.flow_identifier = flow_identifier
+    self.hostname = hostname
+    self.query = query
     self.client_identifier = client_identifier
+    self.description = description
+    self.flow_identifier = flow_identifier
+    self.name = name
