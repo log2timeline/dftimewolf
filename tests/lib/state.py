@@ -157,26 +157,26 @@ class StateTest(unittest.TestCase):
 
     # Test incorrect filters retrieve nothing
     filtered = test_state.GetContainers(thread_aware_modules.TestContainer,
-                                             False,
-                                             'metadata_key',
-                                             'incorrect_value')
+                                        False,
+                                        'metadata_key',
+                                        'incorrect_value')
     full_list = test_state.GetContainers(thread_aware_modules.TestContainer)
     self.assertEqual(len(filtered), 0)  # None retrieved
     self.assertEqual(len(full_list), 3)  # None removed since none were popped
 
     filtered = test_state.GetContainers(thread_aware_modules.TestContainer,
-                                             False,
-                                             'incorrect_key',
-                                             'metadata_value')
+                                        False,
+                                        'incorrect_key',
+                                        'metadata_value')
     full_list = test_state.GetContainers(thread_aware_modules.TestContainer)
     self.assertEqual(len(filtered), 0)  # None retrieved
     self.assertEqual(len(full_list), 3)  # None removed since none were popped
 
     # Test retrieval, without popping
     filtered = test_state.GetContainers(thread_aware_modules.TestContainer,
-                                             False,
-                                             'metadata_key',
-                                             '1')
+                                        False,
+                                        'metadata_key',
+                                        '1')
     full_list = test_state.GetContainers(thread_aware_modules.TestContainer)
     self.assertEqual(len(filtered), 1)  # One retrieved
     self.assertEqual(len(full_list), 3)  # None removed since none were popped
@@ -185,9 +185,9 @@ class StateTest(unittest.TestCase):
 
     # Test retrieval, with popping
     filtered = test_state.GetContainers(thread_aware_modules.TestContainer,
-                                             True,
-                                             'metadata_key',
-                                             '1')
+                                        True,
+                                        'metadata_key',
+                                        '1')
     remaining = test_state.GetContainers(thread_aware_modules.TestContainer)
     self.assertEqual(len(filtered), 1)  # One retrieved
     self.assertEqual(len(remaining), 2)  # One popped
