@@ -612,3 +612,11 @@ class OsqueryResult(interface.AttributeContainer):
     self.description = description
     self.flow_identifier = flow_identifier
     self.name = name
+
+  def __eq__(self, other: OsqueryResult) -> bool:
+    """Override __eq__() for this container."""
+    return self.hostname == other.hostname and self.query == other.query
+
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return f'{self.hostname}:{self.name}'
