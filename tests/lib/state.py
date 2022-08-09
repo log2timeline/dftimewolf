@@ -130,6 +130,80 @@ class StateTest(unittest.TestCase):
     reports = test_state.GetContainers(containers.Report)
     self.assertEqual(len(reports), 1)
     self.assertIsInstance(reports[0], containers.Report)
+    # The container shouldn't have been popped, and still be in the store
+    self.assertEqual(len(test_state.store[test_report.CONTAINER_TYPE]), 1)
+
+    # Try again, but pop
+    reports = test_state.GetContainers(containers.Report, True)
+    self.assertEqual(len(reports), 1)
+    self.assertIsInstance(reports[0], containers.Report)
+    # the container was popped this time
+    self.assertEqual(len(test_state.store[test_report.CONTAINER_TYPE]), 0)
+
+  def testGetContainerWithMetadataFilter(self):
+    """Tests that containers can be retrieved using metadata filters."""
+    test_state = state.DFTimewolfState(config.Config)
+    test_cont_1 = thread_aware_modules.TestContainer('foo')
+    test_cont_2 = thread_aware_modules.TestContainer('bar')
+    test_cont_3 = thread_aware_modules.TestContainer('baz')
+
+    test_cont_1.SetMetadata('metadata_key', '1')
+    test_cont_2.SetMetadata('metadata_key', '2')
+    test_cont_3.SetMetadata('metadata_key', '3')
+
+    test_state.StoreContainer(test_cont_1)
+    test_state.StoreContainer(test_cont_2)
+    test_state.StoreContainer(test_cont_3)
+
+    # Test incorrect filters retrieve nothing
+    filtered = test_state.GetContainers(thread_aware_modules.TestContainer,
+                                             False,
+                                             'metadata_key',
+                                             'incorrect_value')
+    full_list = test_state.GetContainers(thread_aware_modules.TestContainer)
+    self.assertEqual(len(filtered), 0)  # None retrieved
+    self.assertEqual(len(full_list), 3)  # None removed since none were popped
+
+    filtered = test_state.GetContainers(thread_aware_modules.TestContainer,
+                                             False,
+                                             'incorrect_key',
+                                             'metadata_value')
+    full_list = test_state.GetContainers(thread_aware_modules.TestContainer)
+    self.assertEqual(len(filtered), 0)  # None retrieved
+    self.assertEqual(len(full_list), 3)  # None removed since none were popped
+
+    # Test retrieval, without popping
+    filtered = test_state.GetContainers(thread_aware_modules.TestContainer,
+                                             False,
+                                             'metadata_key',
+                                             '1')
+    full_list = test_state.GetContainers(thread_aware_modules.TestContainer)
+    self.assertEqual(len(filtered), 1)  # One retrieved
+    self.assertEqual(len(full_list), 3)  # None removed since none were popped
+    self.assertEqual(filtered[0].value, 'foo')
+    self.assertEqual(filtered[0].metadata['metadata_key'], '1')
+
+    # Test retrieval, with popping
+    filtered = test_state.GetContainers(thread_aware_modules.TestContainer,
+                                             True,
+                                             'metadata_key',
+                                             '1')
+    remaining = test_state.GetContainers(thread_aware_modules.TestContainer)
+    self.assertEqual(len(filtered), 1)  # One retrieved
+    self.assertEqual(len(remaining), 2)  # One popped
+    self.assertEqual(filtered[0].value, 'foo')
+    self.assertEqual(filtered[0].metadata['metadata_key'], '1')
+    self.assertEqual([c.value for c in remaining], ['bar', 'baz'])
+
+  def testGetContainerWithMetadataFilterFailures(self):
+    """Tests Runtime Errors retriving containers with a metadata filter."""
+    test_state = state.DFTimewolfState(config.Config)
+
+    with self.assertRaises(RuntimeError):
+      test_state.GetContainers(containers.Report, False, 'key', '')
+
+    with self.assertRaises(RuntimeError):
+      test_state.GetContainers(containers.Report, False, '', 'value')
 
   @mock.patch('tests.test_modules.modules.DummyPreflightModule.Process')
   @mock.patch('tests.test_modules.modules.DummyPreflightModule.SetUp')

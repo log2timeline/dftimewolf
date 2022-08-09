@@ -23,6 +23,14 @@ class AttributeContainerTest(unittest.TestCase):
 
     self.assertEqual(attribute_names, expected_attribute_names)
 
+  def testSetMetadata(self):
+    """Tests setting and retrieving metadata set on a container."""
+    cont = interface.AttributeContainer()
+    cont.SetMetadata('source_module', 'example_module_name')
+
+    self.assertEqual(len(cont.metadata.keys()), 1)
+    self.assertEqual(cont.metadata['source_module'], 'example_module_name')
+
 
 if __name__ == '__main__':
   unittest.main()
