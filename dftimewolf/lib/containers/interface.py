@@ -56,5 +56,6 @@ class AttributeContainer():
 
     Args:
       key: Metadata key
-      value: Metadata value"""
+      value: Metadata value
+    """
     self.metadata[key] = value
