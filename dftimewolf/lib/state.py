@@ -10,7 +10,7 @@ import importlib
 import logging
 import threading
 import traceback
-from typing import TYPE_CHECKING, Callable, Dict, List, Sequence, Type, Any, TypeVar, cast  # pylint: disable=line-too-long
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Sequence, Type, Any, TypeVar, cast  # pylint: disable=line-too-long
 from dftimewolf.cli import curses_display_manager as cdm
 
 from dftimewolf.config import Config
@@ -260,24 +260,47 @@ class DFTimewolfState(object):
 
   def GetContainers(self,
                     container_class: Type[T],
-                    pop: bool=False) -> Sequence[T]:
+                    pop: bool=False,
+                    metadata_filter_key: Optional[str]=None,
+                    metadata_filter_value: Optional[Any]=None) -> Sequence[T]:
     """Thread-safe method to retrieve data from the state's store.
 
     Args:
       container_class (type): AttributeContainer class used to filter data.
       pop (Optional[bool]): Whether to remove the containers from the state when
           they are retrieved.
+      metadata_filter_key (Optional[str]): Metadata key to filter on.
+      metadata_filter_value (Optional[Any]): Metadata value to filter on.
 
     Returns:
       Collection[AttributeContainer]: attribute container objects provided in
           the store that correspond to the container type.
+
+    Raises:
+      RuntimeError: If only one metadata filter parameter is specified.
     """
+    if bool(metadata_filter_key) ^ bool(metadata_filter_value):  # logical XOR
+      raise RuntimeError('Must specify both key and value for attribute filter')
+
     with self._state_lock:
-      container_objects = cast(
-          List[T], self.store.get(container_class.CONTAINER_TYPE, []))
-      if pop:
-        self.store[container_class.CONTAINER_TYPE] = []
-      return tuple(container_objects)
+      ret_val = []
+      containers = self.store.get(container_class.CONTAINER_TYPE, [])
+      self.store[container_class.CONTAINER_TYPE] = []
+
+      for c in containers:
+        if metadata_filter_key:
+          if c.metadata.get(metadata_filter_key) == metadata_filter_value:
+            ret_val.append(c)
+          else:
+            self.store[container_class.CONTAINER_TYPE].append(c)
+        else:
+          ret_val.append(c)
+
+      if not pop:
+        for c in ret_val:
+          self.store[container_class.CONTAINER_TYPE].append(c)
+
+      return cast(Sequence[T], ret_val)
 
   def DedupeContainers(self, container_class: Type[T]) -> None:
     """Thread safe deduping of containers of the given type.

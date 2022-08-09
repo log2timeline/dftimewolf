@@ -50,3 +50,12 @@ class AttributeContainer():
       attribute_names.append(attribute_name)
 
     return attribute_names
+
+  def SetMetadata(self, key: str, value: Any) -> None:
+    """Sets metadata to the container.
+
+    Args:
+      key: Metadata key
+      value: Metadata value
+    """
+    self.metadata[key] = value
