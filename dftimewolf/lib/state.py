@@ -302,13 +302,6 @@ class DFTimewolfState(object):
 
       return cast(Sequence[T], container_objects)
 
-#    with self._state_lock:
-#      container_objects = cast(
-#          List[T], self.store.get(container_class.CONTAINER_TYPE, []))
-#      if pop:
-#        self.store[container_class.CONTAINER_TYPE] = []
-#      return tuple(container_objects)
-
   def DedupeContainers(self, container_class: Type[T]) -> None:
     """Thread safe deduping of containers of the given type.
 
