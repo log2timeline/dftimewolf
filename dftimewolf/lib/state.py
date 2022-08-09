@@ -283,24 +283,24 @@ class DFTimewolfState(object):
       raise RuntimeError('Must specify both key and value for attribute filter')
 
     with self._state_lock:
-      container_objects = []
+      ret_val = []
       containers = self.store.get(container_class.CONTAINER_TYPE, [])
       self.store[container_class.CONTAINER_TYPE] = []
 
       for c in containers:
         if metadata_filter_key:
           if c.metadata.get(metadata_filter_key) == metadata_filter_value:
-            container_objects.append(c)
+            ret_val.append(c)
           else:
             self.store[container_class.CONTAINER_TYPE].append(c)
         else:
-          container_objects.append(c)
+          ret_val.append(c)
 
       if not pop:
-        for c in container_objects:
+        for c in ret_val:
           self.store[container_class.CONTAINER_TYPE].append(c)
 
-      return cast(Sequence[T], container_objects)
+      return cast(Sequence[T], ret_val)
 
   def DedupeContainers(self, container_class: Type[T]) -> None:
     """Thread safe deduping of containers of the given type.
