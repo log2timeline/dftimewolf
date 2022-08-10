@@ -31,29 +31,25 @@ def Compress(source_path: str, output_directory: Optional[str]=None) -> str:
   if not output_directory:
     output_directory = tempfile.mkdtemp()
 
-  output_file = f'{os.path.basename(source_path)}.tgz'
-  output_file_with_path = os.path.join(output_directory, output_file)
+  filename = f'{os.path.basename(source_path)}.tgz'
+  filepath = os.path.join(output_directory, filename)
 
-  while os.path.exists(output_file_with_path):
-    output_file = (
+  while os.path.exists(filepath):
+    filename = (
         f'{os.path.basename(source_path)}-'
         f'{"".join(random.sample(string.ascii_lowercase, 4))}.tgz')
-    output_file_with_path = os.path.join(output_directory, output_file)
-
-  if os.path.exists(output_file):
-    raise RuntimeError(
-        'Output file {0:s} already exists.'.format(output_file))
+    filepath = os.path.join(output_directory, filename)
 
   try:
-    with tarfile.TarFile.open(output_file_with_path, 'w:gz') as tar:
-      tar.add(source_path, arcname=output_file)
+    with tarfile.TarFile.open(filepath, 'w:gz') as tar:
+      tar.add(source_path, arcname=filename)
       tar.close()
   except (IOError, tarfile.TarError) as exception:
     raise RuntimeError(
         'An error has while compressing directory {0:s}: {1!s}'.format(
             source_path, exception)) from exception
 
-  return output_file_with_path
+  return filepath
 
 
 # preserve python2 compatibility
