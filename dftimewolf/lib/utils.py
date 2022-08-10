@@ -3,10 +3,11 @@
 
 import argparse
 import os
+import random
 import re
+import string
 import tarfile
 import tempfile
-from time import time
 from typing import Any, Dict, Optional, Type
 
 from dftimewolf.config import Config
@@ -30,25 +31,29 @@ def Compress(source_path: str, output_directory: Optional[str]=None) -> str:
   if not output_directory:
     output_directory = tempfile.mkdtemp()
 
-  output_file = os.path.basename(source_path)
-  arcname = '{0:d}-{1:s}'.format(int(time()), output_file)
-  output_file = '{0:s}.tgz'.format(arcname)
-  output_file = os.path.join(output_directory, output_file)
+  output_file = f'{os.path.basename(source_path)}.tgz'
+  output_file_with_path = os.path.join(output_directory, output_file)
+
+  while os.path.exists(output_file_with_path):
+    output_file = (
+        f'{os.path.basename(source_path)}-'
+        f'{"".join(random.sample(string.ascii_lowercase, 4))}.tgz')
+    output_file_with_path = os.path.join(output_directory, output_file)
 
   if os.path.exists(output_file):
     raise RuntimeError(
         'Output file {0:s} already exists.'.format(output_file))
 
   try:
-    with tarfile.TarFile.open(output_file, 'w:gz') as tar:
-      tar.add(source_path, arcname=arcname)
+    with tarfile.TarFile.open(output_file_with_path, 'w:gz') as tar:
+      tar.add(source_path, arcname=output_file)
       tar.close()
   except (IOError, tarfile.TarError) as exception:
     raise RuntimeError(
         'An error has while compressing directory {0:s}: {1!s}'.format(
             source_path, exception)) from exception
 
-  return output_file
+  return output_file_with_path
 
 
 # preserve python2 compatibility
