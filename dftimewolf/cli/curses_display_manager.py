@@ -303,36 +303,36 @@ class CursesDisplayManager:
 
     with self._lock:
       self._stdscr.clear()
-      y, _ = self._stdscr.getmaxyx()
+      y, x = self._stdscr.getmaxyx()
 
       try:
         curr_line = 0
-        self._stdscr.addstr(curr_line, 0, f' {self._recipe_name}')
+        self._stdscr.addstr(curr_line, 0, f' {self._recipe_name}'[:x])
         curr_line += 1
 
         # Preflights
         if self._preflights:
-          self._stdscr.addstr(curr_line, 0, '   Preflights:')
+          self._stdscr.addstr(curr_line, 0, '   Preflights:'[:x])
           curr_line += 1
           for _, module in self._preflights.items():
             for line in module.Stringify():
-              self._stdscr.addstr(curr_line, 0, line)
+              self._stdscr.addstr(curr_line, 0, line[:x])
               curr_line += 1
 
         # Modules
-        self._stdscr.addstr(curr_line, 0, '   Modules:')
+        self._stdscr.addstr(curr_line, 0, '   Modules:'[:x])
         curr_line += 1
         for status in Status:  # Print the modules in Status order
           for _, module in self._modules.items():
             if module.status != status:
               continue
             for line in module.Stringify():
-              self._stdscr.addstr(curr_line, 0, line)
+              self._stdscr.addstr(curr_line, 0, line[:x])
               curr_line += 1
 
         # Messages
         curr_line += 1
-        self._stdscr.addstr(curr_line, 0, ' Messages:')
+        self._stdscr.addstr(curr_line, 0, ' Messages:'[:x])
         curr_line += 1
 
         message_space = y - 4 - curr_line
@@ -342,19 +342,19 @@ class CursesDisplayManager:
         # Slice the aray, we may not be able to fit all messages on the screen
         for m in self._messages[start:]:
           self._stdscr.addstr(curr_line, 0,
-              f'  {m.Stringify(self._messages_longest_source_len)}')
+              f'  {m.Stringify(self._messages_longest_source_len)}'[:x])
           curr_line += 1
 
         # Exceptions
         if self._exception:
           self._stdscr.addstr(y - 2, 0,
-              f' Exception encountered: {str(self._exception)}')
+              f' Exception encountered: {str(self._exception)}'[:x])
       except curses.error:
-#        # pylint: disable=line-too-long
-        self._stdscr.addstr(y - 3, 0, '*********************************************************************** ')
-        self._stdscr.addstr(y - 2, 0, '*** Terminal not large enough, consider increasing your window size *** ')
-        self._stdscr.addstr(y - 1, 0, '*********************************************************************** ')
-#        # pylint: enable=line-too-long
+        # pylint: disable=line-too-long
+        self._stdscr.addstr(y - 3, 0, '*********************************************************************** '[:x])
+        self._stdscr.addstr(y - 2, 0, '*** Terminal not large enough, consider increasing your window size *** '[:x])
+        self._stdscr.addstr(y - 1, 0, '*********************************************************************** '[:x])
+        # pylint: enable=line-too-long
 
       self._stdscr.move(y - 1, 0)
       self._stdscr.refresh()
