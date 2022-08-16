@@ -6,11 +6,11 @@ import unittest
 
 from libcloudforensics.providers.gcp.internal import compute
 from libcloudforensics.providers.gcp.internal import project as gcp_project
+import mock
 from dftimewolf import config
 from dftimewolf.lib import state
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.exporters import gce_disk_from_image
-import mock
 
 
 FAKE_IMAGES = 'fake-image-one,fake-image-two'
