@@ -4,6 +4,7 @@
 import os
 from typing import Dict, List, Optional, TYPE_CHECKING, Any, Type, Union
 
+import magic
 from turbinia import TurbiniaException
 from turbinia import config as turbinia_config  #pylint: disable=unused-import
 from turbinia import evidence
@@ -160,18 +161,26 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       self.ModuleError('No interesting files could be found.', critical=True)
 
     container: Union[containers.File, containers.ThreatIntelligence]
+    f = magic.Magic(mime=True, uncompress=True)
     for description, path in all_local_paths:
       if path.endswith('BinaryExtractorTask.tar.gz'):
         self.PublishMessage(f'Found BinaryExtractorTask result: {path}')
         container = containers.ThreatIntelligence(
             name='BinaryExtractorResults', indicator=None, path=path)
-      if path.endswith('hashes.json'):
+      elif path.endswith('hashes.json'):
         self.PublishMessage(f'Found hashes.json: {path}')
         container = containers.ThreatIntelligence(
             name='ImageExportHashes', indicator=None, path=path)
-      if path.endswith('.plaso'):
+      elif path.endswith('.plaso'):
         self.PublishMessage(f'Found plaso result: {path}')
         container = containers.File(name=description, path=path)
+      elif f.from_file(path).startswith('text'):
+        self.PublishMessage(f'Found result: {path}')
+        container = containers.File(name=description, path=path)
+      else:
+        self.PublishMessage(
+            f'Skipping result of type {f.from_file(path)} at: {path}')
+        continue
       self.state.StoreContainer(container)
   # pylint: enable=arguments-renamed
 

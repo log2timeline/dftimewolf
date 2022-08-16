@@ -141,6 +141,7 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
       self.assertEqual(error_msg, expected_error)
       self.assertTrue(error.exception.critical)
 
+  @mock.patch('magic.Magic')
   @mock.patch('os.path.exists')
   @mock.patch('turbinia.output_manager.GCSOutputWriter')
   @mock.patch('turbinia.evidence.GoogleCloudDisk')
@@ -148,7 +149,7 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
   # pylint: disable=invalid-name
   def testProcessFromParams(
       self, _mock_TurbiniaClient, mock_GoogleCloudDisk, mock_GCSOutputWriter,
-      mock_exists):
+      mock_exists, mock_magic):
     """Tests that the processor processes data correctly when a disk name is
     passed in as a parameter."""
 
@@ -196,6 +197,9 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
     local_mock = mock.MagicMock()
     local_mock.copy_from.return_value = '/local/BinaryExtractorTask.tar.gz'
     mock_GCSOutputWriter.return_value = local_mock
+    magic_mocked = mock.MagicMock()
+    magic_mocked.from_file.return_value = 'text/plain'
+    mock_magic.return_value = magic_mocked
 
     turbinia_processor.PreProcess()
     in_containers = test_state.GetContainers(
