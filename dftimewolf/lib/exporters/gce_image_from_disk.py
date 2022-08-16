@@ -89,10 +89,9 @@ class GCEImageFromDisk(module.ThreadAwareModule):
     # use a class member due to an underlying thread safety issue in
     # httplib2: https://github.com/googleapis/google-cloud-python/issues/3501
     project = gcp_project.GoogleCloudProject(self.dest_project)
-    image_name = f'{self.name_prefix}-{source_disk.name}'
-    # Manually truncating name, while
-    # https://github.com/google/cloud-forensics-utils/pull/447 gets merged.
-    image_name = image_name[:common.COMPUTE_NAME_LIMIT]
+    image_name = common.GenerateUniqueInstanceName(
+        prefix=f'{self.name_prefix}-{source_disk.name}',
+        truncate_at=common.COMPUTE_NAME_LIMIT)
     image = project.compute.CreateImageFromDisk(source_disk, name=image_name)
     self.state.StoreContainer(
         containers.GCEImage(image.name, self.dest_project))
