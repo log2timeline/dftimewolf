@@ -4,10 +4,9 @@
 
 import unittest
 
-import mock
-from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal import compute
-
+from libcloudforensics.providers.gcp.internal import project as gcp_project
+import mock
 from dftimewolf import config
 from dftimewolf.lib import state
 from dftimewolf.lib.containers import containers
@@ -20,18 +19,14 @@ FAKE_ZONE = 'fake-zone-1b'
 FAKE_GCP_PROJECT = gcp_project.GoogleCloudProject(
     FAKE_GCP_PROJECT_NAME)
 FAKE_DISK_CREATION_RESPONSES = [
-  compute.GoogleComputeDisk(
-    FAKE_GCP_PROJECT,
-    FAKE_ZONE,
-    'fake-disk-one'),
-  compute.GoogleComputeDisk(
-    FAKE_GCP_PROJECT,
-    FAKE_ZONE,
-    'fake-disk-two')
+    compute.GoogleComputeDisk(FAKE_GCP_PROJECT.project_id, FAKE_ZONE,
+                              'fake-disk-one'),
+    compute.GoogleComputeDisk(FAKE_GCP_PROJECT.project_id, FAKE_ZONE,
+                              'fake-disk-two')
 ]
 FAKE_STATE_GCS_OBJECT_LIST = [
-  containers.GCEImage('fake-disk-one', FAKE_GCP_PROJECT_NAME),
-  containers.GCEImage('fake-disk-two', FAKE_GCP_PROJECT_NAME)
+    containers.GCEImage('fake-disk-one', FAKE_GCP_PROJECT_NAME),
+    containers.GCEImage('fake-disk-two', FAKE_GCP_PROJECT_NAME)
 ]
 
 
