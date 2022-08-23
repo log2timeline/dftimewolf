@@ -2,9 +2,7 @@
 """Local file system exporter module."""
 
 import os
-import random
 import shutil
-import string
 import tempfile
 from typing import List, Optional
 
@@ -96,11 +94,7 @@ class LocalFilesystemCopy(module.BaseModule):
     full_paths = []
     if os.path.isdir(source):
       try:
-        if os.path.exists(destination_directory):
-          destination_directory = "{0:s}/{1:s}".format(
-              destination_directory,
-              ''.join(random.choices(string.ascii_uppercase, k=10)))
-        shutil.copytree(source, destination_directory)
+        shutil.copytree(source, destination_directory, dirs_exist_ok=True)
         full_paths.append(destination_directory)
       except shutil.Error as e:
         self.ModuleError(str(e), critical=True)
