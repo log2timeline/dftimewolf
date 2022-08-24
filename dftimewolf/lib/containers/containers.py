@@ -351,6 +351,8 @@ class DataFrame(interface.AttributeContainer):
     description (str): Description of the data in the data frame.
     name (str): Name of the data frame.
     source (str): The source of the data in the DataFrame.
+    metadata (dict): a dict for optional report metadata to be used by
+        exporter modules.
   """
 
   CONTAINER_TYPE = 'data_frame'
@@ -360,8 +362,9 @@ class DataFrame(interface.AttributeContainer):
       data_frame: "pandas.DataFrame",
       description: str,
       name: str,
-      source: Optional[str] = None) -> None:
-    super(DataFrame, self).__init__()
+      source: Optional[str] = None,
+      metadata: Optional[Dict[str, Any]] = None) -> None:
+    super(DataFrame, self).__init__(metadata=metadata)
     self.data_frame = data_frame
     self.description = description
     self.name = name
