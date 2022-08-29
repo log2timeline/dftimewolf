@@ -532,8 +532,8 @@ requests = ">=2.14.2,<2.18.0 || >2.18.0"
 websocket-client = ">=0.32.0"
 
 [package.extras]
-tls = ["idna (>=2.0.0)", "cryptography (>=3.4.7)", "pyOpenSSL (>=17.5.0)"]
 ssh = ["paramiko (>=2.4.2)"]
+tls = ["pyOpenSSL (>=17.5.0)", "cryptography (>=3.4.7)", "idna (>=2.0.0)"]
 
 [[package]]
 name = "ecdsa"
@@ -547,8 +547,8 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 six = ">=1.9.0"
 
 [package.extras]
-gmpy2 = ["gmpy2"]
 gmpy = ["gmpy"]
+gmpy2 = ["gmpy2"]
 
 [[package]]
 name = "entrypoints"
@@ -705,9 +705,9 @@ rsa = {version = ">=3.1.4,<5", markers = "python_version >= \"3.6\""}
 six = ">=1.9.0"
 
 [package.extras]
-reauth = ["pyu2f (>=0.1.5)"]
+aiohttp = ["requests (>=2.20.0,<3.0.0dev)", "aiohttp (>=3.6.2,<4.0.0dev)"]
 pyopenssl = ["pyopenssl (>=20.0.0)"]
-aiohttp = ["aiohttp (>=3.6.2,<4.0.0dev)", "requests (>=2.20.0,<3.0.0dev)"]
+reauth = ["pyu2f (>=0.1.5)"]
 
 [[package]]
 name = "google-auth-httplib2"
@@ -907,9 +907,9 @@ optional = false
 python-versions = ">=3.7"
 
 [package.extras]
-test = ["coverage", "pytest-cov", "mock (>=4)", "pytest-mock (>=3)", "pytest (>=7)"]
-docs = ["sphinx-rtd-theme", "sphinx-autodoc-typehints", "sphinx (>=4)"]
-dev = ["twine", "wheel", "pep8-naming", "flake8", "tox (>=3)"]
+dev = ["tox (>=3)", "flake8", "pep8-naming", "wheel", "twine"]
+docs = ["sphinx (>=4)", "sphinx-autodoc-typehints", "sphinx-rtd-theme"]
+test = ["pytest (>=7)", "pytest-mock (>=3)", "mock (>=4)", "pytest-cov", "coverage"]
 
 [[package]]
 name = "grpc-google-iam-v1"
@@ -1054,10 +1054,10 @@ optional = false
 python-versions = ">=3.6.1,<4.0"
 
 [package.extras]
-plugins = ["setuptools"]
+pipfile_deprecated_finder = ["pipreqs", "requirementslib"]
+requirements_deprecated_finder = ["pipreqs", "pip-api"]
 colors = ["colorama (>=0.4.3,<0.5.0)"]
-requirements_deprecated_finder = ["pip-api", "pipreqs"]
-pipfile_deprecated_finder = ["requirementslib", "pipreqs"]
+plugins = ["setuptools"]
 
 [[package]]
 name = "jinja2"
@@ -1110,20 +1110,20 @@ amqp = ">=5.0.9,<6.0.0"
 vine = "*"
 
 [package.extras]
-zookeeper = ["kazoo (>=1.3.1)"]
-yaml = ["PyYAML (>=3.10)"]
-sqs = ["urllib3 (>=1.26.7)", "pycurl (>=7.44.1,<7.45.0)", "boto3 (>=1.9.12)"]
-sqlalchemy = ["sqlalchemy"]
-slmq = ["softlayer-messaging (>=1.0.3)"]
-redis = ["redis (>=3.4.1,!=4.0.0,!=4.0.1)"]
-qpid = ["qpid-tools (>=0.26)", "qpid-python (>=0.26)"]
-pyro = ["pyro4"]
-msgpack = ["msgpack"]
-mongodb = ["pymongo (>=3.3.0,<3.12.1)"]
-librabbitmq = ["librabbitmq (>=2.0.0)"]
-consul = ["python-consul (>=0.6.0)"]
-azurestoragequeues = ["azure-storage-queue"]
 azureservicebus = ["azure-servicebus (>=7.0.0)"]
+azurestoragequeues = ["azure-storage-queue"]
+consul = ["python-consul (>=0.6.0)"]
+librabbitmq = ["librabbitmq (>=2.0.0)"]
+mongodb = ["pymongo (>=3.3.0,<3.12.1)"]
+msgpack = ["msgpack"]
+pyro = ["pyro4"]
+qpid = ["qpid-python (>=0.26)", "qpid-tools (>=0.26)"]
+redis = ["redis (>=3.4.1,!=4.0.0,!=4.0.1)"]
+slmq = ["softlayer-messaging (>=1.0.3)"]
+sqlalchemy = ["sqlalchemy"]
+sqs = ["boto3 (>=1.9.12)", "pycurl (>=7.44.1,<7.45.0)", "urllib3 (>=1.26.7)"]
+yaml = ["PyYAML (>=3.10)"]
+zookeeper = ["kazoo (>=1.3.1)"]
 
 [[package]]
 name = "kubernetes"
@@ -1764,7 +1764,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
 name = "pytype"
-version = "2022.6.30"
+version = "2022.8.23"
 description = "Python type inferencer"
 category = "dev"
 optional = false
@@ -1773,12 +1773,13 @@ python-versions = "<3.11,>=3.7"
 [package.dependencies]
 attrs = ">=21.4.0"
 importlab = ">=0.7"
-libcst = "*"
+libcst = ">=0.4.5"
 networkx = "<2.8.4"
 ninja = ">=1.10.0.post2"
-pydot = "*"
-tabulate = "*"
-toml = "*"
+pydot = ">=1.4.2"
+tabulate = ">=0.8.10"
+toml = ">=0.10.2"
+typing-extensions = ">=4.3.0"
 
 [[package]]
 name = "pytz"
@@ -2218,13 +2219,13 @@ optional = false
 python-versions = ">=3.7"
 
 [package.extras]
-testing = ["pytest-mypy (>=0.9.1)", "pytest-black (>=0.3.7)", "func-timeout", "jaraco.itertools", "pytest-enabler (>=1.3)", "pytest-cov", "pytest-flake8", "pytest-checkdocs (>=2.4)", "pytest (>=6)"]
-docs = ["jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "jaraco.packaging (>=9)", "sphinx"]
+docs = ["sphinx", "jaraco.packaging (>=9)", "rst.linker (>=1.9)", "jaraco.tidelift (>=1.4)"]
+testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.3)", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy (>=0.9.1)"]
 
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<3.11"
-content-hash = "4638c6bbb71873eb7eb93cca47017fa5ca3b8910e768daf29e64dd2664486cb3"
+content-hash = "c0ac17a7e5e31c26d92f87d2122ee3a758395ce2bbbb5a2113da1a69e1d1f462"
 
 [metadata.files]
 adal = [
@@ -3436,19 +3437,19 @@ python-magic = [
     {file = "python_magic-0.4.27-py2.py3-none-any.whl", hash = "sha256:c212960ad306f700aa0d01e5d7a325d20548ff97eb9920dcd29513174f0294d3"},
 ]
 pytype = [
-    {file = "pytype-2022.6.30-cp310-cp310-macosx_10_15_universal2.whl", hash = "sha256:b39bce7b0a563ead26d9c609f0e075f1d4098d291ef5f3a791f3d5968900a43f"},
-    {file = "pytype-2022.6.30-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:65950a7426e420dfdb164dd9691f208405490142f6ed7f66facaf53b93b61523"},
-    {file = "pytype-2022.6.30-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:cd93c231244dd6642144054e153a969897877c033e7b21e8b639b20eae8db126"},
-    {file = "pytype-2022.6.30-cp37-cp37m-macosx_10_15_x86_64.whl", hash = "sha256:e23558a132ee62a5611e21d38d2e5157b5f699fd2ac139b3c1c46b30b76d5bf7"},
-    {file = "pytype-2022.6.30-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:5fe3f0ccc5e6b044887a06f2303c4868e4a9a37b747dc224948968f1caeed147"},
-    {file = "pytype-2022.6.30-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:fc7d056d5786dc094fc188aeefa4c6e838f2cb3da6f35c46dccc64fd46a6ad74"},
-    {file = "pytype-2022.6.30-cp38-cp38-macosx_10_15_x86_64.whl", hash = "sha256:06305dc61dea81463548d901b5fb0be1bb036751ce7ce3dabd03dec3201fdea6"},
-    {file = "pytype-2022.6.30-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:79a624b8eace17d14d8d19880b478679f7b6b2bafb5c80261ced0c115a46cba4"},
-    {file = "pytype-2022.6.30-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:db0c7467a4090adbe30be2becd7d6b62569f7f6beeab38ceb2bc20cae36966e4"},
-    {file = "pytype-2022.6.30-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:20c2b35bd563752d224cc9d4a7f14512fd20f0a193aec6c2c8c06e7306e7d750"},
-    {file = "pytype-2022.6.30-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:4449aa567603c7ca043a83293720c94ac272ed9946a992c17dfaf98d06e1f471"},
-    {file = "pytype-2022.6.30-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:63afdf665d4e9cd329a95363127cc35cdec7b34ca96c53a7ac8e42f40132795c"},
-    {file = "pytype-2022.6.30.tar.gz", hash = "sha256:1c8c425e8bb40117322be06476080d132466fab72e7d199af2de5c55285b6d4f"},
+    {file = "pytype-2022.8.23-cp310-cp310-macosx_10_15_x86_64.whl", hash = "sha256:92b4e981c71b7f79126ef2c52a04bc2dafc061b88b65427702e95d77882a72ad"},
+    {file = "pytype-2022.8.23-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:3a68f85c59e3d1add8583a5dfd74db3817c7d653134a5955707bce7e31c2785d"},
+    {file = "pytype-2022.8.23-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b9fe9d7d5fcd9b44d8981832ee49123cd5596d8e8ecaf3c7472c9ccc191fadac"},
+    {file = "pytype-2022.8.23-cp37-cp37m-macosx_10_15_x86_64.whl", hash = "sha256:a0ead4f4d33b5ebc4d572bc6e673241828906630e6efc2a2bbadf68d3fe2cbc7"},
+    {file = "pytype-2022.8.23-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:3b766edfa62d214900bcb6572eadd1434d013f5bd701b6ac4d9f557b624293d7"},
+    {file = "pytype-2022.8.23-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e9212f982c51f830b043aaa134e04ce9f6b7cc6eb32903959d6ba6fdb55765cc"},
+    {file = "pytype-2022.8.23-cp38-cp38-macosx_10_15_x86_64.whl", hash = "sha256:addd39eccc9f1351acfcde4e0a9c7c11fbae0cc5245abf11b6e1e84b880b142d"},
+    {file = "pytype-2022.8.23-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:4c99099bf3efdfaaadb6c83100e0c0a0a3c1b6b7880a6f3652324c56c854da32"},
+    {file = "pytype-2022.8.23-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:430a5b5104a96ada9c0f3f4f4320754d08240113ebd5d7a9cf2057c8287a8621"},
+    {file = "pytype-2022.8.23-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:a044f30f417979bf76edb480cb359f36434bc8284a3b6fb6c1a91bff60afaeb0"},
+    {file = "pytype-2022.8.23-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d822da7464cccd45795460776874dc20be39f15349891a30861e3d0faee54a14"},
+    {file = "pytype-2022.8.23-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7781a9ad52487936431f4d110f28ee82bc7683b7250046a350f134a199cde01b"},
+    {file = "pytype-2022.8.23.tar.gz", hash = "sha256:c498162248f21cc1e9510070594c8e28461c2c7a935d754c09d492ac7cd03842"},
 ]
 pytz = [
     {file = "pytz-2022.1-py2.py3-none-any.whl", hash = "sha256:e68985985296d9a66a881eb3193b0906246245294a881e7c8afe623866ac6a5c"},
