@@ -8,6 +8,8 @@ import threading
 import traceback
 from typing import Any, Callable, Dict, List, Optional, Union
 
+import signal
+
 import curses
 
 class Status(Enum):
@@ -157,6 +159,7 @@ class CursesDisplayManager:
     curses.noecho()
     curses.cbreak()
     self._stdscr.keypad(True)
+    signal.signal(signal.SIGWINCH, self.SIGWINCH_Handler)
 
   def EndCurses(self) -> None:
     """Curses finalisation actions."""
@@ -206,26 +209,40 @@ class CursesDisplayManager:
     Args:
       source: The source of the message, eg 'dftimewolf' or a runtime name.
       content: The message content.
-      is_error: True if the message is an error message, False otherwise."""
+      is_error: True if the message is an error message, False otherwise.
+    """
     if self._messages_longest_source_len < len(source):
       self._messages_longest_source_len = len(source)
 
-    _, x = self._stdscr.getmaxyx()
-
-    lines = []
-
-    # textwrap.wrap behaves strangely if there are newlines in the content
     for line in content.split('\n'):
-      lines += textwrap.wrap(line,
-                             width=x - self._messages_longest_source_len - 8,
-                             subsequent_indent='  ',
-                             replace_whitespace=False)
-
-    for line in lines:
       if line:
         self._messages.append(Message(source, line, is_error))
 
     self.Draw()
+
+  def PrepareMessagesForDisplay(self, space: int) -> List[str]:
+    """Prepares the list of messages to be displayed.
+
+    Args:
+      space: The number of lines available to print messages.
+
+    Returns:
+      A list of strings, formatted for display."""
+    _, x = self._stdscr.getmaxyx()
+
+    lines = []
+    start = len(self._messages) - space
+    start = 0 if start < 0 else start
+
+    for m in self._messages:
+      lines.extend(
+        textwrap.wrap(m.Stringify(self._messages_longest_source_len),
+                      width=x - self._messages_longest_source_len - 8,
+                       initial_indent='  ', subsequent_indent='    ',
+                      replace_whitespace=False)
+      )
+
+    return lines[start:]
 
   def EnqueuePreflight(self,
                        name: str,
@@ -336,14 +353,19 @@ class CursesDisplayManager:
         curr_line += 1
 
         message_space = y - 4 - curr_line
-        start = len(self._messages) - message_space
-        start = 0 if start < 0 else start
-
-        # Slice the aray, we may not be able to fit all messages on the screen
-        for m in self._messages[start:]:
-          self._stdscr.addstr(curr_line, 0,
-              f'  {m.Stringify(self._messages_longest_source_len)}'[:x])
+        for m in self.PrepareMessagesForDisplay(message_space):
+          self._stdscr.addstr(curr_line, 0, m[:x])
           curr_line += 1
+
+#        message_space = y - 4 - curr_line
+#        start = len(self._messages) - message_space
+#        start = 0 if start < 0 else start
+#
+#        # Slice the aray, we may not be able to fit all messages on the screen
+#        for m in self._messages[start:]:
+#          self._stdscr.addstr(curr_line, 0,
+#              f'  {m.Stringify(self._messages_longest_source_len)}'[:x])
+#          curr_line += 1
 
         # Exceptions
         if self._exception:
@@ -382,6 +404,10 @@ class CursesDisplayManager:
       self._stdscr.addstr(y - 1, 0, "Press any key to continue")
       self._stdscr.getkey()
       self._stdscr.addstr(y - 1, 0, "                         ")
+
+  def SIGWINCH_Handler(self, *unused_argvs: Any) -> None:
+    """Redraw the window when SIGWINCH is raised."""
+    self.Draw()
 
 
 class CDMStringIOWrapper(io.StringIO):
