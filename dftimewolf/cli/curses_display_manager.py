@@ -219,18 +219,18 @@ class CursesDisplayManager:
 
     self.Draw()
 
-  def PrepareMessagesForDisplay(self, space: int) -> List[str]:
+  def PrepareMessagesForDisplay(self, available_lines: int) -> List[str]:
     """Prepares the list of messages to be displayed.
 
     Args:
-      space: The number of lines available to print messages.
+      available_lines: The number of lines available to print messages.
 
     Returns:
       A list of strings, formatted for display."""
     _, x = self._stdscr.getmaxyx()
 
     lines = []
-    start = len(self._messages) - space
+    start = len(self._messages) - available_lines
     start = 0 if start < 0 else start
 
     for m in self._messages:
