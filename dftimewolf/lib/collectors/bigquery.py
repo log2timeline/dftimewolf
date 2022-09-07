@@ -4,7 +4,7 @@ import tempfile
 from typing import Optional
 
 from google.auth import exceptions as google_auth_exceptions
-from google.cloud import bigquery  # type: ignore
+from google.cloud import bigquery # type: ignore
 import google.cloud.exceptions
 
 from dftimewolf.lib import module

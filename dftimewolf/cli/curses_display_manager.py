@@ -8,9 +8,9 @@ import threading
 import traceback
 from typing import Any, Callable, Dict, List, Optional, Union
 
+import curses
 import signal
 
-import curses
 
 class Status(Enum):
   """Enum class for module states.
@@ -209,8 +209,7 @@ class CursesDisplayManager:
     Args:
       source: The source of the message, eg 'dftimewolf' or a runtime name.
       content: The message content.
-      is_error: True if the message is an error message, False otherwise.
-    """
+      is_error: True if the message is an error message, False otherwise."""
     if self._messages_longest_source_len < len(source):
       self._messages_longest_source_len = len(source)
 
@@ -356,16 +355,6 @@ class CursesDisplayManager:
         for m in self.PrepareMessagesForDisplay(message_space):
           self._stdscr.addstr(curr_line, 0, m[:x])
           curr_line += 1
-
-#        message_space = y - 4 - curr_line
-#        start = len(self._messages) - message_space
-#        start = 0 if start < 0 else start
-#
-#        # Slice the aray, we may not be able to fit all messages on the screen
-#        for m in self._messages[start:]:
-#          self._stdscr.addstr(curr_line, 0,
-#              f'  {m.Stringify(self._messages_longest_source_len)}'[:x])
-#          curr_line += 1
 
         # Exceptions
         if self._exception:
