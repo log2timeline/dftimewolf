@@ -230,18 +230,15 @@ class CursesDisplayManager:
     _, x = self._stdscr.getmaxyx()
 
     lines = []
-    start = len(self._messages) - available_lines
-    start = 0 if start < 0 else start
 
     for m in self._messages:
       lines.extend(
         textwrap.wrap(m.Stringify(self._messages_longest_source_len),
                       width=x - self._messages_longest_source_len - 8,
                       initial_indent='  ', subsequent_indent='    ',
-                      replace_whitespace=False)
-      )
+                      replace_whitespace=False))
 
-    return lines[start:]
+    return lines[-available_lines:]
 
   def EnqueuePreflight(self,
                        name: str,
