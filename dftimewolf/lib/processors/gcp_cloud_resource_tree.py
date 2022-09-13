@@ -146,7 +146,11 @@ class GCPCloudResourceTree(module.BaseModule):
     self._OutputResults(resource_to_output)
 
   def _OutputResults(self, resource_to_output: gcp_crt_helper.Resource) -> None:
-    """Output results."""
+    """Output result to console, temp file and DataFrame Container.
+
+    Args:
+      resource_to_output: resource to output the tree for.
+    """
     # Save resource tree to temp file
     output_file = tempfile.NamedTemporaryFile(mode='w',
                                               delete=False,
