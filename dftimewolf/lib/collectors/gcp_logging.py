@@ -88,7 +88,7 @@ class GCPLogsCollector(module.BaseModule):
           except google_api_exceptions.TooManyRequests as exception:
             retries += 1
             self.logger.warning(
-                'Hit quota limit requesting GCP logs (retries {0:d} of {1:d}):'
+                'Hit quota limit requesting GCP logs (retries {0:d} of {1:d}): '
                 '{2:s}'.format(
                     retries, MAX_RETRIES, str(exception)))
             time.sleep(4)
