@@ -16,6 +16,7 @@ from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 
+MAX_RETRIES = 10
 
 # Monkey patching the ProtobufEntry because of various issues, notably
 # https://github.com/googleapis/google-cloud-python/issues/7918
@@ -76,16 +77,27 @@ class GCPLogsCollector(module.BaseModule):
       pages = results.pages
 
       while True:
-        try:
-          page = next(pages)
-        except google_api_exceptions.TooManyRequests as exception:
-          self.logger.warning(
-              'Hit quota limit requesting GCP logs: {0:s}'.format(
-                  str(exception)))
-          time.sleep(4)
-          continue
-        except StopIteration:
-          break
+        have_page = False
+        retries = 0
+        while not have_page and retries < MAX_RETRIES:
+          try:
+            page = next(pages)
+            have_page = True
+          except google_api_exceptions.TooManyRequests as exception:
+            retries += 1
+            self.logger.warning(
+                'Hit quota limit requesting GCP logs (retries {0:d} of {1:d}):'
+                '{2:s}'.format(
+                    retries, MAX_RETRIES, str(exception)))
+            time.sleep(4)
+            continue
+          except StopIteration:
+            break
+
+        if not have_page and retries >= MAX_RETRIES:
+          self.ModuleError(
+              'Hit max retries ({0:d}) requesting GCP logs'.format(
+                  MAX_RETRIES) , critical=True)
 
         for entry in page:
 
