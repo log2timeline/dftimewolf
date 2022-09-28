@@ -76,8 +76,10 @@ class GCPLogsCollector(module.BaseModule):
 
       pages = results.pages
 
-      while True:
+      have_results = True
+      while have_results:
         have_page = False
+        page = []
         retries = 0
         while not have_page and retries < MAX_RETRIES:
           try:
@@ -92,6 +94,7 @@ class GCPLogsCollector(module.BaseModule):
             time.sleep(4)
             continue
           except StopIteration:
+            have_results = False
             break
 
         if not have_page and retries >= MAX_RETRIES:
