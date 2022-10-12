@@ -2,6 +2,7 @@
 """Helper classes for the GCP cloud resource tree module."""
 import datetime
 import enum
+import io
 import json
 from typing import Dict, List, Optional, Any, Set, Union
 import pandas as pd
@@ -271,27 +272,23 @@ class Resource():
 
   def __str__(self) -> str:
     """Returns a string representation of the resource tree."""
-    output = '\n'
+    output = io.StringIO('')
+    # output = '\n'
     dashes = '-' * 200
-    # pylint: disable=line-too-long
-    output_format = '{:<20s}|{:<18s}|{:<20s}|{:<25s}|{:<18s}|{:<20s}|{:<25s}|{:<18s}|{:<100s}\n'
-
     # Draw table header
-    output = f'{output} {dashes} \n'
-    output = f"""{output} {
-        output_format.format(
-            "Resource ID",
-            "Resource Type",
-            "Creation TimeStamp",
-            "Created By",
-            "Creator IP Addr",
-            "Deletion Timestamp",
-            "Deleted By",
-            "Deleter IP Addr",
-            "Tree"
-            )
-        }"""
-    output = f'{output} {dashes} \n'
+    output.write(f'\n{dashes}\n')
+    output.write(f"""
+                 {"Resource ID":<20s}|
+                 {"Resource Type":<18s}|
+                 {"Creation TimeStamp":<20s}|
+                 {"Created By":<25s}|
+                 {"Creator IP Addr":<18s}|
+                 {"Deletion Timestamp":<20s}|
+                 {"Deleted By":<25s}|
+                 {"Deleter IP Addr":<18s}|
+                 {"Tree":<100s}\n
+                 """)
+    output.write(f'{dashes}\n')
 
     # Generate resource tree
     result = self.GenerateTree()
@@ -300,27 +297,26 @@ class Resource():
     for entry in result:
       resource: Optional[Resource] = entry.get('resource_object')
       if resource:
-        output = f"""{output} {
-            output_format.format(
-                resource.id if ('-' not in resource.id) else '',
-                resource.type,
-                resource.creation_timestamp.astimezone(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S") if resource.creation_timestamp else "",
-                resource.created_by,
-                resource.creator_ip_address,
-                resource.deletion_timestamp.astimezone(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S") if resource.deletion_timestamp else "",
-                resource.deleted_by,
-                resource.deleter_ip_address,
-                entry.get("tree")
-                )
-            }"""
+        # pylint: disable=line-too-long
+        output.write(f"""
+                     {resource.id if ('-' not in resource.id) else '':<20s}|
+                     {resource.type:<18s}|
+                     {resource.creation_timestamp.astimezone(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S") if resource.creation_timestamp else "":<20s}|
+                     {resource.created_by:<25s}|
+                     {resource.creator_ip_address:<18s}|
+                     {resource.deletion_timestamp.astimezone(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S") if resource.deletion_timestamp else "":<20s}|
+                     {resource.deleted_by:<25s}|
+                     {resource.deleter_ip_address:<18s}|
+                     {entry.get("tree"):<100s}\n
+                     """)
 
-    output = f'{output} {dashes} \n'
+    output.write(f'{dashes} \n')
 
-    return output
+    return output.getvalue()
 
   def AsDict(self) -> Dict[str, Any]:
     """Returns a dictionary representation of the resource object."""
-    dict = {  # pylint: disable=redefined-builtin
+    return {
         'id':
             self.id,
         'name':
@@ -354,7 +350,6 @@ class Resource():
                 datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
             if self.deletion_timestamp else ''
     }
-    return dict
 
   def ToDataFrame(self) -> pd.DataFrame:
     """Returns a DataFrame representation of the resource tree."""
@@ -367,7 +362,7 @@ class Resource():
       resource_dict['tree'] = entry.get('tree')
       output.append(resource_dict)
     df = pd.DataFrame.from_records(output)
-    df.loc[df["id"].str.contains('-'), "id"] = ''
+    df.loc[df['id'].str.contains('-'), 'id'] = ''
     # Rearrange columns
     df = df[[
         'id', 'name', 'type', 'project_id', 'location', 'tree',

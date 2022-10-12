@@ -137,11 +137,7 @@ class GCPCloudResourceTree(module.BaseModule):
 
     # If the resource has a parent we output the tree of the parent so we can
     # have the resource sibling displayed
-    resource_to_output = None
-    if resource.parent:
-      resource_to_output = resource.parent
-    else:
-      resource_to_output = resource
+    resource_to_output = resource.parent or resource
 
     self._OutputResults(resource_to_output)
 
@@ -396,13 +392,13 @@ class GCPCloudResourceTree(module.BaseModule):
         f'Retrieving logs from {start_timestamp.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")} to {end_timestamp.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}.'
     )
 
-    query_filter = f'''resource.type = ("gce_instance" OR "api" OR "gce_disk" OR "gce_image" OR "gce_instance_template" OR "gce_snapshot")
+    query_filter = f"""resource.type = ("gce_instance" OR "api" OR "gce_disk" OR "gce_image" OR "gce_instance_template" OR "gce_snapshot")
         AND logName = "projects/{project_id}/logs/cloudaudit.googleapis.com%2Factivity"
         AND operation.first = "true"
         AND timestamp >= "{start_timestamp.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}"
         AND timestamp <= "{end_timestamp.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}"
         AND severity=NOTICE \
-        AND protoPayload.methodName : ("insert" OR "create" OR "delete")'''
+        AND protoPayload.methodName : ("insert" OR "create" OR "delete")"""
 
     if resource_id:
       query_filter = f'{query_filter} AND (resource.labels.instance_id="{resource_id}" OR resource.labels.image_id="{resource_id}")'
