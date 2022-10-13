@@ -24,7 +24,6 @@ class LocationType(enum.Enum):
 
 
 class Resource():
-  # pylint: disable=line-too-long
   """A Class that represents a resource (Instance, Disk, Image...etc).
 
   Attributes:
@@ -87,7 +86,8 @@ class Resource():
   @property
   def resource_name(self) -> str:
     """Property resource_name Getter."""
-    if not self._resource_name and self.name and self.project_id and self.location:
+    if (not self._resource_name and self.name and self.project_id and
+        self.location):
       tmp_type = str()
       if self.type == 'gce_disk':
         tmp_type = 'disks'
@@ -107,9 +107,11 @@ class Resource():
       if self.location_type == LocationType.GLOBAL:
         return f'projects/{self.project_id}/global/{tmp_type}/{self.name}'
       if self.location_type == LocationType.REGION:
-        return f'projects/{self.project_id}/regions/{self.location}/{tmp_type}/{self.name}'  # pylint: disable=line-too-long
+        return f"""projects/{
+          self.project_id}/regions/{self.location}/{tmp_type}/{self.name}"""
       if self.location_type == LocationType.ZONE:
-        return f'projects/{self.project_id}/zones/{self.location}/{tmp_type}/{self.name}'  # pylint: disable=line-too-long
+        return f"""projects/{
+          self.project_id}/zones/{self.location}/{tmp_type}/{self.name}"""
 
     return self._resource_name
 
@@ -123,11 +125,10 @@ class Resource():
     Args:
       value: value to set resource_name to.
     """
-    # pylint: disable=line-too-long
     # value example:
     # 1- If parsing logs: projects/test-project/zones/us-central1-a/disks/vm1
-    # 2- If querying resource through API call: //www.googleapis.com/compute/beta/projects/test-project/zones/us-central1-a/disks/vm1
-    # pylint: enable=line-too-long
+    # 2- If querying resource through API call:
+    #     //www.googleapis.com/compute/beta/projects/test-project/zones/us-central1-a/disks/vm1 # pylint: disable=line-too-long
     if value:
       values = value.split('/')
 
@@ -297,18 +298,21 @@ class Resource():
     for entry in result:
       resource: Optional[Resource] = entry.get('resource_object')
       if resource:
-        # pylint: disable=line-too-long
+
         output.write(f"""
                      {resource.id if ('-' not in resource.id) else '':<20s}|
                      {resource.type:<18s}|
-                     {resource.creation_timestamp.astimezone(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S") if resource.creation_timestamp else "":<20s}|
+                     {resource.creation_timestamp.astimezone(
+                         datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+                         if resource.creation_timestamp else "":<20s}|
                      {resource.created_by:<25s}|
                      {resource.creator_ip_address:<18s}|
-                     {resource.deletion_timestamp.astimezone(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S") if resource.deletion_timestamp else "":<20s}|
+                     {resource.deletion_timestamp.astimezone(
+                         datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+                         if resource.deletion_timestamp else "":<20s}|
                      {resource.deleted_by:<25s}|
                      {resource.deleter_ip_address:<18s}|
-                     {entry.get("tree"):<100s}\n
-                     """)
+                     {entry.get("tree"):<100s}\n""")
 
     output.write(f'{dashes} \n')
 

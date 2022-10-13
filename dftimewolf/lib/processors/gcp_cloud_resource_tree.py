@@ -12,7 +12,8 @@ from libcloudforensics.providers.gcp.internal import log as gcp_log
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.processors import gcp_cloud_resource_tree_helper as gcp_crt_helper  # pylint: disable=line-too-long
+from dftimewolf.lib.processors import (gcp_cloud_resource_tree_helper as
+                                       gcp_crt_helper)
 
 if TYPE_CHECKING:
   from dftimewolf.lib import state
@@ -30,8 +31,7 @@ class GCPCloudResourceTree(module.BaseModule):
     mode (gcp_crt_helper.OperatingMode): Module operation mode
     resources_dict (Dict[str, Resource]): Dictionary of resources
     period_covered_by_retrieved_logs (Dict[str, datetime]): Dictionary of the
-        time range of logs retrieved and processed
-
+      time range of logs retrieved and processed
   """
 
   def __init__(self,
@@ -43,19 +43,19 @@ class GCPCloudResourceTree(module.BaseModule):
     Args:
       state: recipe state.
       name: The module's runtime name.
-      critical: True if the module is critical, which causes
-          the entire recipe to fail if the module encounters an error.
+      critical: True if the module is critical, which causes the entire recipe
+        to fail if the module encounters an error.
     """
-    super(GCPCloudResourceTree, self).__init__(state,
-                                               name=name,
-                                               critical=critical)
+    super(GCPCloudResourceTree, self).__init__(
+        state, name=name, critical=critical)
 
     self.project_id: str = str()
     self.location: str = str()
     self.resource_id: Optional[str] = None
     self.resource_name: Optional[str] = None
     self.resource_type: str = str()
-    self.mode: gcp_crt_helper.OperatingMode = gcp_crt_helper.OperatingMode.ONLINE  # pylint: disable=line-too-long
+    self.mode: gcp_crt_helper.OperatingMode = (
+        gcp_crt_helper.OperatingMode.ONLINE)
     self.period_covered_by_retrieved_logs: Dict[str, datetime.datetime] = {}
     self.resources_dict: Dict[str, gcp_crt_helper.Resource] = {}
 
@@ -73,15 +73,15 @@ class GCPCloudResourceTree(module.BaseModule):
       project_id: Project id where the resource are located.
       location: Location where the resource are located (zone/region/global).
       resource_type: Resource type (currently supported types: gce_instance,
-          gce_disk, gce_image, gce_machine_image, gce_instance_template,
-          gce_snapshot)
+        gce_disk, gce_image, gce_machine_image, gce_instance_template,
+        gce_snapshot)
       mode: operational mode (online or offline).
       resource_id: Resource id.
       resource_name: Resource name.
     """
     if not resource_id and not resource_name:
-      self.ModuleError('Please supply resource_id or resource_name.',
-                       critical=True)
+      self.ModuleError(
+          'Please supply resource_id or resource_name.', critical=True)
     self.project_id = project_id
     self.location = location
     self.resource_id = resource_id
@@ -148,10 +148,8 @@ class GCPCloudResourceTree(module.BaseModule):
       resource_to_output: resource to output the tree for.
     """
     # Save resource tree to temp file
-    output_file = tempfile.NamedTemporaryFile(mode='w',
-                                              delete=False,
-                                              encoding='utf-8',
-                                              suffix='.txt')
+    output_file = tempfile.NamedTemporaryFile(
+        mode='w', delete=False, encoding='utf-8', suffix='.txt')
     output_path = output_file.name
 
     self.PublishMessage(f'Saving resource tree to {output_path}')
@@ -225,10 +223,11 @@ class GCPCloudResourceTree(module.BaseModule):
       if resource.creation_timestamp:
         # Handle first entry. Set start_timestamp and end_timestamp to the
         # resource creation_timestamp
-        # pylint: disable=line-too-long
         if not time_ranges:
-          time_range['start_timestamp'] = resource.creation_timestamp - datetime.timedelta(hours=1)
-          time_range['end_timestamp'] = resource.creation_timestamp + datetime.timedelta(hours=1)
+          time_range['start_timestamp'] = (
+              resource.creation_timestamp - datetime.timedelta(hours=1))
+          time_range['end_timestamp'] = (
+              resource.creation_timestamp + datetime.timedelta(hours=1))
           time_ranges.append(time_range)
         else:
           # Check the time difference between the end_timestamp of the last time
@@ -238,12 +237,15 @@ class GCPCloudResourceTree(module.BaseModule):
           # To optimize calls to retrieve logs, we attempt to group resources
           # that have a creation timestamp within 30 days.
           if (time_diff.total_seconds() / 60 / 60 / 24) <= 30:
-            time_ranges[-1]['end_timestamp'] = resource.creation_timestamp + datetime.timedelta(hours=1)
+            time_ranges[-1]['end_timestamp'] = (
+                resource.creation_timestamp + datetime.timedelta(hours=1))
           # Else if resource doesn't fall within 30 days, add a new time range
           # entry
           else:
-            time_range['start_timestamp'] = resource.creation_timestamp - datetime.timedelta(hours=1)
-            time_range['end_timestamp'] = resource.creation_timestamp + datetime.timedelta(hours=1)
+            time_range['start_timestamp'] = (
+                resource.creation_timestamp - datetime.timedelta(hours=1))
+            time_range['end_timestamp'] = (
+                resource.creation_timestamp + datetime.timedelta(hours=1))
             time_ranges.append(time_range)
 
     # Retrieve and parse logs for each of the time ranges.
@@ -280,18 +282,19 @@ class GCPCloudResourceTree(module.BaseModule):
         parent_resource = self.resources_dict.get(resource.parent.id,
                                                   resource.parent)
       else:
-        matched_parent_resource = self._FindResource(
-            resource.parent.name, resource.parent.type,
-            resource.parent.location, resource.parent.project_id)
+        matched_parent_resource = self._FindResource(resource.parent.name,
+                                                     resource.parent.type,
+                                                     resource.parent.location,
+                                                     resource.parent.project_id)
         if matched_parent_resource:
           parent_resource = matched_parent_resource
         else:
           parent_resource = resource.parent
 
     if parent_resource:
-      # pylint: disable=line-too-long
-      if parent_resource.IsDeleted(
-      ) and self.mode == gcp_crt_helper.OperatingMode.ONLINE and resource.creation_timestamp:
+      if (parent_resource.IsDeleted() and
+          self.mode == gcp_crt_helper.OperatingMode.ONLINE and
+          resource.creation_timestamp):
         found_resource = self._SearchForDeletedResource(
             parent_resource, resource.creation_timestamp)
         if found_resource:
@@ -317,8 +320,8 @@ class GCPCloudResourceTree(module.BaseModule):
     Args:
       resource_name: Resource name.
       resource_type: Resource type (currently supported types: gce_instance,
-          gce_disk, gce_image, gce_machine_image, gce_instance_template,
-          gce_snapshot).
+        gce_disk, gce_image, gce_machine_image, gce_instance_template,
+        gce_snapshot).
       location (Optional): Resource location (zone/region) or 'global'.
       project_id (Optional): Id of the project the resource is under.
 
@@ -387,21 +390,29 @@ class GCPCloudResourceTree(module.BaseModule):
         start_timestamp = self.period_covered_by_retrieved_logs['end']
       self.period_covered_by_retrieved_logs['end'] = end_timestamp
 
-    # pylint: disable=line-too-long
-    self.PublishMessage(
-        f'Retrieving logs from {start_timestamp.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")} to {end_timestamp.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}.'
-    )
+    self.PublishMessage(f"""Retrieving logs from
+        {start_timestamp.astimezone(datetime.timezone.utc).strftime(
+            "%Y-%m-%dT%H:%M:%SZ")}
+        to {end_timestamp.astimezone(datetime.timezone.utc).strftime(
+            "%Y-%m-%dT%H:%M:%SZ")}.
+        """)
 
-    query_filter = f"""resource.type = ("gce_instance" OR "api" OR "gce_disk" OR "gce_image" OR "gce_instance_template" OR "gce_snapshot")
-        AND logName = "projects/{project_id}/logs/cloudaudit.googleapis.com%2Factivity"
+    query_filter = f"""resource.type = ("gce_instance" OR "api" OR "gce_disk"
+        OR "gce_image" OR "gce_instance_template" OR "gce_snapshot")
+        AND logName = "projects/{
+            project_id}/logs/cloudaudit.googleapis.com%2Factivity"
         AND operation.first = "true"
-        AND timestamp >= "{start_timestamp.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}"
-        AND timestamp <= "{end_timestamp.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}"
+        AND timestamp >= "{start_timestamp.astimezone(
+            datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}"
+        AND timestamp <= "{end_timestamp.astimezone(
+            datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}"
         AND severity=NOTICE \
         AND protoPayload.methodName : ("insert" OR "create" OR "delete")"""
 
     if resource_id:
-      query_filter = f'{query_filter} AND (resource.labels.instance_id="{resource_id}" OR resource.labels.image_id="{resource_id}")'
+      query_filter = f"""{query_filter} AND
+          (resource.labels.instance_id="{resource_id}" OR
+          resource.labels.image_id="{resource_id}")"""
 
     log_messages: List[Dict[str,
                             Any]] = gcl.ExecuteQuery(qfilter=[query_filter])
@@ -428,8 +439,7 @@ class GCPCloudResourceTree(module.BaseModule):
       file_content = input_file.readline()
 
       if not file_content:
-        self.logger.warning(
-            f'The supplied file {file_container.path} is empty')
+        self.logger.warning(f'The supplied file {file_container.path} is empty')
         return
 
       while file_content:
@@ -593,15 +603,18 @@ class GCPCloudResourceTree(module.BaseModule):
                                               disk_resource.location,
                                               disk_resource.project_id)
 
-        # pylint: disable=line-too-long
         if matched_resource:
-          matched_resource.created_by = matched_resource.created_by or resource.created_by
-          matched_resource.creator_ip_address = matched_resource.creator_ip_address or resource.creator_ip_address
-          matched_resource.creator_useragent = matched_resource.creator_useragent or resource.creator_useragent
-          matched_resource.parent = matched_resource.parent or disk_resource.parent
+          matched_resource.created_by = (
+              matched_resource.created_by or resource.created_by)
+          matched_resource.creator_ip_address = (
+              matched_resource.creator_ip_address or
+              resource.creator_ip_address)
+          matched_resource.creator_useragent = (
+              matched_resource.creator_useragent or resource.creator_useragent)
+          matched_resource.parent = (
+              matched_resource.parent or disk_resource.parent)
           resource.disks.append(matched_resource)
           continue
-        # pylint: enable=line-too-long
 
         initialize_params = disk.get('initializeParams')
         if initialize_params:
@@ -635,9 +648,10 @@ class GCPCloudResourceTree(module.BaseModule):
         resource.disks.append(disk_resource)
 
         if disk_resource.parent and not disk_resource.parent.id:
-          matched_resource = self._FindResource(
-              disk_resource.parent.name, disk_resource.parent.type,
-              disk_resource.parent.location, disk_resource.parent.project_id)
+          matched_resource = self._FindResource(disk_resource.parent.name,
+                                                disk_resource.parent.type,
+                                                disk_resource.parent.location,
+                                                disk_resource.parent.project_id)
           if matched_resource:
             disk_resource.parent = matched_resource
 
@@ -682,7 +696,8 @@ class GCPCloudResourceTree(module.BaseModule):
     if resource.project_id != self.project_id:
       return None
 
-    while start_timestamp > (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=400)):  # pylint: disable=line-too-long
+    while start_timestamp > (datetime.datetime.now(datetime.timezone.utc) -
+                             datetime.timedelta(days=400)):
 
       end_timestamp = start_timestamp + datetime.timedelta(minutes=20)
       start_timestamp = start_timestamp - datetime.timedelta(days=30)
@@ -693,7 +708,8 @@ class GCPCloudResourceTree(module.BaseModule):
 
       matched_resource = self._FindResource(resource.name, resource.type)
       if matched_resource:
-        if matched_resource.deletion_timestamp and matched_resource.creation_timestamp:  # pylint: disable=line-too-long
+        if (matched_resource.deletion_timestamp and
+            matched_resource.creation_timestamp):
           return matched_resource
 
     return None
@@ -874,8 +890,8 @@ class GCPCloudResourceTree(module.BaseModule):
               # If the instance has a sourceMachineImage set, it means that this
               # instance is created from a Machine Image. So we add this as a
               # parent to the disk
-              if (instance.get('sourceMachineImage')
-                  and not disk_resource.parent):
+              if (instance.get('sourceMachineImage') and
+                  not disk_resource.parent):
                 disk_resource.parent = gcp_crt_helper.Resource()
                 disk_resource.parent.resource_name = instance.get(
                     'sourceMachineImage')
