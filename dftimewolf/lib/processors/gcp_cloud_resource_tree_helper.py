@@ -1,26 +1,29 @@
 # -*- coding: utf-8 -*-
 """Helper classes for the GCP cloud resource tree module."""
-from enum import Enum, auto
-from typing import Dict, List, Optional, Any, Set, Union
-from datetime import datetime, timezone
+import datetime
+import enum
+import io
 import json
+from typing import Dict, List, Optional, Any, Set, Union
+import pandas as pd
 
-class OperatingMode(Enum):
+
+class OperatingMode(enum.Enum):
   """Enum represent operational mode (Online or Offline)."""
 
-  ONLINE = auto()
-  OFFLINE = auto()
+  ONLINE = enum.auto()
+  OFFLINE = enum.auto()
 
-class LocationType(Enum):
+
+class LocationType(enum.Enum):
   """Enum represent location type (Zone or Region or Global)."""
 
-  ZONE = auto()
-  REGION = auto()
-  GLOBAL = auto()
+  ZONE = enum.auto()
+  REGION = enum.auto()
+  GLOBAL = enum.auto()
 
 
 class Resource():
-  # pylint: disable=line-too-long
   """A Class that represents a resource (Instance, Disk, Image...etc).
 
   Attributes:
@@ -32,26 +35,27 @@ class Resource():
     location_type (LocationType): Location type (ZONE/REGION/GLOBAL)
     created_by (str): account that created the resource.
     creator_ip_address (str): IP address of the resource creator at time of
-        creation request.
+      creation request.
     creator_useragent (str): Useragent of the resource creator at time of
-        creation request.
+      creation request.
     deleted_by (str): account that deleted the resource.
     deleter_ip_address (str): IP address of the resource deleter at time of
-        deletion request.
+      deletion request.
     deleter_useragent (str): Useragent of the resource deleter at time of
-        deletion request.
+      deletion request.
     parent (Optional[Resource]): Parent resource.
     children (Set[Resource]): Children resources.
     disks (List[Resource]): Disks attached to the resource.
     deleted (bool): Whether the resource is deleted or not.
     _resource_name (str): Full resource name. Maps to protoPayload.resourceName
-        in http://cloud/compute/docs/logging/migrating-from-activity-logs-to-audit-logs#fields.
+      in
+      http://cloud/compute/docs/logging/migrating-from-activity-logs-to-audit-logs#fields.
     _creation_timestamp (Optional[datetime]): Resource creation timestamp.
     _deletion_timestamp (Optional[datetime]): Resource deletion timestamp.
-
   """
 
   has_dynamic_attributes = True  # silences all attribute-errors for Resource
+  _TAB = '|----'
 
   def __init__(self) -> None:
     """Initializes the Resource object."""
@@ -72,8 +76,8 @@ class Resource():
     self.disks: List[Resource] = []
     self.deleted: bool = False
     self._resource_name: str = str()
-    self._creation_timestamp: Optional[datetime] = None
-    self._deletion_timestamp: Optional[datetime] = None
+    self._creation_timestamp: Optional[datetime.datetime] = None
+    self._deletion_timestamp: Optional[datetime.datetime] = None
 
   def __hash__(self) -> int:
     """For object comparison."""
@@ -82,7 +86,8 @@ class Resource():
   @property
   def resource_name(self) -> str:
     """Property resource_name Getter."""
-    if not self._resource_name and self.name and self.project_id and self.location:
+    if (not self._resource_name and self.name and self.project_id and
+        self.location):
       tmp_type = str()
       if self.type == 'gce_disk':
         tmp_type = 'disks'
@@ -102,9 +107,11 @@ class Resource():
       if self.location_type == LocationType.GLOBAL:
         return f'projects/{self.project_id}/global/{tmp_type}/{self.name}'
       if self.location_type == LocationType.REGION:
-        return f'projects/{self.project_id}/regions/{self.location}/{tmp_type}/{self.name}'  # pylint: disable=line-too-long
+        return f"""projects/{
+          self.project_id}/regions/{self.location}/{tmp_type}/{self.name}"""
       if self.location_type == LocationType.ZONE:
-        return f'projects/{self.project_id}/zones/{self.location}/{tmp_type}/{self.name}'  # pylint: disable=line-too-long
+        return f"""projects/{
+          self.project_id}/zones/{self.location}/{tmp_type}/{self.name}"""
 
     return self._resource_name
 
@@ -118,11 +125,10 @@ class Resource():
     Args:
       value: value to set resource_name to.
     """
-    # pylint: disable=line-too-long
     # value example:
     # 1- If parsing logs: projects/test-project/zones/us-central1-a/disks/vm1
-    # 2- If querying resource through API call: //www.googleapis.com/compute/beta/projects/test-project/zones/us-central1-a/disks/vm1
-    # pylint: enable=line-too-long
+    # 2- If querying resource through API call:
+    #     //www.googleapis.com/compute/beta/projects/test-project/zones/us-central1-a/disks/vm1 # pylint: disable=line-too-long
     if value:
       values = value.split('/')
 
@@ -159,38 +165,40 @@ class Resource():
     self._resource_name = value
 
   @property
-  def creation_timestamp(self) -> Optional[datetime]:
+  def creation_timestamp(self) -> Optional[datetime.datetime]:
     """Property creation_timestamp Getter."""
     return self._creation_timestamp
 
   @creation_timestamp.setter
-  def creation_timestamp(self, value: Union[datetime, str]) -> None:
+  def creation_timestamp(self, value: Union[datetime.datetime, str]) -> None:
     """Property creation_timestamp Setter.
 
     Args:
       value: value to set the creation_timestamp to.
     """
-    if isinstance(value, datetime):
+    if isinstance(value, datetime.datetime):
       self._creation_timestamp = value
     else:
-      self._creation_timestamp = datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f%z')
+      self._creation_timestamp = datetime.datetime.strptime(
+          value, '%Y-%m-%dT%H:%M:%S.%f%z')
 
   @property
-  def deletion_timestamp(self) -> Optional[datetime]:
+  def deletion_timestamp(self) -> Optional[datetime.datetime]:
     """Property deletion_timestamp Getter."""
     return self._deletion_timestamp
 
   @deletion_timestamp.setter
-  def deletion_timestamp(self, value: Union[datetime, str]) -> None:
+  def deletion_timestamp(self, value: Union[datetime.datetime, str]) -> None:
     """Property deletion_timestamp Setter.
 
     Args:
       value: value to set the deletion_timestamp to.
     """
-    if isinstance(value, datetime):
+    if isinstance(value, datetime.datetime):
       self._deletion_timestamp = value
     else:
-      self._deletion_timestamp = datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f%z')
+      self._deletion_timestamp = datetime.datetime.strptime(
+          value, '%Y-%m-%dT%H:%M:%S.%f%z')
 
   def IsDeleted(self) -> bool:
     """Checks if resource is deleted."""
@@ -206,7 +214,6 @@ class Resource():
       List of dictionaries containing a reference to the resource and its name
       indented based on it's location in the tree.
     """
-    tab = '\t'
     output: List[Any] = []
 
     # Count the number of parent resources and the level in the tree the
@@ -225,7 +232,7 @@ class Resource():
         counter = counter - 1
         entry: Dict[str, Any] = {}
         entry['resource_object'] = parent_resource
-        entry['graph'] = f'{tab*counter}|--{parent_resource.name}'
+        entry['tree'] = f'{self._TAB*counter}{parent_resource.name}'
         output.insert(0, entry)
         if parent_resource.parent:
           parent_resource = parent_resource.parent
@@ -233,7 +240,7 @@ class Resource():
     # Add resource entry to the List of dictionaries
     entry = {}
     entry['resource_object'] = self
-    entry['graph'] = f'{tab*level}|--{self.name}'
+    entry['tree'] = f'{self._TAB*level}{self.name}'
     output.insert(level, entry)
 
     # Add resource children entries to the List of dictionaries
@@ -246,17 +253,17 @@ class Resource():
 
     Args:
       level: The level in the tree to place the children at.
+
     Returns:
       List of dictionaries containing a reference to the children resource and
           their names indented based on their location in the tree.
     """
     result: List[Dict[str, Resource]] = []
-    tab = '    '
 
     for child in self.children:
       entry: Dict[str, Any] = {}
       entry['resource_object'] = child
-      entry['graph'] = f'{tab*level}|--{child.name}'
+      entry['tree'] = f'{self._TAB*level}{child.name}'
       result.append(entry)
 
       if child.children:
@@ -266,54 +273,110 @@ class Resource():
 
   def __str__(self) -> str:
     """Returns a string representation of the resource tree."""
-    output = '\n'
+    output = io.StringIO('')
+    # output = '\n'
     dashes = '-' * 200
-    # pylint: disable=line-too-long
-    output_format = '{:<20s}|{:<18s}|{:<20s}|{:<25s}|{:<18s}|{:<20s}|{:<25s}|{:<18s}|{:<100s}\n'
-
     # Draw table header
-    output = output + dashes + '\n'
-    output = output + output_format.format(
-        'Resource ID', 'Resource Type', 'Creation TimeStamp', 'Created By',
-        'Creator IP Addr', 'Deletion Timestamp', 'Deleted By',
-        'Deleter IP Addr', 'Tree')
-    output = output + dashes + '\n'
+    output.write(f'\n{dashes}\n')
+    output.write(f'{"Resource ID":<20s}|{"Resource Type":<18s}|' +
+                 f'{"Creation TimeStamp":<20s}|{"Created By":<25s}|' +
+                 f'{"Creator IP Addr":<18s}|{"Deletion Timestamp":<20s}|' +
+                 f'{"Deleted By":<25s}|{"Deleter IP Addr":<18s}|' +
+                 f'{"Tree":<100s}\n')
+    output.write(f'{dashes}\n')
 
+    # Generate resource tree
     result = self.GenerateTree()
-    for i in result:
-      resource: Optional[Resource] = i.get('resource_object')
-      if resource:
-        output = output + \
-            (output_format.format( resource.id if ('-' not in resource.id) else "" , resource.type, resource.creation_timestamp.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S") if resource.creation_timestamp else "",
-            resource.created_by, resource.creator_ip_address,  resource.deletion_timestamp.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S") if resource.deletion_timestamp else "", resource.deleted_by, resource.deleter_ip_address,  i.get('graph')))
-    output = output + dashes + '\n'
 
-    return output
+    # Draw table rows
+    for entry in result:
+      resource: Optional[Resource] = entry.get('resource_object')
+      if resource:
+
+        output.write(
+            f'{resource.id if ("-" not in resource.id) else "":<20s}|' +
+            f'{resource.type:<18s}|' +
+            f"""{resource.creation_timestamp.astimezone(
+                         datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+                         if resource.creation_timestamp else "":<20s}|""" +
+            f'{resource.created_by:<25s}|' +
+            f'{resource.creator_ip_address:<18s}|' +
+            f"""{resource.deletion_timestamp.astimezone(
+                         datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+                         if resource.deletion_timestamp else "":<20s}|""" +
+            f'{resource.deleted_by:<25s}|' +
+            f'{resource.deleter_ip_address:<18s}|' +
+            f'{entry.get("tree"):<100s}\n')
+
+    output.write(f'{dashes} \n')
+
+    return output.getvalue()
+
+  def AsDict(self) -> Dict[str, Any]:
+    """Returns a dictionary representation of the resource object."""
+    return {
+        'id':
+            self.id,
+        'name':
+            self.name,
+        'type':
+            self.type,
+        'project_id':
+            self.project_id,
+        'location':
+            self.location,
+        'created_by':
+            self.created_by,
+        'creator_ip_address':
+            self.creator_ip_address,
+        'creator_useragent':
+            self.creator_useragent,
+        'deleted_by':
+            self.deleted_by,
+        'deleter_ip_address':
+            self.deleter_ip_address,
+        'deleter_useragent':
+            self.deleter_useragent,
+        'resource_name':
+            self.resource_name,
+        'creation_timestamp':
+            self.creation_timestamp.astimezone(
+                datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+            if self.creation_timestamp else '',
+        'deletion_timestamp':
+            self.deletion_timestamp.astimezone(
+                datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+            if self.deletion_timestamp else ''
+    }
+
+  def ToDataFrame(self) -> pd.DataFrame:
+    """Returns a DataFrame representation of the resource tree."""
+    result = self.GenerateTree()
+    output = []
+    for entry in result:
+      if not entry.get('resource_object'):
+        continue
+      resource_dict = entry['resource_object'].AsDict()
+      resource_dict['tree'] = entry.get('tree')
+      output.append(resource_dict)
+    df = pd.DataFrame.from_records(output)
+    df.loc[df['id'].str.contains('-'), 'id'] = ''
+    # Rearrange columns
+    df = df[[
+        'id', 'name', 'type', 'project_id', 'location', 'tree',
+        'creation_timestamp', 'created_by', 'creator_ip_address',
+        'creator_useragent', 'deletion_timestamp', 'deleted_by',
+        'deleter_ip_address', 'deleter_useragent', 'resource_name'
+    ]]
+    return df
 
 
 class ResourceEncoder(json.JSONEncoder):
   """A Class that implements custom json encoding for Resource object."""
 
-  def default(self, o: Resource) -> Dict[str, str]:
+  def default(self, o: Resource) -> Dict[str, Optional[Resource]]:
     """Returns a dictionary representation of the resource object."""
     if isinstance(o, Resource):
-      # pylint: disable=redefined-builtin
-      dict = {
-          "id": o.id,
-          "name": o.name,
-          "type": o.type,
-          "project_id": o.project_id,
-          "location": o.location,
-          "created_by": o.created_by,
-          "creator_ip_address": o.creator_ip_address,
-          "creator_useragent": o.creator_useragent,
-          "deleted_by": o.deleted_by,
-          "deleter_ip_address": o.deleter_ip_address,
-          "deleter_useragent": o.deleter_useragent,
-          "resource_name": o.resource_name,
-          "creation_timestamp": o.creation_timestamp.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S") if o.creation_timestamp else "",  # pylint: disable=line-too-long
-          "deletion_timestamp": o.deletion_timestamp.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S") if o.deletion_timestamp else ""  # pylint: disable=line-too-long
-      }
-      return dict
+      return o.AsDict()
 
     return super().default(o)
