@@ -278,17 +278,11 @@ class Resource():
     dashes = '-' * 200
     # Draw table header
     output.write(f'\n{dashes}\n')
-    output.write(f"""
-                 {"Resource ID":<20s}|
-                 {"Resource Type":<18s}|
-                 {"Creation TimeStamp":<20s}|
-                 {"Created By":<25s}|
-                 {"Creator IP Addr":<18s}|
-                 {"Deletion Timestamp":<20s}|
-                 {"Deleted By":<25s}|
-                 {"Deleter IP Addr":<18s}|
-                 {"Tree":<100s}\n
-                 """)
+    output.write(f'{"Resource ID":<20s}|{"Resource Type":<18s}|' +
+                 f'{"Creation TimeStamp":<20s}|{"Created By":<25s}|' +
+                 f'{"Creator IP Addr":<18s}|{"Deletion Timestamp":<20s}|' +
+                 f'{"Deleted By":<25s}|{"Deleter IP Addr":<18s}|' +
+                 f'{"Tree":<100s}\n')
     output.write(f'{dashes}\n')
 
     # Generate resource tree
@@ -299,20 +293,20 @@ class Resource():
       resource: Optional[Resource] = entry.get('resource_object')
       if resource:
 
-        output.write(f"""
-                     {resource.id if ('-' not in resource.id) else '':<20s}|
-                     {resource.type:<18s}|
-                     {resource.creation_timestamp.astimezone(
+        output.write(
+            f'{resource.id if ("-" not in resource.id) else "":<20s}|' +
+            f'{resource.type:<18s}|' +
+            f"""{resource.creation_timestamp.astimezone(
                          datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
-                         if resource.creation_timestamp else "":<20s}|
-                     {resource.created_by:<25s}|
-                     {resource.creator_ip_address:<18s}|
-                     {resource.deletion_timestamp.astimezone(
+                         if resource.creation_timestamp else "":<20s}|""" +
+            f'{resource.created_by:<25s}|' +
+            f'{resource.creator_ip_address:<18s}|' +
+            f"""{resource.deletion_timestamp.astimezone(
                          datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
-                         if resource.deletion_timestamp else "":<20s}|
-                     {resource.deleted_by:<25s}|
-                     {resource.deleter_ip_address:<18s}|
-                     {entry.get("tree"):<100s}\n""")
+                         if resource.deletion_timestamp else "":<20s}|""" +
+            f'{resource.deleted_by:<25s}|' +
+            f'{resource.deleter_ip_address:<18s}|' +
+            f'{entry.get("tree"):<100s}\n')
 
     output.write(f'{dashes} \n')
 

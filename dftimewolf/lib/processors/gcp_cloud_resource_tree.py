@@ -390,29 +390,27 @@ class GCPCloudResourceTree(module.BaseModule):
         start_timestamp = self.period_covered_by_retrieved_logs['end']
       self.period_covered_by_retrieved_logs['end'] = end_timestamp
 
-    self.PublishMessage(f"""Retrieving logs from
-        {start_timestamp.astimezone(datetime.timezone.utc).strftime(
-            "%Y-%m-%dT%H:%M:%SZ")}
-        to {end_timestamp.astimezone(datetime.timezone.utc).strftime(
-            "%Y-%m-%dT%H:%M:%SZ")}.
-        """)
+    self.PublishMessage(f"""Retrieving logs from {start_timestamp.astimezone(
+      datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")} to {
+        end_timestamp.astimezone(datetime.timezone.utc).strftime(
+            "%Y-%m-%dT%H:%M:%SZ")}.""")
 
-    query_filter = f"""resource.type = ("gce_instance" OR "api" OR "gce_disk"
-        OR "gce_image" OR "gce_instance_template" OR "gce_snapshot")
-        AND logName = "projects/{
-            project_id}/logs/cloudaudit.googleapis.com%2Factivity"
-        AND operation.first = "true"
-        AND timestamp >= "{start_timestamp.astimezone(
-            datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}"
-        AND timestamp <= "{end_timestamp.astimezone(
-            datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}"
-        AND severity=NOTICE \
-        AND protoPayload.methodName : ("insert" OR "create" OR "delete")"""
+    query_filter = (
+        'resource.type = ("gce_instance" OR "api" OR "gce_disk"' +
+        ' OR "gce_image" OR "gce_instance_template" OR "gce_snapshot")' +
+        f""" AND logName = "projects/{
+            project_id}/logs/cloudaudit.googleapis.com%2Factivity" """ +
+        f""" AND operation.first = "true" AND timestamp >= "{
+          start_timestamp.astimezone(
+            datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}" """ +
+        f""" AND timestamp <= "{end_timestamp.astimezone(
+            datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}" """ +
+        ' AND severity=NOTICE' +
+        ' AND protoPayload.methodName : ("insert" OR "create" OR "delete")')
 
     if resource_id:
-      query_filter = f"""{query_filter} AND
-          (resource.labels.instance_id="{resource_id}" OR
-          resource.labels.image_id="{resource_id}")"""
+      query_filter = f"""{query_filter} AND (resource.labels.instance_id="{
+        resource_id}" OR resource.labels.image_id="{resource_id}")"""
 
     log_messages: List[Dict[str,
                             Any]] = gcl.ExecuteQuery(qfilter=[query_filter])
@@ -499,8 +497,8 @@ class GCPCloudResourceTree(module.BaseModule):
           # setting it manually to gce_snapshot
           resource.type = 'gce_snapshot'
 
-          # For creation of a snapshot, its a special case where the targetId is
-          # of the source disk and not the snapshot being created. And the
+          # For creation of a snapshot, it's a special case where the targetId
+          # is of the source disk and not the snapshot being created. And the
           # targetLink points to the source disk. The id of the snapshot
           # is not present in the log message.
           # We need to unset the id which was set earlier to targetId
