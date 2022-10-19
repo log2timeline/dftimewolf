@@ -22,7 +22,6 @@ if TYPE_CHECKING:
   from dftimewolf.lib import state
 
 
-
 class WorkspaceAuditCollector(module.BaseModule):
   """Collector for Google Workspace Audit logs. """
 
@@ -30,19 +29,20 @@ class WorkspaceAuditCollector(module.BaseModule):
   _CREDENTIALS_FILENAME = '.dftimewolf_workspace_credentials.json'
   _CLIENT_SECRET_FILENAME = '.dftimewolf_workspace_client_secret.json'
 
-  def __init__(self,
-               state: 'state.DFTimewolfState',
-               name: Optional[str]=None,
-               critical: bool=False):
+  def __init__(
+      self,
+      state: 'state.DFTimewolfState',
+      name: Optional[str] = None,
+      critical: bool = False):
     """Initializes a Workspace Audit Log collector."""
-    super(WorkspaceAuditCollector, self).__init__(state, name=name,
-        critical=critical)
+    super(WorkspaceAuditCollector, self).__init__(
+        state, name=name, critical=critical)
     self._credentials = None
     self._application_name = ''
     self._filter_expression = ''
     self._user_key = 'all'
     self._start_time = None  # type: Optional[str]
-    self._end_time = None # type: Optional[str]
+    self._end_time = None  # type: Optional[str]
 
   def _BuildAuditResource(self, credentials: Credentials) -> discovery.Resource:
     """Builds a reports resource object to use to request logs.
@@ -53,8 +53,7 @@ class WorkspaceAuditCollector(module.BaseModule):
     Returns:
       A resource object for interacting with the Workspace audit API.
     """
-    service = discovery.build('admin', 'reports_v1',
-        credentials=credentials)
+    service = discovery.build('admin', 'reports_v1', credentials=credentials)
     return service
 
   def _GetCredentials(self) -> Credentials:
@@ -93,12 +92,12 @@ class WorkspaceAuditCollector(module.BaseModule):
                 'No OAuth application credentials available to retrieve '
                 'workspace logs. Please generate OAuth application credentials '
                 '(see https://developers.google.com/workspace/guides/'
-                'create-credentials#desktop) and save them to {0:s}.').format(
-                    secrets_path)
+                'create-credentials#desktop) and save them to {0:s}.'
+            ).format(secrets_path)
             self.ModuleError(error_message, True)
           flow = InstalledAppFlow.from_client_secrets_file(
               secrets_path, self.SCOPES)
-          credentials = flow.run_console()
+          credentials = flow.run_local_server()
 
         # Save the credentials for the next run
         with open(credentials_path, 'w') as token_file:
@@ -107,12 +106,13 @@ class WorkspaceAuditCollector(module.BaseModule):
     return credentials
 
   # pylint: disable=arguments-differ
-  def SetUp(self,
-            application_name: str,
-            filter_expression: str,
-            user_key: str='all',
-            start_time: Optional[str]=None,
-            end_time: Optional[str]=None) -> None:
+  def SetUp(
+      self,
+      application_name: str,
+      filter_expression: str,
+      user_key: str = 'all',
+      start_time: Optional[str] = None,
+      end_time: Optional[str] = None) -> None:
     """Sets up a a Workspace Audit logs collector.
 
     Args:
@@ -131,8 +131,7 @@ class WorkspaceAuditCollector(module.BaseModule):
     # the meet application
     if application_name == 'meet' and '-' in filter_expression:
       filter_expression = filter_expression.replace('-', '')
-      self.logger.info(
-        "Found '-' delimiter in the meeting_id and removed it!")
+      self.logger.info("Found '-' delimiter in the meeting_id and removed it!")
 
     self._credentials = self._GetCredentials()
     self._application_name = application_name
@@ -182,9 +181,12 @@ class WorkspaceAuditCollector(module.BaseModule):
       self.ModuleError(exception, critical=True)
 
     logs_report = containers.WorkspaceLogs(
-        application_name=self._application_name, path=output_path,
-        filter_expression=self._filter_expression, user_key=self._user_key,
-        start_time=self._start_time, end_time=self._end_time)
+        application_name=self._application_name,
+        path=output_path,
+        filter_expression=self._filter_expression,
+        user_key=self._user_key,
+        start_time=self._start_time,
+        end_time=self._end_time)
     self.PublishMessage(f'Downloaded logs to {output_path}')
     self.state.StoreContainer(logs_report)
 
