@@ -98,7 +98,7 @@ class WorkspaceAuditCollector(module.BaseModule):
             self.ModuleError(error_message, True)
           flow = InstalledAppFlow.from_client_secrets_file(
               secrets_path, self.SCOPES)
-          credentials = flow.run_console()
+          credentials = flow.run_local_server()
 
         # Save the credentials for the next run
         with open(credentials_path, 'w') as token_file:
