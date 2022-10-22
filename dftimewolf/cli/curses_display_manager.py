@@ -9,6 +9,8 @@ import traceback
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import curses
+import signal
+
 
 class Status(Enum):
   """Enum class for module states.
@@ -157,6 +159,7 @@ class CursesDisplayManager:
     curses.noecho()
     curses.cbreak()
     self._stdscr.keypad(True)
+    signal.signal(signal.SIGWINCH, self.SIGWINCH_Handler)
 
   def EndCurses(self) -> None:
     """Curses finalisation actions."""
@@ -210,22 +213,32 @@ class CursesDisplayManager:
     if self._messages_longest_source_len < len(source):
       self._messages_longest_source_len = len(source)
 
-    _, x = self._stdscr.getmaxyx()
-
-    lines = []
-
-    # textwrap.wrap behaves strangely if there are newlines in the content
     for line in content.split('\n'):
-      lines += textwrap.wrap(line,
-                             width=x - self._messages_longest_source_len - 8,
-                             subsequent_indent='  ',
-                             replace_whitespace=False)
-
-    for line in lines:
       if line:
         self._messages.append(Message(source, line, is_error))
 
     self.Draw()
+
+  def PrepareMessagesForDisplay(self, available_lines: int) -> List[str]:
+    """Prepares the list of messages to be displayed.
+
+    Args:
+      available_lines: The number of lines available to print messages.
+
+    Returns:
+      A list of strings, formatted for display."""
+    _, x = self._stdscr.getmaxyx()
+
+    lines = []
+
+    for m in self._messages:
+      lines.extend(
+        textwrap.wrap(m.Stringify(self._messages_longest_source_len),
+                      width=x - self._messages_longest_source_len - 8,
+                      initial_indent='  ', subsequent_indent='    ',
+                      replace_whitespace=False))
+
+    return lines[-available_lines:]
 
   def EnqueuePreflight(self,
                        name: str,
@@ -336,13 +349,8 @@ class CursesDisplayManager:
         curr_line += 1
 
         message_space = y - 4 - curr_line
-        start = len(self._messages) - message_space
-        start = 0 if start < 0 else start
-
-        # Slice the aray, we may not be able to fit all messages on the screen
-        for m in self._messages[start:]:
-          self._stdscr.addstr(curr_line, 0,
-              f'  {m.Stringify(self._messages_longest_source_len)}'[:x])
+        for m in self.PrepareMessagesForDisplay(message_space):
+          self._stdscr.addstr(curr_line, 0, m[:x])
           curr_line += 1
 
         # Exceptions
@@ -382,6 +390,10 @@ class CursesDisplayManager:
       self._stdscr.addstr(y - 1, 0, "Press any key to continue")
       self._stdscr.getkey()
       self._stdscr.addstr(y - 1, 0, "                         ")
+
+  def SIGWINCH_Handler(self, *unused_argvs: Any) -> None:
+    """Redraw the window when SIGWINCH is raised."""
+    self.Draw()
 
 
 class CDMStringIOWrapper(io.StringIO):

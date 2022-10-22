@@ -342,7 +342,6 @@ class CursesDisplayManagerTest(unittest.TestCase):
       mock_getmaxyx.return_value = 30, 60
       self.cdm.EnqueueMessage('source 1', 'content 1')
       self.cdm.EnqueueMessage('a longer source name', 'error message', True)
-      self.cdm.EnqueueMessage('source 2', 'this message is longer than the screen width, 60 characters, and will need to be printed on multiple lines.')  # pylint: disable=line-too-long
       self.cdm.EnqueueMessage('source 3', 'this message\nhas a newline in it')
 
     try:
@@ -358,10 +357,6 @@ class CursesDisplayManagerTest(unittest.TestCase):
           'Messages',
           '  [ source 1             ] content 1',
           '  [ a longer source name ] \u001b[31;1merror message\u001b[0m',
-          '  [ source 2             ] this message is longer than the',
-          '  [ source 2             ]   screen width, 60 characters,',
-          '  [ source 2             ]   and will need to be printed on',
-          '  [ source 2             ]   multiple lines.',
           '  [ source 3             ] this message',
           '  [ source 3             ] has a newline in it',
           '',
@@ -550,6 +545,69 @@ class CursesDisplayManagerTest(unittest.TestCase):
           mock.call(9, 0, '*********************************************************************** ')])
       self.assertEqual(mock_addstr.call_count, 12)
       # pylint: enable=line-too-long
+
+  def testWindowResizeDraw(self):
+    """Tests resizing the window."""
+    with mock.patch('curses.cbreak'), \
+        mock.patch('curses.noecho'), \
+        mock.patch('curses.initscr'):
+      self.cdm.StartCurses()
+
+    with mock.patch.object(self.cdm._stdscr, 'getmaxyx') as mock_getmaxyx, \
+        mock.patch.object(self.cdm, 'Draw'):
+      mock_getmaxyx.return_value = 30, 60
+
+      self.cdm.SetRecipe('Recipe name')
+      self.cdm.EnqueuePreflight('First Preflight', [], '1st Preflight')
+      self.cdm.EnqueueModule('First Module', [], '1st Module')
+      self.cdm.EnqueueMessage('source', 'A standard message')
+      self.cdm.EnqueueMessage('source', 'this message is longer than the screen width, 60 characters, and will need to be printed on multiple lines.')  # pylint: disable=line-too-long
+      self.cdm.EnqueueMessage('source', 'Another standard message')
+
+    with mock.patch.object(self.cdm._stdscr, 'getmaxyx') as mock_getmaxyx, \
+        mock.patch.object(self.cdm._stdscr, 'clear') as mock_clear, \
+        mock.patch.object(self.cdm._stdscr, 'addstr') as mock_addstr:
+      mock_getmaxyx.return_value = 30, 60
+
+      self.cdm.Draw()
+
+      mock_clear.assert_called_once_with()
+      # pylint: disable=line-too-long
+      mock_addstr.assert_has_calls([
+          mock.call(0, 0,  ' Recipe name'),
+          mock.call(1, 0,  '   Preflights:'),
+          mock.call(2, 0,  '     1st Preflight: Pending'),
+          mock.call(3, 0,  '   Modules:'),
+          mock.call(4, 0,  '     1st Module: Pending'),
+          mock.call(6, 0,  ' Messages:'),
+          mock.call(7, 0,  '  [ source ] A standard message'),
+          mock.call(8, 0,  '  [ source ] this message is longer than the'),
+          mock.call(9, 0,  '    screen width, 60 characters, and will need'),
+          mock.call(10, 0, '    to be printed on multiple lines.'),
+          mock.call(11, 0, '  [ source ] Another standard message')])
+      self.assertEqual(mock_addstr.call_count, 11)
+      # pylint: enable=line-too-long
+
+    with mock.patch.object(self.cdm._stdscr, 'getmaxyx') as mock_getmaxyx, \
+        mock.patch.object(self.cdm._stdscr, 'clear') as mock_clear, \
+        mock.patch.object(self.cdm._stdscr, 'addstr') as mock_addstr:
+      mock_getmaxyx.return_value = 30, 140
+
+      self.cdm.SIGWINCH_Handler(None, None)
+
+      mock_clear.assert_called_once_with()
+      # pylint: disable=line-too-long
+      mock_addstr.assert_has_calls([
+          mock.call(0, 0, ' Recipe name'),
+          mock.call(1, 0, '   Preflights:'),
+          mock.call(2, 0, '     1st Preflight: Pending'),
+          mock.call(3, 0, '   Modules:'),
+          mock.call(4, 0, '     1st Module: Pending'),
+          mock.call(6, 0, ' Messages:'),
+          mock.call(7, 0, '  [ source ] A standard message'),
+          mock.call(8, 0, '  [ source ] this message is longer than the screen width, 60 characters, and will need to be printed on multiple lines.'),  # pylint: disable=line-too-long
+          mock.call(9, 0, '  [ source ] Another standard message')])
+      self.assertEqual(mock_addstr.call_count, 9)
 
 
 class CDMStringIOWrapperTest(unittest.TestCase):
