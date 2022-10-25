@@ -70,7 +70,7 @@ class AWSCollector(module.BaseModule):
   def Process(self) -> None:
     """Copies a volume and attaches it to the analysis VM."""
     for volume in self._FindVolumesToCopy():
-      print('Volume copy of {0:s} started...'.format(volume.volume_id))
+      print(f'Volume copy of {volume.volume_id:s} started...')
       new_volume = aws_forensics.CreateVolumeCopy(
           self.remote_zone,
           dst_zone=self.analysis_zone,
@@ -168,8 +168,8 @@ class AWSCollector(module.BaseModule):
     self.analysis_zone = analysis_zone or remote_zone
     self.analysis_profile_name = analysis_profile_name or remote_profile_name
 
-    analysis_vm_name = 'aws-forensics-vm-{0:s}'.format(self.incident_id)
-    print('Your analysis VM will be: {0:s}'.format(analysis_vm_name))
+    analysis_vm_name = f'aws-forensics-vm-{self.incident_id:s}'
+    print(f'Your analysis VM will be: {analysis_vm_name:s}')
     self.state.StoreContainer(
         containers.TicketAttribute(
             name=self._ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME,

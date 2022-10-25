@@ -61,16 +61,14 @@ class AWSVolumeSnapshotCollector(module.BaseModule):
     snapshot_ids = []
     try:
       # Snapshot taking is an asynchronous call, no need for threading
-      self.logger.info('Taking snapshots of volumes {0:s}'.
-        format(','.join(volumes)))
+      self.logger.info(f'Taking snapshots of volumes {",".join(volumes):s}')
       for volume in volumes:
         response = ec2.create_snapshot(VolumeId=volume)
         snapshot_ids.append(response['SnapshotId'])
 
       self.logger.info('Waiting for snapshot completion')
       ec2.get_waiter('snapshot_completed').wait(SnapshotIds=snapshot_ids)
-      self.logger.info('Snapshots complete: {0:s}'.
-        format(','.join(snapshot_ids)))
+      self.logger.info(f'Snapshots complete: {",".join(snapshot_ids):s}')
     except ec2.exceptions.ClientError as exception:
       self.ModuleError('Error encountered snapshotting volumes: {0!s}'.
         format(exception), critical=True)

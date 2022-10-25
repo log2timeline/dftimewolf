@@ -60,7 +60,7 @@ class GCPLogsCollector(module.BaseModule):
     output_file = tempfile.NamedTemporaryFile(
         mode='w', delete=False, encoding='utf-8', suffix='.jsonl')
     output_path = output_file.name
-    self.logger.info('Downloading logs to {0:s}'.format(output_path))
+    self.logger.info(f'Downloading logs to {output_path:s}')
 
     try:
       if self._project_name:
@@ -99,8 +99,7 @@ class GCPLogsCollector(module.BaseModule):
 
         if not have_page and retries >= MAX_RETRIES:
           self.ModuleError(
-              'Hit max retries ({0:d}) requesting GCP logs'.format(
-                  MAX_RETRIES) , critical=True)
+              f'Hit max retries ({MAX_RETRIES:d}) requesting GCP logs' , critical=True)
 
         for entry in page:
 
@@ -110,7 +109,7 @@ class GCPLogsCollector(module.BaseModule):
 
     except google_api_exceptions.NotFound as exception:
       self.ModuleError(
-          'Error accessing project: {0!s}'.format(exception), critical=True)
+          f'Error accessing project: {exception!s}', critical=True)
 
     except google_api_exceptions.InvalidArgument as exception:
       self.ModuleError(
