@@ -638,7 +638,8 @@ class GRRHuntDownloader(GRRHuntDownloaderBase):
       os.remove(output_file_path)
     except OSError as exception:
       self.logger.warning(
-          f'Output path {output_file_path:s} could not be removed: {exception:s}')
+          f'Output path {output_file_path:s} '
+          f'could not be removed: {exception:s}')
 
     # Translate GRR client IDs to FQDNs with the information retrieved
     # earlier

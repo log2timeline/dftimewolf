@@ -670,7 +670,8 @@ class GRRFileCollector(GRRFlow):
       message = 'Would fetch 0 files - bailing out instead.'
       self.logger.critical(message)
       raise DFTimewolfError(message, critical=False)
-    self.logger.info(f'Filefinder to collect {len(self.files):d} items on each host')
+    self.logger.info(
+        f'Filefinder to collect {len(self.files):d} items on each host')
 
   def PostProcess(self) -> None:
     """Check if we're skipping any offline clients."""

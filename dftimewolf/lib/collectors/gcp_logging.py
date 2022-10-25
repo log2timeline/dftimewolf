@@ -99,7 +99,8 @@ class GCPLogsCollector(module.BaseModule):
 
         if not have_page and retries >= MAX_RETRIES:
           self.ModuleError(
-              f'Hit max retries ({MAX_RETRIES:d}) requesting GCP logs' , critical=True)
+              f'Hit max retries ({MAX_RETRIES:d}) requesting GCP logs',
+              critical=True)
 
         for entry in page:
 
