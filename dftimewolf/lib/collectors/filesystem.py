@@ -49,7 +49,7 @@ class FilesystemCollector(module.BaseModule):
         container = containers.File(os.path.basename(path), path)
         file_containers.append(container)
       else:
-        self.logger.warning('Path {0:s} does not exist'.format(path))
+        self.logger.warning(f'Path {path:s} does not exist')
     if not file_containers:
       self.ModuleError(
           message='No valid paths collected, bailing',

@@ -149,7 +149,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       DFTimewolfError: if no client ID found for selector.
     """
     # Search for the selector in GRR
-    self.logger.info('Searching for client: {0:s}'.format(selector))
+    self.logger.info(f'Searching for client: {selector:s}')
     try:
       search_result = self.grr_api.SearchClients(selector)
     except grr_errors.UnknownError as exception:
@@ -160,8 +160,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     result = self._FilterSelectionCriteria(selector, search_result)
 
     if not result:
-      self.ModuleError('Could not get client for {0:s}'.format(
-          selector), critical=True)
+      self.ModuleError(f'Could not get client for {selector:s}', critical=True)
 
     active_clients = self._FilterActiveClients(result)
     if len(active_clients) >1:
@@ -187,7 +186,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
         datetime.datetime.utcnow() - last_seen_datetime).total_seconds()
     last_seen_minutes = int(round(last_seen_seconds / 60))
 
-    self.logger.info('Found active client: {0:s}'.format(client.client_id))
+    self.logger.info(f'Found active client: {client.client_id:s}')
     self.logger.info('Client last seen: {0:s} ({1:d} minutes ago)'.format(
         last_seen_datetime.strftime('%Y-%m-%dT%H:%M:%S+0000'),
         last_seen_minutes))
@@ -242,7 +241,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       keepalive_flow = client.CreateFlow(
           name='KeepAlive', args=flows_pb2.KeepAliveArgs())
       self.logger.info(
-          'KeepAlive Flow:{0:s} scheduled'.format(keepalive_flow.flow_id))
+          f'KeepAlive Flow:{keepalive_flow.flow_id:s} scheduled')
 
     return flow_id
 
@@ -257,7 +256,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     Raises:
       DFTimewolfError: If a Flow error was encountered.
     """
-    self.logger.info('{0:s}: Waiting to finish'.format(flow_id))
+    self.logger.info(f'{flow_id:s}: Waiting to finish')
     if self.skip_offline_clients:
       self.logger.info('Client will be skipped if offline.')
 
@@ -275,11 +274,10 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
         if 'ArtifactNotRegisteredError' in status.context.backtrace:
           message = status.context.backtrace.split('\n')[-2]
         raise DFTimewolfError(
-            '{0:s}: FAILED! Message from GRR:\n{1:s}'.format(
-                flow_id, message))
+            f'{flow_id:s}: FAILED! Message from GRR:\n{message:s}')
 
       if status.state == flows_pb2.FlowContext.TERMINATED:
-        self.logger.info('{0:s}: Complete'.format(flow_id))
+        self.logger.info(f'{flow_id:s}: Complete')
         break
 
       time.sleep(self._CHECK_FLOW_INTERVAL_SEC)
@@ -337,7 +335,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
 
     if os.path.exists(output_file_path):
       self.logger.info(
-          '{0:s} already exists: Skipping'.format(output_file_path))
+          f'{output_file_path:s} already exists: Skipping')
       return None
 
     if is_timeline_flow:
@@ -357,7 +355,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       shutil.copy2(
           output_file_path,
           os.path.join(client_output_folder,
-                       '{}_timeline.body'.format(flow_id)))
+                       f'{flow_id}_timeline.body'))
     else:
       with zipfile.ZipFile(output_file_path) as archive:
         archive.extractall(path=client_output_folder)
@@ -483,13 +481,13 @@ class GRRArtifactCollector(GRRFlow):
     """
     for client in self._FindClients([container.hostname]):
       system_type = client.data.os_info.system
-      self.logger.info('System type: {0:s}'.format(system_type))
+      self.logger.info(f'System type: {system_type:s}')
 
       # If the list is supplied by the user via a flag, honor that.
       artifact_list = []
       if self.artifacts:
         self.logger.info(
-            'Artifacts to be collected: {0!s}'.format(self.artifacts))
+            f'Artifacts to be collected: {self.artifacts!s}')
         artifact_list = self.artifacts
       else:
         default_artifacts = self.artifact_registry.get(system_type, None)
@@ -501,7 +499,7 @@ class GRRArtifactCollector(GRRFlow):
 
       if self.extra_artifacts:
         self.logger.info(
-            'Throwing in an extra {0!s}'.format(self.extra_artifacts))
+            f'Throwing in an extra {self.extra_artifacts!s}')
         artifact_list.extend(self.extra_artifacts)
         artifact_list = list(set(artifact_list))
 
@@ -520,8 +518,8 @@ class GRRArtifactCollector(GRRFlow):
           max_file_size=self.max_file_size)
       flow_id = self._LaunchFlow(client, 'ArtifactCollectorFlow', flow_args)
       if not flow_id:
-        msg = 'Flow could not be launched on {0:s}.'.format(client.client_id)
-        msg += '\nArtifactCollectorFlow args: {0!s}'.format(flow_args)
+        msg = f'Flow could not be launched on {client.client_id:s}.'
+        msg += f'\nArtifactCollectorFlow args: {flow_args!s}'
         self.ModuleError(msg, critical=True)
       self._AwaitFlow(client, flow_id)
       collected_flow_data = self._DownloadFiles(client, flow_id)
@@ -624,7 +622,7 @@ class GRRFileCollector(GRRFlow):
     if action.lower() in self._ACTIONS:
       self.action = self._ACTIONS[action.lower()]
     if self.action is None:
-      self.ModuleError("Invalid action {0!s}".format(action),
+      self.ModuleError(f"Invalid action {action!s}",
                        critical=True)
     if max_file_size:
       self.max_file_size = int(max_file_size)
@@ -672,8 +670,8 @@ class GRRFileCollector(GRRFlow):
       message = 'Would fetch 0 files - bailing out instead.'
       self.logger.critical(message)
       raise DFTimewolfError(message, critical=False)
-    self.logger.info('Filefinder to collect {0:d} items on each host'.format(
-        len(self.files)))
+    self.logger.info(
+        f'Filefinder to collect {len(self.files):d} items on each host')
 
   def PostProcess(self) -> None:
     """Check if we're skipping any offline clients."""
@@ -1084,7 +1082,7 @@ class GRRTimelineCollector(GRRFlow):
       if not root_path:
         return
       self.logger.info(
-          'Timeline to start from "{0:s}" items'.format(root_path.decode()))
+          f'Timeline to start from "{root_path.decode():s}" items')
 
       timeline_args = timeline_pb2.TimelineArgs(root=root_path,)
       flow_id = self._LaunchFlow(client, 'TimelineFlow', timeline_args)
@@ -1112,7 +1110,7 @@ class GRRTimelineCollector(GRRFlow):
 
     if os.path.exists(output_file_path):
       self.logger.info(
-          '{0:s} already exists: Skipping'.format(output_file_path))
+          f'{output_file_path:s} already exists: Skipping')
       return None
 
     flow = client.Flow(flow_id)

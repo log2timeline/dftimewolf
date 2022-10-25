@@ -222,7 +222,7 @@ class GRRHuntArtifactCollector(GRRHunt):
     Raises:
       RuntimeError: if no items specified for collection.
     """
-    self.logger.info('Artifacts to be collected: {0!s}'.format(self.artifacts))
+    self.logger.info(f'Artifacts to be collected: {self.artifacts!s}')
     hunt_args = grr_flows.ArtifactCollectorFlowArgs(
         artifact_list=self.artifacts,
         use_raw_filesystem_access=self.use_raw_filesystem_access,
@@ -316,9 +316,9 @@ class GRRHuntFileCollector(GRRHunt):
       RuntimeError: if no items specified for collection.
     """
     self.logger.info(
-        'Hunt to collect {0:d} items'.format(len(self.file_path_list)))
+        f'Hunt to collect {len(self.file_path_list):d} items')
     self.logger.info(
-        'Files to be collected: {0!s}'.format(self.file_path_list))
+        f'Files to be collected: {self.file_path_list!s}')
     hunt_action = grr_flows.FileFinderAction(
         action_type=grr_flows.FileFinderAction.DOWNLOAD,
         download=grr_flows.FileFinderDownloadActionOptions(
@@ -544,7 +544,7 @@ class GRRHuntDownloader(GRRHuntDownloaderBase):
 
     if os.path.exists(output_file_path):
       self.logger.info(
-          '{0:s} already exists: Skipping'.format(output_file_path))
+          f'{output_file_path:s} already exists: Skipping')
       return []
 
     self._WrapGRRRequestWithApproval(
@@ -624,24 +624,22 @@ class GRRHuntDownloader(GRRHuntDownloaderBase):
             try:
               archive.extract(f, self.output_path)
             except KeyError as exception:
-              self.logger.warning('Extraction error: {0:s}'.format(exception))
+              self.logger.warning(f'Extraction error: {exception:s}')
               return []
 
     except OSError as exception:
-      msg = 'Error manipulating file {0:s}: {1!s}'.format(
-          output_file_path, exception)
+      msg = f'Error manipulating file {output_file_path:s}: {exception!s}'
       self.ModuleError(msg, critical=True)
     except zipfile.BadZipfile as exception:
-      msg = 'Bad zipfile {0:s}: {1!s}'.format(
-          output_file_path, exception)
+      msg = f'Bad zipfile {output_file_path:s}: {exception!s}'
       self.ModuleError(msg, critical=True)
 
     try:
       os.remove(output_file_path)
     except OSError as exception:
       self.logger.warning(
-          'Output path {0:s} could not be removed: {1:s}'.format(
-              output_file_path, exception))
+          f'Output path {output_file_path:s} '
+          f'could not be removed: {exception:s}')
 
     # Translate GRR client IDs to FQDNs with the information retrieved
     # earlier

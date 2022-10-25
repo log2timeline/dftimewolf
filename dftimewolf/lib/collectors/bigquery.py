@@ -42,9 +42,9 @@ class BigQueryCollector(module.BaseModule):
   def Process(self) -> None:
     """Collects data from BigQuery."""
     output_file = tempfile.NamedTemporaryFile(
-        mode="w", delete=False, encoding="utf-8", suffix=".jsonl")
+        mode='w', delete=False, encoding='utf-8', suffix='.jsonl')
     output_path = output_file.name
-    self.logger.info("Downloading results to {0:s}".format(output_path))
+    self.logger.info(f'Downloading results to {output_path:s}')
 
     try:
       if self._project_name:
@@ -53,20 +53,20 @@ class BigQueryCollector(module.BaseModule):
         bq_client = bigquery.Client()
 
       records = bq_client.query(self._query).to_dataframe().to_json(
-          orient="records", lines=True, date_format="iso")
+          orient='records', lines=True, date_format='iso')
       output_file.write(records)
 
     # pytype: disable=module-attr
     except google.cloud.exceptions.NotFound as exception:
-      self.ModuleError(f"Error accessing project: {exception!s}",
+      self.ModuleError(f'Error accessing project: {exception!s}',
           critical=True)
     # pytype: enable=module-attr
 
     except (google_auth_exceptions.DefaultCredentialsError) as exception:
       self.ModuleError(
-        "Something is wrong with your gcloud access token or "
-        "Application Default Credentials. Try running:\n "
-        "$ gcloud auth application-default login"
+        'Something is wrong with your gcloud access token or '
+        'Application Default Credentials. Try running:\n '
+        '$ gcloud auth application-default login'
         )
       self.ModuleError(exception, critical=True)
 

@@ -67,7 +67,7 @@ class AzureCollector(module.BaseModule):
   def Process(self) -> None:
     """Copies a disk to the analysis account."""
     for disk in self._FindDisksToCopy():
-      self.logger.info('Disk copy of {0:s} started...'.format(disk.name))
+      self.logger.info(f'Disk copy of {disk.name:s} started...')
       new_disk = az_forensics.CreateDiskCopy(
           self.analysis_resource_group_name,
           disk_name=disk.name,
@@ -168,8 +168,8 @@ class AzureCollector(module.BaseModule):
     self.analysis_region = analysis_region
     self.analysis_profile_name = analysis_profile_name or remote_profile_name
 
-    analysis_vm_name = 'azure-forensics-vm-{0:s}'.format(self.incident_id)
-    print('Your analysis VM will be: {0:s}'.format(analysis_vm_name))
+    analysis_vm_name = f'azure-forensics-vm-{self.incident_id:s}'
+    print(f'Your analysis VM will be: {analysis_vm_name:s}')
     self.state.StoreContainer(
         containers.TicketAttribute(
             name=self._ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME,

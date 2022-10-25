@@ -59,7 +59,7 @@ class AWSLogsCollector(module.BaseModule):
     output_file = tempfile.NamedTemporaryFile(
     mode='w', delete=False, encoding='utf-8', suffix='.jsonl')
     output_path = output_file.name
-    self.logger.info('Downloading logs to {0:s}'.format(output_path))
+    self.logger.info(f'Downloading logs to {output_path:s}')
 
     if self._profile_name:
       try:

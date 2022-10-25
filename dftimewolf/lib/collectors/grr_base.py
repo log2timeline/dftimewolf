@@ -114,7 +114,7 @@ class GRRBaseModule(object):
         return grr_function(*args, **kwargs)
 
       except grr_errors.AccessForbiddenError as exception:
-        logger.info('No valid approval found: {0!s}'.format(exception))
+        logger.info(f'No valid approval found: {exception!s}')
         # If approval was already sent, just wait a bit more.
         if approval_sent:
           logger.info('Approval not yet granted, waiting {0:d}s'.format(

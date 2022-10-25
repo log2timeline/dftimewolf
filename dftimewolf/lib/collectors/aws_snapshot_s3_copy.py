@@ -94,7 +94,7 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
   def PreProcess(self) -> None:
     """Set up for the snapshot copy operation."""
     if not self.bucket_exists:
-      self.logger.info('Creating AWS bucket {0:s}'.format(self.bucket))
+      self.logger.info(f'Creating AWS bucket {self.bucket:s}')
 
       create_bucket_args = {'Bucket': self.bucket}
       # us-east-1 is the default, but throws an error if actually specified.
@@ -132,8 +132,8 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
       for h in result['hashes']:
         self.state.StoreContainer(containers.AWSS3Object(h))
     except ResourceCreationError as exception:
-      self.ModuleError('Exception during copy operation: {0!s}'.
-          format(exception), critical=True)
+      self.ModuleError(
+          f'Exception during copy operation: {exception!s}', critical=True)
 
   def PostProcess(self) -> None:
     """Clean up afterwards."""
