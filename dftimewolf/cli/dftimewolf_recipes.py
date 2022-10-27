@@ -250,8 +250,7 @@ class DFTimewolfTool(object):
 
     self._AddRecipeOptions(argument_parser)
 
-    with redirect_stdout(sys.stderr):
-      self._command_line_options = argument_parser.parse_args(arguments)
+    self._command_line_options = argument_parser.parse_args(arguments)
 
     if not getattr(self._command_line_options, 'recipe', None):
       error_message = '\nPlease specify a recipe.\n' + help_text
@@ -447,7 +446,7 @@ def Main() -> bool:
 
   SetupLogging(no_curses)
 
-  if no_curses:
+  if any([no_curses, '-h' in sys.argv, '--help' in sys.argv]):
     return RunTool()
 
   cursesdisplaymanager = CursesDisplayManager()
