@@ -103,7 +103,6 @@ class CursesDisplayManagerModuleTest(unittest.TestCase):
          '       Thread2: Completed (container2)',
          '       Thread3: Completed (container3)'])
 
-
   def testStringifyPending(self):
     """Tests the string representation of the module when Pending."""
     self.assertEqual(
@@ -117,7 +116,7 @@ class CursesDisplayManagerModuleTest(unittest.TestCase):
         self.m.Stringify(),
         ['     RuntimeName: Completed'])
 
-  def testStringifyCompleted(self):
+  def testStringifyCancelled(self):
     """Tests the string representation of the module when Cancelled."""
     self.m.SetStatus(Status.CANCELLED)
     self.assertEqual(
@@ -365,6 +364,26 @@ class CursesDisplayManagerTest(unittest.TestCase):
           'line 2',
           'line 3\n'])
         self.assertEqual(sio.getvalue(), expected)
+
+  def testMessagesWithURL(self):
+    """Test that a URL in a message is not split over multiple lines."""
+    self.cdm.Draw = mock.MagicMock()
+
+    with mock.patch('curses.cbreak'), \
+        mock.patch('curses.noecho'), \
+        mock.patch('curses.initscr'):
+      self.cdm.StartCurses()
+
+    with mock.patch.object(self.cdm._stdscr, 'getmaxyx') as mock_getmaxyx:
+      mock_getmaxyx.return_value = 30, 60
+      self.cdm.EnqueueMessage(
+        'module_name',
+        'some text before a URL https://www.example.com/document?query=value')
+
+      actual_lines = self.cdm.PrepareMessagesForDisplay(10)
+      expected_lines =  ['  [ module_name ] some text before a URL',
+                         '    https://www.example.com/document?query=value']
+      self.assertEqual(actual_lines, expected_lines)
 
   def testDraw(self):
     """Tests drawing to the console via curses."""
