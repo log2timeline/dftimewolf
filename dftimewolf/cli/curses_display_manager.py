@@ -236,7 +236,7 @@ class CursesDisplayManager:
         textwrap.wrap(m.Stringify(self._messages_longest_source_len),
                       width=x - self._messages_longest_source_len - 8,
                       initial_indent='  ', subsequent_indent='    ',
-                      replace_whitespace=False))
+                      replace_whitespace=False, break_long_words=False))
 
     return lines[-available_lines:]
 
