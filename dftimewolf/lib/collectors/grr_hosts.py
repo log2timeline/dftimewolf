@@ -12,6 +12,7 @@ from typing import List, Optional, Tuple, Type
 import pandas as pd
 
 from grr_api_client import errors as grr_errors
+from grr_api_client import flow
 from grr_api_client.client import Client
 from grr_response_proto import flows_pb2, jobs_pb2, timeline_pb2
 from grr_response_proto import osquery_pb2 as osquery_flows
@@ -367,6 +368,127 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     """Thread pool size."""
     return GRR_THREAD_POOL_SIZE
 
+class GRRYaraScanner(GRRFlow):
+  """GRR Yara scanner.
+
+  Launches YaraProcessScans against one or multiple hosts, stores a pandas
+  DataFrame containing results.
+  """
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str]=None,
+               critical: bool=False) -> None:
+      super(GRRYaraScanner, self).__init__(
+          state, name=name, critical=critical)
+      self.process_regex = ''
+      self.rule_text = ''
+      self.rule_count = 0
+
+  def SetUp(
+    self,
+    reason: str,
+    hostnames: str,
+    process_regex: str,
+    grr_server_url: str,
+    grr_username: str,
+    grr_password: str,
+    approvers: Optional[str] = None,
+    verify: bool = True,
+    skip_offline_clients: bool = False) -> None:
+
+    super().SetUp(
+      reason, grr_server_url, grr_username, grr_password,
+      approvers=approvers, verify=verify,
+      skip_offline_clients=skip_offline_clients)
+
+    for hostname in hostnames.strip().split(','):
+      hostname = hostname.strip()
+      if hostname:
+        self.state.StoreContainer(containers.Host(hostname=hostname))
+    self.state.DedupeContainers(containers.Host)
+
+    self.process_regex = process_regex
+    if self.process_regex:
+      try:
+        re.compile(self.process_regex)
+      except re.error as error:
+        self.ModuleError(
+            f'Invalid process_regex: {error}', critical=True)
+
+  def PreProcess(self) -> None:
+    """Concatenates Yara rules into one stacked rule.
+
+    This is so we only launch one GRR Flow per host, instead of N Flows for N
+    rules that were stored upstream.
+    """
+    yara_rules = self.state.GetContainers(containers.YaraRule)
+    if not yara_rules:
+      self.logger.warning('No Yara rules found.')
+      return
+    self.rule_text = '\n'.join([r.rule_text for r in yara_rules])
+    self.rule_count = len(yara_rules)
+
+  def Process(self, container: containers.Host) -> None:
+    if not self.rule_count:
+      return
+
+    self.logger.info(
+      f'Running {self.rule_count} Yara sigs against {container.hostname}')
+    for client in self._FindClients([container.hostname]):
+      grr_hostname = client.data.os_info.fqdn
+      flow_args = flows_pb2.YaraProcessScanRequest(
+        yara_signature=self.rule_text,
+        ignore_grr_process=True,
+        process_regex=self.process_regex,
+        dump_process_on_match=False
+      )
+
+      flow_id = self._LaunchFlow(client, 'YaraProcessScan', flow_args)
+      self.logger.info(f'Launched flow {flow_id} on {client.client_id} ({grr_hostname})')
+
+      self._AwaitFlow(client, flow_id)
+
+      flow = client.Flow(flow_id).Get()  # Get latest flow data from GRR server.
+      results = list(flow.ListResults())
+      yara_hits_df = self._YaraHitsToDataFrame(client, results)
+
+      if yara_hits_df.empty:
+        self.logger.info(f'{flow_id}: No Yara hits on {client.client_id}')
+        return
+
+      self.PublishMessage(f'{flow_id}: found Yara hits on {client.client_id}')
+      dataframe = containers.DataFrame(
+        data_frame=yara_hits_df,
+        description=(f'List of processes in {client.client_id} where'
+                     'Yara rules matched.'),
+        name=f'Yara matches on {client.client_id}',
+        source='GRRYaraCollector')
+      self.state.StoreContainer(dataframe)
+
+  def _YaraHitsToDataFrame(
+    self,
+    client: Client,
+    results: List[flow.FlowResult]) -> pd.DataFrame:
+
+    entries = []
+    for r in results:
+      process = r.payload.process
+      for match in r.payload.match:
+        entries.append({
+            'grr_client': client.client_id,
+            'grr_fqdn': client.data.os_info.fqdn,
+            'pid': process.pid,
+            'process': process.exe,
+            'username': process.username,
+            'cwd': process.cwd,
+            'rule_name': match.rule_name,
+            'string_matches': [sm.string_id for sm in match.string_matches]
+        })
+    return pd.DataFrame(entries)
+
+  def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
+    """This module operates on Host containers."""
+    return containers.Host
 
 class GRRArtifactCollector(GRRFlow):
   """Artifact collector for GRR flows.
@@ -1143,4 +1265,5 @@ modules_manager.ModulesManager.RegisterModules([
     GRRFileCollector,
     GRRFlowCollector,
     GRROsqueryCollector,
-    GRRTimelineCollector])
+    GRRTimelineCollector,
+    GRRYaraScanner])

@@ -7,6 +7,7 @@ from grr_api_client import flow
 from grr_api_client import hunt
 from grr_response_proto.api import client_pb2
 from grr_response_proto.api import flow_pb2
+from grr_response_proto import sysinfo_pb2
 from grr_response_proto.api import hunt_pb2
 from grr_response_proto import flows_pb2
 
@@ -130,3 +131,28 @@ hunt_pb = hunt_pb2.ApiHunt(
 )
 
 MOCK_HUNT = hunt.Hunt(data=hunt_pb, context=None)
+
+MOCK_YARASCAN_PAYLOAD = flows_pb2.YaraProcessScanMatch(
+    process=sysinfo_pb2.Process(
+        pid=12345,
+        exe='C:\\temp\\bad.exe',
+        username='tomchop',
+        cwd='C:\\temp',
+    ),
+    match=[
+        flows_pb2.YaraMatch(
+            rule_name='badstring',
+            string_matches=[
+                flows_pb2.YaraStringMatch(string_id='$badstring1'),
+                flows_pb2.YaraStringMatch(string_id='$badstring2')
+            ]
+        ),
+        flows_pb2.YaraMatch(
+            rule_name='superbadstring',
+            string_matches=[
+                flows_pb2.YaraStringMatch(string_id='$superbadstring1'),
+                flows_pb2.YaraStringMatch(string_id='$superbadstring2')
+            ]
+        )
+    ]
+)
