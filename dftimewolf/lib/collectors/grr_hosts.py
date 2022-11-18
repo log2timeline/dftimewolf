@@ -230,12 +230,12 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       DFTimewolfError: If approvers are required but none were specified.
     """
     # Start the flow and get the flow ID
-    flow = self._WrapGRRRequestWithApproval(
+    grr_flow = self._WrapGRRRequestWithApproval(
         client, client.CreateFlow, self.logger, name=name, args=args)
-    if not flow:
+    if not grr_flow:
       return ''
 
-    flow_id = flow.flow_id  # type: str
+    flow_id = grr_flow.flow_id  # type: str
     self.PublishMessage(f'{flow_id}: Scheduled')
 
     if self.keepalive:
@@ -324,9 +324,9 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     Returns:
       str: path containing the downloaded files.
     """
-    flow = client.Flow(flow_id)
+    grr_flow = client.Flow(flow_id)
     is_timeline_flow = False
-    if flow.Get().data.name == 'TimelineFlow':
+    if grr_flow.Get().data.name == 'TimelineFlow':
       is_timeline_flow = True
       output_file_path = os.path.join(
           self.output_path, '.'.join((flow_id, 'body')))
@@ -340,9 +340,9 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       return None
 
     if is_timeline_flow:
-      file_archive = flow.GetCollectedTimelineBody()
+      file_archive = grr_flow.GetCollectedTimelineBody()
     else:
-      file_archive = flow.GetFilesArchive()
+      file_archive = grr_flow.GetFilesArchive()
 
     file_archive.WriteToFile(output_file_path)
 
@@ -374,15 +374,16 @@ class GRRYaraScanner(GRRFlow):
   Launches YaraProcessScans against one or multiple hosts, stores a pandas
   DataFrame containing results.
   """
+  # pylint: disable=arguments-differ
   def __init__(self,
                state: DFTimewolfState,
                name: Optional[str]=None,
                critical: bool=False) -> None:
-      super(GRRYaraScanner, self).__init__(
+    super(GRRYaraScanner, self).__init__(
           state, name=name, critical=critical)
-      self.process_regex = ''
-      self.rule_text = ''
-      self.rule_count = 0
+    self.process_regex = ''
+    self.rule_text = ''
+    self.rule_count = 0
 
   def SetUp(
     self,
@@ -444,12 +445,14 @@ class GRRYaraScanner(GRRFlow):
       )
 
       flow_id = self._LaunchFlow(client, 'YaraProcessScan', flow_args)
-      self.logger.info(f'Launched flow {flow_id} on {client.client_id} ({grr_hostname})')
+      self.logger.info(
+        f'Launched flow {flow_id} on {client.client_id} ({grr_hostname})')
 
       self._AwaitFlow(client, flow_id)
 
-      flow = client.Flow(flow_id).Get()  # Get latest flow data from GRR server.
-      results = list(flow.ListResults())
+      # Get latest flow data from GRR server.
+      grr_flow = client.Flow(flow_id).Get()
+      results = list(grr_flow.ListResults())
       yara_hits_df = self._YaraHitsToDataFrame(client, results)
 
       if yara_hits_df.empty:
@@ -888,18 +891,18 @@ class GRROsqueryCollector(GRRFlow):
     Returns:
       List[pd.DataFrame]: the Osquery results.
     """
-    flow = client.Flow(flow_id)
-    list_results = list(flow.ListResults())
+    grr_flow = client.Flow(flow_id)
+    list_results = list(grr_flow.ListResults())
 
     if not list_results:
-      self.logger.info(f'No rows returned for flow ID {str(flow)}')
+      self.logger.info(f'No rows returned for flow ID {str(grr_flow)}')
       return list_results
 
     results = []
     for result in list_results:
       payload = result.payload
       if not isinstance(payload, osquery_flows.OsqueryResult):
-        self.logger.error(f'Incorrect results format from flow ID {flow}')
+        self.logger.error(f'Incorrect results format from flow ID {grr_flow}')
         continue
 
       headers = [column.name for column in payload.table.header.columns]
@@ -1235,15 +1238,15 @@ class GRRTimelineCollector(GRRFlow):
           f'{output_file_path:s} already exists: Skipping')
       return None
 
-    flow = client.Flow(flow_id)
+    grr_flow = client.Flow(flow_id)
     if self._timeline_format == 1:
       ntfs_inodes = client.data.os_info.system.lower() == 'windows'
-      timeline = flow.GetCollectedTimelineBody(
+      timeline = grr_flow.GetCollectedTimelineBody(
           timestamp_subsecond_precision=True,
           inode_ntfs_file_reference_format=ntfs_inodes,
           backslash_escape=True)
     else:
-      timeline = flow.GetCollectedTimeline(self._timeline_format)
+      timeline = grr_flow.GetCollectedTimeline(self._timeline_format)
     timeline.WriteToFile(output_file_path)
 
     return output_file_path
