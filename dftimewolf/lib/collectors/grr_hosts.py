@@ -472,6 +472,17 @@ class GRRYaraScanner(GRRFlow):
     self,
     client: Client,
     results: List[flow.FlowResult]) -> pd.DataFrame:
+    """Converts results of a GRR YaraProcessScan Flow to a pandas DataFrame.
+
+    Args:
+      client: The GRR client object that had matches.
+      results: The FlowResult object obtained by calling ListResults on the
+          GRR Flow object.
+
+    Returns:
+      A pandas DataFrame containing client / process / signature match
+      information.
+    """
 
     entries = []
     for r in results:
