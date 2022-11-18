@@ -6,33 +6,32 @@ read it already.
 
 ## Installation
 
-To be able to develop you need a local installation of dfTimewolf. To install it locally, a venv is recommended.
+To be able to develop you need a local installation of dfTimewolf. To install it locally, a venv is recommended. We use poetry:
 
 ```bash
-git clone https://github.com/log2timeline/dftimewolf/
-git checkout -b "featurename"
-python3 -m venv venv
-source /home/user/dev/dftimewolf/venv/bin/activate
-```
-
-Remove the first line in the requirements.txt file containing something something simple.
-
-Then:
-
-```bash
-pip install pipenv
-pipenv install --dev
+pip install poetry
+poetry install
 ```
 
 Now you are ready to run dfTimewolf in your local environment:
 
 ```bash
-/home/user/dev/dftimewolf/venv/bin/dftimewolf -h
+poetry run dftimewolf -h
 ```
-or
+
+## Docker container
+
+We also provide a dev Docker container that you can use to install dftimewolf's
+dependencies in.
+
+```bash
+cd docker/dev
+docker-compose run --rm dftw tests
 ```
-python -m dftimewolf.cli.dftimewolf_recipes -h # if you installed with pipenv
-```
+
+It will pick up changes from your current working directory, so tests will run
+with the version of the code present on your filesystem. See `docker/dev/README.md`
+for more details.
 
 ## Code review
 
