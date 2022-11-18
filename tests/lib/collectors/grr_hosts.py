@@ -1025,6 +1025,7 @@ class GRRYaraScannerTest(unittest.TestCase):
 
   @mock.patch('grr_api_client.api.InitHttp')
   def testInitializeBadRegex(self, unused_mock_InitHttp):
+    """Tests that bad regexes get caught upon intialization."""
     with self.assertRaises(errors.DFTimewolfError) as error:
       self.grr_yara_scanner.SetUp(
           reason='Random reason',
