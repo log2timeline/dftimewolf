@@ -1,0 +1,13 @@
+version: '3.3'
+services:
+
+  dftw:
+    build:
+      context: ../../
+      dockerfile: ./docker/dev/Dockerfile
+    environment:
+      - DFTIMEWOLF_NO_CURSES=1
+    entrypoint:
+      - /docker-entrypoint.sh
+    volumes:
+      - ../../:/app/
