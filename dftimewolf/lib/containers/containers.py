@@ -162,6 +162,8 @@ class YaraRule(interface.AttributeContainer):
     name: The name of the Yara rule.
     rule_text: The actual Yara rule string.
   """
+  CONTAINER_TYPE = 'yara_rule'
+
   def __init__(self, name: str, rule_text: str) -> None:
     super(YaraRule, self).__init__()
     self.name = name
