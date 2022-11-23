@@ -374,6 +374,10 @@ class GRRYaraScanner(GRRFlow):
   Launches YaraProcessScans against one or multiple hosts, stores a pandas
   DataFrame containing results.
   """
+
+  # can be overridden for internal modules to group on.
+  GROUPING_KEY = 'grouping_key'
+
   # pylint: disable=arguments-differ
   def __init__(self,
                state: DFTimewolfState,
@@ -456,16 +460,21 @@ class GRRYaraScanner(GRRFlow):
       yara_hits_df = self._YaraHitsToDataFrame(client, results)
 
       if yara_hits_df.empty:
-        self.logger.info(f'{flow_id}: No Yara hits on {client.client_id}')
+        self.logger.info(f'{flow_id}: No Yara hits on {grr_hostname}'
+                          ' ({client.client_id})')
         return
 
-      self.PublishMessage(f'{flow_id}: found Yara hits on {client.client_id}')
+      self.PublishMessage(f'{flow_id}: found Yara hits on {grr_hostname}'
+                           ' ({client.client_id})')
       dataframe = containers.DataFrame(
         data_frame=yara_hits_df,
-        description=(f'List of processes in {client.client_id} where'
-                     'Yara rules matched.'),
-        name=f'Yara matches on {client.client_id}',
+        description=(f'List of processes in {grr_hostname} ({client.client_id})'
+                     '  where Yara rules matched.'),
+        name=f'Yara matches on {grr_hostname} ({client.client_id})',
         source='GRRYaraCollector')
+      dataframe.SetMetadata(
+        self.GROUPING_KEY,
+        'GRRYaraScan hits on DATETIME')
       self.state.StoreContainer(dataframe)
 
   def _YaraHitsToDataFrame(
