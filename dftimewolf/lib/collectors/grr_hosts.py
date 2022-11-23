@@ -461,15 +461,15 @@ class GRRYaraScanner(GRRFlow):
 
       if yara_hits_df.empty:
         self.logger.info(f'{flow_id}: No Yara hits on {grr_hostname}'
-                          ' ({client.client_id})')
+                         f' ({client.client_id})')
         return
 
       self.PublishMessage(f'{flow_id}: found Yara hits on {grr_hostname}'
-                           ' ({client.client_id})')
+                          f' ({client.client_id})')
       dataframe = containers.DataFrame(
         data_frame=yara_hits_df,
         description=(f'List of processes in {grr_hostname} ({client.client_id})'
-                     '  where Yara rules matched.'),
+                     ' with Yara hits.'),
         name=f'Yara matches on {grr_hostname} ({client.client_id})',
         source='GRRYaraCollector')
       dataframe.SetMetadata(
@@ -497,6 +497,7 @@ class GRRYaraScanner(GRRFlow):
     for r in results:
       process = r.payload.process
       for match in r.payload.match:
+        string_matches = set(sm.string_id for sm in match.string_matches)
         entries.append({
             'grr_client': client.client_id,
             'grr_fqdn': client.data.os_info.fqdn,
@@ -505,7 +506,7 @@ class GRRYaraScanner(GRRFlow):
             'username': process.username,
             'cwd': process.cwd,
             'rule_name': match.rule_name,
-            'string_matches': [sm.string_id for sm in match.string_matches]
+            'string_matches': sorted(list(string_matches))
         })
     return pd.DataFrame(entries)
 

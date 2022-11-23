@@ -144,6 +144,9 @@ MOCK_YARASCAN_PAYLOAD = flows_pb2.YaraProcessScanMatch(
             rule_name='badstring',
             string_matches=[
                 flows_pb2.YaraStringMatch(string_id='$badstring1'),
+                flows_pb2.YaraStringMatch(string_id='$badstring1'),
+                flows_pb2.YaraStringMatch(string_id='$badstring1'),
+                flows_pb2.YaraStringMatch(string_id='$badstring1'),
                 flows_pb2.YaraStringMatch(string_id='$badstring2')
             ]
         ),
