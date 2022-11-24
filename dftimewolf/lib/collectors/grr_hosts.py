@@ -483,7 +483,7 @@ class GRRYaraScanner(GRRFlow):
       containers.Report(
             'GRRYaraScan',  # actually used as report title
             (f'{self._grouping}\nGRRYaraScan found {hits} Yara '
-             'hits on {container.hostname}'),
+             f'hits on {container.hostname}'),
             text_format='markdown',
             metadata={self.GROUPING_KEY: self._grouping},
         ))
