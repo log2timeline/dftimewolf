@@ -432,6 +432,7 @@ class GRRYaraScanner(GRRFlow):
       return
     self.rule_text = '\n'.join([r.rule_text for r in yara_rules])
     self.rule_count = len(yara_rules)
+    self._grouping = f'# GRR Yara Scan - {datetime.datetime.now()}'
 
   def Process(self, container: containers.Host) -> None:
     if not self.rule_count:
@@ -439,6 +440,8 @@ class GRRYaraScanner(GRRFlow):
 
     self.logger.info(
       f'Running {self.rule_count} Yara sigs against {container.hostname}')
+
+    hits = 0
     for client in self._FindClients([container.hostname]):
       grr_hostname = client.data.os_info.fqdn
       flow_args = flows_pb2.YaraProcessScanRequest(
@@ -472,10 +475,18 @@ class GRRYaraScanner(GRRFlow):
                      ' with Yara hits.'),
         name=f'Yara matches on {grr_hostname} ({client.client_id})',
         source='GRRYaraCollector')
-      dataframe.SetMetadata(
-        self.GROUPING_KEY,
-        'GRRYaraScan hits on DATETIME')
+      dataframe.SetMetadata(self.GROUPING_KEY, self._grouping)
       self.state.StoreContainer(dataframe)
+      hits += 1
+
+    self.state.StoreContainer(
+      containers.Report(
+            'GRRYaraScan',  # actually used as report title
+            (f'{self._grouping}\nGRRYaraScan found {hits} Yara '
+             'hits on {container.hostname}'),
+            text_format='markdown',
+            metadata={self.GROUPING_KEY: self._grouping},
+        ))
 
   def _YaraHitsToDataFrame(
     self,
