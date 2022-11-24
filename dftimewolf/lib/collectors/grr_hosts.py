@@ -388,6 +388,7 @@ class GRRYaraScanner(GRRFlow):
     self.process_regex = ''
     self.rule_text = ''
     self.rule_count = 0
+    self._grouping = ''
 
   def SetUp(
     self,
@@ -487,6 +488,9 @@ class GRRYaraScanner(GRRFlow):
             text_format='markdown',
             metadata={self.GROUPING_KEY: self._grouping},
         ))
+
+  def PostProcess(self) -> None:
+    """Not implemented."""
 
   def _YaraHitsToDataFrame(
     self,
