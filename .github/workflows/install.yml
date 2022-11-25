@@ -25,6 +25,9 @@ jobs:
       run: |
         pip install poetry
         poetry install
-    - name: Test dftimewolf shortcut
+    - name: Test running with full Python path
+      run: |
+        poetry run python dftimewolf/cli/dftimewolf_recipes.py -h
+    - name: Test Python script shortcut
       run: |
         poetry run python dftimewolf/cli/dftimewolf_recipes.py -h
