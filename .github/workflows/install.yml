@@ -30,4 +30,4 @@ jobs:
         poetry run python dftimewolf/cli/dftimewolf_recipes.py -h
     - name: Test Python script shortcut
       run: |
-        poetry run python dftimewolf/cli/dftimewolf_recipes.py -h
+        poetry run dftimewolf -h
