@@ -12,6 +12,7 @@ from typing import List, Optional, Tuple, Type
 import pandas as pd
 
 from grr_api_client import errors as grr_errors
+from grr_api_client import flow
 from grr_api_client.client import Client
 from grr_response_proto import flows_pb2, jobs_pb2, timeline_pb2
 from grr_response_proto import osquery_pb2 as osquery_flows
@@ -229,12 +230,12 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       DFTimewolfError: If approvers are required but none were specified.
     """
     # Start the flow and get the flow ID
-    flow = self._WrapGRRRequestWithApproval(
+    grr_flow = self._WrapGRRRequestWithApproval(
         client, client.CreateFlow, self.logger, name=name, args=args)
-    if not flow:
+    if not grr_flow:
       return ''
 
-    flow_id = flow.flow_id  # type: str
+    flow_id = grr_flow.flow_id  # type: str
     self.PublishMessage(f'{flow_id}: Scheduled')
 
     if self.keepalive:
@@ -323,9 +324,9 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     Returns:
       str: path containing the downloaded files.
     """
-    flow = client.Flow(flow_id)
+    grr_flow = client.Flow(flow_id)
     is_timeline_flow = False
-    if flow.Get().data.name == 'TimelineFlow':
+    if grr_flow.Get().data.name == 'TimelineFlow':
       is_timeline_flow = True
       output_file_path = os.path.join(
           self.output_path, '.'.join((flow_id, 'body')))
@@ -339,9 +340,9 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       return None
 
     if is_timeline_flow:
-      file_archive = flow.GetCollectedTimelineBody()
+      file_archive = grr_flow.GetCollectedTimelineBody()
     else:
-      file_archive = flow.GetFilesArchive()
+      file_archive = grr_flow.GetFilesArchive()
 
     file_archive.WriteToFile(output_file_path)
 
@@ -367,6 +368,166 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     """Thread pool size."""
     return GRR_THREAD_POOL_SIZE
 
+class GRRYaraScanner(GRRFlow):
+  """GRR Yara scanner.
+
+  Launches YaraProcessScans against one or multiple hosts, stores a pandas
+  DataFrame containing results.
+  """
+
+  # can be overridden for internal modules to group on.
+  GROUPING_KEY = 'grouping_key'
+
+  # pylint: disable=arguments-differ
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str]=None,
+               critical: bool=False) -> None:
+    super(GRRYaraScanner, self).__init__(
+          state, name=name, critical=critical)
+    self.process_regex = ''
+    self.rule_text = ''
+    self.rule_count = 0
+    self._grouping = ''
+
+  def SetUp(
+    self,
+    reason: str,
+    hostnames: str,
+    process_regex: str,
+    grr_server_url: str,
+    grr_username: str,
+    grr_password: str,
+    approvers: Optional[str] = None,
+    verify: bool = True,
+    skip_offline_clients: bool = False) -> None:
+
+    super().SetUp(
+      reason, grr_server_url, grr_username, grr_password,
+      approvers=approvers, verify=verify,
+      skip_offline_clients=skip_offline_clients)
+
+    for hostname in hostnames.strip().split(','):
+      hostname = hostname.strip()
+      if hostname:
+        self.state.StoreContainer(containers.Host(hostname=hostname))
+    self.state.DedupeContainers(containers.Host)
+
+    self.process_regex = process_regex
+    if self.process_regex:
+      try:
+        re.compile(self.process_regex)
+      except re.error as error:
+        self.ModuleError(
+            f'Invalid process_regex: {error}', critical=True)
+
+  def PreProcess(self) -> None:
+    """Concatenates Yara rules into one stacked rule.
+
+    This is so we only launch one GRR Flow per host, instead of N Flows for N
+    rules that were stored upstream.
+    """
+    yara_rules = self.state.GetContainers(containers.YaraRule)
+    if not yara_rules:
+      self.logger.warning('No Yara rules found.')
+      return
+    self.rule_text = '\n'.join([r.rule_text for r in yara_rules])
+    self.rule_count = len(yara_rules)
+    self._grouping = f'# GRR Yara Scan - {datetime.datetime.now()}'
+
+  def Process(self, container: containers.Host) -> None:
+    if not self.rule_count:
+      return
+
+    self.logger.info(
+      f'Running {self.rule_count} Yara sigs against {container.hostname}')
+
+    hits = 0
+    for client in self._FindClients([container.hostname]):
+      grr_hostname = client.data.os_info.fqdn
+      flow_args = flows_pb2.YaraProcessScanRequest(
+        yara_signature=self.rule_text,
+        ignore_grr_process=True,
+        process_regex=self.process_regex,
+        dump_process_on_match=False
+      )
+
+      flow_id = self._LaunchFlow(client, 'YaraProcessScan', flow_args)
+      self.logger.info(
+        f'Launched flow {flow_id} on {client.client_id} ({grr_hostname})')
+
+      self._AwaitFlow(client, flow_id)
+
+      # Get latest flow data from GRR server.
+      grr_flow = client.Flow(flow_id).Get()
+      results = list(grr_flow.ListResults())
+      yara_hits_df = self._YaraHitsToDataFrame(client, results)
+
+      if yara_hits_df.empty:
+        self.logger.info(f'{flow_id}: No Yara hits on {grr_hostname}'
+                         f' ({client.client_id})')
+        return
+
+      self.PublishMessage(f'{flow_id}: found Yara hits on {grr_hostname}'
+                          f' ({client.client_id})')
+      dataframe = containers.DataFrame(
+        data_frame=yara_hits_df,
+        description=(f'List of processes in {grr_hostname} ({client.client_id})'
+                     ' with Yara hits.'),
+        name=f'Yara matches on {grr_hostname} ({client.client_id})',
+        source='GRRYaraCollector')
+      dataframe.SetMetadata(self.GROUPING_KEY, self._grouping)
+      self.state.StoreContainer(dataframe)
+      hits += 1
+
+    self.state.StoreContainer(
+      containers.Report(
+            'GRRYaraScan',  # actually used as report title
+            (f'{self._grouping}\nGRRYaraScan found {hits} Yara '
+             f'hits on {container.hostname}'),
+            text_format='markdown',
+            metadata={self.GROUPING_KEY: self._grouping},
+        ))
+
+  def PostProcess(self) -> None:
+    """Not implemented."""
+
+  def _YaraHitsToDataFrame(
+    self,
+    client: Client,
+    results: List[flow.FlowResult]) -> pd.DataFrame:
+    """Converts results of a GRR YaraProcessScan Flow to a pandas DataFrame.
+
+    Args:
+      client: The GRR client object that had matches.
+      results: The FlowResult object obtained by calling ListResults on the
+          GRR Flow object.
+
+    Returns:
+      A pandas DataFrame containing client / process / signature match
+      information.
+    """
+
+    entries = []
+    for r in results:
+      process = r.payload.process
+      for match in r.payload.match:
+        string_matches = set(sm.string_id for sm in match.string_matches)
+        entries.append({
+            'grr_client': client.client_id,
+            'grr_fqdn': client.data.os_info.fqdn,
+            'pid': process.pid,
+            'process': process.exe,
+            'username': process.username,
+            'cwd': process.cwd,
+            'rule_name': match.rule_name,
+            'string_matches': sorted(list(string_matches))
+        })
+    return pd.DataFrame(entries)
+
+  def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
+    """This module operates on Host containers."""
+    return containers.Host
 
 class GRRArtifactCollector(GRRFlow):
   """Artifact collector for GRR flows.
@@ -766,18 +927,18 @@ class GRROsqueryCollector(GRRFlow):
     Returns:
       List[pd.DataFrame]: the Osquery results.
     """
-    flow = client.Flow(flow_id)
-    list_results = list(flow.ListResults())
+    grr_flow = client.Flow(flow_id)
+    list_results = list(grr_flow.ListResults())
 
     if not list_results:
-      self.logger.info(f'No rows returned for flow ID {str(flow)}')
+      self.logger.info(f'No rows returned for flow ID {str(grr_flow)}')
       return list_results
 
     results = []
     for result in list_results:
       payload = result.payload
       if not isinstance(payload, osquery_flows.OsqueryResult):
-        self.logger.error(f'Incorrect results format from flow ID {flow}')
+        self.logger.error(f'Incorrect results format from flow ID {grr_flow}')
         continue
 
       headers = [column.name for column in payload.table.header.columns]
@@ -1113,15 +1274,15 @@ class GRRTimelineCollector(GRRFlow):
           f'{output_file_path:s} already exists: Skipping')
       return None
 
-    flow = client.Flow(flow_id)
+    grr_flow = client.Flow(flow_id)
     if self._timeline_format == 1:
       ntfs_inodes = client.data.os_info.system.lower() == 'windows'
-      timeline = flow.GetCollectedTimelineBody(
+      timeline = grr_flow.GetCollectedTimelineBody(
           timestamp_subsecond_precision=True,
           inode_ntfs_file_reference_format=ntfs_inodes,
           backslash_escape=True)
     else:
-      timeline = flow.GetCollectedTimeline(self._timeline_format)
+      timeline = grr_flow.GetCollectedTimeline(self._timeline_format)
     timeline.WriteToFile(output_file_path)
 
     return output_file_path
@@ -1143,4 +1304,5 @@ modules_manager.ModulesManager.RegisterModules([
     GRRFileCollector,
     GRRFlowCollector,
     GRROsqueryCollector,
-    GRRTimelineCollector])
+    GRRTimelineCollector,
+    GRRYaraScanner])

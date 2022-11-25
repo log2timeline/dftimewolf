@@ -988,5 +988,128 @@ class GRROsqueryCollectorTest(unittest.TestCase):
     self.assertEqual(results[0].client_identifier, 'C.0000000000000001')
 
 
+class GRRYaraScannerTest(unittest.TestCase):
+  """Tests for the GRR Yara scanner."""
+
+  # For pytype
+  grr_yara_scanner: grr_hosts.GRRYaraScanner
+  mock_grr_api: mock.Mock
+  test_state: state.DFTimewolfState
+
+  def setUp(self):
+    self.mock_grr_api = mock.Mock()
+    self.test_state = state.DFTimewolfState(config.Config)
+    self.test_state.StoreContainer(
+      containers.YaraRule(
+        name="test_rule",
+        rule_text="rule test_rule { condition: true }")
+    )
+    self.grr_yara_scanner = grr_hosts.GRRYaraScanner(
+        self.test_state)
+
+  @mock.patch('grr_api_client.api.InitHttp')
+  def testInitialization(self, unused_mock_InitHttp):
+    """Tests that the collector can be initialized."""
+    self.grr_yara_scanner.SetUp(
+        reason='Random reason',
+        hostnames='C.0000000000000001',
+        process_regex='.*',
+        grr_server_url='http://fake/endpoint',
+        grr_username='user',
+        grr_password='password',
+        approvers='approver1,approver2',
+        verify=False,
+        skip_offline_clients=False
+    )
+    self.assertIsNotNone(self.grr_yara_scanner)
+
+  @mock.patch('grr_api_client.api.InitHttp')
+  def testInitializeBadRegex(self, unused_mock_InitHttp):
+    """Tests that bad regexes get caught upon initialization."""
+    with self.assertRaises(errors.DFTimewolfError) as error:
+      self.grr_yara_scanner.SetUp(
+          reason='Random reason',
+          hostnames='C.0000000000000001',
+          process_regex='(((((((',
+          grr_server_url='http://fake/endpoint',
+          grr_username='user',
+          grr_password='password',
+          approvers='approver1,approver2',
+          verify=False,
+          skip_offline_clients=False
+      )
+    self.assertEqual(
+        'Invalid process_regex: missing ), unterminated subpattern at '
+        'position 6',
+        error.exception.message)
+
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow')
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRROsqueryCollector.'
+              '_DownloadResults')
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._LaunchFlow')
+  @mock.patch('grr_api_client.flow.FlowBase.Get')
+  @mock.patch('grr_api_client.api.InitHttp')
+  def testProcess(
+    self,
+    mock_InitHttp,
+    mock_Get,
+    unused_mock_LaunchFlow,
+    unused_mock_DownloadResults,
+    unused_mock_AwaitFlow):
+    """Tests that the module launches appropriate flows."""
+    mock_InitHttp.return_value.SearchClients.return_value = \
+        mock_grr_hosts.MOCK_CLIENT_LIST
+    mock_payloads = [mock.Mock(payload=mock_grr_hosts.MOCK_YARASCAN_PAYLOAD)]
+    mock_ListResults = mock.Mock()
+    mock_ListResults.return_value = mock_payloads
+    mock_Get.return_value.ListResults = mock_ListResults
+
+    self.grr_yara_scanner.SetUp(
+        reason='Random reason',
+        hostnames='C.0000000000000001',
+        process_regex='.*',
+        grr_server_url='http://fake/endpoint',
+        grr_username='user',
+        grr_password='password',
+        approvers='approver1,approver2',
+        verify=False,
+        skip_offline_clients=False
+    )
+
+    self.grr_yara_scanner.PreProcess()
+    in_containers = self.test_state.GetContainers(
+        self.grr_yara_scanner.GetThreadOnContainerType())
+    for container in in_containers:
+      self.grr_yara_scanner.Process(container)
+    self.grr_yara_scanner.PostProcess()
+
+    df_containers = self.test_state.GetContainers(containers.DataFrame)
+    self.assertEqual(len(df_containers), 1)
+    df = df_containers[0].data_frame
+    self.assertEqual(
+      df.to_dict(orient='records'),
+      [
+        {
+          'grr_client': 'C.0000000000000001',
+          'grr_fqdn': 'tomchop',
+          'pid': 12345,
+          'process': 'C:\\temp\\bad.exe',
+          'username': 'tomchop',
+          'cwd': 'C:\\temp',
+          'rule_name': 'badstring',
+          'string_matches': ['$badstring1', '$badstring2']
+        },
+        {
+          'grr_client': 'C.0000000000000001',
+          'grr_fqdn': 'tomchop',
+          'pid': 12345, 'process': 'C:\\temp\\bad.exe',
+          'username': 'tomchop',
+          'cwd': 'C:\\temp',
+          'rule_name': 'superbadstring',
+          'string_matches': ['$superbadstring1', '$superbadstring2']
+        }
+      ]
+    )
+
 if __name__ == '__main__':
   unittest.main()

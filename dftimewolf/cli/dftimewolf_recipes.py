@@ -56,6 +56,7 @@ MODULES = {
   'GRRHuntOsqueryDownloader': 'dftimewolf.lib.collectors.grr_hunt',
   'GRROsqueryCollector': 'dftimewolf.lib.collectors.grr_hosts',
   'GRRTimelineCollector': 'dftimewolf.lib.collectors.grr_hosts',
+  'GRRYaraScanner': 'dftimewolf.lib.collectors.grr_hosts',
   'LocalFilesystemCopy': 'dftimewolf.lib.exporters.local_filesystem',
   'LocalPlasoProcessor': 'dftimewolf.lib.processors.localplaso',
   'OsqueryCollector': 'dftimewolf.lib.collectors.osquery',

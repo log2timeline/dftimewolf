@@ -6,6 +6,42 @@ import unittest
 import pandas
 from dftimewolf.lib.containers import containers
 
+CONTAINER_CLASSES = [
+  containers.AWSS3Object,
+  containers.AWSSnapshot,
+  containers.AWSVolume,
+  containers.DataFrame,
+  containers.Directory,
+  containers.File,
+  containers.ForensicsVM,
+  containers.FSPath,
+  containers.GCEImage,
+  containers.GCPLogs,
+  containers.GCSObject,
+  containers.GrrFlow,
+  containers.Host,
+  containers.OsqueryQuery,
+  containers.OsqueryResult,
+  containers.RemoteFSPath,
+  containers.Report,
+  containers.ThreatIntelligence,
+  containers.TicketAttribute,
+  containers.URL,
+  containers.WorkspaceLogs,
+  containers.YaraRule,
+]
+
+class ContainerTest(unittest.TestCase):
+  """Tests relative to all containers."""
+
+  def testHasContainerType(self):
+    """Tests that all containers have a CONTAINER_TYPE attribute."""
+    for container_class in CONTAINER_CLASSES:
+      self.assertTrue(hasattr(container_class, 'CONTAINER_TYPE'))
+      self.assertIsNotNone(
+        container_class.CONTAINER_TYPE,
+        msg=f'{container_class.__name__} has no defined CONTAINER_TYPE.')
+
 class ReportDataTest(unittest.TestCase):
   """Tests for the Report data attribute container."""
 
