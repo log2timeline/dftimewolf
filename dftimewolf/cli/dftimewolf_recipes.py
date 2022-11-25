@@ -71,7 +71,8 @@ MODULES = {
   'VTCollector' : 'dftimewolf.lib.collectors.virustotal',
   'WorkspaceAuditCollector': 'dftimewolf.lib.collectors.workspace_audit',
   'WorkspaceAuditTimesketch': 'dftimewolf.lib.processors.workspace_audit_timesketch',
-  'GCPCloudResourceTree': 'dftimewolf.lib.processors.gcp_cloud_resource_tree'
+  'GCPCloudResourceTree': 'dftimewolf.lib.processors.gcp_cloud_resource_tree',
+  'YetiYaraCollector': 'dftimewolf.lib.collectors.yara'
 
 }
 # pylint: enable=line-too-long
