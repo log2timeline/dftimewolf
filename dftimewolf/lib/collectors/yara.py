@@ -13,9 +13,9 @@ from dftimewolf.lib.state import DFTimewolfState
 
 
 class YetiYaraCollector(module.BaseModule):
-  """Collector of Yara rules from Yeti instances.
+  """Collector of Yara rules from Yeti TBB instances.
 
-  Stores them in container.YaraRule containers.
+  Yeti TBB is Apache 2.0 licensed. Stores them in container.YaraRule containers.
 
   Attributes:
     rule_name_filter: A string by which to filter Yara rule names
