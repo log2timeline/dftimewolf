@@ -46,7 +46,7 @@ class YetiYaraCollector(module.BaseModule):
     self.api_key = api_key
     self.api_root = api_root
 
-  def Process(self):
+  def Process(self) -> None:
 
     self.logger.debug(f'Connecting to {self.api_root}...')
     self.api_root = self.api_root.strip('/')
