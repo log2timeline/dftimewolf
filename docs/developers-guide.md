@@ -115,7 +115,7 @@ There are two locations to register new modules:
 It is recommended to run tests locally to discover issues early in the development lifecycle.
 
 ```bash
-pip install pipenv
-pipenv install --dev
-python -m unittest discover -s tests -p '*.py'
+pip install poetry
+poetry install
+poetry run python -m unittest discover -s tests -p '*.py'
 ```
