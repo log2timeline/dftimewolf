@@ -6,8 +6,8 @@ Ideally you'll want to install dftimewolf in its own virtual environment.
 
 ```code
 git clone https://github.com/log2timeline/dftimewolf.git && cd dftimewolf
-pip install -r requirements.txt
-pip install -e .
+pip install poetry
+poetry install
 ```
 
 <div class="admonition note">
