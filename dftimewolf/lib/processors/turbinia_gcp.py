@@ -161,7 +161,6 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       self.ModuleError('No interesting files could be found.', critical=True)
 
     container: Union[containers.File, containers.ThreatIntelligence]
-    f = magic.Magic(mime=True, uncompress=True)
     for description, path in all_local_paths:
       if path.endswith('BinaryExtractorTask.tar.gz'):
         self.PublishMessage(f'Found BinaryExtractorTask result: {path}')
@@ -174,12 +173,12 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       elif path.endswith('.plaso'):
         self.PublishMessage(f'Found plaso result: {path}')
         container = containers.File(name=description, path=path)
-      elif f.from_file(path).startswith('text'):
+      elif magic.from_file(path, mime=True).startswith('text'):
         self.PublishMessage(f'Found result: {path}')
         container = containers.File(name=description, path=path)
       else:
         self.PublishMessage(
-            f'Skipping result of type {f.from_file(path)} at: {path}')
+            f'Skipping result of type {magic.from_file(path)} at: {path}')
         continue
       self.state.StoreContainer(container)
   # pylint: enable=arguments-renamed
