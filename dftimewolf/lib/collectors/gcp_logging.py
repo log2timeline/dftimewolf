@@ -84,6 +84,9 @@ class GCPLogsCollector(module.BaseModule):
       backoff_multiplier (str): Query delay multiplier if the API quota is met and backoff is enabled
       output_file (str): Output file name
       output_path (str): Output file path
+    
+    Returns:
+      output_path (str): Log output path (may have been updated if API quota was exceeded)
     """
     while True:
       try:
