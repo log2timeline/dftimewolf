@@ -15,6 +15,7 @@ import pandas as pd
 import yaml
 
 from dftimewolf.lib import module
+from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.collectors import grr_base
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
@@ -136,7 +137,10 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
         flow_name=name, flow_args=args, hunt_runner_args=runner_args)
 
     self.PublishMessage(f'{hunt.hunt_id}: Hunt created')
-    self._WrapGRRRequestWithApproval(hunt, hunt.Start, self.logger)
+    try:
+      self._WrapGRRRequestWithApproval(hunt, hunt.Start, self.logger)
+    except DFTimewolfError as exception:
+      self.ModuleError(exception.message, critical=exception.critical)
     return hunt
 
 
@@ -547,8 +551,11 @@ class GRRHuntDownloader(GRRHuntDownloaderBase):
           f'{output_file_path:s} already exists: Skipping')
       return []
 
-    self._WrapGRRRequestWithApproval(
-        hunt, self._GetAndWriteArchive, self.logger, hunt, output_file_path)
+    try:
+      self._WrapGRRRequestWithApproval(
+          hunt, self._GetAndWriteArchive, self.logger, hunt, output_file_path)
+    except DFTimewolfError as exception:
+      self.ModuleError(exception.message, critical=exception.critical)
 
     results = self._ExtractHuntResults(output_file_path)
     self.PublishMessage(
@@ -698,8 +705,11 @@ class GRRHuntOsqueryDownloader(GRRHuntDownloaderBase):
     Raises:
       DFTimewolfError: if approval is needed and approvers were not specified.
     """
-    self._WrapGRRRequestWithApproval(
-        hunt, self._GetAndWriteResults, self.logger, hunt, self.output_path)
+    try:
+      self._WrapGRRRequestWithApproval(
+          hunt, self._GetAndWriteResults, self.logger, hunt, self.output_path)
+    except DFTimewolfError as exception:
+      self.ModuleError(exception.message, critical=exception.critical)
 
     self.PublishMessage(
         f'Wrote results of {hunt.hunt_id} to {self.output_path}')
