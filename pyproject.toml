@@ -5,6 +5,9 @@ description = ""
 authors = ["Thomas Chopitea <tomchop@gmail.com>"]
 license = "Apache"
 
+[tool.poetry.scripts]
+dftimewolf = 'dftimewolf.cli.dftimewolf_recipes:Main'
+
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
 docker = "^5.0.3"

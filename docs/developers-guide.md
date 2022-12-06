@@ -48,9 +48,9 @@ dfTimewolf follows the
 
 If you're not satisfied with the way modules are chained, or default arguments
 that are passed to some of the recipes, then you can create your own. See
-[existing recipes](https://github.com/log2timeline/dftimewolf/tree/main/dftimewolf/cli/recipes)
+[existing recipes](https://github.com/log2timeline/dftimewolf/tree/main/data/recipes)
 for simple examples like
-[local_plaso](https://github.com/log2timeline/dftimewolf/blob/main/dftimewolf/cli/recipes/local_plaso.py).
+[plaso_ts](https://github.com/log2timeline/dftimewolf/blob/main/data/recipes/plaso_ts.json).
 Details on recipe keys are given [here](architecture.md#recipes).
 
 ### Recipe location
@@ -115,7 +115,7 @@ There are two locations to register new modules:
 It is recommended to run tests locally to discover issues early in the development lifecycle.
 
 ```bash
-pip install pipenv
-pipenv install --dev
-python -m unittest discover -s tests -p '*.py'
+pip install poetry
+poetry install
+poetry run python -m unittest discover -s tests -p '*.py'
 ```
