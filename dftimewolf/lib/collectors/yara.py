@@ -47,6 +47,10 @@ class YetiYaraCollector(module.BaseModule):
     self.api_root = api_root
 
   def Process(self) -> None:
+    """Collects Yara rules from a Yeti instance.
+
+    Collected Yara rules will be stored in YaraRule attribute containers.
+    """
 
     self.logger.debug(f'Connecting to {self.api_root}...')
     self.api_root = self.api_root.strip('/')
