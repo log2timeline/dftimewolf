@@ -666,7 +666,7 @@ class GRRFlowCollectorTest(unittest.TestCase):
   @mock.patch('grr_api_client.flow.FlowBase.Get')
   @mock.patch('grr_api_client.client.Client.ListFlows')
   @mock.patch('grr_api_client.api.InitHttp')
-  def setUp(self, mock_InitHttp, mock_list_flows, mock_flow_get):
+  def setUp(self, mock_InitHttp, mock_list_flows, unused_mock_flow_get):
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
     self.mock_grr_api.SearchClients.return_value = \
@@ -711,7 +711,8 @@ class GRRFlowCollectorTest(unittest.TestCase):
   @mock.patch('grr_api_client.flow.FlowBase.Get')
   @mock.patch('grr_api_client.client.Client.ListFlows')
   @mock.patch('grr_api_client.api.InitHttp')
-  def testPreProcessNoFlows(self, mock_InitHttp, mock_list_flows, mock_flow_get):
+  def testPreProcessNoFlows(
+    self, mock_InitHttp, mock_list_flows, unused_mock_flow_get):
     """Tests that if no flows are found, an error is thrown."""
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
@@ -749,7 +750,7 @@ class GRRFlowCollectorTest(unittest.TestCase):
       mock_DLFiles,
       mock_InitHttp,
       mock_list_flows,
-      mock_flow_get):
+      unused_mock_flow_get):
     """Tests Process when the flow is found but has no data collected."""
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
