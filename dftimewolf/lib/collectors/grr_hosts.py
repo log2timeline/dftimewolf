@@ -230,8 +230,11 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       DFTimewolfError: If approvers are required but none were specified.
     """
     # Start the flow and get the flow ID
-    grr_flow = self._WrapGRRRequestWithApproval(
-        client, client.CreateFlow, self.logger, name=name, args=args)
+    try:
+      grr_flow = self._WrapGRRRequestWithApproval(
+          client, client.CreateFlow, self.logger, name=name, args=args)
+    except DFTimewolfError as exception:
+      self.ModuleError(exception.message, critical=exception.critical)
     if not grr_flow:
       return ''
 
@@ -383,6 +386,16 @@ class GRRYaraScanner(GRRFlow):
   # can be overridden for internal modules to group on.
   GROUPING_KEY = 'grouping_key'
 
+  REPORT_TEXT = """
+GRR Yara scan found {0:d} matches on `{1:s}`.
+
+Scanned rules:
+
+* {2:s}
+
+Flow ID: `{3:s}`
+  """
+
   # pylint: disable=arguments-differ
   def __init__(self,
                state: DFTimewolfState,
@@ -394,6 +407,7 @@ class GRRYaraScanner(GRRFlow):
     self.rule_text = ''
     self.rule_count = 0
     self._grouping = ''
+    self.rule_names = ''
 
   def SetUp(
     self,
@@ -438,6 +452,7 @@ class GRRYaraScanner(GRRFlow):
       return
     self.rule_text = '\n'.join([r.rule_text for r in yara_rules])
     self.rule_count = len(yara_rules)
+    self.rule_names = ', '.join([r.name for r in yara_rules])
     self._grouping = f'# GRR Yara Scan - {datetime.datetime.now()}'
 
   def Process(self, container: containers.Host) -> None:
@@ -448,6 +463,7 @@ class GRRYaraScanner(GRRFlow):
       f'Running {self.rule_count} Yara sigs against {container.hostname}')
 
     hits = 0
+    flows = []
     for client in self._FindClients([container.hostname]):
       grr_hostname = client.data.os_info.fqdn
       flow_args = flows_pb2.YaraProcessScanRequest(
@@ -468,10 +484,14 @@ class GRRYaraScanner(GRRFlow):
       results = list(grr_flow.ListResults())
       yara_hits_df = self._YaraHitsToDataFrame(client, results)
 
+      flows.append((
+        grr_flow.client_id,
+        grr_flow.flow_id,
+        not yara_hits_df.empty))
       if yara_hits_df.empty:
         self.logger.info(f'{flow_id}: No Yara hits on {grr_hostname}'
                          f' ({client.client_id})')
-        return
+        continue
 
       self.PublishMessage(f'{flow_id}: found Yara hits on {grr_hostname}'
                           f' ({client.client_id})')
@@ -485,14 +505,20 @@ class GRRYaraScanner(GRRFlow):
       self.state.StoreContainer(dataframe)
       hits += 1
 
-    self.state.StoreContainer(
-      containers.Report(
-            'GRRYaraScan',  # actually used as report title
-            (f'{self._grouping}\nGRRYaraScan found {hits} Yara '
-             f'hits on {container.hostname}'),
-            text_format='markdown',
-            metadata={self.GROUPING_KEY: self._grouping},
-        ))
+    flow_string = ', '.join([f'`{c}:{f}` (hits: {h})' for c, f, h in flows])
+    flow_string = flow_string.replace('hits: True', 'hits: **True**')
+    report_text = self.REPORT_TEXT.format(
+        hits,
+        container.hostname,
+        '\n* '.join(self.rule_names.split(', ')),
+        flow_string)
+    report = containers.Report(
+        'GRRYaraScan',  # actually used as report title
+        report_text,
+        text_format='markdown',
+        metadata={self.GROUPING_KEY: self._grouping})
+
+    self.state.StoreContainer(report)
 
   def PostProcess(self) -> None:
     """Not implemented."""
