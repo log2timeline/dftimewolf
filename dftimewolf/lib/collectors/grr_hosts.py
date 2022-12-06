@@ -274,8 +274,13 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
         message = status.context.backtrace
         if 'ArtifactNotRegisteredError' in status.context.backtrace:
           message = status.context.backtrace.split('\n')[-2]
-        raise DFTimewolfError(
-            f'{flow_id:s}: FAILED! Message from GRR:\n{message:s}')
+        self.ModuleError(
+            f'{flow_id:s}: FAILED! Message from GRR:\n{message:s}',
+            critical=True)
+
+      if status.state == 4: # Flow crashed, no enum in flows_pb2
+        self.ModuleError(f'{flow_id:s}: Crashed', critical=False)
+        break
 
       if status.state == flows_pb2.FlowContext.TERMINATED:
         self.logger.info(f'{flow_id:s}: Complete')
@@ -1105,26 +1110,18 @@ class GRRFlowCollector(GRRFlow):
         skip_offline_clients=skip_offline_clients)
 
     flows = flow_ids.strip().split(',')
-    found_flows = []
-
-    # For each host specified, list their flows
     for item in hostnames.strip().split(','):
       host = item.strip()
       if host:
         client = self._GetClientBySelector(host)
-        client_flows = [f.flow_id for f in client.ListFlows()]
-        # If the client has a requested flow, queue it up (via the state)
-        for f in flows:
-          if f in client_flows:
-            self.state.StoreContainer(containers.GrrFlow(host, f))
-            found_flows.append(f)
+        for flow_id in flows:
+          try:
+            client.Flow(flow_id).Get()
+            self.state.StoreContainer(containers.GrrFlow(host, flow_id))
+          except grr_errors.UnknownError:
+            self.logger.warning(
+                f'Flow {flow_id} not found in {client.client_id}')
     self.state.DedupeContainers(containers.GrrFlow)
-
-    missing_flows = sorted([f for f in flows if f not in found_flows])
-    if missing_flows:
-      self.logger.warning('The following flows were not found: '
-          f'{", ".join(missing_flows)}')
-      self.logger.warning('Did you specify a child flow instead of a parent?')
 
   def Process(self, container: containers.GrrFlow) -> None:
     """Downloads the results of a GRR collection flow.
