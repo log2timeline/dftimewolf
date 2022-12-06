@@ -74,12 +74,6 @@ class YetiYaraCollector(module.BaseModule):
           name=rule['name'], rule_text=rule['pattern'])
       self.state.StoreContainer(container)
 
-  def PreProcess(self) -> None:
-    """"Unused."""
-
-  def PostProcess(self) -> None:
-    """"Unused."""
-
 modules_manager.ModulesManager.RegisterModules([
     YetiYaraCollector,
 ])
