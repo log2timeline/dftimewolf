@@ -75,5 +75,30 @@ class YetiYaraCollectorTest(unittest.TestCase):
         '}'
     )
 
+  @mock.patch('requests.post')
+  def testProcessBadRequest(self, mock_post):
+    """Tests that Process() handles errors correctly."""
+    mock_post.return_value.status_code = 519
+    mock_post.return_value.json.return_value = 'BAD_RESPONSE'
+
+    self.yara_collector.SetUp(
+        rule_name_filter='rulefilter',
+        api_key='d34db33f',
+        api_root='http://localhost:8080/api/'
+    )
+    with self.assertLogs(self.yara_collector.logger, level='ERROR') as lc:
+      self.yara_collector.Process()
+
+      # Confirm that the error message was logged
+      log_messages = [record.getMessage() for record in lc.records]
+      self.assertEqual(
+        'Error (HTTP 519) retrieving indicators from Yeti: BAD_RESPONSE',
+        log_messages[0])
+
+      # No containers should have been stored
+      yara_containers = self.yara_collector.state.GetContainers(
+        containers.YaraRule)
+      self.assertEqual(len(yara_containers), 0)
+
 if __name__ == '__main__':
   unittest.main()
