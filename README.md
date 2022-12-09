@@ -17,5 +17,4 @@ Github actions |  [Codecov](https://codecov.io/) | [CodeFactor](https://codefact
 
 ### Getting started
 
-[Documentation](https://dftimewolf.readthedocs.io) is hosted on Read the Docs:
-[dftimewolf.readthedocs.io](https://dftimewolf.readthedocs.io).
+[Documentation](https://log2timeline.github.io/dftimewolf/) is hosted on GitHub pages.
