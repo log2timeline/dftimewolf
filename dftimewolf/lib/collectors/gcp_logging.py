@@ -3,7 +3,7 @@
 import json
 import tempfile
 import time
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Tuple
 
 from google.api_core import exceptions as google_api_exceptions
 from google.auth import exceptions as google_auth_exceptions
@@ -43,7 +43,7 @@ class GCPLogsCollector(module.BaseModule):
     self._backoff = False
     self._delay = 0
 
-  def OutputFile(self):
+  def OutputFile(self) -> Tuple[Any, str]:
     """Generate an output file name and path"""
     output_file = tempfile.NamedTemporaryFile(
         mode='w', delete=False, encoding='utf-8', suffix='.jsonl')
@@ -51,42 +51,45 @@ class GCPLogsCollector(module.BaseModule):
     self.logger.info(f'Downloading logs to {output_path}')
     return output_file, output_path
 
-  def SetupLoggingClient(self):
+  def SetupLoggingClient(self) -> Any:
     """Sets up a GCP Logging Client
-    
+
     Args:
       N/A
     """
     if self._project_name:
       return logging.Client(_use_grpc=False,  # type: ignore
                                         project=self._project_name)
-    else:
-      return logging.Client(_use_grpc=False)  # type: ignore
-  
-  def ListPages(self, logging_client):
+    return logging.Client(_use_grpc=False)  # type: ignore
+
+  def ListPages(self, logging_client: Any) -> Any:
     """Returns pages based on a Cloud Logging filter
-    
+
     Args:
       logging_client: A GCP Cloud Logging client
     """
-    results = logging_client.list_entries(  # type: ignore
+    results = logging_client.list_entries(
           order_by=logging.DESCENDING,
           filter_=self._filter_expression,
           page_size=1000)
     return results.pages
 
-  def ProcessPages(self, pages, backoff_multiplier, output_file, output_path):
+  def ProcessPages(self, pages: Any, backoff_multiplier: int,
+    output_file: Any, output_path: str) -> str:
     """Iterates through a generator or pages and saves logs to disk.
     Can optionally perform exponential backoff if query API limits are exceeded.
-    
+
     Args:
-      pages (generator): A google cloud logging list_entries generator pages object
-      backoff_multiplier (str): Query delay multiplier if the API quota is met and backoff is enabled
+      pages (generator): A google cloud logging list_entries \
+        generator pages object
+      backoff_multiplier (str): Query delay multiplier if the API quota is met \
+        and backoff is enabled
       output_file (str): Output file name
       output_path (str): Output file path
-    
+
     Returns:
-      output_path (str): Log output path (may have been updated if API quota was exceeded)
+      output_path (str): Log output path (may have been updated if API quota \
+        was exceeded)
     """
     while True:
       try:
@@ -94,9 +97,12 @@ class GCPLogsCollector(module.BaseModule):
         page = next(pages)
       except google_api_exceptions.TooManyRequests as exception:
         self.PublishMessage('Hit quota limit requesting GCP logs.')
+        self.logger.debug(f'exception: {exception}')
         if self._backoff is True:
-          self.PublishMessage('Retrying in 60 seconds with a slower query rate.')
-          self.PublishMessage('Due to the GCP logging API, the query must restart from the beginning')
+          self.PublishMessage('Retrying in 60 seconds with a slower query \
+            rate.')
+          self.PublishMessage('Due to the GCP logging API, the query must \
+            restart from the beginning')
           time.sleep(60)
           if self._delay == 0:
             self._delay = 1
@@ -105,11 +111,14 @@ class GCPLogsCollector(module.BaseModule):
           self.logger.debug('Setting up new logging client.')
           logging_client = self.SetupLoggingClient()
           pages = self.ListPages(logging_client)
-          self.PublishMessage(f'Restarting query with an API request rate of 1 per {self._delay}s')
+          self.PublishMessage(f'Restarting query with an API request rate \
+            of 1 per {self._delay}s')
           output_file, output_path = self.OutputFile()
         else:
-          self.PublishMessage('Exponential backoff was not enabled, so query has exited.')
-          self.PublishMessage('The collection is most likely incomplete.', is_error=True)
+          self.PublishMessage('Exponential backoff was not enabled, so \
+            query has exited.')
+          self.PublishMessage('The collection is most likely \
+            incomplete.', is_error=True)
       except StopIteration:
         break
 
@@ -117,23 +126,26 @@ class GCPLogsCollector(module.BaseModule):
         log_dictionary = entry.to_api_repr()
         output_file.write(json.dumps(log_dictionary))
         output_file.write('\n')
-    
+
     return output_path
 
   # pylint: disable=arguments-differ
-  def SetUp(self, project_name: str, filter_expression: str, backoff: bool, delay: str) -> None:
+  def SetUp(self, project_name: str, filter_expression: str, backoff: bool,
+    delay: str) -> None:
     """Sets up a a GCP logs collector.
 
     Args:
       project_name (str): name of the project to fetch logs from.
       filter_expression (str): GCP advanced logs filter expression.
-      backoff (bool): Retry queries with an increased delay when API quotas are exceeded.
-      delay (str): Seconds to wait between retreiving results pages to avoid exceeding API quotas
+      backoff (bool): Retry queries with an increased delay when API \
+        quotas are exceeded.
+      delay (str): Seconds to wait between retreiving results pages to \
+        avoid exceeding API quotas
     """
     self._project_name = project_name
     self._filter_expression = filter_expression
     self._backoff = backoff
-    self._delay = float(delay)
+    self._delay = int(delay)
 
   def Process(self) -> None:
     """Copies logs from a cloud project."""
@@ -141,13 +153,13 @@ class GCPLogsCollector(module.BaseModule):
     output_file, output_path = self.OutputFile()
 
     try:
-      'Setup a logging client'
+      # Setup a logging client'
       logging_client = self.SetupLoggingClient()
-      
-      'Get a generator of query results'
+
+      # Get a generator of query results
       pages = self.ListPages(logging_client)
 
-      'Iterate through query result pages and save json logs to disk'
+      # Iterate through query result pages and save json logs to disk
       output_path = self.ProcessPages(pages, 2, output_file, output_path)
 
     except google_api_exceptions.NotFound as exception:
@@ -156,7 +168,8 @@ class GCPLogsCollector(module.BaseModule):
 
     except google_api_exceptions.InvalidArgument as exception:
       self.ModuleError(
-          f'Unable to parse filter {self._filter_expression:s} with error {exception:s}', critical=True)
+          f'Unable to parse filter {self._filter_expression:s} with \
+            error {exception:s}', critical=True)
 
     except (google_auth_exceptions.DefaultCredentialsError,
             google_auth_exceptions.RefreshError) as exception:
