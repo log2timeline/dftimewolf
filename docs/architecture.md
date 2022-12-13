@@ -37,7 +37,7 @@ Tip: If you want your module to be able to take inputs from both recipe
 arguments or the state, consider including something like the following in your
 `SetUp`:
 
-```
+```python
   for p in param.split(','):
     self.state.StoreContainer(containers.MyContainer(p))
 ```
