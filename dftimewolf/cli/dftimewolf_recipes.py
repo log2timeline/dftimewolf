@@ -35,15 +35,16 @@ MODULES = {
   'BigQueryCollector': 'dftimewolf.lib.collectors.bigquery',
   'FilesystemCollector': 'dftimewolf.lib.collectors.filesystem',
   'GCEDiskCopy': 'dftimewolf.lib.collectors.gce_disk_copy',
-  'GoogleCloudDiskExport': 'dftimewolf.lib.exporters.gce_disk_export',
-  'GoogleCloudDiskExportStream': 'dftimewolf.lib.exporters.gce_disk_export_dd',
   'GCEDiskFromImage': 'dftimewolf.lib.exporters.gce_disk_from_image',
   'GCEForensicsVM': 'dftimewolf.lib.processors.gce_forensics_vm',
   'GCEImageFromDisk': 'dftimewolf.lib.exporters.gce_image_from_disk',
+  'GCPCloudResourceTree': 'dftimewolf.lib.processors.gcp_cloud_resource_tree',
   'GCPLoggingTimesketch': 'dftimewolf.lib.processors.gcp_logging_timesketch',
   'GCPLogsCollector': 'dftimewolf.lib.collectors.gcp_logging',
   'GCPTokenCheck': 'dftimewolf.lib.preflights.cloud_token',
   'GCSToGCEImage': 'dftimewolf.lib.exporters.gcs_to_gce_image',
+  'GoogleCloudDiskExport': 'dftimewolf.lib.exporters.gce_disk_export',
+  'GoogleCloudDiskExportStream': 'dftimewolf.lib.exporters.gce_disk_export_dd',
   'GoogleSheetsCollector': 'dftimewolf.lib.collectors.gsheets',
   'GrepperSearch': 'dftimewolf.lib.processors.grepper',
   'GRRArtifactCollector': 'dftimewolf.lib.collectors.grr_hosts',
@@ -71,8 +72,7 @@ MODULES = {
   'VTCollector' : 'dftimewolf.lib.collectors.virustotal',
   'WorkspaceAuditCollector': 'dftimewolf.lib.collectors.workspace_audit',
   'WorkspaceAuditTimesketch': 'dftimewolf.lib.processors.workspace_audit_timesketch',
-  'GCPCloudResourceTree': 'dftimewolf.lib.processors.gcp_cloud_resource_tree'
-
+  'YetiYaraCollector': 'dftimewolf.lib.collectors.yara'
 }
 # pylint: enable=line-too-long
 
@@ -443,8 +443,9 @@ def Main() -> bool:
 
   Returns:
     bool: True if DFTimewolf could be run successfully, False otherwise."""
-  no_curses = bool(os.environ.get('DFTIMEWOLF_NO_CURSES'))
-
+  no_curses = any([bool(os.environ.get('DFTIMEWOLF_NO_CURSES')),
+                   not sys.stdout.isatty(),
+                   not sys.stdin.isatty()])
   SetupLogging(no_curses)
 
   if any([no_curses, '-h' in sys.argv, '--help' in sys.argv]):

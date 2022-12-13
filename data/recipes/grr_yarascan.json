@@ -1,0 +1,45 @@
+{
+  "name": "grr_yarascan",
+  "short_description": "Run Yara rules on hosts memory.",
+  "description": "Run Yara rules on hosts memory.",
+  "modules": [
+    {
+      "wants": [],
+      "name": "YetiYaraCollector",
+      "args": {
+        "rule_name_filter": "@yara_name_filter",
+        "api_key": "@api_key",
+        "api_root": "@api_root"
+      }
+    },
+    {
+        "wants": ["YetiYaraCollector"],
+        "name": "GRRYaraScanner",
+        "args": {
+          "hostnames": "@hostnames",
+          "reason": "@reason",
+          "process_regex": "(?i)^(?!fleetspeak\\.exe|gagent\\.exe).*",
+          "grr_server_url": "@grr_server_url",
+          "grr_username": "@grr_username",
+          "grr_password": "@grr_password",
+          "approvers": "@approvers",
+          "verify": "@verify",
+          "skip_offline_clients": "@skip_offline_clients"
+        }
+      }
+
+  ],
+  "args": [
+    ["reason", "Reason for collection.", null],
+    ["hostnames", "Hostname(s) to collect the flow from.", null],
+    ["--yara_name_filter", "Filter to filter Yara sigs by.", null],
+    ["--api_key", "API Key to the Yeti instance", null],
+    ["--api_root", "API root of the Yeti instance (e.g. http://localhost/api/)", "http://localhost/api/"],
+    ["--approvers", "Emails for GRR approval request.", null],
+    ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
+    ["--verify", "Whether to verify the GRR TLS certificate.", true],
+    ["--skip_offline_clients", "Whether to skip clients that are offline.", false],
+    ["--grr_username", "GRR username", "admin"],
+    ["--grr_password", "GRR password", "demo"]
+  ]
+}
