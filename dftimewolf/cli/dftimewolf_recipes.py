@@ -443,8 +443,9 @@ def Main() -> bool:
 
   Returns:
     bool: True if DFTimewolf could be run successfully, False otherwise."""
-  no_curses = bool(os.environ.get('DFTIMEWOLF_NO_CURSES'))
-
+  no_curses = any([bool(os.environ.get('DFTIMEWOLF_NO_CURSES')),
+                   not sys.stdout.isatty(),
+                   not sys.stdin.isatty()])
   SetupLogging(no_curses)
 
   if any([no_curses, '-h' in sys.argv, '--help' in sys.argv]):
