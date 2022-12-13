@@ -4,7 +4,7 @@
 
 Ideally you'll want to install dftimewolf in its own virtual environment.
 
-```code
+```
 git clone https://github.com/log2timeline/dftimewolf.git && cd dftimewolf
 pip install poetry
 poetry install
@@ -16,9 +16,8 @@ poetry install
   to install them separately and make them available in your virtual environment.</p>
 </div>
 
-You can then invoke the `dftimewolf` command from any directory.
-
-You can also install dfTimewolf the SetupTools way: `python setup.py install`
+If you want to run dftimewolf from any other directory, activate the virtualenv
+by doing `poetry shell` in the main dfTimewolf directory.
 
 ## Quick how-to
 
@@ -26,10 +25,10 @@ dfTimewolf is typically run by specifying a recipe name and any arguments the
 recipe defines. For example:
 
 ```code
-dftimewolf local_plaso /tmp/path1,/tmp/path2 --incident_id 12345
+dftimewolf plaso_ts /tmp/path1,/tmp/path2 --incident_id 12345
 ```
 
-This will launch the local_plaso recipe against `path1` and `path2` in `/tmp`.
+This will launch the `plaso_ts` recipe against `path1` and `path2` in `/tmp`.
 In this recipe `--incident_id` is used by Timesketch as a sketch description.
 
 Details on a recipe can be obtained using the standard python help flags:

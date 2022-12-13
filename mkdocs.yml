@@ -5,6 +5,7 @@ nav:
     - Getting started: getting-started.md
     - User manual: user-manual.md
     - Developers' guide: developers-guide.md
+    - Module writing basics: module-writing-basics.md
     - Architecture: architecture.md
     - Metawolf: metawolf.md
     - Recipe list: recipe-list.md
