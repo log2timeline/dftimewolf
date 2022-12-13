@@ -48,7 +48,7 @@ class GCPLogsCollector(module.BaseModule):
     output_file = tempfile.NamedTemporaryFile(
         mode='w', delete=False, encoding='utf-8', suffix='.jsonl')
     output_path = output_file.name
-    self.logger.info('Downloading logs to {0:s}'.format(output_path))
+    self.logger.info(f'Downloading logs to {output_path}')
     return output_file, output_path
 
   def SetupLoggingClient(self):
@@ -102,14 +102,14 @@ class GCPLogsCollector(module.BaseModule):
             self._delay = 1
           else:
             self._delay *= backoff_multiplier
-          self.PublishMessage('Setting up new logging client.')
+          self.logger.debug('Setting up new logging client.')
           logging_client = self.SetupLoggingClient()
           pages = self.ListPages(logging_client)
-          self.PublishMessage('Restarting query with an API request rate of 1 per {0}s'.format(self._delay))
+          self.PublishMessage(f'Restarting query with an API request rate of 1 per {self._delay}s')
           output_file, output_path = self.OutputFile()
         else:
           self.PublishMessage('Exponential backoff was not enabled, so query has exited.')
-          self.PublishMessage('The collection is most likely incomplete.')
+          self.PublishMessage('The collection is most likely incomplete.', is_error=True)
       except StopIteration:
         break
 
@@ -134,8 +134,6 @@ class GCPLogsCollector(module.BaseModule):
     self._filter_expression = filter_expression
     self._backoff = backoff
     self._delay = float(delay)
-    self.PublishMessage(f'backoff {self._backoff}')
-    self.PublishMessage(f'delay {self._delay}')
 
   def Process(self) -> None:
     """Copies logs from a cloud project."""
@@ -154,12 +152,11 @@ class GCPLogsCollector(module.BaseModule):
 
     except google_api_exceptions.NotFound as exception:
       self.ModuleError(
-          'Error accessing project: {0!s}'.format(exception), critical=True)
+          f'Error accessing project: {exception!s}', critical=True)
 
     except google_api_exceptions.InvalidArgument as exception:
       self.ModuleError(
-          'Unable to parse filter {0:s} with error {1:s}'.format(
-              self._filter_expression, exception), critical=True)
+          f'Unable to parse filter {self._filter_expression:s} with error {exception:s}', critical=True)
 
     except (google_auth_exceptions.DefaultCredentialsError,
             google_auth_exceptions.RefreshError) as exception:
