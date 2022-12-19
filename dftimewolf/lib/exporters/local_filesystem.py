@@ -48,6 +48,7 @@ class LocalFilesystemCopy(module.BaseModule):
 
   def Process(self) -> None:
     """Checks whether the paths exists and updates the state accordingly."""
+    self.state.DedupeContainers(containers.File)
     for file_container in self.state.GetContainers(containers.File, pop=True):
       self.logger.info('{0:s} -> {1:s}'.format(
           file_container.path, self._target_directory))
