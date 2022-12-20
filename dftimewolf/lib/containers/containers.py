@@ -589,7 +589,7 @@ class OsqueryQuery(interface.AttributeContainer):
 
   def __str__(self) -> str:
     """Override __str()__."""
-    return self.name
+    return f'{self.name}'
 
 
 class OsqueryResult(interface.AttributeContainer):
