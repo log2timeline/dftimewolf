@@ -1054,7 +1054,7 @@ class GRROsqueryCollector(GRRFlow):
 
           self.state.StoreContainer(containers.GrrFlow(
                 hostname=host_container.hostname,
-                flow_id=flow_id))
+                flow=flow_id))
 
   def PostProcess(self) -> None:
     """When a directory is specified, get the flow results and save them
