@@ -1014,7 +1014,7 @@ class GRROsqueryCollector(GRRFlow):
           flow_identifier=flow_identifier,
           client_identifier=client_identifier)
       self.state.StoreContainer(results_container)
-      continue
+      return
 
     for data_frame in results:
       self.logger.info(
@@ -1046,11 +1046,15 @@ class GRROsqueryCollector(GRRFlow):
               ignore_stderr_errors=self.ignore_stderr_errors)
 
           try:
-            flow_id = self._LaunchFlow(client, 'OsqueryFlow', hunt_args)
+            flow_id = self._LaunchFlow(client, 'OsqueryFlow', hunt_args)  
           except DFTimewolfError as error:
             self.ModuleError(
                 f'Error raised while launching flow: {error.message}')
             continue
+          
+          self.state.StoreContainer(containers.GRRFlow(
+                hostname=host_container.hostname,
+                flow_id=flow_id))
 
   def PostProcess(self) -> None:
     """When a directory is specified, get the flow results and save them
