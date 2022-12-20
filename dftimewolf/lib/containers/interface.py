@@ -22,6 +22,7 @@ class AttributeContainer():
   """
   CONTAINER_TYPE = None  # type: str
   metadata = {}  # type: Dict[str, Any]
+  src_module = None  # type: str
 
   def __init__(self, metadata: Optional[Dict[str, Any]] = None):
     """Initializes an AttributeContainer.

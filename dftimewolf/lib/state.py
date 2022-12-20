@@ -7,6 +7,7 @@ Use it to track errors, abort on global failures, clean up after modules, etc.
 from dataclasses import dataclass
 from concurrent.futures import ThreadPoolExecutor, Future
 import importlib
+import inspect
 import logging
 import threading
 import traceback
@@ -238,6 +239,9 @@ class DFTimewolfState(object):
       container (AttributeContainer): data to store.
     """
     with self._state_lock:
+      calling_class = inspect.stack()[1][0].f_locals["self"].__class__.__name__
+      container.src_module = calling_class
+      logger.debug(f'{calling_class} is storing a {container.CONTAINER_TYPE} object: {str(container)}')
       self.store.setdefault(container.CONTAINER_TYPE, []).append(container)
 
   def StoreStats(self, stats_entry: StatsEntry) -> None:
@@ -299,6 +303,12 @@ class DFTimewolfState(object):
       if not pop:
         for c in ret_val:
           self.store[container_class.CONTAINER_TYPE].append(c)
+
+      calling_class = inspect.stack()[1][0].f_locals["self"].__class__.__name__
+      verb = 'popping' if pop else 'retrieving'
+      logger.debug(f'{calling_class} is {verb} {len(ret_val)} {container_class.CONTAINER_TYPE} containers:')
+      for item in ret_val:
+        logger.debug(f'  * {str(item)} - origin: {item.src_module}')
 
       return cast(Sequence[T], ret_val)
 
