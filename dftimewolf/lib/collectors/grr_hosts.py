@@ -1046,13 +1046,13 @@ class GRROsqueryCollector(GRRFlow):
               ignore_stderr_errors=self.ignore_stderr_errors)
 
           try:
-            flow_id = self._LaunchFlow(client, 'OsqueryFlow', hunt_args)  
+            flow_id = self._LaunchFlow(client, 'OsqueryFlow', hunt_args)
           except DFTimewolfError as error:
             self.ModuleError(
                 f'Error raised while launching flow: {error.message}')
             continue
-          
-          self.state.StoreContainer(containers.GRRFlow(
+
+          self.state.StoreContainer(containers.GrrFlow(
                 hostname=host_container.hostname,
                 flow_id=flow_id))
 
