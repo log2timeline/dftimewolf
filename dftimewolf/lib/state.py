@@ -242,7 +242,7 @@ class DFTimewolfState(object):
       calling_class = inspect.stack()[1][0].f_locals["self"].__class__.__name__
       container.src_module = calling_class
       logger.debug(f'{calling_class} is storing a {container.CONTAINER_TYPE} '
-          f'object: {str(container)}')
+          f'container: {str(container)}')
       self.store.setdefault(container.CONTAINER_TYPE, []).append(container)
 
   def StoreStats(self, stats_entry: StatsEntry) -> None:
