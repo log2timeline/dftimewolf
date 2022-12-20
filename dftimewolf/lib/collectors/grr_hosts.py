@@ -980,67 +980,77 @@ class GRROsqueryCollector(GRRFlow):
       results.append(data_frame)
     return results
 
-  def Process(self, container: containers.Host) -> None:
+  def Process(self, container: containers.OsqueryQuery) -> None:
     """Collect osquery results from a host with GRR.
 
     Raises:
       DFTimewolfError: if no artifacts specified nor resolved by platform.
     """
-    for client in self._FindClients([container.hostname]):
-      osquery_containers = self.state.GetContainers(containers.OsqueryQuery)
+    client = self._GetClientBySelector(container.client_id)
+    flow_id = container.flow_identifier
 
-      for osquery_container in osquery_containers:
-        hunt_args = osquery_flows.OsqueryFlowArgs(
-            query=osquery_container.query,
-            timeout_millis=self.timeout_millis,
-            ignore_stderr_errors=self.ignore_stderr_errors)
+    try:
+      self._AwaitFlow(client, flow_id)
+    except DFTimewolfError as error:
+      self.ModuleError(
+          f'Error raised while launching/awaiting flow: {error.message}')
+      return
 
-        try:
-          flow_id = self._LaunchFlow(client, 'OsqueryFlow', hunt_args)
-          self._AwaitFlow(client, flow_id)
-        except DFTimewolfError as error:
-          self.ModuleError(
-              f'Error raised while launching/awaiting flow: {error.message}')
-          continue
+    name = container.name
+    description = container.description
+    query = container.query
+    hostname = client.hostname  # TODO: check
+    flow_identifier = flow_id
+    client_identifier = client.client_id
 
-        name = osquery_container.name
-        description = osquery_container.description
-        query = osquery_container.query
-        hostname = container.hostname
-        flow_identifier = flow_id
-        client_identifier = client.client_id
+    results = self._DownloadResults(client, flow_id)
+    if not results:
+      results_container = containers.OsqueryResult(
+          name=name,
+          description=description,
+          query=query,
+          hostname=hostname,
+          data_frame=pd.DataFrame(),
+          flow_identifier=flow_identifier,
+          client_identifier=client_identifier)
+      self.state.StoreContainer(results_container)
+      continue
 
-        results = self._DownloadResults(client, flow_id)
-        if not results:
-          results_container = containers.OsqueryResult(
-              name=name,
-              description=description,
-              query=query,
-              hostname=hostname,
-              data_frame=pd.DataFrame(),
-              flow_identifier=flow_identifier,
-              client_identifier=client_identifier)
-          self.state.StoreContainer(results_container)
-          continue
+    for data_frame in results:
+      self.logger.info(
+          f'{str(flow_id)} ({container.hostname}): {len(data_frame)} rows '
+          'collected')
 
-        for data_frame in results:
-          self.logger.info(
-              f'{str(flow_id)} ({container.hostname}): {len(data_frame)} rows '
-              'collected')
+      dataframe_container = containers.OsqueryResult(
+          name=name,
+          description=description,
+          query=query,
+          hostname=hostname,
+          data_frame=data_frame,
+          flow_identifier=flow_identifier,
+          client_identifier=client_identifier)
 
-          dataframe_container = containers.OsqueryResult(
-              name=name,
-              description=description,
-              query=query,
-              hostname=hostname,
-              data_frame=data_frame,
-              flow_identifier=flow_identifier,
-              client_identifier=client_identifier)
-
-          self.state.StoreContainer(dataframe_container)
+      self.state.StoreContainer(dataframe_container)
 
   def PreProcess(self) -> None:
-    """Not implemented."""
+    """Creates the Osquery Flows."""
+    host_containers = self.state.GetContainers(containers.Host)
+    for host_container in host_containers:
+      for client in self._FindClients([host_container.hostname]):
+        osquery_containers = self.state.GetContainers(containers.OsqueryQuery)
+
+        for osquery_container in osquery_containers:
+          hunt_args = osquery_flows.OsqueryFlowArgs(
+              query=osquery_container.query,
+              timeout_millis=self.timeout_millis,
+              ignore_stderr_errors=self.ignore_stderr_errors)
+
+          try:
+            flow_id = self._LaunchFlow(client, 'OsqueryFlow', hunt_args)
+          except DFTimewolfError as error:
+            self.ModuleError(
+                f'Error raised while launching flow: {error.message}')
+            continue
 
   def PostProcess(self) -> None:
     """When a directory is specified, get the flow results and save them
@@ -1067,7 +1077,7 @@ class GRROsqueryCollector(GRRFlow):
           continue
         hostname = container.hostname
         client_id = container.client_identifier
-        flow_id = container.client_identifier
+        flow_id = container.flow_identifier
         query = container.query
 
         output_file_path = os.path.join(
@@ -1083,7 +1093,7 @@ class GRROsqueryCollector(GRRFlow):
 
   def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
     """This module operates on Host containers."""
-    return containers.Host
+    return containers.OsqueryQuery
 
 
 class GRRFlowCollector(GRRFlow):
