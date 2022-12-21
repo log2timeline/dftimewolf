@@ -406,7 +406,7 @@ class Host(interface.AttributeContainer):
 
 
 class GrrFlow(interface.AttributeContainer):
-  """Attribute container definition for a host.
+  """Attribute container definition for a Grr Flow.
 
   Attributes:
     hostname (str): The host's hostname.
@@ -425,6 +425,38 @@ class GrrFlow(interface.AttributeContainer):
     return f'{self.hostname}:{self.flow_id}'
 
   def __eq__(self, other: GrrFlow) -> bool:
+    """Override __eq__() for this container."""
+    return self.hostname == other.hostname and self.flow_id == other.flow_id
+
+
+class OsqueryGrrFlow(interface.AttributeContainer):
+  """Attribute container definition for a Osquery Grr flow.
+
+  Attributes:
+    hostname (str): The host's hostname.
+    flow_id (str): A hexadecimal flow ID.
+    name (str): Osquery name.
+    description (str): Osquery description
+    query (str): Osquery query
+  """
+
+  CONTAINER_TYPE = 'grr_osquery_flow'
+
+  def __init__(
+      self, hostname: str, flow_id: str, name: str, description: str, query: str
+  ) -> None:
+    super(OsqueryGrrFlow, self).__init__()
+    self.hostname = hostname
+    self.flow_id = flow_id
+    self.name = name
+    self.description = description
+    self.query = query
+
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return f'{self.hostname}:{self.flow_id}:{self.name}'
+
+  def __eq__(self, other: OsqueryGrrFlow) -> bool:
     """Override __eq__() for this container."""
     return self.hostname == other.hostname and self.flow_id == other.flow_id
 

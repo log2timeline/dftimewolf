@@ -102,6 +102,22 @@ class RemoteFSPathDataTest(unittest.TestCase):
     self.assertEqual(attribute_names, expected_attribute_names)
 
 
+class OsqueryGrrFlowDataTest(unittest.TestCase):
+  """Tests for the OsqueryGrrFlow attribute container."""
+
+  def testGetAttributeNames(self):
+    """Tests the GetAttributeNames function."""
+    attribute_container = containers.OsqueryGrrFlow(
+        query='', name='', description='', hostname='', flow_id='')
+
+    expected_attribute_names = [
+        'description', 'flow_id', 'hostname', 'metadata', 'name', 'query']
+
+    attribute_names = sorted(attribute_container.GetAttributeNames())
+
+    self.assertEqual(attribute_names, expected_attribute_names)
+
+
 class OsqueryQueryDataTest(unittest.TestCase):
   """Tests for the OsqueryQuery attribute container."""
 

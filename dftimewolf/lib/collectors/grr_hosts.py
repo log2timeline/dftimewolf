@@ -980,26 +980,26 @@ class GRROsqueryCollector(GRRFlow):
       results.append(data_frame)
     return results
 
-  def Process(self, container: containers.OsqueryQuery) -> None:
+  def Process(self, container: containers.OsqueryGrrFlow) -> None:
     """Collect osquery results from a host with GRR.
 
     Raises:
       DFTimewolfError: if no artifacts specified nor resolved by platform.
     """
-    client = self._GetClientBySelector(container.client_id)
-    flow_id = container.flow_identifier
+    client = self._GetClientBySelector(container.hostname)
+    flow_id = container.flow_id
 
     try:
       self._AwaitFlow(client, flow_id)
     except DFTimewolfError as error:
       self.ModuleError(
-          f'Error raised while launching/awaiting flow: {error.message}')
+          f'Error raised while awaiting flow: {error.message}')
       return
 
     name = container.name
     description = container.description
     query = container.query
-    hostname = client.hostname  # TODO: check
+    hostname = container.hostname
     flow_identifier = flow_id
     client_identifier = client.client_id
 
@@ -1018,8 +1018,7 @@ class GRROsqueryCollector(GRRFlow):
 
     for data_frame in results:
       self.logger.info(
-          f'{str(flow_id)} ({container.hostname}): {len(data_frame)} rows '
-          'collected')
+          f'{str(flow_id)} ({hostname}): {len(data_frame)} rows collected')
 
       dataframe_container = containers.OsqueryResult(
           name=name,
@@ -1052,9 +1051,12 @@ class GRROsqueryCollector(GRRFlow):
                 f'Error raised while launching flow: {error.message}')
             continue
 
-          self.state.StoreContainer(containers.GrrFlow(
+          self.state.StoreContainer(containers.OsqueryGrrFlow(
                 hostname=host_container.hostname,
-                flow=flow_id))
+                flow_id=flow_id,
+                name=osquery_container.name,
+                description=osquery_container.description,
+                query=osquery_container.query))
 
   def PostProcess(self) -> None:
     """When a directory is specified, get the flow results and save them
@@ -1096,8 +1098,8 @@ class GRROsqueryCollector(GRRFlow):
         manifest_fd.write(f'"{flow_id}","{hostname}","{client_id}","{query}"\n')
 
   def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
-    """This module operates on Host containers."""
-    return containers.OsqueryQuery
+    """This module operates on OsqueryGrrFlow containers."""
+    return containers.OsqueryGrrFlow
 
 
 class GRRFlowCollector(GRRFlow):
