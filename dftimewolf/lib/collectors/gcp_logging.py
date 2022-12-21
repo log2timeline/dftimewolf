@@ -56,7 +56,7 @@ class GCPLogsCollector(module.BaseModule):
 
     Args:
       N/A
-    
+
     Returns:
       logging.Client: A GCP logging client
     """
@@ -70,7 +70,7 @@ class GCPLogsCollector(module.BaseModule):
 
     Args:
       logging_client: A GCP Cloud Logging client
-    
+
     Returns:
       results.pages: Query result pages generator
     """
