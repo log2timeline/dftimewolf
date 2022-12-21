@@ -56,6 +56,9 @@ class GCPLogsCollector(module.BaseModule):
 
     Args:
       N/A
+    
+    Returns:
+      logging.Client: A GCP logging client
     """
     if self._project_name:
       return logging.Client(_use_grpc=False,  # type: ignore
@@ -67,6 +70,9 @@ class GCPLogsCollector(module.BaseModule):
 
     Args:
       logging_client: A GCP Cloud Logging client
+    
+    Returns:
+      results.pages: Query result pages generator
     """
     results = logging_client.list_entries(
           order_by=logging.DESCENDING,

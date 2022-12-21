@@ -15,8 +15,10 @@
       "name": "GCPLogsCollector",
       "args": {
         "project_name": "@project_name",
-        "filter_expression": "logName:\"projects/@project_name/logs/cloudsql.googleapis.com\" timestamp>\"@start_date\" timestamp<\"@end_date\""
-      }
+        "filter_expression": "@filter_expression",
+        "backoff": "@backoff",
+        "delay": "@delay"
+    }
     },
     {
       "wants": ["GCPLogsCollector"],
