@@ -239,7 +239,7 @@ class DFTimewolfState(object):
       container (AttributeContainer): data to store.
     """
     with self._state_lock:
-      calling_module = inspect.stack()[1][0].f_locals["self"].name
+      calling_module = FindCallerModule()
       container.src_module_name = calling_module
       logger.debug(f'{calling_module} is storing a {container.CONTAINER_TYPE} '
           f'container: {str(container)}')
@@ -305,9 +305,9 @@ class DFTimewolfState(object):
         for c in ret_val:
           self.store[container_class.CONTAINER_TYPE].append(c)
 
-      calling_class = inspect.stack()[1][0].f_locals["self"].__class__.__name__
-      if calling_class != 'DFTimewolfState':
-        logger.debug(f'{calling_class} is retrieving {len(ret_val)} '
+      calling_module = FindCallerModule()
+      if calling_module != 'DFTimewolfState':
+        logger.debug(f'{calling_module} is retrieving {len(ret_val)} '
             f'{container_class.CONTAINER_TYPE} containers - pop == {pop}')
         for item in ret_val:
           logger.debug(f'  * {str(item)} - origin: {item.src_module_name}')
@@ -827,3 +827,26 @@ class DFTimewolfStateWithCDM(DFTimewolfState):
       message: The message content.
       is_error: True if the message is an error message, False otherwise."""
     self.cursesdm.EnqueueMessage(source, message, is_error)
+
+
+def FindCallerModule() -> str:
+  """Finds the caller module runtime name.
+
+  This method is used in Get/StoreContainer to find the module name that called
+  that method. Used for debug logging to track container lifecycles.
+
+  This method looks two frames up the stack for the caller information:
+  * 0: state.py:FindCallerModule (this frame when the method is called)
+  * 1: state.py:DFTimewolfState.Get/StoreContainer()
+  * 2: <module>.<method> <- The module name we want.
+
+  In unit tests, #2 is the unit test class, which has no 'name' attribute. In
+  such a scenario, fall back to the class name.
+
+  Returns:
+    A string of the calling module runtime name if present, else the class name.
+  """
+  desired_stack_frame = 2
+  caller_locals = inspect.stack()[desired_stack_frame][0].f_locals["self"]
+  return (caller_locals.name if hasattr(caller_locals, 'name') else
+      caller_locals.__class__.__name__)
