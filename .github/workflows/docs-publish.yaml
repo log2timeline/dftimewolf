@@ -23,4 +23,4 @@ jobs:
       - name: Generate recipe doc
         run: poetry run python docs/generate_recipe_doc.py data/recipes docs
       - name: Build doc
-        run: poetry run  mkdocs gh-deploy --force
+        run: poetry run mkdocs gh-deploy --force

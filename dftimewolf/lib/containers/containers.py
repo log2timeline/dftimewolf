@@ -230,6 +230,10 @@ class File(interface.AttributeContainer):
     """Override __str()__."""
     return self.path
 
+  def __eq__(self, other: File) -> bool:
+    """Override __eq__() for this container."""
+    return self.name == other.name and self.path == other.path
+
 
 class Directory(interface.AttributeContainer):
   """Attribute container definition for generic directories.
