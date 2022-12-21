@@ -443,7 +443,8 @@ class OsqueryGrrFlow(interface.AttributeContainer):
   CONTAINER_TYPE = 'grr_osquery_flow'
 
   def __init__(
-      self, hostname: str, flow_id: str, name: str, description: str, query: str
+      self, hostname: str, flow_id: str, query: str, name: Optional[str], 
+      description: Optional[str] 
   ) -> None:
     super(OsqueryGrrFlow, self).__init__()
     self.hostname = hostname
