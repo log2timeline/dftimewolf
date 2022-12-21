@@ -239,9 +239,9 @@ class DFTimewolfState(object):
       container (AttributeContainer): data to store.
     """
     with self._state_lock:
-      calling_class = inspect.stack()[1][0].f_locals["self"].__class__.__name__
-      container.src_module = calling_class
-      logger.debug(f'{calling_class} is storing a {container.CONTAINER_TYPE} '
+      calling_module = inspect.stack()[1][0].f_locals["self"].name
+      container.src_module_name = calling_module
+      logger.debug(f'{calling_module} is storing a {container.CONTAINER_TYPE} '
           f'container: {str(container)}')
       self.store.setdefault(container.CONTAINER_TYPE, []).append(container)
 
@@ -307,11 +307,10 @@ class DFTimewolfState(object):
 
       calling_class = inspect.stack()[1][0].f_locals["self"].__class__.__name__
       if calling_class != 'DFTimewolfState':
-        verb = 'popping' if pop else 'retrieving'
-        logger.debug(f'{calling_class} is {verb} {len(ret_val)} '
-            f'{container_class.CONTAINER_TYPE} containers:')
+        logger.debug(f'{calling_class} is retrieving {len(ret_val)} '
+            f'{container_class.CONTAINER_TYPE} containers - pop == {pop}')
         for item in ret_val:
-          logger.debug(f'  * {str(item)} - origin: {item.src_module}')
+          logger.debug(f'  * {str(item)} - origin: {item.src_module_name}')
 
       return cast(Sequence[T], ret_val)
 
@@ -412,7 +411,7 @@ class DFTimewolfState(object):
       pop = not module.KeepThreadedContainersInState()
       for c in self.GetContainers(module.GetThreadOnContainerType(), pop):
         logger.debug(f'Launching {module.name}.Process thread with {str(c)} '
-            f'from {c.src_module}')
+            f'from {c.src_module_name}')
         futures.append(
             executor.submit(module.Process, c))
 
