@@ -435,9 +435,9 @@ class OsqueryGrrFlow(interface.AttributeContainer):
   Attributes:
     hostname (str): The host's hostname.
     flow_id (str): A hexadecimal flow ID.
-    name (str): Osquery name.
-    description (str): Osquery description
     query (str): Osquery query
+    name (Optional[str]): Osquery name.
+    description (Optional[str]): Osquery description
   """
 
   CONTAINER_TYPE = 'grr_osquery_flow'
