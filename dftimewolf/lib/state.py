@@ -848,5 +848,5 @@ def FindCallerModule() -> str:
   """
   desired_stack_frame = 2
   caller_locals = inspect.stack()[desired_stack_frame][0].f_locals["self"]
-  return (caller_locals.name if hasattr(caller_locals, 'name') else
-      caller_locals.__class__.__name__)
+  return str((caller_locals.name if hasattr(caller_locals, 'name') else
+      caller_locals.__class__.__name__))
