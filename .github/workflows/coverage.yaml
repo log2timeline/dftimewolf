@@ -10,8 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        python-version: [3.9, "3.10"]
+        os: [ubuntu-latest]
+        python-version: [3.9]
     env:
       DFTIMEWOLF_NO_CURSES: 1
     steps:

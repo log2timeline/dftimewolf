@@ -54,6 +54,9 @@ class BaseModule(object):
     self.logger.propagate = False
     self.SetupLogging()
 
+    for x in [1, 2, 3, 4, 5]:
+      print(x)
+
   def SetupLogging(self, threaded: bool = False) -> None:
     """Sets up stream and file logging for a specific module."""
     self.logger.setLevel(logging.DEBUG)
