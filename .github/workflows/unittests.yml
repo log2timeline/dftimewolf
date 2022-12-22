@@ -30,8 +30,5 @@ jobs:
     - name: Coverage XML
       run: |
         poetry run coverage xml -o coverage.xml
-    - name: Coverage
-      uses: orgoro/coverage@v3
-      with:
-        coverageFile: coverage.xml
-        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Upload Coverage to Codecov
+      uses: codecov/codecov-action@v2
