@@ -20,10 +20,12 @@
         }
     }, {
         "wants": ["GCPLogsCollector"],
-        "name": "GCPLoggingTimesketch",
-        "args": {}
+        "name": "LocalPlasoProcessor",
+        "args": {
+          "timezone": null
+        }
     }, {
-        "wants": ["GCPLoggingTimesketch"],
+        "wants": ["LocalPlasoProcessor"],
         "name": "TimesketchExporter",
         "args": {
             "incident_id": "@incident_id",
