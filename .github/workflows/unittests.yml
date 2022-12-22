@@ -7,7 +7,6 @@ on:
 jobs:
 
   poetry:
-    permissions: write-all
     runs-on: ubuntu-latest
     strategy:
       matrix:
