@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Definition of modules for collecting data from GRR hosts."""
 
-from concurrent.futures import ThreadPoolExecutor, Future
+from concurrent.futures import ThreadPoolExecutor
 import datetime
 import os
 import re
