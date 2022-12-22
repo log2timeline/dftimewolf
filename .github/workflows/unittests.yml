@@ -26,4 +26,12 @@ jobs:
         poetry install
     - name: Test with unittest
       run: |
-        poetry run python -m unittest discover -s tests -p '*.py'
+        poetry run coverage run -m unittest discover -s tests -p '*.py'
+    - name: Coverage XML
+      run: |
+        poetry run coverage xml -o coverage.xml
+    - name: Coverage
+      uses: orgoro/coverage@v3
+      with:
+        coverageFile: coverage.xml
+        token: ${{ secrets.GITHUB_TOKEN }}
