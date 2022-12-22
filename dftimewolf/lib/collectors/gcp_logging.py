@@ -139,9 +139,7 @@ class GCPLogsCollector(module.BaseModule):
     self.PublishMessage(f'Downloaded logs to {output_path}')
     output_file.close()
 
-    logs_report = containers.GCPLogs(
-        path=output_path, filter_expression=self._filter_expression,
-        project_name=self._project_name)
+    logs_report = containers.File(self._filter_expression, output_path)
     self.state.StoreContainer(logs_report)
 
 

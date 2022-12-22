@@ -548,7 +548,7 @@ Parameter|Default value|Description
 
 
 
-Modules: `GCPLogsCollector`, `GCPLoggingTimesketch`, `TimesketchExporter`
+Modules: `GCPLogsCollector`, `LocalPlasoProcessor`, `TimesketchExporter`
 
 **Module graph**
 
@@ -579,7 +579,7 @@ Parameter|Default value|Description
 
 
 
-Modules: `GCPLogsCollector`, `GCPLoggingTimesketch`, `TimesketchExporter`
+Modules: `GCPLogsCollector`, `LocalPlasoProcessor`, `TimesketchExporter`
 
 **Module graph**
 
@@ -635,7 +635,7 @@ Parameter|Default value|Description
 
 
 
-Modules: `GCPLogsCollector`, `GCPLoggingTimesketch`, `TimesketchExporter`
+Modules: `GCPLogsCollector`, `LocalPlasoProcessor`, `TimesketchExporter`
 
 **Module graph**
 
@@ -666,7 +666,7 @@ Parameter|Default value|Description
 
 
 
-Modules: `GCPLogsCollector`, `GCPLoggingTimesketch`, `TimesketchExporter`
+Modules: `GCPLogsCollector`, `LocalPlasoProcessor`, `TimesketchExporter`
 
 **Module graph**
 
@@ -1132,6 +1132,41 @@ Modules: `GRRTimelineCollector`, `LocalPlasoProcessor`, `TimesketchExporter`, `T
 **Module graph**
 
 ![grr_timeline_ts](_static/graphviz/grr_timeline_ts.png)
+
+----
+
+## `grr_yarascan`
+
+Run Yara rules on hosts memory.
+
+**Details:**
+
+Run Yara rules on hosts memory.
+
+**CLI parameters:**
+
+Parameter|Default value|Description
+---------|-------------|-----------
+`reason`|`None`|Reason for collection.
+`hostnames`|`None`|Hostname(s) to collect the flow from.
+`--yara_name_filter`|`None`|Filter to filter Yara sigs by.
+`--api_key`|`None`|API Key to the Yeti instance
+`--api_root`|`'http://localhost/api/'`|API root of the Yeti instance (e.g. http://localhost/api/)
+`--approvers`|`None`|Emails for GRR approval request.
+`--grr_server_url`|`'http://localhost:8000'`|GRR endpoint
+`--verify`|`True`|Whether to verify the GRR TLS certificate.
+`--skip_offline_clients`|`False`|Whether to skip clients that are offline.
+`--grr_username`|`'admin'`|GRR username
+`--grr_password`|`'demo'`|GRR password
+
+
+
+
+Modules: `YetiYaraCollector`, `GRRYaraScanner`
+
+**Module graph**
+
+![grr_yarascan](_static/graphviz/grr_yarascan.png)
 
 ----
 
