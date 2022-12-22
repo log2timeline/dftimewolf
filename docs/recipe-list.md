@@ -544,6 +544,8 @@ Parameter|Default value|Description
 `--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
 `--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
 `--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+`--backoff`|`False`|Option to attempt to retry collection at a slower rate if the Cloud Logging API quota is exceeded.
+`--delay`|`0`|Optional number of seconds to delay each Cloud Logging request.
 
 
 
@@ -575,7 +577,8 @@ Parameter|Default value|Description
 `--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
 `--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
 `--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
-
+`--backoff`|`False`|Option to attempt to retry collection at a slower rate if the Cloud Logging API quota is exceeded.
+`--delay`|`0`|Optional number of seconds to delay each Cloud Logging request.
 
 
 
@@ -601,7 +604,8 @@ Parameter|Default value|Description
 ---------|-------------|-----------
 `project_name`|`None`|Name of the GCP project to collect logs from.
 `filter_expression`|`"resource.type = 'gce_instance'"`|Filter expression to use to query GCP logs. See https://cloud.google.com/logging/docs/view/query-library for examples.
-
+`--backoff`|`False`|Option to attempt to retry collection at a slower rate if the Cloud Logging API quota is exceeded.
+`--delay`|`0`|Optional number of seconds to delay each Cloud Logging request.
 
 
 
@@ -631,7 +635,8 @@ Parameter|Default value|Description
 `--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
 `--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
 `--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
-
+`--backoff`|`False`|Option to attempt to retry collection at a slower rate if the Cloud Logging API quota is exceeded.
+`--delay`|`0`|Optional number of seconds to delay each Cloud Logging request.
 
 
 
@@ -662,7 +667,8 @@ Parameter|Default value|Description
 `--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
 `--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
 `--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
-
+`--backoff`|`False`|Option to attempt to retry collection at a slower rate if the Cloud Logging API quota is exceeded.
+`--delay`|`0`|Optional number of seconds to delay each Cloud Logging request.
 
 
 

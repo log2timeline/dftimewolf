@@ -14,7 +14,7 @@
         "name": "GCPLogsCollector",
         "args": {
             "project_name": "@project_name",
-            "filter_expression": "@filter_expression",
+            "filter_expression": "logName=projects/@project_name/logs/cloudaudit.googleapis.com%2Factivity timestamp>\"@start_date\" timestamp<\"@end_date\"",
             "backoff": "@backoff",
             "delay": "@delay"
         }
@@ -40,6 +40,8 @@
         ["--incident_id", "Incident ID (used for Timesketch description).", null],
         ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
-        ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true]
+        ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true],
+        ["--backoff", "If GCP Cloud Logging API query limits are exceeded, retry with an increased delay between each query to try complete the query at a slower rate.", false],
+        ["--delay", "Number of seconds to wait between each GCP Cloud Logging query to avoid hitting API query limits", 0]
     ]
 }
