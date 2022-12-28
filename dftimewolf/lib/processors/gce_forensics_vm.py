@@ -122,7 +122,7 @@ class GCEForensicsVM(module.BaseModule):
     self.PublishMessage(
         f'gcloud compute ssh --project {self.project.project_id} '
         f'{analysis_vm_name} --zone {self.project.default_zone}')
-    self.state.StoreContainer(
+    self.StoreContainer(
         containers.TicketAttribute(
             name=self._ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME,
             type_=self._ANALYSIS_VM_CONTAINER_ATTRIBUTE_TYPE,
@@ -147,12 +147,12 @@ class GCEForensicsVM(module.BaseModule):
     if self._gcp_label:
       self.analysis_vm.AddLabels(self._gcp_label)
       self.analysis_vm.GetBootDisk().AddLabels(self._gcp_label)
-    self.state.StoreContainer(containers.ForensicsVM(
+    self.StoreContainer(containers.ForensicsVM(
         name=self.analysis_vm.name,
         evidence_disk=None,
         platform='gcp'))
 
-    disks = self.state.GetContainers(containers.GCEDisk)
+    disks = self.GetContainers(containers.GCEDisk)
 
     # Sleep until status is RUNNING before attaching disks. Possible values:
     # https://cloud.google.com/compute/docs/reference/rest/v1/instances/get

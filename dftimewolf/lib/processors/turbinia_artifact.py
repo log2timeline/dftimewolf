@@ -104,7 +104,7 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
           self.logger.info(f'  {task["name"]}: {path}')
           container = containers.RemoteFSPath(
               path=path, hostname=container.hostname)
-          self.state.StoreContainer(container)
+          self.StoreContainer(container)
 
   @staticmethod
   def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:

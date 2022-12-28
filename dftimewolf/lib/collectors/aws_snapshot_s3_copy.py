@@ -86,7 +86,7 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
 
     if snapshots:
       for snap in snapshots.split(','):
-        self.state.StoreContainer(containers.AWSSnapshot(snap))
+        self.StoreContainer(containers.AWSSnapshot(snap))
 
     # Check the bucket exists
     self.bucket_exists = self._CheckBucketExists(self.bucket)
@@ -104,7 +104,7 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
 
     # Check the snapshots exist
     snap_ids = [snap.id for snap in \
-        self.state.GetContainers(containers.AWSSnapshot)]
+        self.GetContainers(containers.AWSSnapshot)]
     if not self._CheckSnapshotsExist(snap_ids):
       self.ModuleError(
           'Could not find the snapshots ids to copy.',
@@ -128,9 +128,9 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
           self.iam_details['profile']['arn'],
           subnet_id=self.subnet)
 
-      self.state.StoreContainer(containers.AWSS3Object(result['image']))
+      self.StoreContainer(containers.AWSS3Object(result['image']))
       for h in result['hashes']:
-        self.state.StoreContainer(containers.AWSS3Object(h))
+        self.StoreContainer(containers.AWSS3Object(h))
     except ResourceCreationError as exception:
       self.ModuleError(
           f'Exception during copy operation: {exception!s}', critical=True)

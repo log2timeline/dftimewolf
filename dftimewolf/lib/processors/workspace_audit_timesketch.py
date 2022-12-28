@@ -209,11 +209,11 @@ class WorkspaceAuditTimesketch(BaseModule):
           f'{timeline_name} filter {logs_container.filter_expression}')
 
     container = containers.File(name=timeline_name, path=output_path)
-    self.state.StoreContainer(container)
+    self.StoreContainer(container)
 
   def Process(self) -> None:
     """Processes Workspace logs containers for insertion into Timesketch."""
-    logs_containers = self.state.GetContainers(containers.WorkspaceLogs)
+    logs_containers = self.GetContainers(containers.WorkspaceLogs)
     for logs_container in logs_containers:
       self._ProcessLogContainer(logs_container)
 

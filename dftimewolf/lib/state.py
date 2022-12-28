@@ -7,7 +7,6 @@ Use it to track errors, abort on global failures, clean up after modules, etc.
 from dataclasses import dataclass
 from concurrent.futures import ThreadPoolExecutor, Future
 import importlib
-import inspect
 import logging
 import threading
 import traceback
@@ -232,17 +231,17 @@ class DFTimewolfState(object):
     with self._state_lock:
       return self._cache.get(name, default_value)
 
-  def StoreContainer(self, container: "interface.AttributeContainer") -> None:
+  def StoreContainer(self,
+                     container: "interface.AttributeContainer",
+                     source_module: str = "") -> None:
     """Thread-safe method to store data in the state's store.
 
     Args:
       container (AttributeContainer): data to store.
+      source_module: the originating module.
     """
     with self._state_lock:
-      calling_module = FindCallerModule()
-      container.src_module_name = calling_module
-      logger.debug(f'{calling_module} is storing a {container.CONTAINER_TYPE} '
-          f'container: {str(container)}')
+      container.src_module_name = source_module
       self.store.setdefault(container.CONTAINER_TYPE, []).append(container)
 
   def StoreStats(self, stats_entry: StatsEntry) -> None:
@@ -304,13 +303,6 @@ class DFTimewolfState(object):
       if not pop:
         for c in ret_val:
           self.store[container_class.CONTAINER_TYPE].append(c)
-
-      calling_module = FindCallerModule()
-      if calling_module != 'DFTimewolfState':
-        logger.debug(f'{calling_module} is retrieving {len(ret_val)} '
-            f'{container_class.CONTAINER_TYPE} containers - pop == {pop}')
-        for item in ret_val:
-          logger.debug(f'  * {str(item)} - origin: {item.src_module_name}')
 
       return cast(Sequence[T], ret_val)
 
@@ -827,26 +819,3 @@ class DFTimewolfStateWithCDM(DFTimewolfState):
       message: The message content.
       is_error: True if the message is an error message, False otherwise."""
     self.cursesdm.EnqueueMessage(source, message, is_error)
-
-
-def FindCallerModule() -> str:
-  """Finds the caller module runtime name.
-
-  This method is used in Get/StoreContainer to find the module name that called
-  that method. Used for debug logging to track container lifecycles.
-
-  This method looks two frames up the stack for the caller information:
-  * 0: state.py:FindCallerModule (this frame when the method is called)
-  * 1: state.py:DFTimewolfState.Get/StoreContainer()
-  * 2: <module>.<method> <- The module name we want.
-
-  In unit tests, #2 is the unit test class, which has no 'name' attribute. In
-  such a scenario, fall back to the class name.
-
-  Returns:
-    A string of the calling module runtime name if present, else the class name.
-  """
-  desired_stack_frame = 2
-  caller_locals = inspect.stack()[desired_stack_frame][0].f_locals["self"]
-  return str((caller_locals.name if hasattr(caller_locals, 'name') else
-      caller_locals.__class__.__name__))

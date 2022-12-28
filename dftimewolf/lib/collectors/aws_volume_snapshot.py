@@ -41,12 +41,12 @@ class AWSVolumeSnapshotCollector(module.BaseModule):
     self.region = region
     if volumes:
       for vol_id in volumes.split(','):
-        self.state.StoreContainer(containers.AWSVolume(vol_id))
+        self.StoreContainer(containers.AWSVolume(vol_id))
 
   def Process(self) -> None:
     """Images the volumes into S3."""
 
-    volumes = [c.id for c in self.state.GetContainers(containers.AWSVolume)]
+    volumes = [c.id for c in self.GetContainers(containers.AWSVolume)]
     if len(volumes) == 0:
       self.ModuleError('No volume IDs specified', critical=True)
 
@@ -74,7 +74,7 @@ class AWSVolumeSnapshotCollector(module.BaseModule):
         format(exception), critical=True)
 
     for snap_id in snapshot_ids:
-      self.state.StoreContainer(containers.AWSSnapshot(snap_id))
+      self.StoreContainer(containers.AWSSnapshot(snap_id))
 
 
 modules_manager.ModulesManager.RegisterModule(AWSVolumeSnapshotCollector)

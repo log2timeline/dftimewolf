@@ -83,7 +83,7 @@ class S3ToGCSCopy(module.ThreadAwareModule):
 
     if s3_objects:
       for obj in s3_objects.split(','):
-        self.state.StoreContainer(containers.AWSS3Object(obj))
+        self.StoreContainer(containers.AWSS3Object(obj))
 
   def PreProcess(self) -> None:
     """Prep work for copying objects from S3 to GCS - Bucket creation."""
@@ -120,7 +120,7 @@ class S3ToGCSCopy(module.ThreadAwareModule):
         container.path, az, 'gs://' + self.dest_bucket)
     _, s3_path = SplitStoragePath(container.path)
     output = self.dest_bucket + '/' + s3_path
-    self.state.StoreContainer(containers.GCSObject(output))
+    self.StoreContainer(containers.GCSObject(output))
 
   def _SetBucketServiceAccountPermissions(self) -> None:
     """Grant access to the storage transfer service account to use the bucket.
