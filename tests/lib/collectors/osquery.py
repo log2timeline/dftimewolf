@@ -84,7 +84,7 @@ class OsqueryCollectorTest(unittest.TestCase):
 
     osquery_collector.Process()
 
-    containers = test_state.GetContainers(OsqueryQuery)
+    containers = osquery_collector.GetContainers(OsqueryQuery)
     self.assertEqual(len(containers), 1)
     self.assertEqual(containers[0].query, "SELECT * FROM processes")
 
@@ -124,7 +124,7 @@ class OsqueryCollectorTest(unittest.TestCase):
 
     osquery_collector.Process()
 
-    containers = test_state.GetContainers(OsqueryQuery)
+    containers = osquery_collector.GetContainers(OsqueryQuery)
     self.assertEqual(len(containers), 2)
 
     self.assertEqual(containers[0].name, 'query_1')

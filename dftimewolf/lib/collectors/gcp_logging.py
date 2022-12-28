@@ -200,7 +200,7 @@ class GCPLogsCollector(module.BaseModule):
     output_file.close()
 
     logs_report = containers.File(self._filter_expression, output_path)
-    self.state.StoreContainer(logs_report)
+    self.StoreContainer(logs_report)
 
 
 modules_manager.ModulesManager.RegisterModule(GCPLogsCollector)

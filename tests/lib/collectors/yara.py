@@ -59,7 +59,7 @@ class YetiYaraCollectorTest(unittest.TestCase):
         json={'name': 'rulefilter', 'type': 'x-yara'},
         headers={'X-Yeti-API': 'd34db33f'},
     )
-    yara_containers = self.yara_collector.state.GetContainers(
+    yara_containers = self.yara_collector.GetContainers(
       containers.YaraRule)
     self.assertEqual(len(yara_containers), 1)
     self.assertEqual(yara_containers[0].name, 'Some random rule')
@@ -96,7 +96,7 @@ class YetiYaraCollectorTest(unittest.TestCase):
         log_messages[0])
 
       # No containers should have been stored
-      yara_containers = self.yara_collector.state.GetContainers(
+      yara_containers = self.yara_collector.GetContainers(
         containers.YaraRule)
       self.assertEqual(len(yara_containers), 0)
 

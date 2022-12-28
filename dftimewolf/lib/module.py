@@ -10,7 +10,7 @@ from logging import handlers
 import traceback
 import sys
 
-from typing import Optional, Type, cast, TypeVar, Dict, Any
+from typing import Optional, Type, cast, TypeVar, Dict, Any, Sequence
 
 from dftimewolf.lib import errors
 from dftimewolf.lib import logging_utils
@@ -129,6 +129,50 @@ class BaseModule(object):
     else:
       self.logger.info(message)
     self.state.PublishMessage(self.name, message, is_error)
+
+  def StoreContainer(self, container: "interface.AttributeContainer") -> None:
+    """Stores a container in the state's container store.
+
+    Args:
+      container (AttributeContainer): data to store.
+    """
+    self.logger.debug(f'{self.name} is storing a {container.CONTAINER_TYPE} '
+        f'container: {str(container)}')
+
+    self.state.StoreContainer(container, self.name)
+
+  def GetContainers(self,
+                    container_class: Type[T],
+                    pop: bool=False,
+                    metadata_filter_key: Optional[str]=None,
+                    metadata_filter_value: Optional[Any]=None) -> Sequence[T]:
+    """Retrieve containers from the state container store.
+
+    Args:
+      container_class (type): AttributeContainer class used to filter data.
+      pop (Optional[bool]): Whether to remove the containers from the state when
+          they are retrieved.
+      metadata_filter_key (Optional[str]): Metadata key to filter on.
+      metadata_filter_value (Optional[Any]): Metadata value to filter on.
+
+    Returns:
+      Collection[AttributeContainer]: attribute container objects provided in
+          the store that correspond to the container type.
+
+    Raises:
+      RuntimeError: If only one metadata filter parameter is specified.
+    """
+    containers = self.state.GetContainers(container_class,
+                                          pop,
+                                          metadata_filter_key,
+                                          metadata_filter_value)
+
+    self.logger.debug(f'{self.name} is retrieving {len(containers)} '
+        f'{container_class.CONTAINER_TYPE} containers - pop == {pop}')
+    for item in containers:
+      self.logger.debug(f'  * {str(item)} - origin: {item.src_module_name}')
+
+    return containers
 
   @abc.abstractmethod
   def Process(self) -> None:

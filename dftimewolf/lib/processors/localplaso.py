@@ -158,17 +158,17 @@ class LocalPlasoProcessor(module.BaseModule):
       self._LocalPlasoRun(cmd)
 
     new_container = containers.File(description, plaso_storage_file_path)
-    self.state.StoreContainer(new_container)
+    self.StoreContainer(new_container)
 
   def Process(self) -> None:
     """Executes log2timeline.py on the module input."""
 
     combined_list = [
     ]  # type: List[Union[containers.File, containers.Directory]]
-    for file_container in self.state.GetContainers(containers.File, pop=True):
+    for file_container in self.GetContainers(containers.File, pop=True):
       combined_list.append(file_container)
 
-    for directory_container in self.state.GetContainers(containers.Directory,
+    for directory_container in self.GetContainers(containers.Directory,
                                                         pop=True):
       combined_list.append(directory_container)
 

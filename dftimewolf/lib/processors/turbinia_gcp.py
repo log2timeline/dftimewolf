@@ -64,7 +64,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       for disk in disk_names.strip().split(','):
         if not disk:
           continue
-        self.state.StoreContainer(containers.GCEDisk(
+        self.StoreContainer(containers.GCEDisk(
             name=disk,
             project=project))
 
@@ -82,10 +82,10 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     we grab those containers and track the disks for processing by this module,
     for any modules that aren't using the new container yet.
     """
-    vm_containers = self.state.GetContainers(containers.ForensicsVM)
+    vm_containers = self.GetContainers(containers.ForensicsVM)
     for container in vm_containers:
       if container.evidence_disk and container.evidence_disk.name:
-        self.state.StoreContainer(
+        self.StoreContainer(
             containers.GCEDisk(
                 name=container.evidence_disk.name,
                 project=self.project))
@@ -112,14 +112,14 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
         zone=self.turbinia_zone)
 
     threat_intel_indicators = None
-    threatintel = self.state.GetContainers(containers.ThreatIntelligence)
+    threatintel = self.GetContainers(containers.ThreatIntelligence)
     if threatintel:
       self.logger.info(
           f'Sending {len(threatintel)} threatintel to Turbinia GrepWorkers...')
       threat_intel_indicators = [item.indicator for item in threatintel]
 
     yara_rules = None
-    yara_containers = self.state.GetContainers(containers.YaraRule)
+    yara_containers = self.GetContainers(containers.YaraRule)
     if yara_containers:
       self.logger.info(f'Sending {len(yara_containers)} Yara rules to Turbinia '
           'Plaso worker...')
@@ -133,7 +133,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     except TurbiniaException as exception:
       self.ModuleError(str(exception), critical=True)
 
-    self.state.StoreContainer(containers.Report(
+    self.StoreContainer(containers.Report(
         module_name='TurbiniaProcessor', text=report, text_format='markdown'))
 
     local_paths, gs_paths = self._DeterminePaths(task_data)
@@ -180,7 +180,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
         self.PublishMessage(
             f'Skipping result of type {magic.from_file(path)} at: {path}')
         continue
-      self.state.StoreContainer(container)
+      self.StoreContainer(container)
   # pylint: enable=arguments-renamed
 
   @staticmethod

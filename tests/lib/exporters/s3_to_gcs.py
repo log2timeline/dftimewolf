@@ -61,7 +61,7 @@ class S3ToGCSCopyTest(unittest.TestCase):
 
     expected_objects = FAKE_S3_OBJECTS.split(',')
     actual_objects = [c.path for \
-        c in test_state.GetContainers(containers.AWSS3Object)]
+        c in exporter.GetContainers(containers.AWSS3Object)]
 
     self.assertEqual(FAKE_AWS_REGION, exporter.aws_region)
     self.assertEqual(FAKE_GCP_PROJECT_NAME, exporter.dest_project_name)
@@ -105,7 +105,7 @@ class S3ToGCSCopyTest(unittest.TestCase):
 
     expected_output = ['gs://fake-gcs-bucket/one', 'gs://fake-gcs-bucket/two']
     actual_output = [c.path for \
-        c in test_state.GetContainers(containers.GCSObject)]
+        c in exporter.GetContainers(containers.GCSObject)]
 
     self.assertEqual(sorted(expected_output), sorted(actual_output))
 
@@ -134,20 +134,20 @@ class S3ToGCSCopyTest(unittest.TestCase):
     mock_sleep.return_value = None
 
     test_state = state.DFTimewolfState(config.Config)
-    for c in FAKE_STATE_S3_OBJECT_LIST:
-      test_state.StoreContainer(c)
-
     exporter = s3_to_gcs.S3ToGCSCopy(test_state)
+    for c in FAKE_STATE_S3_OBJECT_LIST:
+      exporter.StoreContainer(c)
+
     exporter.SetUp(FAKE_AWS_REGION,
         FAKE_GCP_PROJECT_NAME,
         FAKE_GCS_BUCKET)
 
-    for c in test_state.GetContainers(containers.AWSS3Object):
+    for c in exporter.GetContainers(containers.AWSS3Object):
       exporter.Process(c)
 
     expected_output = ['gs://fake-gcs-bucket/one', 'gs://fake-gcs-bucket/two']
     actual_output = [c.path for \
-        c in test_state.GetContainers(containers.GCSObject)]
+        c in exporter.GetContainers(containers.GCSObject)]
 
     self.assertEqual(sorted(expected_output), sorted(actual_output))
 

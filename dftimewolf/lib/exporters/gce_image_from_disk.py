@@ -64,7 +64,7 @@ class GCEImageFromDisk(module.ThreadAwareModule):
     if source_disks:
       for obj in source_disks.split(','):
         if obj:
-          self.state.StoreContainer(containers.GCEDisk(obj, source_project))
+          self.StoreContainer(containers.GCEDisk(obj, source_project))
 
   def Process(self, container: containers.GCEDisk) -> None:
     """Creates a GCE disk from an image.
@@ -93,7 +93,7 @@ class GCEImageFromDisk(module.ThreadAwareModule):
         prefix=f'{self.name_prefix}-{source_disk.name}',
         truncate_at=common.COMPUTE_NAME_LIMIT)
     image = project.compute.CreateImageFromDisk(source_disk, name=image_name)
-    self.state.StoreContainer(
+    self.StoreContainer(
         containers.GCEImage(image.name, self.dest_project))
 
     self.logger.info(

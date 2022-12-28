@@ -136,7 +136,7 @@ Two methods are used as part of module initialisation: The python class `__init_
     for p in paths.split(','):
       if p:
         filename = os.path.basename(p)
-        self.state.StoreContainer(containers.File(name=filename, path=p))
+        self.StoreContainer(containers.File(name=filename, path=p))
 ```
 
 ## 3 - Processing
@@ -176,7 +176,7 @@ Next up is `Process(container)`. This method will receive one `File` container (
     digest = sha1.hexdigest()
     if digest in self.hashes:
       os.rename(container.path, f'{self.destination_dir}/{container.name}')
-      self.state.StoreContainer(
+      self.StoreContainer(
           containers.File(
               name=container.name,
               path=f'{self.destination_dir}/{container.name}'))
@@ -186,7 +186,7 @@ Finally, we would implement a `PostProcess()` method. In our example, there is n
 
 ```python
   def PostProcess():
-    count = len(self.state.GetContainers(containers.File))
+    count = len(self.GetContainers(containers.File))
     if count == 0:
       self.ModuleError(
           message=f'No matching hashes found.',

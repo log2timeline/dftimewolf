@@ -183,7 +183,7 @@ class AWSCollectorTest(unittest.TestCase):
         volume_id=FAKE_VOLUME.volume_id,
         src_profile='test-remote-profile-name',
         dst_profile='test-analysis-profile-name')
-    forensics_vms = test_state.GetContainers(containers.ForensicsVM)
+    forensics_vms = aws_collector.GetContainers(containers.ForensicsVM)
     forensics_vm = forensics_vms[0]
     self.assertEqual('fake-analysis-vm', forensics_vm.name)
     self.assertEqual(

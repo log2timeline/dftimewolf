@@ -305,7 +305,7 @@ class GRRHuntFileCollector(GRRHunt):
 
   def PreProcess(self) -> None:
     """Load File paths from containers and check there are files to download."""
-    for file_container in self.state.GetContainers(
+    for file_container in self.GetContainers(
         container_class=containers.FSPath):
       self.file_path_list.append(file_container.path)
 
@@ -403,7 +403,7 @@ class GRRHuntOsqueryCollector(GRRHunt):
 
   def Process(self) -> None:
     """Starts a new Osquery GRR hunt."""
-    osquery_containers = self.state.GetContainers(containers.OsqueryQuery)
+    osquery_containers = self.GetContainers(containers.OsqueryQuery)
 
     for osquery_container in osquery_containers:
       hunt_args = osquery_flows.OsqueryFlowArgs()
@@ -497,7 +497,7 @@ class GRRHuntDownloaderBase(GRRHunt):
 
     for description, path in self._CollectHuntResults(hunt):
       container = containers.File(name=description, path=path)
-      self.state.StoreContainer(container)
+      self.StoreContainer(container)
 
 
 class GRRHuntDownloader(GRRHuntDownloaderBase):

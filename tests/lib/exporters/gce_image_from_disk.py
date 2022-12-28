@@ -63,12 +63,12 @@ class GCEImageFromDiskTest(unittest.TestCase):
     self.assertEqual('fake-prefix', exporter.name_prefix)
 
     actual_names = [
-        c.name for c in test_state.GetContainers(containers.GCEDisk)]
+        c.name for c in exporter.GetContainers(containers.GCEDisk)]
     expected_names = ['disk-1', 'disk-2', 'disk-3']
     self.assertEqual(sorted(actual_names), sorted(expected_names))
 
     for project in [
-        c.project for c in test_state.GetContainers(containers.GCEDisk)
+        c.project for c in exporter.GetContainers(containers.GCEDisk)
     ]:
       self.assertEqual(project, 'source-project')
 
@@ -92,20 +92,20 @@ class GCEImageFromDiskTest(unittest.TestCase):
                    FAKE_NAME_PREFIX)
 
     exporter.PreProcess()
-    for c in test_state.GetContainers(exporter.GetThreadOnContainerType()):
+    for c in exporter.GetContainers(exporter.GetThreadOnContainerType()):
       exporter.Process(c)  # pytype: disable=wrong-arg-types
       # GetContainers returns the abstract base class type, but process is
       # called with the instantiated child class.
     exporter.PostProcess()
 
     actual_output = [
-        c.name for c in test_state.GetContainers(containers.GCEImage)]
+        c.name for c in exporter.GetContainers(containers.GCEImage)]
 
     self.assertEqual(
         sorted(actual_output), sorted(['fake-image-one', 'fake-image-two']))
 
     for project in [
-        c.project for c in test_state.GetContainers(containers.GCEImage)
+        c.project for c in exporter.GetContainers(containers.GCEImage)
     ]:
       self.assertEqual(project, FAKE_GCP_DEST_PROJECT_NAME)
 
@@ -127,10 +127,11 @@ class GCEImageFromDiskTest(unittest.TestCase):
     mock_lcf_create_image_from_disk.side_effect = FAKE_DISK_CREATION_RESPONSES
 
     test_state = state.DFTimewolfState(config.Config)
-    for c in FAKE_STATE_OBJECT_LIST:
-      test_state.StoreContainer(c)
-
     exporter = gce_image_from_disk.GCEImageFromDisk(test_state)
+
+    for c in FAKE_STATE_OBJECT_LIST:
+      exporter.StoreContainer(c)
+
     exporter.SetUp(None,
                    FAKE_GCP_SOURCE_PROJECT_NAME,
                    FAKE_SOURCE_ZONE,
@@ -139,21 +140,21 @@ class GCEImageFromDiskTest(unittest.TestCase):
                    FAKE_NAME_PREFIX)
 
     exporter.PreProcess()
-    for c in test_state.GetContainers(exporter.GetThreadOnContainerType()):
+    for c in exporter.GetContainers(exporter.GetThreadOnContainerType()):
       exporter.Process(c)  # pytype: disable=wrong-arg-types
       # GetContainers returns the abstract base class type, but process is
       # called with the instantiated child class.
     exporter.PostProcess()
 
     actual_output = [c.name for \
-        c in test_state.GetContainers(containers.GCEImage)]
+        c in exporter.GetContainers(containers.GCEImage)]
 
     self.assertEqual(sorted(actual_output), sorted([
       'fake-image-one',
       'fake-image-two']))
 
     for project in [c.project for \
-        c in test_state.GetContainers(containers.GCEImage)]:
+        c in exporter.GetContainers(containers.GCEImage)]:
       self.assertEqual(project, FAKE_GCP_DEST_PROJECT_NAME)
 
 

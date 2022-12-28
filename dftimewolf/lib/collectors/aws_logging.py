@@ -114,7 +114,7 @@ class AWSLogsCollector(module.BaseModule):
     output_file.close()
 
     logs_report = containers.File('AWSLogsCollector result', output_path)
-    self.state.StoreContainer(logs_report)
+    self.StoreContainer(logs_report)
 
 
 modules_manager.ModulesManager.RegisterModule(AWSLogsCollector)

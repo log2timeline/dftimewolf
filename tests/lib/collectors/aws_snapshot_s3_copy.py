@@ -153,7 +153,7 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
           FAKE_SUBNET)
 
     state_snaps = [snap.id for snap in \
-        test_state.GetContainers(containers.AWSSnapshot)]
+        collector.GetContainers(containers.AWSSnapshot)]
 
     self.assertEqual(['snap-01234567', 'snap-12345678'], state_snaps)
     self.assertEqual(FAKE_REGION, collector.region)
@@ -172,7 +172,7 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
           FAKE_REGION)
 
     state_snaps = [snap.id for snap in \
-        test_state.GetContainers(containers.AWSSnapshot)]
+        collector.GetContainers(containers.AWSSnapshot)]
 
     self.assertEqual(['snap-01234567', 'snap-12345678'], state_snaps)
     self.assertEqual(FAKE_REGION, collector.region)
@@ -238,12 +238,12 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
           FAKE_REGION)
 
       collector.PreProcess()
-      for c in test_state.GetContainers(containers.AWSSnapshot):
+      for c in collector.GetContainers(containers.AWSSnapshot):
         collector.Process(c)
       collector.PostProcess()
 
     actual_output = [c.path for c in \
-        test_state.GetContainers(containers.AWSS3Object)]
+        collector.GetContainers(containers.AWSS3Object)]
 
     self.assertEqual(sorted(actual_output), sorted([
           's3://fake-bucket/snap-01234567/image.bin',
@@ -276,23 +276,23 @@ class AWSSnapshotS3CopyCollectorTest(unittest.TestCase):
     mock_sleep.return_value = None
 
     test_state = state.DFTimewolfState(config.Config)
-    for snapshot in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']:
-      test_state.StoreContainer(containers.AWSSnapshot(
-          snapshot['SnapshotId']))
-
     collector = aws_snapshot_s3_copy.AWSSnapshotS3CopyCollector(test_state)
+
+    for snapshot in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']:
+      collector.StoreContainer(containers.AWSSnapshot(
+          snapshot['SnapshotId']))
 
     with mock.patch('botocore.client.BaseClient._make_api_call',
         new=MockMakeAPICall):
       collector.SetUp(None, FAKE_BUCKET, FAKE_REGION)
 
       collector.PreProcess()
-      for c in test_state.GetContainers(containers.AWSSnapshot):
+      for c in collector.GetContainers(containers.AWSSnapshot):
         collector.Process(c)
       collector.PostProcess()
 
     actual_output = [c.path for c in \
-        test_state.GetContainers(containers.AWSS3Object)]
+        collector.GetContainers(containers.AWSS3Object)]
 
     self.assertEqual(sorted(actual_output), sorted([
           's3://fake-bucket/snap-01234567/image.bin',

@@ -105,7 +105,7 @@ class AzureLogsCollector(module.BaseModule):
     output_file.close()
 
     logs_report = containers.File('AzureLogsCollector result', output_path)
-    self.state.StoreContainer(logs_report)
+    self.StoreContainer(logs_report)
 
 
 modules_manager.ModulesManager.RegisterModule(AzureLogsCollector)

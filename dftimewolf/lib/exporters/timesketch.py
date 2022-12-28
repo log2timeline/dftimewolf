@@ -149,7 +149,7 @@ class TimesketchExporter(module.ThreadAwareModule):
     Returns:
       int: the sketch idenifier, or 0 if one was not available.
     """
-    attributes = self.state.GetContainers(containers.TicketAttribute)
+    attributes = self.GetContainers(containers.TicketAttribute)
     for attribute in attributes:
       if attribute.name == self._SKETCH_ATTRIBUTE_NAME:
         sketch_match = re.search(r'sketch/(\d+)/', attribute.value)
@@ -250,7 +250,7 @@ class TimesketchExporter(module.ThreadAwareModule):
         module_name='TimesketchExporter',
         text=message,
         text_format='markdown')
-    self.state.StoreContainer(report_container)
+    self.StoreContainer(report_container)
 
 
 modules_manager.ModulesManager.RegisterModule(TimesketchExporter)

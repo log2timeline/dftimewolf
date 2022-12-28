@@ -39,11 +39,11 @@ arguments or the state, consider including something like the following in your
 
 ```python
   for p in param.split(','):
-    self.state.StoreContainer(containers.MyContainer(p))
+    self.StoreContainer(containers.MyContainer(p))
 ```
 
 This way, any recipe arguments (in this example, comma separated) are available
-in `Process` via `self.state.GetContainers()`, in addition to any containers
+in `Process` via `self.GetContainers()`, in addition to any containers
 from previous modules.
 
 ### Thread Aware Modules
@@ -53,7 +53,7 @@ If your module takes multiple inputs you can take advantage of the
 threads. The following are the differences from implementing `BaseModule`:
 
 * Process takes a single container argument. You process this single container,
-rather than sourcing containers to process from `self.state.GetContainers()`.
+rather than sourcing containers to process from `self.GetContainers()`.
 * Required method overrides:
   * `GetThreadOnContainerType()` - The type of container that is to be used as
   input to the parallel threads.

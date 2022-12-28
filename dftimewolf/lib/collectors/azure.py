@@ -82,7 +82,7 @@ class AzureCollector(module.BaseModule):
           name=self.analysis_vm.name,
           evidence_disk=new_disk,
           platform='azure')
-      self.state.StoreContainer(container)
+      self.StoreContainer(container)
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
@@ -170,7 +170,7 @@ class AzureCollector(module.BaseModule):
 
     analysis_vm_name = f'azure-forensics-vm-{self.incident_id:s}'
     print(f'Your analysis VM will be: {analysis_vm_name:s}')
-    self.state.StoreContainer(
+    self.StoreContainer(
         containers.TicketAttribute(
             name=self._ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME,
             type_=self._ANALYSIS_VM_CONTAINER_ATTRIBUTE_TYPE,
