@@ -202,14 +202,14 @@ class GCEDiskCopyTest(unittest.TestCase):
         False
     )
     collector.PreProcess()
-    disks = test_state.GetContainers(containers.GCEDisk)
+    disks = collector.GetContainers(containers.GCEDisk)
     self.assertEqual(len(disks), 1)
     self.assertEqual(disks[0].name, 'bootdisk')
     mock_GetBootDisk.assert_called_once()
 
     # Specifying all_disks should return all disks for the instance
     # (see mock_list_disks return value)
-    test_state.GetContainers(containers.GCEDisk, True)  # Clear containers first
+    collector.GetContainers(containers.GCEDisk, True)  # Clear containers first
     collector.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
@@ -220,14 +220,14 @@ class GCEDiskCopyTest(unittest.TestCase):
         False
     )
     collector.PreProcess()
-    disks = test_state.GetContainers(containers.GCEDisk)
+    disks = collector.GetContainers(containers.GCEDisk)
     self.assertEqual(len(disks), 2)
     self.assertEqual(disks[0].name, 'bootdisk')
     self.assertEqual(disks[1].name, 'disk1')
 
     # Specifying a csv list of disks should have those included also
     collector = gce_disk_copy.GCEDiskCopy(test_state)
-    test_state.GetContainers(containers.GCEDisk, True)  # Clear containers first
+    collector.GetContainers(containers.GCEDisk, True)  # Clear containers first
     collector.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
@@ -238,7 +238,7 @@ class GCEDiskCopyTest(unittest.TestCase):
         False
     )
     collector.PreProcess()
-    disks = test_state.GetContainers(containers.GCEDisk)
+    disks = collector.GetContainers(containers.GCEDisk)
     self.assertEqual(len(disks), 4)
     self.assertEqual(disks[0].name, 'another_disk_1')
     self.assertEqual(disks[1].name, 'another_disk_2')
@@ -349,7 +349,7 @@ class GCEDiskCopyTest(unittest.TestCase):
     FAKE_INSTANCE.Stop = mock.MagicMock()
 
     collector.PreProcess()
-    conts = test_state.GetContainers(collector.GetThreadOnContainerType(), True)
+    conts = collector.GetContainers(collector.GetThreadOnContainerType(), True)
     for d in conts:
       collector.Process(d)  # pytype: disable=wrong-arg-types
       # GetContainers returns the abstract base class type, but process is
@@ -363,7 +363,7 @@ class GCEDiskCopyTest(unittest.TestCase):
 
     FAKE_INSTANCE.Stop.assert_called_once()
 
-    out_disks = test_state.GetContainers(containers.GCEDisk)
+    out_disks = collector.GetContainers(containers.GCEDisk)
     out_disk_names = [d.name for d in out_disks]
     expected_disk_names = ['disk1-copy', 'disk2-copy']
     self.assertEqual(out_disk_names, expected_disk_names)
@@ -372,7 +372,7 @@ class GCEDiskCopyTest(unittest.TestCase):
 
     # Do it again, but we don't want to stop the instance this time.
     # First, clear the containers
-    test_state.GetContainers(containers.GCEDisk, True)
+    collector.GetContainers(containers.GCEDisk, True)
     mock_CreateDiskCopy.side_effect = FAKE_DISK_COPY
     collector = gce_disk_copy.GCEDiskCopy(test_state)
     collector.SetUp(
@@ -387,7 +387,7 @@ class GCEDiskCopyTest(unittest.TestCase):
     FAKE_INSTANCE.Stop = mock.MagicMock()
 
     collector.PreProcess()
-    conts = test_state.GetContainers(collector.GetThreadOnContainerType(), True)
+    conts = collector.GetContainers(collector.GetThreadOnContainerType(), True)
     for d in conts:
       collector.Process(d)  # pytype: disable=wrong-arg-types
       # GetContainers returns the abstract base class type, but process is
@@ -400,7 +400,7 @@ class GCEDiskCopyTest(unittest.TestCase):
     collector.PostProcess()
 
     FAKE_INSTANCE.Stop.assert_not_called()
-    out_disks = test_state.GetContainers(containers.GCEDisk)
+    out_disks = collector.GetContainers(containers.GCEDisk)
     out_disk_names = sorted([d.name for d in out_disks])
     expected_disk_names = ['disk1-copy', 'disk2-copy']
     self.assertEqual(out_disk_names, expected_disk_names)
@@ -429,7 +429,7 @@ class GCEDiskCopyTest(unittest.TestCase):
         False
     )
     collector.PreProcess()
-    conts = test_state.GetContainers(collector.GetThreadOnContainerType())
+    conts = collector.GetContainers(collector.GetThreadOnContainerType())
     for d in conts:
       collector.Process(d)  # pytype: disable=wrong-arg-types
       # GetContainers returns the abstract base class type, but process is
@@ -455,7 +455,7 @@ class GCEDiskCopyTest(unittest.TestCase):
         False
     )
     collector.PreProcess()
-    conts = test_state.GetContainers(collector.GetThreadOnContainerType())
+    conts = collector.GetContainers(collector.GetThreadOnContainerType())
     with self.assertRaises(errors.DFTimewolfError) as error:
       for d in conts:
         collector.Process(d)  # pytype: disable=wrong-arg-types
