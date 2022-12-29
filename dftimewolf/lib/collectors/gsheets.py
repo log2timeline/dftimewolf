@@ -118,7 +118,7 @@ class GoogleSheetsCollector(module.BaseModule):
             name= self._spreadsheet_id,
             path=output_path,
             description= f'{spreadsheet_title}_{sheet_title}')
-        self.state.StoreContainer(sheet_csv_file)
+        self.StoreContainer(sheet_csv_file)
 
     except (RefreshError, DefaultCredentialsError) as exception:
       self.ModuleError('Something is wrong with your gcloud access token or '

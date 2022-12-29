@@ -76,7 +76,7 @@ class YetiYaraCollector(module.BaseModule):
     for rule in intel.values():
       container = containers.YaraRule(
           name=rule['name'], rule_text=rule['pattern'])
-      self.state.StoreContainer(container)
+      self.StoreContainer(container)
 
 modules_manager.ModulesManager.RegisterModules([
     YetiYaraCollector,

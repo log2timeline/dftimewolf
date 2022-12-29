@@ -76,7 +76,7 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase):
           '{0:s}.tar.gz'.format(image_name))
       self.PublishMessage(f'Disk was exported to: {output_url}')
       container = containers.URL(path=output_url)
-      self.state.StoreContainer(container)
+      self.StoreContainer(container)
 
   # pylint: disable=arguments-differ
   def SetUp(self,

@@ -92,14 +92,15 @@ class GCEForensicsVMTest(unittest.TestCase):
     mock_DiskInit.side_effect = [disk1, disk2, disk3]
 
     test_state = state.DFTimewolfState(config.Config)
-    test_state.StoreContainer(containers.GCEDisk(
+    processor = GCEForensicsVM(test_state)
+
+    processor.StoreContainer(containers.GCEDisk(
         'test-disk-1', 'test-analysis-project-name'))
-    test_state.StoreContainer(containers.GCEDisk(
+    processor.StoreContainer(containers.GCEDisk(
         'test-disk-2', 'test-analysis-project-name'))
-    test_state.StoreContainer(containers.GCEDisk(
+    processor.StoreContainer(containers.GCEDisk(
         'test-disk-3', 'test-analysis-project-name'))
 
-    processor = GCEForensicsVM(test_state)
     processor.SetUp(
         'test-analysis-project-name',
         'test-incident-id',
@@ -126,8 +127,8 @@ class GCEForensicsVMTest(unittest.TestCase):
     mock_AddLabels.assert_has_calls([
         mock.call({'incident_id': 'test-incident-id'})])
 
-    self.assertEqual(1, len(test_state.GetContainers(containers.ForensicsVM)))
-    forensics_vm = test_state.GetContainers(containers.ForensicsVM)[0]
+    self.assertEqual(1, len(processor.GetContainers(containers.ForensicsVM)))
+    forensics_vm = processor.GetContainers(containers.ForensicsVM)[0]
     self.assertEqual(forensics_vm.name, 'fake-analysis-vm')
 
     self.assertEqual(mock_AttachDisk.call_count, 3)
@@ -137,7 +138,7 @@ class GCEForensicsVMTest(unittest.TestCase):
       mock.call(disk3),
     ])
 
-    actual_disks = test_state.GetContainers(containers.GCEDisk)
+    actual_disks = processor.GetContainers(containers.GCEDisk)
     actual_disk_names = [d.name for d in actual_disks]
 
     self.assertEqual(3, len(actual_disks))
@@ -173,11 +174,12 @@ class GCEForensicsVMTest(unittest.TestCase):
     """Tests that nothing happens when create_analysis_vm is false."""
 
     test_state = state.DFTimewolfState(config.Config)
+    processor = GCEForensicsVM(test_state)
+
     for d in ['test-disk-1', 'test-disk-2', 'test-disk-3']:
-      test_state.StoreContainer(
+      processor.StoreContainer(
           containers.GCEDisk(d, 'test-analysis-project-name'))
 
-    processor = GCEForensicsVM(test_state)
     processor.SetUp(
         'test-analysis-project-name',
         'test-incident-id',
@@ -195,9 +197,9 @@ class GCEForensicsVMTest(unittest.TestCase):
     mock_StartAnalysisVM.assert_not_called()
     mock_AttachDisk.assert_not_called()
 
-    self.assertEqual(3, len(test_state.GetContainers(containers.GCEDisk)))
+    self.assertEqual(3, len(processor.GetContainers(containers.GCEDisk)))
     expected_disks = ['test-disk-1', 'test-disk-2', 'test-disk-3']
-    actual_disks = [d.name for d in test_state.GetContainers(containers.GCEDisk)]
+    actual_disks = [d.name for d in processor.GetContainers(containers.GCEDisk)]
     self.assertEqual(expected_disks, actual_disks)
 
 

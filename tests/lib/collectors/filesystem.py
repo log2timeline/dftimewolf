@@ -30,7 +30,7 @@ class LocalFileSystemTest(unittest.TestCase):
     filesystem_collector.SetUp(paths=fake_paths)
     mock_exists.return_value = True
     filesystem_collector.Process()
-    files = test_state.GetContainers(containers.File)
+    files = filesystem_collector.GetContainers(containers.File)
     self.assertEqual(files[0].path, '/fake/path/1')
     self.assertEqual(files[0].name, '1')
     self.assertEqual(files[1].path, '/fake/path/2')

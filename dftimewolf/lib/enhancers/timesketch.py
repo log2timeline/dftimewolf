@@ -190,7 +190,7 @@ class TimesketchEnhancer(module.BaseModule):
       except ValueError:
         pass
 
-      self.state.StoreContainer(containers.DataFrame(
+      self.StoreContainer(containers.DataFrame(
           data_frame=data_frame[columns],
           description='Timesketch Aggregation: {0:s}'.format(
               aggregation.name), name=self._REPORT_NAME))
@@ -235,7 +235,7 @@ class TimesketchEnhancer(module.BaseModule):
       else:
         story_string = story.to_export_format(self._formatter.FORMAT)
 
-      self.state.StoreContainer(containers.Report(
+      self.StoreContainer(containers.Report(
           module_name='TimesketchEnhancer',
           text_format=self._formatter.FORMAT,
           text=story_string))
@@ -313,7 +313,7 @@ class TimesketchEnhancer(module.BaseModule):
       except ValueError:
         pass
 
-      self.state.StoreContainer(
+      self.StoreContainer(
           containers.DataFrame(
               data_frame=data_frame[columns],
               name=self._REPORT_NAME,
@@ -475,7 +475,7 @@ class TimesketchEnhancer(module.BaseModule):
       summary_lines.append(self._formatter.IndentEnd())
 
     report_attributes = {'update_comment': True}
-    self.state.StoreContainer(containers.Report(
+    self.StoreContainer(containers.Report(
         module_name='TimesketchEnhancer', text_format=self._formatter.FORMAT,
         text='\n'.join(summary_lines), metadata=report_attributes))
     self.logger.info('Analyzer reports generated')

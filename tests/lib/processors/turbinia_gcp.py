@@ -63,7 +63,7 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
     # pytype: disable=attribute-error
     self.assertEqual(
         'disk-1',
-        test_state.GetContainers(
+        turbinia_processor.GetContainers(
             turbinia_processor.GetThreadOnContainerType())[0].name)
     # pytype: enable=attribute-error
 
@@ -154,10 +154,10 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
     passed in as a parameter."""
 
     test_state = state.DFTimewolfState(config.Config)
-    test_state.StoreContainer(
+    turbinia_processor = turbinia_gcp.TurbiniaGCPProcessor(test_state)
+    turbinia_processor.StoreContainer(
         containers.YaraRule(
             name='dummy_yara', rule_text="rule dummy { condition: false }"))
-    turbinia_processor = turbinia_gcp.TurbiniaGCPProcessor(test_state)
     turbinia_processor.SetUp(
         turbinia_config_file=None,
         disk_names='disk-1',
@@ -202,7 +202,7 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
     mock_magic.return_value = magic_mocked
 
     turbinia_processor.PreProcess()
-    in_containers = test_state.GetContainers(
+    in_containers = turbinia_processor.GetContainers(
         turbinia_processor.GetThreadOnContainerType())
     for c in in_containers:
       turbinia_processor.Process(c)  # pytype: disable=wrong-arg-types
@@ -231,8 +231,8 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
         'gs://BinaryExtractorTask.tar.gz',
         local_output_dir=turbinia_processor._output_path)
     self.assertEqual(test_state.errors, [])
-    ti_containers = test_state.GetContainers(containers.ThreatIntelligence)
-    file_containers = test_state.GetContainers(containers.File)
+    ti_containers = turbinia_processor.GetContainers(containers.ThreatIntelligence)
+    file_containers = turbinia_processor.GetContainers(containers.File)
 
     # Make sure that file.txt is ignored
     self.assertEqual(len(file_containers), 2)
@@ -257,13 +257,13 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
     received from the state.
     """
     test_state = state.DFTimewolfState(config.Config)
-    test_state.StoreContainer(
+    turbinia_processor = turbinia_gcp.TurbiniaGCPProcessor(test_state)
+    turbinia_processor.StoreContainer(
       containers.YaraRule(
         name='dummy_yara', rule_text="rule dummy { condition: false }")
     )
-    test_state.StoreContainer(containers.GCEDisk(
+    turbinia_processor.StoreContainer(containers.GCEDisk(
         name='disk-1', project='turbinia-project'))
-    turbinia_processor = turbinia_gcp.TurbiniaGCPProcessor(test_state)
     turbinia_processor.SetUp(
         turbinia_config_file=None,
         project='turbinia-project',
@@ -304,7 +304,7 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
     mock_GCSOutputWriter.return_value = local_mock
 
     turbinia_processor.PreProcess()
-    in_containers = test_state.GetContainers(
+    in_containers = turbinia_processor.GetContainers(
         turbinia_processor.GetThreadOnContainerType())
     for c in in_containers:
       turbinia_processor.Process(c)  # pytype: disable=wrong-arg-types
@@ -333,8 +333,8 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
         'gs://BinaryExtractorTask.tar.gz',
         local_output_dir=turbinia_processor._output_path)
     self.assertEqual(test_state.errors, [])
-    ti_containers = test_state.GetContainers(containers.ThreatIntelligence)
-    file_containers = test_state.GetContainers(containers.File)
+    ti_containers = turbinia_processor.GetContainers(containers.ThreatIntelligence)
+    file_containers = turbinia_processor.GetContainers(containers.File)
 
     # Make sure that file.txt is ignored
     self.assertEqual(len(file_containers), 2)
@@ -355,9 +355,9 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
                               mock_GoogleCloudDisk):
     """Tests that process does nothing if the disks are in another project."""
     test_state = state.DFTimewolfState(config.Config)
-    test_state.StoreContainer(containers.GCEDisk(
-        name='disk-1', project='another-project'))
     turbinia_processor = turbinia_gcp.TurbiniaGCPProcessor(test_state)
+    turbinia_processor.StoreContainer(containers.GCEDisk(
+        name='disk-1', project='another-project'))
     turbinia_processor.SetUp(
         turbinia_config_file=None,
         project='turbinia-project',
@@ -366,7 +366,7 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
         sketch_id=4567)
 
     turbinia_processor.PreProcess()
-    in_containers = test_state.GetContainers(
+    in_containers = turbinia_processor.GetContainers(
         turbinia_processor.GetThreadOnContainerType())
     for c in in_containers:
       turbinia_processor.Process(c)  # pytype: disable=wrong-arg-types
@@ -374,7 +374,7 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
       # called with the instantiated child class.
     turbinia_processor.PostProcess()
 
-    file_containers = test_state.GetContainers(containers.File)
+    file_containers = turbinia_processor.GetContainers(containers.File)
     self.assertEqual(len(file_containers), 0)
 
     # pylint: disable=no-member
@@ -422,7 +422,8 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
     We store a ForensicsVM container in the state, run PreProcess, then check
     that the state contains a GCEDisk as expected."""
     test_state = state.DFTimewolfState(config.Config)
-    test_state.StoreContainer(
+    turbinia_processor = turbinia_gcp.TurbiniaGCPProcessor(test_state)
+    turbinia_processor.StoreContainer(
         containers.ForensicsVM(
             name='ForensicsVM',
             evidence_disk=GoogleComputeDisk(
@@ -431,7 +432,6 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
                 zone='europe-west1'),
             platform='gcp'))
 
-    turbinia_processor = turbinia_gcp.TurbiniaGCPProcessor(test_state)
     turbinia_processor.SetUp(
         turbinia_config_file=None,
         project='turbinia-project',
@@ -442,7 +442,7 @@ class TurbiniaGCPProcessorTest(unittest.TestCase):
     turbinia_processor.client.create_request.return_value = turbinia_message.TurbiniaRequest()
     turbinia_processor.PreProcess()
 
-    out_containers = test_state.GetContainers(containers.GCEDisk)
+    out_containers = turbinia_processor.GetContainers(containers.GCEDisk)
 
     self.assertEqual(len(out_containers), 1)
     self.assertEqual(out_containers[0].name, 'disk-1')

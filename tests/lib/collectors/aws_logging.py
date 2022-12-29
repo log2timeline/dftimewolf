@@ -73,7 +73,7 @@ class AWSLoggingTest(unittest.TestCase):
         StartTime=dt.fromisoformat('2021-01-01 00:00:00'),
         EndTime=dt.fromisoformat('2021-01-02 00:00:00'))
 
-    aws_containers = test_state.GetContainers(containers.File)
+    aws_containers = aws_logging_collector.GetContainers(containers.File)
     self.assertTrue(aws_containers)
     self.assertEqual(aws_containers[0].name, 'AWSLogsCollector result')
 

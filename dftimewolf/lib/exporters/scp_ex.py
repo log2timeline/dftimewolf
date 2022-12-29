@@ -94,10 +94,10 @@ class SCPExporter(module.BaseModule):
       fspaths: Sequence[Union[containers.File, containers.RemoteFSPath]]
       if self._upload:
         # We're uploading local paths to the remote host.
-        fspaths = self.state.GetContainers(containers.File)
+        fspaths = self.GetContainers(containers.File)
       else:
         # We're downloading remote paths to the local host.
-        fspaths = self.state.GetContainers(containers.RemoteFSPath)
+        fspaths = self.GetContainers(containers.RemoteFSPath)
       self._paths = [fspath.path for fspath in fspaths]
 
     if not self._paths:
@@ -145,7 +145,7 @@ class SCPExporter(module.BaseModule):
         self.PublishMessage(f'Local filesystem path {full_path}')
         fspath = containers.File(name=file_name, path=full_path)
 
-      self.state.StoreContainer(fspath)
+      self.StoreContainer(fspath)
 
   def _PrefixRemotePaths(self, paths: List[str]) -> List[str]:
     """Prefixes a list of paths with remote SSH access information.

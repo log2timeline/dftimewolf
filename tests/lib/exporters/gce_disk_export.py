@@ -111,7 +111,7 @@ class GoogleCloudDiskExportTest(unittest.TestCase):
     mock_delete_image.assert_called_once()
     output_url = os.path.join(
         'gs://fake-bucket', 'image-df-export-temp.tar.gz')
-    urls = test_state.GetContainers(containers.URL)
+    urls = cloud_disk_exporter.GetContainers(containers.URL)
     self.assertEqual(urls[0].path, output_url)
 
 

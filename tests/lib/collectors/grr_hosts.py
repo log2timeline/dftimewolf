@@ -252,7 +252,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     """Tests that the module is setup properly."""
     # pytype: disable=attribute-error
     actual_hosts = [h.hostname for h in \
-        self.grr_artifact_collector.state.GetContainers(
+        self.grr_artifact_collector.GetContainers(
             self.grr_artifact_collector.GetThreadOnContainerType())]
     # pytype: enable=attribute-error
 
@@ -413,7 +413,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     mock_Get.return_value = mock_grr_hosts.MOCK_FLOW
 
     self.grr_artifact_collector.PreProcess()
-    in_containers = self.test_state.GetContainers(
+    in_containers = self.grr_artifact_collector.GetContainers(
         self.grr_artifact_collector.GetThreadOnContainerType())
     for c in in_containers:
       self.grr_artifact_collector.Process(c)
@@ -426,7 +426,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     mock_DownloadFiles.assert_called_with(
         mock_grr_hosts.MOCK_CLIENT_LIST[1], mock_grr_hosts.MOCK_FLOW.flow_id
     )
-    results = self.test_state.GetContainers(containers.File)
+    results = self.grr_artifact_collector.GetContainers(containers.File)
     self.assertEqual(len(results), 1)
     result = results[0]
     self.assertEqual(result.name, 'tomchop')
@@ -461,7 +461,8 @@ class GRRArtifactCollectorTest(unittest.TestCase):
         skip_offline_clients=False,
         max_file_size=1234,
     )
-    self.test_state.StoreContainer(containers.Host(hostname='container.host'))
+    self.grr_artifact_collector.StoreContainer(
+        containers.Host(hostname='container.host'))
 
     self.grr_artifact_collector.PreProcess()
     in_containers = self.test_state.GetContainers(
@@ -485,8 +486,8 @@ class GRRFileCollectorTest(unittest.TestCase):
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
     self.test_state = state.DFTimewolfState(config.Config)
-    self.test_state.StoreContainer(containers.FSPath(path='/etc/hosts'))
     self.grr_file_collector = grr_hosts.GRRFileCollector(self.test_state)
+    self.grr_file_collector.StoreContainer(containers.FSPath(path='/etc/hosts'))
     self.grr_file_collector.SetUp(
         hostnames='C.0000000000000001',
         files='/etc/passwd',
@@ -505,7 +506,7 @@ class GRRFileCollectorTest(unittest.TestCase):
     """Tests that the collector can be initialized."""
     # pytype: disable=attribute-error
     actual_hosts = [h.hostname for h in \
-        self.grr_file_collector.state.GetContainers(
+        self.grr_file_collector.GetContainers(
             self.grr_file_collector.GetThreadOnContainerType())]
     # pytype: enable=attribute-error
 
@@ -530,7 +531,7 @@ class GRRFileCollectorTest(unittest.TestCase):
     mock_DownloadFiles.return_value = '/tmp/something'
 
     self.grr_file_collector.PreProcess()
-    in_containers = self.test_state.GetContainers(
+    in_containers = self.grr_file_collector.GetContainers(
         self.grr_file_collector.GetThreadOnContainerType())
     for c in in_containers:
       self.grr_file_collector.Process(c)
@@ -549,7 +550,7 @@ class GRRFileCollectorTest(unittest.TestCase):
             )
         )
     )
-    results = self.test_state.GetContainers(containers.File)
+    results = self.grr_file_collector.GetContainers(containers.File)
     self.assertEqual(len(results), 1)
     self.assertEqual(results[0].name, 'tomchop')
     self.assertEqual(results[0].path, '/tmp/something')
@@ -571,8 +572,8 @@ class GRRFileCollectorTest(unittest.TestCase):
     mock_DownloadFiles.return_value = '/tmp/something'
 
     self.test_state.store = {}
-    self.test_state.StoreContainer(containers.FSPath(path='/etc/hosts'))
     self.grr_file_collector = grr_hosts.GRRFileCollector(self.test_state)
+    self.grr_file_collector.StoreContainer(containers.FSPath(path='/etc/hosts'))
 
     self.grr_file_collector.SetUp(
         hostnames='C.0000000000000002',
@@ -609,7 +610,7 @@ class GRRFileCollectorTest(unittest.TestCase):
             )
         )
     )
-    results = self.test_state.GetContainers(containers.File)
+    results = self.grr_file_collector.GetContainers(containers.File)
     self.assertEqual(len(results), 1)
     self.assertEqual(results[0].name, 'tomchop')
     self.assertEqual(results[0].path, '/tmp/something')
@@ -643,7 +644,8 @@ class GRRFileCollectorTest(unittest.TestCase):
         skip_offline_clients=False,
         action='stat',
     )
-    self.test_state.StoreContainer(containers.Host(hostname='container.host'))
+    self.grr_file_collector.StoreContainer(
+        containers.Host(hostname='container.host'))
 
     self.grr_file_collector.PreProcess()
     in_containers = self.test_state.GetContainers(
@@ -694,7 +696,7 @@ class GRRFlowCollectorTest(unittest.TestCase):
     mock_DownloadFiles.return_value = '/tmp/something'
 
     self.grr_flow_collector.PreProcess()
-    in_containers = self.test_state.GetContainers(
+    in_containers = self.grr_flow_collector.GetContainers(
         self.grr_flow_collector.GetThreadOnContainerType())
     for c in in_containers:
       self.grr_flow_collector.Process(c)
@@ -702,7 +704,7 @@ class GRRFlowCollectorTest(unittest.TestCase):
 
     mock_DownloadFiles.assert_called_once_with(
         mock_grr_hosts.MOCK_CLIENT_RECENT, 'F:12345')
-    results = self.test_state.GetContainers(containers.File)
+    results = self.grr_flow_collector.GetContainers(containers.File)
     self.assertEqual(len(results), 1)
     result = results[0]
     self.assertEqual(result.name, 'tomchop')
@@ -733,7 +735,7 @@ class GRRFlowCollectorTest(unittest.TestCase):
     )
 
     # Clear the containers to test correct failure on no containers being found.
-    self.test_state.GetContainers(containers.GrrFlow, True)
+    self.grr_flow_collector.GetContainers(containers.GrrFlow, True)
 
     with self.assertRaises(errors.DFTimewolfError) as error:
       grr_flow_collector.PreProcess()
@@ -773,7 +775,7 @@ class GRRFlowCollectorTest(unittest.TestCase):
           skip_offline_clients=False,
       )
       self.grr_flow_collector.PreProcess()
-      in_containers = self.test_state.GetContainers(
+      in_containers = self.grr_flow_collector.GetContainers(
           self.grr_flow_collector.GetThreadOnContainerType())
       for c in in_containers:
         self.grr_flow_collector.Process(c)
@@ -816,7 +818,7 @@ class GRRTimelineCollectorTest(unittest.TestCase):
     """Tests that the collector can be initialized."""
     # pytype: disable=attribute-error
     actual_hosts = [h.hostname for h in \
-        self.grr_timeline_collector.state.GetContainers(
+        self.grr_timeline_collector.GetContainers(
             self.grr_timeline_collector.GetThreadOnContainerType())]
     # pytype: enable=attribute-error
 
@@ -840,7 +842,7 @@ class GRRTimelineCollectorTest(unittest.TestCase):
     mock_Get.return_value = mock_grr_hosts.MOCK_FLOW
 
     self.grr_timeline_collector.PreProcess()
-    in_containers = self.test_state.GetContainers(
+    in_containers = self.grr_timeline_collector.GetContainers(
         self.grr_timeline_collector.GetThreadOnContainerType())
     for c in in_containers:
       self.grr_timeline_collector.Process(c)
@@ -848,7 +850,7 @@ class GRRTimelineCollectorTest(unittest.TestCase):
 
     mock_DownloadTimeline.assert_called_once_with(
         mock_grr_hosts.MOCK_CLIENT_RECENT, 'F:12345')
-    results = self.test_state.GetContainers(containers.File)
+    results = self.grr_timeline_collector.GetContainers(containers.File)
     self.assertEqual(len(results), 1)
     result = results[0]
     self.assertEqual(result.name, 'tomchop')
@@ -869,6 +871,8 @@ class GRRTimelineCollectorTest(unittest.TestCase):
     mock_InitHttp.return_value = self.mock_grr_api
     self.grr_timeline_collector = grr_hosts.GRRTimelineCollector(
         self.test_state)
+    self.grr_timeline_collector.StoreContainer(
+        containers.Host(hostname='container.host'))
     self.grr_timeline_collector.SetUp(
         hostnames='',
         root_path='/',
@@ -880,7 +884,6 @@ class GRRTimelineCollectorTest(unittest.TestCase):
         approvers='approver1,approver2',
         skip_offline_clients=False,
     )
-    self.test_state.StoreContainer(containers.Host(hostname='container.host'))
 
     self.grr_timeline_collector.PreProcess()
     in_containers = self.test_state.GetContainers(
@@ -905,10 +908,10 @@ class GRROsqueryCollectorTest(unittest.TestCase):
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
     self.test_state = state.DFTimewolfState(config.Config)
-    self.test_state.StoreContainer(
-      containers.OsqueryQuery('SELECT * FROM processes'))
     self.grr_osquery_collector = grr_hosts.GRROsqueryCollector(
         self.test_state)
+    self.grr_osquery_collector.StoreContainer(
+      containers.OsqueryQuery('SELECT * FROM processes'))
     self.grr_osquery_collector.SetUp(
         hostnames='C.0000000000000001',
         reason='Random reason',
@@ -938,7 +941,7 @@ class GRROsqueryCollectorTest(unittest.TestCase):
     mock_DownloadResults.return_value = [pd.DataFrame([[1, 2]])]
 
     self.grr_osquery_collector.PreProcess()
-    in_containers = self.test_state.GetContainers(
+    in_containers = self.grr_osquery_collector.GetContainers(
         self.grr_osquery_collector.GetThreadOnContainerType())
     for container in in_containers:
       self.grr_osquery_collector.Process(container)
@@ -954,7 +957,7 @@ class GRROsqueryCollectorTest(unittest.TestCase):
         )
     )
 
-    results = self.test_state.GetContainers(containers.OsqueryResult)
+    results = self.grr_osquery_collector.GetContainers(containers.OsqueryResult)
     self.assertEqual(len(results), 1)
     self.assertEqual(results[0].query, 'SELECT * FROM processes')
     self.assertEqual(results[0].name, None)
@@ -974,13 +977,13 @@ class GRRYaraScannerTest(unittest.TestCase):
   def setUp(self):
     self.mock_grr_api = mock.Mock()
     self.test_state = state.DFTimewolfState(config.Config)
-    self.test_state.StoreContainer(
+    self.grr_yara_scanner = grr_hosts.GRRYaraScanner(
+        self.test_state)
+    self.grr_yara_scanner.StoreContainer(
       containers.YaraRule(
         name="test_rule",
         rule_text="rule test_rule { condition: true }")
     )
-    self.grr_yara_scanner = grr_hosts.GRRYaraScanner(
-        self.test_state)
 
   @mock.patch('grr_api_client.api.InitHttp')
   def testInitialization(self, unused_mock_InitHttp):
@@ -1052,13 +1055,13 @@ class GRRYaraScannerTest(unittest.TestCase):
     )
 
     self.grr_yara_scanner.PreProcess()
-    in_containers = self.test_state.GetContainers(
+    in_containers = self.grr_yara_scanner.GetContainers(
         self.grr_yara_scanner.GetThreadOnContainerType())
     for container in in_containers:
       self.grr_yara_scanner.Process(container)
     self.grr_yara_scanner.PostProcess()
 
-    df_containers = self.test_state.GetContainers(containers.DataFrame)
+    df_containers = self.grr_yara_scanner.GetContainers(containers.DataFrame)
     self.assertEqual(len(df_containers), 1)
     df = df_containers[0].data_frame
     self.assertEqual(

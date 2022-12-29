@@ -180,7 +180,7 @@ class GoogleCloudDiskExportStream(GoogleCloudDiskExportBase):
           disk_path_gcs = value_tuple[-1]
           incident_id = value_tuple[0]
           container = containers.URL(path=disk_path_gcs)
-          self.state.StoreContainer(container)
+          self.StoreContainer(container)
           self.PublishMessage(
               f'Disk "{archived_disk}" exported. Incident ID: {incident_id} '
               f'Output path: { disk_path_gcs}. To import this disk as '
