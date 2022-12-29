@@ -991,9 +991,9 @@ class GRROsqueryCollector(GRRFlow):
     """Processes an osquery flow on a GRR client.
 
     Args:
-      hostname (str): the GRR client hostname.
-      client (Client): the Grr Client.
-      osquery_container (containers.OsqueryQuery): the osquery.
+      hostname: the GRR client hostname.
+      client: the GRR Client.
+      osquery_container: the OSQuery.
     """
     hunt_args = osquery_flows.OsqueryFlowArgs(
         query=osquery_container.query,
