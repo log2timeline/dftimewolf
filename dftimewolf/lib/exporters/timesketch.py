@@ -30,8 +30,6 @@ class TimesketchExporter(module.ThreadAwareModule):
     timesketch_api (TimesketchApiClient): Timesketch API client.
   """
 
-  # The name of a ticket attribute that contains the URL to a sketch.
-  _SKETCH_ATTRIBUTE_NAME = 'Timesketch URL'
 
   sketch: ts_sketch.Sketch
 
@@ -91,7 +89,8 @@ class TimesketchExporter(module.ThreadAwareModule):
     # If no sketch ID is provided through the CLI, attempt to get it from
     # attributes
     if not self.sketch_id:
-      self.sketch_id = self._GetSketchIDFromAttributes()
+      attributes = self.GetContainers(containers.TicketAttribute)
+      self.sketch_id = timesketch_utils.GetSketchIDFromAttributes(attributes)
 
     # If we have a sketch ID, check that we can write to it and cache it.
     if self.sketch_id:
@@ -143,20 +142,7 @@ class TimesketchExporter(module.ThreadAwareModule):
         break
       time.sleep(10)
 
-  def _GetSketchIDFromAttributes(self) -> int:
-    """Attempts to retrieve a Timesketch ID from ticket attributes.
 
-    Returns:
-      int: the sketch idenifier, or 0 if one was not available.
-    """
-    attributes = self.GetContainers(containers.TicketAttribute)
-    for attribute in attributes:
-      if attribute.name == self._SKETCH_ATTRIBUTE_NAME:
-        sketch_match = re.search(r'sketch/(\d+)/', attribute.value)
-        if sketch_match:
-          sketch_id = int(sketch_match.group(1), 10)
-          return sketch_id
-    return 0
 
   def Process(self, container: containers.File) -> None:
     """Executes a Timesketch export.
