@@ -31,8 +31,7 @@ def GetSketchIDFromAttributes(
   Returns:
     int: the sketch idenifier, or 0 if one was not available.
   """
-  attributes = self.GetContainers(containers.TicketAttribute)
-  for attribute in attributes:
+  for attribute in attribute_containers:
     if attribute.name == _SKETCH_ATTRIBUTE_NAME:
       sketch_match = re.search(r'sketch/(\d+)/', attribute.value)
       if sketch_match:
