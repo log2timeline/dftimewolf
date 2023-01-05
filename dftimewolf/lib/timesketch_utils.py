@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Utility functions to get a Timesketch API client and an importer client."""
 import threading
-from typing import TYPE_CHECKING
+from typing import Sequence, TYPE_CHECKING
 
 from timesketch_api_client import client
 from timesketch_api_client import config
