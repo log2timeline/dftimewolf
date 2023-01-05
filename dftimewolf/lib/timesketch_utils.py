@@ -20,7 +20,7 @@ LOCK = threading.Lock()
 
 
 def GetSketchIDFromAttributes(
-  self, attribute_containers: Sequence[containers.TicketAttribute]
+  attribute_containers: Sequence[containers.TicketAttribute]
 ) -> int:
   """Attempts to retrieve a Timesketch ID from ticket attributes.
 
