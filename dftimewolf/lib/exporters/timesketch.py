@@ -2,7 +2,6 @@
 """Export processing results to Timesketch.
 Threaded version of existing Timesketch module."""
 
-import re
 import time
 from typing import Optional, List, Type, Union
 
