@@ -1,20 +1,44 @@
 # -*- coding: utf-8 -*-
 """Utility functions to get a Timesketch API client and an importer client."""
+import re
 import threading
-from typing import TYPE_CHECKING
+from typing import Sequence, TYPE_CHECKING
 
 from timesketch_api_client import client
 from timesketch_api_client import config
 from timesketch_api_client import crypto
 
+from dftimewolf.lib.containers import containers
 from dftimewolf.lib.errors import DFTimewolfError
 
 if TYPE_CHECKING:
   from dftimewolf.lib import state
 
+# The name of a ticket attribute that contains the URL to a sketch.
+_SKETCH_ATTRIBUTE_NAME = 'Timesketch URL'
 
 LOCK = threading.Lock()
 
+
+def GetSketchIDFromAttributes(
+  attribute_containers: Sequence[containers.TicketAttribute]
+) -> int:
+  """Attempts to retrieve a Timesketch ID from ticket attributes.
+
+  Args:
+    attribute_containers: List of TicketAttribute containers extracted from a
+      ticket.
+
+  Returns:
+    int: the sketch idenifier, or 0 if one was not available.
+  """
+  for attribute in attribute_containers:
+    if attribute.name == _SKETCH_ATTRIBUTE_NAME:
+      sketch_match = re.search(r'sketch/(\d+)/', attribute.value)
+      if sketch_match:
+        sketch_id = int(sketch_match.group(1), 10)
+        return sketch_id
+  return 0
 
 def GetApiClient(state: "state.DFTimewolfState",
                  token_password: str='') -> client.TimesketchApi:
