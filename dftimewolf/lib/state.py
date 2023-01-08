@@ -558,8 +558,8 @@ class DFTimewolfState(object):
 
   def RegisterStreamingCallback(
       self,
-      target: Callable[["interface.AttributeContainer"], Any],
-      container_type: Type["interface.AttributeContainer"]) -> None:
+      target: Callable[[T], Any],
+      container_type: Type[T]) -> None:
     """Registers a callback for a type of container.
 
     The function to be registered should a single parameter of type
