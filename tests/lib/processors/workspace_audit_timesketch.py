@@ -36,9 +36,9 @@ class WorkspaceAuditTimesketchTest(unittest.TestCase):
         user_key='testuser@example.com', start_time='2021-08-10T14:21Z',
         end_time='2021-09-10T14:21Z')
 
-    test_state.StoreContainer(workspace_container)
+    processor.StoreContainer(workspace_container)
     processor.Process()
-    stored_containers = test_state.GetContainers(containers.File)
+    stored_containers = processor.GetContainers(containers.File)
 
     self.assertEqual(1, len(stored_containers))
 

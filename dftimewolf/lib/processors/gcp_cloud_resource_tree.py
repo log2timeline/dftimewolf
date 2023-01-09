@@ -105,7 +105,7 @@ class GCPCloudResourceTree(module.BaseModule):
     if self.mode == gcp_crt_helper.OperatingMode.OFFLINE:
       self.logger.info('Starting module in offline mode.')
       # Get the file containers created by the previous module in the recipe
-      file_containers = self.state.GetContainers(containers.File)
+      file_containers = self.GetContainers(containers.File)
 
       # Loop over the file containers and parse the content of each to fill the
       # resources dictionary
@@ -166,7 +166,7 @@ class GCPCloudResourceTree(module.BaseModule):
         data_frame=resource_to_output.ToDataFrame(),
         description=f'Resource tree for {resource_to_output.name}',
         name=f'{resource_to_output.resource_name} resource tree')
-    self.state.StoreContainer(dataframe_container)
+    self.StoreContainer(dataframe_container)
 
   def _GetListOfResources(self, project_id: str) -> None:
     """Acquires a list of resources under a project.

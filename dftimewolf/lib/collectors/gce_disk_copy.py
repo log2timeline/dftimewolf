@@ -125,14 +125,14 @@ class GCEDiskCopy(module.ThreadAwareModule):
     try:
       # Disks from the csv list passed in
       for d in self.disk_names:
-        self.state.StoreContainer(
+        self.StoreContainer(
             containers.GCEDisk(d, self.source_project.project_id))
 
       # Disks from the instances passed in
       for i in self.remote_instance_names:
         try:
           for d in self._GetDisksFromInstance(i, self.all_disks):
-            self.state.StoreContainer(
+            self.StoreContainer(
                 containers.GCEDisk(d, self.source_project.project_id))
 
         except lcf_errors.ResourceNotFoundError:
@@ -168,7 +168,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
       self.at_least_one_success = True
       self.PublishMessage(f'Disk {container.name} successfully copied to '
           f'{new_disk.name}')
-      self.state.StoreContainer(containers.GCEDisk(
+      self.StoreContainer(containers.GCEDisk(
           new_disk.name, self.destination_project.project_id))
     except lcf_errors.ResourceNotFoundError as exception:
       self.logger.error(f'Could not find disk "{container.name}": {exception}')

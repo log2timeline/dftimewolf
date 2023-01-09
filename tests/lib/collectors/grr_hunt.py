@@ -73,9 +73,10 @@ class GRRHuntFileCollectorTest(unittest.TestCase):
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
     self.test_state = state.DFTimewolfState(config.Config)
-    self.test_state.StoreContainer(containers.FSPath(path='/etc/hosts'))
     self.grr_hunt_file_collector = grr_hunt.GRRHuntFileCollector(
         self.test_state)
+    self.grr_hunt_file_collector.StoreContainer(
+        containers.FSPath(path='/etc/hosts'))
     self.grr_hunt_file_collector.SetUp(
         file_path_list='/etc/passwd,/etc/shadow',
         reason='random reason',
@@ -131,10 +132,10 @@ class GRRHuntOsqueryCollectorTest(unittest.TestCase):
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
     self.test_state = state.DFTimewolfState(config.Config)
-    self.test_state.StoreContainer(
-        containers.OsqueryQuery(query='SELECT * FROM processes'))
     self.grr_hunt_osquery_collector = grr_hunt.GRRHuntOsqueryCollector(
         self.test_state)
+    self.grr_hunt_osquery_collector.StoreContainer(
+        containers.OsqueryQuery(query='SELECT * FROM processes'))
     self.grr_hunt_osquery_collector.SetUp(
         reason='random reason',
         timeout_millis=300000,

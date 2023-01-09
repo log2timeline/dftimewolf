@@ -66,7 +66,7 @@ class GCSToGCEImageTest(unittest.TestCase):
     exporter.SetUp(FAKE_GCP_PROJECT_NAME, FAKE_GCS_OBJECTS)
 
     actual_objects = [c.path for \
-        c in test_state.GetContainers(containers.GCSObject)]
+        c in exporter.GetContainers(containers.GCSObject)]
 
     self.assertEqual(FAKE_GCP_PROJECT_NAME, exporter.dest_project_name)
     self.assertEqual(sorted(actual_objects), sorted([
@@ -99,14 +99,14 @@ class GCSToGCEImageTest(unittest.TestCase):
     exporter.SetUp(FAKE_GCP_PROJECT_NAME, FAKE_GCS_OBJECTS)
 
     exporter.PreProcess()
-    for c in test_state.GetContainers(exporter.GetThreadOnContainerType()):
+    for c in exporter.GetContainers(exporter.GetThreadOnContainerType()):
       exporter.Process(c)  # pytype: disable=wrong-arg-types
       # GetContainers returns the abstract base class type, but process is
       # called with the instantiated child class.
     exporter.PostProcess()
 
     actual_output = [c.name for \
-        c in test_state.GetContainers(containers.GCEImage)]
+        c in exporter.GetContainers(containers.GCEImage)]
 
     self.assertEqual(sorted(actual_output), sorted([
         'fake-gcs-bucket-one',
@@ -133,21 +133,21 @@ class GCSToGCEImageTest(unittest.TestCase):
     mock_lcf_import_image_from_storage.side_effect = FAKE_IMPORT_IMAGE_RESPONSES
 
     test_state = state.DFTimewolfState(config.Config)
-    for c in FAKE_STATE_GCS_OBJECT_LIST:
-      test_state.StoreContainer(c)
-
     exporter = gcs_to_gce_image.GCSToGCEImage(test_state)
+    for c in FAKE_STATE_GCS_OBJECT_LIST:
+      exporter.StoreContainer(c)
+
     exporter.SetUp(FAKE_GCP_PROJECT_NAME)
 
     exporter.PreProcess()
-    for c in test_state.GetContainers(exporter.GetThreadOnContainerType()):
+    for c in exporter.GetContainers(exporter.GetThreadOnContainerType()):
       exporter.Process(c)  # pytype: disable=wrong-arg-types
       # GetContainers returns the abstract base class type, but process is
       # called with the instantiated child class.
     exporter.PostProcess()
 
     actual_output = [c.name for \
-        c in test_state.GetContainers(containers.GCEImage)]
+        c in exporter.GetContainers(containers.GCEImage)]
 
     self.assertEqual(sorted(actual_output), sorted([
         'fake-gcs-bucket-one',

@@ -171,7 +171,7 @@ class OsqueryCollector(module.BaseModule):
   def Process(self) -> None:
     """Collects osquery from the command line and local file system."""
     for osquery in self.osqueries:
-      self.state.StoreContainer(osquery)
+      self.StoreContainer(osquery)
 
 
 modules_manager.ModulesManager.RegisterModule(OsqueryCollector)

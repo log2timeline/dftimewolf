@@ -152,7 +152,7 @@ class VTCollector(module.BaseModule):
 
     if self.vt_type == 'pcap':
       file_container = containers.File(name=vt_hash, path=file.name)
-      self.state.StoreContainer(file_container)
+      self.StoreContainer(file_container)
 
     if self.vt_type == 'evtx':
       # Unzip the file so that plaso can go over EVTX part in the archive
@@ -166,7 +166,7 @@ class VTCollector(module.BaseModule):
 
       dir_container = containers.Directory(
           name=vt_hash, path=os.path.abspath(extract_output_dir))
-      self.state.StoreContainer(dir_container)
+      self.StoreContainer(dir_container)
 
   def _CheckOutputPath(self, directory: str) -> str:
     """Checks that the output path can be manipulated by the module.

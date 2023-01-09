@@ -228,7 +228,11 @@ class File(interface.AttributeContainer):
 
   def __str__(self) -> str:
     """Override __str()__."""
-    return self.path
+    return f'{self.path}/{self.name}'
+
+  def __eq__(self, other: File) -> bool:
+    """Override __eq__() for this container."""
+    return self.name == other.name and self.path == other.path
 
 
 class Directory(interface.AttributeContainer):
@@ -583,6 +587,9 @@ class OsqueryQuery(interface.AttributeContainer):
     self.platforms = platforms
     self.query = query
 
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return f'{self.name}'
 
 
 class OsqueryResult(interface.AttributeContainer):

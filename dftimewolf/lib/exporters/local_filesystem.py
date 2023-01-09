@@ -48,7 +48,8 @@ class LocalFilesystemCopy(module.BaseModule):
 
   def Process(self) -> None:
     """Checks whether the paths exists and updates the state accordingly."""
-    for file_container in self.state.GetContainers(containers.File, pop=True):
+    self.state.DedupeContainers(containers.File)
+    for file_container in self.GetContainers(containers.File, pop=True):
       self.logger.info('{0:s} -> {1:s}'.format(
           file_container.path, self._target_directory))
 
@@ -63,11 +64,11 @@ class LocalFilesystemCopy(module.BaseModule):
               critical=True)
         for path_ in full_paths:
           file_name = os.path.basename(path_)
-          self.state.StoreContainer(containers.File(name=file_name, path=path_))
+          self.StoreContainer(containers.File(name=file_name, path=path_))
       else:
         try:
           tar_file = utils.Compress(file_container.path, self._target_directory)
-          self.state.StoreContainer(containers.File(
+          self.StoreContainer(containers.File(
               name=os.path.basename(tar_file), path=tar_file))
           self.PublishMessage(
               f'{file_container.path} was compressed into {tar_file}')

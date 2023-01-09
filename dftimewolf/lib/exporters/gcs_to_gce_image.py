@@ -91,7 +91,7 @@ class GCSToGCEImage(module.ThreadAwareModule):
 
     if source_objects:
       for obj in source_objects.split(','):
-        self.state.StoreContainer(containers.GCSObject(obj))
+        self.StoreContainer(containers.GCSObject(obj))
 
   def PreProcess(self) -> None:
     """PreProcessing for the module.
@@ -153,7 +153,7 @@ class GCSToGCEImage(module.ThreadAwareModule):
         guest_environment = False,
         image_name = name)
 
-    self.state.StoreContainer(
+    self.StoreContainer(
         containers.GCEImage(image.name, self.dest_project_name))
 
   def PostProcess(self) -> None:

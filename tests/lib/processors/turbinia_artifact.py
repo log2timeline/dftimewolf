@@ -70,9 +70,9 @@ class TurbiniaArtifactProcessorTest(unittest.TestCase):
         received from the state.
     """
     test_state = state.DFTimewolfState(config.Config)
-    test_state.StoreContainer(
-        containers.RemoteFSPath(hostname='remotehost', path='/tmp/file.ext'))
     turbinia_processor = turbinia_artifact.TurbiniaArtifactProcessor(test_state)
+    turbinia_processor.StoreContainer(
+        containers.RemoteFSPath(hostname='remotehost', path='/tmp/file.ext'))
     turbinia_processor.SetUp(
         turbinia_config_file=None,
         project='turbinia-project',
@@ -93,7 +93,7 @@ class TurbiniaArtifactProcessorTest(unittest.TestCase):
     }]
 
     turbinia_processor.PreProcess()
-    in_containers = test_state.GetContainers(
+    in_containers = turbinia_processor.GetContainers(
         turbinia_processor.GetThreadOnContainerType(), pop=True)
     for c in in_containers:
       turbinia_processor.Process(c)  # pytype: disable=wrong-arg-types
@@ -101,7 +101,7 @@ class TurbiniaArtifactProcessorTest(unittest.TestCase):
       # called with the instantiated child class.
     turbinia_processor.PostProcess()
 
-    conts = test_state.GetContainers(containers.RemoteFSPath)
+    conts = turbinia_processor.GetContainers(containers.RemoteFSPath)
     self.assertEqual(len(conts), 2)
     for c in conts:
       self.assertEqual(c.hostname, 'remotehost')

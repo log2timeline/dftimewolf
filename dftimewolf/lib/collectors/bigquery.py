@@ -74,7 +74,7 @@ class BigQueryCollector(module.BaseModule):
     output_file.close()
 
     bq_report = containers.File(name=self._description, path=output_path)
-    self.state.StoreContainer(bq_report)
+    self.StoreContainer(bq_report)
 
 
 modules_manager.ModulesManager.RegisterModule(BigQueryCollector)

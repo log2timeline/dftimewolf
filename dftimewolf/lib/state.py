@@ -231,13 +231,17 @@ class DFTimewolfState(object):
     with self._state_lock:
       return self._cache.get(name, default_value)
 
-  def StoreContainer(self, container: "interface.AttributeContainer") -> None:
+  def StoreContainer(self,
+                     container: "interface.AttributeContainer",
+                     source_module: str = "") -> None:
     """Thread-safe method to store data in the state's store.
 
     Args:
       container (AttributeContainer): data to store.
+      source_module: the originating module.
     """
     with self._state_lock:
+      container.src_module_name = source_module
       self.store.setdefault(container.CONTAINER_TYPE, []).append(container)
 
   def StoreStats(self, stats_entry: StatsEntry) -> None:
@@ -398,6 +402,8 @@ class DFTimewolfState(object):
         as executor:
       pop = not module.KeepThreadedContainersInState()
       for c in self.GetContainers(module.GetThreadOnContainerType(), pop):
+        logger.debug(f'Launching {module.name}.Process thread with {str(c)} '
+            f'from {c.src_module_name}')
         futures.append(
             executor.submit(module.Process, c))
 
@@ -552,8 +558,8 @@ class DFTimewolfState(object):
 
   def RegisterStreamingCallback(
       self,
-      target: Callable[["interface.AttributeContainer"], Any],
-      container_type: Type["interface.AttributeContainer"]) -> None:
+      target: Callable[[T], Any],
+      container_type: Type[T]) -> None:
     """Registers a callback for a type of container.
 
     The function to be registered should a single parameter of type

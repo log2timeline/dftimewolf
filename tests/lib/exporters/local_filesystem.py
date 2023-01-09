@@ -51,13 +51,14 @@ class LocalFileSystemTest(unittest.TestCase):
                       mock_copytree):
     """Tests that the module processes input and copies correctly."""
     test_state = state.DFTimewolfState(config.Config)
-    test_state.StoreContainer(containers.File(
+    local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
+
+    local_filesystem_copy.StoreContainer(containers.File(
         name='description', path='/fake/evidence_directory'))
-    test_state.StoreContainer(containers.File(
+    local_filesystem_copy.StoreContainer(containers.File(
         name='description2', path='/fake/evidence_file'))
     mock_mkdtemp.return_value = '/fake/random'
 
-    local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
     local_filesystem_copy.SetUp()
     local_filesystem_copy.Process()
 
@@ -72,13 +73,13 @@ class LocalFileSystemTest(unittest.TestCase):
   def testProcessCompress(self, mock_mkdtemp, mock_compress):
     """Tests that the module processes input and compresses correctly."""
     test_state = state.DFTimewolfState(config.Config)
-    test_state.StoreContainer(containers.File(
+    local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
+    local_filesystem_copy.StoreContainer(containers.File(
         name='description', path='/fake/evidence_directory'))
-    test_state.StoreContainer(containers.File(
+    local_filesystem_copy.StoreContainer(containers.File(
         name='description2', path='/fake/evidence_file'))
     mock_mkdtemp.return_value = '/fake/random'
     mock_compress.return_value = '/fake/tarball.tgz'
-    local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
     local_filesystem_copy.SetUp(compress=True)
     local_filesystem_copy.Process()
     mock_compress.assert_has_calls([
@@ -103,9 +104,9 @@ class LocalFileSystemTest(unittest.TestCase):
     mock_copytree.side_effect = OSError('FAKEERROR')
     mock_isdir.return_value = False
     test_state = state.DFTimewolfState(config.Config)
-    test_state.StoreContainer(
-        containers.File(name='blah', path='/sourcefile'))
     local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
+    local_filesystem_copy.StoreContainer(
+        containers.File(name='blah', path='/sourcefile'))
     local_filesystem_copy.SetUp(target_directory="/nonexistent")
     with self.assertRaises(errors.DFTimewolfError) as error:
       local_filesystem_copy.Process()

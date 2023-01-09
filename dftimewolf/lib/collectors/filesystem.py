@@ -55,7 +55,7 @@ class FilesystemCollector(module.BaseModule):
           message='No valid paths collected, bailing',
           critical=True)
     for container in file_containers:
-      self.state.StoreContainer(container)
+      self.StoreContainer(container)
 
 
 modules_manager.ModulesManager.RegisterModule(FilesystemCollector)

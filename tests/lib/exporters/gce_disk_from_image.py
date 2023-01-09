@@ -47,7 +47,7 @@ class GCEDiskFromImageTest(unittest.TestCase):
     exporter.SetUp(FAKE_GCP_PROJECT_NAME, FAKE_ZONE, FAKE_IMAGES)
 
     actual_objects = [c.name for \
-        c in test_state.GetContainers(containers.GCEImage)]
+        c in exporter.GetContainers(containers.GCEImage)]
 
     self.assertEqual(FAKE_GCP_PROJECT_NAME, exporter.dest_project_name)
     self.assertEqual(FAKE_ZONE, exporter.dest_zone)
@@ -72,14 +72,14 @@ class GCEDiskFromImageTest(unittest.TestCase):
     exporter.SetUp(FAKE_GCP_PROJECT_NAME, FAKE_ZONE, FAKE_IMAGES)
 
     exporter.PreProcess()
-    for c in test_state.GetContainers(exporter.GetThreadOnContainerType()):
+    for c in exporter.GetContainers(exporter.GetThreadOnContainerType()):
       exporter.Process(c)  # pytype: disable=wrong-arg-types
       # GetContainers returns the abstract base class type, but process is
       # called with the instantiated child class.
     exporter.PostProcess()
 
     actual_output = [c.name for \
-        c in test_state.GetContainers(containers.GCEDisk)]
+        c in exporter.GetContainers(containers.GCEDisk)]
 
     self.assertEqual(sorted(actual_output), sorted([
       'fake-disk-one',
@@ -97,21 +97,22 @@ class GCEDiskFromImageTest(unittest.TestCase):
     mock_lcf_create_disk_from_image.side_effect = FAKE_DISK_CREATION_RESPONSES
 
     test_state = state.DFTimewolfState(config.Config)
-    for c in FAKE_STATE_GCS_OBJECT_LIST:
-      test_state.StoreContainer(c)
 
     exporter = gce_disk_from_image.GCEDiskFromImage(test_state)
+    for c in FAKE_STATE_GCS_OBJECT_LIST:
+      exporter.StoreContainer(c)
+
     exporter.SetUp(FAKE_GCP_PROJECT_NAME, FAKE_ZONE)
 
     exporter.PreProcess()
-    for c in test_state.GetContainers(exporter.GetThreadOnContainerType()):
+    for c in exporter.GetContainers(exporter.GetThreadOnContainerType()):
       exporter.Process(c)  # pytype: disable=wrong-arg-types
       # GetContainers returns the abstract base class type, but process is
       # called with the instantiated child class.
     exporter.PostProcess()
 
     actual_output = [c.name for \
-        c in test_state.GetContainers(containers.GCEDisk)]
+        c in exporter.GetContainers(containers.GCEDisk)]
 
     self.assertEqual(sorted(actual_output), sorted([
       'fake-disk-one',

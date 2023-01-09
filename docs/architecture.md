@@ -37,13 +37,13 @@ Tip: If you want your module to be able to take inputs from both recipe
 arguments or the state, consider including something like the following in your
 `SetUp`:
 
-```
+```python
   for p in param.split(','):
-    self.state.StoreContainer(containers.MyContainer(p))
+    self.StoreContainer(containers.MyContainer(p))
 ```
 
 This way, any recipe arguments (in this example, comma separated) are available
-in `Process` via `self.state.GetContainers()`, in addition to any containers
+in `Process` via `self.GetContainers()`, in addition to any containers
 from previous modules.
 
 ### Thread Aware Modules
@@ -53,10 +53,10 @@ If your module takes multiple inputs you can take advantage of the
 threads. The following are the differences from implementing `BaseModule`:
 
 * Process takes a single container argument. You process this single container,
-rather than sourcing containers to process from `self.state.GetContainers()`.
+rather than sourcing containers to process from `self.GetContainers()`.
 * Required method overrides:
   * `GetThreadOnContainerType()` - The type of container that is to be used as
-  input to the parallel threads. 
+  input to the parallel threads.
   * `GetThreadPoolSize()` - Determine the maximum number of simultaneous threads.
 * Optional method overrides:
   * `PreProcess()` & `PostProcess()` - Work that needs to be done prior to, or
@@ -79,8 +79,8 @@ Modules can also report errors using their `ModuleError` function. Errors added
 this way will be reported at the end of the run. Semantically, they mean that
 the recipe flow didn't go as expected and should be examined.
 
-`ModuleError` also takes a `critical` parameter, that will raise an exception
-and interrupt the flow of the recipe. This should be used for errors that
+`ModuleError` also takes a `critical` parameter, which will raise an exception
+and interrupt the flow of the whole recipe. This should be used for errors that
 dftimewolf can't recover from (e.g. if a binary run by one of the modules can't
 be found on disk).
 
@@ -91,7 +91,7 @@ parameters can be ingested from the command-line. A recipe JSON object follows a
 specific format:
 
 - `name`: This is the name with which the recipe will be invoked (e.g.
-  `local_plaso`).
+  `plaso_ts`).
 - `description`: This is a longer description of what the recipe does. It will
   show up in the help message when invoking `dftimewolf recipe_hame -h`.
 - `short_description`: This is what will show up in the help message when

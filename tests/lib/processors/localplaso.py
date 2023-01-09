@@ -40,7 +40,7 @@ class LocalPlasoTest(unittest.TestCase):
         message="")
 
     local_plaso_processor = localplaso.LocalPlasoProcessor(test_state)
-    test_state.StoreContainer(
+    local_plaso_processor.StoreContainer(
         containers.File(name='test', path='/notexist/test'))
     local_plaso_processor.SetUp()
     local_plaso_processor.Process()
@@ -49,7 +49,8 @@ class LocalPlasoTest(unittest.TestCase):
     self.assertEqual(args[10], '/notexist/test')
     plaso_path = args[9]  # Dynamically generated path to the plaso file
     self.assertEqual(
-        test_state.GetContainers(containers.File)[0].path, plaso_path)
+        local_plaso_processor.GetContainers(containers.File)[0].path,
+        plaso_path)
 
   @mock.patch('docker.from_env')
   def testProcessingDockerized(self, mock_docker):
@@ -57,7 +58,7 @@ class LocalPlasoTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     mock_docker.return_value = mock.Mock()
     local_plaso_processor = localplaso.LocalPlasoProcessor(test_state)
-    test_state.StoreContainer(
+    local_plaso_processor.StoreContainer(
         containers.File(name='test', path='/notexist/test'))
     local_plaso_processor.SetUp()
     local_plaso_processor.Process()
@@ -67,7 +68,7 @@ class LocalPlasoTest(unittest.TestCase):
     match = re.match(r".*/([a-z0-9]+\.plaso).*", args['command'])
     self.assertIsNotNone(match)
     self.assertRegex(
-        test_state.GetContainers(containers.File)[0].path,
+        local_plaso_processor.GetContainers(containers.File)[0].path,
         f".*/{match.group(1)}")  # pytype: disable=attribute-error
 
   @mock.patch.dict('os.environ', {'PATH': '/fake/path:/fake/path/2'})
