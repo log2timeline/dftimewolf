@@ -882,7 +882,6 @@ class Metawolf(cmd2.Cmd):
     # Add the recipe arguments to the autocomplete parser
     for action in self.set_parser._actions:  # pylint: disable=protected-access
       if action.dest == 'p':
-
         action.choices = [args.switch.replace('--', '') for args in
                           recipes[self.recipe].args]
         break
