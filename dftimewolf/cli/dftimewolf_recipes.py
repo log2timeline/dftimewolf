@@ -120,12 +120,13 @@ class DFTimewolfTool(object):
           description=description)
       subparser.set_defaults(recipe=recipe.contents)
 
-      for switch, help_text, default in recipe.args:
-        if isinstance(default, bool):
-          subparser.add_argument(switch, help=help_text, default=default,
-                                 action='store_true')
+      for args in recipe.args:
+        if isinstance(args.default, bool):
+          subparser.add_argument(args.switch, help=args.help_text,
+                                 default=args.default, action='store_true')
         else:
-          subparser.add_argument(switch, help=help_text, default=default)
+          subparser.add_argument(args.switch, help=args.help_text,
+                                 default=args.default)
 
       # Override recipe defaults with those specified in Config
       # so that they can in turn be overridden in the commandline
@@ -411,6 +412,13 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
       cdm.EnqueueMessage('dftimewolf', str(exception), True)
     logger.critical(str(exception))
     return False
+
+  # Interpolate arguments
+  recipe = tool.state.recipe
+  for module in recipe.get('preflights', []) + recipe.get('modules', []):
+    module['args'] = utils.ImportArgsFromDict(module['args'],
+                                              tool.state.command_line_options,
+                                              tool.state.config)
 
   tool.state.LogExecutionPlan()
 

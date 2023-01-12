@@ -186,12 +186,9 @@ class DFTimewolfState(object):
       else:
         plan += '{0:s}:\n'.format(module['name'])
 
-      new_args = utils.ImportArgsFromDict(
-          module['args'], self.command_line_options, self.config)
-
-      if not new_args:
+      if not module['args']:
         plan += '  *No params*\n'
-      for key, value in new_args.items():
+      for key, value in module['args'].items():
         plan += '  {0:s}{1:s}\n'.format(key.ljust(maxlen + 3), repr(value))
 
     return plan

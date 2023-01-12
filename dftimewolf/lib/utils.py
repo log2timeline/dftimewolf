@@ -68,7 +68,7 @@ def ImportArgsFromDict(value: Any,
   """Replaces some arguments by those specified by a key-value dictionary.
 
   This function will be recursively called on a dictionary looking for any
-  value containing a "$" variable. If found, the value will be replaced
+  value containing a "@" variable. If found, the value will be replaced
   by the attribute in "args" of the same name.
 
   It is used to load arguments from the CLI and any extra configuration

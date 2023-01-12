@@ -42,3 +42,7 @@ class CommandLineParseError(DFTimewolfError):
 
 class CriticalError(DFTimewolfError):
   """Critical error that should abort the whole workflow."""
+
+
+class RecipeArgsValidatorError(DFTimewolfError):
+  """Fatal error in recipe argument validation."""
