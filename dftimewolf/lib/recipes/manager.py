@@ -9,7 +9,7 @@ from io import StringIO, TextIOWrapper
 from typing import List, Union, Dict, TextIO
 
 from dftimewolf.lib import errors, resources
-from dftimewolf.lib.resources import Recipe
+from dftimewolf.lib.resources import Recipe, RecipeArgs
 
 
 class RecipesManager(object):
@@ -35,7 +35,12 @@ class RecipesManager(object):
     description = json_dict['description']
     del json_dict['description']
 
-    args = json_dict['args']
+    args = []
+    for arg_list in json_dict['args']:
+      arg = RecipeArgs(switch=arg_list[0],
+                       help_text=arg_list[1],
+                       default=arg_list[2])
+      args.append(arg)
     del json_dict['args']
 
     return resources.Recipe(description, json_dict, args)

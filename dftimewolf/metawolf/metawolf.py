@@ -525,7 +525,7 @@ class Metawolf(cmd2.Cmd):
       t = PrettyTable(
           ['Argument', 'Description'],
           align='l')
-      for name, desc, _ in df_recipe.args:
+      for name, desc in [(a.switch, a.help_text) for a in df_recipe.args]:
         is_optional = name.startswith('--')
         if is_optional:
           name = name.replace('--', '')
@@ -835,7 +835,11 @@ class Metawolf(cmd2.Cmd):
 
     # Add current recipe's settables
     recipes = self.metawolf_utils.recipe_manager.Recipes()
-    for name, desc, default_value in recipes[self.recipe].args:
+    for arg in recipes[self.recipe].args:
+      name = arg.switch
+      desc = arg.help_text
+      default_value = arg.default
+
       t = type(default_value) if default_value is not None else str
       is_optional = name.startswith('--')
       if is_optional:
@@ -878,7 +882,7 @@ class Metawolf(cmd2.Cmd):
     # Add the recipe arguments to the autocomplete parser
     for action in self.set_parser._actions:  # pylint: disable=protected-access
       if action.dest == 'p':
-        action.choices = [name.replace('--', '') for name, _, _ in
+        action.choices = [args.switch.replace('--', '') for args in
                           recipes[self.recipe].args]
         break
 

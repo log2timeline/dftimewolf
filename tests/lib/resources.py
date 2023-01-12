@@ -11,7 +11,7 @@ class RecipeTest(unittest.TestCase):
   """Tests Recipe."""
 
   _ARGS = [
-      ('test', 'Test argument', None),
+      resources.RecipeArgs('test', 'Test argument', None),
   ]
 
   _CONTENTS = {

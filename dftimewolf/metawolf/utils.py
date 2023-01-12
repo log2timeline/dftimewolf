@@ -328,7 +328,7 @@ class MetawolfUtils:
 
     # We need to order the arguments as they are defined in the recipe
     cmd = [DFTIMEWOLF, recipe]
-    for name, _, _ in self.recipe_manager.Recipes()[recipe].args:
+    for name in [a.switch for a in self.recipe_manager.Recipes()[recipe].args]:
       if name.startswith('--'):
         name = name.replace('--', '')
       if name in cmd_components:

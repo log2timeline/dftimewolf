@@ -1,13 +1,23 @@
 # -*- coding: utf-8 -*-
 """Various dfTimewolf resource objects."""
-from typing import Any, Dict, List, Tuple
+
+import dataclasses
+from typing import Any, Dict, List, Optional
+
+
+@dataclasses.dataclass
+class RecipeArgs:
+  """Dataclass for a single recipe argument."""
+  switch: str = ''
+  help_text: str = ''
+  default: Any = None
 
 
 class Recipe(object):
   """Recipe.
 
   Attributes:
-    args (list[tuple[str, str, object]]): command line arguments of
+    args (list[RecipeArgs]): command line arguments of
         the recipe.
     contents (dict[str, object]): recipe contents.
     description (str): description.
@@ -17,7 +27,7 @@ class Recipe(object):
   def __init__(self,
                description: str,
                contents: Dict[str, Any],
-               args: List[Tuple[str, str, Any]]) -> None:
+               args: List[RecipeArgs]) -> None:
     """Initializes a recipe.
 
     Args:
