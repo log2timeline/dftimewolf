@@ -38,8 +38,8 @@ class RecipesManager(object):
     args = []
     for arg_list in json_dict['args']:
       arg = RecipeArgs(switch=arg_list[0],
-                             help_text=arg_list[1],
-                             default=arg_list[2])
+                       help_text=arg_list[1],
+                       default=arg_list[2])
       args.append(arg)
     del json_dict['args']
 
