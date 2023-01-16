@@ -197,6 +197,15 @@ class TicketAttribute(interface.AttributeContainer):
     self.name = name
     self.value = value
 
+    # Will be merged once
+  def __eq__(self, other):
+    """Override '==' operator. Used only in unit tests."""
+    return (
+        self.type == other.type
+        and self.name == other.name
+        and self.value == other.value
+    )
+
   def __str__(self) -> str:
     """Override __str()__."""
     return self.name
