@@ -453,10 +453,6 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
     logger.critical(str(exception))
     return False
 
-
-#  logger.critical('Bailing early during dev')
-#  return False
-
   tool.RunPreflights()
 
   try:
