@@ -23,19 +23,19 @@ Copies EBS volumes from within AWS by pushing them to an AWS S3 bucket. The S3 b
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['aws_region', 'AWS region containing the EBS volumes.', None, {'format': 'aws_region'}]`|`None`|
-`['gcp_zone', 'Destination GCP zone in which to create the disks.', None]`|`None`|
-`['volumes', 'Comma separated list of EBS volume IDs (e.g. vol-xxxxxxxx).', None]`|`None`|
-`['aws_bucket', 'AWS bucket for image storage.', None]`|`None`|
-`['gcp_bucket', 'GCP bucket for image storage.', None]`|`None`|
-`['--subnet', 'AWS subnet to copy instances from, required if there is no default subnet in the volume region.', None]`|`None`|
-`['--gcp_project', 'Destination GCP project.', None]`|`None`|
-`['--aws_profile', 'Source AWS profile.', None]`|`None`|
-`['--incident_id', 'Incident ID (used for Timesketch description).', None]`|`None`|
-`['--run_all_jobs', 'Run all Turbinia processing jobs instead of a faster subset.', False]`|`None`|
-`['--sketch_id', 'Timesketch sketch to which the timeline should be added.', None]`|`None`|
-`['--token_password', 'Optional custom password to decrypt Timesketch credential file with.', '']`|`None`|
-`['--wait_for_timelines', 'Whether to wait for Timesketch to finish processing all timelines.', True]`|`None`|
+`aws_region`|`None`|AWS region containing the EBS volumes.
+`gcp_zone`|`None`|Destination GCP zone in which to create the disks.
+`volumes`|`None`|Comma separated list of EBS volume IDs (e.g. vol-xxxxxxxx).
+`aws_bucket`|`None`|AWS bucket for image storage.
+`gcp_bucket`|`None`|GCP bucket for image storage.
+`--subnet`|`None`|AWS subnet to copy instances from, required if there is no default subnet in the volume region.
+`--gcp_project`|`None`|Destination GCP project.
+`--aws_profile`|`None`|Source AWS profile.
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--run_all_jobs`|`False`|Run all Turbinia processing jobs instead of a faster subset.
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
 
 
 
@@ -60,15 +60,15 @@ Copies a volume from an AWS account, creates an analysis VM in AWS (with a start
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['remote_profile_name', 'Name of the AWS profile pointing to the AWS account where the volume(s) exist(s).', None]`|`None`|
-`['remote_zone', 'The AWS zone in which the source volume(s) exist(s).', None]`|`None`|
-`['incident_id', 'Incident ID to label the VM with.', None]`|`None`|
-`['--instance_id', 'Instance ID of the instance to analyze.', None]`|`None`|
-`['--volume_ids', 'Comma-separated list of volume IDs to copy.', None]`|`None`|
-`['--all_volumes', 'Copy all volumes in the designated instance. Overrides volume_ids if specified.', False]`|`None`|
-`['--boot_volume_size', 'The size of the analysis VM boot volume (in GB).', 50]`|`None`|
-`['--analysis_zone', 'The AWS zone in which to create the VM.', None]`|`None`|
-`['--analysis_profile_name', 'Name of the AWS profile to use when creating the analysis VM.', None]`|`None`|
+`remote_profile_name`|`None`|Name of the AWS profile pointing to the AWS account where the volume(s) exist(s).
+`remote_zone`|`None`|The AWS zone in which the source volume(s) exist(s).
+`incident_id`|`None`|Incident ID to label the VM with.
+`--instance_id`|`None`|Instance ID of the instance to analyze.
+`--volume_ids`|`None`|Comma-separated list of volume IDs to copy.
+`--all_volumes`|`False`|Copy all volumes in the designated instance. Overrides volume_ids if specified.
+`--boot_volume_size`|`50`|The size of the analysis VM boot volume (in GB).
+`--analysis_zone`|`None`|The AWS zone in which to create the VM.
+`--analysis_profile_name`|`None`|Name of the AWS profile to use when creating the analysis VM.
 
 
 
@@ -93,10 +93,10 @@ Collects logs from an AWS account using a specified query filter and date ranges
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['--profile_name', 'Name of the AWS profile to collect logs from.', 'default']`|`None`|
-`['--query_filter', 'Filter expression to use to query logs.', None]`|`None`|
-`['--start_time', 'Start time for the query.', None]`|`None`|
-`['--end_time', 'End time for the query.', None]`|`None`|
+`--profile_name`|`'default'`|Name of the AWS profile to collect logs from.
+`--query_filter`|`None`|Filter expression to use to query logs.
+`--start_time`|`None`|Start time for the query.
+`--end_time`|`None`|End time for the query.
 
 
 
@@ -121,14 +121,14 @@ Collects logs from an AWS account using a specified query filter and date ranges
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['--profile_name', 'Name of the AWS profile to collect logs from.', 'default']`|`None`|
-`['--query_filter', 'Filter expression to use to query logs.', None]`|`None`|
-`['--start_time', 'Start time for the query.', None]`|`None`|
-`['--end_time', 'End time for the query.', None]`|`None`|
-`['--incident_id', 'Incident ID (used for Timesketch description).', None]`|`None`|
-`['--sketch_id', 'Timesketch sketch to which the timeline should be added.', None]`|`None`|
-`['--token_password', 'Optional custom password to decrypt Timesketch credential file with.', '']`|`None`|
-`['--wait_for_timelines', 'Whether to wait for Timesketch to finish processing all timelines.', True]`|`None`|
+`--profile_name`|`'default'`|Name of the AWS profile to collect logs from.
+`--query_filter`|`None`|Filter expression to use to query logs.
+`--start_time`|`None`|Start time for the query.
+`--end_time`|`None`|End time for the query.
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
 
 
 
@@ -153,20 +153,20 @@ Copies EBS volumes from within AWS, uses buckets and cloud-to-cloud operations t
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['aws_region', 'AWS region containing the EBS volumes.', None]`|`None`|
-`['gcp_zone', 'Destination GCP zone in which to create the disks.', None]`|`None`|
-`['volumes', 'Comma separated list of EBS volume IDs (e.g. vol-xxxxxxxx).', None]`|`None`|
-`['aws_bucket', 'AWS bucket for image storage.', None]`|`None`|
-`['gcp_bucket', 'GCP bucket for image storage.', None]`|`None`|
-`['--subnet', 'AWS subnet to copy instances from, required if there is no default subnet in the volume region.', None]`|`None`|
-`['--gcp_project', 'Destination GCP project.', None]`|`None`|
-`['--aws_profile', 'Source AWS profile.', None]`|`None`|
-`['--incident_id', 'Incident ID (used for Timesketch description).', None]`|`None`|
-`['--sketch_id', 'Timesketch sketch to which the timeline should be added.', None]`|`None`|
-`['--token_password', 'Optional custom password to decrypt Timesketch credential file with.', '']`|`None`|
-`['--turbinia_recipe', 'The Turbinia recipe name to use for evidence processing.', None]`|`None`|
-`['--turbinia_zone', 'Zone Turbinia is located in', 'us-central1-f']`|`None`|
-`['--wait_for_timelines', 'Whether to wait for Timesketch to finish processing all timelines.', True]`|`None`|
+`aws_region`|`None`|AWS region containing the EBS volumes.
+`gcp_zone`|`None`|Destination GCP zone in which to create the disks.
+`volumes`|`None`|Comma separated list of EBS volume IDs (e.g. vol-xxxxxxxx).
+`aws_bucket`|`None`|AWS bucket for image storage.
+`gcp_bucket`|`None`|GCP bucket for image storage.
+`--subnet`|`None`|AWS subnet to copy instances from, required if there is no default subnet in the volume region.
+`--gcp_project`|`None`|Destination GCP project.
+`--aws_profile`|`None`|Source AWS profile.
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--turbinia_recipe`|`None`|The Turbinia recipe name to use for evidence processing.
+`--turbinia_zone`|`'us-central1-f'`|Zone Turbinia is located in
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
 
 
 
@@ -191,16 +191,16 @@ Copies a disk from an Azure account, creates an analysis VM in Azure (with a sta
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['remote_profile_name', 'Name of the Azure profile pointing to the Azure account where the disk(s) exist(s).', None]`|`None`|
-`['analysis_resource_group_name', 'The Azure resource group name in which to create the VM.', None]`|`None`|
-`['incident_id', 'Incident ID to label the VM with.', None]`|`None`|
-`['ssh_public_key', 'A SSH public key string to add to the VM (e.g. `ssh-rsa AAAAB3NzaC1y...`).', None]`|`None`|
-`['--instance_name', 'Instance name of the instance to analyze.', None]`|`None`|
-`['--disk_names', 'Comma-separated list of disk names to copy.', None]`|`None`|
-`['--all_disks', 'Copy all disks in the designated instance. Overrides `disk_names` if specified.', False]`|`None`|
-`['--boot_disk_size', "The size of the analysis VM's boot disk (in GB).", 50]`|`None`|
-`['--analysis_region', 'The Azure region in which to create the VM.', None]`|`None`|
-`['--analysis_profile_name', 'Name of the Azure profile to use when creating the analysis VM.', None]`|`None`|
+`remote_profile_name`|`None`|Name of the Azure profile pointing to the Azure account where the disk(s) exist(s).
+`analysis_resource_group_name`|`None`|The Azure resource group name in which to create the VM.
+`incident_id`|`None`|Incident ID to label the VM with.
+`ssh_public_key`|`None`|A SSH public key string to add to the VM (e.g. `ssh-rsa AAAAB3NzaC1y...`).
+`--instance_name`|`None`|Instance name of the instance to analyze.
+`--disk_names`|`None`|Comma-separated list of disk names to copy.
+`--all_disks`|`False`|Copy all disks in the designated instance. Overrides `disk_names` if specified.
+`--boot_disk_size`|`50`|The size of the analysis VM's boot disk (in GB).
+`--analysis_region`|`None`|The Azure region in which to create the VM.
+`--analysis_profile_name`|`None`|Name of the Azure profile to use when creating the analysis VM.
 
 
 
@@ -225,9 +225,9 @@ Collects logs from an Azure subscription using a specified filter, and dumps the
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['subscription_id', 'Subscription ID for the subscription to collect logs from.', None]`|`None`|
-`['filter_expression', 'A filter expression to use for the log query, must specify at least a start date like "eventTimestamp ge \'2022-02-01\'"', None]`|`None`|
-`['--profile_name', 'A profile name to use when looking for Azure credentials.', None]`|`None`|
+`subscription_id`|`None`|Subscription ID for the subscription to collect logs from.
+`filter_expression`|`None`|A filter expression to use for the log query, must specify at least a start date like "eventTimestamp ge '2022-02-01'"
+`--profile_name`|`None`|A profile name to use when looking for Azure credentials.
 
 
 
@@ -252,13 +252,13 @@ Collects logs from an Azure subscription using a specified query filter and date
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['subscription_id', 'Subscription ID for the subscription to collect logs from.', None]`|`None`|
-`['filter_expression', 'A filter expression to use for the log query, must specify at least a start date like "eventTimestamp ge \'2022-02-01\'"', None]`|`None`|
-`['--profile_name', 'A profile name to use when looking for Azure credentials.', None]`|`None`|
-`['--incident_id', 'Incident ID (used for Timesketch description).', None]`|`None`|
-`['--sketch_id', 'Timesketch sketch to which the timeline should be added.', None]`|`None`|
-`['--token_password', 'Optional custom password to decrypt Timesketch credential file with.', '']`|`None`|
-`['--wait_for_timelines', 'Whether to wait for Timesketch to finish processing all timelines.', True]`|`None`|
+`subscription_id`|`None`|Subscription ID for the subscription to collect logs from.
+`filter_expression`|`None`|A filter expression to use for the log query, must specify at least a start date like "eventTimestamp ge '2022-02-01'"
+`--profile_name`|`None`|A profile name to use when looking for Azure credentials.
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
 
 
 
@@ -283,9 +283,9 @@ Collects results from BigQuery in a GCP project and dumps them in JSONL on the l
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['project_name', 'Name of GCP project to collect logs from.', None]`|`None`|
-`['query', 'Query to execute.', None]`|`None`|
-`['description', 'Human-readable description of the query.', None]`|`None`|
+`project_name`|`None`|Name of GCP project to collect logs from.
+`query`|`None`|Query to execute.
+`description`|`None`|Human-readable description of the query.
 
 
 
@@ -310,13 +310,13 @@ Collects results from BigQuery in JSONL form, dumps them to the filesystem, and 
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['project_name', 'Name of GCP project to collect logs from.', None]`|`None`|
-`['query', 'Query to execute.', None]`|`None`|
-`['description', 'Human-readable description of the query.', None]`|`None`|
-`['--incident_id', 'Incident ID (used for Timesketch description).', None]`|`None`|
-`['--sketch_id', 'Timesketch sketch to which the timeline should be added.', None]`|`None`|
-`['--token_password', 'Optional custom password to decrypt Timesketch credential file with.', '']`|`None`|
-`['--wait_for_timelines', 'Whether to wait for Timesketch to finish processing all timelines.', True]`|`None`|
+`project_name`|`None`|Name of GCP project to collect logs from.
+`query`|`None`|Query to execute.
+`description`|`None`|Human-readable description of the query.
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
 
 
 
@@ -341,13 +341,13 @@ Copies disks from one project to another. The disks can be specified individuall
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['source_project_name', 'Source project containing the disks to export.', None]`|`None`|
-`['--destination_project_name', 'Project to where the disk images are exported. If not provided, source_project_name is used.', None]`|`None`|
-`['--source_disk_names', 'Comma-separated list of disk names to export. If not provided, disks attached to `remote_instance_name` will be used.', None]`|`None`|
-`['--remote_instance_names', 'Comma-separated list of instances in source project from which to copy disks. If not provided, `disk_names` will be used.', None]`|`None`|
-`['--all_disks', "If True, copy all disks attached to the `remote_instance_names` instances. If False and `remote_instance_name` is provided, it will select the instance's boot disk.", False]`|`None`|
-`['--zone', 'Destination zone for the disks to be copied to.', 'us-central1-f']`|`None`|
-`['--stop_instances', 'Stop instances after disks have been copied', False]`|`None`|
+`source_project_name`|`None`|Source project containing the disks to export.
+`--destination_project_name`|`None`|Project to where the disk images are exported. If not provided, source_project_name is used.
+`--source_disk_names`|`None`|Comma-separated list of disk names to export. If not provided, disks attached to `remote_instance_name` will be used.
+`--remote_instance_names`|`None`|Comma-separated list of instances in source project from which to copy disks. If not provided, `disk_names` will be used.
+`--all_disks`|`False`|If True, copy all disks attached to the `remote_instance_names` instances. If False and `remote_instance_name` is provided, it will select the instance's boot disk.
+`--zone`|`'us-central1-f'`|Destination zone for the disks to be copied to.
+`--stop_instances`|`False`|Stop instances after disks have been copied
 
 
 
@@ -376,13 +376,13 @@ As this export happens through a Cloud Build job, the default service account `[
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['source_project_name', 'Source project containing the disk to export.', None]`|`None`|
-`['gcs_output_location', 'Google Cloud Storage parent bucket/folder to which to export the image.', None]`|`None`|
-`['--analysis_project_name', 'Project where the disk image is created then exported. If not provided, the image is exported to a bucket in the source project.', None]`|`None`|
-`['--source_disk_names', 'Comma-separated list of disk names to export. If not provided, disks attached to `remote_instance_name` will be used.', None]`|`None`|
-`['--remote_instance_name', 'Instance in source project to export its disks. If not provided, `disk_names` will be used.', None]`|`None`|
-`['--all_disks', "If True, copy all disks attached to the `remote_instance_name` instance. If False and `remote_instance_name` is provided, it will select the instance's boot disk.", False]`|`None`|
-`['--exported_image_name', "Name of the output file, must comply with `^[A-Za-z0-9-]*$` and `'.tar.gz'` will be appended to the name. If not provided or if more than one disk is selected, the exported image will be named `exported-image-{TIMESTAMP('%Y%m%d%H%M%S')}`.", None]`|`None`|
+`source_project_name`|`None`|Source project containing the disk to export.
+`gcs_output_location`|`None`|Google Cloud Storage parent bucket/folder to which to export the image.
+`--analysis_project_name`|`None`|Project where the disk image is created then exported. If not provided, the image is exported to a bucket in the source project.
+`--source_disk_names`|`None`|Comma-separated list of disk names to export. If not provided, disks attached to `remote_instance_name` will be used.
+`--remote_instance_name`|`None`|Instance in source project to export its disks. If not provided, `disk_names` will be used.
+`--all_disks`|`False`|If True, copy all disks attached to the `remote_instance_name` instance. If False and `remote_instance_name` is provided, it will select the instance's boot disk.
+`--exported_image_name`|`None`|Name of the output file, must comply with `^[A-Za-z0-9-]*$` and `'.tar.gz'` will be appended to the name. If not provided or if more than one disk is selected, the exported image will be named `exported-image-{TIMESTAMP('%Y%m%d%H%M%S')}`.
 
 
 
@@ -411,13 +411,13 @@ The compute engine default service account in the source project must have suffi
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['source_project_name', 'Source project containing the disk to export.', None]`|`None`|
-`['gcs_output_location', 'Google Cloud Storage parent bucket/folder to which to export the image.', None]`|`None`|
-`['--source_disk_names', 'Comma-separated list of disk names to export. If not provided, disks attached to `remote_instance_name` will be used.', None]`|`None`|
-`['--remote_instance_name', 'Instance in source project to export its disks. If not provided, `source_disk_names ` will be used.', None]`|`None`|
-`['--all_disks', "If True, copy all disks attached to the `remote_instance_name` instance. If False and `remote_instance_name` is provided, it will select the instance's boot disk.", False]`|`None`|
-`['--boot_image_project', 'Name of the project where the boot disk image of the export VM is stored.', 'debian-cloud']`|`None`|
-`['--boot_image_family', 'Name of the image to use to create the boot disk of the export VM.', 'debian-10']`|`None`|
+`source_project_name`|`None`|Source project containing the disk to export.
+`gcs_output_location`|`None`|Google Cloud Storage parent bucket/folder to which to export the image.
+`--source_disk_names`|`None`|Comma-separated list of disk names to export. If not provided, disks attached to `remote_instance_name` will be used.
+`--remote_instance_name`|`None`|Instance in source project to export its disks. If not provided, `source_disk_names ` will be used.
+`--all_disks`|`False`|If True, copy all disks attached to the `remote_instance_name` instance. If False and `remote_instance_name` is provided, it will select the instance's boot disk.
+`--boot_image_project`|`'debian-cloud'`|Name of the project where the boot disk image of the export VM is stored.
+`--boot_image_family`|`'debian-10'`|Name of the image to use to create the boot disk of the export VM.
 
 
 
@@ -442,11 +442,11 @@ Generates a parent/children tree for given GCP resource by enumerating all the c
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['project_id', 'ID of the project where the resource is located', None]`|`None`|
-`['location', "Resource location (zone/region) or 'global'", None]`|`None`|
-`['resource_type', 'Resource type (currently supported types: gce_instance, gce_disk, gce_image, gce_machine_image, gce_instance_template, gce_snapshot)', None]`|`None`|
-`['--resource_id', 'Resource id', None]`|`None`|
-`['--resource_name', 'Resource name', None]`|`None`|
+`project_id`|`None`|ID of the project where the resource is located
+`location`|`None`|Resource location (zone/region) or 'global'
+`resource_type`|`None`|Resource type (currently supported types: gce_instance, gce_disk, gce_image, gce_machine_image, gce_instance_template, gce_snapshot)
+`--resource_id`|`None`|Resource id
+`--resource_name`|`None`|Resource name
 
 
 
@@ -471,12 +471,12 @@ Generates a parent/children tree for given GCP resource using the supplied expor
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['project_id', 'ID of the project where the resource is located', None]`|`None`|
-`['location', "Resource location (zone/region) or 'global'", None]`|`None`|
-`['resource_type', 'Resource type (currently supported types: gce_instance, gce_disk, gce_image, gce_machine_image, gce_instance_template, gce_snapshot)', None]`|`None`|
-`['paths', 'Comma-separated paths to GCP log files. Log files should contain log entiries in json format.', None]`|`None`|
-`['--resource_id', 'Resource id', None]`|`None`|
-`['--resource_name', 'Resource name', None]`|`None`|
+`project_id`|`None`|ID of the project where the resource is located
+`location`|`None`|Resource location (zone/region) or 'global'
+`resource_type`|`None`|Resource type (currently supported types: gce_instance, gce_disk, gce_image, gce_machine_image, gce_instance_template, gce_snapshot)
+`paths`|`None`|Comma-separated paths to GCP log files. Log files should contain log entiries in json format.
+`--resource_id`|`None`|Resource id
+`--resource_name`|`None`|Resource name
 
 
 
@@ -501,18 +501,18 @@ Copies a persistent disk from a GCP project to another, creates an analysis VM (
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['source_project_name', 'Name of the project containing the instance / disks to copy.', None]`|`None`|
-`['analysis_project_name', 'Name of the project where the analysis VM will be created and disks copied to.', None]`|`None`|
-`['--incident_id', 'Incident ID to label the VM with.', None]`|`None`|
-`['--instances', 'Name of the instance to analyze.', None]`|`None`|
-`['--disks', 'Comma-separated list of disks to copy from the source GCP project (if `instance` not provided).', None]`|`None`|
-`['--all_disks', 'Copy all disks in the designated instance. Overrides `disk_names` if specified.', False]`|`None`|
-`['--stop_instances', 'Stop the designated instance after copying disks.', False]`|`None`|
-`['--create_analysis_vm', 'Create an analysis VM in the destination project.', True]`|`None`|
-`['--cpu_cores', 'Number of CPU cores of the analysis VM.', 4]`|`None`|
-`['--boot_disk_size', 'The size of the analysis VM boot disk (in GB).', 50.0]`|`None`|
-`['--boot_disk_type', 'Disk type to use [pd-standard, pd-ssd].', 'pd-standard']`|`None`|
-`['--zone', 'The GCP zone where the Analysis VM and copied disks will be created.', 'us-central1-f']`|`None`|
+`source_project_name`|`None`|Name of the project containing the instance / disks to copy.
+`analysis_project_name`|`None`|Name of the project where the analysis VM will be created and disks copied to.
+`--incident_id`|`None`|Incident ID to label the VM with.
+`--instances`|`None`|Name of the instance to analyze.
+`--disks`|`None`|Comma-separated list of disks to copy from the source GCP project (if `instance` not provided).
+`--all_disks`|`False`|Copy all disks in the designated instance. Overrides `disk_names` if specified.
+`--stop_instances`|`False`|Stop the designated instance after copying disks.
+`--create_analysis_vm`|`True`|Create an analysis VM in the destination project.
+`--cpu_cores`|`4`|Number of CPU cores of the analysis VM.
+`--boot_disk_size`|`50.0`|The size of the analysis VM boot disk (in GB).
+`--boot_disk_type`|`'pd-standard'`|Disk type to use [pd-standard, pd-ssd].
+`--zone`|`'us-central1-f'`|The GCP zone where the Analysis VM and copied disks will be created.
 
 
 
@@ -537,15 +537,15 @@ Collects GCP logs from a project and exports them to Timesketch. Some light proc
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['project_name', 'Name of the GCP project to collect logs from.', None]`|`None`|
-`['start_date', 'Start date (yyyy-mm-ddTHH:MM:SSZ).', None]`|`None`|
-`['end_date', 'End date (yyyy-mm-ddTHH:MM:SSZ).', None]`|`None`|
-`['--incident_id', 'Incident ID (used for Timesketch description).', None]`|`None`|
-`['--sketch_id', 'Timesketch sketch to which the timeline should be added.', None]`|`None`|
-`['--token_password', 'Optional custom password to decrypt Timesketch credential file with.', '']`|`None`|
-`['--wait_for_timelines', 'Whether to wait for Timesketch to finish processing all timelines.', True]`|`None`|
-`['--backoff', 'If GCP Cloud Logging API query limits are exceeded, retry with an increased delay between each query to try complete the query at a slower rate.', False]`|`None`|
-`['--delay', 'Number of seconds to wait between each GCP Cloud Logging query to avoid hitting API query limits', 0]`|`None`|
+`project_name`|`None`|Name of the GCP project to collect logs from.
+`start_date`|`None`|Start date (yyyy-mm-ddTHH:MM:SSZ).
+`end_date`|`None`|End date (yyyy-mm-ddTHH:MM:SSZ).
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+`--backoff`|`False`|If GCP Cloud Logging API query limits are exceeded, retry with an increased delay between each query to try complete the query at a slower rate.
+`--delay`|`0`|Number of seconds to wait between each GCP Cloud Logging query to avoid hitting API query limits
 
 
 
@@ -570,15 +570,15 @@ Collects GCP related to Cloud SQL instances in a project and exports them to Tim
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['project_name', 'Name of the GCP project to collect logs from.', None]`|`None`|
-`['start_date', 'Start date (yyyy-mm-ddTHH:MM:SSZ).', None]`|`None`|
-`['end_date', 'End date (yyyy-mm-ddTHH:MM:SSZ).', None]`|`None`|
-`['--incident_id', 'Incident ID (used for Timesketch description).', None]`|`None`|
-`['--sketch_id', 'Timesketch sketch to which the timeline should be added.', None]`|`None`|
-`['--token_password', 'Optional custom password to decrypt Timesketch credential file with.', '']`|`None`|
-`['--wait_for_timelines', 'Whether to wait for Timesketch to finish processing all timelines.', True]`|`None`|
-`['--backoff', 'If GCP Cloud Logging API query limits are exceeded, retry with an increased delay between each query to try complete the query at a slower rate.', False]`|`None`|
-`['--delay', 'Number of seconds to wait between each GCP Cloud Logging query to avoid hitting API query limits', 0]`|`None`|
+`project_name`|`None`|Name of the GCP project to collect logs from.
+`start_date`|`None`|Start date (yyyy-mm-ddTHH:MM:SSZ).
+`end_date`|`None`|End date (yyyy-mm-ddTHH:MM:SSZ).
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+`--backoff`|`False`|If GCP Cloud Logging API query limits are exceeded, retry with an increased delay between each query to try complete the query at a slower rate.
+`--delay`|`0`|Number of seconds to wait between each GCP Cloud Logging query to avoid hitting API query limits
 
 
 
@@ -603,10 +603,10 @@ Collects logs from a GCP project and dumps on the filesystem.
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['project_name', 'Name of the GCP project to collect logs from.', None]`|`None`|
-`['filter_expression', 'Filter expression to use to query GCP logs. See https://cloud.google.com/logging/docs/view/query-library for examples.', "resource.type = 'gce_instance'"]`|`None`|
-`['--backoff', 'If GCP Cloud Logging API query limits are exceeded, retry with an increased delay between each query to try complete the query at a slower rate.', False]`|`None`|
-`['--delay', 'Number of seconds to wait between each GCP Cloud Logging query to avoid hitting API query limits', 0]`|`None`|
+`project_name`|`None`|Name of the GCP project to collect logs from.
+`filter_expression`|`"resource.type = 'gce_instance'"`|Filter expression to use to query GCP logs. See https://cloud.google.com/logging/docs/view/query-library for examples.
+`--backoff`|`False`|If GCP Cloud Logging API query limits are exceeded, retry with an increased delay between each query to try complete the query at a slower rate.
+`--delay`|`0`|Number of seconds to wait between each GCP Cloud Logging query to avoid hitting API query limits
 
 
 
@@ -631,14 +631,14 @@ Collects GCP Cloud Audit Logs for a GCE instance and exports them to Timesketch.
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['project_name', 'Name of the GCP project to collect logs from.', None]`|`None`|
-`['instance_id', 'Identifier for GCE instance (Instance ID).', None]`|`None`|
-`['--incident_id', 'Incident ID (used for Timesketch description).', None]`|`None`|
-`['--sketch_id', 'Timesketch sketch to which the timeline should be added.', None]`|`None`|
-`['--token_password', 'Optional custom password to decrypt Timesketch credential file with.', '']`|`None`|
-`['--wait_for_timelines', 'Whether to wait for Timesketch to finish processing all timelines.', True]`|`None`|
-`['--backoff', 'If GCP Cloud Logging API query limits are exceeded, retry with an increased delay between each query to try complete the query at a slower rate.', False]`|`None`|
-`['--delay', 'Number of seconds to wait between each GCP Cloud Logging query to avoid hitting API query limits', 0]`|`None`|
+`project_name`|`None`|Name of the GCP project to collect logs from.
+`instance_id`|`None`|Identifier for GCE instance (Instance ID).
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+`--backoff`|`False`|If GCP Cloud Logging API query limits are exceeded, retry with an increased delay between each query to try complete the query at a slower rate.
+`--delay`|`0`|Number of seconds to wait between each GCP Cloud Logging query to avoid hitting API query limits
 
 
 
@@ -663,15 +663,15 @@ Loads all GCE Cloud Audit Logs for all instances in a GCP project into Timesketc
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['project_name', 'Name of the GCP project to collect logs from.', None]`|`None`|
-`['start_date', 'Start date (yyyy-mm-ddTHH:MM:SSZ).', None]`|`None`|
-`['end_date', 'End date (yyyy-mm-ddTHH:MM:SSZ).', None]`|`None`|
-`['--incident_id', 'Incident ID (used for Timesketch description).', None]`|`None`|
-`['--sketch_id', 'Timesketch sketch to which the timeline should be added.', None]`|`None`|
-`['--token_password', 'Optional custom password to decrypt Timesketch credential file with.', '']`|`None`|
-`['--wait_for_timelines', 'Whether to wait for Timesketch to finish processing all timelines.', True]`|`None`|
-`['--backoff', 'If GCP Cloud Logging API query limits are exceeded, retry with an increased delay between each query to try complete the query at a slower rate.', False]`|`None`|
-`['--delay', 'Number of seconds to wait between each GCP Cloud Logging query to avoid hitting API query limits', 0]`|`None`|
+`project_name`|`None`|Name of the GCP project to collect logs from.
+`start_date`|`None`|Start date (yyyy-mm-ddTHH:MM:SSZ).
+`end_date`|`None`|End date (yyyy-mm-ddTHH:MM:SSZ).
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+`--backoff`|`False`|If GCP Cloud Logging API query limits are exceeded, retry with an increased delay between each query to try complete the query at a slower rate.
+`--delay`|`0`|Number of seconds to wait between each GCP Cloud Logging query to avoid hitting API query limits
 
 
 
@@ -702,24 +702,24 @@ This recipe will also start an analysis VM in the destination project with the a
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['source_project_name', 'Name of the project containing the instance / disks to copy.', None]`|`None`|
-`['analysis_project_name', 'Name of the project containing the Turbinia instance.', None]`|`None`|
-`['--turbinia_recipe', 'The Turbinia recipe name to use for evidence processing.', None]`|`None`|
-`['--turbinia_zone', 'The GCP zone the disk to process and Turbinia workers are in.', 'us-central1-f']`|`None`|
-`['--incident_id', 'Incident ID (used for Timesketch description and to label the VM with).', None]`|`None`|
-`['--sketch_id', 'Timesketch sketch to which the timeline should be added.', None]`|`None`|
-`['--token_password', 'Optional custom password to decrypt Timesketch credential file with.', '']`|`None`|
-`['--create_analysis_vm', 'Create an analysis VM in the destination project.', True]`|`None`|
-`['--wait_for_timelines', 'Whether to wait for Timesketch to finish processing all timelines.', True]`|`None`|
-`['--instances', 'Name of the instances to analyze.', None]`|`None`|
-`['--disks', 'Comma-separated list of disks to copy from the source GCP project (if `instance` not provided).', None]`|`None`|
-`['--all_disks', 'Copy all disks in the designated instance. Overrides disk_names if specified.', False]`|`None`|
-`['--stop_instances', 'Stop the designated instances after copying disks.', False]`|`None`|
-`['--cpu_cores', 'Number of CPU cores of the analysis VM.', 4]`|`None`|
-`['--boot_disk_size', 'The size of the analysis VM boot disk (in GB).', 50.0]`|`None`|
-`['--boot_disk_type', 'Disk type to use [pd-standard, pd-ssd]', 'pd-standard']`|`None`|
-`['--image_project', 'Name of the project where the analysis VM image is hosted.', 'ubuntu-os-cloud']`|`None`|
-`['--image_family', 'Name of the image to use to create the analysis VM.', 'ubuntu-1804-lts']`|`None`|
+`source_project_name`|`None`|Name of the project containing the instance / disks to copy.
+`analysis_project_name`|`None`|Name of the project containing the Turbinia instance.
+`--turbinia_recipe`|`None`|The Turbinia recipe name to use for evidence processing.
+`--turbinia_zone`|`'us-central1-f'`|The GCP zone the disk to process and Turbinia workers are in.
+`--incident_id`|`None`|Incident ID (used for Timesketch description and to label the VM with).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--create_analysis_vm`|`True`|Create an analysis VM in the destination project.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+`--instances`|`None`|Name of the instances to analyze.
+`--disks`|`None`|Comma-separated list of disks to copy from the source GCP project (if `instance` not provided).
+`--all_disks`|`False`|Copy all disks in the designated instance. Overrides disk_names if specified.
+`--stop_instances`|`False`|Stop the designated instances after copying disks.
+`--cpu_cores`|`4`|Number of CPU cores of the analysis VM.
+`--boot_disk_size`|`50.0`|The size of the analysis VM boot disk (in GB).
+`--boot_disk_type`|`'pd-standard'`|Disk type to use [pd-standard, pd-ssd]
+`--image_project`|`'ubuntu-os-cloud'`|Name of the project where the analysis VM image is hosted.
+`--image_family`|`'ubuntu-1804-lts'`|Name of the image to use to create the analysis VM.
 
 
 
@@ -746,14 +746,14 @@ This processes disks that are already in the project where Turbinia exists. If y
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['analysis_project_name', 'Name of GCP project the disk exists in.', None]`|`None`|
-`['turbinia_zone', 'The GCP zone the disk to process (and Turbinia workers) are in.', None]`|`None`|
-`['disk_names', 'Names of GCP persistent disks to process.', None]`|`None`|
-`['--incident_id', 'Incident ID (used for Timesketch description).', None]`|`None`|
-`['--sketch_id', 'Timesketch sketch to which the timeline should be added.', None]`|`None`|
-`['--token_password', 'Optional custom password to decrypt Timesketch credential file with.', '']`|`None`|
-`['--turbinia_recipe', 'The Turbinia recipe name to use for evidence processing.', None]`|`None`|
-`['--wait_for_timelines', 'Whether to wait for Timesketch to finish processing all timelines.', True]`|`None`|
+`analysis_project_name`|`None`|Name of GCP project the disk exists in.
+`turbinia_zone`|`None`|The GCP zone the disk to process (and Turbinia workers) are in.
+`disk_names`|`None`|Names of GCP persistent disks to process.
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--turbinia_recipe`|`None`|The Turbinia recipe name to use for evidence processing.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
 
 
 
@@ -781,19 +781,19 @@ Collect ForensicArtifacts from hosts using GRR.
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['hostnames', 'Comma-separated list of hostnames or GRR client IDs to process.', None]`|`None`|
-`['reason', 'Reason for collection.', None]`|`None`|
-`['keywords', 'Pipe-separated list of keywords to search for (e.g. key1|key2|key3.', None]`|`None`|
-`['--artifacts', 'Comma-separated list of artifacts to fetch (override default artifacts).', None]`|`None`|
-`['--extra_artifacts', 'Comma-separated list of artifacts to append to the default artifact list.', None]`|`None`|
-`['--use_raw_filesystem_access', 'Use raw disk access to fetch artifacts.', False]`|`None`|
-`['--approvers', 'Emails for GRR approval request.', None]`|`None`|
-`['--grr_server_url', 'GRR endpoint.', 'http://localhost:8000']`|`None`|
-`['--verify', 'Whether to verify the GRR TLS certificate.', True]`|`None`|
-`['--skip_offline_clients', 'Whether to skip clients that are offline.', False]`|`None`|
-`['--grr_username', 'GRR username.', 'admin']`|`None`|
-`['--grr_password', 'GRR password.', 'admin']`|`None`|
-`['--max_file_size', 'Maximum size of files to collect (in bytes).', 5368709120]`|`None`|
+`hostnames`|`None`|Comma-separated list of hostnames or GRR client IDs to process.
+`reason`|`None`|Reason for collection.
+`keywords`|`None`|Pipe-separated list of keywords to search for (e.g. key1|key2|key3.
+`--artifacts`|`None`|Comma-separated list of artifacts to fetch (override default artifacts).
+`--extra_artifacts`|`None`|Comma-separated list of artifacts to append to the default artifact list.
+`--use_raw_filesystem_access`|`False`|Use raw disk access to fetch artifacts.
+`--approvers`|`None`|Emails for GRR approval request.
+`--grr_server_url`|`'http://localhost:8000'`|GRR endpoint.
+`--verify`|`True`|Whether to verify the GRR TLS certificate.
+`--skip_offline_clients`|`False`|Whether to skip clients that are offline.
+`--grr_username`|`'admin'`|GRR username.
+`--grr_password`|`'admin'`|GRR password.
+`--max_file_size`|`5368709120`|Maximum size of files to collect (in bytes).
 
 
 
@@ -824,23 +824,23 @@ The default set of artifacts is defined in the GRRArtifactCollector module (see 
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['hostnames', 'Comma-separated list of hostnames or GRR client IDs to process.', None]`|`None`|
-`['reason', 'Reason for collection.', None]`|`None`|
-`['--artifacts', 'Comma-separated list of artifacts to fetch (override default artifacts).', None]`|`None`|
-`['--extra_artifacts', 'Comma-separated list of artifacts to append to the default artifact list.', None]`|`None`|
-`['--use_raw_filesystem_access', 'Use raw disk access to fetch artifacts.', False]`|`None`|
-`['--approvers', 'Emails for GRR approval request.', None]`|`None`|
-`['--sketch_id', 'Timesketch sketch to which the timeline should be added.', None]`|`None`|
-`['--wait_for_timelines', 'Whether to wait for Timesketch to finish processing all timelines.', True]`|`None`|
-`['--analyzers', 'Timesketch analyzers to run', None]`|`None`|
-`['--token_password', 'Optional custom password to decrypt Timesketch credential file with.', '']`|`None`|
-`['--incident_id', 'Incident ID (used for Timesketch description).', None]`|`None`|
-`['--grr_server_url', 'GRR endpoint.', 'http://localhost:8000']`|`None`|
-`['--verify', 'Whether to verify the GRR TLS certificate.', True]`|`None`|
-`['--skip_offline_clients', 'Whether to skip clients that are offline.', False]`|`None`|
-`['--grr_username', 'GRR username', 'admin']`|`None`|
-`['--grr_password', 'GRR password', 'admin']`|`None`|
-`['--max_file_size', 'Maximum size of files to collect (in bytes).', 5368709120]`|`None`|
+`hostnames`|`None`|Comma-separated list of hostnames or GRR client IDs to process.
+`reason`|`None`|Reason for collection.
+`--artifacts`|`None`|Comma-separated list of artifacts to fetch (override default artifacts).
+`--extra_artifacts`|`None`|Comma-separated list of artifacts to append to the default artifact list.
+`--use_raw_filesystem_access`|`False`|Use raw disk access to fetch artifacts.
+`--approvers`|`None`|Emails for GRR approval request.
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+`--analyzers`|`None`|Timesketch analyzers to run
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--grr_server_url`|`'http://localhost:8000'`|GRR endpoint.
+`--verify`|`True`|Whether to verify the GRR TLS certificate.
+`--skip_offline_clients`|`False`|Whether to skip clients that are offline.
+`--grr_username`|`'admin'`|GRR username
+`--grr_password`|`'admin'`|GRR password
+`--max_file_size`|`5368709120`|Maximum size of files to collect (in bytes).
 
 
 
@@ -865,19 +865,19 @@ Collects specific files from one or more GRR hosts. Files can be a glob pattern 
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['hostnames', 'Comma-separated list of hostnames or GRR client IDs to process.', None]`|`None`|
-`['reason', 'Reason for collection.', None]`|`None`|
-`['files', 'Comma-separated list of files to fetch (supports globs and GRR variable interpolation).', None]`|`None`|
-`['directory', 'Directory in which to export files.', None]`|`None`|
-`['--use_raw_filesystem_access', 'Use raw disk access to fetch artifacts.', False]`|`None`|
-`['--approvers', 'Emails for GRR approval request.', None]`|`None`|
-`['--verify', 'Whether to verify the GRR TLS certificate.', True]`|`None`|
-`['--skip_offline_clients', 'Whether to skip clients that are offline.', False]`|`None`|
-`['--action', 'String denoting action (download/hash/stat) to take', 'download']`|`None`|
-`['--grr_server_url', 'GRR endpoint', 'http://localhost:8000']`|`None`|
-`['--grr_username', 'GRR username', 'admin']`|`None`|
-`['--grr_password', 'GRR password', 'admin']`|`None`|
-`['--max_file_size', 'Maximum size of files to collect (in bytes).', 5368709120]`|`None`|
+`hostnames`|`None`|Comma-separated list of hostnames or GRR client IDs to process.
+`reason`|`None`|Reason for collection.
+`files`|`None`|Comma-separated list of files to fetch (supports globs and GRR variable interpolation).
+`directory`|`None`|Directory in which to export files.
+`--use_raw_filesystem_access`|`False`|Use raw disk access to fetch artifacts.
+`--approvers`|`None`|Emails for GRR approval request.
+`--verify`|`True`|Whether to verify the GRR TLS certificate.
+`--skip_offline_clients`|`False`|Whether to skip clients that are offline.
+`--action`|`'download'`|String denoting action (download/hash/stat) to take
+`--grr_server_url`|`'http://localhost:8000'`|GRR endpoint
+`--grr_username`|`'admin'`|GRR username
+`--grr_password`|`'admin'`|GRR password
+`--max_file_size`|`5368709120`|Maximum size of files to collect (in bytes).
 
 
 
@@ -902,16 +902,16 @@ Download the result of a GRR flow to the local filesystem. Flow IDs are unique *
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['hostnames', 'Hostname(s) to collect the flow from.', None]`|`None`|
-`['flow_ids', 'Flow ID(s) to download.', None]`|`None`|
-`['reason', 'Reason for collection.', None]`|`None`|
-`['directory', 'Directory in which to export files.', None]`|`None`|
-`['--approvers', 'Emails for GRR approval request.', None]`|`None`|
-`['--grr_server_url', 'GRR endpoint', 'http://localhost:8000']`|`None`|
-`['--verify', 'Whether to verify the GRR TLS certificate.', True]`|`None`|
-`['--skip_offline_clients', 'Whether to skip clients that are offline.', False]`|`None`|
-`['--grr_username', 'GRR username', 'admin']`|`None`|
-`['--grr_password', 'GRR password', 'admin']`|`None`|
+`hostnames`|`None`|Hostname(s) to collect the flow from.
+`flow_ids`|`None`|Flow ID(s) to download.
+`reason`|`None`|Reason for collection.
+`directory`|`None`|Directory in which to export files.
+`--approvers`|`None`|Emails for GRR approval request.
+`--grr_server_url`|`'http://localhost:8000'`|GRR endpoint
+`--verify`|`True`|Whether to verify the GRR TLS certificate.
+`--skip_offline_clients`|`False`|Whether to skip clients that are offline.
+`--grr_username`|`'admin'`|GRR username
+`--grr_password`|`'admin'`|GRR password
 
 
 
@@ -936,18 +936,18 @@ Starts a GRR artifact hunt and provides the Hunt ID to the user. Feed the Hunt I
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['artifacts', 'Comma-separated list of artifacts to hunt for.', None]`|`None`|
-`['reason', 'Reason for collection.', None]`|`None`|
-`['--use_raw_filesystem_access', 'Use raw disk access to fetch artifacts.', False]`|`None`|
-`['--approvers', 'Emails for GRR approval request.', None]`|`None`|
-`['--grr_server_url', 'GRR endpoint', 'http://localhost:8000']`|`None`|
-`['--verify', 'Whether to verify the GRR TLS certificate.', True]`|`None`|
-`['--grr_username', 'GRR username', 'admin']`|`None`|
-`['--grr_password', 'GRR password', 'admin']`|`None`|
-`['--max_file_size', 'Maximum size of files to collect (in bytes).', 5368709120]`|`None`|
-`['--match_mode', 'Match mode of the client rule set (ANY or ALL)', None]`|`None`|
-`['--client_operating_systems', 'Comma-separated list of client operating systems to filter hosts on (linux, osx, win).', None]`|`None`|
-`['--client_labels', 'Comma-separated list of client labels to filter GRR hosts on.', None]`|`None`|
+`artifacts`|`None`|Comma-separated list of artifacts to hunt for.
+`reason`|`None`|Reason for collection.
+`--use_raw_filesystem_access`|`False`|Use raw disk access to fetch artifacts.
+`--approvers`|`None`|Emails for GRR approval request.
+`--grr_server_url`|`'http://localhost:8000'`|GRR endpoint
+`--verify`|`True`|Whether to verify the GRR TLS certificate.
+`--grr_username`|`'admin'`|GRR username
+`--grr_password`|`'admin'`|GRR password
+`--max_file_size`|`5368709120`|Maximum size of files to collect (in bytes).
+`--match_mode`|`None`|Match mode of the client rule set (ANY or ALL)
+`--client_operating_systems`|`None`|Comma-separated list of client operating systems to filter hosts on (linux, osx, win).
+`--client_labels`|`None`|Comma-separated list of client labels to filter GRR hosts on.
 
 
 
@@ -974,17 +974,17 @@ Like in `grr_files_collect`, files can be globs and support variable interpolati
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['file_path_list', 'Comma-separated list of file paths to hunt for.', None]`|`None`|
-`['reason', 'Reason for collection.', None]`|`None`|
-`['--approvers', 'Emails for GRR approval request.', None]`|`None`|
-`['--grr_server_url', 'GRR endpoint', 'http://localhost:8000']`|`None`|
-`['--verify', 'Whether to verify the GRR TLS certificate.', True]`|`None`|
-`['--grr_username', 'GRR username', 'admin']`|`None`|
-`['--grr_password', 'GRR password', 'admin']`|`None`|
-`['--max_file_size', 'Maximum size of files to collect (in bytes).', 5368709120]`|`None`|
-`['--match_mode', 'Match mode of the client rule set (ANY or ALL)', None]`|`None`|
-`['--client_operating_systems', 'Comma-separated list of client operating systems to filter hosts on (linux, osx, win).', None]`|`None`|
-`['--client_labels', 'Comma-separated list of client labels to filter GRR hosts on.', None]`|`None`|
+`file_path_list`|`None`|Comma-separated list of file paths to hunt for.
+`reason`|`None`|Reason for collection.
+`--approvers`|`None`|Emails for GRR approval request.
+`--grr_server_url`|`'http://localhost:8000'`|GRR endpoint
+`--verify`|`True`|Whether to verify the GRR TLS certificate.
+`--grr_username`|`'admin'`|GRR username
+`--grr_password`|`'admin'`|GRR password
+`--max_file_size`|`5368709120`|Maximum size of files to collect (in bytes).
+`--match_mode`|`None`|Match mode of the client rule set (ANY or ALL)
+`--client_operating_systems`|`None`|Comma-separated list of client operating systems to filter hosts on (linux, osx, win).
+`--client_labels`|`None`|Comma-separated list of client labels to filter GRR hosts on.
 
 
 
@@ -1009,19 +1009,19 @@ Starts a GRR osquery hunt and provides the Hunt ID to the user.
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['reason', 'Reason for collection.', None]`|`None`|
-`['--osquery_query', 'Osquery query to hunt for.', None]`|`None`|
-`['--osquery_paths', 'Path(s) to text file containing one osquery query per line.', None]`|`None`|
-`['--timeout_millis', 'Osquery timeout in milliseconds', 300000]`|`None`|
-`['--ignore_stderr_errors', 'Ignore osquery stderr errors', False]`|`None`|
-`['--approvers', 'Emails for GRR approval request.', None]`|`None`|
-`['--grr_server_url', 'GRR endpoint', 'http://localhost:8000']`|`None`|
-`['--verify', 'Whether to verify the GRR TLS certificate.', True]`|`None`|
-`['--grr_username', 'GRR username', 'admin']`|`None`|
-`['--grr_password', 'GRR password', 'admin']`|`None`|
-`['--match_mode', 'Match mode of the client rule set (ANY or ALL)', None]`|`None`|
-`['--client_operating_systems', 'Comma-separated list of client operating systems to filter hosts on (linux, osx, win).', None]`|`None`|
-`['--client_labels', 'Comma-separated list of client labels to filter GRR hosts on.', None]`|`None`|
+`reason`|`None`|Reason for collection.
+`--osquery_query`|`None`|Osquery query to hunt for.
+`--osquery_paths`|`None`|Path(s) to text file containing one osquery query per line.
+`--timeout_millis`|`300000`|Osquery timeout in milliseconds
+`--ignore_stderr_errors`|`False`|Ignore osquery stderr errors
+`--approvers`|`None`|Emails for GRR approval request.
+`--grr_server_url`|`'http://localhost:8000'`|GRR endpoint
+`--verify`|`True`|Whether to verify the GRR TLS certificate.
+`--grr_username`|`'admin'`|GRR username
+`--grr_password`|`'admin'`|GRR password
+`--match_mode`|`None`|Match mode of the client rule set (ANY or ALL)
+`--client_operating_systems`|`None`|Comma-separated list of client operating systems to filter hosts on (linux, osx, win).
+`--client_labels`|`None`|Comma-separated list of client labels to filter GRR hosts on.
 
 
 
@@ -1050,16 +1050,16 @@ Download the results of a GRR hunt and process them.
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['hunt_id', 'ID of GRR Hunt results to fetch.', None]`|`None`|
-`['reason', 'Reason for exporting hunt (used for Timesketch description).', None]`|`None`|
-`['--sketch_id', 'Timesketch sketch to which the timeline should be added.', None]`|`None`|
-`['--token_password', 'Optional custom password to decrypt Timesketch credential file with.', '']`|`None`|
-`['--wait_for_timelines', 'Whether to wait for Timesketch to finish processing all timelines.', True]`|`None`|
-`['--approvers', 'Emails for GRR approval request.', None]`|`None`|
-`['--grr_server_url', 'GRR endpoint', 'http://localhost:8000']`|`None`|
-`['--verify', 'Whether to verify the GRR TLS certificate.', True]`|`None`|
-`['--grr_username', 'GRR username', 'admin']`|`None`|
-`['--grr_password', 'GRR password', 'admin']`|`None`|
+`hunt_id`|`None`|ID of GRR Hunt results to fetch.
+`reason`|`None`|Reason for exporting hunt (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+`--approvers`|`None`|Emails for GRR approval request.
+`--grr_server_url`|`'http://localhost:8000'`|GRR endpoint
+`--verify`|`True`|Whether to verify the GRR TLS certificate.
+`--grr_username`|`'admin'`|GRR username
+`--grr_password`|`'admin'`|GRR password
 
 
 
@@ -1084,19 +1084,19 @@ Runs osquery on GRR hosts and save any results to local CSV files.
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['reason', 'Reason for collection.', None]`|`None`|
-`['hostnames', 'Hostname(s) to collect the osquery flow from.', None]`|`None`|
-`['--osquery_query', 'Osquery query to hunt for.', None]`|`None`|
-`['--osquery_paths', 'Path(s) to text file containing one osquery query per line.', None]`|`None`|
-`['--timeout_millis', 'Osquery timeout in milliseconds', 300000]`|`None`|
-`['--ignore_stderr_errors', 'Ignore osquery stderr errors', False]`|`None`|
-`['--directory', 'Directory in which to export results.', None]`|`None`|
-`['--approvers', 'Emails for GRR approval request.', None]`|`None`|
-`['--grr_server_url', 'GRR endpoint', 'http://localhost:8000']`|`None`|
-`['--verify', 'Whether to verify the GRR TLS certificate.', True]`|`None`|
-`['--skip_offline_clients', 'Whether to skip clients that are offline.', False]`|`None`|
-`['--grr_username', 'GRR username', 'admin']`|`None`|
-`['--grr_password', 'GRR password', 'admin']`|`None`|
+`reason`|`None`|Reason for collection.
+`hostnames`|`None`|Hostname(s) to collect the osquery flow from.
+`--osquery_query`|`None`|Osquery query to hunt for.
+`--osquery_paths`|`None`|Path(s) to text file containing one osquery query per line.
+`--timeout_millis`|`300000`|Osquery timeout in milliseconds
+`--ignore_stderr_errors`|`False`|Ignore osquery stderr errors
+`--directory`|`None`|Directory in which to export results.
+`--approvers`|`None`|Emails for GRR approval request.
+`--grr_server_url`|`'http://localhost:8000'`|GRR endpoint
+`--verify`|`True`|Whether to verify the GRR TLS certificate.
+`--skip_offline_clients`|`False`|Whether to skip clients that are offline.
+`--grr_username`|`'admin'`|GRR username
+`--grr_password`|`'admin'`|GRR password
 
 
 
@@ -1121,18 +1121,18 @@ Uses the GRR TimelineFlow to generate a filesystem timeline and exports it to Ti
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['hostnames', 'Comma-separated list of hostnames or GRR client IDs to process.', None]`|`None`|
-`['root_path', 'Root path for timeline generation.', '/']`|`None`|
-`['reason', 'Reason for collection.', None]`|`None`|
-`['--skip_offline_clients', 'Whether to skip clients that are offline.', False]`|`None`|
-`['--approvers', 'Comma-separated list of usernames to ask for approval.', None]`|`None`|
-`['--sketch_id', 'Timesketch sketch to which the timeline should be added.', None]`|`None`|
-`['--grr_server_url', 'GRR endpoint.', 'http://localhost:8000']`|`None`|
-`['--token_password', 'Optional custom password to decrypt Timesketch credential file with.', '']`|`None`|
-`['--timesketch_quick', 'Skip waiting for analyzers to complete their run.', False]`|`None`|
-`['--wait_for_timelines', 'Whether to wait for Timesketch to finish processing all timelines.', True]`|`None`|
-`['--grr_username', 'GRR username.', 'admin']`|`None`|
-`['--grr_password', 'GRR password.', 'admin']`|`None`|
+`hostnames`|`None`|Comma-separated list of hostnames or GRR client IDs to process.
+`root_path`|`'/'`|Root path for timeline generation.
+`reason`|`None`|Reason for collection.
+`--skip_offline_clients`|`False`|Whether to skip clients that are offline.
+`--approvers`|`None`|Comma-separated list of usernames to ask for approval.
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--grr_server_url`|`'http://localhost:8000'`|GRR endpoint.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--timesketch_quick`|`False`|Skip waiting for analyzers to complete their run.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
+`--grr_username`|`'admin'`|GRR username.
+`--grr_password`|`'admin'`|GRR password.
 
 
 
@@ -1157,17 +1157,17 @@ Run Yara rules on hosts memory.
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['reason', 'Reason for collection.', None]`|`None`|
-`['hostnames', 'Hostname(s) to collect the flow from.', None]`|`None`|
-`['--yara_name_filter', 'Filter to filter Yara sigs by.', None]`|`None`|
-`['--api_key', 'API Key to the Yeti instance', None]`|`None`|
-`['--api_root', 'API root of the Yeti instance (e.g. http://localhost/api/)', 'http://localhost/api/']`|`None`|
-`['--approvers', 'Emails for GRR approval request.', None]`|`None`|
-`['--grr_server_url', 'GRR endpoint', 'http://localhost:8000']`|`None`|
-`['--verify', 'Whether to verify the GRR TLS certificate.', True]`|`None`|
-`['--skip_offline_clients', 'Whether to skip clients that are offline.', False]`|`None`|
-`['--grr_username', 'GRR username', 'admin']`|`None`|
-`['--grr_password', 'GRR password', 'demo']`|`None`|
+`reason`|`None`|Reason for collection.
+`hostnames`|`None`|Hostname(s) to collect the flow from.
+`--yara_name_filter`|`None`|Filter to filter Yara sigs by.
+`--api_key`|`None`|API Key to the Yeti instance
+`--api_root`|`'http://localhost/api/'`|API root of the Yeti instance (e.g. http://localhost/api/)
+`--approvers`|`None`|Emails for GRR approval request.
+`--grr_server_url`|`'http://localhost:8000'`|GRR endpoint
+`--verify`|`True`|Whether to verify the GRR TLS certificate.
+`--skip_offline_clients`|`False`|Whether to skip clients that are offline.
+`--grr_username`|`'admin'`|GRR username
+`--grr_password`|`'demo'`|GRR password
 
 
 
@@ -1192,13 +1192,13 @@ Collects data from google sheets and outputs them to Timesketch.
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['spreadsheet', 'ID or URL of the Google Sheet spreadsheet to collect data from.', None]`|`None`|
-`['--sheet_names', 'Comma-separated list sheet names to collect date from. If not set all sheets in the spreadsheet will be parsed.', []]`|`None`|
-`['--validate_columns', 'Set to True to check for mandatory columns required by Timesketch while extracting data. Set to False to ignore validation. Default is True.', True]`|`None`|
-`['--sketch_id', 'Sketch to which the timeline should be added', None]`|`None`|
-`['--token_password', 'Optional custom password to decrypt Timesketch credential file with', '']`|`None`|
-`['--incident_id', 'Incident ID (used for Timesketch description)', None]`|`None`|
-`['--wait_for_timelines', 'Whether to wait for timelines to finish processing.', True]`|`None`|
+`spreadsheet`|`None`|ID or URL of the Google Sheet spreadsheet to collect data from.
+`--sheet_names`|`[]`|Comma-separated list sheet names to collect date from. If not set all sheets in the spreadsheet will be parsed.
+`--validate_columns`|`True`|Set to True to check for mandatory columns required by Timesketch while extracting data. Set to False to ignore validation. Default is True.
+`--sketch_id`|`None`|Sketch to which the timeline should be added
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with
+`--incident_id`|`None`|Incident ID (used for Timesketch description)
+`--wait_for_timelines`|`True`|Whether to wait for timelines to finish processing.
 
 
 
@@ -1227,11 +1227,11 @@ Processes a list of file paths using Plaso and sends results to Timesketch.
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['paths', 'Comma-separated list of paths to process.', None]`|`None`|
-`['--incident_id', 'Incident ID (used for Timesketch description).', None]`|`None`|
-`['--sketch_id', 'Timesketch sketch to which the timeline should be added.', None]`|`None`|
-`['--token_password', 'Optional custom password to decrypt Timesketch credential file with.', '']`|`None`|
-`['--wait_for_timelines', 'Whether to wait for Timesketch to finish processing all timelines.', True]`|`None`|
+`paths`|`None`|Comma-separated list of paths to process.
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
 
 
 
@@ -1256,12 +1256,12 @@ Uploads a CSV or Plaso file to Timesketch.
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['files', 'Comma-separated list of paths to CSV files or Plaso storage files.', None]`|`None`|
-`['--analyzers', 'Timesketch analyzers to run.', None]`|`None`|
-`['--sketch_id', 'Timesketch sketch to which the timeline should be added.', None]`|`None`|
-`['--token_password', 'Optional custom password to decrypt Timesketch credential file with.', '']`|`None`|
-`['--incident_id', 'Incident ID (used for Timesketch description).', None]`|`None`|
-`['--wait_for_timelines', 'Whether to wait for Timesketch to finish processing all timelines.', True]`|`None`|
+`files`|`None`|Comma-separated list of paths to CSV files or Plaso storage files.
+`--analyzers`|`None`|Timesketch analyzers to run.
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
 
 
 
@@ -1286,14 +1286,14 @@ Uploads arbitrary files to Turbinia for processing. The recipe will wait for Tur
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['files', 'Paths to process.', None]`|`None`|
-`['--turbinia_recipe', 'The Turbinia recipe name to use for evidence processing.', None]`|`None`|
-`['--destination_turbinia_dir', 'Destination path in Turbinia host to write the files to.', None]`|`None`|
-`['--hostname', 'Remote host.', None]`|`None`|
-`['--directory', 'Directory in which to copy and compress files.', None]`|`None`|
-`['--turbinia_config', 'Turbinia config file to use.', None]`|`None`|
-`['--local_turbinia_results', 'Directory where Turbinia results will be downloaded to.', None]`|`None`|
-`['--sketch_id', 'Timesketch sketch ID.', None]`|`None`|
+`files`|`None`|Paths to process.
+`--turbinia_recipe`|`None`|The Turbinia recipe name to use for evidence processing.
+`--destination_turbinia_dir`|`None`|Destination path in Turbinia host to write the files to.
+`--hostname`|`None`|Remote host.
+`--directory`|`None`|Directory in which to copy and compress files.
+`--turbinia_config`|`None`|Turbinia config file to use.
+`--local_turbinia_results`|`None`|Directory where Turbinia results will be downloaded to.
+`--sketch_id`|`None`|Timesketch sketch ID.
 
 
 
@@ -1320,15 +1320,15 @@ The following analyzers will run on the processed timeline: `browser_search,brow
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['files', 'Comma-separated list of paths to CSV files or Plaso storage files.', None]`|`None`|
-`['--sketch_id', 'Timesketch sketch to which the timeline should be added.', None]`|`None`|
-`['--token_password', 'Optional custom password to decrypt Timesketch credential file with.', '']`|`None`|
-`['--incident_id', 'Incident ID (used for Timesketch description).', None]`|`None`|
-`['--wait_for_analyzers', 'Wait for analyzers until they complete their run, if set to False the TS enhancer will be skipped.', True]`|`None`|
-`['--timesketch_include_stories', 'Include story dumps in reports.', False]`|`None`|
-`['--searches_to_skip', 'A comma separated list of saved searches that should not be uploaded.', None]`|`None`|
-`['--analyzer_max_checks', 'Number of wait cycles (per cycle is 3 seconds) before terminating wait for analyzers to complete.', 0]`|`None`|
-`['--aggregations_to_skip', 'A comma separated list of aggregation names that should not be uploaded.', None]`|`None`|
+`files`|`None`|Comma-separated list of paths to CSV files or Plaso storage files.
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--wait_for_analyzers`|`True`|Wait for analyzers until they complete their run, if set to False the TS enhancer will be skipped.
+`--timesketch_include_stories`|`False`|Include story dumps in reports.
+`--searches_to_skip`|`None`|A comma separated list of saved searches that should not be uploaded.
+`--analyzer_max_checks`|`0`|Number of wait cycles (per cycle is 3 seconds) before terminating wait for analyzers to complete.
+`--aggregations_to_skip`|`None`|A comma separated list of aggregation names that should not be uploaded.
 
 
 
@@ -1353,9 +1353,9 @@ Downloads the EVTX files from VirusTotal sandbox run for a specific hash, proces
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['hashes', 'Comma-separated list of hashes to process.', None]`|`None`|
-`['directory', 'Directory in which to export files.', None]`|`None`|
-`['--vt_api_key', 'Virustotal API key', 'admin']`|`None`|
+`hashes`|`None`|Comma-separated list of hashes to process.
+`directory`|`None`|Directory in which to export files.
+`--vt_api_key`|`'admin'`|Virustotal API key
 
 
 
@@ -1380,13 +1380,13 @@ Downloads the EVTX file generated by VirusTotal during the sandbox runs for a sp
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['hashes', 'Comma-separated list of hashes to process.', None]`|`None`|
-`['directory', 'Directory in which to export files.', None]`|`None`|
-`['--vt_api_key', 'Virustotal API key', 'admin']`|`None`|
-`['--incident_id', 'Incident ID (used for Timesketch description).', None]`|`None`|
-`['--sketch_id', 'Timesketch sketch to which the timeline should be added.', None]`|`None`|
-`['--token_password', 'Optional custom password to decrypt Timesketch credential file with', '']`|`None`|
-`['--wait_for_timelines', 'Whether to wait for Timesketch to finish processing all timelines.', True]`|`None`|
+`hashes`|`None`|Comma-separated list of hashes to process.
+`directory`|`None`|Directory in which to export files.
+`--vt_api_key`|`'admin'`|Virustotal API key
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
 
 
 
@@ -1411,9 +1411,9 @@ Downloads the PCAP files generated from VirusTotal sandbox's run for a specific 
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['hashes', 'Comma-separated list of hashes to process.', None]`|`None`|
-`['directory', 'Directory in which to export files.', None]`|`None`|
-`['--vt_api_key', 'Virustotal API key', 'admin']`|`None`|
+`hashes`|`None`|Comma-separated list of hashes to process.
+`directory`|`None`|Directory in which to export files.
+`--vt_api_key`|`'admin'`|Virustotal API key
 
 
 
@@ -1442,11 +1442,11 @@ For filters, see https://developers.google.com/admin-sdk/reports/reference/rest/
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['application_name', 'Name of application to to collect logs for. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#ApplicationName for a list of possible values.', None]`|`None`|
-`['--user', 'email address of the user to query logs for', 'all']`|`None`|
-`['--start_time', 'Start time (yyyy-mm-ddTHH:MM:SSZ).', None]`|`None`|
-`['--end_time', 'End time (yyyy-mm-ddTHH:MM:SSZ).', None]`|`None`|
-`['--filter_expression', 'Filter expression to use to query Workspace logs. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list.', '']`|`None`|
+`application_name`|`None`|Name of application to to collect logs for. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#ApplicationName for a list of possible values.
+`--user`|`'all'`|email address of the user to query logs for
+`--start_time`|`None`|Start time (yyyy-mm-ddTHH:MM:SSZ).
+`--end_time`|`None`|End time (yyyy-mm-ddTHH:MM:SSZ).
+`--filter_expression`|`''`|Filter expression to use to query Workspace logs. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list.
 
 
 
@@ -1471,13 +1471,13 @@ Collects Google Workspace audit records for a Google Meet and adds them to Times
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['meeting_id', "ID for the Meeting to look up. (Without the '-' delimiter)", None]`|`None`|
-`['--start_time', 'Start time (yyyy-mm-ddTHH:MM:SSZ).', None]`|`None`|
-`['--end_time', 'End time (yyyy-mm-ddTHH:MM:SSZ).', None]`|`None`|
-`['--incident_id', 'Incident ID (used for Timesketch description).', None]`|`None`|
-`['--sketch_id', 'Timesketch sketch to which the timeline should be added.', None]`|`None`|
-`['--token_password', 'Optional custom password to decrypt Timesketch credential file with.', '']`|`None`|
-`['--wait_for_timelines', 'Whether to wait for Timesketch to finish processing all timelines.', True]`|`None`|
+`meeting_id`|`None`|ID for the Meeting to look up. (Without the '-' delimiter)
+`--start_time`|`None`|Start time (yyyy-mm-ddTHH:MM:SSZ).
+`--end_time`|`None`|End time (yyyy-mm-ddTHH:MM:SSZ).
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
 
 
 
@@ -1504,14 +1504,14 @@ Collects logs for the following apps: `Login`, `Drive`, `Token`, `Chrome`, `CAA`
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['user', 'email address of the user to query logs for', '']`|`None`|
-`['--start_time', 'Start time (yyyy-mm-ddTHH:MM:SSZ).', None]`|`None`|
-`['--end_time', 'End time (yyyy-mm-ddTHH:MM:SSZ).', None]`|`None`|
-`['--filter_expression', 'Filter expression to use to query Workspace logs. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list', '']`|`None`|
-`['--incident_id', 'Incident ID (used for Timesketch description).', None]`|`None`|
-`['--sketch_id', 'Timesketch sketch to which the timeline should be added.', None]`|`None`|
-`['--token_password', 'Optional custom password to decrypt Timesketch credential file with.', '']`|`None`|
-`['--wait_for_timelines', 'Whether to wait for Timesketch to finish processing all timelines.', True]`|`None`|
+`user`|`''`|email address of the user to query logs for
+`--start_time`|`None`|Start time (yyyy-mm-ddTHH:MM:SSZ).
+`--end_time`|`None`|End time (yyyy-mm-ddTHH:MM:SSZ).
+`--filter_expression`|`''`|Filter expression to use to query Workspace logs. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
 
 
 
@@ -1536,14 +1536,14 @@ Collects Drive records for a Workspace user and adds them to Timesketch.
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['user', 'email address of the user to query logs for', '']`|`None`|
-`['--start_time', 'Start time (yyyy-mm-ddTHH:MM:SSZ).', None]`|`None`|
-`['--end_time', 'End time (yyyy-mm-ddTHH:MM:SSZ).', None]`|`None`|
-`['--filter_expression', 'Filter expression to use to query Workspace logs. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list', '']`|`None`|
-`['--incident_id', 'Incident ID (used for Timesketch description).', None]`|`None`|
-`['--sketch_id', 'Timesketch sketch to which the timeline should be added.', None]`|`None`|
-`['--token_password', 'Optional custom password to decrypt Timesketch credential file with.', '']`|`None`|
-`['--wait_for_timelines', 'Whether to wait for Timesketch to finish processing all timelines.', True]`|`None`|
+`user`|`''`|email address of the user to query logs for
+`--start_time`|`None`|Start time (yyyy-mm-ddTHH:MM:SSZ).
+`--end_time`|`None`|End time (yyyy-mm-ddTHH:MM:SSZ).
+`--filter_expression`|`''`|Filter expression to use to query Workspace logs. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
 
 
 
@@ -1568,14 +1568,14 @@ Collects login records for a Workspace user and adds them to Timesketch.
 
 Parameter|Default value|Description
 ---------|-------------|-----------
-`['user', 'email address of the user to query logs for', '']`|`None`|
-`['--start_time', 'Start time (yyyy-mm-ddTHH:MM:SSZ).', None]`|`None`|
-`['--end_time', 'End time (yyyy-mm-ddTHH:MM:SSZ).', None]`|`None`|
-`['--filter_expression', 'Filter expression to use to query Workspace logs. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list', '']`|`None`|
-`['--incident_id', 'Incident ID (used for Timesketch description).', None]`|`None`|
-`['--sketch_id', 'Timesketch sketch to which the timeline should be added.', None]`|`None`|
-`['--token_password', 'Optional custom password to decrypt Timesketch credential file with.', '']`|`None`|
-`['--wait_for_timelines', 'Whether to wait for Timesketch to finish processing all timelines.', True]`|`None`|
+`user`|`''`|email address of the user to query logs for
+`--start_time`|`None`|Start time (yyyy-mm-ddTHH:MM:SSZ).
+`--end_time`|`None`|End time (yyyy-mm-ddTHH:MM:SSZ).
+`--filter_expression`|`''`|Filter expression to use to query Workspace logs. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list
+`--incident_id`|`None`|Incident ID (used for Timesketch description).
+`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
+`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
+`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
 
 
 
