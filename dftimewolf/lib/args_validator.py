@@ -4,7 +4,7 @@ import abc
 import ipaddress
 import re
 
-from typing import Any, Type, Dict, Optional
+from typing import Any, Dict, Optional
 
 from dftimewolf.lib import errors
 
@@ -30,7 +30,7 @@ class AbstractValidator(abc.ABC):
 class CommaSeparatedValidator(AbstractValidator):
   """Subclass of AbstractValidator that allows for comma separated strings.
 
-  Subclasses that override this shoudl implement ValidateSingle instead of
+  Subclasses that override this should implement ValidateSingle instead of
   Validate."""
 
   def Validate(self,
