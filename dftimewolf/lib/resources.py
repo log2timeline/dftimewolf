@@ -11,6 +11,7 @@ class RecipeArgs:
   switch: str = ''
   help_text: str = ''
   default: Any = None
+  format: Optional[Dict[str, Any]] = None
 
 
 class Recipe(object):
@@ -37,7 +38,7 @@ class Recipe(object):
           the recipe.
     """
     super(Recipe, self).__init__()
-    self.args = args
+    self.args: List[RecipeArgs] = args
     self.contents = contents
     self.name = contents['name']  # type: str
     self.description = description
