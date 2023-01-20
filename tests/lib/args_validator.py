@@ -23,7 +23,7 @@ class DefaultValidatorTest(unittest.TestCase):
     self.validator.Validate('operand', {})
 
 
-# pylint: disable=abstract-class-instantiated,line-too-long
+# pylint: disable=abstract-class-instantiated
 # pytype: disable=not-instantiable
 class CommaSeparatedValidatorTester(unittest.TestCase):
   """Tests CommaSeparatedValidator."""
@@ -37,33 +37,43 @@ class CommaSeparatedValidatorTester(unittest.TestCase):
     args_validator.CommaSeparatedValidator.__abstractmethods__=set()
 
     # pylint: disable=unused-variable
-    with mock.patch.object(args_validator.CommaSeparatedValidator, '__init__', return_value=None) as mock_init:
+    with mock.patch.object(args_validator.CommaSeparatedValidator,
+                           '__init__',
+                           return_value=None) as mock_init:
       validator = args_validator.CommaSeparatedValidator()
       mock_init.assert_called_once()
     # pylint: enable=unused-variable
 
-  @mock.patch.object(args_validator.CommaSeparatedValidator, '__init__', return_value=None)
+  @mock.patch.object(args_validator.CommaSeparatedValidator,
+                     '__init__',
+                     return_value=None)
   def test_Validate(self, _):
     """Tests validation."""
     args_validator.CommaSeparatedValidator.__abstractmethods__=set()
 
-    with mock.patch.object(args_validator.CommaSeparatedValidator, 'ValidateSingle', return_value=None) as mock_validatesingle:
+    with mock.patch.object(args_validator.CommaSeparatedValidator,
+                           'ValidateSingle',
+                           return_value=None) as mock_validatesingle:
       validator = args_validator.CommaSeparatedValidator()
       validator.Validate('one,two,three', {'comma_separated': True})
       self.assertEqual(mock_validatesingle.call_count, 3)
 
-    with mock.patch.object(args_validator.CommaSeparatedValidator, 'ValidateSingle', return_value=None) as mock_validatesingle:
+    with mock.patch.object(args_validator.CommaSeparatedValidator,
+                           'ValidateSingle',
+                           return_value=None) as mock_validatesingle:
       validator = args_validator.CommaSeparatedValidator()
       validator.Validate('one,two,three', {'comma_separated': False})
       self.assertEqual(mock_validatesingle.call_count, 1)
 
-    with mock.patch.object(args_validator.CommaSeparatedValidator, 'ValidateSingle', return_value=None):
+    with mock.patch.object(args_validator.CommaSeparatedValidator,
+                           'ValidateSingle',
+                           return_value=None):
       with self.assertRaisesRegex(
           errors.RecipeArgsValidatorError,
           'Missing validator parameter: comma_separated'):
         validator = args_validator.CommaSeparatedValidator()
         validator.Validate('one,two,three', {})
-# pylint: enable=abstract-class-instantiated,line-too-long
+# pylint: enable=abstract-class-instantiated
 # pytype: enable=not-instantiable
 
 
@@ -87,7 +97,7 @@ class AWSRegionValidatorTest(unittest.TestCase):
 
   def test_ValidateFailure(self):
     """Tests invalid values correctly throw an exeption."""
-    regions = ['nope', '123456']
+    regions = ['invalid', '123456']
 
     for r in regions:
       with self.assertRaisesRegex(
@@ -146,7 +156,7 @@ class RegexValidatorTest(unittest.TestCase):
     params = {'comma_separated': True, 'regex': '.?bcdef.?'}
     with self.assertRaisesRegex(
         errors.RecipeArgsValidatorError,
-        '"tuvwxy" does not match regex \/\.\?bcdef\.\?\/'):
+        r'"tuvwxy" does not match regex \/\.\?bcdef\.\?\/'):
       self.validator.Validate('tuvwxy', params)
 
   def test_RequiredParam(self):
@@ -187,6 +197,7 @@ class SubnetValidatorTest(unittest.TestCase):
         self.validator.Validate(value, params)
 
 
+# pylint: disable=protected-access
 class ValidatorManagerTest(unittest.TestCase):
   """Tests the validatorManager class."""
 
