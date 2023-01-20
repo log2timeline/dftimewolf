@@ -7,6 +7,8 @@ import sys
 import json
 import graphviz
 
+from dftimewolf.lib import resources
+
 # These are the first strings that will be generated in the file.
 HEADER = """
 # Recipe list
@@ -85,8 +87,10 @@ def generate_args_description(recipe):
   formatted_string = 'Parameter|Default value|Description\n'
   formatted_string += '---------|-------------|-----------\n'
   for arg in args:
-    flag, description, default = arg
-    formatted_string += f'`{flag}`|`{repr(default)}`|{description}\n'
+    recipe_args = resources.RecipeArgs(arg)
+    formatted_string += (f'`{recipe_args.switch}`|'
+                         f'`{repr(recipe_args.default)}`|'
+                         f'{recipe_args.help_text}\n')
   return formatted_string + '\n\n'
 
 
