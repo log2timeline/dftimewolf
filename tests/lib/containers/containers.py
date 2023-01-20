@@ -136,15 +136,16 @@ class OsqueryResultDataTest(unittest.TestCase):
     self.assertEqual(attribute_names, expected_attribute_names)
 
 class TicketAttributeTest(unittest.TestCase):
-
+  """Tests for the TicketAttribute attribute container."""
   def TestEquality(self):
     """Tests that the equality operator works as intended."""
     ticket_attribute_container_1 = containers.TicketAttribute(
-      type='type1', name='name1', value='value1')
+      type_='type1', name='name1', value='value1')
     ticket_attribute_container_2 = containers.TicketAttribute(
-      type='type1', name='name2', value='value1')
+      type_='type1', name='name2', value='value1')
 
-    self.assertNotEqual(ticket_attribute_container_1, ticket_attribute_container_2)
+    self.assertNotEqual(
+      ticket_attribute_container_1, ticket_attribute_container_2)
 
     ticket_attribute_container_2.name = 'name1'
 
