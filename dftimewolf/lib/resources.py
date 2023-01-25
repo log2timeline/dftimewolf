@@ -11,7 +11,7 @@ class RecipeArgs:
   switch: str = ''
   help_text: str = ''
   default: Any = None
-  format: Optional[Dict[str, Any]] = None
+  format: Dict[str, Any] = None  # type: ignore
 
 
 class Recipe(object):
