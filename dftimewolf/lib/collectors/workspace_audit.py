@@ -141,21 +141,24 @@ class WorkspaceAuditCollector(module.BaseModule):
     self._filter_expression = filter_expression
     self._user_key = user_key
 
-    if not (RE_TIMESTAMP.match(start_time) and RE_TIMESTAMP.match(end_time)):
-      self.ModuleError(
-          'Invalid timestamp format. Please use YYYY-MM-DDTHH:MM:SSZ',
+    for time in [start_time, end_time]:
+      if time and RE_TIMESTAMP.match(time):
+        self.ModuleError(
+          'Invalid timestamp format. Please use YYYY-MM-DDTHH:MM:SSZ.'
+          f' You provided "{time}"',
           critical=True)
 
     self._end_time = end_time
     self._start_time = start_time
 
-    now = datetime.datetime.now(tz=datetime.timezone.utc)
-    start_datetime = datetime.datetime.fromisoformat(
-      start_time.replace('Z', '+00:00'))
-    if start_datetime < now - datetime.timedelta(days=180):
-      self.ModuleError(
-          'Maximum gWorkspace retention is 6 months. '
-          'Please choose a more recent start date.', critical=True)
+    if start_time:
+      now = datetime.datetime.now(tz=datetime.timezone.utc)
+      start_datetime = datetime.datetime.fromisoformat(
+        start_time.replace('Z', '+00:00'))
+      if start_datetime < now - datetime.timedelta(days=180):
+        self.ModuleError(
+            'Maximum gWorkspace retention is 6 months. '
+            'Please choose a more recent start date.', critical=True)
 
   def Process(self) -> None:
     """Copies audit logs from a Google Workspace log."""

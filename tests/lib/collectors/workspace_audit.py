@@ -18,7 +18,8 @@ class WorkspaceAuditCollectorTest(unittest.TestCase):
 
   def setUp(self):
     test_state = state.DFTimewolfState(config.Config)
-    self.ws_collector = workspace_audit.WorkspaceAuditCollector(test_state, name='test')
+    self.ws_collector = workspace_audit.WorkspaceAuditCollector(
+      test_state, name='test')
 
   def testInitialization(self):
     """Tests that the collector can be initialized."""
@@ -41,7 +42,7 @@ class WorkspaceAuditCollectorTest(unittest.TestCase):
         application_name='test',
         filter_expression='test',
         user_key='test',
-        start_time='2022-01-01T00:00:00Z',  # This is longer than 6mo before 2023-01-01
+        start_time='2022-01-01T00:00:00Z',  # This is > 6mo before 2023-01-01
         end_time='2023-01-01T00:00:00Z',
       )
       self.assertEqual(
@@ -60,7 +61,8 @@ class WorkspaceAuditCollectorTest(unittest.TestCase):
       )
       self.assertEqual(
         error.exception.message,
-        'Invalid timestamp format. Please use YYYY-MM-DDTHH:MM:SSZ')
+        'Invalid timestamp format. Please use YYYY-MM-DDTHH:MM:SSZ. '
+        'You provided "2022-01-01 00:00:00"')
 
     # Assert that setup with recent date works as expected.
     self.ws_collector.SetUp(
