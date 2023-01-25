@@ -12,9 +12,8 @@ from dftimewolf.lib import errors
 class AbstractValidator(abc.ABC):
   """Base class for validator objects."""
 
-  name: str = None  # type: ignore
+  VALIDATOR_NAME: str = None  # type: ignore
 
-  @abc.abstractmethod
   def __init__(self) -> None:
     """Initialise."""
 
@@ -24,7 +23,17 @@ class AbstractValidator(abc.ABC):
     """Validate the parameter.
 
     Subclasses that override this should raise errors.RecipeArgsValidatorError
-    on validation failures, with a string describing the problem."""
+    on validation failures, with a message describing the problem.
+
+    Args:
+      operand: The argument value to validate.
+      validator_params: Any extra fields to configure the validator. These come
+        from the recipe json.
+
+    Raises:
+      errors.RecipeArgsValidatorError: If the arguments fail validation, either
+          from invalid validator name or config, or from an invalid argument.
+    """
 
 
 class CommaSeparatedValidator(AbstractValidator):
@@ -37,7 +46,17 @@ class CommaSeparatedValidator(AbstractValidator):
                operand: str,
                validator_params: Dict[str, Any]) -> None:
     """Split the string by commas if validator_params['comma_separated'] == True
-    and validate each component in ValidateSingle."""
+    and validate each component in ValidateSingle.
+
+    Args:
+      operand: The argument value to validate.
+      validator_params: Any extra fields to configure the validator. These come
+        from the recipe json and must include 'comma_separated': True or False.
+
+    Raises:
+      errors.RecipeArgsValidatorError: If the arguments fail validation, either
+          from invalid validator name or config, or from an invalid argument.
+    """
 
     if 'comma_separated' not in validator_params:
       raise errors.RecipeArgsValidatorError(
@@ -55,16 +74,23 @@ class CommaSeparatedValidator(AbstractValidator):
   @abc.abstractmethod
   def ValidateSingle(
       self, operand: str, validator_params: Optional[Dict[str, Any]]) -> None:
-    """Validate a single operand from a comma separated list."""
+    """Validate a single operand from a comma separated list.
+
+    Args:
+      operand: The argument value to validate.
+      validator_params: Any extra fields to configure the validator. These come
+        from the recipe json.
+
+    Raises:
+      errors.RecipeArgsValidatorError: If the arguments fail validation, either
+          from invalid validator name or config, or from an invalid argument.
+    """
 
 
 class DefaultValidator(AbstractValidator):
   """The default validator always returns true."""
 
-  def __init__(self) -> None:
-    """Initialise."""
-    super().__init__()
-    self.name = 'default'
+  VALIDATOR_NAME = 'default'
 
   def Validate(self,
                operand: Any,
@@ -76,10 +102,14 @@ class AWSRegionValidator(AbstractValidator):
   """Validates a correct AWS region."""
 
   # pylint: disable=line-too-long
-  # Source: curl -s https://ip-ranges.amazonaws.com/ip-ranges.json | jq -r '.prefixes[] | select(.service == "EC2") | .region' ip-ranges.json  | sort | uniq
+  # Source:
+  #   curl -s https://ip-ranges.amazonaws.com/ip-ranges.json | \
+  #   jq -r '.prefixes[] | select(.service == "EC2") | .region' ip-ranges.json \
+  #   | sort | uniq
   # Fetched 2023-01-15
   # pylint: enable=line-too-long
-  _regions = [
+  # TODO - Fetch at runtime?
+  _regions = {
     'af-south-1', 'ap-east-1', 'ap-northeast-1', 'ap-northeast-2',
     'ap-northeast-3', 'ap-south-1', 'ap-south-2', 'ap-southeast-1',
     'ap-southeast-2', 'ap-southeast-3', 'ap-southeast-4', 'ap-southeast-6',
@@ -88,17 +118,21 @@ class AWSRegionValidator(AbstractValidator):
     'eu-west-2', 'eu-west-3', 'il-central-1', 'me-central-1', 'me-south-1',
     'sa-east-1', 'us-east-1', 'us-east-2', 'us-gov-east-1', 'us-gov-west-1',
     'us-west-1', 'us-west-2'
-  ]
-
-  def __init__(self) -> None:
-    """Initialise."""
-    super().__init__()
-    self.name = 'aws_region'
+  }
+  VALIDATOR_NAME = 'aws_region'
 
   def Validate(self,
                operand: Any,
                validator_params: Dict[str, Any]) -> None:
-    """Validate operand is a valid AWS region."""
+    """Validate operand is a valid AWS region.
+
+    Args:
+      operand: The argument value to validate.
+      validator_params: Unused for this validator.
+
+    Raises:
+      errors.RecipeArgsValidatorError: If operand is not a valid AWS region.
+    """
     if operand not in self._regions:
       raise errors.RecipeArgsValidatorError('Invalid AWS Region name')
 
@@ -108,7 +142,8 @@ class GCPZoneValidator(AbstractValidator):
 
   # Source: https://cloud.google.com/compute/docs/regions-zones/
   # Fetched 2023-01-13
-  _zones = [
+  # TODO - Fetch at runtime?
+  _zones = {
     'asia-east1-a', 'asia-east1-b', 'asia-east1-c', 'asia-east2-a',
     'asia-east2-b', 'asia-east2-c', 'asia-northeast1-a', 'asia-northeast1-b',
     'asia-northeast1-c', 'asia-northeast2-a', 'asia-northeast2-b',
@@ -138,17 +173,22 @@ class GCPZoneValidator(AbstractValidator):
     'us-east4-b', 'us-east4-c', 'us-east5-a', 'us-east5-b', 'us-east5-c',
     'us-south1-a', 'us-south1-b', 'us-south1-c', 'us-west1-a', 'us-west1-b',
     'us-west1-c', 'us-west2-a', 'us-west2-b', 'us-west2-c', 'us-west3-a',
-    'us-west3-b', 'us-west3-c', 'us-west4-a', 'us-west4-b', 'us-west4-c']
-
-  def __init__(self) -> None:
-    """Initialise."""
-    super().__init__()
-    self.name = 'gcp_zone'
+    'us-west3-b', 'us-west3-c', 'us-west4-a', 'us-west4-b', 'us-west4-c'
+  }
+  VALIDATOR_NAME = 'gcp_zone'
 
   def Validate(self,
                operand: Any,
                validator_params: Optional[Dict[str, Any]]) -> None:
-    """Validate that operand is a valid GCP zone."""
+    """Validate that operand is a valid GCP zone.
+
+    Args:
+      operand: The argument value to validate.
+      validator_params: Unused for this validator.
+
+    Raises:
+      errors.RecipeArgsValidatorError: If operand is not a valid GCP Zone.
+    """
     if operand not in self._zones:
       raise errors.RecipeArgsValidatorError('Invalid GCP zone name')
 
@@ -156,15 +196,22 @@ class GCPZoneValidator(AbstractValidator):
 class RegexValidator(CommaSeparatedValidator):
   """Validates a string according to a regular expression."""
 
-  def __init__(self) -> None:
-    """Initialise."""
-    super().__init__()
-    self.name = 'regex'
+  VALIDATOR_NAME = 'regex'
 
   def ValidateSingle(self,
                      operand: str,
                      validator_params: Dict[str, Any]) -> None:
-    """Validate a string according to a regular expression."""
+    """Validate a string according to a regular expression.
+
+    Args:
+      operand: The argument value to validate.
+      validator_params: Validator parameters from the json recipe. Must include
+        'regex'.
+
+    Raises:
+      errors.RecipeArgsValidatorError: Raised on validator config errors, or if
+        argument fails validation.
+    """
     if 'regex' not in validator_params:
       raise errors.RecipeArgsValidatorError(
           'Missing validator parameter: regex')
@@ -177,15 +224,22 @@ class RegexValidator(CommaSeparatedValidator):
 
 class SubnetValidator(CommaSeparatedValidator):
   """Validates a subnet."""
-  def __init__(self) -> None:
-    """Initialise."""
-    super().__init__()
-    self.name = 'subnet'
+
+  VALIDATOR_NAME = 'subnet'
 
   def ValidateSingle(self,
                      operand: str,
                      validator_params: Optional[Dict[str, Any]]) -> None:
-    """Validate that operand is a valid subnet string."""
+    """Validate that operand is a valid subnet string.
+
+    Args:
+      operand: The argument value to validate.
+      validator_params: Unused for this validator.
+
+    Raises:
+      errors.RecipeArgsValidatorError: Raised on validator config errors, or if
+        argument fails validation.
+    """
     try:
       ipaddress.ip_network(operand)
     except ValueError:
@@ -206,13 +260,27 @@ class ValidatorManager:
     self.RegisterValidator(SubnetValidator())
 
   def RegisterValidator(self, validator: AbstractValidator) -> None:
-    """Register a validator class for usage."""
-    self._validators[validator.name] = validator
+    """Register a validator class for usage.
+
+    Args:
+      validator: The validator class to register for usage.
+    """
+    self._validators[validator.VALIDATOR_NAME] = validator
 
   def Validate(self,
                operand: Any,
                validator_params: Optional[Dict[str, Any]]=None) -> None:
-    """Validate a operand."""
+    """Validate a operand.
+
+    Args:
+      operand: The argument value to validate.
+      validator_params: Validator parameters from the json recipe. Must include
+        'regex'.
+
+    Raises:
+      errors.RecipeArgsValidatorError: Raised on validator config errors, or if
+        argument fails validation.
+    """
     if validator_params is None:
       validator = self._default_validator
     else:

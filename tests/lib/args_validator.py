@@ -16,7 +16,7 @@ class DefaultValidatorTest(unittest.TestCase):
 
   def test_Init(self):
     """Tests initialisation."""
-    self.assertEqual(self.validator.name, 'default')
+    self.assertEqual(self.validator.VALIDATOR_NAME, 'default')
 
   def test_ValidateSuccess(self):
     """Test that correct values do not throw an exception."""
@@ -44,10 +44,7 @@ class CommaSeparatedValidatorTester(unittest.TestCase):
       mock_init.assert_called_once()
     # pylint: enable=unused-variable
 
-  @mock.patch.object(args_validator.CommaSeparatedValidator,
-                     '__init__',
-                     return_value=None)
-  def test_Validate(self, _):
+  def test_Validate(self):
     """Tests validation."""
     args_validator.CommaSeparatedValidator.__abstractmethods__=set()
 
@@ -86,7 +83,7 @@ class AWSRegionValidatorTest(unittest.TestCase):
 
   def test_Init(self):
     """Tests initialisation."""
-    self.assertEqual(self.validator.name, 'aws_region')
+    self.assertEqual(self.validator.VALIDATOR_NAME, 'aws_region')
 
   def test_ValidateSuccess(self):
     """Test that correct values do not throw an exception."""
@@ -114,7 +111,7 @@ class GCPZoneValidatorTest(unittest.TestCase):
 
   def test_Init(self):
     """Tests initialisation."""
-    self.assertEqual(self.validator.name, 'gcp_zone')
+    self.assertEqual(self.validator.VALIDATOR_NAME, 'gcp_zone')
 
   def test_ValidateSuccess(self):
     """Test that correct values do not throw an exception."""
@@ -142,7 +139,7 @@ class RegexValidatorTest(unittest.TestCase):
 
   def test_Init(self):
     """Tests initialisation."""
-    self.assertEqual(self.validator.name, 'regex')
+    self.assertEqual(self.validator.VALIDATOR_NAME, 'regex')
 
   def test_ValidateSuccess(self):
     """Test that correct values do not throw an exception."""
@@ -177,7 +174,7 @@ class SubnetValidatorTest(unittest.TestCase):
 
   def test_Init(self):
     """Tests initialisation."""
-    self.assertEqual(self.validator.name, 'subnet')
+    self.assertEqual(self.validator.VALIDATOR_NAME, 'subnet')
 
   def test_ValidateSuccess(self):
     """Test that correct values do not throw an exception."""

@@ -443,8 +443,6 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
                                               tool.state.command_line_options,
                                               tool.state.config)
 
-  tool.state.LogExecutionPlan()
-
   try:
     tool.ValidateArguments()
   except errors.RecipeArgsValidatorError as exception:
@@ -452,6 +450,8 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
       cdm.EnqueueMessage('dftimewolf', str(exception), True)
     logger.critical(str(exception))
     return False
+
+  tool.state.LogExecutionPlan()
 
   tool.RunPreflights()
 
