@@ -20,6 +20,7 @@ from dftimewolf import config
 
 from dftimewolf.lib import errors
 from dftimewolf.lib import utils
+from dftimewolf.lib import args_validator
 
 if TYPE_CHECKING:
   from dftimewolf.lib import state as dftw_state
@@ -97,8 +98,8 @@ class DFTimewolfTool(object):
     self._data_files_path = ''
     self._recipes_manager = recipes_manager.RecipesManager()
     self._recipe = {}  # type: Dict[str, Any]
-    self._args_validator = args_validator.ValidatorManager()
     self.cdm = cdm
+    self.dftwValidator = args_validator.DFTWRecipeArgsValidator()
 
     self._DetermineDataFilesPath()
 
@@ -123,12 +124,17 @@ class DFTimewolfTool(object):
       subparser.set_defaults(recipe=recipe.contents)
 
       for args in recipe.args:
+        if args.format is not None and 'format' in args.format:
+          typeValidator = self.dftwValidator[args.format['format']](args.format)
+        else:
+          typeValidator = self.dftwValidator[None]()
+
         if isinstance(args.default, bool):
           subparser.add_argument(args.switch, help=args.help_text,
                                  default=args.default, action='store_true')
         else:
           subparser.add_argument(args.switch, help=args.help_text,
-                                 default=args.default)
+                                 default=args.default, type=typeValidator)
 
       # Override recipe defaults with those specified in Config
       # so that they can in turn be overridden in the commandline
@@ -277,27 +283,6 @@ class DFTimewolfTool(object):
 
     self._state.command_line_options = vars(self._command_line_options)
 
-  def ValidateArguments(self) -> None:
-    """Validate the arguments."""
-    recipe = self._recipes_manager.Recipes()[self._recipe['name']]
-    error_messages = []
-
-    for arg in recipe.args:
-      try:
-        switch = arg.switch.replace('--', '')
-        self._args_validator.Validate(self.state.command_line_options[switch],
-                                      arg.format)
-      except errors.RecipeArgsValidatorError as exception:
-        error_messages.append(f'Argument validation error: "{arg.switch}" with '
-            f'value "{self.state.command_line_options[switch]}" gave error: '
-            f'{str(exception)}')
-
-    if error_messages:
-      for message in error_messages:
-        logger.critical(message)
-      raise errors.RecipeArgsValidatorError(
-          'At least one argument failed validation')
-
   def RunPreflights(self) -> None:
     """Runs preflight modules."""
     logger.info('Running preflights...')
@@ -445,13 +430,8 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
 
   tool.state.LogExecutionPlan()
 
-  try:
-    tool.ValidateArguments()
-  except errors.RecipeArgsValidatorError as exception:
-    if cdm:
-      cdm.EnqueueMessage('dftimewolf', str(exception), True)
-    logger.critical(str(exception))
-    return False
+  logger.critical('Bailing early during dev. Don\'t merge these lines.')
+  return False
 
   tool.RunPreflights()
 
