@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 """Pulls audit logs from Google Workspace."""
 
+import datetime
 import os.path
 import json
+import re
 import tempfile
 
 from typing import Optional, TYPE_CHECKING
@@ -21,7 +23,7 @@ from dftimewolf.lib.modules import manager as modules_manager
 if TYPE_CHECKING:
   from dftimewolf.lib import state
 
-
+RE_TIMESTAMP = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$')
 
 class WorkspaceAuditCollector(module.BaseModule):
   """Collector for Google Workspace Audit logs. """
@@ -138,8 +140,22 @@ class WorkspaceAuditCollector(module.BaseModule):
     self._application_name = application_name
     self._filter_expression = filter_expression
     self._user_key = user_key
-    self._start_time = start_time
+
+    if not (RE_TIMESTAMP.match(start_time) and RE_TIMESTAMP.match(end_time)):
+      self.ModuleError(
+          'Invalid timestamp format. Please use YYYY-MM-DDTHH:MM:SSZ',
+          critical=True)
+
     self._end_time = end_time
+    self._start_time = start_time
+
+    now = datetime.datetime.now(tz=datetime.timezone.utc)
+    start_datetime = datetime.datetime.fromisoformat(
+      start_time.replace('Z', '+00:00'))
+    if start_datetime < now - datetime.timedelta(days=180):
+      self.ModuleError(
+          'Maximum gWorkspace retention is 6 months. '
+          'Please choose a more recent start date.', critical=True)
 
   def Process(self) -> None:
     """Copies audit logs from a Google Workspace log."""
