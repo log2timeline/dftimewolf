@@ -49,6 +49,19 @@ class WorkspaceAuditCollectorTest(unittest.TestCase):
         'Maximum gWorkspace retention is 6 months. Please choose a more recent '
         'start date.')
 
+    # Assert that set up with malformed date fails
+    with self.assertRaises(errors.DFTimewolfError) as error:
+      self.ws_collector.SetUp(
+        application_name='test',
+        filter_expression='test',
+        user_key='test',
+        start_time='2022-01-01 00:00:00',  # Malformed date
+        end_time='2023-01-01T00:00:00Z',
+      )
+      self.assertEqual(
+        error.exception.message,
+        'Invalid timestamp format. Please use YYYY-MM-DDTHH:MM:SSZ')
+
     # Assert that setup with recent date works as expected.
     self.ws_collector.SetUp(
         application_name='test',
