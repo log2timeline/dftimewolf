@@ -60,38 +60,40 @@ class AWSRegionValidator(AbstractValidator):
     """Initialise."""
     super().__init__()
     self.name = 'aws_region'
-    self.operand: str = ''
 
   def GenerateValidateCallable(self, validator_params) -> Callable[[str], bool]:
     return self.Validate
     
-  def Validate(self, str):
-    if str not in self._regions:
+  def Validate(self, operand):
+    if operand not in self._regions:
       raise ValueError('Invalid AWS Region name')
+    return operand
 
 
-#class RegexValidator(CommaSeparatedValidator):
-#  """Validates a string according to a regular expression."""
-#
-#  def __init__(self) -> None:
-#    """Initialise."""
-#    super().__init__()
-#    self.name = 'regex'
-#
-#  def ValidateSingle(self,
-#                     operand: str,
-#                     validator_params: Dict[str, Any]) -> None:
-#    """Validate a string according to a regular expression."""
-#    if 'regex' not in validator_params:
-#      raise errors.RecipeArgsValidatorError(
-#          'Missing validator parameter: regex')
-#
-#    regex = re.compile(validator_params['regex'])
-#    if not regex.match(operand):
-#      raise errors.RecipeArgsValidatorError(
-#          f'"{operand}" does not match regex /{validator_params["regex"]}/')
+class RegexValidator(AbstractValidator):
+  """Validates a string according to a regular expression."""
+
+  def __init__(self) -> None:
+    """Initialise."""
+    super().__init__()
+    self.name = 'regex'
+    self.regex = ''
 
 
+  def GenerateValidateCallable(self, validator_params) -> Callable[[str], bool]:
+    if 'regex' not in validator_params:
+      raise errors.RecipeArgsValidatorError(
+          'Missing validator parameter: regex')
+
+    self.regex = re.compile(validator_params['regex'])
+
+    return self.Validate
+    
+  def Validate(self, operand):
+    if not self.regex.match(operand):
+      raise ValueError(
+          f'"{operand}" does not match regex /{self.regex}/')
+    return operand
 
 
 class DFTWRecipeArgsValidator:
@@ -104,7 +106,7 @@ class DFTWRecipeArgsValidator:
 
     self.RegisterValidator(AWSRegionValidator())
 #    self.RegisterValidator(GCPZoneValidator())
-#    self.RegisterValidator(RegexValidator())
+    self.RegisterValidator(RegexValidator())
 #    self.RegisterValidator(SubnetValidator())
 
   def RegisterValidator(self, validator: AbstractValidator) -> None:

@@ -64,7 +64,7 @@
   "args": [
     ["aws_region", "AWS region containing the EBS volumes.", null, {"format": "aws_region"}],
     ["gcp_zone", "Destination GCP zone in which to create the disks.", null],
-    ["volumes", "Comma separated list of EBS volume IDs (e.g. vol-xxxxxxxx).", null],
+    ["volumes", "Comma separated list of EBS volume IDs (e.g. vol-xxxxxxxx).", null, {"format": "regex", "regex": "vol-[0-9a-f]{8,17}"}],
     ["aws_bucket", "AWS bucket for image storage.", null],
     ["gcp_bucket", "GCP bucket for image storage.", null],
     ["--subnet", "AWS subnet to copy instances from, required if there is no default subnet in the volume region.", null],
