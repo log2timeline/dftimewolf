@@ -142,7 +142,7 @@ class WorkspaceAuditCollector(module.BaseModule):
     self._user_key = user_key
 
     for time in [start_time, end_time]:
-      if time and RE_TIMESTAMP.match(time):
+      if time and not RE_TIMESTAMP.match(time):
         self.ModuleError(
           'Invalid timestamp format. Please use YYYY-MM-DDTHH:MM:SSZ.'
           f' You provided "{time}"',
