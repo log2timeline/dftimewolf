@@ -12,7 +12,7 @@ from dftimewolf.lib import errors
 class AbstractValidator(abc.ABC):
   """Base class for validator objects."""
 
-  VALIDATOR_NAME: str = None  # type: ignore
+  NAME: str = None  # type: ignore
 
   def __init__(self) -> None:
     """Initialise."""
@@ -90,7 +90,7 @@ class CommaSeparatedValidator(AbstractValidator):
 class DefaultValidator(AbstractValidator):
   """The default validator always returns true."""
 
-  VALIDATOR_NAME = 'default'
+  NAME = 'default'
 
   def Validate(self,
                operand: Any,
@@ -119,7 +119,7 @@ class AWSRegionValidator(AbstractValidator):
     'sa-east-1', 'us-east-1', 'us-east-2', 'us-gov-east-1', 'us-gov-west-1',
     'us-west-1', 'us-west-2'
   }
-  VALIDATOR_NAME = 'aws_region'
+  NAME = 'aws_region'
 
   def Validate(self,
                operand: Any,
@@ -175,7 +175,7 @@ class GCPZoneValidator(AbstractValidator):
     'us-west1-c', 'us-west2-a', 'us-west2-b', 'us-west2-c', 'us-west3-a',
     'us-west3-b', 'us-west3-c', 'us-west4-a', 'us-west4-b', 'us-west4-c'
   }
-  VALIDATOR_NAME = 'gcp_zone'
+  NAME = 'gcp_zone'
 
   def Validate(self,
                operand: Any,
@@ -196,7 +196,7 @@ class GCPZoneValidator(AbstractValidator):
 class RegexValidator(CommaSeparatedValidator):
   """Validates a string according to a regular expression."""
 
-  VALIDATOR_NAME = 'regex'
+  NAME = 'regex'
 
   def ValidateSingle(self,
                      operand: str,
@@ -225,7 +225,7 @@ class RegexValidator(CommaSeparatedValidator):
 class SubnetValidator(CommaSeparatedValidator):
   """Validates a subnet."""
 
-  VALIDATOR_NAME = 'subnet'
+  NAME = 'subnet'
 
   def ValidateSingle(self,
                      operand: str,
@@ -265,7 +265,7 @@ class ValidatorManager:
     Args:
       validator: The validator class to register for usage.
     """
-    self._validators[validator.VALIDATOR_NAME] = validator
+    self._validators[validator.NAME] = validator
 
   def Validate(self,
                operand: Any,
