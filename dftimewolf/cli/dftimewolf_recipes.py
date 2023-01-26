@@ -14,6 +14,7 @@ from dftimewolf.cli.curses_display_manager import CursesDisplayManager
 from dftimewolf.cli.curses_display_manager import CDMStringIOWrapper
 
 # pylint: disable=wrong-import-position
+from dftimewolf.lib import args_validator
 from dftimewolf.lib import logging_utils
 from dftimewolf import config
 
@@ -96,6 +97,7 @@ class DFTimewolfTool(object):
     self._data_files_path = ''
     self._recipes_manager = recipes_manager.RecipesManager()
     self._recipe = {}  # type: Dict[str, Any]
+    self._args_validator = args_validator.ValidatorManager()
     self.cdm = cdm
 
     self._DetermineDataFilesPath()
@@ -275,6 +277,27 @@ class DFTimewolfTool(object):
 
     self._state.command_line_options = vars(self._command_line_options)
 
+  def ValidateArguments(self) -> None:
+    """Validate the arguments."""
+    recipe = self._recipes_manager.Recipes()[self._recipe['name']]
+    error_messages = []
+
+    for arg in recipe.args:
+      try:
+        switch = arg.switch.replace('--', '')
+        self._args_validator.Validate(self.state.command_line_options[switch],
+                                      arg.format)
+      except errors.RecipeArgsValidatorError as exception:
+        error_messages.append(f'Argument validation error: "{arg.switch}" with '
+            f'value "{self.state.command_line_options[switch]}" gave error: '
+            f'{str(exception)}')
+
+    if error_messages:
+      for message in error_messages:
+        logger.critical(message)
+      raise errors.RecipeArgsValidatorError(
+          'At least one argument failed validation')
+
   def RunPreflights(self) -> None:
     """Runs preflight modules."""
     logger.info('Running preflights...')
@@ -413,12 +436,20 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
     logger.critical(str(exception))
     return False
 
-  # Interpolate arguments
+  # Interpolate arguments into recipe
   recipe = tool.state.recipe
   for module in recipe.get('preflights', []) + recipe.get('modules', []):
     module['args'] = utils.ImportArgsFromDict(module['args'],
                                               tool.state.command_line_options,
                                               tool.state.config)
+
+  try:
+    tool.ValidateArguments()
+  except errors.RecipeArgsValidatorError as exception:
+    if cdm:
+      cdm.EnqueueMessage('dftimewolf', str(exception), True)
+    logger.critical(str(exception))
+    return False
 
   tool.state.LogExecutionPlan()
 
