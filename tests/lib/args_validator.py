@@ -241,7 +241,7 @@ class ValidatorManagerTest(unittest.TestCase):
                        {'format': 'subnet', 'comma_separated': False})
 
   def test_InvalidValidator(self):
-    """Tests an exception ois thrown if an invalid validator is specified."""
+    """Tests an exception is thrown if an invalid validator is specified."""
     with self.assertRaisesRegex(
         errors.RecipeArgsValidatorError,
         'invalid is not a valid validator name'):
