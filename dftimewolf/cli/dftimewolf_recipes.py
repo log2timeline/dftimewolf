@@ -285,8 +285,10 @@ class DFTimewolfTool(object):
     for arg in recipe.args:
       try:
         switch = arg.switch.replace('--', '')
-        self._args_validator.Validate(self.state.command_line_options[switch],
-                                      arg.format)
+        if (switch == arg.switch or  # Ignore optional args, unless present
+            self.state.command_line_options[switch] is not None):
+          self._args_validator.Validate(self.state.command_line_options[switch],
+                                        arg.format)
       except errors.RecipeArgsValidatorError as exception:
         error_messages.append(f'Argument validation error: "{arg.switch}" with '
             f'value "{self.state.command_line_options[switch]}" gave error: '

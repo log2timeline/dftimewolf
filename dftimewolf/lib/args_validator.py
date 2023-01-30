@@ -44,7 +44,7 @@ class CommaSeparatedValidator(AbstractValidator):
 
   def Validate(self,
                operand: str,
-               validator_params: Dict[str, Any]) -> None:
+               validator_params: Optional[Dict[str, Any]]) -> None:
     """Split the string by commas if validator_params['comma_separated'] == True
     and validate each component in ValidateSingle.
 
@@ -58,7 +58,7 @@ class CommaSeparatedValidator(AbstractValidator):
           from invalid validator name or config, or from an invalid argument.
     """
 
-    if 'comma_separated' not in validator_params:
+    if not validator_params or 'comma_separated' not in validator_params:
       raise errors.RecipeArgsValidatorError(
           'Missing validator parameter: comma_separated')
 
@@ -123,7 +123,7 @@ class AWSRegionValidator(AbstractValidator):
 
   def Validate(self,
                operand: Any,
-               validator_params: Dict[str, Any]) -> None:
+               validator_params: Optional[Dict[str, Any]]) -> None:
     """Validate operand is a valid AWS region.
 
     Args:
@@ -200,7 +200,7 @@ class RegexValidator(CommaSeparatedValidator):
 
   def ValidateSingle(self,
                      operand: str,
-                     validator_params: Dict[str, Any]) -> None:
+                     validator_params: Optional[Dict[str, Any]]) -> None:
     """Validate a string according to a regular expression.
 
     Args:
@@ -212,7 +212,7 @@ class RegexValidator(CommaSeparatedValidator):
       errors.RecipeArgsValidatorError: Raised on validator config errors, or if
         argument fails validation.
     """
-    if 'regex' not in validator_params:
+    if not validator_params or 'regex' not in validator_params:
       raise errors.RecipeArgsValidatorError(
           'Missing validator parameter: regex')
 
