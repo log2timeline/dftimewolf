@@ -44,7 +44,7 @@ class CommaSeparatedValidator(AbstractValidator):
 
   def Validate(self,
                operand: str,
-               validator_params: Optional[Dict[str, Any]]) -> None:
+               validator_params: Optional[Dict[str, Any]] = None) -> None:
     """Split the string by commas if validator_params['comma_separated'] == True
     and validate each component in ValidateSingle.
 
@@ -123,7 +123,7 @@ class AWSRegionValidator(AbstractValidator):
 
   def Validate(self,
                operand: Any,
-               validator_params: Optional[Dict[str, Any]]) -> None:
+               validator_params: Optional[Dict[str, Any]] = None) -> None:
     """Validate operand is a valid AWS region.
 
     Args:
@@ -200,7 +200,7 @@ class RegexValidator(CommaSeparatedValidator):
 
   def ValidateSingle(self,
                      operand: str,
-                     validator_params: Optional[Dict[str, Any]]) -> None:
+                     validator_params: Optional[Dict[str, Any]] = None) -> None:
     """Validate a string according to a regular expression.
 
     Args:
