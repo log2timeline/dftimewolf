@@ -455,9 +455,6 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
 
   tool.state.LogExecutionPlan()
 
-#  logger.critical('bailing early during dev. DO NOT SUBMIT.')
-#  return False
-
   tool.RunPreflights()
 
   try:
