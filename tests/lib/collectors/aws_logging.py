@@ -29,12 +29,14 @@ class AWSLoggingTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     aws_logging_collector = aws_logging.AWSLogsCollector(test_state)
     aws_logging_collector.SetUp(
+        region='fake-region',
         profile_name='default',
         query_filter='Username,fakename',
         start_time='2021-01-01 00:00:00',
         end_time='2021-01-02 00:00:00')
 
     # pylint: disable=protected-access
+    self.assertEqual(aws_logging_collector._region, 'fake-region')
     self.assertEqual(aws_logging_collector._profile_name, 'default')
     self.assertEqual(aws_logging_collector._query_filter, 'Username,fakename')
     self.assertEqual(
@@ -57,12 +59,14 @@ class AWSLoggingTest(unittest.TestCase):
     aws_logging_collector = aws_logging.AWSLogsCollector(test_state)
 
     aws_logging_collector.SetUp(
+        region='fake-region',
         query_filter='Username,fakename',
         start_time='2021-01-01 00:00:00',
         end_time='2021-01-02 00:00:00')
     aws_logging_collector.Process()
 
-    mock_session.client.assert_called_with('cloudtrail')
+    mock_session.client.assert_called_with(
+        'cloudtrail', region_name='fake-region')
     mock_client.lookup_events.assert_called_with(
         LookupAttributes=[
           {

@@ -16,11 +16,13 @@
           "profile_name": "@profile_name",
           "query_filter": "@query_filter",
           "start_time": "@start_time",
-          "end_time": "@end_time"
+          "end_time": "@end_time",
+          "region": "@region"
         }
     }],
     "args": [
-        ["--profile_name", "Name of the AWS profile to collect logs from.", "default"],
+        ["region", "AWS Region", null, {"format": "aws_region"}],
+        ["--profile_name", "Name of the AWS profile to collect logs from.", null],
         ["--query_filter", "Filter expression to use to query logs.", null],
         ["--start_time", "Start time for the query.", null],
         ["--end_time", "End time for the query.", null]

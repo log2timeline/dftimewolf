@@ -27,10 +27,12 @@ class AWSLogsCollector(module.BaseModule):
     self._profile_name: Optional[str] = None
     self._query_filter: Optional[str] = None
     self._start_time: Optional[datetime] = None
-    self._end_time:Optional[datetime] = None
+    self._end_time: Optional[datetime] = None
+    self._region: str = None  # type: ignore
 
   # pylint: disable=arguments-differ
   def SetUp(self,
+            region: str,
             profile_name: Optional[str]=None,
             query_filter: Optional[str]=None,
             start_time: Optional[str]=None,
@@ -38,6 +40,7 @@ class AWSLogsCollector(module.BaseModule):
     """Sets up an AWS logs collector
 
     Args:
+      region (str): An AWS region name.
       profile_name (str): Optional. The profile name to collect logs with.
       query_filter (str): Optional. The CloudTrail query filter in the form
         'key,value'
@@ -46,6 +49,7 @@ class AWSLogsCollector(module.BaseModule):
       end_time (str): Optional. The end time for the query in the format
         'YYYY-MM-DD HH:MM:SS'
     """
+    self._region = region
     self._profile_name = profile_name
     self._query_filter = query_filter
     if start_time:
@@ -79,7 +83,7 @@ class AWSLogsCollector(module.BaseModule):
           'configured. See https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html')  # pylint: disable=line-too-long
       self.ModuleError(str(exception), critical=True)
 
-    cloudtrail_client = session.client('cloudtrail')
+    cloudtrail_client = session.client('cloudtrail', region_name=self._region)
 
     request_params: Dict[str, Any] = {}
     if self._query_filter:
