@@ -194,6 +194,71 @@ class SubnetValidatorTest(unittest.TestCase):
         self.validator.Validate(value, params)
 
 
+class DatetimeValidatorTest(unittest.TestCase):
+  """Tests the DatetimeValidator class."""
+
+  FORMAT_STRING = '%Y-%m-%d %H:%M:%S'
+
+  def setUp(self):
+    """Setup."""
+    self.validator = args_validator.DatetimeValidator()
+
+  def test_Init(self):
+    """Tests initialisation."""
+    self.assertEqual(self.validator.NAME, 'datetime')
+
+  def test_RequiredParam(self):
+    """Tests an error is thrown if format_string is missing."""
+    with self.assertRaisesRegex(
+        errors.RecipeArgsValidatorError,
+        'Missing validator parameter: format_string'):
+      self.validator.Validate('value', {})
+
+  def test_ValidateSuccess(self):
+    """Tests a successful validation."""
+    self.validator.Validate(
+        '2023-12-31 23:29:59', {'format_string': self.FORMAT_STRING})
+
+  def test_ValidateSuccessWithOrder(self):
+    """Tests validation success with order parameters."""
+    first = '2023-01-01 00:00:00'
+    second = '2023-01-02 00:00:00'
+    third = '2023-01-03 00:00:00'
+
+    params = {
+      'format_string': self.FORMAT_STRING,
+      'before': third,
+      'after': first
+    }
+
+    self.validator.Validate(second, params)
+
+
+  def test_ValidateFailureInvalidFormat(self):
+    """Tests invalid date formats correctly fail."""
+    values = ['value', '2023-12-31', '2023-31-12 23:29:59']
+    for v in values:
+      with self.assertRaisesRegex(
+          errors.RecipeArgsValidatorError,
+          f"time data '{v}' does not match format '{self.FORMAT_STRING}'"):
+        self.validator.Validate(v, {'format_string': self.FORMAT_STRING})
+
+  def test_ValidateOrder(self):
+    """Tests the _ValidateOrder method."""
+    first = '2023-01-01 00:00:00'
+    second = '2023-01-02 00:00:00'
+
+    # Correct order passes without exception
+    self.validator._ValidateOrder(first, second, self.FORMAT_STRING)
+
+    # Reverse order raises exeption
+    with self.assertRaisesRegex(
+        errors.RecipeArgsValidatorError,
+        f"{second} is after {first} but it should be the other way around"):
+      self.validator._ValidateOrder(second, first, self.FORMAT_STRING)
+
+
+
 # pylint: disable=protected-access
 class ValidatorManagerTest(unittest.TestCase):
   """Tests the validatorManager class."""
@@ -207,15 +272,18 @@ class ValidatorManagerTest(unittest.TestCase):
     self.assertIsInstance(self.vm._default_validator,
                           args_validator.DefaultValidator)
 
-    self.assertEqual(len(self.vm._validators), 4)
+    self.assertEqual(len(self.vm._validators), 5)
 
     self.assertIn('aws_region', self.vm._validators)
+    self.assertIn('datetime', self.vm._validators)
     self.assertIn('gcp_zone', self.vm._validators)
     self.assertIn('regex', self.vm._validators)
     self.assertIn('subnet', self.vm._validators)
 
     self.assertIsInstance(self.vm._validators['aws_region'],
                           args_validator.AWSRegionValidator)
+    self.assertIsInstance(self.vm._validators['datetime'],
+                          args_validator.DatetimeValidator)
     self.assertIsInstance(self.vm._validators['gcp_zone'],
                           args_validator.GCPZoneValidator)
     self.assertIsInstance(self.vm._validators['regex'],

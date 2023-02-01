@@ -4,7 +4,9 @@ import abc
 import ipaddress
 import re
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
+
+import datetime
 
 from dftimewolf.lib import errors
 
@@ -246,6 +248,112 @@ class SubnetValidator(CommaSeparatedValidator):
       raise errors.RecipeArgsValidatorError(f'{operand} is not a valid subnet.')
 
 
+class DatetimeValidator(AbstractValidator):
+  """Validates a datetime string.
+
+  Requires a format string that defines what the datetime should look like.
+
+  Optionally, it can confirm order of multiple dates as well. A recipe can
+  specify the following datetime validator:
+
+  {
+    "format": "datetime",
+    "format_string": "%Y-%m-%dT%H:%M:%SZ",
+    "before": "dateX",  # optional
+    "after": "dateY"  # optional
+  }
+
+  The arguement will then be checked that it is before the date in 'before', and
+  after the date in 'after'. Caveat: if a value in before or after is also a
+  parameter, eg with a recipe containing:
+
+  "args": {
+    [
+      "start_date",
+      "Start date",
+      null,
+      {
+        "format": "datetime",
+        "format_string": "%Y-%m-%dT%H:%M:%SZ",
+        "before": "@end_date"
+      }
+    ], [
+      "end_date",
+      "End date",
+      null,
+      {
+        "format": "datetime",
+        "format_string": "%Y-%m-%dT%H:%M:%SZ",
+        "after": "@start_date"
+      }
+    ],
+    ...
+  then "format_string" must be the same for both args.
+  """
+
+  NAME = 'datetime'
+
+  def Validate(self,
+               operand: Any,
+               validator_params: Optional[Dict[str, Any]]) -> None:
+    """Validate that operand is a valid GCP zone.
+
+    Args:
+      operand: The argument value to validate.
+      validator_params: A dict with validator options. Keys:
+        'format_string': A date format string (required)
+        'before': A datetime that the operand must be before (optional)
+        'after': A datetime that the operand must be after (optional)
+
+    Raises:
+      errors.RecipeArgsValidatorError: If validation fails.
+    """
+    if not validator_params or 'format_string' not in validator_params:
+      raise errors.RecipeArgsValidatorError(
+          'Missing validator parameter: format_string')
+
+    try:
+      dt = datetime.datetime.strptime(
+          operand, validator_params['format_string'])
+    except ValueError as exception:  # Date parsing failure
+      raise errors.RecipeArgsValidatorError(str(exception))
+
+    if 'before' in validator_params and validator_params['before'] is not None:
+      self._ValidateOrder(
+          dt, validator_params['before'], validator_params["format_string"])
+
+    if 'after' in validator_params and validator_params['after'] is not None:
+      self._ValidateOrder(
+          validator_params['after'], dt, validator_params["format_string"])
+
+  def _ValidateOrder(self,
+                     first: Union[str, datetime.datetime],
+                     second: Union[str, datetime.datetime],
+                     format_string: str) -> None:
+    """Validates date ordering.
+
+    Args:
+      first: The earlier date.
+      second: The later date
+      format: A format string defining str -> datetime conversion.
+
+    Raises:
+      errors.RecipeArgsValidatorError: If the order is incorrect or string ->
+        datetime conversion fails."""
+    try:
+      if isinstance(first, str):
+        first = datetime.datetime.strptime(first, format_string)
+      if isinstance(second, str):
+        second = datetime.datetime.strptime(second, format_string)
+    except ValueError as exception:
+      raise errors.RecipeArgsValidatorError(
+          f'Error in order comparison: {str(exception)}')
+
+    if first > second:
+      raise errors.RecipeArgsValidatorError(
+          f'{first} is after {second} but it should be the other way around')
+
+
 class ValidatorManager:
   """Class that handles validating arguments."""
 
@@ -255,6 +363,7 @@ class ValidatorManager:
     self._default_validator: AbstractValidator = DefaultValidator()
 
     self.RegisterValidator(AWSRegionValidator())
+    self.RegisterValidator(DatetimeValidator())
     self.RegisterValidator(GCPZoneValidator())
     self.RegisterValidator(RegexValidator())
     self.RegisterValidator(SubnetValidator())

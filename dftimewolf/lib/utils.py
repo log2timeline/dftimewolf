@@ -62,8 +62,7 @@ class DFTimewolfFormatterClass(
 
 
 def ImportArgsFromDict(value: Any,
-                       args: Dict[str,
-                       Any],
+                       args: Dict[str, Any],
                        config: Type[Config]) -> Any:
   """Replaces some arguments by those specified by a key-value dictionary.
 
