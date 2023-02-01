@@ -243,6 +243,7 @@ class DatetimeValidatorTest(unittest.TestCase):
           f"time data '{v}' does not match format '{self.FORMAT_STRING}'"):
         self.validator.Validate(v, {'format_string': self.FORMAT_STRING})
 
+  # pylint: disable=protected-access
   def test_ValidateOrder(self):
     """Tests the _ValidateOrder method."""
     first = '2023-01-01 00:00:00'
@@ -256,7 +257,6 @@ class DatetimeValidatorTest(unittest.TestCase):
         errors.RecipeArgsValidatorError,
         f"{second} is after {first} but it should be the other way around"):
       self.validator._ValidateOrder(second, first, self.FORMAT_STRING)
-
 
 
 # pylint: disable=protected-access
