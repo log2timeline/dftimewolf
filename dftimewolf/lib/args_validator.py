@@ -335,7 +335,7 @@ class DatetimeValidator(AbstractValidator):
 
     Args:
       first: The earlier date.
-      second: The later date
+      second: The later date.
       format: A format string defining str -> datetime conversion.
 
     Raises:
