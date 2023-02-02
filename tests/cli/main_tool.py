@@ -70,7 +70,7 @@ class MainToolTest(unittest.TestCase):
     # We want to access the tool's state object to load recipes and go through
     # modules.
     # pylint: disable=protected-access
-    self.tool._state =  dftw_state.DFTimewolfState(config.Config)
+    self.tool._state = dftw_state.DFTimewolfState(config.Config)
 
     for recipe in self.tool._recipes_manager.GetRecipes():
       self.tool._state.LoadRecipe(recipe.contents, dftimewolf_recipes.MODULES)
@@ -95,7 +95,7 @@ class MainToolTest(unittest.TestCase):
         NESTED_ARG_RECIPE.__doc__,
         NESTED_ARG_RECIPE,
         NESTED_ARG_RECIPE_ARGS)
-    self.tool._state =  dftw_state.DFTimewolfState(config.Config)
+    self.tool._state = dftw_state.DFTimewolfState(config.Config)
     self.tool._recipes_manager.RegisterRecipe(nested_arg_recipe)
     self.tool._state.LoadRecipe(NESTED_ARG_RECIPE, dftimewolf_recipes.MODULES)
 
@@ -115,7 +115,7 @@ class MainToolTest(unittest.TestCase):
         NESTED_ARG_RECIPE.__doc__,
         NESTED_ARG_RECIPE,
         NESTED_ARG_RECIPE_ARGS)
-    self.tool._state =  dftw_state.DFTimewolfState(config.Config)
+    self.tool._state = dftw_state.DFTimewolfState(config.Config)
     self.tool._recipes_manager.RegisterRecipe(nested_arg_recipe)
     self.tool._state.LoadRecipe(NESTED_ARG_RECIPE, dftimewolf_recipes.MODULES)
 
