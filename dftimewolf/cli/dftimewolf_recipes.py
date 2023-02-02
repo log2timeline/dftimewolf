@@ -284,6 +284,14 @@ class DFTimewolfTool(object):
 
     for arg in recipe.args:
       try:
+        # If any @params are in the validator options, substitute them in.
+        if arg.format is not None:
+          for key in arg.format:
+            if isinstance(arg.format[key], str) and '@' in arg.format[key]:
+              to_substitute = arg.format[key].replace('@', '')
+              if to_substitute in self.state.command_line_options:
+                arg.format[key] = self.state.command_line_options[to_substitute]
+
         switch = arg.switch.replace('--', '')
         if (switch == arg.switch or  # Ignore optional args, unless present
             self.state.command_line_options[switch] is not None):

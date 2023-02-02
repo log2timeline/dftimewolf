@@ -14,7 +14,7 @@
         "name": "GCPLogsCollector",
         "args": {
             "project_name": "@project_name",
-            "filter_expression": "logName=projects/@project_name/logs/cloudaudit.googleapis.com%2Factivity resource.type:\"gce\" timestamp>\"@start_date\" timestamp<\"@end_date\"",
+            "filter_expression": "logName=projects/@project_name/logs/cloudaudit.googleapis.com%2Factivity resource.type:\"gce\" timestamp>=\"@start_date\" timestamp<=\"@end_date\"",
             "backoff": "@backoff",
             "delay": "@delay"
         }
@@ -36,9 +36,9 @@
         }
     }],
     "args": [
-        ["project_name", "Name of the GCP project to collect logs from.", null],
-        ["start_date", "Start date (yyyy-mm-ddTHH:MM:SSZ).", null],
-        ["end_date", "End date (yyyy-mm-ddTHH:MM:SSZ).", null],
+        ["project_name", "Name of the GCP project to collect logs from.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9]{4,28}[a-z0-9]$"}],
+        ["start_date", "Start date (yyyy-mm-ddTHH:MM:SSZ).", null, {"format": "datetime", "format_string": "%Y-%m-%dT%H:%M:%SZ", "before": "@end_date"}],
+        ["end_date", "End date (yyyy-mm-ddTHH:MM:SSZ).", null, {"format": "datetime", "format_string": "%Y-%m-%dT%H:%M:%SZ", "after": "@start_date"}],
         ["--incident_id", "Incident ID (used for Timesketch description).", null],
         ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
