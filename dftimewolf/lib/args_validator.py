@@ -53,16 +53,17 @@ class CommaSeparatedValidator(AbstractValidator):
     Args:
       operand: The argument value to validate.
       validator_params: Any extra fields to configure the validator. These come
-        from the recipe json and must include 'comma_separated': True or False.
+        from the recipe json and can include 'comma_separated' - Default False.
 
     Raises:
       errors.RecipeArgsValidatorError: If the arguments fail validation, either
           from invalid validator name or config, or from an invalid argument.
     """
 
-    if not validator_params or 'comma_separated' not in validator_params:
-      raise errors.RecipeArgsValidatorError(
-          'Missing validator parameter: comma_separated')
+    if not validator_params:
+      validator_params = {}
+    if 'comma_separated' not in validator_params:
+      validator_params['comma_separated'] = False
 
     operands = []
     if validator_params['comma_separated']:

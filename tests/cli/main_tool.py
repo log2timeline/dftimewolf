@@ -8,7 +8,27 @@ import inspect
 
 from dftimewolf.cli import dftimewolf_recipes
 from dftimewolf.lib import state as dftw_state
+from dftimewolf.lib import resources, errors
 from dftimewolf import config
+
+
+# This test recipe requires two args: Anything for arg1, and the word 'Second'
+# for arg2. The value for arg1 will be substituted into 'other_arg' in arg2.
+NESTED_ARG_RECIPE = {
+    'name': 'nested_arg_recipe',
+    'short_description': 'Short description.',
+    'preflights': [],
+    'modules': [],
+    'args': [
+      ['arg1', 'Argument 1', None],
+      ['arg2', 'Argument 2', None,  {'format': 'regex',
+                                     'regex': '^Second$',
+                                     'other_arg': '@arg1'}]
+    ]
+}
+
+NESTED_ARG_RECIPE_ARGS = [
+    resources.RecipeArgs(*arg) for arg in NESTED_ARG_RECIPE['args']]
 
 class MainToolTest(unittest.TestCase):
   """Tests for main tool functions."""
@@ -50,7 +70,7 @@ class MainToolTest(unittest.TestCase):
     # We want to access the tool's state object to load recipes and go through
     # modules.
     # pylint: disable=protected-access
-    self.tool._state =  dftw_state.DFTimewolfState(config.Config)
+    self.tool._state = dftw_state.DFTimewolfState(config.Config)
 
     for recipe in self.tool._recipes_manager.GetRecipes():
       self.tool._state.LoadRecipe(recipe.contents, dftimewolf_recipes.MODULES)
@@ -67,3 +87,45 @@ class MainToolTest(unittest.TestCase):
           expected_args,
           provided_args,
           f'Error in {recipe.name}:{runtime_name}')
+
+  def testRecipeWithNestedArgs(self):
+    """Tests that a recipe with args referenced in other args is populated."""
+    # pylint: disable=protected-access
+    nested_arg_recipe = resources.Recipe(
+        NESTED_ARG_RECIPE.__doc__,
+        NESTED_ARG_RECIPE,
+        NESTED_ARG_RECIPE_ARGS)
+    self.tool._state = dftw_state.DFTimewolfState(config.Config)
+    self.tool._recipes_manager.RegisterRecipe(nested_arg_recipe)
+    self.tool._state.LoadRecipe(NESTED_ARG_RECIPE, dftimewolf_recipes.MODULES)
+
+    self.tool.ParseArguments(['nested_arg_recipe', 'First', 'Second'])
+    self.tool.ValidateArguments()
+
+    # Check the nested arg 'First' has been inserted into the 'other_arg' value
+    # of 'arg2'
+    for arg in NESTED_ARG_RECIPE_ARGS:
+      if arg.switch == 'arg2':
+        self.assertEqual(arg.format['other_arg'], 'First')
+
+  def testFailingArgValidation(self):
+    """Tests that a recipe fails when args don't validate."""
+    # pylint: disable=protected-access
+    nested_arg_recipe = resources.Recipe(
+        NESTED_ARG_RECIPE.__doc__,
+        NESTED_ARG_RECIPE,
+        NESTED_ARG_RECIPE_ARGS)
+    self.tool._state = dftw_state.DFTimewolfState(config.Config)
+    self.tool._recipes_manager.RegisterRecipe(nested_arg_recipe)
+    self.tool._state.LoadRecipe(NESTED_ARG_RECIPE, dftimewolf_recipes.MODULES)
+
+    self.tool.ParseArguments(['nested_arg_recipe', 'First', 'Not Second'])
+
+    with self.assertRaisesRegex(
+        errors.RecipeArgsValidatorError,
+        'At least one argument failed validation'):
+      self.tool.ValidateArguments()
+
+
+if __name__ == '__main__':
+  unittest.main()
