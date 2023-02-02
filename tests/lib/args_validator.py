@@ -65,11 +65,9 @@ class CommaSeparatedValidatorTester(unittest.TestCase):
     with mock.patch.object(args_validator.CommaSeparatedValidator,
                            'ValidateSingle',
                            return_value=None):
-      with self.assertRaisesRegex(
-          errors.RecipeArgsValidatorError,
-          'Missing validator parameter: comma_separated'):
-        validator = args_validator.CommaSeparatedValidator()
-        validator.Validate('one,two,three', {})
+      validator = args_validator.CommaSeparatedValidator()
+      validator.Validate('one,two,three', {})
+      self.assertEqual(mock_validatesingle.call_count, 1)
 # pylint: enable=abstract-class-instantiated
 # pytype: enable=not-instantiable
 
