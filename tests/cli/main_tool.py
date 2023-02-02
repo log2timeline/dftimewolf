@@ -90,6 +90,7 @@ class MainToolTest(unittest.TestCase):
 
   def testRecipeWithNestedArgs(self):
     """Tests that a recipe with args referenced in other args is populated."""
+    # pylint: disable=protected-access
     nested_arg_recipe = resources.Recipe(
         NESTED_ARG_RECIPE.__doc__,
         NESTED_ARG_RECIPE,
@@ -109,6 +110,7 @@ class MainToolTest(unittest.TestCase):
 
   def testFailingArgValidation(self):
     """Tests that a recipe fails when args don't validate."""
+    # pylint: disable=protected-access
     nested_arg_recipe = resources.Recipe(
         NESTED_ARG_RECIPE.__doc__,
         NESTED_ARG_RECIPE,
