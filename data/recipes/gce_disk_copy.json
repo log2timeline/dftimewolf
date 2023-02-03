@@ -37,7 +37,7 @@
         ["--source_disk_names", "Comma-separated list of disk names to export. If not provided, disks attached to `remote_instance_name` will be used.", null, {"format": "regex", "comma_separated": true, "regex": "^[a-z][-a-z0-9]{0,61}[a-z0-9]?$"}],
         ["--remote_instance_names", "Comma-separated list of instances in source project from which to copy disks. If not provided, `disk_names` will be used.", null, {"format": "regex", "comma_separated": true, "regex": "^[a-z][-a-z0-9]{0,61}[a-z0-9]?$"}],
         ["--all_disks", "If True, copy all disks attached to the `remote_instance_names` instances. If False and `remote_instance_name` is provided, it will select the instance's boot disk.", false],
-        ["--zone", "Destination zone for the disks to be copied to.", "us-central1-f", {"format": "gcp_zo"}],
+        ["--zone", "Destination zone for the disks to be copied to.", "us-central1-f", {"format": "gcp_zone"}],
         ["--stop_instances", "Stop instances after disks have been copied", false]
     ]
   }

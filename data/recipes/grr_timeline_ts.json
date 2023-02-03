@@ -48,7 +48,7 @@
     }
   }],
   "args": [
-    ["hostnames", "Comma-separated list of hostnames or GRR client IDs to process.", null],
+    ["hostnames", "Comma-separated list of hostnames or GRR client IDs to process.", null, {"format": "fqdn", "comma_separated": true}],
     ["root_path", "Root path for timeline generation.", "/"],
     ["reason", "Reason for collection.", null],
     ["--skip_offline_clients", "Whether to skip clients that are offline.", false],

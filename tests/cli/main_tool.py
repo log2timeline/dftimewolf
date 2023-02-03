@@ -90,6 +90,7 @@ class MainToolTest(unittest.TestCase):
 
   def testRecipeValidators(self):
     """Tests that recipes do not specify invalid validators."""
+    # pylint: disable=protected-access
     self.tool._state = dftw_state.DFTimewolfState(config.Config)
 
     for recipe in self.tool._recipes_manager.GetRecipes():

@@ -355,6 +355,39 @@ class DatetimeValidator(AbstractValidator):
           f'{first} is after {second} but it should be the other way around')
 
 
+class FQDNValidator(RegexValidator):
+  """Validator for FQDNs."""
+
+  NAME = 'fqdn'
+  FQDN_REGEX = (
+      r'(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$)')
+  # Source: https://stackoverflow.com/questions/11809631/fully-qualified-domain-name-validation#20204811  # pylint: disable=line-too-long
+  # Retrieved 2023-02-03
+
+  def Validate(self,
+               operand: str,
+               validator_params: Optional[Dict[str, Any]] = None) -> None:
+    """Validate FQDNs.
+
+    Args:
+      operand: The FQDNs to validate.
+      validator_params: May contain "comma_separated": True|False.
+
+    Raises:
+      errors.RecipeArgsValidatorError: Raised if argument fails validation.
+    """
+    if not validator_params:
+      validator_params = {}
+    validator_params['regex'] = self.FQDN_REGEX
+
+    try:
+      super().Validate(operand, validator_params)
+    except errors.RecipeArgsValidatorError:
+      # Give a nicer error message than the regex failure
+      raise errors.RecipeArgsValidatorError(
+          f"'{operand}' contains an invalid hostname.")
+
+
 class ValidatorManager:
   """Class that handles validating arguments."""
 
@@ -365,6 +398,7 @@ class ValidatorManager:
 
     self.RegisterValidator(AWSRegionValidator())
     self.RegisterValidator(DatetimeValidator())
+    self.RegisterValidator(FQDNValidator())
     self.RegisterValidator(GCPZoneValidator())
     self.RegisterValidator(RegexValidator())
     self.RegisterValidator(SubnetValidator())
