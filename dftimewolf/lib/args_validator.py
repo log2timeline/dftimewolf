@@ -364,14 +364,14 @@ class FQDNValidator(RegexValidator):
   # Source: https://stackoverflow.com/questions/11809631/fully-qualified-domain-name-validation#20204811  # pylint: disable=line-too-long
   # Retrieved 2023-02-03
 
-  def Validate(self,
-               operand: str,
-               validator_params: Optional[Dict[str, Any]] = None) -> None:
-    """Validate FQDNs.
+  def ValidateSingle(self,
+                     operand: str,
+                     validator_params: Optional[Dict[str, Any]] = None) -> None:
+    """Validate an FQDN.
 
     Args:
-      operand: The FQDNs to validate.
-      validator_params: May contain "comma_separated": True|False.
+      operand: The FQDN to validate.
+      validator_params: Unused for this validator.
 
     Raises:
       errors.RecipeArgsValidatorError: Raised if argument fails validation.
@@ -381,11 +381,51 @@ class FQDNValidator(RegexValidator):
     validator_params['regex'] = self.FQDN_REGEX
 
     try:
-      super().Validate(operand, validator_params)
+      super().ValidateSingle(operand, validator_params)
     except errors.RecipeArgsValidatorError:
       # Give a nicer error message than the regex failure
       raise errors.RecipeArgsValidatorError(
-          f"'{operand}' contains an invalid hostname.")
+          f"'{operand}' is an invalid hostname.")
+
+
+class GRRHostValidator(FQDNValidator):
+  """Validates a GRR hostname.
+
+  Grr can accept FQDNs, or Grr client IDs, which take the form of
+  C.1facf5562db006ad.
+  """
+
+  NAME = 'grr_host'
+  GRR_REGEX = r'^C\.[0-9a-f]{16}$'
+
+  def ValidateSingle(self,
+                     operand: str,
+                     validator_params: Optional[Dict[str, Any]] = None) -> None:
+    """Validate a Grr host ID.
+
+    Args:
+      operand: The ID to validate.
+      validator_params: Unused for this validator.
+
+    Raises:
+      errors.RecipeArgsValidatorError: Raised if argument fails validation.
+    """
+    if not validator_params:
+      validator_params = {}
+
+    # Grr Host IDs can be FQDNs, test that first
+    try:
+      FQDNValidator.ValidateSingle(self, operand, validator_params)
+    except errors.RecipeArgsValidatorError:
+      # Hostname validation failed, check for Grr client ID.
+      validator_params['regex'] = self.GRR_REGEX
+
+      try:
+        RegexValidator.ValidateSingle(self, operand, validator_params)
+      except errors.RecipeArgsValidatorError:
+        # Give a nicer error message than the regex failure
+        raise errors.RecipeArgsValidatorError(
+            f"'{operand}' is an invalid Grr host ID.")
 
 
 class ValidatorManager:
@@ -400,6 +440,7 @@ class ValidatorManager:
     self.RegisterValidator(DatetimeValidator())
     self.RegisterValidator(FQDNValidator())
     self.RegisterValidator(GCPZoneValidator())
+    self.RegisterValidator(GRRHostValidator())
     self.RegisterValidator(RegexValidator())
     self.RegisterValidator(SubnetValidator())
 
