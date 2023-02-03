@@ -88,6 +88,20 @@ class MainToolTest(unittest.TestCase):
           provided_args,
           f'Error in {recipe.name}:{runtime_name}')
 
+  def testRecipeValidators(self):
+    """Tests that recipes do not specify invalid validators."""
+    self.tool._state = dftw_state.DFTimewolfState(config.Config)
+
+    for recipe in self.tool._recipes_manager.GetRecipes():
+      self.tool._state.LoadRecipe(recipe.contents, dftimewolf_recipes.MODULES)
+      for arg in recipe.args:
+        if arg.format:
+          self.assertIn(
+              arg.format['format'],
+              self.tool._args_validator._validators.keys(),
+              f'Error in {recipe.name}:{arg.switch} - '
+              f'Invalid validator {arg.format["format"]}.')
+
   def testRecipeWithNestedArgs(self):
     """Tests that a recipe with args referenced in other args is populated."""
     # pylint: disable=protected-access
