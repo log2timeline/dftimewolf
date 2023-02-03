@@ -7,6 +7,7 @@ import re
 from typing import Any, Dict, Optional, Union
 
 import datetime
+from urllib.parse import urlparse
 
 from dftimewolf.lib import errors
 
@@ -428,6 +429,40 @@ class GRRHostValidator(FQDNValidator):
             f"'{operand}' is an invalid Grr host ID.")
 
 
+class URLValidator(FQDNValidator):
+  """Validates a URL."""
+
+  NAME = "url"
+
+  def ValidateSingle(self,
+                     operand: str,
+                     validator_params: Optional[Dict[str, Any]] = None) -> None:
+    """Validates a URL.
+
+    Args:
+      operand: The URL to validate.
+      validator_params: Unused for this validator.
+
+    Raises:
+      errors.RecipeArgsValidatorError: Raised if argument fails validation.
+    """
+    u = urlparse(operand)
+    if not u.hostname:
+      raise errors.RecipeArgsValidatorError(f"'{operand}' is an invalid URL.")
+    try:
+      # Test if the FQDN is actually an IP address, which is fine.
+      ipaddress.ip_address(u.hostname)
+      return
+    except ValueError:
+      pass
+
+    try:
+      FQDNValidator.ValidateSingle(self, u.hostname, validator_params)
+    except errors.RecipeArgsValidatorError:
+      # Give a nicer error message than the regex failure
+      raise errors.RecipeArgsValidatorError(f"'{operand}' is an invalid URL.")
+
+
 class ValidatorManager:
   """Class that handles validating arguments."""
 
@@ -443,6 +478,7 @@ class ValidatorManager:
     self.RegisterValidator(GRRHostValidator())
     self.RegisterValidator(RegexValidator())
     self.RegisterValidator(SubnetValidator())
+    self.RegisterValidator(URLValidator())
 
   def RegisterValidator(self, validator: AbstractValidator) -> None:
     """Register a validator class for usage.

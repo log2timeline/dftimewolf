@@ -30,7 +30,7 @@
         ["reason", "Reason for collection.", null],
         ["directory", "Directory in which to export files.", null],
         ["--approvers", "Emails for GRR approval request.", null],
-        ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
+        ["--grr_server_url", "GRR endpoint", "http://localhost:8000", {"format": "url"}],
         ["--verify", "Whether to verify the GRR TLS certificate.", true],
         ["--skip_offline_clients", "Whether to skip clients that are offline.", false],
         ["--grr_username", "GRR username", "admin"],

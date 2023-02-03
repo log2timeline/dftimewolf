@@ -54,7 +54,7 @@
     ["--skip_offline_clients", "Whether to skip clients that are offline.", false],
     ["--approvers", "Comma-separated list of usernames to ask for approval.", null],
     ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
-    ["--grr_server_url", "GRR endpoint.", "http://localhost:8000"],
+    ["--grr_server_url", "GRR endpoint.", "http://localhost:8000", {"format": "url"}],
     ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
     ["--timesketch_quick", "Skip waiting for analyzers to complete their run.", false],
     ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true],

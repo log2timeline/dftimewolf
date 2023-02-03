@@ -328,6 +328,52 @@ class GRRHostValidatorTest(unittest.TestCase):
         "'value' is an invalid Grr host ID."):
       self.validator.Validate(','.join(fqdns), {'comma_separated': True})
 
+
+class URLValidatorTest(unittest.TestCase):
+  """Tests the URLValidator class."""
+
+  def setUp(self):
+    """Setup."""
+    self.validator = args_validator.URLValidator()
+
+  def test_Init(self):
+    """Tests initialisation."""
+    self.assertEqual(self.validator.NAME, 'url')
+
+  def test_ValidateSuccess(self):
+    """Test successful validation."""
+    fqdns = [
+        'http://10.100.0.100:8080',
+        'http://10.100.0.100',
+        'https://10.100.0.100',
+        'http://grr.ramoj-playground.internal:8080',
+        'http://grr.ramoj-playground.internal',
+        'https://grr.ramoj-playground.internal',
+    ]
+    for fqdn in fqdns:
+      self.validator.Validate(fqdn)
+
+    self.validator.Validate(','.join(fqdns), {'comma_separated': True})
+
+  def test_ValidationFailure(self):
+    """Tests validation failures."""
+    fqdns = [
+        'value',
+        '10.100.0.100',  # Needs scheme
+        'http://one.*.com'
+        ]
+    for fqdn in fqdns:
+      with self.assertRaisesRegex(
+          errors.RecipeArgsValidatorError,
+          f"'{fqdn}' is an invalid URL."):
+        self.validator.Validate(fqdn)
+
+    with self.assertRaisesRegex(
+        errors.RecipeArgsValidatorError,
+        "'value' is an invalid URL."):
+      self.validator.Validate(','.join(fqdns), {'comma_separated': True})
+
+
 # pylint: disable=protected-access
 class ValidatorManagerTest(unittest.TestCase):
   """Tests the validatorManager class."""
@@ -341,7 +387,7 @@ class ValidatorManagerTest(unittest.TestCase):
     self.assertIsInstance(self.vm._default_validator,
                           args_validator.DefaultValidator)
 
-    self.assertEqual(len(self.vm._validators), 7)
+    self.assertEqual(len(self.vm._validators), 8)
 
     self.assertIn('aws_region', self.vm._validators)
     self.assertIn('datetime', self.vm._validators)
@@ -350,6 +396,7 @@ class ValidatorManagerTest(unittest.TestCase):
     self.assertIn('grr_host', self.vm._validators)
     self.assertIn('regex', self.vm._validators)
     self.assertIn('subnet', self.vm._validators)
+    self.assertIn('url', self.vm._validators)
 
     self.assertIsInstance(self.vm._validators['aws_region'],
                           args_validator.AWSRegionValidator)
@@ -365,6 +412,8 @@ class ValidatorManagerTest(unittest.TestCase):
                           args_validator.RegexValidator)
     self.assertIsInstance(self.vm._validators['subnet'],
                           args_validator.SubnetValidator)
+    self.assertIsInstance(self.vm._validators['url'],
+                          args_validator.URLValidator)
 
   def test_Validation(self):
     """Tests validation."""
