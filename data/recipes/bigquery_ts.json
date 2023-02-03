@@ -30,11 +30,11 @@
             }
         }],
         "args": [
-            ["project_name", "Name of GCP project to collect logs from.", null],
+            ["project_name", "Name of GCP project to collect logs from.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9]{4,28}[a-z0-9]$"}],
             ["query", "Query to execute.", null],
             ["description", "Human-readable description of the query.", null],
             ["--incident_id", "Incident ID (used for Timesketch description).", null],
-            ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null],
+            ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
             ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
             ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true]
         ]
