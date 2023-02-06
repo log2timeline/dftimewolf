@@ -61,7 +61,7 @@
         ["files", "Paths to process.", null],
         ["--turbinia_recipe", "The Turbinia recipe name to use for evidence processing.", null],
         ["--destination_turbinia_dir", "Destination path in Turbinia host to write the files to.", null],
-        ["--hostname", "Remote host.", null],
+        ["--hostname", "Remote host.", null, {"format": "fqdn"}],
         ["--directory", "Directory in which to copy and compress files.", null],
         ["--turbinia_config", "Turbinia config file to use.", null],
         ["--local_turbinia_results", "Directory where Turbinia results will be downloaded to.", null],

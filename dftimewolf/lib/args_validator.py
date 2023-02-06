@@ -7,6 +7,7 @@ import re
 from typing import Any, Dict, Optional, Union
 
 import datetime
+from urllib.parse import urlparse
 
 from dftimewolf.lib import errors
 
@@ -355,6 +356,113 @@ class DatetimeValidator(AbstractValidator):
           f'{first} is after {second} but it should be the other way around')
 
 
+class FQDNValidator(RegexValidator):
+  """Validator for FQDNs."""
+
+  NAME = 'fqdn'
+  FQDN_REGEX = (
+      r'(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$)')
+  # Source: https://stackoverflow.com/questions/11809631/fully-qualified-domain-name-validation#20204811  # pylint: disable=line-too-long
+  # Retrieved 2023-02-03
+
+  def ValidateSingle(self,
+                     operand: str,
+                     validator_params: Optional[Dict[str, Any]] = None) -> None:
+    """Validate an FQDN.
+
+    Args:
+      operand: The FQDN to validate.
+      validator_params: Unused for this validator.
+
+    Raises:
+      errors.RecipeArgsValidatorError: Raised if argument fails validation.
+    """
+    if not validator_params:
+      validator_params = {}
+    validator_params['regex'] = self.FQDN_REGEX
+
+    try:
+      super().ValidateSingle(operand, validator_params)
+    except errors.RecipeArgsValidatorError:
+      # Give a nicer error message than the regex failure
+      raise errors.RecipeArgsValidatorError(
+          f"'{operand}' is an invalid hostname.")
+
+
+class GRRHostValidator(FQDNValidator):
+  """Validates a GRR hostname.
+
+  Grr can accept FQDNs, or Grr client IDs, which take the form of
+  C.1facf5562db006ad.
+  """
+
+  NAME = 'grr_host'
+  GRR_REGEX = r'^C\.[0-9a-f]{16}$'
+
+  def ValidateSingle(self,
+                     operand: str,
+                     validator_params: Optional[Dict[str, Any]] = None) -> None:
+    """Validate a Grr host ID.
+
+    Args:
+      operand: The ID to validate.
+      validator_params: Unused for this validator.
+
+    Raises:
+      errors.RecipeArgsValidatorError: Raised if argument fails validation.
+    """
+    if not validator_params:
+      validator_params = {}
+
+    # Grr Host IDs can be FQDNs, test that first
+    try:
+      FQDNValidator.ValidateSingle(self, operand, validator_params)
+    except errors.RecipeArgsValidatorError:
+      # Hostname validation failed, check for Grr client ID.
+      validator_params['regex'] = self.GRR_REGEX
+
+      try:
+        RegexValidator.ValidateSingle(self, operand, validator_params)
+      except errors.RecipeArgsValidatorError:
+        # Give a nicer error message than the regex failure
+        raise errors.RecipeArgsValidatorError(
+            f"'{operand}' is an invalid Grr host ID.")
+
+
+class URLValidator(FQDNValidator):
+  """Validates a URL."""
+
+  NAME = "url"
+
+  def ValidateSingle(self,
+                     operand: str,
+                     validator_params: Optional[Dict[str, Any]] = None) -> None:
+    """Validates a URL.
+
+    Args:
+      operand: The URL to validate.
+      validator_params: Unused for this validator.
+
+    Raises:
+      errors.RecipeArgsValidatorError: Raised if argument fails validation.
+    """
+    u = urlparse(operand)
+    if not u.hostname:
+      raise errors.RecipeArgsValidatorError(f"'{operand}' is an invalid URL.")
+    try:
+      # Test if the FQDN is actually an IP address, which is fine.
+      ipaddress.ip_address(u.hostname)
+      return
+    except ValueError:
+      pass
+
+    try:
+      FQDNValidator.ValidateSingle(self, u.hostname, validator_params)
+    except errors.RecipeArgsValidatorError:
+      # Give a nicer error message than the regex failure
+      raise errors.RecipeArgsValidatorError(f"'{operand}' is an invalid URL.")
+
+
 class ValidatorManager:
   """Class that handles validating arguments."""
 
@@ -365,9 +473,12 @@ class ValidatorManager:
 
     self.RegisterValidator(AWSRegionValidator())
     self.RegisterValidator(DatetimeValidator())
+    self.RegisterValidator(FQDNValidator())
     self.RegisterValidator(GCPZoneValidator())
+    self.RegisterValidator(GRRHostValidator())
     self.RegisterValidator(RegexValidator())
     self.RegisterValidator(SubnetValidator())
+    self.RegisterValidator(URLValidator())
 
   def RegisterValidator(self, validator: AbstractValidator) -> None:
     """Register a validator class for usage.
