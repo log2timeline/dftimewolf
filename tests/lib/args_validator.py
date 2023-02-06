@@ -265,11 +265,11 @@ class FQDNValidatorTest(unittest.TestCase):
     self.validator = args_validator.FQDNValidator()
 
   def test_Init(self):
-    """Tests initialisation."""
+    """Tests initialization."""
     self.assertEqual(self.validator.NAME, 'fqdn')
 
   def test_ValidateSuccess(self):
-    """Test successful validtion."""
+    """Test successful validation."""
     fqdns = ['github.com',
              'grr-client-ubuntu.c.ramoj-playground.internal',
              'www.google.com.au',
@@ -302,11 +302,11 @@ class GRRHostValidatorTest(unittest.TestCase):
     self.validator = args_validator.GRRHostValidator()
 
   def test_Init(self):
-    """Tests initialisation."""
+    """Tests initialization."""
     self.assertEqual(self.validator.NAME, 'grr_host')
 
   def test_ValidateSuccess(self):
-    """Test successful validtion."""
+    """Test successful validation."""
     fqdns = ['C.1facf5562db006ad',
              'grr-client-ubuntu.c.ramoj-playground.internal']
     for fqdn in fqdns:
@@ -337,7 +337,7 @@ class URLValidatorTest(unittest.TestCase):
     self.validator = args_validator.URLValidator()
 
   def test_Init(self):
-    """Tests initialisation."""
+    """Tests initialization."""
     self.assertEqual(self.validator.NAME, 'url')
 
   def test_ValidateSuccess(self):
@@ -361,7 +361,7 @@ class URLValidatorTest(unittest.TestCase):
         'value',
         '10.100.0.100',  # Needs scheme
         'http://one.*.com'
-        ]
+    ]
     for fqdn in fqdns:
       with self.assertRaisesRegex(
           errors.RecipeArgsValidatorError,
