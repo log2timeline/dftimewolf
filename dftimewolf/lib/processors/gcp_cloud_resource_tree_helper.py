@@ -86,8 +86,8 @@ class Resource():
   @property
   def resource_name(self) -> str:
     """Property resource_name Getter."""
-    if (not self._resource_name and self.name and self.project_id and
-        self.location):
+    if (not self._resource_name and self.name and self.project_id
+        and self.location):
       tmp_type = str()
       if self.type == 'gce_disk':
         tmp_type = 'disks'
@@ -292,22 +292,24 @@ class Resource():
     for entry in result:
       resource: Optional[Resource] = entry.get('resource_object')
       if resource:
-
         output.write(
-            f'{resource.id if ("-" not in resource.id) else "":<20s}|' +
-            f'{resource.type:<18s}|' +
-            f"""{resource.creation_timestamp.astimezone(
-                         datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
-                         if resource.creation_timestamp else "":<20s}|""" +
-            f'{resource.created_by:<25s}|' +
-            f'{resource.creator_ip_address:<18s}|' +
-            f"""{resource.deletion_timestamp.astimezone(
-                         datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
-                         if resource.deletion_timestamp else "":<20s}|""" +
-            f'{resource.deleted_by:<25s}|' +
-            f'{resource.deleter_ip_address:<18s}|' +
-            f'{entry.get("tree"):<100s}\n')
-
+          # pylint: disable=line-too-long
+          # If the resource.id contains a '-' then its a fake one we created for tracking so we are not displaying it in the output
+          f'{resource.id if ("-" not in resource.id and resource.id) else "":<20s}|'
+          + f'{resource.type if resource.type else "":<18s}|'
+          + f"""{resource.creation_timestamp.astimezone(
+                        datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+                        if resource.creation_timestamp else "":<20s}|"""
+          + f'{resource.created_by if resource.created_by else "":<25s}|'
+          + f'{resource.creator_ip_address if resource.creator_ip_address else "":<18s}|'
+          + f"""{resource.deletion_timestamp.astimezone(
+                        datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+                        if resource.deletion_timestamp else "":<20s}|"""
+          + f'{resource.deleted_by if resource.deleted_by else "":<25s}|'
+          + f'{resource.deleter_ip_address if resource.deleter_ip_address else "":<18s}|'
+          + f'{entry.get("tree"):<100s}\n'
+          # pylint: enable=line-too-long
+        )
     output.write(f'{dashes} \n')
 
     return output.getvalue()
@@ -316,37 +318,37 @@ class Resource():
     """Returns a dictionary representation of the resource object."""
     return {
         'id':
-            self.id,
+        self.id,
         'name':
-            self.name,
+        self.name,
         'type':
-            self.type,
+        self.type,
         'project_id':
-            self.project_id,
+        self.project_id,
         'location':
-            self.location,
+        self.location,
         'created_by':
-            self.created_by,
+        self.created_by,
         'creator_ip_address':
-            self.creator_ip_address,
+        self.creator_ip_address,
         'creator_useragent':
-            self.creator_useragent,
+        self.creator_useragent,
         'deleted_by':
-            self.deleted_by,
+        self.deleted_by,
         'deleter_ip_address':
-            self.deleter_ip_address,
+        self.deleter_ip_address,
         'deleter_useragent':
-            self.deleter_useragent,
+        self.deleter_useragent,
         'resource_name':
-            self.resource_name,
+        self.resource_name,
         'creation_timestamp':
-            self.creation_timestamp.astimezone(
-                datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
-            if self.creation_timestamp else '',
+        self.creation_timestamp.astimezone(
+            datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+        if self.creation_timestamp else '',
         'deletion_timestamp':
-            self.deletion_timestamp.astimezone(
-                datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
-            if self.deletion_timestamp else ''
+        self.deletion_timestamp.astimezone(
+            datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+        if self.deletion_timestamp else ''
     }
 
   def ToDataFrame(self) -> pd.DataFrame:
