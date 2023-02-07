@@ -9,6 +9,7 @@ import traceback
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import curses
+import shutil
 import signal
 
 
@@ -393,6 +394,7 @@ class CursesDisplayManager:
 
   def SIGWINCH_Handler(self, *unused_argvs: Any) -> None:
     """Redraw the window when SIGWINCH is raised."""
+    curses.resizeterm(*shutil.get_terminal_size())
     self.Draw()
 
 
