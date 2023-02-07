@@ -105,13 +105,11 @@ class DefaultValidator(AbstractValidator):
 class AWSRegionValidator(AbstractValidator):
   """Validates a correct AWS region."""
 
-  # pylint: disable=line-too-long
   # Source:
   #   curl -s https://ip-ranges.amazonaws.com/ip-ranges.json | \
   #   jq -r '.prefixes[] | select(.service == "EC2") | .region' ip-ranges.json \
   #   | sort | uniq
   # Fetched 2023-01-15
-  # pylint: enable=line-too-long
   # TODO - Fetch at runtime?
   _regions = {
     'af-south-1', 'ap-east-1', 'ap-northeast-1', 'ap-northeast-2',
@@ -139,6 +137,50 @@ class AWSRegionValidator(AbstractValidator):
     """
     if operand not in self._regions:
       raise errors.RecipeArgsValidatorError('Invalid AWS Region name')
+
+
+class AzureRegionValidator(AbstractValidator):
+  """Validates an Azure region."""
+
+  # Source: az account list-locations | jq -r '.[].name' | sort
+  # Fetched 2023-02-07
+  # TODO - Fetch at runtime?
+  _regions = {
+      'asia', 'asiapacific', 'australia', 'australiacentral',
+      'australiacentral2', 'australiaeast', 'australiasoutheast', 'brazil',
+      'brazilsouth', 'brazilsoutheast', 'canada', 'canadacentral', 'canadaeast',
+      'centralindia', 'centralus', 'centraluseuap', 'centralusstage',
+      'eastasia', 'eastasiastage', 'eastus', 'eastus2', 'eastus2euap',
+      'eastus2stage', 'eastusstage', 'eastusstg', 'europe', 'france',
+      'francecentral', 'francesouth', 'germany', 'germanynorth',
+      'germanywestcentral', 'global', 'india', 'japan', 'japaneast',
+      'japanwest', 'jioindiacentral', 'jioindiawest', 'korea', 'koreacentral',
+      'koreasouth', 'northcentralus', 'northcentralusstage', 'northeurope',
+      'norway', 'norwayeast', 'norwaywest', 'qatarcentral', 'singapore',
+      'southafrica', 'southafricanorth', 'southafricawest', 'southcentralus',
+      'southcentralusstage', 'southcentralusstg', 'southeastasia',
+      'southeastasiastage', 'southindia', 'swedencentral', 'switzerland',
+      'switzerlandnorth', 'switzerlandwest', 'uae', 'uaecentral', 'uaenorth',
+      'uk', 'uksouth', 'ukwest', 'unitedstates', 'unitedstateseuap',
+      'westcentralus', 'westeurope', 'westindia', 'westus', 'westus2',
+      'westus2stage', 'westus3', 'westusstage'
+  }
+  NAME = 'azure_region'
+
+  def Validate(self,
+               operand: Any,
+               validator_params: Optional[Dict[str, Any]]) -> None:
+    """Validate that operand is a valid Azure region.
+
+    Args:
+      operand: The argument value to validate.
+      validator_params: Unused for this validator.
+
+    Raises:
+      errors.RecipeArgsValidatorError: If operand is not a valid Azure region.
+    """
+    if operand not in self._regions:
+      raise errors.RecipeArgsValidatorError('Invalid Azure region name')
 
 
 class GCPZoneValidator(AbstractValidator):
@@ -472,6 +514,7 @@ class ValidatorManager:
     self._default_validator: AbstractValidator = DefaultValidator()
 
     self.RegisterValidator(AWSRegionValidator())
+    self.RegisterValidator(AzureRegionValidator())
     self.RegisterValidator(DatetimeValidator())
     self.RegisterValidator(FQDNValidator())
     self.RegisterValidator(GCPZoneValidator())
