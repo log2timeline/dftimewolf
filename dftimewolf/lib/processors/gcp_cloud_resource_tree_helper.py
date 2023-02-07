@@ -295,7 +295,7 @@ class Resource():
         output.write(
           # pylint: disable=line-too-long
           # If the resource.id contains a '-' then its a fake one we created for tracking so we are not displaying it in the output
-          f'{resource.id if ("-" not in resource.id and resource.id) else "":<20s}|'
+          f'{resource.id if (resource.id and "-" not in resource.id) else "":<20s}|'
           + f'{resource.type if resource.type else "":<18s}|'
           + f"""{resource.creation_timestamp.astimezone(
                         datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
