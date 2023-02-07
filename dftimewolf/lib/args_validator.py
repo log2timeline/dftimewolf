@@ -221,7 +221,7 @@ class RegexValidator(CommaSeparatedValidator):
           'Missing validator parameter: regex')
 
     regex = re.compile(validator_params['regex'])
-    if not regex.match(operand):
+    if not regex.match(str(operand)):
       raise errors.RecipeArgsValidatorError(
           f'"{operand}" does not match regex /{validator_params["regex"]}/')
 

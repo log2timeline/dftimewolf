@@ -28,7 +28,7 @@
         }
     }],
     "args": [
-        ["hostnames", "Comma-separated list of hostnames or GRR client IDs to process.", null],
+        ["hostnames", "Comma-separated list of hostnames or GRR client IDs to process.", null, {"format": "grr_host", "comma_separated": true}],
         ["reason", "Reason for collection.", null],
         ["files", "Comma-separated list of files to fetch (supports globs and GRR variable interpolation).", null],
         ["directory", "Directory in which to export files.", null],
@@ -36,8 +36,8 @@
         ["--approvers", "Emails for GRR approval request.", null],
         ["--verify", "Whether to verify the GRR TLS certificate.", true],
         ["--skip_offline_clients", "Whether to skip clients that are offline.", false],
-        ["--action", "String denoting action (download/hash/stat) to take", "download"],
-        ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
+        ["--action", "String denoting action (download/hash/stat) to take", "download", {"format": "regex", "regex": "^(download)|(hash)|(stat)$"}],
+        ["--grr_server_url", "GRR endpoint", "http://localhost:8000", {"format": "url"}],
         ["--grr_username", "GRR username", "admin"],
         ["--grr_password", "GRR password", "admin"],
         ["--max_file_size", "Maximum size of files to collect (in bytes).", 5368709120]

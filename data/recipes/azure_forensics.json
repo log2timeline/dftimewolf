@@ -28,7 +28,7 @@
       ["--instance_name", "Instance name of the instance to analyze.", null],
       ["--disk_names", "Comma-separated list of disk names to copy.", null],
       ["--all_disks", "Copy all disks in the designated instance. Overrides `disk_names` if specified.", false],
-      ["--boot_disk_size", "The size of the analysis VM's boot disk (in GB).", 50],
+      ["--boot_disk_size", "The size of the analysis VM's boot disk (in GB).", 50, {"format": "regex", "regex": "^\\d+$"}],
       ["--analysis_region", "The Azure region in which to create the VM.", null],
       ["--analysis_profile_name", "Name of the Azure profile to use when creating the analysis VM.", null]
   ]

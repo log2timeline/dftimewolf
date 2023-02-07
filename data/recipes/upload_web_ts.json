@@ -33,7 +33,7 @@
     }],
     "args": [
         ["files", "Comma-separated list of paths to CSV files or Plaso storage files.", null],
-        ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null],
+        ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
         ["--incident_id", "Incident ID (used for Timesketch description).", null],
         ["--wait_for_analyzers", "Wait for analyzers until they complete their run, if set to False the TS enhancer will be skipped.", true],

@@ -25,7 +25,7 @@
         ["reason", "Reason for collection.", null],
         ["--use_raw_filesystem_access", "Use raw disk access to fetch artifacts.", false],
         ["--approvers", "Emails for GRR approval request.", null],
-        ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
+        ["--grr_server_url", "GRR endpoint", "http://localhost:8000", {"format": "url"}],
         ["--verify", "Whether to verify the GRR TLS certificate.", true],
         ["--grr_username", "GRR username", "admin"],
         ["--grr_password", "GRR password", "admin"],

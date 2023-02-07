@@ -25,7 +25,7 @@
         ["file_path_list", "Comma-separated list of file paths to hunt for.", null],
         ["reason", "Reason for collection.", null],
         ["--approvers", "Emails for GRR approval request.", null],
-        ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
+        ["--grr_server_url", "GRR endpoint", "http://localhost:8000", {"format": "url"}],
         ["--verify", "Whether to verify the GRR TLS certificate.", true],
         ["--grr_username", "GRR username", "admin"],
         ["--grr_password", "GRR password", "admin"],

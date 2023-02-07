@@ -22,7 +22,7 @@
     "args": [
         ["files", "Comma-separated list of paths to CSV files or Plaso storage files.", null],
         ["--analyzers", "Timesketch analyzers to run.", null],
-        ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null],
+        ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
         ["--incident_id", "Incident ID (used for Timesketch description).", null],
         ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true]
