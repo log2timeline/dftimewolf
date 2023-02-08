@@ -609,7 +609,8 @@ class CursesDisplayManagerTest(unittest.TestCase):
 
     with mock.patch.object(self.cdm._stdscr, 'getmaxyx') as mock_getmaxyx, \
         mock.patch.object(self.cdm._stdscr, 'clear') as mock_clear, \
-        mock.patch.object(self.cdm._stdscr, 'addstr') as mock_addstr:
+        mock.patch.object(self.cdm._stdscr, 'addstr') as mock_addstr, \
+        mock.patch('curses.resizeterm'):
       mock_getmaxyx.return_value = 30, 140
 
       self.cdm.SIGWINCH_Handler(None, None)
