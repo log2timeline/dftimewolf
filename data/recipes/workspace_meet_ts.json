@@ -33,11 +33,11 @@
     }
   ],
   "args": [
-    ["meeting_id", "ID for the Meeting to look up. (Without the '-' delimiter)", null],
-    ["--start_time", "Start time (yyyy-mm-ddTHH:MM:SSZ).", null],
-    ["--end_time", "End time (yyyy-mm-ddTHH:MM:SSZ).", null],
+    ["meeting_id", "ID for the Meeting to look up. (Without the '-' delimiter)", null, {"format": "regex", "regex": "^[a-z]{10}$"}],
+    ["--start_time", "Start time (yyyy-mm-ddTHH:MM:SSZ).", null, {"format": "datetime", "format_string": "%Y-%m-%dT%H:%M:%SZ", "before": "@end_time"}],
+    ["--end_time", "End time (yyyy-mm-ddTHH:MM:SSZ).", null, {"format": "datetime", "format_string": "%Y-%m-%dT%H:%M:%SZ", "after": "@start_time"}],
     ["--incident_id", "Incident ID (used for Timesketch description).", null],
-    ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null],
+    ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
     ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
     ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true]
   ]

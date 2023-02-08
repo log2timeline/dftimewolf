@@ -37,7 +37,7 @@
             "turbinia_config_file": "@turbinia_config",
             "project": null,
             "turbinia_recipe": "@turbinia_recipe",
-            "turbinia_zone": "us-central1-f",
+            "turbinia_zone": "@turbinia_zone",
             "output_directory": null,
             "sketch_id": null
         }
@@ -65,6 +65,7 @@
         ["--directory", "Directory in which to copy and compress files.", null],
         ["--turbinia_config", "Turbinia config file to use.", null],
         ["--local_turbinia_results", "Directory where Turbinia results will be downloaded to.", null],
-        ["--sketch_id", "Timesketch sketch ID.", null]
+        ["--turbinia_zone", "The GCP zone the disk to process and Turbinia workers are in.", "us-central1-f", {"format": "gcp_zone"}],
+        ["--sketch_id", "Timesketch sketch ID.", null, {"format": "regex", "regex": "^\\d+$"}]
     ]
   }

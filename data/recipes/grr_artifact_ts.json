@@ -37,22 +37,22 @@
         }
     }],
     "args": [
-        ["hostnames", "Comma-separated list of hostnames or GRR client IDs to process.", null],
+        ["hostnames", "Comma-separated list of hostnames or GRR client IDs to process.", null, {"format": "grr_host", "comma_separated": true}],
         ["reason", "Reason for collection.", null],
         ["--artifacts", "Comma-separated list of artifacts to fetch (override default artifacts).", null],
         ["--extra_artifacts", "Comma-separated list of artifacts to append to the default artifact list.", null],
         ["--use_raw_filesystem_access", "Use raw disk access to fetch artifacts.", false],
         ["--approvers", "Emails for GRR approval request.", null],
-        ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null],
+        ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
         ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true],
         ["--analyzers", "Timesketch analyzers to run", null],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
         ["--incident_id", "Incident ID (used for Timesketch description).", null],
-        ["--grr_server_url", "GRR endpoint.", "http://localhost:8000"],
+        ["--grr_server_url", "GRR endpoint.", "http://localhost:8000", {"format": "url"}],
         ["--verify", "Whether to verify the GRR TLS certificate.", true],
         ["--skip_offline_clients", "Whether to skip clients that are offline.", false],
         ["--grr_username", "GRR username", "admin"],
         ["--grr_password", "GRR password", "admin"],
-        ["--max_file_size", "Maximum size of files to collect (in bytes).", 5368709120]
+        ["--max_file_size", "Maximum size of files to collect (in bytes).", 5368709120, {"format": "regex", "regex": "^\\d+$"}]
     ]
 }

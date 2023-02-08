@@ -30,15 +30,15 @@
         ["reason", "Reason for collection.", null],
         ["--osquery_query", "Osquery query to hunt for.", null],
         ["--osquery_paths", "Path(s) to text file containing one osquery query per line.", null],
-        ["--timeout_millis", "Osquery timeout in milliseconds", 300000],
+        ["--timeout_millis", "Osquery timeout in milliseconds", 300000, {"format": "regex", "regex": "^\\d+$"}],
         ["--ignore_stderr_errors", "Ignore osquery stderr errors", false],
         ["--approvers", "Emails for GRR approval request.", null],
-        ["--grr_server_url", "GRR endpoint", "http://localhost:8000"],
+        ["--grr_server_url", "GRR endpoint", "http://localhost:8000", {"format": "url"}],
         ["--verify", "Whether to verify the GRR TLS certificate.", true],
         ["--grr_username", "GRR username", "admin"],
         ["--grr_password", "GRR password", "admin"],
         ["--match_mode", "Match mode of the client rule set (ANY or ALL)", null],
-        ["--client_operating_systems", "Comma-separated list of client operating systems to filter hosts on (linux, osx, win).", null],
+        ["--client_operating_systems", "Comma-separated list of client operating systems to filter hosts on (linux, osx, win).", null, {"format": "regex", "regex": "^(linux)|(osx)|(win)$", "comma_separated": true}],
         ["--client_labels", "Comma-separated list of client labels to filter GRR hosts on.", null]
     ]
 }

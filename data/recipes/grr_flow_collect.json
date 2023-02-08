@@ -25,8 +25,8 @@
         }
     }],
     "args": [
-        ["hostnames", "Hostname(s) to collect the flow from.", null],
-        ["flow_ids", "Flow ID(s) to download.", null],
+        ["hostnames", "Hostname(s) to collect the flow from.", null, {"format": "grr_host", "comma_separated": true}],
+        ["flow_ids", "Flow ID(s) to download.", null, {"format": "regex", "comma_separated": true, "regex": "^[0-9A-F]{16}$"}],
         ["reason", "Reason for collection.", null],
         ["directory", "Directory in which to export files.", null],
         ["--approvers", "Emails for GRR approval request.", null],

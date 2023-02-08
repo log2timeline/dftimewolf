@@ -15,10 +15,10 @@
         }
     }],
     "args": [
-        ["application_name", "Name of application to to collect logs for. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#ApplicationName for a list of possible values.", null],
-        ["--user", "email address of the user to query logs for","all"],
-        ["--start_time", "Start time (yyyy-mm-ddTHH:MM:SSZ).", null],
-        ["--end_time", "End time (yyyy-mm-ddTHH:MM:SSZ).", null],
+        ["application_name", "Name of application to to collect logs for. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#ApplicationName for a list of possible values.", null, {"format": "regex", "regex": "^[_a-z]{1,32}$"}],
+        ["--user", "email address of the user to query logs for", "all"],
+        ["--start_time", "Start time (yyyy-mm-ddTHH:MM:SSZ).", null, {"format": "datetime", "format_string": "%Y-%m-%dT%H:%M:%SZ", "before": "@end_time"}],
+        ["--end_time", "End time (yyyy-mm-ddTHH:MM:SSZ).", null, {"format": "datetime", "format_string": "%Y-%m-%dT%H:%M:%SZ", "after": "@start_time"}],
         ["--filter_expression", "Filter expression to use to query Workspace logs. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list.", ""]
     ]
 }

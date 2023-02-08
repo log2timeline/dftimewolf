@@ -100,6 +100,34 @@ class AWSRegionValidatorTest(unittest.TestCase):
         self.validator.Validate(r, {})
 
 
+class AzureRegionValidatorTest(unittest.TestCase):
+  """Tests AzureRegionValidator."""
+
+  def setUp(self):
+    """Setup."""
+    self.validator = args_validator.AzureRegionValidator()
+
+  def test_Init(self):
+    """Tests initialisation."""
+    self.assertEqual(self.validator.NAME, 'azure_region')
+
+  def test_ValidateSuccess(self):
+    """Test that correct values do not throw an exception."""
+    regions = ['eastasia', 'norwaywest', 'westindia']
+
+    for r in regions:
+      self.validator.Validate(r, {})
+
+  def test_ValidateFailure(self):
+    """Tests invalid values correctly throw an exeption."""
+    regions = ['invalid', '123456']
+
+    for r in regions:
+      with self.assertRaisesRegex(
+          errors.RecipeArgsValidatorError, 'Invalid Azure region name'):
+        self.validator.Validate(r, {})
+
+
 class GCPZoneValidatorTest(unittest.TestCase):
   """Tests GCPZoneValidator."""
 
@@ -387,9 +415,10 @@ class ValidatorManagerTest(unittest.TestCase):
     self.assertIsInstance(self.vm._default_validator,
                           args_validator.DefaultValidator)
 
-    self.assertEqual(len(self.vm._validators), 8)
+    self.assertEqual(len(self.vm._validators), 9)
 
     self.assertIn('aws_region', self.vm._validators)
+    self.assertIn('azure_region', self.vm._validators)
     self.assertIn('datetime', self.vm._validators)
     self.assertIn('fqdn', self.vm._validators)
     self.assertIn('gcp_zone', self.vm._validators)
@@ -400,6 +429,8 @@ class ValidatorManagerTest(unittest.TestCase):
 
     self.assertIsInstance(self.vm._validators['aws_region'],
                           args_validator.AWSRegionValidator)
+    self.assertIsInstance(self.vm._validators['azure_region'],
+                          args_validator.AzureRegionValidator)
     self.assertIsInstance(self.vm._validators['datetime'],
                           args_validator.DatetimeValidator)
     self.assertIsInstance(self.vm._validators['fqdn'],

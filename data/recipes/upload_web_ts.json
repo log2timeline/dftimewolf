@@ -33,13 +33,13 @@
     }],
     "args": [
         ["files", "Comma-separated list of paths to CSV files or Plaso storage files.", null],
-        ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null],
+        ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
         ["--incident_id", "Incident ID (used for Timesketch description).", null],
         ["--wait_for_analyzers", "Wait for analyzers until they complete their run, if set to False the TS enhancer will be skipped.", true],
         ["--timesketch_include_stories", "Include story dumps in reports.", false],
         ["--searches_to_skip", "A comma separated list of saved searches that should not be uploaded.", null],
-        ["--analyzer_max_checks", "Number of wait cycles (per cycle is 3 seconds) before terminating wait for analyzers to complete.", 0],
+        ["--analyzer_max_checks", "Number of wait cycles (per cycle is 3 seconds) before terminating wait for analyzers to complete.", 0, {"format": "regex", "regex": "^\\d+$"}],
         ["--aggregations_to_skip", "A comma separated list of aggregation names that should not be uploaded.", null]
     ]
 }

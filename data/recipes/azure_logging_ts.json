@@ -33,7 +33,7 @@
         ["filter_expression", "A filter expression to use for the log query, must specify at least a start date like \"eventTimestamp ge '2022-02-01'\"", null],
         ["--profile_name", "A profile name to use when looking for Azure credentials.", null],
         ["--incident_id", "Incident ID (used for Timesketch description).", null],
-        ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null],
+        ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
         ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true]
     ]
