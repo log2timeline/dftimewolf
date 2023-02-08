@@ -34,7 +34,7 @@
     ["hostnames", "Hostname(s) to collect the flow from.", null, {"format": "grr_host", "comma_separated": true}],
     ["--yara_name_filter", "Filter to filter Yara sigs by.", null],
     ["--api_key", "API Key to the Yeti instance", null],
-    ["--api_root", "API root of the Yeti instance (e.g. http://localhost/api/)", "http://localhost/api/"],
+    ["--api_root", "API root of the Yeti instance (e.g. http://localhost/api/)", "http://localhost/api/", {"format": "url"}],
     ["--approvers", "Emails for GRR approval request.", null],
     ["--grr_server_url", "GRR endpoint", "http://localhost:8000", {"format": "url"}],
     ["--verify", "Whether to verify the GRR TLS certificate.", true],

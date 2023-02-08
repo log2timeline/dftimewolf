@@ -20,9 +20,9 @@
         }
     }],
     "args": [
-        ["project_name", "Name of the GCP project to collect logs from.", null],
+        ["project_name", "Name of the GCP project to collect logs from.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9]{4,28}[a-z0-9]$"}],
         ["filter_expression", "Filter expression to use to query GCP logs. See https://cloud.google.com/logging/docs/view/query-library for examples.", "resource.type = 'gce_instance'"],
         ["--backoff", "If GCP Cloud Logging API query limits are exceeded, retry with an increased delay between each query to try complete the query at a slower rate.", false],
-        ["--delay", "Number of seconds to wait between each GCP Cloud Logging query to avoid hitting API query limits", 0]
+        ["--delay", "Number of seconds to wait between each GCP Cloud Logging query to avoid hitting API query limits", 0, {"format": "regex", "regex": "^\\d+$"}]
     ]
 }

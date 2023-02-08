@@ -36,13 +36,13 @@
         }
     }],
     "args": [
-        ["project_name", "Name of the GCP project to collect logs from.", null],
-        ["instance_id", "Identifier for GCE instance (Instance ID).", null],
+        ["project_name", "Name of the GCP project to collect logs from.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9]{4,28}[a-z0-9]$"}],
+        ["instance_id", "Identifier for GCE instance (Instance ID).", null, {"format": "regex", "regex": "^[a-z][-a-z0-9]{0,61}[a-z0-9]?$"}],
         ["--incident_id", "Incident ID (used for Timesketch description).", null],
         ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
         ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true],
         ["--backoff", "If GCP Cloud Logging API query limits are exceeded, retry with an increased delay between each query to try complete the query at a slower rate.", false],
-        ["--delay", "Number of seconds to wait between each GCP Cloud Logging query to avoid hitting API query limits", 0]
+        ["--delay", "Number of seconds to wait between each GCP Cloud Logging query to avoid hitting API query limits", 0, {"format": "regex", "regex": "^\\d+$"}]
     ]
 }

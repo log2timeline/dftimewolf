@@ -48,7 +48,7 @@
     }
   ],
   "args": [
-      ["source_project_name", "Name of the project containing the instance / disks to copy.", null],
+      ["source_project_name", "Name of the project containing the instance / disks to copy.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9]{4,28}[a-z0-9]$"}],
       ["analysis_project_name", "Name of the project where the analysis VM will be created and disks copied to.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9]{4,28}[a-z0-9]$"}],
       ["--incident_id", "Incident ID to label the VM with.", null],
       ["--instances", "Name of the instance to analyze.", null],
@@ -56,7 +56,7 @@
       ["--all_disks", "Copy all disks in the designated instance. Overrides `disk_names` if specified.", false],
       ["--stop_instances", "Stop the designated instance after copying disks.", false],
       ["--create_analysis_vm", "Create an analysis VM in the destination project.", true],
-      ["--cpu_cores", "Number of CPU cores of the analysis VM.", 4],
+      ["--cpu_cores", "Number of CPU cores of the analysis VM.", 4, {"format": "regex", "regex": "^\\d+$"}],
       ["--boot_disk_size", "The size of the analysis VM boot disk (in GB).", 50, {"format": "regex", "regex": "^\\d+$"}],
       ["--boot_disk_type", "Disk type to use [pd-standard, pd-ssd].", "pd-standard", {"format": "regex", "regex": "^pd-((ssd)|(standard))$"}],
       ["--zone", "The GCP zone where the Analysis VM and copied disks will be created.", "us-central1-f", {"format": "gcp_zone"}]

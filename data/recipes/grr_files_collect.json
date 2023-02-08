@@ -40,6 +40,6 @@
         ["--grr_server_url", "GRR endpoint", "http://localhost:8000", {"format": "url"}],
         ["--grr_username", "GRR username", "admin"],
         ["--grr_password", "GRR password", "admin"],
-        ["--max_file_size", "Maximum size of files to collect (in bytes).", 5368709120]
+        ["--max_file_size", "Maximum size of files to collect (in bytes).", 5368709120, {"format": "regex", "regex": "^\\d+$"}]
     ]
 }

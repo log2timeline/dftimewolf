@@ -24,10 +24,10 @@
       }
   }],
   "args": [
-      ["source_project_name", "Source project containing the disk to export.", null],
-      ["gcs_output_location", "Google Cloud Storage parent bucket/folder to which to export the image.", null],
-      ["--source_disk_names", "Comma-separated list of disk names to export. If not provided, disks attached to `remote_instance_name` will be used.", null],
-      ["--remote_instance_name", "Instance in source project to export its disks. If not provided, `source_disk_names ` will be used.", null],
+      ["source_project_name", "Source project containing the disk to export.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9]{4,28}[a-z0-9]$"}],
+      ["gcs_output_location", "Google Cloud Storage parent bucket/folder to which to export the image.", null, {"format": "regex", "regex": "^(gs:\/\/)?[0-9a-z][-\\.0-9a-z_]{1,61}[0-9a-z](\/[-\\.0-9a-z_]*)*$"}],
+      ["--source_disk_names", "Comma-separated list of disk names to export. If not provided, disks attached to `remote_instance_name` will be used.", null, {"format": "regex", "comma_separated": true, "regex": "^[a-z][-a-z0-9]{0,61}[a-z0-9]?$"}],
+      ["--remote_instance_name", "Instance in source project to export its disks. If not provided, `source_disk_names ` will be used.", null, {"format": "regex", "comma_separated": true, "regex": "^[a-z][-a-z0-9]{0,61}[a-z0-9]?$"}],
       ["--all_disks", "If True, copy all disks attached to the `remote_instance_name` instance. If False and `remote_instance_name` is provided, it will select the instance's boot disk.", false],
       ["--boot_image_project", "Name of the project where the boot disk image of the export VM is stored.", "debian-cloud"],
       ["--boot_image_family", "Name of the image to use to create the boot disk of the export VM.", "debian-10"]

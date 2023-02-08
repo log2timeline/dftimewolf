@@ -32,7 +32,7 @@
         }
     }],
     "args": [
-        ["hunt_id", "ID of GRR Hunt results to fetch.", null],
+        ["hunt_id", "ID of GRR Hunt results to fetch.", null, {"format": "regex", "comma_separated": true, "regex": "^[0-9A-F]{16}$"}],
         ["reason", "Reason for exporting hunt (used for Timesketch description).", null],
         ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],

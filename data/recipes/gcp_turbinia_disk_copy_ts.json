@@ -67,7 +67,7 @@
         }
     }],
     "args": [
-        ["source_project_name", "Name of the project containing the instance / disks to copy.", null],
+        ["source_project_name", "Name of the project containing the instance / disks to copy.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9]{4,28}[a-z0-9]$"}],
         ["analysis_project_name", "Name of the project containing the Turbinia instance.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9]{4,28}[a-z0-9]$"}],
         ["--turbinia_recipe", "The Turbinia recipe name to use for evidence processing.", null],
         ["--turbinia_zone", "The GCP zone the disk to process and Turbinia workers are in.", "us-central1-f", {"format": "gcp_zone"}],
@@ -80,7 +80,7 @@
         ["--disks", "Comma-separated list of disks to copy from the source GCP project (if `instance` not provided).", null],
         ["--all_disks", "Copy all disks in the designated instance. Overrides disk_names if specified.", false],
         ["--stop_instances", "Stop the designated instances after copying disks.", false],
-        ["--cpu_cores", "Number of CPU cores of the analysis VM.", 4],
+        ["--cpu_cores", "Number of CPU cores of the analysis VM.", 4, {"format": "regex", "regex": "^\\d+$"}],
         ["--boot_disk_size", "The size of the analysis VM boot disk (in GB).", 50, {"format": "regex", "regex": "^\\d+$"}],
         ["--boot_disk_type", "Disk type to use [pd-standard, pd-ssd]", "pd-standard", {"format": "regex", "regex": "^pd-((ssd)|(standard))$"}],
         ["--image_project", "Name of the project where the analysis VM image is hosted.", "ubuntu-os-cloud"],
