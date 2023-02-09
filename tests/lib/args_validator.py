@@ -91,7 +91,7 @@ class AWSRegionValidatorTest(unittest.TestCase):
       self.validator.Validate(r, {})
 
   def test_ValidateFailure(self):
-    """Tests invalid values correctly throw an exeption."""
+    """Tests invalid values correctly throw an exception."""
     regions = ['invalid', '123456']
 
     for r in regions:
@@ -119,7 +119,7 @@ class GCPZoneValidatorTest(unittest.TestCase):
       self.validator.Validate(r, None)
 
   def test_ValidateFailure(self):
-    """Tests invalid values correctly throw an exeption."""
+    """Tests invalid values correctly throw an exception."""
     regions = ['nope', '123456']
 
     for r in regions:
@@ -250,7 +250,7 @@ class DatetimeValidatorTest(unittest.TestCase):
     # Correct order passes without exception
     self.validator._ValidateOrder(first, second, self.FORMAT_STRING)
 
-    # Reverse order raises exeption
+    # Reverse order raises exception
     with self.assertRaisesRegex(
         errors.RecipeArgsValidatorError,
         f"{second} is after {first} but it should be the other way around"):
