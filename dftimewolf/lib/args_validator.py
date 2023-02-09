@@ -308,7 +308,7 @@ class DatetimeValidator(AbstractValidator):
     "after": "dateY"  # optional
   }
 
-  The arguement will then be checked that it is before the date in 'before', and
+  The argument will then be checked that it is before the date in 'before', and
   after the date in 'after'. Caveat: if a value in before or after is also a
   parameter, eg with a recipe containing:
 
