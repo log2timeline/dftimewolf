@@ -119,7 +119,7 @@ class AzureRegionValidatorTest(unittest.TestCase):
       self.validator.Validate(r, {})
 
   def test_ValidateFailure(self):
-    """Tests invalid values correctly throw an exeption."""
+    """Tests invalid values correctly throw an exception."""
     regions = ['invalid', '123456']
 
     for r in regions:
