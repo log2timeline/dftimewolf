@@ -374,6 +374,8 @@ class URLValidatorTest(unittest.TestCase):
         'http://10.100.0.100:8080',
         'http://10.100.0.100',
         'https://10.100.0.100',
+        'http://localhost:8080',
+        'http://grr-server:8080',
         'http://grr.ramoj-playground.internal:8080',
         'http://grr.ramoj-playground.internal',
         'https://grr.ramoj-playground.internal',

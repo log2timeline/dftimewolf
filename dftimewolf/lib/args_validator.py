@@ -476,6 +476,7 @@ class URLValidator(FQDNValidator):
   """Validates a URL."""
 
   NAME = "url"
+  HOSTNAME_REGEX = r'^[-_a-z0-9]{3,64}$'  # Flat names, like 'localhost'
 
   def ValidateSingle(self,
                      operand: str,
@@ -489,21 +490,31 @@ class URLValidator(FQDNValidator):
     Raises:
       errors.RecipeArgsValidatorError: Raised if argument fails validation.
     """
-    u = urlparse(operand)
-    if not u.hostname:
+    url = urlparse(operand)
+    if not url.hostname:
       raise errors.RecipeArgsValidatorError(f"'{operand}' is an invalid URL.")
+
+    # Test if the FQDN is actually an IP address, which is fine.
     try:
-      # Test if the FQDN is actually an IP address, which is fine.
-      ipaddress.ip_address(u.hostname)
+      ipaddress.ip_address(url.hostname)
       return
     except ValueError:
       pass
 
+    # Hostname can also be a flat name, such as 'localhost'
     try:
-      FQDNValidator.ValidateSingle(self, u.hostname, validator_params)
+      if not validator_params:
+        validator_params = {}
+      validator_params['regex'] = self.HOSTNAME_REGEX
+      RegexValidator.ValidateSingle(self, url.hostname, validator_params)
+      return
     except errors.RecipeArgsValidatorError:
-      # Give a nicer error message than the regex failure
-      raise errors.RecipeArgsValidatorError(f"'{operand}' is an invalid URL.")
+      # Finally, hostname can be a FQDN.
+      try:
+        FQDNValidator.ValidateSingle(self, url.hostname, validator_params)
+      except errors.RecipeArgsValidatorError:
+        # Give a nicer error message than the regex failure
+        raise errors.RecipeArgsValidatorError(f"'{operand}' is an invalid URL.")
 
 
 class ValidatorManager:
