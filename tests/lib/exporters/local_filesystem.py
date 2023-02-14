@@ -37,7 +37,7 @@ class LocalFileSystemTest(unittest.TestCase):
     local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
     self.assertIsNotNone(local_filesystem_copy)
 
-  @mock.patch('shutil.copytree')
+  @mock.patch('shutil.copytree', autospec=True)
   @mock.patch('shutil.copy2')
   @mock.patch('os.path.isdir', side_effect=FakeIsDir)
   @mock.patch('os.listdir', side_effect=FakeListDir)
@@ -50,6 +50,8 @@ class LocalFileSystemTest(unittest.TestCase):
                       mock_copy2,
                       mock_copytree):
     """Tests that the module processes input and copies correctly."""
+    mock_copytree.return_value = '/fake/destination'
+    mock_copy2.return_value = '/fake/destination'
     test_state = state.DFTimewolfState(config.Config)
     local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
 
@@ -57,16 +59,17 @@ class LocalFileSystemTest(unittest.TestCase):
         name='description', path='/fake/evidence_directory'))
     local_filesystem_copy.StoreContainer(containers.File(
         name='description2', path='/fake/evidence_file'))
-    mock_mkdtemp.return_value = '/fake/random'
+    mock_mkdtemp.return_value = '/fake/destination'
 
     local_filesystem_copy.SetUp()
     local_filesystem_copy.Process()
 
     mock_copytree.assert_has_calls([
-        mock.call(
-            '/fake/evidence_directory', '/fake/random', dirs_exist_ok=True)
+        mock.call('/fake/evidence_directory',
+                  '/fake/destination/evidence_directory',
+                  dirs_exist_ok=True)
     ])
-    mock_copy2.assert_called_with('/fake/evidence_file', '/fake/random')
+    mock_copy2.assert_called_with('/fake/evidence_file', '/fake/destination')
 
   @mock.patch('dftimewolf.lib.utils.Compress')
   @mock.patch('tempfile.mkdtemp')

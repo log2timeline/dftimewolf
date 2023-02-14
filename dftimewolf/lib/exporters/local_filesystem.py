@@ -95,16 +95,18 @@ class LocalFilesystemCopy(module.BaseModule):
     full_paths = []
     if os.path.isdir(source):
       try:
-        shutil.copytree(source, destination_directory, dirs_exist_ok=True)
-        full_paths.append(destination_directory)
+        basename = source.split('/')[-1]
+        full_paths.append(shutil.copytree(
+            source, 
+            '/'.join([destination_directory, basename]),
+            dirs_exist_ok=True))
       except shutil.Error as e:
         self.ModuleError(str(e), critical=True)
     else:
       try:
-        shutil.copy2(source, destination_directory)
+        full_paths.append(shutil.copy2(source, destination_directory))
       except shutil.SameFileError as exception:
         self.logger.warning(str(exception))
-      full_paths.append(os.path.join(destination_directory, source))
 
     return full_paths
 

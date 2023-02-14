@@ -236,6 +236,8 @@ class File(interface.AttributeContainer):
 
   def __str__(self) -> str:
     """Override __str()__."""
+    if self.path.endswith(self.name):
+      return self.path  
     return f'{self.path}/{self.name}'
 
   def __eq__(self, other: File) -> bool:
