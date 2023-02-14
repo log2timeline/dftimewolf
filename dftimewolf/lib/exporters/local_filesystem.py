@@ -97,7 +97,7 @@ class LocalFilesystemCopy(module.BaseModule):
       try:
         basename = source.split('/')[-1]
         full_paths.append(shutil.copytree(
-            source, 
+            source,
             '/'.join([destination_directory, basename]),
             dirs_exist_ok=True))
       except shutil.Error as e:
