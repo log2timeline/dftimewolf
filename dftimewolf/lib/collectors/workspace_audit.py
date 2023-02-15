@@ -156,9 +156,12 @@ class WorkspaceAuditCollector(module.BaseModule):
       start_datetime = datetime.datetime.fromisoformat(
         start_time.replace('Z', '+00:00'))
       if start_datetime < now - datetime.timedelta(days=180):
+        max_date = (now - datetime.timedelta(days=180)).strftime(
+          '%Y-%m-%dT%H:%M:%SZ')
         self.ModuleError(
             'Maximum gWorkspace retention is 6 months. '
-            'Please choose a more recent start date.', critical=True)
+            'Please choose a more recent start date '
+            f'(Maximum: {max_date}).', critical=True)
 
   def Process(self) -> None:
     """Copies audit logs from a Google Workspace log."""
