@@ -66,6 +66,7 @@ MODULES = {
   'SanityChecks': 'dftimewolf.lib.preflights.sanity_checks',
   'SCPExporter': 'dftimewolf.lib.exporters.scp_ex',
   'SSHMultiplexer': 'dftimewolf.lib.preflights.ssh_multiplexer',
+  'Telemetry': 'dftimewolf.lib.preflights.telemetry',
   'TimesketchEnhancer': 'dftimewolf.lib.enhancers.timesketch',
   'TimesketchExporter': 'dftimewolf.lib.exporters.timesketch',
   'TurbiniaArtifactProcessor': 'dftimewolf.lib.processors.turbinia_artifact',
