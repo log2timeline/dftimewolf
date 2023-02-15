@@ -141,6 +141,17 @@ class BaseModule(object):
 
     self.state.StoreContainer(container, self.name)
 
+  def StreamContainer(self, container: "interface.AttributeContainer") -> None:
+    """Streams a container to the next module in the recipe.
+
+    Args:
+      container (AttributeContainer): data to store.
+    """
+    self.logger.debug(f'{self.name} is streaming a {container.CONTAINER_TYPE} '
+        f'container: {str(container)}')
+
+    self.state.StreamContainer(container, self.name)
+
   def GetContainers(self,
                     container_class: Type[T],
                     pop: bool=False,

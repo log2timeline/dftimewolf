@@ -234,7 +234,7 @@ class DFTimewolfState(object):
     """Thread-safe method to store data in the state's store.
 
     Args:
-      container (AttributeContainer): data to store.
+      container: data to store.
       source_module: the originating module.
     """
     with self._state_lock:
@@ -571,13 +571,17 @@ class DFTimewolfState(object):
       self.streaming_callbacks[container_type] = []
     self.streaming_callbacks[container_type].append(target)
 
-  def StreamContainer(self, container: "interface.AttributeContainer") -> None:
+  def StreamContainer(self,
+                      container: "interface.AttributeContainer",
+                      source_module: str = "") -> None:
     """Streams a container to the callbacks that are registered to handle it.
 
     Args:
-      container (interface.AttributeContainer): container instance that will be
-          streamed to any registered callbacks.
+      container: container instance that will be streamed to any
+          registered callbacks.
+      source_module: the originating module.
     """
+    container.src_module_name = source_module
     for callback in self.streaming_callbacks.get(type(container), []):
       callback(container)
 
