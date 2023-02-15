@@ -82,7 +82,7 @@ RECIPE = {
             }
         }
     ],
-    'args': [  # TODO - Add args validators when they're all written
+    'args': [
         ['source_project_name', 'Name of the project containing the instance / disks to copy.', None, {'format': 'regex', 'comma_separated': False, 'regex': '^[a-z][-a-z0-9]{4,28}[a-z0-9]$'}],
         ['destination_project_name', 'Name of the project where the analysis VM will be created and disks copied to.', None, {'format': 'regex', 'comma_separated': False, 'regex': '^[a-z][-a-z0-9]{4,28}[a-z0-9]$'}],
         ['--incident_id', 'Incident ID to label the VM with.', None],
