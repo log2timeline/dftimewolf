@@ -161,7 +161,7 @@ class WorkspaceAuditCollector(module.BaseModule):
         self.ModuleError(
             'Maximum gWorkspace retention is 6 months. '
             'Please choose a more recent start date '
-            f'(Maximum: {max_date}).', critical=True)
+            f'(Earliest: {max_date}).', critical=True)
 
   def Process(self) -> None:
     """Copies audit logs from a Google Workspace log."""

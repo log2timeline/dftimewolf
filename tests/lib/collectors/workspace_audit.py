@@ -48,7 +48,7 @@ class WorkspaceAuditCollectorTest(unittest.TestCase):
     self.assertEqual(
       error.exception.message,
       'Maximum gWorkspace retention is 6 months. Please choose a more recent '
-      'start date (Maximum: 2022-07-05T00:00:00Z).')
+      'start date (Earliest: 2022-07-05T00:00:00Z).')
 
     # Assert that set up with malformed date fails
     with self.assertRaises(errors.DFTimewolfError) as error:
