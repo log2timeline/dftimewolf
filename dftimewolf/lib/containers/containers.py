@@ -640,3 +640,23 @@ class OsqueryResult(interface.AttributeContainer):
   def __str__(self) -> str:
     """Override __str()__."""
     return f'{self.hostname}:{self.name}'
+
+
+class Telemetry(interface.AttributeContainer):
+  """Attribute container for Telemetry.
+
+  Attributes:
+    key: The key of the telemetry.
+    value: The value of the telemetry.
+  """
+
+  CONTAINER_TYPE = 'telemetry'
+
+  def __init__(self, key: str, value: str):
+    super(Telemetry, self).__init__()
+    self.key = key
+    self.value = value
+
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return f'Telemetry<{self.key}:{self.value}>'
