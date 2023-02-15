@@ -101,7 +101,7 @@ RECIPE = {
     ['gcp_zone', 'Destination GCP zone in which to create the disks.', None, {'format': 'gcp_zone'}],
     ['volumes', 'Comma separated list of EBS volume IDs (e.g. vol-xxxxxxxx).', None, {'format': 'regex', 'comma_separated': True, 'regex': '^vol-[0-9a-f]{8,17}$'}],
     ['aws_bucket', 'AWS bucket for image storage.', None, {'format': 'regex', 'comma_separated': False, 'regex': '^(s3:\/\/)?[0-9a-z][-\\.0-9a-z]{1,61}[0-9a-z]$'}],
-    ["gcp_bucket", "GCP bucket for image storage.", None, {'format': 'regex', 'comma_separated': False, 'regex': '^(gs:\/\/)?[0-9a-z][-\\.0-9a-z_]{1,61}[0-9a-z]$'}],
+    ['gcp_bucket', 'GCP bucket for image storage.', None, {'format': 'regex', 'comma_separated': False, 'regex': '^(gs:\/\/)?[0-9a-z][-\\.0-9a-z_]{1,61}[0-9a-z]$'}],
     ['--subnet', 'AWS subnet to copy instances from, required if there is no default subnet in the volume region.', None, {'format': 'regex', 'comma_separated': False, 'regex': '^subnet-[0-9a-f]{8,17}$'}],
     ['--gcp_project', 'Destination GCP project.', None],
     ['--aws_profile', 'Source AWS profile.', None],
