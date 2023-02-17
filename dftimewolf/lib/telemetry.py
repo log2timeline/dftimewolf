@@ -1,32 +1,23 @@
 """Telemetry module."""
 import datetime
-from typing import Optional
 import uuid
-
-from dftimewolf.lib import module
-from dftimewolf.lib.containers import containers
-from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.state import DFTimewolfState
 
 from google.cloud import spanner
 
-class Telemetry(module.PreflightModule):
+class Telemetry():
   """Sends telemetry data to Google Cloud Spanner."""
 
-  def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str]=None,
-               critical: bool=False) -> None:
-    """Initializes a Telemetry object."""
-    super(Telemetry, self).__init__(state, name=name, critical=critical)
-    self.database = None
-    self.uuid = None
+  # Make telemetry a singleton.
+  def __new__(cls, *args, **kwargs):
+    if not hasattr(cls, 'instance'):
+      cls.instance = super(Telemetry, cls).__new__(cls)
+    return cls.instance
 
-  # pylint: disable=arguments-differ
-  def SetUp(self,
-            project_name: str,
-            instance_name: str,
-            database_name: str) -> None:
+  def __init__(self,
+               project_name: str,
+               instance_name: str,
+               database_name: str) -> None:
+    """Initializes a Telemetry object."""
     spanner_client = spanner.Client(project=project_name)
     instance = spanner_client.instance(instance_name)
     self.database = instance.database(database_name)
@@ -34,18 +25,6 @@ class Telemetry(module.PreflightModule):
     # In another life, we'd get the WF ID from somewhere else,
     # but for now, we'll just generate a UUID.
     self.uuid = str(uuid.uuid4())
-    self.LogWorkflowStart()
-    self.logger.success(f'dfTimewolf Workflow UUID: {self.uuid}')
-
-    # Setup streaming handlers
-    self.state.RegisterStreamingCallback(
-      self.LogTelemetryContainer,
-      containers.Telemetry)
-
-    telemetry_container = containers.Telemetry(
-      'Workflow started',
-      str(datetime.datetime.now()))
-    self.StreamContainer(telemetry_container)
 
 
   def GetAllWorkflowTelemetry(self):
@@ -58,13 +37,13 @@ class Telemetry(module.PreflightModule):
         query,
         params={'uuid': self.uuid},
         param_types={'uuid': spanner.param_types.STRING})
-      for row in result:
-        self.logger.info(f'\t{row[1]}:\t\t{row[2]} - {row[3]}: {row[4]}')
+      # for row in result:
+      #   self.logger.info(f'\t{row[1]}:\t\t{row[2]} - {row[3]}: {row[4]}')
 
-    self.logger.info(f'Getting all telemetry for Workflow {self.uuid}...')
+    # self.logger.info(f'Getting all telemetry for Workflow {self.uuid}...')
     self.database.run_in_transaction(_GetAllWorkflowTelemetryTransaction)
 
-  def LogWorkflowStart(self):
+  def LogWorkflowStart(self, recipe_name: str, modules: set[str]) -> None:
     """Logs the start of a Workflow."""
     def _LogWorkflowStartTransaction(transaction, params: dict):
       # Using keys() and values() is not deterministic enough.
@@ -75,12 +54,10 @@ class Telemetry(module.PreflightModule):
         values.append(value)
       transaction.insert(table='Workflow', columns=columns, values=[values])
 
-    modules = [m['name'] for m in self.state.recipe.get('modules', [])]
-    modules.extend([m['name'] for m in self.state.recipe.get('preflights', [])])
     params = {
       'uuid': self.uuid,
       'creation_time': datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-      'recipe': self.state.recipe.get('name', 'Unknown Recipe'),
+      'recipe': recipe_name,
       'modules': ','.join(modules),
       'preflights_delta': '0',
       'setup_delta': '0',
@@ -89,6 +66,25 @@ class Telemetry(module.PreflightModule):
       'metadata': '',
     }
     self.database.run_in_transaction(_LogWorkflowStartTransaction, params)
+
+  def UpdateWorkflowtelemetry(self, key: str, value: int) -> None:
+    def _UpdateWorkflowtelemetryTransaction(transaction, key: str, value: str):
+      transaction.execute_update(
+        f'UPDATE Workflow SET {key} = @value WHERE uuid = @uuid',
+        params={'key': key, 'value': value, 'uuid':self.uuid},
+        param_types={
+          # 'key': spanner.param_types.STRING,
+          'value': spanner.param_types.INT64,
+          'uuid': spanner.param_types.STRING
+          })
+    if key not in {
+      'preflights_delta',
+      'setup_delta',
+      'run_delta',
+      'total_time'}:
+      raise ValueError(f'Invalid key {key}')
+    self.database.run_in_transaction(
+      _UpdateWorkflowtelemetryTransaction, key, value)
 
   def LogTelemetry(self, key: str, value: str, src_module_name: str) -> None:
     """Logs a telemetry event.
@@ -116,17 +112,7 @@ class Telemetry(module.PreflightModule):
     }
     self.database.run_in_transaction(_LogTelemetryTransaction, telemetry)
 
-  def LogTelemetryContainer(self, container: containers.Telemetry) -> None:
+  def LogTelemetryContainer(
+    self, key: str, value: str, src_module_name: str) -> None:
     """Logs a telemetry event."""
-    self.LogTelemetry(container.key, container.value, container.src_module_name)
-
-
-  def Process(self) -> None:
-    # Unused, everything happens streaming.
-    pass
-
-  def CleanUp(self) -> None:
-    self.GetAllWorkflowTelemetry()
-
-
-modules_manager.ModulesManager.RegisterModule(Telemetry)
+    self.LogTelemetry(key, value, src_module_name)
