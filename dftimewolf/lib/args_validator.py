@@ -4,7 +4,7 @@ import abc
 import ipaddress
 import re
 
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, Tuple
 
 import datetime
 from urllib.parse import urlparse
@@ -21,21 +21,20 @@ class AbstractValidator(abc.ABC):
     """Initialise."""
 
   @abc.abstractmethod
-  def Validate(
-      self, operand: Any, validator_params: Optional[Dict[str, Any]]) -> None:
+  def Validate(self,
+               operand: Any,
+               validator_params: Optional[Dict[str, Any]]) -> Tuple[bool, str]:
     """Validate the parameter.
-
-    Subclasses that override this should raise errors.RecipeArgsValidatorError
-    on validation failures, with a message describing the problem.
 
     Args:
       operand: The argument value to validate.
       validator_params: Any extra fields to configure the validator. These come
         from the recipe json.
 
-    Raises:
-      errors.RecipeArgsValidatorError: If the arguments fail validation, either
-          from invalid validator name or config, or from an invalid argument.
+    Returns:
+      A Tuple:
+        boolean: True if operand passes validation, False otherwise.
+        str: A message for validation failure. Only set if the boolean is false.
     """
 
 
@@ -47,7 +46,8 @@ class CommaSeparatedValidator(AbstractValidator):
 
   def Validate(self,
                operand: str,
-               validator_params: Optional[Dict[str, Any]] = None) -> None:
+               validator_params: Optional[Dict[str, Any]] = None
+               ) -> Tuple[bool, str]:
     """Split the string by commas if validator_params['comma_separated'] == True
     and validate each component in ValidateSingle.
 
@@ -56,9 +56,13 @@ class CommaSeparatedValidator(AbstractValidator):
       validator_params: Any extra fields to configure the validator. These come
         from the recipe json and can include 'comma_separated' - Default False.
 
+    Returns:
+      A Tuple:
+        boolean: True if operand passes validation, False otherwise.
+        str: A message for validation failure. Only set if the boolean is false.
+
     Raises:
-      errors.RecipeArgsValidatorError: If the arguments fail validation, either
-          from invalid validator name or config, or from an invalid argument.
+      errors.RecipeArgsValidatorError: An error in validation.
     """
 
     if not validator_params:
@@ -72,12 +76,17 @@ class CommaSeparatedValidator(AbstractValidator):
     else:
       operands.append(operand)
 
-    for op in operands:
-      self.ValidateSingle(op, validator_params)
+    results = [self.ValidateSingle(op, validator_params) for op in operands]
+
+    if not all(r[0] for r in results):
+      return False, '\n'.join([r[1] for r in results if not r[0]])
+    return True, ''
 
   @abc.abstractmethod
-  def ValidateSingle(
-      self, operand: str, validator_params: Optional[Dict[str, Any]]) -> None:
+  def ValidateSingle(self,
+                     operand: str,
+                     validator_params: Optional[Dict[str, Any]]
+                     ) -> Tuple[bool, str]:
     """Validate a single operand from a comma separated list.
 
     Args:
@@ -85,9 +94,13 @@ class CommaSeparatedValidator(AbstractValidator):
       validator_params: Any extra fields to configure the validator. These come
         from the recipe json.
 
+    Returns:
+      A Tuple:
+        boolean: True if operand passes validation, False otherwise.
+        str: A message for validation failure. Only set if the boolean is false.
+
     Raises:
-      errors.RecipeArgsValidatorError: If the arguments fail validation, either
-          from invalid validator name or config, or from an invalid argument.
+      errors.RecipeArgsValidatorError: An error in validation.
     """
 
 
@@ -98,8 +111,10 @@ class DefaultValidator(AbstractValidator):
 
   def Validate(self,
                operand: Any,
-               validator_params: Optional[Dict[str, Any]]) -> None:
-    """Never raises an errors.RecipeArgsValidatorError."""
+               validator_params: Optional[Dict[str, Any]]
+               ) -> Tuple[bool, str]:
+    """Always passes."""
+    return True, ''
 
 
 class AWSRegionValidator(AbstractValidator):
@@ -125,18 +140,25 @@ class AWSRegionValidator(AbstractValidator):
 
   def Validate(self,
                operand: Any,
-               validator_params: Optional[Dict[str, Any]] = None) -> None:
+               validator_params: Optional[Dict[str, Any]] = None
+               ) -> Tuple[bool, str]:
     """Validate operand is a valid AWS region.
 
     Args:
       operand: The argument value to validate.
       validator_params: Unused for this validator.
 
+    Returns:
+      A Tuple:
+        boolean: True if operand is a valid AWS region, False otherwise.
+        str: A message for validation failure. Only set if the boolean is false.
+
     Raises:
-      errors.RecipeArgsValidatorError: If operand is not a valid AWS region.
+      errors.RecipeArgsValidatorError: An error in validation.
     """
     if operand not in self._regions:
-      raise errors.RecipeArgsValidatorError('Invalid AWS Region name')
+      return False, 'Invalid AWS Region name'
+    return True, ''
 
 
 class AzureRegionValidator(AbstractValidator):
@@ -169,18 +191,24 @@ class AzureRegionValidator(AbstractValidator):
 
   def Validate(self,
                operand: Any,
-               validator_params: Optional[Dict[str, Any]]) -> None:
+               validator_params: Optional[Dict[str, Any]]) -> Tuple[bool, str]:
     """Validate that operand is a valid Azure region.
 
     Args:
       operand: The argument value to validate.
       validator_params: Unused for this validator.
 
+    Returns:
+      A Tuple:
+        boolean: True if operand is a valid Azure region, False otherwise.
+        str: A message for validation failure. Only set if the boolean is false.
+
     Raises:
-      errors.RecipeArgsValidatorError: If operand is not a valid Azure region.
+      errors.RecipeArgsValidatorError: An error in validation.
     """
     if operand not in self._regions:
-      raise errors.RecipeArgsValidatorError('Invalid Azure region name')
+      return False, 'Invalid Azure Region name'
+    return True, ''
 
 
 class GCPZoneValidator(AbstractValidator):
@@ -226,18 +254,24 @@ class GCPZoneValidator(AbstractValidator):
 
   def Validate(self,
                operand: Any,
-               validator_params: Optional[Dict[str, Any]]) -> None:
+               validator_params: Optional[Dict[str, Any]]) -> Tuple[bool, str]:
     """Validate that operand is a valid GCP zone.
 
     Args:
       operand: The argument value to validate.
       validator_params: Unused for this validator.
 
+    Returns:
+      A Tuple:
+        boolean: True if operand is a valid GCP zone, False otherwise.
+        str: A message for validation failure. Only set if the boolean is false.
+
     Raises:
-      errors.RecipeArgsValidatorError: If operand is not a valid GCP Zone.
+      errors.RecipeArgsValidatorError: An error in validation.
     """
     if operand not in self._zones:
-      raise errors.RecipeArgsValidatorError('Invalid GCP zone name')
+      return False, 'Invalid GCP Zone name'
+    return True, ''
 
 
 class RegexValidator(CommaSeparatedValidator):
@@ -247,7 +281,8 @@ class RegexValidator(CommaSeparatedValidator):
 
   def ValidateSingle(self,
                      operand: str,
-                     validator_params: Optional[Dict[str, Any]] = None) -> None:
+                     validator_params: Optional[Dict[str, Any]] = None
+                     ) -> Tuple[bool, str]:
     """Validate a string according to a regular expression.
 
     Args:
@@ -255,9 +290,13 @@ class RegexValidator(CommaSeparatedValidator):
       validator_params: Validator parameters from the json recipe. Must include
         'regex'.
 
+    Returns:
+      A Tuple:
+        boolean: True if operand matches the regex, False otherwise.
+        str: A message for validation failure. Only set if the boolean is false.
+
     Raises:
-      errors.RecipeArgsValidatorError: Raised on validator config errors, or if
-        argument fails validation.
+      errors.RecipeArgsValidatorError: An error in validation.
     """
     if not validator_params or 'regex' not in validator_params:
       raise errors.RecipeArgsValidatorError(
@@ -265,8 +304,9 @@ class RegexValidator(CommaSeparatedValidator):
 
     regex = re.compile(validator_params['regex'])
     if not regex.match(str(operand)):
-      raise errors.RecipeArgsValidatorError(
+      return (False,
           f'"{operand}" does not match regex /{validator_params["regex"]}/')
+    return True, ''
 
 
 class SubnetValidator(CommaSeparatedValidator):
@@ -276,21 +316,27 @@ class SubnetValidator(CommaSeparatedValidator):
 
   def ValidateSingle(self,
                      operand: str,
-                     validator_params: Optional[Dict[str, Any]]) -> None:
+                     validator_params: Optional[Dict[str, Any]]
+                     ) -> Tuple[bool, str]:
     """Validate that operand is a valid subnet string.
 
     Args:
       operand: The argument value to validate.
       validator_params: Unused for this validator.
 
+    Returns:
+      A Tuple:
+        boolean: True if operand passes validation, False otherwise.
+        str: A message for validation failure. Only set if the boolean is false.
+
     Raises:
-      errors.RecipeArgsValidatorError: Raised on validator config errors, or if
-        argument fails validation.
+      errors.RecipeArgsValidatorError: An error in validation.
     """
     try:
       ipaddress.ip_network(operand)
     except ValueError:
-      raise errors.RecipeArgsValidatorError(f'{operand} is not a valid subnet.')
+      return False, f'{operand} is not a valid subnet.'
+    return True, ''
 
 
 class DatetimeValidator(AbstractValidator):
@@ -340,7 +386,7 @@ class DatetimeValidator(AbstractValidator):
 
   def Validate(self,
                operand: Any,
-               validator_params: Optional[Dict[str, Any]]) -> None:
+               validator_params: Optional[Dict[str, Any]]) -> Tuple[bool, str]:
     """Validate that operand is a valid GCP zone.
 
     Args:
@@ -350,8 +396,13 @@ class DatetimeValidator(AbstractValidator):
         'before': A datetime that the operand must be before (optional)
         'after': A datetime that the operand must be after (optional)
 
+    Returns:
+      A Tuple:
+        boolean: True if operand passes validation, False otherwise.
+        str: A message for validation failure. Only set if the boolean is false.
+
     Raises:
-      errors.RecipeArgsValidatorError: If validation fails.
+      errors.RecipeArgsValidatorError: An error in validation.
     """
     if not validator_params or 'format_string' not in validator_params:
       raise errors.RecipeArgsValidatorError(
@@ -361,48 +412,60 @@ class DatetimeValidator(AbstractValidator):
       dt = datetime.datetime.strptime(
           operand, validator_params['format_string'])
     except ValueError as exception:  # Date parsing failure
-      raise errors.RecipeArgsValidatorError(str(exception))
+      return False, str(exception)
 
-    if 'before' in validator_params and validator_params['before'] is not None:
-      self._ValidateOrder(
-          dt, validator_params['before'], validator_params["format_string"])
+    try:
+      if 'before' in validator_params and validator_params['before']:
+        if not self._ValidateOrder(
+            dt, validator_params['before'], validator_params["format_string"]):
+          return False, (f'{validator_params["before"]} is before {dt} but it '
+                         'should be the other way around')
 
-    if 'after' in validator_params and validator_params['after'] is not None:
-      self._ValidateOrder(
-          validator_params['after'], dt, validator_params["format_string"])
+      if 'after' in validator_params and validator_params['after']:
+        if not self._ValidateOrder(
+            validator_params['after'], dt, validator_params["format_string"]):
+          return False, (f'{dt} is before {validator_params["after"]} but it '
+                         'should be the other way around')
+    except ValueError as exception:
+      raise errors.RecipeArgsValidatorError(
+          f'Error in order comparison: {str(exception)}')
+    return True, ''
+
 
   def _ValidateOrder(self,
                      first: Union[str, datetime.datetime],
                      second: Union[str, datetime.datetime],
-                     format_string: str) -> None:
+                     format_string: str) -> bool:
     """Validates date ordering.
 
     Args:
-      first: The earlier date.
-      second: The later date.
+      first: The intended earlier date.
+      second: The intended later date.
       format: A format string defining str -> datetime conversion.
 
+    Returns:
+      True if the ordering is correct, false otherwise.
+
     Raises:
-      errors.RecipeArgsValidatorError: If the order is incorrect or string ->
-        datetime conversion fails."""
-    try:
-      if isinstance(first, str):
-        first = datetime.datetime.strptime(first, format_string)
-      if isinstance(second, str):
-        second = datetime.datetime.strptime(second, format_string)
-    except ValueError as exception:
-      raise errors.RecipeArgsValidatorError(
-          f'Error in order comparison: {str(exception)}')
+      ValueError: If string -> datetime conversion fails.
+    """
+    if isinstance(first, str):
+      first = datetime.datetime.strptime(first, format_string)
+    if isinstance(second, str):
+      second = datetime.datetime.strptime(second, format_string)
 
-    if first > second:
-      raise errors.RecipeArgsValidatorError(
-          f'{first} is after {second} but it should be the other way around')
+    return first < second
 
 
-class FQDNValidator(RegexValidator):
-  """Validator for FQDNs."""
+class HostnameValidator(RegexValidator):
+  """Validator for Hostnames.
 
-  NAME = 'fqdn'
+  Can validate flat hostnames and FQDNs. Optionally, can have `fqdn_only`
+  specified to require FQDNs and reject flat hostnames."""
+
+  NAME = 'hostname'
+  FQDN_ONLY_FLAG = 'fqdn_only'
+  HOSTNAME_REGEX = r'^[-_a-z0-9]{3,64}$'  # Flat names, like 'localhost'
   FQDN_REGEX = (
       r'(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$)')
   # Source: https://stackoverflow.com/questions/11809631/fully-qualified-domain-name-validation#20204811  # pylint: disable=line-too-long
@@ -410,29 +473,41 @@ class FQDNValidator(RegexValidator):
 
   def ValidateSingle(self,
                      operand: str,
-                     validator_params: Optional[Dict[str, Any]] = None) -> None:
+                     validator_params: Optional[Dict[str, Any]] = None
+                     ) -> Tuple[bool, str]:
     """Validate an FQDN.
 
     Args:
       operand: The FQDN to validate.
-      validator_params: Unused for this validator.
+      validator_params: May contain `fqdn_only` if flat names should be
+        considered invalid. Default False.
+
+    Returns:
+      A Tuple:
+        boolean: True if operand is a valid FQDN, False otherwise.
+        str: A message for validation failure. Only set if the boolean is false.
 
     Raises:
-      errors.RecipeArgsValidatorError: Raised if argument fails validation.
+      errors.RecipeArgsValidatorError: An error in validation.
     """
     if not validator_params:
       validator_params = {}
-    validator_params['regex'] = self.FQDN_REGEX
 
-    try:
-      super().ValidateSingle(operand, validator_params)
-    except errors.RecipeArgsValidatorError:
-      # Give a nicer error message than the regex failure
-      raise errors.RecipeArgsValidatorError(
-          f"'{operand}' is an invalid hostname.")
+    regexes = [self.FQDN_REGEX]
+    if not validator_params.get(self.FQDN_ONLY_FLAG, False):
+      regexes.append(self.HOSTNAME_REGEX)
+    results = []
+
+    for regex in regexes:
+      validator_params['regex'] = regex
+      results.append(super().ValidateSingle(operand, validator_params))
+
+    if not any(r[0] for r in results):
+      return False, f"'{operand}' is an invalid hostname."
+    return True, ''
 
 
-class GRRHostValidator(FQDNValidator):
+class GRRHostValidator(HostnameValidator):
   """Validates a GRR hostname.
 
   Grr can accept FQDNs, or Grr client IDs, which take the form of
@@ -444,77 +519,80 @@ class GRRHostValidator(FQDNValidator):
 
   def ValidateSingle(self,
                      operand: str,
-                     validator_params: Optional[Dict[str, Any]] = None) -> None:
+                     validator_params: Optional[Dict[str, Any]] = None
+                     ) -> Tuple[bool, str]:
     """Validate a Grr host ID.
 
     Args:
       operand: The ID to validate.
       validator_params: Unused for this validator.
 
+    Returns:
+      A Tuple:
+        boolean: True if operand is a valid Grr ID, False otherwise.
+        str: A message for validation failure. Only set if the boolean is false.
+
     Raises:
-      errors.RecipeArgsValidatorError: Raised if argument fails validation.
+      errors.RecipeArgsValidatorError: An error in validation.
     """
     if not validator_params:
       validator_params = {}
+    validator_params['regex'] = self.GRR_REGEX
 
-    # Grr Host IDs can be FQDNs, test that first
-    try:
-      FQDNValidator.ValidateSingle(self, operand, validator_params)
-    except errors.RecipeArgsValidatorError:
-      # Hostname validation failed, check for Grr client ID.
-      validator_params['regex'] = self.GRR_REGEX
+    bases = [RegexValidator, HostnameValidator]
+    results = [base.ValidateSingle(self, operand, validator_params)
+               for base in bases]
 
-      try:
-        RegexValidator.ValidateSingle(self, operand, validator_params)
-      except errors.RecipeArgsValidatorError:
-        # Give a nicer error message than the regex failure
-        raise errors.RecipeArgsValidatorError(
-            f"'{operand}' is an invalid Grr host ID.")
+    if not any(r[0] for r in results):
+      return False, f"'{operand}' is an invalid Grr host ID."
+    return True, ''
 
 
-class URLValidator(FQDNValidator):
+class URLValidator(HostnameValidator):
   """Validates a URL."""
 
   NAME = "url"
-  HOSTNAME_REGEX = r'^[-_a-z0-9]{3,64}$'  # Flat names, like 'localhost'
 
   def ValidateSingle(self,
                      operand: str,
-                     validator_params: Optional[Dict[str, Any]] = None) -> None:
+                     validator_params: Optional[Dict[str, Any]] = None
+                     ) -> Tuple[bool, str]:
     """Validates a URL.
 
     Args:
       operand: The URL to validate.
       validator_params: Unused for this validator.
 
+    Returns:
+      A Tuple:
+        boolean: True if operand is a valid URL, False otherwise.
+        str: A message for validation failure. Only set if the boolean is false.
+
     Raises:
-      errors.RecipeArgsValidatorError: Raised if argument fails validation.
+      errors.RecipeArgsValidatorError: An error in validation.
     """
     url = urlparse(operand)
     if not url.hostname:
-      raise errors.RecipeArgsValidatorError(f"'{operand}' is an invalid URL.")
+      return False, f"'{operand}' is an invalid URL."
 
     # Test if the FQDN is actually an IP address, which is fine.
     try:
       ipaddress.ip_address(url.hostname)
-      return
+      return True, ''
     except ValueError:
       pass
 
-    # Hostname can also be a flat name, such as 'localhost'
-    try:
-      if not validator_params:
-        validator_params = {}
-      validator_params['regex'] = self.HOSTNAME_REGEX
-      RegexValidator.ValidateSingle(self, url.hostname, validator_params)
-      return
-    except errors.RecipeArgsValidatorError:
-      # Finally, hostname can be a FQDN.
-      try:
-        FQDNValidator.ValidateSingle(self, url.hostname, validator_params)
-      except errors.RecipeArgsValidatorError:
-        # Give a nicer error message than the regex failure
-        raise errors.RecipeArgsValidatorError(f"'{operand}' is an invalid URL.")
+    if not validator_params:
+      validator_params = {}
+    validator_params['regex'] = self.HOSTNAME_REGEX
+
+    bases = [RegexValidator, HostnameValidator]
+    results = [base.ValidateSingle(self, url.hostname, validator_params)
+               for base in bases]
+
+    if not any(r[0] for r in results):
+      return False, f"'{operand}' is an invalid URL."
+    return True, ''
 
 
 class ValidatorManager:
@@ -528,7 +606,7 @@ class ValidatorManager:
     self.RegisterValidator(AWSRegionValidator())
     self.RegisterValidator(AzureRegionValidator())
     self.RegisterValidator(DatetimeValidator())
-    self.RegisterValidator(FQDNValidator())
+    self.RegisterValidator(HostnameValidator())
     self.RegisterValidator(GCPZoneValidator())
     self.RegisterValidator(GRRHostValidator())
     self.RegisterValidator(RegexValidator())
@@ -545,17 +623,21 @@ class ValidatorManager:
 
   def Validate(self,
                operand: Any,
-               validator_params: Optional[Dict[str, Any]]=None) -> None:
+               validator_params: Optional[Dict[str, Any]]=None
+               ) -> Tuple[bool, str]:
     """Validate a operand.
 
     Args:
       operand: The argument value to validate.
-      validator_params: Validator parameters from the json recipe. Must include
-        'regex'.
+      validator_params: Validator parameters from the json recipe.
+
+    Returns:
+      A Tuple:
+        boolean: True if operand passes validation, False otherwise.
+        str: A message for validation failure. Only set if the boolean is false.
 
     Raises:
-      errors.RecipeArgsValidatorError: Raised on validator config errors, or if
-        argument fails validation.
+      errors.RecipeArgsValidatorError: Raised on validator config errors.
     """
     if validator_params is None:
       validator = self._default_validator
@@ -567,4 +649,4 @@ class ValidatorManager:
       validator = self._validators.get(
           validator_params['format'], self._default_validator)
 
-    validator.Validate(operand, validator_params)
+    return validator.Validate(operand, validator_params)
