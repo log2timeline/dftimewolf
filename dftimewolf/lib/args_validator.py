@@ -35,7 +35,7 @@ class AbstractValidator(abc.ABC):
       A Tuple:
         boolean: True if operand passes validation, False otherwise.
         str: A message for validation failure. Only set if the boolean is false.
-    
+
     Raises:
       errors.RecipeArgsValidatorError
     """
@@ -288,6 +288,9 @@ class RegexValidator(CommaSeparatedValidator):
       A Tuple:
         boolean: True if operand matches the regex, False otherwise.
         str: A message for validation failure. Only set if the boolean is false.
+
+    Raises:
+      errors.RecipeArgsValidatorError: If no regex is found to use.
     """
     if not validator_params or 'regex' not in validator_params:
       raise errors.RecipeArgsValidatorError(
