@@ -35,6 +35,9 @@ class AbstractValidator(abc.ABC):
       A Tuple:
         boolean: True if operand passes validation, False otherwise.
         str: A message for validation failure. Only set if the boolean is false.
+    
+    Raises:
+      errors.RecipeArgsValidatorError
     """
 
 
@@ -152,9 +155,6 @@ class AWSRegionValidator(AbstractValidator):
       A Tuple:
         boolean: True if operand is a valid AWS region, False otherwise.
         str: A message for validation failure. Only set if the boolean is false.
-
-    Raises:
-      errors.RecipeArgsValidatorError: An error in validation.
     """
     if operand not in self._regions:
       return False, 'Invalid AWS Region name'
@@ -202,9 +202,6 @@ class AzureRegionValidator(AbstractValidator):
       A Tuple:
         boolean: True if operand is a valid Azure region, False otherwise.
         str: A message for validation failure. Only set if the boolean is false.
-
-    Raises:
-      errors.RecipeArgsValidatorError: An error in validation.
     """
     if operand not in self._regions:
       return False, 'Invalid Azure Region name'
@@ -265,9 +262,6 @@ class GCPZoneValidator(AbstractValidator):
       A Tuple:
         boolean: True if operand is a valid GCP zone, False otherwise.
         str: A message for validation failure. Only set if the boolean is false.
-
-    Raises:
-      errors.RecipeArgsValidatorError: An error in validation.
     """
     if operand not in self._zones:
       return False, 'Invalid GCP Zone name'
@@ -294,9 +288,6 @@ class RegexValidator(CommaSeparatedValidator):
       A Tuple:
         boolean: True if operand matches the regex, False otherwise.
         str: A message for validation failure. Only set if the boolean is false.
-
-    Raises:
-      errors.RecipeArgsValidatorError: An error in validation.
     """
     if not validator_params or 'regex' not in validator_params:
       raise errors.RecipeArgsValidatorError(
@@ -328,9 +319,6 @@ class SubnetValidator(CommaSeparatedValidator):
       A Tuple:
         boolean: True if operand passes validation, False otherwise.
         str: A message for validation failure. Only set if the boolean is false.
-
-    Raises:
-      errors.RecipeArgsValidatorError: An error in validation.
     """
     try:
       ipaddress.ip_network(operand)
@@ -486,9 +474,6 @@ class HostnameValidator(RegexValidator):
       A Tuple:
         boolean: True if operand is a valid FQDN, False otherwise.
         str: A message for validation failure. Only set if the boolean is false.
-
-    Raises:
-      errors.RecipeArgsValidatorError: An error in validation.
     """
     if not validator_params:
       validator_params = {}
@@ -531,9 +516,6 @@ class GRRHostValidator(HostnameValidator):
       A Tuple:
         boolean: True if operand is a valid Grr ID, False otherwise.
         str: A message for validation failure. Only set if the boolean is false.
-
-    Raises:
-      errors.RecipeArgsValidatorError: An error in validation.
     """
     if not validator_params:
       validator_params = {}
@@ -567,9 +549,6 @@ class URLValidator(HostnameValidator):
       A Tuple:
         boolean: True if operand is a valid URL, False otherwise.
         str: A message for validation failure. Only set if the boolean is false.
-
-    Raises:
-      errors.RecipeArgsValidatorError: An error in validation.
     """
     url = urlparse(operand)
     if not url.hostname:
