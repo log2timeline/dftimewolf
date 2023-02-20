@@ -421,12 +421,7 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
   Returns:
     bool: True if DFTimewolf could be run successfully, False otherwise.
   """
-  version_tuple = (sys.version_info[0], sys.version_info[1])
-  if version_tuple[0] != 3 or version_tuple < (3, 6):
-    logger.critical(('Unsupported Python version: {0:s}, version 3.6 or higher '
-                     'required.').format(sys.version))
-    return False
-
+  time_start = time.time()*1000
   tool = DFTimewolfTool(cdm)
 
   # TODO: log errors if this fails.
