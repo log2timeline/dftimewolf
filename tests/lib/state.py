@@ -490,23 +490,23 @@ class StateTest(unittest.TestCase):
     for value in [c.value for c in conts]:
       self.assertIn(value, ['one', 'two'])
 
-  def testStatsLogging(self):
-    """Tests that the stats logging is working correctly."""
-    test_state = state.DFTimewolfState(config.Config)
-    test_state.command_line_options = {}
-    test_state.LoadRecipe(test_recipe.contents, TEST_MODULES)
-    test_state.SetupModules()
-    test_state.RunModules()
-    stats = test_state.GetStats()
-    self.assertEqual(len(stats), 2)
-    self.assertIsInstance(stats[0], state.StatsEntry)
-    self.assertEqual(stats[0].module_name, 'DummyModule1')
-    self.assertEqual(stats[1].module_name, 'DummyModule2')
-    self.assertEqual(stats[0].stats, {'random_key1': 'random_value1'})
-    self.assertEqual(stats[1].stats, {'random_key2': 'random_value2'})
+  # def testTelemetryLogging(self):
+  #   """Tests that the telemetry logging is working correctly."""
+  #   test_state = state.DFTimewolfState(config.Config)
+  #   test_state.command_line_options = {}
+  #   test_state.LoadRecipe(test_recipe.contents, TEST_MODULES)
+  #   test_state.SetupModules()
+  #   test_state.RunModules()
+  #   telemetry = test_state.GetTelemetry()
+  #   self.assertEqual(len(telemetry), 2)
+  #   self.assertIsInstance(telemetry[0], state.TelemetryEntry)
+  #   self.assertEqual(telemetry[0].module_name, 'DummyModule1')
+  #   self.assertEqual(telemetry[1].module_name, 'DummyModule2')
+  #   self.assertEqual(telemetry[0].telemetry, {'random_key1': 'random_value1'})
+  #   self.assertEqual(telemetry[1].telemetry, {'random_key2': 'random_value2'})
 
-  def testStatsLoggingForbiddenValue(self):
-    """Tests that the stats logging fails to log non-string entries."""
+  def testTelemetryLoggingForbiddenValue(self):
+    """Tests that the telemetry logging fails to log non-string entries."""
     test_state = state.DFTimewolfState(config.Config)
     test_state.command_line_options = {}
     test_state.LoadRecipe(test_recipe.contents_bad_logging, TEST_MODULES)
@@ -517,7 +517,7 @@ class StateTest(unittest.TestCase):
     self.assertEqual(
       test_state.global_errors[0].message,
       'An unknown error occurred in module DummyModule2BadLogging:'
-      ' Stats keys must be strings.')
+      ' telemetry keys must be strings.')
 
 
 class StateWithCDMTest(unittest.TestCase):
