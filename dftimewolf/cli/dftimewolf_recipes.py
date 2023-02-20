@@ -450,6 +450,8 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
     logger.critical(str(exception))
     return False
 
+  tool.LogWorkflowStart()
+
   # Interpolate arguments into recipe
   recipe = tool.state.recipe
   for module in recipe.get('preflights', []) + recipe.get('modules', []):
