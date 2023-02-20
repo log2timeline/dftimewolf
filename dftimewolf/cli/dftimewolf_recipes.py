@@ -467,7 +467,11 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
 
   tool.state.LogExecutionPlan()
 
+  time_ready = time.time()*1000
   tool.RunPreflights()
+  time_preflights = time.time()*1000
+  tool.UpdateWorkflowTelemetry(
+    'preflights_delta', int(time_preflights - time_ready))
 
   try:
     tool.SetupModules()
@@ -477,6 +481,10 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
     logger.critical(str(exception))
     return False
 
+  time_setup = time.time()*1000
+  tool.UpdateWorkflowTelemetry(
+    'setup_delta', int(time_setup - time_preflights))
+
   try:
     tool.RunModules()
   except errors.CriticalError as exception:
@@ -485,8 +493,16 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
     logger.critical(str(exception))
     return False
 
+  time_run = time.time()*1000
+  tool.UpdateWorkflowTelemetry(
+    'run_delta', int(time_run - time_setup))
+
   tool.CleanUpPreflights()
-  tool.ExportStats()
+
+  total_time = time.time()*1000 - time_start
+  tool.UpdateWorkflowTelemetry('total_time', int(total_time))
+  for telemetry_row in tool.FormatTelemetry().split('\n'):
+    logger.debug(telemetry_row)
 
   return True
 
@@ -500,7 +516,6 @@ def Main() -> bool:
                    not sys.stdout.isatty(),
                    not sys.stdin.isatty()])
   SetupLogging(no_curses)
-
   if any([no_curses, '-h' in sys.argv, '--help' in sys.argv]):
     return RunTool()
 
