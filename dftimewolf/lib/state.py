@@ -15,6 +15,7 @@ from dftimewolf.cli import curses_display_manager as cdm
 
 from dftimewolf.config import Config
 from dftimewolf.lib import errors, utils
+from dftimewolf.lib import telemetry
 from dftimewolf.lib.containers.interface import AttributeContainer
 from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.modules import manager as modules_manager
@@ -31,22 +32,6 @@ logger = logging.getLogger('dftimewolf')
 
 NEW_ISSUE_URL = 'https://github.com/log2timeline/dftimewolf/issues/new'
 
-
-@dataclass
-class StatsEntry:
-  """A simple dataclass to store module-related statistics.
-
-  Attributes:
-    module_type: Type of the module that generated the stats.
-    module_name: Name of the module that generated the stats. This has the
-        same value as module_type when no runtime_name has been specified for
-        the module.
-    stats: Dictionary of stats to store. Contents are arbitrary, but
-        keys must be strings.
-  """
-  module_type: str
-  module_name: str
-  stats: Dict[str, Any]
 
 class DFTimewolfState(object):
   """The main State class.
@@ -73,7 +58,8 @@ class DFTimewolfState(object):
     self._cache = {}  # type: Dict[str, str]
     self._module_pool = {}  # type: Dict[str, BaseModule]
     self._state_lock = threading.Lock()
-    self._stats_lock = threading.Lock()
+    self._telemetry_lock = threading.Lock()
+    self.telemetry = None # type: Union[telemetry.Telemetry, None]
     self._threading_event_per_module = {}  # type: Dict[str, threading.Event]
     self.config = config
     self.errors = []  # type: List[DFTimewolfError]
@@ -241,23 +227,17 @@ class DFTimewolfState(object):
       container.src_module_name = source_module
       self.store.setdefault(container.CONTAINER_TYPE, []).append(container)
 
-  def StoreStats(self, stats_entry: StatsEntry) -> None:
-    """Thread-safe method to store stats in the state's stats store.
+  def LogTelemetry(self, telemetry_entry: telemetry.TelemetryEntry) -> None:
+    """Thread-safe method to store telemetry in the state's telemetry store.
 
     Args:
-      stats_entry: The stats object to store.
+      telemetry_entry: The telemetry object to store.
     """
-    with self._stats_lock:
-      self.stats_store.append(stats_entry)
-
-  def GetStats(self) -> List[StatsEntry]:
-    """Get stats entries that have been stored in the state.
-
-    Returns:
-       The stats objects stored in the state's stats store.
-    """
-    with self._stats_lock:
-      return self.stats_store
+    with self._telemetry_lock:
+      for key, value in telemetry_entry.telemetry.items():
+        self.telemetry.LogTelemetry(
+          key, value, telemetry_entry.module_name
+        )
 
   def GetContainers(self,
                     container_class: Type[T],

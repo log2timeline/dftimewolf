@@ -4,7 +4,22 @@ import uuid
 
 from google.cloud import spanner
 
-class Telemetry():
+@dataclass
+class TelemetryEntry:
+  """A simple dataclass to store module-related statistics.
+
+  Attributes:
+    module_type: Type of the module that generated the telemetry.
+    module_name: Name of the module that generated the telemetry. This has the
+        same value as module_type when no runtime_name has been specified for
+        the module.
+    telemetry: Dictionary of telemetry to store. Contents are arbitrary, but
+        keys must be strings.
+  """
+  module_type: str
+  module_name: str
+  telemetry: dict[str, str]
+
   """Sends telemetry data to Google Cloud Spanner."""
 
   # Make telemetry a singleton.

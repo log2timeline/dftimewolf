@@ -15,6 +15,7 @@ from typing import Optional, Type, cast, TypeVar, Dict, Any, Sequence
 from dftimewolf.lib import errors
 from dftimewolf.lib import logging_utils
 from dftimewolf.lib import state as state_lib  # pylint: disable=cyclic-import
+from dftimewolf.lib import telemetry
 from dftimewolf.lib.containers import interface
 
 T = TypeVar("T", bound="interface.AttributeContainer")  # pylint: disable=invalid-name,line-too-long
@@ -34,7 +35,7 @@ class BaseModule(object):
 
   def __init__(self,
                state: "state_lib.DFTimewolfState",
-               name:Optional[str]=None,
+               name: Optional[str]=None,
                critical: Optional[bool]=False):
     """Initialize a module.
 
@@ -72,19 +73,21 @@ class BaseModule(object):
 
       self.logger.addHandler(console_handler)
 
-  def LogStats(self, stats: Dict[str, Any]) -> None:
-    """Saves useful runtime statistics to the state for later processing.
+  def LogTelemetry(self, data: Dict[str, str]) -> None:
+    """Logs useful telemetry using the telemetry attribute in the state object.
 
     Args:
-      stats: Stats to store. Contents are arbitrary, but keys must be strings.
+      data: Key-value telemetry to store.
 
     Raises:
-      ValueError: If the keys in the stats dict are not strings.
+      ValueError: If the keys in the telemetry dict are not strings.
     """
-    if not all (isinstance(key, str) for key in stats.keys()):
-      raise ValueError("Stats keys must be strings.")
-    stastentry = state_lib.StatsEntry(type(self).__name__, self.name, stats)
-    self.state.StoreStats(stastentry)
+    if not all (isinstance(key, str) for key in data.keys()):
+      raise ValueError("telemetry keys must be strings.")
+    if not all (isinstance(value, str) for value in data.values()):
+      raise ValueError("telemetry values must be strings.")
+    entry = telemetry.TelemetryEntry(type(self).__name__, self.name, data)
+    self.state.LogTelemetry(entry)
 
   def CleanUp(self) -> None:
     """Cleans up module output to prepare it for the next module."""
