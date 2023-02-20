@@ -339,19 +339,23 @@ class DFTimewolfTool(object):
     """Calls the preflight's CleanUp functions."""
     self._state.CleanUpPreflights()
 
-  def PrintStats(self) -> None:
-    """Prints collected stats if existing."""
-    stat_entries = self._state.GetStats()
-    if not stat_entries:
-      logger.info('No statistics collected during execution.')
+  def LogWorkflowStart(self) -> None:
+    """Logs the start of the workflow."""
+    logger.info('Initializing workflow telemetry...')
+    modules = [module['name'] for module in self.state.recipe.get('modules', [])]
+    modules.extend([module['name'] for module in self.state.recipe.get('preflights', [])])
+    self.telemetry.LogWorkflowStart(
+      self.state.recipe.get('name', 'unknown'),
+      set(modules)
+    )
 
-    logger.info(f'{len(stat_entries)} stat entries collected during execution.')
-    for entry in stat_entries:
-      logger.debug(f'[{entry.module_name} ({entry.module_type})] {entry.stats}')
+  def UpdateWorkflowTelemetry(self, key, value) -> None:
+    """Updates the workflow telemetry."""
+    self.telemetry.UpdateWorkflowTelemetry(key, value)
 
-  def ExportStats(self) -> None:
-    """Exports collected stats if existing. Default behavior is to log."""
-    self.PrintStats()
+  def FormatTelemetry(self) -> str:
+    """Prints collected telemetry if existing."""
+    return self.telemetry.FormatTelemetry()
 
   def RecipesManager(self) -> recipes_manager.RecipesManager:
     """Returns the recipes manager."""
