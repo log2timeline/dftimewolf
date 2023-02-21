@@ -20,6 +20,8 @@ from dftimewolf.lib.containers import interface
 
 T = TypeVar("T", bound="interface.AttributeContainer")  # pylint: disable=invalid-name,line-too-long
 
+# import pdb; pdb.set_trace()
+TELEMETRY = telemetry.GoogleCloudSpannerTelemetry()
 
 class BaseModule(object):
   """Interface of a DFTimewolf module.

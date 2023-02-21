@@ -31,6 +31,7 @@ logger = logging.getLogger('dftimewolf')
 
 NEW_ISSUE_URL = 'https://github.com/log2timeline/dftimewolf/issues/new'
 
+TELEMETRY = telemetry.GoogleCloudSpannerTelemetry()
 
 class DFTimewolfState(object):
   """The main State class.
@@ -51,15 +52,13 @@ class DFTimewolfState(object):
   """
 
   def __init__(self,
-               config: Type[Config],
-               telemetry_agent: telemetry.BaseTelemetry) -> None:
+               config: Type[Config]) -> None:
     """Initializes a state."""
     super(DFTimewolfState, self).__init__()
     self.command_line_options = {}  # type: Dict[str, Any]
     self._cache = {}  # type: Dict[str, str]
     self._module_pool = {}  # type: Dict[str, BaseModule]
     self._state_lock = threading.Lock()
-    self._telemetry_lock = threading.Lock()
     self._threading_event_per_module = {}  # type: Dict[str, threading.Event]
     self.config = config
     self.errors = []  # type: List[DFTimewolfError]
@@ -69,7 +68,6 @@ class DFTimewolfState(object):
     self.streaming_callbacks = {}  # type: Dict[Type[interface.AttributeContainer], List[Callable[[Any], Any]]]  # pylint: disable=line-too-long
     self._abort_execution = False
     self.stdout_log = True
-    self.telemetry = telemetry_agent
 
   def _InvokeModulesInThreads(self, callback: Callable[[Any], Any]) -> None:
     """Invokes the callback function on all the modules in separate threads.
@@ -233,11 +231,10 @@ class DFTimewolfState(object):
     Args:
       telemetry_entry: The telemetry object to store.
     """
-    with self._telemetry_lock:
-      for key, value in telemetry_entry.telemetry.items():
-        self.telemetry.LogTelemetry(
-          key, value, telemetry_entry.module_name
-        )
+    for key, value in telemetry_entry.telemetry.items():
+      TELEMETRY.LogTelemetry(
+        key, value, telemetry_entry.module_name
+      )
 
   def GetContainers(self,
                     container_class: Type[T],
@@ -639,10 +636,9 @@ class DFTimewolfStateWithCDM(DFTimewolfState):
 
   def __init__(self,
                config: Type[Config],
-               cursesdm: cdm.CursesDisplayManager,
-               telemetry_agent: telemetry.BaseTelemetry) -> None:
+               cursesdm: cdm.CursesDisplayManager) -> None:
     """Initializes a state."""
-    super(DFTimewolfStateWithCDM, self).__init__(config, telemetry_agent)
+    super(DFTimewolfStateWithCDM, self).__init__(config)
     self.cursesdm = cursesdm
     self.stdout_log = False
 
