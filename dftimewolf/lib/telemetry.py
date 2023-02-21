@@ -54,9 +54,8 @@ class BaseTelemetry():
       value: Telemetry value.
       src_module_name: Name of the module that generated the telemetry.
     """
-    entry = f'\tTelemetry added: \t{key}: \t{value} ({src_module_name})'
+    entry = f'\t{key}: \t{value} ({src_module_name})'
     self.entries.append(entry)
-    print(entry)
 
 
 class GoogleCloudSpannerTelemetry(BaseTelemetry):
