@@ -28,6 +28,8 @@ from dftimewolf.lib import utils
 if TYPE_CHECKING:
   from dftimewolf.lib import state as dftw_state
 
+TELEMETRY = telemetry
+
 # pylint: disable=line-too-long
 MODULES = {
   'AWSAccountCheck': 'dftimewolf.lib.preflights.cloud_token',
@@ -416,6 +418,7 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
 
   # TODO: log errors if this fails.
   tool.LoadConfiguration()
+  TELEMETRY.LogTelemetry('no_curses', str(cdm is None), 'core')
 
   try:
     tool.ReadRecipes()
@@ -509,7 +512,6 @@ def Main() -> bool:
   no_curses = any([bool(os.environ.get('DFTIMEWOLF_NO_CURSES')),
                    not sys.stdout.isatty(),
                    not sys.stdin.isatty()])
-  TELEMETRY.LogTelemetry('no_curses', str(no_curses), 'core')
   SetupLogging(no_curses)
   if any([no_curses, '-h' in sys.argv, '--help' in sys.argv]):
     return RunTool()
@@ -536,6 +538,7 @@ def Main() -> bool:
     cursesdisplaymanager.PrintMessages()
 
   return exit_code
+  # TODO: Telemetry to log errors
 
 if __name__ == '__main__':
   signal.signal(signal.SIGINT, SignalHandler)

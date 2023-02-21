@@ -31,7 +31,7 @@ logger = logging.getLogger('dftimewolf')
 
 NEW_ISSUE_URL = 'https://github.com/log2timeline/dftimewolf/issues/new'
 
-TELEMETRY = telemetry.GoogleCloudSpannerTelemetry()
+TELEMETRY = telemetry
 
 class DFTimewolfState(object):
   """The main State class.

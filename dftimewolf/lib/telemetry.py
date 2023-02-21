@@ -3,6 +3,8 @@ import datetime
 from dataclasses import dataclass
 import uuid
 
+from dftimewolf import config
+
 from google.cloud import spanner
 
 @dataclass
@@ -20,7 +22,6 @@ class TelemetryEntry:
   module_type: str
   module_name: str
   telemetry: dict[str, str]
-
 
 class BaseTelemetry():
   """Interface for implementing a telemetry module."""
@@ -117,3 +118,23 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
       'value': value,
     }
     self.database.run_in_transaction(_LogTelemetryTransaction, telemetry)
+
+TELEMETRY = None
+
+def GetTelemetry():
+  global TELEMETRY
+  if not TELEMETRY:
+    telemetry_config = config.Config.GetExtra('telemetry')
+    if telemetry_config.get('type') == 'google_cloud_spanner':
+      TELEMETRY = GoogleCloudSpannerTelemetry(**telemetry_config['config'])
+    else:
+      TELEMETRY = BaseTelemetry()
+  return TELEMETRY
+
+def LogTelemetry(key: str, value: str, src_module_name: str) -> None:
+  telemetry = GetTelemetry()
+  telemetry.LogTelemetry(key, value, src_module_name)
+
+def FormatTelemetry() -> str:
+  telemetry = GetTelemetry()
+  return telemetry.FormatTelemetry()
