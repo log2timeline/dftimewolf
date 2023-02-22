@@ -36,14 +36,10 @@ class BaseTelemetry():
     super().__init__()
     self.uuid = str(uuid.uuid4())
     self.entries = []
-    self.workflow = {}
 
   def FormatTelemetry(self):
     """Gets all telemetry for a given workflow UUID."""
     output = [f'Telemetry information for: {self.uuid}']
-
-    for key, value in self.workflow.items():
-      output.append(f'\t{key}:\t\t{value}')
     output.extend(self.entries)
     return '\n'.join(output)
 
@@ -77,21 +73,21 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
   def FormatTelemetry(self) -> str:
     """Gets all telemetry for a given workflow UUID."""
     entries = []
-    def _GetAllWorkflowTelemetryTransaction(transaction, entries):
-      entries.append(f'Telemetry information for: {self.uuid}')
-      query = (
-        'SELECT * from Telemetry WHERE workflow_uuid = @uuid ORDER BY time ASC'
-      )
-      result = transaction.execute_sql(
-        query,
-        params={'uuid': self.uuid},
-        param_types={'uuid': spanner.param_types.STRING})
-      for row in result:
-        entries.append(f'\t{row[1]}:\t\t{row[2]} - {row[3]}: {row[4]}')
-
     self.database.run_in_transaction(
-      _GetAllWorkflowTelemetryTransaction, entries=entries)
+      self._GetAllWorkflowTelemetryTransaction, entries=entries)
     return '\n'.join(entries)
+
+  def _GetAllWorkflowTelemetryTransaction(self, transaction, entries):
+    entries.append(f'Telemetry information for: {self.uuid}')
+    query = (
+      'SELECT * from Telemetry WHERE workflow_uuid = @uuid ORDER BY time ASC'
+    )
+    result = transaction.execute_sql(
+      query,
+      params={'uuid': self.uuid},
+      param_types={'uuid': spanner.param_types.STRING})
+    for row in result:
+      entries.append(f'\t{row[1]}:\t\t{row[2]} - {row[3]}: {row[4]}')
 
   def LogTelemetry(self, key: str, value: str, src_module_name: str) -> None:
     """Logs a telemetry event.
@@ -101,14 +97,6 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
       value: Telemetry value.
       src_module_name: Name of the module that generated the telemetry.
     """
-    def _LogTelemetryTransaction(transaction, telemetry: dict) -> None:
-      # Using items() provides a stable order for the columns and values
-      columns = []
-      values = []
-      for key, value in telemetry.items():
-        columns.append(key)
-        values.append(value)
-      transaction.insert(table='Telemetry', columns=columns, values=[values])
 
     telemetry = {
       'workflow_uuid': self.uuid,
@@ -117,7 +105,16 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
       'key': key,
       'value': value,
     }
-    self.database.run_in_transaction(_LogTelemetryTransaction, telemetry)
+    self.database.run_in_transaction(self._LogTelemetryTransaction, telemetry)
+
+  def _LogTelemetryTransaction(self, transaction, telemetry: dict) -> None:
+    # Using items() provides a stable order for the columns and values
+    columns = []
+    values = []
+    for key, value in telemetry.items():
+      columns.append(key)
+      values.append(value)
+    transaction.insert(table='Telemetry', columns=columns, values=[values])
 
 TELEMETRY = None
 
