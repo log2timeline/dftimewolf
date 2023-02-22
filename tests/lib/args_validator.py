@@ -344,7 +344,7 @@ class HostnameValidatorTest(unittest.TestCase):
       'grr-server'
     ]
     for fqdn in fqdns:
-      val, _ = self.validator.Validate(fqdn)
+      val, _ = self.validator.Validate(fqdn, {})
       self.assertTrue(val)
 
     val, _ = self.validator.Validate(','.join(fqdns), {'comma_separated': True})
@@ -354,7 +354,7 @@ class HostnameValidatorTest(unittest.TestCase):
     """Tests validation failures."""
     fqdns = ['a-.com', '-a.com']
     for fqdn in fqdns:
-      val, msg = self.validator.Validate(fqdn)
+      val, msg = self.validator.Validate(fqdn, {})
       self.assertFalse(val)
       self.assertEqual(msg, f"'{fqdn}' is an invalid hostname.")
 
@@ -396,7 +396,7 @@ class GRRHostValidatorTest(unittest.TestCase):
              'grr-client-ubuntu.c.ramoj-playground.internal',
              'grr-client']
     for fqdn in fqdns:
-      val, _ = self.validator.Validate(fqdn)
+      val, _ = self.validator.Validate(fqdn, {})
       self.assertTrue(val)
 
     val, _ = self.validator.Validate(','.join(fqdns), {'comma_separated': True})
@@ -406,7 +406,7 @@ class GRRHostValidatorTest(unittest.TestCase):
     """Tests validation failures."""
     fqdns = ['a-.com', 'C.a', 'C.01234567890123456789']
     for fqdn in fqdns:
-      val, msg = self.validator.Validate(fqdn)
+      val, msg = self.validator.Validate(fqdn, {})
       self.assertFalse(val)
       self.assertEqual(msg, f"'{fqdn}' is an invalid Grr host ID.")
 
@@ -443,7 +443,7 @@ class URLValidatorTest(unittest.TestCase):
         'https://grr.ramoj-playground.internal',
     ]
     for fqdn in fqdns:
-      val, _ = self.validator.Validate(fqdn)
+      val, _ = self.validator.Validate(fqdn, {})
       self.assertTrue(val, f'{fqdn} failed validation')
 
     val, _ = self.validator.Validate(','.join(fqdns), {'comma_separated': True})
@@ -457,7 +457,7 @@ class URLValidatorTest(unittest.TestCase):
         'http://one.*.com'
     ]
     for fqdn in fqdns:
-      val, msg = self.validator.Validate(fqdn)
+      val, msg = self.validator.Validate(fqdn, {})
     self.assertFalse(val)
     self.assertEqual(msg, f"'{fqdn}' is an invalid URL.")
 
@@ -521,13 +521,13 @@ class ValidatorManagerTest(unittest.TestCase):
 
   def test_DefaultValidation(self):
     """Tests param validation with DefaultValidator."""
-    val, _ = self.vm.Validate('operand')
+    val, _ = self.vm.Validate('operand', {})
     self.assertTrue(val)
 
   def test_ValidationFailure(self):
     """Tests validation failure."""
     val, msg = self.vm.Validate('invalid',
-                     {'format': 'subnet', 'comma_separated': False})
+                                {'format': 'subnet', 'comma_separated': False})
     self.assertFalse(val)
     self.assertEqual(msg, 'invalid is not a valid subnet.')
 
