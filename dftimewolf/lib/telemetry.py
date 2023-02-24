@@ -1,9 +1,10 @@
 """Telemetry module."""
 import datetime
 from dataclasses import dataclass
+from typing import Dict, Any, List, Union
 import uuid
 
-from google.cloud import spanner
+from google.cloud import spanner  # type: ignore
 
 from dftimewolf import config
 
@@ -22,12 +23,12 @@ class TelemetryEntry:
   """
   module_type: str
   module_name: str
-  telemetry: dict[str, str]
+  telemetry: Dict[str, str]
 
 class BaseTelemetry():
   """Interface for implementing a telemetry module."""
 
-  def __new__(cls, *args, **kwargs): # pylint: disable=unused-argument
+  def __new__(cls, *args: Any, **kwargs: Dict[str, Any]) -> "BaseTelemetry": # pylint: disable=unused-argument
     if not hasattr(cls, 'instance'):
       cls.instance = super(BaseTelemetry, cls).__new__(cls)
     return cls.instance
@@ -36,9 +37,9 @@ class BaseTelemetry():
     """Initializes a BaseTelemetry object."""
     super().__init__()
     self.uuid = str(uuid.uuid4())
-    self.entries = []
+    self.entries = [] # type: List[str]
 
-  def FormatTelemetry(self):
+  def FormatTelemetry(self) -> str:
     """Gets all telemetry for a given workflow UUID."""
     output = [f'Telemetry information for: {self.uuid}']
     output.extend(self.entries)
@@ -59,7 +60,7 @@ class BaseTelemetry():
 class GoogleCloudSpannerTelemetry(BaseTelemetry):
   """Sends telemetry data to Google Cloud Spanner."""
 
-  def __init__(self, **kwargs) -> None:
+  def __init__(self, **kwargs: Dict[str, Any]) -> None:
     """Initializes a GoogleCloudSpannerTelemetry object."""
     if hasattr(self, 'database'):  # Already initialized
       return
@@ -70,12 +71,12 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
 
   def FormatTelemetry(self) -> str:
     """Gets all telemetry for a given workflow UUID."""
-    entries = []
+    entries = []  # type: List[str]
     self.database.run_in_transaction(
       self._GetAllWorkflowTelemetryTransaction, entries=entries)
     return '\n'.join(entries)
 
-  def _GetAllWorkflowTelemetryTransaction(self, transaction, entries):
+  def _GetAllWorkflowTelemetryTransaction(self, transaction: Any, entries: List[str]) -> None:
     entries.append(f'Telemetry information for: {self.uuid}')
     query = (
       'SELECT * from Telemetry WHERE workflow_uuid = @uuid ORDER BY time ASC'
@@ -105,7 +106,7 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
     }
     self.database.run_in_transaction(self._LogTelemetryTransaction, telemetry)
 
-  def _LogTelemetryTransaction(self, transaction, telemetry: dict) -> None:
+  def _LogTelemetryTransaction(self, transaction: Any, telemetry: Dict[str, str]) -> None:
     # Using items() provides a stable order for the columns and values
     columns = []
     values = []
@@ -114,9 +115,9 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
       values.append(value)
     transaction.insert(table='Telemetry', columns=columns, values=[values])
 
-TELEMETRY = None
+TELEMETRY = None  # type: Union[BaseTelemetry, GoogleCloudSpannerTelemetry, None]
 
-def GetTelemetry():
+def GetTelemetry() -> Union[BaseTelemetry, GoogleCloudSpannerTelemetry]:
   """Returns the currently configured Telemetry object."""
   # pylint: disable=global-statement
   global TELEMETRY
