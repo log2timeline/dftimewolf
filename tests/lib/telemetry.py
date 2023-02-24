@@ -3,11 +3,11 @@
 """Tests for the Telemetry modules."""
 
 import unittest
-
 import mock
 
-from dftimewolf.lib import telemetry
 from google.cloud import spanner
+
+from dftimewolf.lib import telemetry
 
 
 class BaseTelemetryTest(unittest.TestCase):
@@ -52,7 +52,8 @@ class BaseTelemetryTest(unittest.TestCase):
     result = telemetry1.FormatTelemetry()
     self.assertEqual(
         result,
-        'Telemetry information for: test_uuid\n\ttest_key: \ttest_value (random_module)'
+        ('Telemetry information for: test_uuid\n\ttest_key:'
+         ' \ttest_value (random_module)')
     )
 
 
@@ -62,7 +63,7 @@ class GoogleCloudSpannerTelemetryTest(unittest.TestCase):
   def setUp(self):
     """Patch the Google Cloud Spanner Client class."""
     self.patcher = mock.patch('google.cloud.spanner.Client')
-    self.mock_spanner_Client = self.patcher.start()
+    self.mock_spanner_client = self.patcher.start()
 
   def tearDown(self):
     """Delete singleton attributes, stop patching."""
@@ -93,8 +94,8 @@ class GoogleCloudSpannerTelemetryTest(unittest.TestCase):
         database_name='test_database')
     self.assertIsNotNone(telemetry1.uuid)
     self.assertIsNotNone(telemetry1.database)
-    self.mock_spanner_Client.assert_called_with(project='test_project')
-    instance = self.mock_spanner_Client.return_value.instance
+    self.mock_spanner_client.assert_called_with(project='test_project')
+    instance = self.mock_spanner_client.return_value.instance
     instance.assert_called_with('test_instance')
     database = instance.return_value.database
     database.assert_called_with('test_database')
@@ -158,7 +159,7 @@ class GoogleCloudSpannerTelemetryTest(unittest.TestCase):
         instance_name='test_instance',
         database_name='test_database')
     telemetry1.LogTelemetry('test_key', 'test_value', 'random_module')
-    instance = self.mock_spanner_Client.return_value.instance.return_value
+    instance = self.mock_spanner_client.return_value.instance.return_value
     database = instance.database.return_value
     database.run_in_transaction.assert_called_with(
         telemetry1._LogTelemetryTransaction,  # pylint: disable=protected-access

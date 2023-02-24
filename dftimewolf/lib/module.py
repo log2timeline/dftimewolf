@@ -11,12 +11,15 @@ import traceback
 import sys
 
 from typing import Optional, Type, cast, TypeVar, Dict, Any, Sequence
+from typing import TYPE_CHECKING
 
 from dftimewolf.lib import errors
 from dftimewolf.lib import logging_utils
-from dftimewolf.lib import state as state_lib  # pylint: disable=cyclic-import
 from dftimewolf.lib import telemetry
 from dftimewolf.lib.containers import interface
+
+if TYPE_CHECKING:
+  from dftimewolf.lib import state as state_lib  # pylint: disable=cyclic-import
 
 T = TypeVar("T", bound="interface.AttributeContainer")  # pylint: disable=invalid-name,line-too-long
 

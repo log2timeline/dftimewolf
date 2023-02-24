@@ -3,9 +3,10 @@ import datetime
 from dataclasses import dataclass
 import uuid
 
+from google.cloud import spanner
+
 from dftimewolf import config
 
-from google.cloud import spanner
 
 @dataclass
 class TelemetryEntry:
@@ -26,12 +27,12 @@ class TelemetryEntry:
 class BaseTelemetry():
   """Interface for implementing a telemetry module."""
 
-  def __new__(cls, *args, **kwargs):
+  def __new__(cls, *args, **kwargs): # pylint: disable=unused-argument
     if not hasattr(cls, 'instance'):
       cls.instance = super(BaseTelemetry, cls).__new__(cls)
     return cls.instance
 
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self) -> None:
     """Initializes a BaseTelemetry object."""
     super().__init__()
     self.uuid = str(uuid.uuid4())
@@ -58,17 +59,14 @@ class BaseTelemetry():
 class GoogleCloudSpannerTelemetry(BaseTelemetry):
   """Sends telemetry data to Google Cloud Spanner."""
 
-  def __init__(self, *args, **kwargs) -> None:
+  def __init__(self, **kwargs) -> None:
     """Initializes a GoogleCloudSpannerTelemetry object."""
     if hasattr(self, 'database'):  # Already initialized
       return
+    super().__init__()
     spanner_client = spanner.Client(project=kwargs['project_name'])
     instance = spanner_client.instance(kwargs['instance_name'])
     self.database = instance.database(kwargs['database_name'])
-
-    # In another life, we'd get the WF ID from somewhere else,
-    # but for now, we'll just generate a UUID.
-    self.uuid = str(uuid.uuid4())
 
   def FormatTelemetry(self) -> str:
     """Gets all telemetry for a given workflow UUID."""
@@ -119,8 +117,10 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
 TELEMETRY = None
 
 def GetTelemetry():
+  """Returns the currently configured Telemetry object."""
+  # pylint: disable=global-statement
   global TELEMETRY
-  if not TELEMETRY:
+  if TELEMETRY is None:
     telemetry_config = config.Config.GetExtra('telemetry')
     if telemetry_config.get('type') == 'google_cloud_spanner':
       TELEMETRY = GoogleCloudSpannerTelemetry(**telemetry_config['config'])
@@ -129,9 +129,11 @@ def GetTelemetry():
   return TELEMETRY
 
 def LogTelemetry(key: str, value: str, src_module_name: str) -> None:
+  """"Logs a Telemetry entry using the currently configured Telemetry object."""
   telemetry = GetTelemetry()
   telemetry.LogTelemetry(key, value, src_module_name)
 
 def FormatTelemetry() -> str:
+  """Formats the telemetry of the currently configured Telemetry object."""
   telemetry = GetTelemetry()
   return telemetry.FormatTelemetry()

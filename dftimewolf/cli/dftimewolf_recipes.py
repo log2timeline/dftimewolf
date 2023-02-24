@@ -438,8 +438,12 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
     logger.critical(str(exception))
     return False
 
-  modules = [module['name'] for module in tool.state.recipe.get('modules', [])]
-  modules.extend([module['name'] for module in tool.state.recipe.get('preflights', [])])
+  modules = [
+    module['name'] for module in tool.state.recipe.get('modules', [])
+  ]
+  modules.extend([
+    module['name'] for module in tool.state.recipe.get('preflights', [])
+  ])
 
   TELEMETRY.LogTelemetry(
     'workflow_start',
