@@ -68,4 +68,4 @@ class DummyModule2BadLogging(DummyModule2):
   def Process(self):
     """Dummy Process function with bad logging (int as key)."""
     print(self.name + ' Process!')
-    self.LogTelemetry({1234: 'random_value2'})  # pytype: disable=wrong-arg-types
+    self.LogTelemetry({'1234': 'random_value2'})
