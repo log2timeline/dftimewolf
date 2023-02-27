@@ -4,7 +4,8 @@ from dataclasses import dataclass
 from typing import Dict, Any, List, Union
 import uuid
 
-from google.cloud import spanner  # type: ignore
+# mypy complains when doing from google.cloud import spanner
+import google.cloud.spanner as spanner
 
 from dftimewolf import config
 
