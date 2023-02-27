@@ -11,7 +11,7 @@ class RecipeArgs:
   switch: str = ''
   help_text: str = ''
   default: Any = None
-  format: Dict[str, Any] = None  # type: ignore
+  format: Dict[str, Any] = dataclasses.field(default_factory=dict)
 
 
 class Recipe(object):

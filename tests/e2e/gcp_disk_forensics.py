@@ -82,15 +82,15 @@ RECIPE = {
             }
         }
     ],
-    'args': [  # TODO - Add args validators when they're all written
-        ['source_project_name', 'Name of the project containing the instance / disks to copy.', None],
-        ['destination_project_name', 'Name of the project where the analysis VM will be created and disks copied to.', None],
+    'args': [
+        ['source_project_name', 'Name of the project containing the instance / disks to copy.', None, {'format': 'regex', 'comma_separated': False, 'regex': '^[a-z][-a-z0-9]{4,28}[a-z0-9]$'}],
+        ['destination_project_name', 'Name of the project where the analysis VM will be created and disks copied to.', None, {'format': 'regex', 'comma_separated': False, 'regex': '^[a-z][-a-z0-9]{4,28}[a-z0-9]$'}],
         ['--incident_id', 'Incident ID to label the VM with.', None],
         ['--instances', 'Name of the instance to analyze.', None],
         ['--disks', 'Comma-separated list of disks to copy from the source GCP project (if `instance` not provided).', None],
         ['--all_disks', 'Copy all disks in the designated instance. Overrides `disk_names` if specified.', False],
         ['--stop_instances', 'Stop the designated instance after copying disks.', False],
-        ['--zone', 'The GCP zone where the Analysis VM and copied disks will be created.', 'us-central1-f']
+        ['--zone', 'The GCP zone where the Analysis VM and copied disks will be created.', 'us-central1-f', {'format': 'gcp_zone'}]
     ]
 }
 # pylint: enable=line-too-long

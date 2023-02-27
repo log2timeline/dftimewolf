@@ -301,8 +301,13 @@ class DFTimewolfTool(object):
         switch = arg.switch.replace('--', '')
         if (switch == arg.switch or  # Ignore optional args, unless present
             self.state.command_line_options[switch] is not None):
-          self._args_validator.Validate(self.state.command_line_options[switch],
-                                        arg.format)
+          value, message = self._args_validator.Validate(
+              self.state.command_line_options[switch], arg.format)
+          if not value:
+            error_messages.append(
+                f'Argument validation error: "{arg.switch}" with value '
+                f'"{self.state.command_line_options[switch]}" gave error: '
+                f'{str(message)}')
       except errors.RecipeArgsValidatorError as exception:
         error_messages.append(f'Argument validation error: "{arg.switch}" with '
             f'value "{self.state.command_line_options[switch]}" gave error: '
@@ -310,6 +315,8 @@ class DFTimewolfTool(object):
 
     if error_messages:
       for message in error_messages:
+        if self.cdm:
+          self.cdm.EnqueueMessage('dftimewolf', message, True)
         logger.critical(message)
       raise errors.RecipeArgsValidatorError(
           'At least one argument failed validation')
