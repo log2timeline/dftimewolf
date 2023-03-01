@@ -5,7 +5,11 @@ from typing import Dict, Any, List, Union
 import uuid
 
 # mypy complains when doing from google.cloud import spanner
-import google.cloud.spanner as spanner
+try:
+  import google.cloud.spanner as spanner
+  HAS_SPANNER = True
+except ImportError:
+  HAS_SPANNER = False
 
 from dftimewolf import config
 
@@ -124,7 +128,7 @@ def GetTelemetry() -> Union[BaseTelemetry, GoogleCloudSpannerTelemetry]:
   global TELEMETRY
   if TELEMETRY is None:
     telemetry_config = config.Config.GetExtra('telemetry')
-    if telemetry_config.get('type') == 'google_cloud_spanner':
+    if telemetry_config.get('type') == 'google_cloud_spanner' and HAS_SPANNER:
       TELEMETRY = GoogleCloudSpannerTelemetry(**telemetry_config['config'])
     else:
       TELEMETRY = BaseTelemetry()

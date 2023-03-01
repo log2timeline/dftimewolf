@@ -5,7 +5,11 @@
 import unittest
 import mock
 
-from google.cloud import spanner
+try:
+  from google.cloud import spanner
+  HAS_SPANNER = True
+except ImportError:
+  HAS_SPANNER = False
 
 from dftimewolf.lib import telemetry
 
@@ -56,7 +60,7 @@ class BaseTelemetryTest(unittest.TestCase):
          ' \ttest_value (random_module)')
     )
 
-
+@unittest.skipIf(not HAS_SPANNER, 'Missing google.cloud.spanner dependency.')
 class GoogleCloudSpannerTelemetryTest(unittest.TestCase):
   """Tests for the DFTimewolfState class."""
 
