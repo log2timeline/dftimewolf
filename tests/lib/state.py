@@ -490,21 +490,6 @@ class StateTest(unittest.TestCase):
     for value in [c.value for c in conts]:
       self.assertIn(value, ['one', 'two'])
 
-  # def testTelemetryLogging(self):
-  #   """Tests that the telemetry logging is working correctly."""
-  #   test_state = state.DFTimewolfState(config.Config)
-  #   test_state.command_line_options = {}
-  #   test_state.LoadRecipe(test_recipe.contents, TEST_MODULES)
-  #   test_state.SetupModules()
-  #   test_state.RunModules()
-  #   telemetry = test_state.GetTelemetry()
-  #   self.assertEqual(len(telemetry), 2)
-  #   self.assertIsInstance(telemetry[0], state.TelemetryEntry)
-  #   self.assertEqual(telemetry[0].module_name, 'DummyModule1')
-  #   self.assertEqual(telemetry[1].module_name, 'DummyModule2')
-  #   self.assertEqual(telemetry[0].telemetry, {'random_key1': 'random_value1'})
-  #   self.assertEqual(telemetry[1].telemetry, {'random_key2': 'random_value2'})
-
   def testTelemetryLoggingForbiddenValue(self):
     """Tests that the telemetry logging fails to log non-string entries."""
     test_state = state.DFTimewolfState(config.Config)
