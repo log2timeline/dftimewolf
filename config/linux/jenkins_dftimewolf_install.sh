@@ -9,10 +9,10 @@ set -e
 sudo add-apt-repository ppa:gift/dev -y
 sudo apt-get update -qq
 # Ubuntu 20.04 comes with python 3.8, we only support >= 3.9
-sudo apt-get install -y python3-pip python3.9
+sudo apt-get install -y python3-pip
 sudo apt-get install --reinstall python3-apt
 python3 --version
-/usr/bin/python3.9 -m pip install poetry
+/usr/bin/python3 -m pip install poetry
 
 
 if [[ "$*" =~ "include-docker" ]]; then
@@ -85,7 +85,7 @@ fi
 # pending resolution of https://github.com/log2timeline/l2tdevtools/issues/595
 if [[ "$*" =~ "include-turbinia" ]]; then
     echo "Installing Turbinia"
-    /usr/bin/python3.9 -m pip install turbinia
+    /usr/bin/python3 -m pip install turbinia
 fi
 
 echo "Installing dftimewolf requirements via Poetry"
