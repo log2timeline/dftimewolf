@@ -6,7 +6,7 @@ import uuid
 
 # mypy complains when doing from google.cloud import spanner
 try:
-  import google.cloud.spanner as spanner
+  from google.cloud import spanner
   HAS_SPANNER = True
 except ImportError:
   HAS_SPANNER = False
@@ -81,7 +81,10 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
       self._GetAllWorkflowTelemetryTransaction, entries=entries)
     return '\n'.join(entries)
 
-  def _GetAllWorkflowTelemetryTransaction(self, transaction: Any, entries: List[str]) -> None:
+  def _GetAllWorkflowTelemetryTransaction(
+    self,
+    transaction: Any,
+    entries: List[str]) -> None:
     entries.append(f'Telemetry information for: {self.uuid}')
     query = (
       'SELECT * from Telemetry WHERE workflow_uuid = @uuid ORDER BY time ASC'
@@ -111,7 +114,8 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
     }
     self.database.run_in_transaction(self._LogTelemetryTransaction, telemetry)
 
-  def _LogTelemetryTransaction(self, transaction: Any, telemetry: Dict[str, str]) -> None:
+  def _LogTelemetryTransaction(
+      self, transaction: Any, telemetry: Dict[str, str]) -> None:
     # Using items() provides a stable order for the columns and values
     columns = []
     values = []
@@ -120,6 +124,7 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
       values.append(value)
     transaction.insert(table='Telemetry', columns=columns, values=[values])
 
+# pylint: disable=line-too-long
 TELEMETRY = None  # type: Union[BaseTelemetry, GoogleCloudSpannerTelemetry, None]
 
 def GetTelemetry() -> Union[BaseTelemetry, GoogleCloudSpannerTelemetry]:
