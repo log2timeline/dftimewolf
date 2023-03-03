@@ -6,7 +6,7 @@ import uuid
 
 # mypy complains when doing from google.cloud import spanner
 try:
-  from google.cloud import spanner
+  from google.cloud import spanner  # type: ignore
   HAS_SPANNER = True
 except ImportError:
   HAS_SPANNER = False
