@@ -15,6 +15,7 @@ from dftimewolf.cli import curses_display_manager as cdm
 
 from dftimewolf.config import Config
 from dftimewolf.lib import errors, utils
+from dftimewolf.lib.containers import interface
 from dftimewolf.lib.containers.interface import AttributeContainer
 from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.modules import manager as modules_manager
@@ -22,7 +23,6 @@ from dftimewolf.lib.module import ThreadAwareModule, BaseModule
 
 if TYPE_CHECKING:
   from dftimewolf.lib import module as dftw_module
-  from dftimewolf.lib.containers import interface
 T = TypeVar("T", bound="interface.AttributeContainer")  # pylint: disable=invalid-name,line-too-long
 
 # TODO(tomchop): Consider changing this to `dftimewolf.state` if we ever need
@@ -30,8 +30,6 @@ T = TypeVar("T", bound="interface.AttributeContainer")  # pylint: disable=invali
 logger = logging.getLogger('dftimewolf')
 
 NEW_ISSUE_URL = 'https://github.com/log2timeline/dftimewolf/issues/new'
-
-_CONTAINER_METADATA_KEY_SOURCE_MODULE = "SOURCE_MODULE"
 
 
 @dataclass
@@ -240,9 +238,8 @@ class DFTimewolfState(object):
       source_module: the originating module.
     """
     with self._state_lock:
-      container.src_module_name = source_module
       container.SetMetadata(
-          _CONTAINER_METADATA_KEY_SOURCE_MODULE, source_module)
+          interface.METADATA_KEY_SOURCE_MODULE, source_module)
       self.store.setdefault(container.CONTAINER_TYPE, []).append(container)
 
   def StoreStats(self, stats_entry: StatsEntry) -> None:
@@ -403,8 +400,10 @@ class DFTimewolfState(object):
         as executor:
       pop = not module.KeepThreadedContainersInState()
       for c in self.GetContainers(module.GetThreadOnContainerType(), pop):
-        logger.debug(f'Launching {module.name}.Process thread with {str(c)} '
-            f'from {c.src_module_name}')
+        logger.debug(
+            f'Launching {module.name}.Process thread with {str(c)} from '
+            f'{c.metadata.get(interface.METADATA_KEY_SOURCE_MODULE, "Unknown")}'
+        )
         futures.append(
             executor.submit(module.Process, c))
 
