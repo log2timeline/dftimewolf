@@ -31,6 +31,8 @@ logger = logging.getLogger('dftimewolf')
 
 NEW_ISSUE_URL = 'https://github.com/log2timeline/dftimewolf/issues/new'
 
+_CONTAINER_METADATA_KEY_SOURCE_MODULE = "SOURCE_MODULE"
+
 
 @dataclass
 class StatsEntry:
@@ -239,6 +241,8 @@ class DFTimewolfState(object):
     """
     with self._state_lock:
       container.src_module_name = source_module
+      container.SetMetadata(
+          _CONTAINER_METADATA_KEY_SOURCE_MODULE, source_module)
       self.store.setdefault(container.CONTAINER_TYPE, []).append(container)
 
   def StoreStats(self, stats_entry: StatsEntry) -> None:
