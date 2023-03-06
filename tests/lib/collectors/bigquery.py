@@ -33,6 +33,13 @@ class BigQueryCollectorTest(unittest.TestCase):
     mock_bq().query.assert_called_with('test_query')
     mock_bq().query().to_dataframe().to_json.assert_called_once()
 
+    conts = test_state.GetContainers(containers.File)
+    self.assertEqual(len(conts), 1)
+
+    conts = test_state.GetContainers(containers.DataFrame)
+    self.assertEqual(len(conts), 0)
+
+
   @mock.patch('google.cloud.bigquery.Client')
   def testQueryPandaOutput(self, mock_bq):
     """Tests placing query results in a dataframe."""
@@ -48,6 +55,9 @@ class BigQueryCollectorTest(unittest.TestCase):
 
     pd.testing.assert_frame_equal(conts[0].data_frame,
                                   pd.DataFrame([1], ['foo']))
+
+    conts = test_state.GetContainers(containers.File)
+    self.assertEqual(len(conts), 0)
 
 
 if __name__ == '__main__':

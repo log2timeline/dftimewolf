@@ -16,7 +16,7 @@
             "project_name": "@project_name",
             "query": "@query",
             "description": "@description",
-            "panda_output": false
+            "pandas_output": false
         }
         }, {
 

@@ -25,27 +25,27 @@ class BigQueryCollector(module.BaseModule):
     self._project_name = ""
     self._query = ""
     self._description = ""
-    self._panda_output = False
+    self._pandas_output = False
 
   # pylint: disable=arguments-differ
   def SetUp(self,
             project_name: str,
             query: str,
             description: str,
-            panda_output: bool) -> None:
+            pandas_output: bool) -> None:
     """Sets up a BigQuery collector.
 
     Args:
       project_name (str): name of the project that contains the BigQuery tables.
       query (str): The query to run.
       description (str): A description of the query.
-      panda_output (bool): True if the results should be kep in a panda DF in
-          memory, false if the they should be written to disk.
+      pandas_output (bool): True if the results should be kept in a pandas DF in
+          memory, False if they should be written to disk.
     """
     self._project_name = project_name
     self._query = query
     self._description = description
-    self._panda_output = panda_output
+    self._pandas_output = pandas_output
 
   def Process(self) -> None:
     """Collects data from BigQuery."""
@@ -71,21 +71,19 @@ class BigQueryCollector(module.BaseModule):
         )
       self.ModuleError(exception, critical=True)
 
-    if self._panda_output:
+    if self._pandas_output:
       frame_container = containers.DataFrame(df, self._description, 'bq_result')
       self.StoreContainer(frame_container)
     else:
-      output_file = tempfile.NamedTemporaryFile(
-          mode='w', delete=False, encoding='utf-8', suffix='.jsonl')
-      output_path = output_file.name
-      records = df.to_json(
-          orient='records', lines=True, date_format='iso')
-      output_file.write(records)
+      with tempfile.NamedTemporaryFile(
+          mode='w', delete=False, encoding='utf-8', suffix='.jsonl'
+          ) as output_file:
+        records = df.to_json(orient='records', lines=True, date_format='iso')
+        output_file.write(records)
 
-      self.PublishMessage(f'Downloaded logs to {output_path}')
-      output_file.close()
+      self.PublishMessage(f'Downloaded logs to {output_file.name}')
 
-      bq_report = containers.File(name=self._description, path=output_path)
+      bq_report = containers.File(name=self._description, path=output_file.name)
       self.StoreContainer(bq_report)
 
 
