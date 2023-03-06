@@ -187,8 +187,10 @@ class BaseModule(object):
 
     self.logger.debug(f'{self.name} is retrieving {len(containers)} '
         f'{container_class.CONTAINER_TYPE} containers - pop == {pop}')
-    for item in containers:
-      self.logger.debug(f'  * {str(item)} - origin: {item.src_module_name}')
+    for c in containers:
+      self.logger.debug(
+          f'  * {str(c)} - origin: '
+          f'{c.metadata.get(interface.METADATA_KEY_SOURCE_MODULE, "Unknown")}')
 
     return containers
 

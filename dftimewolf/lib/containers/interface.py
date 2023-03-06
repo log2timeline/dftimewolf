@@ -3,6 +3,9 @@
 from typing import Any, Dict, List, Optional
 
 
+METADATA_KEY_SOURCE_MODULE = "SOURCE_MODULE"
+
+
 class AttributeContainer():
   """The attribute container interface.
 
@@ -22,7 +25,6 @@ class AttributeContainer():
   """
   CONTAINER_TYPE = None  # type: str
   metadata = {}  # type: Dict[str, Any]
-  src_module_name = None  # type: str
 
   def __init__(self, metadata: Optional[Dict[str, Any]] = None):
     """Initializes an AttributeContainer.
