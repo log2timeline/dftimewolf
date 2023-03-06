@@ -55,11 +55,7 @@ class BigQueryCollector(module.BaseModule):
         bq_client = bigquery.Client(project=self._project_name)
       else:
         bq_client = bigquery.Client()
-
       df = bq_client.query(self._query).to_dataframe()
-
-      df.info(verbose = True)
-      print(str(df))
 
     # pytype: disable=module-attr
     except google.cloud.exceptions.NotFound as exception:
