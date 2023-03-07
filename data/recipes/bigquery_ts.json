@@ -15,7 +15,8 @@
         "args": {
             "project_name": "@project_name",
             "query": "@query",
-            "description": "@description"
+            "description": "@description",
+            "pandas_output": false
         }
         }, {
 
@@ -30,7 +31,7 @@
             }
         }],
         "args": [
-            ["project_name", "Name of GCP project to collect logs from.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9]{4,28}[a-z0-9]$"}],
+            ["project_name", "Name of GCP project to collect logs from.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-\\.:a-z0-9]{4,28}[a-z0-9]$"}],
             ["query", "Query to execute.", null],
             ["description", "Human-readable description of the query.", null],
             ["--incident_id", "Incident ID (used for Timesketch description).", null],
