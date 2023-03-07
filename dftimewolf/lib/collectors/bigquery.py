@@ -13,6 +13,7 @@ from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 from dftimewolf.lib import utils
 
+
 class BigQueryCollector(module.BaseModule):
   """Collector for BigQuery."""
 
