@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """Reads logs from a BigQuery table."""
-import tempfile
 from typing import Optional
 
 from google.auth import exceptions as google_auth_exceptions

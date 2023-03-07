@@ -12,9 +12,8 @@ import unittest
 
 import mock
 
-from dftimewolf.lib import utils
-
 import pandas as pd
+from dftimewolf.lib import utils
 
 
 class UtilsTest(unittest.TestCase):

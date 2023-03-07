@@ -10,9 +10,8 @@ import tarfile
 import tempfile
 from typing import Any, Dict, Optional, Type
 
-from dftimewolf.config import Config
-
 import pandas as pd
+from dftimewolf.config import Config
 
 
 TOKEN_REGEX = re.compile(r'\@([\w_]+)')
