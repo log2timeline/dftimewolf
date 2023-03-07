@@ -14,6 +14,7 @@ from dftimewolf.config import Config
 
 import pandas as pd
 
+
 TOKEN_REGEX = re.compile(r'\@([\w_]+)')
 
 

@@ -16,6 +16,7 @@ from dftimewolf.lib import utils
 
 import pandas as pd
 
+
 class UtilsTest(unittest.TestCase):
   """Tests for the utils module."""
 
