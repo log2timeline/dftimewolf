@@ -55,10 +55,10 @@ def Compress(source_path: str, output_directory: Optional[str]=None) -> str:
 
 
 def WriteDataFrameToJsonl(df: pd.DataFrame) -> str:
-  """Writes a panda DataFrame to jsonl.
+  """Writes a pandas DataFrame to jsonl.
 
   Args:
-    df: The frame to output.
+    df: The DataFrame to output.
 
   Returns:
     The filename of the output file.
