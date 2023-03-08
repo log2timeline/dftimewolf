@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """Reads logs from a BigQuery table."""
-import tempfile
 from typing import Optional
 
 from google.auth import exceptions as google_auth_exceptions
@@ -11,6 +10,7 @@ from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
+from dftimewolf.lib import utils
 
 
 class BigQueryCollector(module.BaseModule):
@@ -75,15 +75,10 @@ class BigQueryCollector(module.BaseModule):
       frame_container = containers.DataFrame(df, self._description, 'bq_result')
       self.StoreContainer(frame_container)
     else:
-      with tempfile.NamedTemporaryFile(
-          mode='w', delete=False, encoding='utf-8', suffix='.jsonl'
-          ) as output_file:
-        records = df.to_json(orient='records', lines=True, date_format='iso')
-        output_file.write(records)
+      filename = utils.WriteDataFrameToJsonl(df)
+      self.PublishMessage(f'Downloaded logs to {filename}')
 
-      self.PublishMessage(f'Downloaded logs to {output_file.name}')
-
-      bq_report = containers.File(name=self._description, path=output_file.name)
+      bq_report = containers.File(name=self._description, path=filename)
       self.StoreContainer(bq_report)
 
 

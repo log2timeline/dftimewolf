@@ -12,6 +12,7 @@ import unittest
 
 import mock
 
+import pandas as pd
 from dftimewolf.lib import utils
 
 
@@ -50,3 +51,15 @@ class UtilsTest(unittest.TestCase):
     member_data = (
         tar.extractfile(member_name).read())  # pytype: disable=attribute-error
     self.assertEqual(member_data, test_data.encode('utf-8'))
+
+  def testWriteDataFrameToJsonl(self):
+    """Tests the utils.WriteDataFrameToJsonl() method."""
+    sample_df = pd.DataFrame([1], [0], ['foo'])
+    expected_jsonl = '{"foo":1}\n'
+
+    filename = utils.WriteDataFrameToJsonl(sample_df)
+
+    with open(filename) as f:
+      contents = ''.join(f.readlines())
+
+    self.assertEqual(contents, expected_jsonl)
