@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """Reads logs from a BigQuery table."""
-import tempfile
 from typing import Optional
 
 from google.auth import exceptions as google_auth_exceptions
@@ -11,6 +10,7 @@ from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
+from dftimewolf.lib import utils
 
 
 class BigQueryCollector(module.BaseModule):
@@ -25,36 +25,37 @@ class BigQueryCollector(module.BaseModule):
     self._project_name = ""
     self._query = ""
     self._description = ""
+    self._pandas_output = False
 
   # pylint: disable=arguments-differ
-  def SetUp(self, project_name: str, query: str, description: str) -> None:
+  def SetUp(self,
+            project_name: str,
+            query: str,
+            description: str,
+            pandas_output: bool) -> None:
     """Sets up a BigQuery collector.
 
     Args:
       project_name (str): name of the project that contains the BigQuery tables.
       query (str): The query to run.
       description (str): A description of the query.
+      pandas_output (bool): True if the results should be kept in a pandas DF in
+          memory, False if they should be written to disk.
     """
     self._project_name = project_name
     self._query = query
     self._description = description
+    self._pandas_output = pandas_output
 
   def Process(self) -> None:
     """Collects data from BigQuery."""
-    output_file = tempfile.NamedTemporaryFile(
-        mode='w', delete=False, encoding='utf-8', suffix='.jsonl')
-    output_path = output_file.name
-    self.logger.info(f'Downloading results to {output_path:s}')
 
     try:
       if self._project_name:
         bq_client = bigquery.Client(project=self._project_name)
       else:
         bq_client = bigquery.Client()
-
-      records = bq_client.query(self._query).to_dataframe().to_json(
-          orient='records', lines=True, date_format='iso')
-      output_file.write(records)
+      df = bq_client.query(self._query).to_dataframe()
 
     # pytype: disable=module-attr
     except google.cloud.exceptions.NotFound as exception:
@@ -70,11 +71,15 @@ class BigQueryCollector(module.BaseModule):
         )
       self.ModuleError(exception, critical=True)
 
-    self.PublishMessage(f'Downloaded logs to {output_path}')
-    output_file.close()
+    if self._pandas_output:
+      frame_container = containers.DataFrame(df, self._description, 'bq_result')
+      self.StoreContainer(frame_container)
+    else:
+      filename = utils.WriteDataFrameToJsonl(df)
+      self.PublishMessage(f'Downloaded logs to {filename}')
 
-    bq_report = containers.File(name=self._description, path=output_path)
-    self.StoreContainer(bq_report)
+      bq_report = containers.File(name=self._description, path=filename)
+      self.StoreContainer(bq_report)
 
 
 modules_manager.ModulesManager.RegisterModule(BigQueryCollector)

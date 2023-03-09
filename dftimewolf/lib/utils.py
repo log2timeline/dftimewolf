@@ -10,7 +10,9 @@ import tarfile
 import tempfile
 from typing import Any, Dict, Optional, Type
 
+import pandas as pd
 from dftimewolf.config import Config
+
 
 TOKEN_REGEX = re.compile(r'\@([\w_]+)')
 
@@ -50,6 +52,23 @@ def Compress(source_path: str, output_directory: Optional[str]=None) -> str:
             source_path, exception)) from exception
 
   return filepath
+
+
+def WriteDataFrameToJsonl(df: pd.DataFrame) -> str:
+  """Writes a pandas DataFrame to jsonl.
+
+  Args:
+    df: The DataFrame to output.
+
+  Returns:
+    The filename of the output file.
+  """
+  with tempfile.NamedTemporaryFile(
+      mode='w', delete=False, encoding='utf-8', suffix='.jsonl'
+      ) as output_file:
+    output_file.write(
+        df.to_json(orient='records', lines=True, date_format='iso'))
+    return output_file.name
 
 
 # preserve python2 compatibility
