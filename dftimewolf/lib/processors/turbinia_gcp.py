@@ -183,8 +183,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       self.StoreContainer(container)
   # pylint: enable=arguments-renamed
 
-  @staticmethod
-  def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
+  def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
     return containers.GCEDisk
 
   def GetThreadPoolSize(self) -> int:

@@ -411,17 +411,17 @@ Flow ID: `{3:s}`
     self._grouping = ''
     self.rule_names = ''
 
-  def SetUp(
-    self,
-    reason: str,
-    hostnames: str,
-    process_regex: str,
-    grr_server_url: str,
-    grr_username: str,
-    grr_password: str,
-    approvers: Optional[str] = None,
-    verify: bool = True,
-    skip_offline_clients: bool = False) -> None:
+  def SetUp(self,
+            reason: str,
+            hostnames: str,
+            process_regex: str,
+            grr_server_url: str,
+            grr_username: str,
+            grr_password: str,
+            approvers: Optional[str] = None,
+            verify: bool = True,
+            skip_offline_clients: bool = False
+            ) -> None:  # pytype: disable=signature-mismatch
 
     super().SetUp(
       reason, grr_server_url, grr_username, grr_password,
@@ -457,7 +457,8 @@ Flow ID: `{3:s}`
     self.rule_names = ', '.join([r.name for r in yara_rules])
     self._grouping = f'# GRR Yara Scan - {datetime.datetime.now()}'
 
-  def Process(self, container: containers.Host) -> None:
+  def Process(self, container: containers.Host
+              ) -> None:  # pytype: disable=signature-mismatch
     if not self.rule_count:
       return
 
@@ -626,7 +627,8 @@ class GRRArtifactCollector(GRRFlow):
             max_file_size: Optional[int],
             approvers: Optional[str]=None,
             verify: bool=True,
-            skip_offline_clients: bool=False) -> None:
+            skip_offline_clients: bool=False
+            ) -> None:  # pytype: disable=signature-mismatch
     """Initializes a GRR artifact collector.
 
     Args:
@@ -667,7 +669,8 @@ class GRRArtifactCollector(GRRFlow):
     if max_file_size:
       self.max_file_size = max_file_size
 
-  def Process(self, container: containers.Host) -> None:
+  def Process(self, container: containers.Host
+              ) -> None:  # pytype: disable=signature-mismatch
     """Collects artifacts from a host with GRR.
 
     Raises:
@@ -777,7 +780,8 @@ class GRRFileCollector(GRRFlow):
             approvers: Optional[str]=None,
             verify: bool=True,
             skip_offline_clients: bool=False,
-            action: str='download') -> None:
+            action: str='download'
+            ) -> None:  # pytype: disable=signature-mismatch
     """Initializes a GRR file collector.
 
     Args:
@@ -821,7 +825,8 @@ class GRRFileCollector(GRRFlow):
     if max_file_size:
       self.max_file_size = int(max_file_size)
 
-  def Process(self, container: containers.Host) -> None:
+  def Process(self, container: containers.Host
+              ) -> None:  # pytype: disable=signature-mismatch
     """Collects files from a host with GRR.
 
     Raises:
@@ -909,7 +914,8 @@ class GRROsqueryCollector(GRRFlow):
             grr_password: str,
             approvers: str,
             verify: bool,
-            skip_offline_clients: bool) -> None:
+            skip_offline_clients: bool
+            ) -> None:  # pytype: disable=signature-mismatch
     """Initializes a GRR artifact collector.
 
     Args:
@@ -1042,7 +1048,8 @@ class GRROsqueryCollector(GRRFlow):
 
       self.state.StoreContainer(dataframe_container)
 
-  def Process(self, container: containers.Host) -> None:
+  def Process(self, container: containers.Host
+              ) -> None:  # pytype: disable=signature-mismatch
     """Collect osquery results from a host with GRR.
 
     Raises:
@@ -1143,7 +1150,8 @@ class GRRFlowCollector(GRRFlow):
             grr_password: str,
             approvers: Optional[str]=None,
             verify: bool=True,
-            skip_offline_clients: bool=False) -> None:
+            skip_offline_clients: bool=False
+            ) -> None:  # pytype: disable=signature-mismatch
     """Initializes a GRR flow collector.
 
     Args:
@@ -1178,7 +1186,8 @@ class GRRFlowCollector(GRRFlow):
                 f'Flow {flow_id} not found in {client.client_id}')
     self.state.DedupeContainers(containers.GrrFlow)
 
-  def Process(self, container: containers.GrrFlow) -> None:
+  def Process(self, container: containers.GrrFlow
+              ) -> None:  # pytype: disable=signature-mismatch
     """Downloads the results of a GRR collection flow.
 
     Raises:
@@ -1249,7 +1258,8 @@ class GRRTimelineCollector(GRRFlow):
             grr_password: str,
             approvers: Optional[str]=None,
             verify: bool=True,
-            skip_offline_clients: bool=False) -> None:
+            skip_offline_clients: bool=False
+            ) -> None:  # pytype: disable=signature-mismatch
     """Initializes a GRR timeline collector.
     Args:
       hostnames (str): comma-separated hostnames to launch the flow on.
@@ -1284,7 +1294,8 @@ class GRRTimelineCollector(GRRFlow):
       self.ModuleError('Timeline format must be 1 (BODY) or 2 (RAW).',
                        critical=True)
 
-  def Process(self, container: containers.Host) -> None:
+  def Process(self, container: containers.Host
+              ) -> None:  # pytype: disable=signature-mismatch
     """Collects a timeline from a host with GRR.
 
     Raises:

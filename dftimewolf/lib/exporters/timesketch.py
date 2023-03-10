@@ -141,9 +141,8 @@ class TimesketchExporter(module.ThreadAwareModule):
         break
       time.sleep(10)
 
-
-
-  def Process(self, container: containers.File) -> None:
+  def Process(self, container: containers.File
+              ) -> None:  # pytype: disable=signature-mismatch
     """Executes a Timesketch export.
 
     Args:
@@ -200,8 +199,7 @@ class TimesketchExporter(module.ThreadAwareModule):
           analyzer, session_id))
       self.logger.info(results.status_string)
 
-  @staticmethod
-  def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
+  def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
     return containers.File
 
   def GetThreadPoolSize(self) -> int:
