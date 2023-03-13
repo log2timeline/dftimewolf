@@ -69,7 +69,7 @@ class BigQueryCollector(module.BaseModule):
         'Application Default Credentials. Try running:\n '
         '$ gcloud auth application-default login'
         )
-      self.ModuleError(exception, critical=True)
+      self.ModuleError(str(exception), critical=True)
 
     if self._pandas_output:
       frame_container = containers.DataFrame(df, self._description, 'bq_result')

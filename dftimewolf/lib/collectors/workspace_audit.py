@@ -201,7 +201,7 @@ class WorkspaceAuditCollector(module.BaseModule):
           'Something is wrong with your gcloud access token or '
           'Application Default Credentials. Try running:\n '
           '$ gcloud auth application-default login')
-      self.ModuleError(exception, critical=True)
+      self.ModuleError(str(exception), critical=True)
 
     logs_report = containers.WorkspaceLogs(
         application_name=self._application_name, path=output_path,

@@ -33,10 +33,10 @@ FAKE_PROJECT_GET = {
 }
 FAKE_IMPORT_IMAGE_RESPONSES = [
   compute.GoogleComputeImage(
-    FAKE_GCP_PROJECT,
+    FAKE_GCP_PROJECT_NAME,
     'fake_zone',
     'fake-gcs-bucket-one'),
-  compute.GoogleComputeImage(FAKE_GCP_PROJECT,
+  compute.GoogleComputeImage(FAKE_GCP_PROJECT_NAME,
   'fake_zone',
   'fake-gcs-bucket-two')
 ]

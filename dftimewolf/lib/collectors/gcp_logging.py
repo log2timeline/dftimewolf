@@ -183,9 +183,7 @@ class GCPLogsCollector(module.BaseModule):
           'Something is wrong with your gcloud access token or '
           'Application Default Credentials. Try running:\n '
           '$ gcloud auth application-default login')
-      # TODO: determine if exception should be converted into a string as
-      # elsewhere in the codebase.
-      self.ModuleError(exception, critical=True)
+      self.ModuleError(str(exception), critical=True)
 
     except HttpError as exception:
       if exception.resp.status == 403:

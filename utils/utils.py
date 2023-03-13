@@ -15,9 +15,9 @@ def ReadExportScript(filename: str) -> str:
     Raises:
       OSError: If the script cannot be opened, read or closed.
     """
+    path = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), filename)
     try:
-      path = os.path.join(
-          os.path.dirname(os.path.realpath(__file__)), filename)
       with open(path, encoding='utf-8') as startup_script:
         return startup_script.read()
     except OSError as exception:

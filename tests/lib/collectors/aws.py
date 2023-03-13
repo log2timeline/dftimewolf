@@ -37,7 +37,6 @@ FAKE_VOLUME = ebs.AWSVolume(
     FAKE_AWS_ACCOUNT,
     'fake-zone-2',
     'fake-zone-2b',
-    'fake-vpc-id',
     False)
 FAKE_BOOT_VOLUME = ebs.AWSVolume(
     'fake-boot-volume-id',
@@ -52,7 +51,6 @@ FAKE_VOLUME_COPY = ebs.AWSVolume(
     FAKE_AWS_ACCOUNT,
     'fake-zone-2',
     'fake-zone-2b',
-    'fake-vpc-id',
     False)
 
 
@@ -187,7 +185,8 @@ class AWSCollectorTest(unittest.TestCase):
     forensics_vm = forensics_vms[0]
     self.assertEqual('fake-analysis-vm', forensics_vm.name)
     self.assertEqual(
-        'fake-volume-id-copy', forensics_vm.evidence_disk.volume_id)
+        'fake-volume-id-copy',
+        forensics_vm.evidence_disk.volume_id)  # pytype: disable=attribute-error
 
   # pylint: disable=line-too-long
   @mock.patch('boto3.session.Session._setup_loader')

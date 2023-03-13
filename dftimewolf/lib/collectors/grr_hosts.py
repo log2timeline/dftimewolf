@@ -239,7 +239,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     if not grr_flow:
       return ''
 
-    flow_id = grr_flow.flow_id  # type: str
+    flow_id = grr_flow.flow_id  # pytype: disable=attribute-error
     self.PublishMessage(f'{flow_id}: Scheduled')
 
     if self.keepalive:

@@ -45,7 +45,7 @@ class S3ToGCSCopy(module.ThreadAwareModule):
         state, name=name, critical=critical)
     self.aws_region: str = ''
     self.dest_project_name: str = ''
-    self.dest_project: gcp_project.GoogleCloudProject = ''
+    self.dest_project: gcp_project.GoogleCloudProject = None
     self.dest_bucket: str = ''
     self.filter: Any = None
     self.bucket_exists = False
