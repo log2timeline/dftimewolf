@@ -561,7 +561,6 @@ class DFTimewolfState(object):
           registered callbacks.
       source_module: the originating module.
     """
-    container.src_module_name = source_module
     for callback in self.streaming_callbacks.get(type(container), []):
       callback(container)
 
