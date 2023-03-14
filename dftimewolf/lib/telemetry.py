@@ -33,7 +33,7 @@ class TelemetryEntry:
 class BaseTelemetry():
   """Interface for implementing a telemetry module."""
 
-  def __new__(cls, *args: Any, **kwargs: Dict[str, Any]) -> "BaseTelemetry": # pylint: disable=unused-argument
+  def __new__(cls, *args: Any, **kwargs: str) -> "BaseTelemetry": # pylint: disable=unused-argument
     if not hasattr(cls, 'instance'):
       cls.instance = super(BaseTelemetry, cls).__new__(cls)
     return cls.instance
@@ -65,7 +65,7 @@ class BaseTelemetry():
 class GoogleCloudSpannerTelemetry(BaseTelemetry):
   """Sends telemetry data to Google Cloud Spanner."""
 
-  def __init__(self, **kwargs: Dict[str, Any]) -> None:
+  def __init__(self, **kwargs: str) -> None:
     """Initializes a GoogleCloudSpannerTelemetry object."""
     if hasattr(self, 'database'):  # Already initialized
       return
