@@ -261,7 +261,8 @@ class ThreadAwareModule(BaseModule):
 
   # pylint: disable=arguments-differ
   @abc.abstractmethod
-  def Process(self, container: interface.AttributeContainer) -> None:
+  def Process(self, container: interface.AttributeContainer
+              ) -> None:  # pytype: disable=signature-mismatch
     """Carry out a single process based on the input container. This will be
     run in parallel, based on the number of containers of the ThreadOn type,
     given by GetThreadOnContainerType(), up to GetThreadPoolSize() max
@@ -274,17 +275,15 @@ class ThreadAwareModule(BaseModule):
     once, regardless of the number of class instantiations. Called after
     Process."""
 
-  @staticmethod
   @abc.abstractmethod
-  def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
+  def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
     """Returns the container type that this module should be threaded on."""
 
   @abc.abstractmethod
   def GetThreadPoolSize(self) -> int:
     """Returns the maximum number of threads for this module."""
 
-  @staticmethod
-  def KeepThreadedContainersInState() -> bool:
+  def KeepThreadedContainersInState(self) -> bool:
     """Whether to keep the containers that are used to thread on in the state,
     or pop them. Default behaviour is to keep the containers. Override this
     method to return false to pop them from the state."""

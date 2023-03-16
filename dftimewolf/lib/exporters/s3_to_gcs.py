@@ -45,7 +45,7 @@ class S3ToGCSCopy(module.ThreadAwareModule):
         state, name=name, critical=critical)
     self.aws_region: str = ''
     self.dest_project_name: str = ''
-    self.dest_project: gcp_project.GoogleCloudProject = ''
+    self.dest_project: gcp_project.GoogleCloudProject = None
     self.dest_bucket: str = ''
     self.filter: Any = None
     self.bucket_exists = False
@@ -101,7 +101,8 @@ class S3ToGCSCopy(module.ThreadAwareModule):
     except Exception as exception: # pylint: disable=broad-except
       self.ModuleError(str(exception), critical=True)
 
-  def Process(self, container: containers.AWSS3Object) -> None:
+  def Process(self, container: containers.AWSS3Object
+              ) -> None:  # pytype: disable=signature-mismatch
     """Creates and exports disk image to the output bucket."""
     if self.filter and not self.filter.match(container.path):
       self.logger.info('{0:s} does not match filter. Skipping.'.
@@ -157,8 +158,7 @@ class S3ToGCSCopy(module.ThreadAwareModule):
     buckets = [b['id'] for b in self.dest_project.storage.ListBuckets()]
     return bucket_name in buckets
 
-  @staticmethod
-  def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
+  def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
     return containers.AWSS3Object
 
   def GetThreadPoolSize(self) -> int:

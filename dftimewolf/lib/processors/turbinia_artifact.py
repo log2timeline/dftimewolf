@@ -73,7 +73,8 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
       self.ModuleError(str(exception), critical=True)
       return
 
-  def Process(self, container: containers.RemoteFSPath) -> None:
+  def Process(self, container: containers.RemoteFSPath
+              ) -> None:  # pytype: disable=signature-mismatch
     """Process files with Turbinia."""
 
     log_file_path = os.path.join(self._output_path,
@@ -106,15 +107,13 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
               path=path, hostname=container.hostname)
           self.StoreContainer(container)
 
-  @staticmethod
-  def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
+  def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
     return containers.RemoteFSPath
 
   def GetThreadPoolSize(self) -> int:
     return self.parallel_count
 
-  @staticmethod
-  def KeepThreadedContainersInState() -> bool:
+  def KeepThreadedContainersInState(self) -> bool:
     return False
 
   def PreProcess(self) -> None:

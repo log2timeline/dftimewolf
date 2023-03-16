@@ -124,7 +124,7 @@ class GoogleSheetsCollector(module.BaseModule):
       self.ModuleError('Something is wrong with your gcloud access token or '
                        'Application Default Credentials. Try running:\n '
                        '$ gcloud auth application-default login')
-      self.ModuleError(exception, critical=True)
+      self.ModuleError(str(exception), critical=True)
 
   def _GetCredentials(self) -> Credentials:
     """Obtains API credentials for accessing the Google Sheets API.

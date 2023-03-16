@@ -21,12 +21,10 @@ class FileHashModule(module.ThreadAwareModule):
     """Init."""
     (FileHashModule, self).__init__(state, name=name, critical=critical)
 
-  @staticmethod
-  def GetThreadOnContainerType():
+  def GetThreadOnContainerType(self):
     """What container type to thread on."""
 
-  @staticmethod
-  def KeepThreadedContainersInState() -> bool:
+  def KeepThreadedContainersInState(self) -> bool:
       """Keep, or pop the containers used for threading."""
 
   def GetThreadPoolSize(self):
@@ -91,8 +89,7 @@ Three of the methods outlined above are used to tell the orchestration how to ha
 The `GetThreadOnContainerType()` method is used to identify which container is used for threading. That is, this is the container type that will get passed to `Process(container)` one at a time. Since we're operating on local filesystem files, we can use the existing container, `containers.File`.
 
 ```python
-  @staticmethod
-  def GetThreadOnContainerType():
+  def GetThreadOnContainerType(self):
     return containers.File
 ```
 
@@ -107,8 +104,7 @@ Second of these methods is `GetThreadPoolSize()` which tells the orchestration h
 Finally, we want to operate on file containers, and only keep those file containers in the state if the hash is matched. We will do that by telling the orchestration to pop the containers when passed to `Process()` and add the matches back.
 
 ```python
-  @staticmethod
-  def KeepThreadedContainersInState():
+  def KeepThreadedContainersInState(self):
     return False
 ```
 
