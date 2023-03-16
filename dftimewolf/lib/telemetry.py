@@ -15,7 +15,7 @@ from dftimewolf import config
 
 
 @dataclass
-class TelemetryEntry:
+class TelemetryCollection:
   """A simple dataclass to store module-related statistics.
 
   Attributes:
