@@ -453,7 +453,8 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
   ])
   recipe_name = tool.state.recipe['name']
 
-  TELEMETRY.LogTelemetry('modules', ','.join(modules), 'core', recipe_name)
+  for module in sorted(modules):
+    TELEMETRY.LogTelemetry('module', module, 'core', recipe_name)
   TELEMETRY.LogTelemetry(
     'workflow_start',
     datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
