@@ -28,6 +28,7 @@ class TelemetryEntry:
   """
   module_type: str
   module_name: str
+  recipe: str
   telemetry: Dict[str, str]
 
 class BaseTelemetry():
@@ -50,7 +51,7 @@ class BaseTelemetry():
     output.extend(self.entries)
     return '\n'.join(output)
 
-  def LogTelemetry(self, key: str, value: str, src_module_name: str) -> None:
+  def LogTelemetry(self, key: str, value: str, src_module_name: str, recipe_name: str) -> None:
     """Logs a telemetry event.
 
     Args:
@@ -58,7 +59,7 @@ class BaseTelemetry():
       value: Telemetry value.
       src_module_name: Name of the module that generated the telemetry.
     """
-    entry = f'\t{key}: \t{value} ({src_module_name})'
+    entry = f'\t{key}: \t{value} ({src_module_name} in {recipe_name})'
     self.entries.append(entry)
 
 
@@ -96,7 +97,7 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
     for row in result:
       entries.append(f'\t{row[1]}:\t\t{row[2]} - {row[3]}: {row[4]}')
 
-  def LogTelemetry(self, key: str, value: str, src_module_name: str) -> None:
+  def LogTelemetry(self, key: str, value: str, src_module_name: str, recipe_name: str) -> None:
     """Logs a telemetry event.
 
     Args:
@@ -109,6 +110,7 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
       'workflow_uuid': self.uuid,
       'time': datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
       'source_module': src_module_name,
+      'recipe': recipe_name,
       'key': key,
       'value': value,
     }
@@ -139,10 +141,10 @@ def GetTelemetry() -> Union[BaseTelemetry, GoogleCloudSpannerTelemetry]:
       TELEMETRY = BaseTelemetry()
   return TELEMETRY
 
-def LogTelemetry(key: str, value: str, src_module_name: str) -> None:
+def LogTelemetry(key: str, value: str, src_module_name: str, recipe_name: str = '') -> None:
   """"Logs a Telemetry entry using the currently configured Telemetry object."""
   telemetry = GetTelemetry()
-  telemetry.LogTelemetry(key, value, src_module_name)
+  telemetry.LogTelemetry(key, value, src_module_name, recipe_name)
 
 def FormatTelemetry() -> str:
   """Formats the telemetry of the currently configured Telemetry object."""

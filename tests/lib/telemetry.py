@@ -42,22 +42,25 @@ class BaseTelemetryTest(unittest.TestCase):
   def testLogTelemetry(self):
     """Tests that LogTelemetry logs the correct data."""
     telemetry1 = telemetry.BaseTelemetry()
-    telemetry1.LogTelemetry('test_key', 'test_value', 'random_module')
+    telemetry1.LogTelemetry(
+      'test_key', 'test_value', 'random_module', 'random_recipe')
     self.assertEqual(len(telemetry1.entries), 1)
     self.assertEqual(
-        telemetry1.entries[0], '\ttest_key: \ttest_value (random_module)')
+        telemetry1.entries[0],
+        '\ttest_key: \ttest_value (random_module in random_recipe)')
 
   # patch UUID to return a constant value
   @mock.patch('uuid.uuid4', return_value='test_uuid')
   def testFormatTelemetry(self, unused_mock_uuid):
     """Tests that the resulting Telemetry is properly formatted."""
     telemetry1 = telemetry.BaseTelemetry()
-    telemetry1.LogTelemetry('test_key', 'test_value', 'random_module')
+    telemetry1.LogTelemetry(
+      'test_key', 'test_value', 'random_module', 'random_recipe')
     result = telemetry1.FormatTelemetry()
     self.assertEqual(
         result,
         ('Telemetry information for: test_uuid\n\ttest_key:'
-         ' \ttest_value (random_module)')
+         ' \ttest_value (random_module in random_recipe)')
     )
 
 @unittest.skipIf(not HAS_SPANNER, 'Missing google.cloud.spanner dependency.')
@@ -162,7 +165,7 @@ class GoogleCloudSpannerTelemetryTest(unittest.TestCase):
         project_name='test_project',
         instance_name='test_instance',
         database_name='test_database')
-    telemetry1.LogTelemetry('test_key', 'test_value', 'random_module')
+    telemetry1.LogTelemetry('test_key', 'test_value', 'random_module', 'random_recipe')
     instance = self.mock_spanner_client.return_value.instance.return_value
     database = instance.database.return_value
     database.run_in_transaction.assert_called_with(
@@ -170,6 +173,7 @@ class GoogleCloudSpannerTelemetryTest(unittest.TestCase):
         {
             'workflow_uuid': 'test_uuid',
             'time': mock.ANY,
+            'recipe': 'random_recipe',
             'source_module': 'random_module',
             'key': 'test_key',
             'value': 'test_value'

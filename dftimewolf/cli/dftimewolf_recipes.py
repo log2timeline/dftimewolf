@@ -452,11 +452,13 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
     module['name'] for module in tool.state.recipe.get('preflights', [])
   ])
 
+  recipe_name = tool.state.recipe['name']
+
   TELEMETRY.LogTelemetry(
     'workflow_start',
     datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-    'core')
-  TELEMETRY.LogTelemetry('recipe', tool.state.recipe['name'], 'core')
+    'core',
+    recipe_name)
 
   # Interpolate arguments into recipe
   recipe = tool.state.recipe
@@ -479,7 +481,7 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
   tool.RunPreflights()
   time_preflights = time.time()*1000
   TELEMETRY.LogTelemetry(
-    'preflights_delta', str(time_preflights - time_ready), 'core')
+    'preflights_delta', str(time_preflights - time_ready), 'core', recipe_name)
 
   try:
     tool.SetupModules()
@@ -491,7 +493,7 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
 
   time_setup = time.time()*1000
   TELEMETRY.LogTelemetry(
-    'setup_delta', str(time_setup - time_preflights), 'core')
+    'setup_delta', str(time_setup - time_preflights), 'core', recipe_name)
 
   try:
     tool.RunModules()
@@ -503,12 +505,12 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
 
   time_run = time.time()*1000
   TELEMETRY.LogTelemetry(
-    'run_delta', str(time_run - time_setup), 'core')
+    'run_delta', str(time_run - time_setup), 'core', recipe_name)
 
   tool.CleanUpPreflights()
 
   total_time = time.time()*1000 - time_start
-  TELEMETRY.LogTelemetry('total_time', str(total_time), 'core')
+  TELEMETRY.LogTelemetry('total_time', str(total_time), 'core', recipe_name)
   for telemetry_row in tool.FormatTelemetry().split('\n'):
     logger.debug(telemetry_row)
 

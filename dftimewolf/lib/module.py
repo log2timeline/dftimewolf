@@ -90,7 +90,8 @@ class BaseModule(object):
       raise ValueError("telemetry keys must be strings.")
     if not all (isinstance(value, str) for value in data.values()):
       raise ValueError("telemetry values must be strings.")
-    entry = telemetry.TelemetryEntry(type(self).__name__, self.name, data)
+    entry = telemetry.TelemetryEntry(
+        type(self).__name__, self.name, self.state.recipe['name'], data)
     self.state.LogTelemetry(entry)
 
   def CleanUp(self) -> None:
