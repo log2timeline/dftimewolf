@@ -53,7 +53,8 @@ class GCEDiskFromImage(module.ThreadAwareModule):
           self.StoreContainer(containers.GCEImage(obj, dest_project))
 
 
-  def Process(self, container: containers.GCEImage) -> None:
+  def Process(self, container: containers.GCEImage
+              ) -> None:  # pytype: disable=signature-mismatch
     """Creates a GCE disk from an image.
 
     Args:
@@ -79,8 +80,7 @@ class GCEDiskFromImage(module.ThreadAwareModule):
 
     self.logger.info(f'Disk {disk.name} finished creation')
 
-  @staticmethod
-  def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
+  def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
     return containers.GCEImage
 
   def GetThreadPoolSize(self) -> int:

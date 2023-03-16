@@ -149,7 +149,8 @@ class GCEDiskCopy(module.ThreadAwareModule):
             critical=True)
       self.ModuleError(str(exception), critical=True)
 
-  def Process(self, container: containers.GCEDisk) -> None:
+  def Process(self, container: containers.GCEDisk
+              ) -> None:  # pytype: disable=signature-mismatch
     """Copies a disk to the destination project.
 
     Args:
@@ -232,8 +233,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
       return [d.name for d in list(remote_instance.ListDisks().values())]
     return [remote_instance.GetBootDisk().name]
 
-  @staticmethod
-  def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
+  def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
     return containers.GCEDisk
 
   def GetThreadPoolSize(self) -> int:

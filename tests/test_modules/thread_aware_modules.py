@@ -97,8 +97,7 @@ class ThreadAwareConsumerModule(module.ThreadAwareModule):
       new_container = TestContainerThree('output ' + self.output_values.pop())
     self.StoreContainer(new_container)
 
-  @staticmethod
-  def GetThreadOnContainerType():
+  def GetThreadOnContainerType(self):
     return TestContainer
 
   def GetThreadPoolSize(self):
@@ -128,8 +127,7 @@ class Issue503Module(module.ThreadAwareModule):
     self.logger.info('{0:s} Process!'.format(self.name))
     self.StoreContainer(TestContainer(container.value + " Processed"))
 
-  @staticmethod
-  def GetThreadOnContainerType():
+  def GetThreadOnContainerType(self):
     return TestContainer
 
   def GetThreadPoolSize(self):

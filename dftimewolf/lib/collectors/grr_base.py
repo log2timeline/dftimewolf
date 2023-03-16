@@ -39,7 +39,7 @@ class GRRBaseModule(object):
           the entire recipe to fail if the module encounters an error.
     """
     self.reason = str()
-    self.grr_api = None  # type: grr_api.ApiClient
+    self.grr_api: grr_api.GrrApi = None
     self.grr_url = str()
     self.approvers = []  # type: List[str]
     self.output_path = str()

@@ -116,7 +116,8 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
     if self.iam_details['profile']['created']:
       time.sleep(20) # Propagation delay
 
-  def Process(self, container: containers.AWSSnapshot) -> None:
+  def Process(self, container: containers.AWSSnapshot
+              ) -> None:  # pytype: disable=signature-mismatch
     """Perform the copy of the snapshot to S3."""
 
     # Aws accounts have thread safety issues. Create a unique one per thread
@@ -198,8 +199,7 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
     buckets = [bucket['Name'] for bucket in self.s3.list_buckets()['Buckets']]
     return bucket_name in buckets
 
-  @staticmethod
-  def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
+  def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
     return containers.AWSSnapshot
 
   def GetThreadPoolSize(self) -> int:

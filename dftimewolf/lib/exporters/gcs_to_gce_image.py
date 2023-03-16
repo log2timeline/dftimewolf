@@ -135,7 +135,8 @@ class GCSToGCEImage(module.ThreadAwareModule):
       # IAM service raises googleapiclient.errors.HttpError
       self.ModuleError(str(exception), critical=True)
 
-  def Process(self, container: containers.GCSObject) -> None:
+  def Process(self, container: containers.GCSObject
+              ) -> None:  # pytype: disable=signature-mismatch
     """Creates a GCE image from an image in GCS.
 
     Args:
@@ -324,8 +325,7 @@ class GCSToGCEImage(module.ThreadAwareModule):
     self.iam_service.projects().roles().delete( #pylint: disable=no-member
         name = role_name).execute()
 
-  @staticmethod
-  def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
+  def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
     return containers.GCSObject
 
   def GetThreadPoolSize(self) -> int:

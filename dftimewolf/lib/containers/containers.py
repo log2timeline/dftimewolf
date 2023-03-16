@@ -289,7 +289,7 @@ class ForensicsVM(interface.AttributeContainer):
 
   def __init__(
       self, name: str, evidence_disk: Union["GoogleComputeDisk", "AWSVol",
-                                            "AZComputeDisk"],
+                                            "AZComputeDisk", None],
       platform: str) -> None:
     super(ForensicsVM, self).__init__()
     self.name = name
