@@ -451,9 +451,9 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
   modules.extend([
     module['name'] for module in tool.state.recipe.get('preflights', [])
   ])
-
   recipe_name = tool.state.recipe['name']
 
+  TELEMETRY.LogTelemetry('modules', ','.join(modules), 'core', recipe_name)
   TELEMETRY.LogTelemetry(
     'workflow_start',
     datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
