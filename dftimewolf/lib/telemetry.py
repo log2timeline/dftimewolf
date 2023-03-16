@@ -24,7 +24,7 @@ class TelemetryCollection:
         same value as module_type when no runtime_name has been specified for
         the module.
     telemetry: Dictionary of telemetry to store. Contents are arbitrary, but
-        keys must be strings.
+        keys and values must be strings.
   """
   module_type: str
   module_name: str
@@ -51,7 +51,12 @@ class BaseTelemetry():
     output.extend(self.entries)
     return '\n'.join(output)
 
-  def LogTelemetry(self, key: str, value: str, src_module_name: str, recipe_name: str) -> None:
+  def LogTelemetry(
+    self,
+    key: str,
+    value: str,
+    src_module_name: str,
+    recipe_name: str) -> None:
     """Logs a telemetry event.
 
     Args:
@@ -97,7 +102,12 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
     for row in result:
       entries.append(f'\t{row[1]}:\t\t{row[2]} - {row[3]}: {row[4]}')
 
-  def LogTelemetry(self, key: str, value: str, src_module_name: str, recipe_name: str) -> None:
+  def LogTelemetry(
+    self,
+    key: str,
+    value: str,
+    src_module_name: str,
+    recipe_name: str) -> None:
     """Logs a telemetry event.
 
     Args:

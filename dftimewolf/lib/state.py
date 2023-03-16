@@ -226,7 +226,8 @@ class DFTimewolfState(object):
           interface.METADATA_KEY_SOURCE_MODULE, source_module)
       self.store.setdefault(container.CONTAINER_TYPE, []).append(container)
 
-  def LogTelemetry(self, telemetry_entry: telemetry.TelemetryCollection) -> None:
+  def LogTelemetry(
+    self, telemetry_entry: telemetry.TelemetryCollection) -> None:
     """Method to store telemetry in the state's telemetry store.
 
     Args:

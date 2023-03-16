@@ -165,7 +165,8 @@ class GoogleCloudSpannerTelemetryTest(unittest.TestCase):
         project_name='test_project',
         instance_name='test_instance',
         database_name='test_database')
-    telemetry1.LogTelemetry('test_key', 'test_value', 'random_module', 'random_recipe')
+    telemetry1.LogTelemetry(
+      'test_key', 'test_value', 'random_module', 'random_recipe')
     instance = self.mock_spanner_client.return_value.instance.return_value
     database = instance.database.return_value
     database.run_in_transaction.assert_called_with(
