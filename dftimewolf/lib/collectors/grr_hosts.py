@@ -14,6 +14,7 @@ import pandas as pd
 
 from grr_api_client import errors as grr_errors
 from grr_api_client import flow
+from grr_api_client import utils
 from grr_api_client.client import Client
 from grr_response_proto import flows_pb2, jobs_pb2, timeline_pb2
 from grr_response_proto import osquery_pb2 as osquery_flows
@@ -124,7 +125,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
   def _FilterSelectionCriteria(
       self,
       selector: str,
-      search_result: List[Client]) -> List[Tuple[int, Client]]:
+      search_result: utils.ItemsIterator[Client]) -> List[Tuple[int, Client]]:
     result = []
     selector = selector.lower()
     for client in search_result:
@@ -239,7 +240,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     if not grr_flow:
       return ''
 
-    flow_id = grr_flow.flow_id  # pytype: disable=attribute-error
+    flow_id = str(grr_flow.flow_id)  # pytype: disable=attribute-error
     self.PublishMessage(f'{flow_id}: Scheduled')
 
     if self.keepalive:
