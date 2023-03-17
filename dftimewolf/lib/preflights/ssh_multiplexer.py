@@ -1,6 +1,7 @@
 """Opens an SSH connection to a server using ControlMaster directives."""
 
 import subprocess
+import time
 from typing import Optional, List
 
 from dftimewolf.lib import module
@@ -57,7 +58,7 @@ class SSHMultiplexer(module.PreflightModule):
     command.extend([
        '-o', 'ControlMaster=auto',
        '-o', 'ControlPersist=yes',
-       '-o', 'ControlPath=~/.ssh/ctrl-%C',
+       '-o', f'ControlPath=~/.ssh/ctrl-dftw-{str(time.time_ns())}-%C',
     ])
     if self.extra_ssh_options:
       command.extend(self.extra_ssh_options)
@@ -73,12 +74,12 @@ class SSHMultiplexer(module.PreflightModule):
     """Close the shared SSH connection."""
     command = ['ssh',
                '-O', 'exit',
-               '-o', 'ControlPath=~/.ssh/ctrl-%C',
+               '-o', f'ControlPath=~/.ssh/ctrl-dftw-{str(time.time_ns())}-%C',
                self.hostname]
     ret = subprocess.call(command)
     if ret != 0:
       self.logger.error('Error cleaning up the shared SSH connection. Remove '
-                        'any lingering ~/.ssh/ctrl-* files.')
+                        'any lingering ~/.ssh/ctrl-dftw-*-* files.')
     else:
       self.logger.info('Succesfully cleaned up SSH connection.')
 
