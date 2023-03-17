@@ -4,11 +4,14 @@
 
 import argparse
 from contextlib import redirect_stderr, redirect_stdout
+import datetime
 import curses
 import logging
 import os
 import signal
 import sys
+import time
+
 from typing import TYPE_CHECKING, List, Optional, Dict, Any, cast
 from dftimewolf.cli.curses_display_manager import CursesDisplayManager
 from dftimewolf.cli.curses_display_manager import CDMStringIOWrapper
@@ -16,6 +19,7 @@ from dftimewolf.cli.curses_display_manager import CDMStringIOWrapper
 # pylint: disable=wrong-import-position
 from dftimewolf.lib import args_validator
 from dftimewolf.lib import logging_utils
+from dftimewolf.lib import telemetry
 from dftimewolf import config
 
 from dftimewolf.lib import errors
@@ -23,6 +27,8 @@ from dftimewolf.lib import utils
 
 if TYPE_CHECKING:
   from dftimewolf.lib import state as dftw_state
+
+TELEMETRY = telemetry
 
 # pylint: disable=line-too-long
 MODULES = {
@@ -346,19 +352,9 @@ class DFTimewolfTool(object):
     """Calls the preflight's CleanUp functions."""
     self._state.CleanUpPreflights()
 
-  def PrintStats(self) -> None:
-    """Prints collected stats if existing."""
-    stat_entries = self._state.GetStats()
-    if not stat_entries:
-      logger.info('No statistics collected during execution.')
-
-    logger.info(f'{len(stat_entries)} stat entries collected during execution.')
-    for entry in stat_entries:
-      logger.debug(f'[{entry.module_name} ({entry.module_type})] {entry.stats}')
-
-  def ExportStats(self) -> None:
-    """Exports collected stats if existing. Default behavior is to log."""
-    self.PrintStats()
+  def FormatTelemetry(self) -> str:
+    """Prints collected telemetry if existing."""
+    return TELEMETRY.FormatTelemetry()
 
   def RecipesManager(self) -> recipes_manager.RecipesManager:
     """Returns the recipes manager."""
@@ -424,16 +420,12 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
   Returns:
     bool: True if DFTimewolf could be run successfully, False otherwise.
   """
-  version_tuple = (sys.version_info[0], sys.version_info[1])
-  if version_tuple[0] != 3 or version_tuple < (3, 6):
-    logger.critical(('Unsupported Python version: {0:s}, version 3.6 or higher '
-                     'required.').format(sys.version))
-    return False
-
+  time_start = time.time()*1000
   tool = DFTimewolfTool(cdm)
 
   # TODO: log errors if this fails.
   tool.LoadConfiguration()
+  TELEMETRY.LogTelemetry('no_curses', str(cdm is None), 'core')
 
   try:
     tool.ReadRecipes()
@@ -453,6 +445,22 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
     logger.critical(str(exception))
     return False
 
+  modules = [
+    module['name'] for module in tool.state.recipe.get('modules', [])
+  ]
+  modules.extend([
+    module['name'] for module in tool.state.recipe.get('preflights', [])
+  ])
+  recipe_name = tool.state.recipe['name']
+
+  for module in sorted(modules):
+    TELEMETRY.LogTelemetry('module', module, 'core', recipe_name)
+  TELEMETRY.LogTelemetry(
+    'workflow_start',
+    datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+    'core',
+    recipe_name)
+
   # Interpolate arguments into recipe
   recipe = tool.state.recipe
   for module in recipe.get('preflights', []) + recipe.get('modules', []):
@@ -470,7 +478,11 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
 
   tool.state.LogExecutionPlan()
 
+  time_ready = time.time()*1000
   tool.RunPreflights()
+  time_preflights = time.time()*1000
+  TELEMETRY.LogTelemetry(
+    'preflights_delta', str(time_preflights - time_ready), 'core', recipe_name)
 
   try:
     tool.SetupModules()
@@ -480,6 +492,10 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
     logger.critical(str(exception))
     return False
 
+  time_setup = time.time()*1000
+  TELEMETRY.LogTelemetry(
+    'setup_delta', str(time_setup - time_preflights), 'core', recipe_name)
+
   try:
     tool.RunModules()
   except errors.CriticalError as exception:
@@ -488,8 +504,16 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
     logger.critical(str(exception))
     return False
 
+  time_run = time.time()*1000
+  TELEMETRY.LogTelemetry(
+    'run_delta', str(time_run - time_setup), 'core', recipe_name)
+
   tool.CleanUpPreflights()
-  tool.ExportStats()
+
+  total_time = time.time()*1000 - time_start
+  TELEMETRY.LogTelemetry('total_time', str(total_time), 'core', recipe_name)
+  for telemetry_row in tool.FormatTelemetry().split('\n'):
+    logger.debug(telemetry_row)
 
   return True
 
@@ -503,7 +527,6 @@ def Main() -> bool:
                    not sys.stdout.isatty(),
                    not sys.stdin.isatty()])
   SetupLogging(no_curses)
-
   if any([no_curses, '-h' in sys.argv, '--help' in sys.argv]):
     return RunTool()
 
@@ -529,6 +552,7 @@ def Main() -> bool:
     cursesdisplaymanager.PrintMessages()
 
   return exit_code
+  # TODO: Telemetry to log errors
 
 if __name__ == '__main__':
   signal.signal(signal.SIGINT, SignalHandler)

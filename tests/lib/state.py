@@ -22,7 +22,6 @@ from tests.test_modules import test_recipe
 TEST_MODULES = {
   'DummyModule1': 'tests.test_modules.modules',
   'DummyModule2': 'tests.test_modules.modules',
-  'DummyModule2BadLogging': 'tests.test_modules.modules',
   'DummyPreflightModule': 'tests.test_modules.modules',
   'ContainerGeneratorModule': 'tests.test_modules.thread_aware_modules',
   'ThreadAwareConsumerModule': 'tests.test_modules.thread_aware_modules',
@@ -38,7 +37,6 @@ class StateTest(unittest.TestCase):
     modules_manager.ModulesManager.RegisterModules([
         modules.DummyModule1,
         modules.DummyModule2,
-        modules.DummyModule2BadLogging,
         modules.DummyPreflightModule,
         thread_aware_modules.ContainerGeneratorModule,
         thread_aware_modules.ThreadAwareConsumerModule,
@@ -61,8 +59,6 @@ class StateTest(unittest.TestCase):
 
     modules_manager.ModulesManager.DeregisterModule(modules.DummyModule1)
     modules_manager.ModulesManager.DeregisterModule(modules.DummyModule2)
-    modules_manager.ModulesManager.DeregisterModule(
-        modules.DummyModule2BadLogging)
     modules_manager.ModulesManager.DeregisterModule(
         modules.DummyPreflightModule)
     modules_manager.ModulesManager.DeregisterModule(
@@ -490,35 +486,6 @@ class StateTest(unittest.TestCase):
     for value in [c.value for c in conts]:
       self.assertIn(value, ['one', 'two'])
 
-  def testStatsLogging(self):
-    """Tests that the stats logging is working correctly."""
-    test_state = state.DFTimewolfState(config.Config)
-    test_state.command_line_options = {}
-    test_state.LoadRecipe(test_recipe.contents, TEST_MODULES)
-    test_state.SetupModules()
-    test_state.RunModules()
-    stats = test_state.GetStats()
-    self.assertEqual(len(stats), 2)
-    self.assertIsInstance(stats[0], state.StatsEntry)
-    self.assertEqual(stats[0].module_name, 'DummyModule1')
-    self.assertEqual(stats[1].module_name, 'DummyModule2')
-    self.assertEqual(stats[0].stats, {'random_key1': 'random_value1'})
-    self.assertEqual(stats[1].stats, {'random_key2': 'random_value2'})
-
-  def testStatsLoggingForbiddenValue(self):
-    """Tests that the stats logging fails to log non-string entries."""
-    test_state = state.DFTimewolfState(config.Config)
-    test_state.command_line_options = {}
-    test_state.LoadRecipe(test_recipe.contents_bad_logging, TEST_MODULES)
-    test_state.SetupModules()
-    with self.assertRaises(errors.CriticalError) as error:
-      test_state.RunModules()
-    self.assertEqual(error.exception.message, 'Critical error found. Aborting.')
-    self.assertEqual(
-      test_state.global_errors[0].message,
-      'An unknown error occurred in module DummyModule2BadLogging:'
-      ' Stats keys must be strings.')
-
 
 class StateWithCDMTest(unittest.TestCase):
   """Tests for the DFTimewolfStateWithCDM class.
@@ -530,7 +497,6 @@ class StateWithCDMTest(unittest.TestCase):
     modules_manager.ModulesManager.RegisterModules([
         modules.DummyModule1,
         modules.DummyModule2,
-        modules.DummyModule2BadLogging,
         modules.DummyPreflightModule,
         thread_aware_modules.ContainerGeneratorModule,
         thread_aware_modules.ThreadAwareConsumerModule,
@@ -553,8 +519,6 @@ class StateWithCDMTest(unittest.TestCase):
 
     modules_manager.ModulesManager.DeregisterModule(modules.DummyModule1)
     modules_manager.ModulesManager.DeregisterModule(modules.DummyModule2)
-    modules_manager.ModulesManager.DeregisterModule(
-        modules.DummyModule2BadLogging)
     modules_manager.ModulesManager.DeregisterModule(
         modules.DummyPreflightModule)
     modules_manager.ModulesManager.DeregisterModule(

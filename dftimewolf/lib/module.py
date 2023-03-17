@@ -11,14 +11,19 @@ import traceback
 import sys
 
 from typing import Optional, Type, cast, TypeVar, Dict, Any, Sequence
+from typing import TYPE_CHECKING
 
 from dftimewolf.lib import errors
 from dftimewolf.lib import logging_utils
-from dftimewolf.lib import state as state_lib  # pylint: disable=cyclic-import
+from dftimewolf.lib import telemetry
 from dftimewolf.lib.containers import interface
+
+if TYPE_CHECKING:
+  from dftimewolf.lib import state as state_lib  # pylint: disable=cyclic-import
 
 T = TypeVar("T", bound="interface.AttributeContainer")  # pylint: disable=invalid-name,line-too-long
 
+TELEMETRY = telemetry
 
 class BaseModule(object):
   """Interface of a DFTimewolf module.
@@ -34,7 +39,7 @@ class BaseModule(object):
 
   def __init__(self,
                state: "state_lib.DFTimewolfState",
-               name:Optional[str]=None,
+               name: Optional[str]=None,
                critical: Optional[bool]=False):
     """Initialize a module.
 
@@ -72,19 +77,22 @@ class BaseModule(object):
 
       self.logger.addHandler(console_handler)
 
-  def LogStats(self, stats: Dict[str, Any]) -> None:
-    """Saves useful runtime statistics to the state for later processing.
+  def LogTelemetry(self, data: Dict[str, str]) -> None:
+    """Logs useful telemetry using the telemetry attribute in the state object.
 
     Args:
-      stats: Stats to store. Contents are arbitrary, but keys must be strings.
+      data: Key-value telemetry to store.
 
     Raises:
-      ValueError: If the keys in the stats dict are not strings.
+      ValueError: If the keys in the telemetry dict are not strings.
     """
-    if not all (isinstance(key, str) for key in stats.keys()):
-      raise ValueError("Stats keys must be strings.")
-    stastentry = state_lib.StatsEntry(type(self).__name__, self.name, stats)
-    self.state.StoreStats(stastentry)
+    if not all (isinstance(key, str) for key in data.keys()):
+      raise ValueError("telemetry keys must be strings.")
+    if not all (isinstance(value, str) for value in data.values()):
+      raise ValueError("telemetry values must be strings.")
+    entry = telemetry.TelemetryCollection(
+        type(self).__name__, self.name, self.state.recipe['name'], data)
+    self.state.LogTelemetry(entry)
 
   def CleanUp(self) -> None:
     """Cleans up module output to prepare it for the next module."""
@@ -140,6 +148,17 @@ class BaseModule(object):
         f'container: {str(container)}')
 
     self.state.StoreContainer(container, self.name)
+
+  def StreamContainer(self, container: "interface.AttributeContainer") -> None:
+    """Streams a container to the next module in the recipe.
+
+    Args:
+      container (AttributeContainer): data to store.
+    """
+    self.logger.debug(f'{self.name} is streaming a {container.CONTAINER_TYPE} '
+        f'container: {str(container)}')
+
+    self.state.StreamContainer(container, self.name)
 
   def GetContainers(self,
                     container_class: Type[T],

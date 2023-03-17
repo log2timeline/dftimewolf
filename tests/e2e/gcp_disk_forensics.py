@@ -259,13 +259,13 @@ def ReadProjectInfo() -> Dict[str, str]:
     RuntimeError: if the json file cannot be parsed.
     ValueError: if the json file does not have the required properties.
   """
-  project_info = os.environ.get('PROJECT_INFO')
-  if project_info is None:
+  project_info_file = os.environ.get('PROJECT_INFO')
+  if project_info_file is None:
     raise OSError('Error: please make sure that you defined the '
                   '"PROJECT_INFO" environment variable pointing '
                   'to your project settings.')
   try:
-    json_file = open(project_info)
+    json_file = open(project_info_file)
     try:
       project_info = json.load(json_file)
     except ValueError as exception:

@@ -24,7 +24,7 @@ class DummyModule1(module.BaseModule):
   def Process(self):
     """Dummy Process function."""
     print(self.name + ' Process!')
-    self.LogStats({'random_key1': 'random_value1'})
+    self.LogTelemetry({'random_key1': 'random_value1'})
 
 
 class DummyModule2(module.BaseModule):
@@ -42,7 +42,7 @@ class DummyModule2(module.BaseModule):
   def Process(self):
     """Dummy Process function."""
     print(self.name + ' Process!')
-    self.LogStats({'random_key2': 'random_value2'})
+    self.LogTelemetry({'random_key2': 'random_value2'})
 
 class DummyPreflightModule(module.PreflightModule):
   """Dummy preflight module."""
@@ -61,11 +61,3 @@ class DummyPreflightModule(module.PreflightModule):
   def CleanUp(self):
     """Dummy cleanup function."""
     print(self.name + 'CleanUp!')
-
-class DummyModule2BadLogging(DummyModule2):
-  """Dummy module that has bad logging."""
-
-  def Process(self):
-    """Dummy Process function with bad logging (int as key)."""
-    print(self.name + ' Process!')
-    self.LogStats({1234: 'random_value2'})  # pytype: disable=wrong-arg-types
