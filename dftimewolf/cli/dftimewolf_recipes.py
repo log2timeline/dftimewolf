@@ -104,6 +104,7 @@ class DFTimewolfTool(object):
     self._recipes_manager = recipes_manager.RecipesManager()
     self._recipe = {}  # type: Dict[str, Any]
     self._args_validator = args_validator.ValidatorManager()
+    self.dry_run = False
     self.cdm = cdm
 
     self._DetermineDataFilesPath()
@@ -119,6 +120,9 @@ class DFTimewolfTool(object):
     Args:
       argument_parser (argparse.ArgumentParser): argparse argument parser.
     """
+    argument_parser.add_argument('--dry_run', help='Tool dry run',
+                                 default=False, action='store_true')
+
     subparsers = argument_parser.add_subparsers()
 
     for recipe in self._recipes_manager.GetRecipes():
@@ -267,6 +271,7 @@ class DFTimewolfTool(object):
       raise errors.CommandLineParseError(error_message)
 
     self._recipe = self._command_line_options.recipe
+    self.dry_run = self._command_line_options.dry_run
 
     if self.cdm:
       self._state = DFTimewolfStateWithCDM(config.Config, self.cdm)
@@ -477,6 +482,10 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
     return False
 
   tool.state.LogExecutionPlan()
+
+  if tool.dry_run:
+    logger.info("Exiting as --dry_run flag is set.")
+    return True
 
   time_ready = time.time()*1000
   tool.RunPreflights()
