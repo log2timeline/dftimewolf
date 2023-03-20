@@ -52,7 +52,8 @@ class SSHMultiplexer(unittest.TestCase):
     ssh_multi.CleanUp()
 
     mock_call.assert_called_with([
-      'ssh', '-O', 'exit', '-o', 'ControlPath=~/.ssh/ctrl-dftw-123456789-%C', 'fakehost'
+      'ssh', '-O', 'exit', '-o',
+      'ControlPath=~/.ssh/ctrl-dftw-123456789-%C', 'fakehost'
     ])
 
 
