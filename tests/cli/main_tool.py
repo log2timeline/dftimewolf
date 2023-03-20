@@ -11,7 +11,6 @@ from dftimewolf.lib import state as dftw_state
 from dftimewolf.lib import resources, errors
 from dftimewolf import config
 
-
 # This test recipe requires two args: Anything for arg1, and the word 'Second'
 # for arg2. The value for arg1 will be substituted into 'other_arg' in arg2.
 NESTED_ARG_RECIPE = {
@@ -140,6 +139,22 @@ class MainToolTest(unittest.TestCase):
         errors.RecipeArgsValidatorError,
         'At least one argument failed validation'):
       self.tool.ValidateArguments()
+
+  def testDryRun(self):
+    """Tests setting the dry_run flag."""
+    # pylint: disable=protected-access
+    nested_arg_recipe = resources.Recipe(
+        NESTED_ARG_RECIPE.__doc__,
+        NESTED_ARG_RECIPE,
+        NESTED_ARG_RECIPE_ARGS)
+    self.tool._state = dftw_state.DFTimewolfState(config.Config)
+    self.tool._recipes_manager.RegisterRecipe(nested_arg_recipe)
+    self.tool._state.LoadRecipe(NESTED_ARG_RECIPE, dftimewolf_recipes.MODULES)
+
+    self.tool.ParseArguments(
+        ['--dry_run', 'nested_arg_recipe', 'First', 'Not Second'])
+
+    self.assertTrue(self.tool.dry_run)
 
 
 if __name__ == '__main__':
