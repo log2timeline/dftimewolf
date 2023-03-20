@@ -104,6 +104,7 @@ class DFTimewolfTool(object):
     self._recipes_manager = recipes_manager.RecipesManager()
     self._recipe = {}  # type: Dict[str, Any]
     self._args_validator = args_validator.ValidatorManager()
+    self.dry_run = False
     self.cdm = cdm
 
     self._DetermineDataFilesPath()
@@ -119,6 +120,9 @@ class DFTimewolfTool(object):
     Args:
       argument_parser (argparse.ArgumentParser): argparse argument parser.
     """
+    argument_parser.add_argument('--dry_run', help='Tool dry run',
+                                 default=False, action='store_true')
+
     subparsers = argument_parser.add_subparsers()
 
     for recipe in self._recipes_manager.GetRecipes():
@@ -267,6 +271,7 @@ class DFTimewolfTool(object):
       raise errors.CommandLineParseError(error_message)
 
     self._recipe = self._command_line_options.recipe
+    self.dry_run = self._command_line_options.dry_run
 
     if self.cdm:
       self._state = DFTimewolfStateWithCDM(config.Config, self.cdm)
@@ -413,12 +418,12 @@ def SetupLogging(stdout_log: bool = False) -> None:
   logger.success('Success!')
 
 
-def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
+def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
   """
   Runs DFTimewolfTool.
 
   Returns:
-    bool: True if DFTimewolf could be run successfully, False otherwise.
+    int: 0 DFTimewolf could be run successfully, 1 otherwise.
   """
   time_start = time.time()*1000
   tool = DFTimewolfTool(cdm)
@@ -433,7 +438,7 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
     if cdm:
       cdm.EnqueueMessage('dftimewolf', str(exception), True)
     logger.critical(str(exception))
-    return False
+    return 1
 
   try:
     tool.ParseArguments(sys.argv[1:])
@@ -443,7 +448,7 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
     if cdm:
       cdm.EnqueueMessage('dftimewolf', str(exception), True)
     logger.critical(str(exception))
-    return False
+    return 1
 
   modules = [
     module['name'] for module in tool.state.recipe.get('modules', [])
@@ -474,9 +479,13 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
     if cdm:
       cdm.EnqueueMessage('dftimewolf', str(exception), True)
     logger.critical(str(exception))
-    return False
+    return 1
 
   tool.state.LogExecutionPlan()
+
+  if tool.dry_run:
+    logger.info("Exiting as --dry_run flag is set.")
+    return 0
 
   time_ready = time.time()*1000
   tool.RunPreflights()
@@ -490,7 +499,7 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
     if cdm:
       cdm.EnqueueMessage('dftimewolf', str(exception), True)
     logger.critical(str(exception))
-    return False
+    return 1
 
   time_setup = time.time()*1000
   TELEMETRY.LogTelemetry(
@@ -502,7 +511,7 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
     if cdm:
       cdm.EnqueueMessage('dftimewolf', str(exception), True)
     logger.critical(str(exception))
-    return False
+    return 1
 
   time_run = time.time()*1000
   TELEMETRY.LogTelemetry(
@@ -515,14 +524,15 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> bool:
   for telemetry_row in tool.FormatTelemetry().split('\n'):
     logger.debug(telemetry_row)
 
-  return True
+  return 0
 
 
-def Main() -> bool:
+def Main() -> int:
   """Main function for DFTimewolf.
 
   Returns:
-    bool: True if DFTimewolf could be run successfully, False otherwise."""
+    int: 0 on success, 1 otherwise.
+  """
   no_curses = any([bool(os.environ.get('DFTIMEWOLF_NO_CURSES')),
                    not sys.stdout.isatty(),
                    not sys.stdin.isatty()])
@@ -538,7 +548,7 @@ def Main() -> bool:
   stdout_null = open(os.devnull, "w")
   stderr_sio = CDMStringIOWrapper(
       'stderr', True, cursesdisplaymanager.EnqueueMessage)
-  exit_code = False
+  exit_code = 0
 
   try:
     with redirect_stdout(stdout_null), redirect_stderr(stderr_sio):
@@ -556,7 +566,4 @@ def Main() -> bool:
 
 if __name__ == '__main__':
   signal.signal(signal.SIGINT, SignalHandler)
-  if Main():
-    sys.exit(0)
-  else:
-    sys.exit(1)
+  sys.exit(Main())
