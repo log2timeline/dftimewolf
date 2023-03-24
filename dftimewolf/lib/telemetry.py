@@ -10,7 +10,7 @@ logger = logging.getLogger('dftimewolf')
 # mypy complains when doing from google.cloud import spanner
 try:
   from google.cloud import spanner  # type: ignore
-  from google.api_core import exceptions  # type: ignore
+  from google.api_core import exceptions
   HAS_SPANNER = True
 except ImportError:
   HAS_SPANNER = False
