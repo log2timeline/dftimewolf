@@ -1,10 +1,12 @@
 """Telemetry module."""
 import datetime
 from dataclasses import dataclass
+import logging
 from typing import Dict, Any, List, Union
 import uuid
 
-import logging
+from dftimewolf import config
+
 logger = logging.getLogger('dftimewolf')
 
 # mypy complains when doing from google.cloud import spanner
@@ -14,8 +16,6 @@ try:
   HAS_SPANNER = True
 except ImportError:
   HAS_SPANNER = False
-
-from dftimewolf import config
 
 
 @dataclass
