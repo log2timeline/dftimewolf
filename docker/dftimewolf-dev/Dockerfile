@@ -17,7 +17,7 @@ RUN pip install poetry
 ADD . /app
 WORKDIR /app
 
-RUN poetry install
+RUN poetry install --with dev
 
 # Copy the entrypoint script into the container
 COPY ./docker/dftimewolf-dev/docker-entrypoint.sh /
