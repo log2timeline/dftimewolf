@@ -1,17 +1,21 @@
 """Telemetry module."""
 import datetime
 from dataclasses import dataclass
+import logging
 from typing import Dict, Any, List, Union
 import uuid
+
+from dftimewolf import config
+
+logger = logging.getLogger('dftimewolf')
 
 # mypy complains when doing from google.cloud import spanner
 try:
   from google.cloud import spanner  # type: ignore
+  from google.api_core import exceptions
   HAS_SPANNER = True
 except ImportError:
   HAS_SPANNER = False
-
-from dftimewolf import config
 
 
 @dataclass
@@ -83,8 +87,12 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
   def FormatTelemetry(self) -> str:
     """Gets all telemetry for a given workflow UUID."""
     entries = []  # type: List[str]
-    self.database.run_in_transaction(
-      self._GetAllWorkflowTelemetryTransaction, entries=entries)
+    try:
+      self.database.run_in_transaction(
+          self._GetAllWorkflowTelemetryTransaction, entries=entries)
+    except exceptions.PermissionDenied as error:
+      logger.warning('Permission denied when logging telemetry. '
+                     f'Check your Spanner database permissions. {error}')
     return '\n'.join(entries)
 
   def _GetAllWorkflowTelemetryTransaction(
@@ -124,7 +132,11 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
       'key': key,
       'value': value,
     }
-    self.database.run_in_transaction(self._LogTelemetryTransaction, telemetry)
+    try:
+      self.database.run_in_transaction(self._LogTelemetryTransaction, telemetry)
+    except exceptions.PermissionDenied as error:
+      logger.warning('Permission denied when logging telemetry. '
+                     f'Check your Spanner database permissions. {error}')
 
   def _LogTelemetryTransaction(
       self, transaction: Any, telemetry: Dict[str, str]) -> None:
