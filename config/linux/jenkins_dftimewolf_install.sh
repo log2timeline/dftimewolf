@@ -61,20 +61,21 @@ fi
 
 if [[ "$*" =~ "include-timesketch" ]]; then
     # Start the Timesketch server container.
-     export OPENSEARCH_VERSION=1.2.2
-     echo "Cloning Timesketch from Github"
-     git clone https://github.com/google/timesketch.git
-     cd timesketch
-     cd docker
-     cd e2e
-     echo "Running the Timesketch docker-compose script"
-     sudo -E docker-compose up -d
-     # Wait for Timesketch to initialize
-     echo "Sleeping 300 seconds..."
-     /bin/sleep 300
-     cd ../../..
-     cp config/linux/timesketchrc ~/.timesketchrc
-     cp config/linux/timesketch.token ~/.timesketch.token
+    export PLASO_PPA_TRACK="stable"
+    export OPENSEARCH_VERSION=1.2.2
+    echo "Cloning Timesketch from Github"
+    git clone https://github.com/google/timesketch.git
+    cd timesketch
+    cd docker
+    cd e2e
+    echo "Running the Timesketch docker-compose script"
+    sudo -E docker-compose up -d
+    # Wait for Timesketch to initialize
+    echo "Sleeping 300 seconds..."
+    /bin/sleep 300
+    cd ../../..
+    cp config/linux/timesketchrc ~/.timesketchrc
+    cp config/linux/timesketch.token ~/.timesketch.token
 fi
 
 if [[ "$*" =~ "include-plaso" ]]; then
