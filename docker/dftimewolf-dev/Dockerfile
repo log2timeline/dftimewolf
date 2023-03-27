@@ -6,7 +6,8 @@ RUN apt update && apt install -y --no-install-recommends \
     python3-dev \
     python3-pip \
     build-essential \
-    libmagic1
+    libmagic1 \
+    git
 
 RUN pip install --upgrade pip
 RUN pip install poetry
@@ -16,10 +17,10 @@ RUN pip install poetry
 ADD . /app
 WORKDIR /app
 
-RUN poetry install
+RUN poetry install --with dev
 
 # Copy the entrypoint script into the container
-COPY ./docker/dev/docker-entrypoint.sh /
+COPY ./docker/dftimewolf-dev/docker-entrypoint.sh /
 RUN chmod a+x /docker-entrypoint.sh
 
 # Load the entrypoint script to be run later
