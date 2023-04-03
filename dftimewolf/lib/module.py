@@ -37,6 +37,11 @@ class BaseModule(object):
     state (DFTimewolfState): recipe state.
   """
 
+  def __init__(
+      self,
+      state: "state_lib.DFTimewolfState",
+      name: Optional[str] = None,
+      critical: Optional[bool] = False):
   def __init__(self,
                state: "state_lib.DFTimewolfState",
                name: Optional[str]=None,
@@ -54,8 +59,8 @@ class BaseModule(object):
     self.name = name if name else self.__class__.__name__
     self.critical = critical
     self.state = state
-    self.logger = cast(logging_utils.WolfLogger,
-                       logging.getLogger(name=self.name))
+    self.logger = cast(
+        logging_utils.WolfLogger, logging.getLogger(name=self.name))
     self.logger.propagate = False
     self.SetupLogging()
 
@@ -64,15 +69,13 @@ class BaseModule(object):
     self.logger.setLevel(logging.DEBUG)
 
     file_handler = handlers.RotatingFileHandler(logging_utils.DEFAULT_LOG_FILE)
-    file_handler.setFormatter(logging_utils.WolfFormatter(
-        colorize=False,
-        threaded=threaded))
+    file_handler.setFormatter(
+        logging_utils.WolfFormatter(colorize=False, threaded=threaded))
     self.logger.addHandler(file_handler)
 
     if self.state.stdout_log:
       console_handler = logging.StreamHandler()
-      formatter = logging_utils.WolfFormatter(
-          random_color=True)
+      formatter = logging_utils.WolfFormatter(random_color=True)
       console_handler.setFormatter(formatter)
 
       self.logger.addHandler(console_handler)
@@ -99,7 +102,7 @@ class BaseModule(object):
     # No clean up is required.
     return
 
-  def ModuleError(self, message: str, critical: bool=False) -> None:
+  def ModuleError(self, message: str, critical: bool = False) -> None:
     """Declares a module error.
 
     Errors will be stored in a DFTimewolfError error object and passed on to the
@@ -144,7 +147,8 @@ class BaseModule(object):
     Args:
       container (AttributeContainer): data to store.
     """
-    self.logger.debug(f'{self.name} is storing a {container.CONTAINER_TYPE} '
+    self.logger.debug(
+        f'{self.name} is storing a {container.CONTAINER_TYPE} '
         f'container: {str(container)}')
 
     self.state.StoreContainer(container, self.name)
@@ -181,12 +185,11 @@ class BaseModule(object):
     Raises:
       RuntimeError: If only one metadata filter parameter is specified.
     """
-    containers = self.state.GetContainers(container_class,
-                                          pop,
-                                          metadata_filter_key,
-                                          metadata_filter_value)
+    containers = self.state.GetContainers(
+        container_class, pop, metadata_filter_key, metadata_filter_value)
 
-    self.logger.debug(f'{self.name} is retrieving {len(containers)} '
+    self.logger.debug(
+        f'{self.name} is retrieving {len(containers)} '
         f'{container_class.CONTAINER_TYPE} containers - pop == {pop}')
     for c in containers:
       self.logger.debug(
@@ -206,6 +209,7 @@ class BaseModule(object):
   @abc.abstractmethod
   def SetUp(self, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
     """Sets up necessary module configuration options."""
+
 
 class PreflightModule(BaseModule):
   """Base class for preflight modules.
@@ -231,6 +235,7 @@ class PreflightModule(BaseModule):
   def CleanUp(self) -> None:
     """Carries out optional cleanup actions at the end of the recipe run."""
 
+
 class ThreadAwareModule(BaseModule):
   """Base class for ThreadAwareModules.
 
@@ -252,10 +257,11 @@ class ThreadAwareModule(BaseModule):
   GetThreadOnContainerType().
   """
 
-  def __init__(self,
-               state: "state_lib.DFTimewolfState",
-               name: Optional[str]=None,
-               critical: Optional[bool]=False) -> None:
+  def __init__(
+      self,
+      state: "state_lib.DFTimewolfState",
+      name: Optional[str] = None,
+      critical: Optional[bool] = False) -> None:
     """Initializes a ThreadAwareModule.
 
     Args:
@@ -264,8 +270,7 @@ class ThreadAwareModule(BaseModule):
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    super(ThreadAwareModule, self).__init__(
-        state, name=name, critical=critical)
+    super(ThreadAwareModule, self).__init__(state, name=name, critical=critical)
 
     # The call to super.__init__ sets up the logger, but we want to change it
     # for threaded modules.
@@ -286,6 +291,7 @@ class ThreadAwareModule(BaseModule):
     run in parallel, based on the number of containers of the ThreadOn type,
     given by GetThreadOnContainerType(), up to GetThreadPoolSize() max
     simultaneous threads."""
+
   # pylint: enable=arguments-differ
 
   @abc.abstractmethod

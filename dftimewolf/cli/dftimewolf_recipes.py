@@ -76,6 +76,8 @@ MODULES = {
   'TimesketchExporter': 'dftimewolf.lib.exporters.timesketch',
   'TurbiniaArtifactProcessor': 'dftimewolf.lib.processors.turbinia_artifact',
   'TurbiniaGCPProcessor': 'dftimewolf.lib.processors.turbinia_gcp',
+  'TurbiniaAPIArtifactProcessor': 'dftimewolf.lib.processors.turbinia_artifact_api',
+  'TurbiniaAPIGCPProcessor': 'dftimewolf.lib.processors.turbinia_gcp_api',
   'VTCollector' : 'dftimewolf.lib.collectors.virustotal',
   'WorkspaceAuditCollector': 'dftimewolf.lib.collectors.workspace_audit',
   'WorkspaceAuditTimesketch': 'dftimewolf.lib.processors.workspace_audit_timesketch',
