@@ -42,7 +42,7 @@ class BigQueryCollector(module.ThreadAwareModule):
     self._project_name = project_name
     if query:
       self.StoreContainer(containers.BigQueryQuery(
-         query, description, pandas_output))
+          query, description, pandas_output))
 
   def PreProcess(self) -> None:
     """Empty PreProcess."""
@@ -78,7 +78,7 @@ class BigQueryCollector(module.ThreadAwareModule):
 
     if container.pandas_output:
       out_container = containers.DataFrame(
-          df, container.description, 'bq_result')
+          df, container.description, container.description)
     else:
       filename = utils.WriteDataFrameToJsonl(df)
       out_container = containers.File(name=container.description, path=filename)
