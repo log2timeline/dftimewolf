@@ -10,7 +10,6 @@ from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers, interface
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.processors.turbinia_base_api import TurbiniaProcessorBaseAPI
-from dftimewolf.lib.processors.turbinia_base_api import TurbiniaException
 
 if TYPE_CHECKING:
   from dftimewolf.lib import state

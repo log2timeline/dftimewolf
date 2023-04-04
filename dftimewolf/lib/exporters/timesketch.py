@@ -3,7 +3,7 @@
 Threaded version of existing Timesketch module."""
 
 import time
-from typing import Optional, List, Type, Union
+from typing import Optional, List, Type, Union, Set
 
 from timesketch_import_client import importer
 from timesketch_api_client import sketch as ts_sketch
@@ -45,6 +45,7 @@ class TimesketchExporter(module.ThreadAwareModule):
     self.wait_for_timelines = False  # type: bool
     self.host_url = None  # type: Union[str, None]
     self.sketch = None  # type: ts_sketch.Sketch
+    self._timeline_names = set() # type: Set[str]
 
   def SetUp(
       self,  # pylint: disable=arguments-differ
@@ -107,6 +108,17 @@ class TimesketchExporter(module.ThreadAwareModule):
     if analyzers:
       self._analyzers = [x.strip() for x in analyzers.split(',')]
 
+    self.sketch = self.state.GetFromCache('timesketch_sketch')
+    if not self.sketch and self.sketch_id:
+      self.logger.info('Using exiting sketch: {0:d}'.format(self.sketch_id))
+      self.sketch = self.timesketch_api.get_sketch(self.sketch_id)
+
+    # Create the sketch if no sketch was stored in the cache.
+    if not self.sketch:
+      self.sketch = self._CreateSketch(incident_id=self.incident_id)
+      self.sketch_id = self.sketch.id
+      self.logger.info('New sketch created: {0:d}'.format(self.sketch_id))
+
     # register callback in timesketch module
     self.state.RegisterStreamingCallback(self.Process, containers.File)
 
@@ -152,9 +164,6 @@ class TimesketchExporter(module.ThreadAwareModule):
       container (containers.File): A container holding a File to import."""
 
     recipe_name = self.state.recipe.get('name', 'no_recipe')
-    if not self.sketch:
-      self.PreProcess()
-
     description = container.name
     if description:
       name = description.rpartition('.')[0]
@@ -164,6 +173,7 @@ class TimesketchExporter(module.ThreadAwareModule):
     else:
       timeline_name = recipe_name
 
+    self._timeline_names.add(timeline_name)
     self.logger.info('Uploading {0:s} ...'.format(timeline_name))
 
     with importer.ImportStreamer() as streamer:
@@ -175,36 +185,7 @@ class TimesketchExporter(module.ThreadAwareModule):
       if streamer.response and container.description:
         streamer.timeline.description = container.description
 
-    if self.wait_for_timelines:
-      self.logger.info('Waiting for timeline {0:s} to finish processing...'\
-          .format(timeline_name))
-      self._WaitForTimelines()
-
-    for analyzer in self._analyzers:
-      self.logger.info(
-          "Running analyzer {0:s} on timeline {1:s}".format(
-              analyzer, timeline_name))
-      results = self.sketch.run_analyzer(
-          analyzer_name=analyzer, timeline_name=timeline_name)
-
-      if not results:
-        self.logger.info(
-            'Analyzer [{0:s}] not able to run on {1:s}'.format(
-                analyzer, timeline_name))
-        continue
-
-      # Unknown why, but we get a list of 2 identical result objects
-      results = results[0]
-      session_id = results._session_id  # pylint: disable=protected-access
-      if not session_id:
-        self.logger.info(
-            'Analyzer [{0:s}] didn\'t provide any session data'.format(
-                analyzer))
-        continue
-      self.logger.info(
-          'Analyzer: {0:s} is running, session ID: {1:d}'.format(
-              analyzer, session_id))
-      self.logger.info(results.status_string)
+    
 
   def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
     return containers.File
@@ -213,21 +194,7 @@ class TimesketchExporter(module.ThreadAwareModule):
     return 5
 
   def PreProcess(self) -> None:
-    """Get the sketch, creating it if it doesn't yet exist."""
-    if not self.timesketch_api:
-      message = 'Could not connect to Timesketch server'
-      self.ModuleError(message, critical=True)
-
-    self.sketch = self.state.GetFromCache('timesketch_sketch')
-    if not self.sketch and self.sketch_id:
-      self.logger.info('Using exiting sketch: {0:d}'.format(self.sketch_id))
-      self.sketch = self.timesketch_api.get_sketch(self.sketch_id)
-
-    # Create the sketch if no sketch was stored in the cache.
-    if not self.sketch:
-      self.sketch = self._CreateSketch(incident_id=self.incident_id)
-      self.sketch_id = self.sketch.id
-      self.logger.info('New sketch created: {0:d}'.format(self.sketch_id))
+    pass
 
   def PostProcess(self) -> None:
     api_root = self.sketch.api.api_root
@@ -240,5 +207,36 @@ class TimesketchExporter(module.ThreadAwareModule):
         module_name='TimesketchExporter', text=message, text_format='markdown')
     self.StoreContainer(report_container)
 
+    if self.wait_for_timelines:
+      for timeline_name in self._timeline_names:
+        self.logger.info('Waiting for timeline {0:s} to finish processing...'\
+            .format(timeline_name))
+        self._WaitForTimelines()
+
+      for analyzer in self._analyzers:
+        self.logger.info(
+            "Running analyzer {0:s} on timeline {1:s}".format(
+                analyzer, timeline_name))
+        results = self.sketch.run_analyzer(
+            analyzer_name=analyzer, timeline_name=timeline_name)
+
+        if not results:
+          self.logger.info(
+              'Analyzer [{0:s}] not able to run on {1:s}'.format(
+                  analyzer, timeline_name))
+          continue
+
+        # Unknown why, but we get a list of 2 identical result objects
+        results = results[0]
+        session_id = results._session_id  # pylint: disable=protected-access
+        if not session_id:
+          self.logger.info(
+              'Analyzer [{0:s}] didn\'t provide any session data'.format(
+                  analyzer))
+          continue
+        self.logger.info(
+            'Analyzer: {0:s} is running, session ID: {1:d}'.format(
+                analyzer, session_id))
+        self.logger.info(results.status_string)
 
 modules_manager.ModulesManager.RegisterModule(TimesketchExporter)
