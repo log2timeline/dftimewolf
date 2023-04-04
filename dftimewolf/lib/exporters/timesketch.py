@@ -82,9 +82,6 @@ class TimesketchExporter(module.ThreadAwareModule):
     self.sketch_id = int(sketch_id) if sketch_id else 0
     self.sketch = None
 
-    # register callback in timesketch module
-    self.state.RegisterStreamingCallback(self.Process, containers.File)
-
     # Check that we have a timesketch session.
     if not (self.timesketch_api or self.timesketch_api.session):
       message = 'Could not connect to Timesketch server'
@@ -109,6 +106,9 @@ class TimesketchExporter(module.ThreadAwareModule):
 
     if analyzers:
       self._analyzers = [x.strip() for x in analyzers.split(',')]
+
+    # register callback in timesketch module
+    self.state.RegisterStreamingCallback(self.Process, containers.File)
 
   def _CreateSketch(
       self, incident_id: Optional[str] = None) -> ts_sketch.Sketch:
@@ -145,14 +145,15 @@ class TimesketchExporter(module.ThreadAwareModule):
         break
       time.sleep(10)
 
-  def Process(self, container: containers.File
-              ) -> None:  # pytype: disable=signature-mismatch
+  def Process(self, container: containers.File) -> None:  # pytype: disable=signature-mismatch
     """Executes a Timesketch export.
 
     Args:
       container (containers.File): A container holding a File to import."""
 
     recipe_name = self.state.recipe.get('name', 'no_recipe')
+    if not self.sketch:
+      self.PreProcess()
 
     description = container.name
     if description:
@@ -170,7 +171,6 @@ class TimesketchExporter(module.ThreadAwareModule):
       streamer.set_timeline_name(timeline_name)
 
       path = container.path
-      self.logger.debug(f'Timesketch sees container path {path}')
       streamer.add_file(path)
       if streamer.response and container.description:
         streamer.timeline.description = container.description

@@ -44,17 +44,18 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBaseAPI,
 
   # pylint: disable=arguments-differ
   def SetUp(
-      self, project: str,
-      turbinia_recipe: Optional[str], turbinia_zone: str, output_directory: str,
-      sketch_id: int) -> None:
+      self, project: str, turbinia_auth: bool, turbinia_recipe: Optional[str],
+      turbinia_zone: str, turbinia_api: str, output_directory: str,
+      incident_id: int) -> None:
     """Sets up the object attributes.
 
     Args:
       project (str): name of the GCP project containing the disk to process.
+      turbinia_auth (bool): Turbinia auth flag.
       turbinia_recipe (str): Turbinia recipe name.
       turbinia_zone (str): GCP zone in which the Turbinia server is running.
       output_directory (str): Name of the directory to process.
-      sketch_id (int): The Timesketch sketch ID.
+      incident_id (int): The incident ID.
     """
     self.output_directory = output_directory
     if not self.output_directory:
@@ -62,7 +63,9 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBaseAPI,
       self.PublishMessage(
           f'Turbinia results will be dumped to {self.output_directory}')
     try:
-      self.TurbiniaSetUp(project, turbinia_recipe, turbinia_zone, sketch_id)
+      self.TurbiniaSetUp(
+          project, turbinia_auth, turbinia_recipe, turbinia_zone, turbinia_api,
+          incident_id)
     except TurbiniaException as exception:
       self.ModuleError(str(exception), critical=True)
       return

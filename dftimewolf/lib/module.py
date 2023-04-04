@@ -43,10 +43,6 @@ class BaseModule(object):
       state: "state_lib.DFTimewolfState",
       name: Optional[str] = None,
       critical: Optional[bool] = False):
-  def __init__(self,
-               state: "state_lib.DFTimewolfState",
-               name: Optional[str]=None,
-               critical: Optional[bool]=False):
     """Initialize a module.
 
     Args:
