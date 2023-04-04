@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 """Reads logs from a BigQuery table."""
-from typing import Optional
+from typing import Optional, Type
 
 from google.auth import exceptions as google_auth_exceptions
 from google.cloud import bigquery
 import google.cloud.exceptions
 
 from dftimewolf.lib import module
-from dftimewolf.lib.containers import containers
+from dftimewolf.lib.containers import containers, interface
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 from dftimewolf.lib import utils
 
 
-class BigQueryCollector(module.BaseModule):
+class BigQueryCollector(module.ThreadAwareModule):
   """Collector for BigQuery."""
 
   def __init__(self,
@@ -22,17 +22,13 @@ class BigQueryCollector(module.BaseModule):
                critical: bool = False) -> None:
     """Initializes a GCP logs collector."""
     super(BigQueryCollector, self).__init__(state, name=name, critical=critical)
-    self._project_name = ""
-    self._query = ""
-    self._description = ""
-    self._pandas_output = False
 
   # pylint: disable=arguments-differ
   def SetUp(self,
-            project_name: str,
-            query: str,
-            description: str,
-            pandas_output: bool) -> None:
+            project_name: str = '',
+            query: str = '',
+            description: str = '',
+            pandas_output: bool = False) -> None:
     """Sets up a BigQuery collector.
 
     Args:
@@ -42,20 +38,27 @@ class BigQueryCollector(module.BaseModule):
       pandas_output (bool): True if the results should be kept in a pandas DF in
           memory, False if they should be written to disk.
     """
-    self._project_name = project_name
-    self._query = query
-    self._description = description
-    self._pandas_output = pandas_output
+    if query:
+      self.StoreContainer(containers.BigQueryQuery(
+         project_name, query, description, pandas_output))
 
-  def Process(self) -> None:
-    """Collects data from BigQuery."""
+  def PreProcess(self) -> None:
+    """Empty PreProcess."""
+
+  def Process(self, container: containers.BigQueryQuery
+              ) -> None:  # pytype: disable=signature-mismatch
+    """Collects data from BigQuery.
+
+    Args:
+      container: A BigQueryQuery container to execute.
+    """
 
     try:
-      if self._project_name:
-        bq_client = bigquery.Client(project=self._project_name)
+      if container.project_name:
+        bq_client = bigquery.Client(project=container.project_name)
       else:
         bq_client = bigquery.Client()
-      df = bq_client.query(self._query).to_dataframe()
+      df = bq_client.query(container.query).to_dataframe()
 
     # pytype: disable=module-attr
     except google.cloud.exceptions.NotFound as exception:
@@ -71,15 +74,31 @@ class BigQueryCollector(module.BaseModule):
         )
       self.ModuleError(str(exception), critical=True)
 
-    if self._pandas_output:
-      frame_container = containers.DataFrame(df, self._description, 'bq_result')
-      self.StoreContainer(frame_container)
+    if container.pandas_output:
+      out_container = containers.DataFrame(
+          df, container.description, 'bq_result')
     else:
       filename = utils.WriteDataFrameToJsonl(df)
+      out_container = containers.File(name=container.description, path=filename)
       self.PublishMessage(f'Downloaded logs to {filename}')
 
-      bq_report = containers.File(name=self._description, path=filename)
-      self.StoreContainer(bq_report)
+    # Copy metadata from source to output
+    out_container.metadata = container.metadata
+    self.StoreContainer(out_container)
 
+  def PostProcess(self) -> None:
+    """Empty PostProcess."""
+
+  def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
+    """This module threads on BigQueryQuery containers."""
+    return containers.BigQueryQuery
+
+  def GetThreadPoolSize(self) -> int:
+    """Returns the maximum number of threads for this module."""
+    return 10  # Arbitrary
+
+  def KeepThreadedContainersInState(self) -> bool:
+    """BigQueryQuery containers should not persist after processing."""
+    return False
 
 modules_manager.ModulesManager.RegisterModule(BigQueryCollector)
