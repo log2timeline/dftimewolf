@@ -6,18 +6,18 @@ import os
 import tarfile
 import tempfile
 import time
-from typing import Dict, List, Optional, Tuple, Any, Union
+from typing import Dict, List, Optional, Tuple, Any, Union, Set, Generator
 import collections
-
+import copy
 import turbinia_api_lib
 
 from dftimewolf.lib.logging_utils import WolfLogger
 from dftimewolf.lib import module
 
-from turbinia_api_lib.api import turbinia_requests_api
+from turbinia_api_lib.api import turbinia_requests_api, turbinia_configuration_api
 from turbinia_api_lib.api import turbinia_request_results_api
-from turbinia_client.helpers import formatter as turbinia_formatter
 from turbinia_client.helpers import auth_helper
+from turbinia_client.helpers import formatter as turbinia_formatter
 
 
 class TurbiniaException(Exception):
@@ -36,6 +36,7 @@ class TurbiniaProcessorBaseAPI(module.BaseModule):
     turbinia_recipe (str): Turbinia recipe name.
     turbinia_region (str): GCP region in which the Turbinia server is running.
     turbinia_zone (str): GCP zone in which the Turbinia server is running.
+    turbinia_api (str): Turbinia API endpoint.
   """
 
   DEFAULT_YARA_MODULES = 'import "pe"\nimport "math"\nimport "hash"\n\n'
@@ -53,54 +54,31 @@ class TurbiniaProcessorBaseAPI(module.BaseModule):
     self.client = None
     self.instance = None
     self.project = str()
-    self.incident_id = int()
+    self.incident_id = str()
     self.sketch_id = int()
+    self.turbinia_auth = bool()
     self.turbinia_recipe = str()  # type: Any
     self.turbinia_region = None
     self.turbinia_zone = str()
+    self.turbinia_api = str()
+    self.client_config = None
     self.parallel_count = 5  # Arbitrary, used by ThreadAwareModule
     self.logger = logger
-    self._client_config = turbinia_api_lib.Configuration(
-        host="http://127.0.0.1:8000")
-    os.environ['GRPC_POLL_STRATEGY'] = 'poll'
-
-  def _DeterminePaths(self, task_data: Dict[str, Any]) -> Dict[str, List[str]]:
-    """Builds lists of local and remote paths from data returned by Turbinia.
-
-    This finds all .plaso, hashes.json, and BinaryExtractorTask files in the
-    Turbinia output, and determines if they are local or remote (it's possible
-    this will be running against a local instance of Turbinia).
-
-    Args:
-      task_data (list[dict]): List of dictionaries representing Turbinia task
-          data.
-
-    Returns:
-      Dict[str, List[str]]) A dict containing task identifiers as keys. The
-          values are lists of output file paths.
-    """
-    result = collections.defaultdict(list)
-    interesting_suffixes = [
+    self.extentions = [
         '.plaso', 'BinaryExtractorTask.tar.gz', 'hashes.json',
         'fraken_stdout.log', 'loki_stdout.log'
     ]
-    for task in task_data.get('tasks'):
-      interesting_task_paths = []
-      # Current task's identifier.
-      task_id = task.get('id')
-      # saved_paths may be set to None
-      saved_paths = task.get('saved_paths') or []
-      for path in saved_paths:
-        for suffix in interesting_suffixes:
-          if path.endswith(suffix):
-            interesting_task_paths.append(path)
-      result[task_id] = interesting_task_paths
 
-    return result
+    os.environ['GRPC_POLL_STRATEGY'] = 'poll'
 
-  def _FilterTarMembers(self, tgzfile: tarfile.TarFile,
-                        saved_paths: List[str]) -> List[tarfile.TarInfo]:
-    """Filters a Turbinia output file and returns a list of TarInfo objects
+  def _isInterestingPath(self, path):
+    """Checks if a path is interesting for the processor."""
+    for suffix in self.extentions:
+      return bool(path.endswith(suffix))
+
+  def _FilterTarMembers(
+      self, tgzfile: tarfile.TarFile, path_to_collect: str) -> tarfile.TarInfo:
+    """Filters a TarFile object for a specific path.
     
     Pre-condition: tgzfile must be a valid TarFile object.
 
@@ -113,13 +91,12 @@ class TurbiniaProcessorBaseAPI(module.BaseModule):
     """
     members = []
     names = tgzfile.getnames()
-    for saved_path in saved_paths:
-      saved_path = saved_path.lstrip('/')
-      if saved_path in names:
-        members.append(tgzfile.getmember(saved_path))
+    path_to_collect = path_to_collect.lstrip('/')
+    if path_to_collect in names:
+      members.append(tgzfile.getmember(path_to_collect))
     return members
 
-  def _ExtractFiles(self, file_path: str, saved_paths: List[str]) -> List[str]:
+  def _ExtractFiles(self, tgz_path: str, path_to_collect: str) -> List[str]:
     """Extracts files which appear in a Turbinia task's saved_paths attribute
     
     Pre-condition(s): The effective UID can read and write to the temporary
@@ -128,72 +105,68 @@ class TurbiniaProcessorBaseAPI(module.BaseModule):
 
     Args:
       file_path: File path of a Turbinia task output file (tgz).
-      saved_paths: The list of saved paths from a Turbinia task.
+      paths_to_collect: A saved path from a Turbinia task.
 
     Returns:
-      A list of local paths of each extracted file.
+      A local path to the extracted file.
     """
-    local_paths = []
-    if not os.path.exists(file_path):
-      self.logger.error(f'File not found {file_path}')
-      return local_paths
+    local_path = ''
+    if not os.path.exists(tgz_path):
+      self.logger.error(f'File not found {tgz_path}')
+      return local_path
 
     tempdir = tempfile.mkdtemp()
-    with tarfile.open(file_path) as file:
-      members = self._FilterTarMembers(file, saved_paths)
+    with tarfile.open(tgz_path) as file:
+      members = self._FilterTarMembers(file, path_to_collect)
       file.extractall(path=tempdir, members=members)
 
-    for saved_path in saved_paths:
-      local_path = os.path.join(tempdir, saved_path.lstrip('/'))
-      local_paths.append(local_path)
-    return local_paths
+    local_path = os.path.join(tempdir, path_to_collect.lstrip('/'))
+    return local_path
 
   def _DownloadFilesFromAPI(
-      self, task_data: Dict[str, List[str]]) -> List[Tuple[str, str]]:
+      self, task_data: Dict[str, List[str]], path: str) -> str:
     """Downloads task output data from the Turbinia API server. 
 
     Args:
       task_data: Response from a /api/request/{request_id} API call.
 
     Returns:
-      A list of local paths to Turbinia task output files.
+      A local path to Turbinia task output files.
     """
-    local_paths = []
-    tasks_to_collect = self._DeterminePaths(task_data)
     api_instance = turbinia_request_results_api.TurbiniaRequestResultsApi(
         self.client)
-    for task_id, saved_paths in tasks_to_collect.items():
-      try:
-        api_response = api_instance.get_task_output(
-            task_id, _preload_content=False)
-        filename = f'{task_id}.tgz'
-        # Read the response and save into a local file.
-        file = tempfile.NamedTemporaryFile(
-            mode='wb', prefix=f'{filename}', suffix='.tgz', delete=False)
-        local_path = file.name
-        self.logger.info(f'Saving output for task {task_id} to: {local_path}')
-        for chunk in api_response.read_chunked():
-          file.write(chunk)
-        file.close()
+    try:
+      task_id = task_data.get('id')
+      api_response = api_instance.get_task_output(
+          task_id, _preload_content=False)
+      filename = f'{task_id}.tgz'
 
-        for path in self._ExtractFiles(local_path, saved_paths):
-          if os.path.exists(path):
-            local_paths.append(path)
-        self.logger.debug(
-            f'local_paths after extracting {task_id}, {local_paths}')
-      except turbinia_api_lib.ApiException as exception:
-        self.logger.error(f'{exception.body}')
-        raise TurbiniaException from exception
-      except OSError as exception:
-        self.logger.error(f'Unable to save file: {exception}')
-        raise TurbiniaException from exception
+      # Create a temporary file to write the response to.
+      file = tempfile.NamedTemporaryFile(
+          mode='wb', prefix=f'{filename}', suffix='.tgz', delete=False)
+      local_path = file.name
+      self.logger.info(f'Saving output for task {task_id} to: {local_path}')
+      # Read the response in chunks and write to the file.
+      for chunk in api_response.read_chunked():
+        file.write(chunk)
+      file.close()
 
-    return local_paths
+      # Extract the files from the tgz file.
+      extracted_path = self._ExtractFiles(local_path, path)
+      if os.path.exists(extracted_path):
+        return extracted_path
+
+    except turbinia_api_lib.ApiException as exception:
+      self.logger.error(f'{exception.body}')
+      raise TurbiniaException from exception
+    except OSError as exception:
+      self.logger.error(f'Unable to save file: {exception}')
+      raise TurbiniaException from exception
 
   def TurbiniaSetUp(
-      self, project: str, turbinia_auth: bool, turbinia_recipe: Union[str,
-                                                                      None],
-      turbinia_zone: str, incident_id: int) -> None:
+      self, project: str, turbinia_auth: bool,
+      turbinia_recipe: Union[str, None], turbinia_zone: str, turbinia_api: str,
+      incident_id: str, sketch_id: int) -> None:
     """Sets up the object attributes.
 
     Raises:
@@ -206,27 +179,41 @@ class TurbiniaProcessorBaseAPI(module.BaseModule):
       incident_id (int): The Timesketch sketch ID.
     """
     self.project = project
+    self.turbinia_auth = turbinia_auth
+    self.turbinia_api = turbinia_api
     self.turbinia_recipe = turbinia_recipe
     self.turbinia_zone = turbinia_zone
-    self.incident_id = int(incident_id)
-    self._output_path = tempfile.mkdtemp()
-    if turbinia_auth:
-      self._client_config.access_token = auth_helper.get_oauth2_credentials(
+    self.incident_id = incident_id
+    self.sketch_id = sketch_id
+    self.client_config = turbinia_api_lib.Configuration(host=self.turbinia_api)
+    # Check if Turbinia requires authentication.
+    if self.turbinia_auth:
+      self.client_config.access_token = auth_helper.get_oauth2_credentials(
           self.credentials_path, self.client_secrets_path)
-    self.client = turbinia_api_lib.ApiClient(self._client_config)
+    self.client = turbinia_api_lib.ApiClient(self.client_config)
+
+    # We need to get the output path from the Turbinia server.
+    api_instance = turbinia_configuration_api.TurbiniaConfigurationApi(
+        self.client)
+    try:
+      api_response = api_instance.read_config()
+      self._output_path = api_response.get('OUTPUT_DIR')
+    except turbinia_api_lib.ApiException as exception:
+      self.ModuleError({exception}, critical=True)
 
   def TurbiniaStart(
       self,
       evidence: Dict[str, Any],
       threat_intel_indicators: Optional[List[Optional[str]]] = None,
       yara_rules: Optional[List[str]] = None) -> str:
-    """Creates and sends a Turbinia processing request.
+    """Sends a Turbinia processing request to the Turbinia API server.
 
     Args:
       evidence: The evidence to process.
       threat_intel_indicators: list of strings used as regular expressions in
           the Turbinia grepper module.
       yara_rules: List of Yara rule strings to use in the Turbinia Yara module.
+
     Returns:
       Turbinia request ID.
     """
@@ -244,11 +231,12 @@ class TurbiniaProcessorBaseAPI(module.BaseModule):
     request_options = {
         'filter_pattern': threat_intel_indicators,
         'jobs_denylist': jobs_denylist,
-        'reason': f'{self.incident_id}',
+        'reason': self.incident_id,
         'requester': getpass.getuser(),
-        'sketch_id': self.incident_id,
         'yara_rules': yara_text
     }
+    if self.sketch_id:
+      request_options['sketch_id'] = self.sketch_id
 
     if self.turbinia_recipe:
       request_options['recipe_name'] = self.turbinia_recipe
@@ -260,7 +248,6 @@ class TurbiniaProcessorBaseAPI(module.BaseModule):
     request = {'evidence': evidence, 'request_options': request_options}
 
     # Send the request to the API server.
-    self.logger.debug(f'Request: {request}')
     try:
       response = api_instance.create_request(request)
       request_id = response.get('request_id')
@@ -269,22 +256,34 @@ class TurbiniaProcessorBaseAPI(module.BaseModule):
               request_id, evidence_name))
     except turbinia_api_lib.ApiException as exception:
       self.ModuleError(str(exception), critical=True)
-    return request_id  
-  def TurbiniaWait(self, request_id: str) -> Tuple[Dict[str, Any], str]:
-    """Waits for Turbinia Request to finish.
+    return request_id
+
+  def TurbiniaWait(
+      self,
+      request_id: str) -> Generator[Tuple[Dict[str, Any], str], None, None]:
+    """This method waits until a Turbinia request finishes processing.
+
+    On each iteration, it checks the status of the request and yields each task
+    data and the paths that have not been processed in prior iterations. A path
+    is only considered if it is not already processed, if it is interesting
+    (i.e., not a log file or a temporary file), and if it starts with the
+    Turbinia server configured output path.
+
+    The method retries 3 times if there is an API exception.
 
     Args:
-      request_id: Request ID for the Turbinia Job.
+        request_id: Request ID for the Turbinia Job.
 
-    Returns:
-      The Turbinia task data.
+    Yields:
+        A tuple containing the Turbinia task data and the path that has not been
+          processed yet.
     """
+
     interval = 30
-    request_data = {}
-    report = ''
     retries = 0
-    status = 'running'
+    processed_paths = set()
     api_instance = turbinia_requests_api.TurbiniaRequestsApi(self.client)
+    status = 'running'
     while status == 'running' and retries < 3:
       time.sleep(interval)
       try:
@@ -292,14 +291,29 @@ class TurbiniaProcessorBaseAPI(module.BaseModule):
         status = request_data.get('status')
         self.logger.info(f'Turbinia request {request_id} {status}')
 
+        for task in request_data.get('tasks', []):
+          current_saved_paths = task.get('saved_paths', [])
+          task_id = task.get('id')
+          if not current_saved_paths:
+            continue
+
+          for path in current_saved_paths:
+            if path not in processed_paths and self._isInterestingPath(
+                path) and path.startswith(self._output_path):
+              processed_paths.add(path)
+              self.logger.info(
+                  f'New output file {path} found for task {task_id}')
+              yield task, path
+
       except turbinia_api_lib.ApiException as exception:
         retries += 1
-        if exception.status == 404:
-          self.logger.error(f'Request not found: {exception}. Retrying...')
-      except TypeError as exception:
-        self.logger.info(f'Error generating markdown report. {exception}')
+        self.logger.warning(f'Retrying after exception: {exception}')
 
+  def TurbiniaFinishReport(self, request_id: str) -> Dict[str, Any]:
+    """This method generates a Turbinia report for a given request ID."""
+    api_instance = turbinia_requests_api.TurbiniaRequestsApi(self.client)
+    request_data = api_instance.get_request_status(request_id)
     if request_data:
       report = turbinia_formatter.RequestMarkdownReport(
           request_data=request_data).generate_markdown()
-    return request_data, report
+    return report
