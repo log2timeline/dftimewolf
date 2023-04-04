@@ -22,6 +22,7 @@ class BigQueryCollector(module.ThreadAwareModule):
                critical: bool = False) -> None:
     """Initializes a GCP logs collector."""
     super(BigQueryCollector, self).__init__(state, name=name, critical=critical)
+    self._project_name: str = ''
 
   # pylint: disable=arguments-differ
   def SetUp(self,
@@ -38,9 +39,10 @@ class BigQueryCollector(module.ThreadAwareModule):
       pandas_output (bool): True if the results should be kept in a pandas DF in
           memory, False if they should be written to disk.
     """
+    self._project_name = project_name
     if query:
       self.StoreContainer(containers.BigQueryQuery(
-         project_name, query, description, pandas_output))
+         query, description, pandas_output))
 
   def PreProcess(self) -> None:
     """Empty PreProcess."""
@@ -54,8 +56,8 @@ class BigQueryCollector(module.ThreadAwareModule):
     """
 
     try:
-      if container.project_name:
-        bq_client = bigquery.Client(project=container.project_name)
+      if self._project_name:
+        bq_client = bigquery.Client(project=self._project_name)
       else:
         bq_client = bigquery.Client()
       df = bq_client.query(container.query).to_dataframe()
