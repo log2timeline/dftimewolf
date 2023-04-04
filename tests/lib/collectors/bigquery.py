@@ -49,9 +49,9 @@ class BigQueryCollectorTest(unittest.TestCase):
     mock_bq().query().to_dataframe().to_json.return_value = "{'foo':1}"
     test_state = state.DFTimewolfState(config.Config)
     bq_collector = bigquery.BigQueryCollector(test_state)
-    input = containers.BigQueryQuery('test_query', 'test_description', True)
-    input.SetMetadata('input_metadata_key', 'input_metadata_value')
-    bq_collector.StoreContainer(input)
+    cont_in = containers.BigQueryQuery('test_query', 'test_description', True)
+    cont_in.SetMetadata('input_metadata_key', 'input_metadata_value')
+    bq_collector.StoreContainer(cont_in)
     bq_collector.SetUp('test_project')
     bq_collector.PreProcess()
     for c in bq_collector.GetContainers(
