@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Reads logs from a BigQuery table."""
-from typing import Optional, Type
+from typing import Optional, Type, Union
 
 from google.auth import exceptions as google_auth_exceptions
 from google.cloud import bigquery
@@ -76,6 +76,7 @@ class BigQueryCollector(module.ThreadAwareModule):
         )
       self.ModuleError(str(exception), critical=True)
 
+    out_container: Union[containers.DataFrame, containers.File]
     if container.pandas_output:
       out_container = containers.DataFrame(
           df, container.description, container.description)
