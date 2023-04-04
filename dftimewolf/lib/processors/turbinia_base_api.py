@@ -7,21 +7,16 @@ import tarfile
 import tempfile
 import time
 from typing import Dict, List, Optional, Tuple, Any, Union, Set, Generator
-import collections
-import copy
-import turbinia_api_lib
 
 from dftimewolf.lib.logging_utils import WolfLogger
 from dftimewolf.lib import module
+
+import turbinia_api_lib
 
 from turbinia_api_lib.api import turbinia_requests_api, turbinia_configuration_api
 from turbinia_api_lib.api import turbinia_request_results_api
 from turbinia_client.helpers import auth_helper
 from turbinia_client.helpers import formatter as turbinia_formatter
-
-
-class TurbiniaException(Exception):
-  pass
 
 
 # pylint: disable=abstract-method,no-member
@@ -157,11 +152,9 @@ class TurbiniaProcessorBaseAPI(module.BaseModule):
         return extracted_path
 
     except turbinia_api_lib.ApiException as exception:
-      self.logger.error(f'{exception.body}')
-      raise TurbiniaException from exception
+      self.ModuleError(f'Unable to download task data: {exception}', critical=False)
     except OSError as exception:
-      self.logger.error(f'Unable to save file: {exception}')
-      raise TurbiniaException from exception
+      self.ModuleError(f'Unable to write to file: {exception}', critical=False)
 
   def TurbiniaSetUp(
       self, project: str, turbinia_auth: bool,
