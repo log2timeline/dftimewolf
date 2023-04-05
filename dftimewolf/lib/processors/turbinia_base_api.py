@@ -6,17 +6,16 @@ import os
 import tarfile
 import tempfile
 import time
-from typing import Dict, List, Optional, Tuple, Any, Union, Set, Generator
+from typing import Dict, List, Optional, Tuple, Any, Union, Generator
+
+import turbinia_api_lib
+from turbinia_client.helpers import auth_helper
+from turbinia_client.helpers import formatter as turbinia_formatter
+from turbinia_api_lib.api import turbinia_requests_api, turbinia_configuration_api
+from turbinia_api_lib.api import turbinia_request_results_api
 
 from dftimewolf.lib.logging_utils import WolfLogger
 from dftimewolf.lib import module
-
-import turbinia_api_lib
-
-from turbinia_api_lib.api import turbinia_requests_api, turbinia_configuration_api
-from turbinia_api_lib.api import turbinia_request_results_api
-from turbinia_client.helpers import auth_helper
-from turbinia_client.helpers import formatter as turbinia_formatter
 
 
 # pylint: disable=abstract-method,no-member
