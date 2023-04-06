@@ -644,6 +644,36 @@ class OsqueryResult(interface.AttributeContainer):
     return f'{self.hostname}:{self.name}'
 
 
+class BigQueryQuery(interface.AttributeContainer):
+  """Attribute container for a BigQuery query.
+
+  Attributes:
+    query: The query string
+    description: A description of the query
+    pandas_output: True if results should be kept in a dataframe, false to write
+        to disk.
+  """
+
+  CONTAINER_TYPE = 'bigquery_query'
+
+  def __init__(self,
+               query: str,
+               description: str,
+               pandas_output: bool) -> None:
+    super(BigQueryQuery, self).__init__()
+    self.query = query
+    self.description = description
+    self.pandas_output = pandas_output
+
+  def __eq__(self, other: BigQueryQuery) -> bool:
+    """Override __eq__() for this container."""
+    return self.query == other.query
+
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return self.description
+
+
 class Telemetry(interface.AttributeContainer):
   """Attribute container for Telemetry.
 

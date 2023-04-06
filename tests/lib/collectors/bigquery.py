@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Tests the BigQuery  collector."""
+"""Tests the BigQuery collector."""
 
 import unittest
 import mock
@@ -29,7 +29,11 @@ class BigQueryCollectorTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     bq_collector = bigquery.BigQueryCollector(test_state)
     bq_collector.SetUp('test_project', 'test_query', 'test_description', False)
-    bq_collector.Process()
+    bq_collector.PreProcess()
+    for c in bq_collector.GetContainers(
+        bq_collector.GetThreadOnContainerType()):
+      bq_collector.Process(c)  # pytype: disable=wrong-arg-types
+    bq_collector.PostProcess()
     mock_bq().query.assert_called_with('test_query')
     mock_bq().query().to_dataframe().to_json.assert_called_once()
 
@@ -39,6 +43,27 @@ class BigQueryCollectorTest(unittest.TestCase):
     conts = test_state.GetContainers(containers.DataFrame)
     self.assertEqual(len(conts), 0)
 
+  @mock.patch('google.cloud.bigquery.Client')
+  def testQueryFromState(self, mock_bq):
+    """Tests that the query runs when it's passed in via the state."""
+    mock_bq().query().to_dataframe().to_json.return_value = "{'foo':1}"
+    test_state = state.DFTimewolfState(config.Config)
+    bq_collector = bigquery.BigQueryCollector(test_state)
+    cont_in = containers.BigQueryQuery('test_query', 'test_description', True)
+    cont_in.SetMetadata('input_metadata_key', 'input_metadata_value')
+    bq_collector.StoreContainer(cont_in)
+    bq_collector.SetUp('test_project', '', '', False)
+    bq_collector.PreProcess()
+    for c in bq_collector.GetContainers(
+        bq_collector.GetThreadOnContainerType()):
+      bq_collector.Process(c)  # pytype: disable=wrong-arg-types
+    bq_collector.PostProcess()
+    mock_bq().query.assert_called_with('test_query')
+
+    conts = test_state.GetContainers(containers.DataFrame)
+    self.assertEqual(len(conts), 1)
+    self.assertEqual(conts[0].metadata.get('input_metadata_key'),
+                     'input_metadata_value')
 
   @mock.patch('google.cloud.bigquery.Client')
   def testQueryPandaOutput(self, mock_bq):
@@ -47,7 +72,11 @@ class BigQueryCollectorTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     bq_collector = bigquery.BigQueryCollector(test_state)
     bq_collector.SetUp('test_project', 'test_query', 'test_description', True)
-    bq_collector.Process()
+    bq_collector.PreProcess()
+    for c in bq_collector.GetContainers(
+        bq_collector.GetThreadOnContainerType()):
+      bq_collector.Process(c)  # pytype: disable=wrong-arg-types
+    bq_collector.PostProcess()
     mock_bq().query.assert_called_with('test_query')
 
     conts = test_state.GetContainers(containers.DataFrame)
