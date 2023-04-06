@@ -26,10 +26,10 @@ class BigQueryCollector(module.ThreadAwareModule):
 
   # pylint: disable=arguments-differ
   def SetUp(self,
-            project_name: str = '',
-            query: str = '',
-            description: str = '',
-            pandas_output: bool = False) -> None:
+            project_name: str,
+            query: str,
+            description: str,
+            pandas_output: bool) -> None:
     """Sets up a BigQuery collector.
 
     Args:

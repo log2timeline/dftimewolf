@@ -52,7 +52,7 @@ class BigQueryCollectorTest(unittest.TestCase):
     cont_in = containers.BigQueryQuery('test_query', 'test_description', True)
     cont_in.SetMetadata('input_metadata_key', 'input_metadata_value')
     bq_collector.StoreContainer(cont_in)
-    bq_collector.SetUp('test_project')
+    bq_collector.SetUp('test_project', '', '', False)
     bq_collector.PreProcess()
     for c in bq_collector.GetContainers(
         bq_collector.GetThreadOnContainerType()):
