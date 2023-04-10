@@ -131,7 +131,7 @@ class TurbiniaAPIGCPProcessor(TurbiniaAPIProcessorBase,
       return
 
     log_file_path = os.path.join(
-        self._output_path, f'{disk_container.name}-turbinia.log')
+        self.output_path, f'{disk_container.name}-turbinia.log')
     self.logger.info(f'Turbinia log file: {log_file_path}')
     self.logger.info(
         f'Using disk {disk_container.name} from previous collector')
