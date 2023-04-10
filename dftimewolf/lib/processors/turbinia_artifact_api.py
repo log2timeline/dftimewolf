@@ -70,7 +70,7 @@ class TurbiniaAPIArtifactProcessor(TurbiniaAPIProcessorBase,
     """Process files with Turbinia."""
 
     log_file_path = os.path.join(
-        self._output_path, '{0:s}_{1:s}-turbinia.log'.format(
+        self.output_path, '{0:s}_{1:s}-turbinia.log'.format(
             container.hostname, container.path.replace('/', '_')))
     self.logger.info('Turbinia log file: {0:s}'.format(log_file_path))
     self.logger.info(
