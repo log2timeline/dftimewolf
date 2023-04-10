@@ -1,5 +1,5 @@
 {
-    "name": "gcp_turbinia_ts_legacy",
+    "name": "gcp_turbinia_ts",
     "short_description": "Processes existing GCP persistent disks with Turbinia project and sends results to Timesketch.",
     "description": "Process GCP persistent disks with Turbinia and send output to Timesketch.\n\nThis processes disks that are already in the project where Turbinia exists. If you want to copy disks from another project, use the `gcp_turbinia_disk_copy_ts` recipe.",
     "preflights": [{
@@ -11,17 +11,19 @@
     }],
     "modules": [{
         "wants": [],
-        "name": "TurbiniaGCPProcessor",
+        "name": "TurbiniaAPIGCPProcessor",
         "args": {
-            "turbinia_config_file": null,
             "disk_names": "@disk_names",
             "project": "@analysis_project_name",
+            "turbinia_auth": "@turbinia_auth",
             "turbinia_recipe": "@turbinia_recipe",
             "turbinia_zone": "@turbinia_zone",
+            "turbinia_api": "@turbinia_api",
+            "incident_id": "@incident_id",
             "sketch_id": "@sketch_id"
         }
     }, {
-        "wants": ["TurbiniaGCPProcessor"],
+        "wants": ["TurbiniaAPIGCPProcessor"],
         "name": "TimesketchExporter",
         "args": {
             "incident_id": "@incident_id",
@@ -39,6 +41,8 @@
         ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
         ["--turbinia_recipe", "The Turbinia recipe name to use for evidence processing.", null],
+        ["--turbinia_auth", "Flag to indicate whether Turbinia API server requires authentication.", false],
+        ["--turbinia_api", "Turbinia API server endpoint.", "http://127.0.0.1:8000"],
         ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true]
     ]
 }

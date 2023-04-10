@@ -71,14 +71,16 @@ class TurbiniaAPIProcessorBase(module.BaseModule):
       return bool(path.endswith(suffix))
 
   def _FilterTarMembers(
-      self, tgzfile: tarfile.TarFile, path_to_collect: str) -> tarfile.TarInfo:
+      self,
+      tgzfile: tarfile.TarFile,
+      path_to_collect: str) -> List[tarfile.TarInfo]:
     """Filters a TarFile object for a specific path.
     
     Pre-condition: tgzfile must be a valid TarFile object.
 
     Args:
       tgzfile: A TarFile object of a Turbinia task output file.
-      saved_paths: A list of saved paths from a Turbinia task.
+      path_to_collect: A path from a Turbinia task.
 
     Returns:
       A list of TarInfo objects.
@@ -90,7 +92,7 @@ class TurbiniaAPIProcessorBase(module.BaseModule):
       members.append(tgzfile.getmember(path_to_collect))
     return members
 
-  def _ExtractFiles(self, tgz_path: str, path_to_collect: str) -> List[str]:
+  def _ExtractFiles(self, tgz_path: str, path_to_collect: str) -> str:
     """Extracts files which appear in a Turbinia task's saved_paths attribute
     
     Pre-condition(s): The effective UID can read and write to the temporary
@@ -99,7 +101,7 @@ class TurbiniaAPIProcessorBase(module.BaseModule):
 
     Args:
       file_path: File path of a Turbinia task output file (tgz).
-      paths_to_collect: A saved path from a Turbinia task.
+      path_to_collect: A saved path from a Turbinia task.
 
     Returns:
       A local path to the extracted file.
@@ -125,8 +127,9 @@ class TurbiniaAPIProcessorBase(module.BaseModule):
       task_data: Response from a /api/request/{request_id} API call.
 
     Returns:
-      A local path to Turbinia task output files.
+      A local path to Turbinia task output files or None
     """
+    result = None
     api_instance = turbinia_request_results_api.TurbiniaRequestResultsApi(
         self.client)
     try:
@@ -148,13 +151,15 @@ class TurbiniaAPIProcessorBase(module.BaseModule):
       # Extract the files from the tgz file.
       extracted_path = self._ExtractFiles(local_path, path)
       if os.path.exists(extracted_path):
-        return extracted_path
+        result = extracted_path
 
     except turbinia_api_lib.ApiException as exception:
       self.ModuleError(
         f'Unable to download task data: {exception}', critical=False)
     except OSError as exception:
       self.ModuleError(f'Unable to write to file: {exception}', critical=False)
+
+    return result
 
   def TurbiniaSetUp(
       self, project: str, turbinia_auth: bool,
@@ -257,9 +262,9 @@ class TurbiniaAPIProcessorBase(module.BaseModule):
     """This method waits until a Turbinia request finishes processing.
 
     On each iteration, it checks the status of the request and yields each task
-    data and the paths that have not been processed in prior iterations. A path
+    data and a path that has not been processed in prior iterations. A path
     is only considered if it is not already processed, if it is interesting
-    (i.e., not a log file or a temporary file), and if it starts with the
+    (i.e., not a log file or a temporary file), and if its path starts with the
     Turbinia server configured output path.
 
     The method retries 3 times if there is an API exception.
