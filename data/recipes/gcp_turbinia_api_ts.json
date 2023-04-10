@@ -1,5 +1,5 @@
 {
-    "name": "gcp_turbinia_api_ts",
+    "name": "gcp_turbinia_ts",
     "short_description": "Processes existing GCP persistent disks with Turbinia project and sends results to Timesketch.",
     "description": "Process GCP persistent disks with Turbinia and send output to Timesketch.\n\nThis processes disks that are already in the project where Turbinia exists. If you want to copy disks from another project, use the `gcp_turbinia_disk_copy_ts` recipe.",
     "preflights": [{

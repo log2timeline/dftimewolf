@@ -147,7 +147,10 @@ class TimesketchExporter(module.ThreadAwareModule):
     return sketch
 
   def _WaitForTimelines(self) -> None:
-    """Waits for all timelines in a sketch to be processed."""
+    """Waits for all timelines in a sketch to be processed.
+
+    Runs analyzers on timelines that are ready.  
+    """
     time.sleep(5)  # Give Timesketch time to populate recently added timelines.
     sketch = self.timesketch_api.get_sketch(self.sketch_id)
     timelines = sketch.list_timelines()
@@ -191,7 +194,8 @@ class TimesketchExporter(module.ThreadAwareModule):
               analyzer, session_id))
       self.logger.info(results.status_string)
 
-  def Process(self, container: containers.File) -> None:  # pytype: disable=signature-mismatch
+  # pytype: disable=signature-mismatch
+  def Process(self, container: containers.File) -> None:
     """Executes a Timesketch export.
 
     Args:
