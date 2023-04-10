@@ -1,5 +1,5 @@
 {
-    "name": "upload_turbinia",
+    "name": "upload_turbinia_legacy",
     "short_description": "Uploads arbitrary files to Turbinia and downloads results.",
     "description": "Uploads arbitrary files to Turbinia for processing. The recipe will wait for Turbinia to return with results and will download them back to the filesystem. The Turbinia system needs to be accessible via SSH.",
     "modules": [{

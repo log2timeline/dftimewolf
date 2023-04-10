@@ -46,7 +46,7 @@
         }
       }, {
         "wants": ["GCEDiskCopy"],
-        "name": "TurbiniaGCPProcessor",
+        "name": "TurbiniaAPIGCPProcessor",
         "args": {
             "turbinia_config_file": null,
             "disk_names": null,
@@ -56,7 +56,7 @@
             "sketch_id": "@sketch_id"
         }
     }, {
-        "wants": ["TurbiniaGCPProcessor"],
+        "wants": ["TurbiniaAPIGCPProcessor"],
         "name": "TimesketchExporter",
         "args": {
             "incident_id": "@incident_id",

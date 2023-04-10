@@ -11,7 +11,8 @@ from typing import Dict, List, Optional, Tuple, Any, Union, Generator
 import turbinia_api_lib
 from turbinia_client.helpers import auth_helper
 from turbinia_client.helpers import formatter as turbinia_formatter
-from turbinia_api_lib.api import turbinia_requests_api, turbinia_configuration_api
+from turbinia_api_lib.api import (turbinia_requests_api,
+                                  turbinia_configuration_api)
 from turbinia_api_lib.api import turbinia_request_results_api
 
 from dftimewolf.lib.logging_utils import WolfLogger
@@ -19,7 +20,7 @@ from dftimewolf.lib import module
 
 
 # pylint: disable=abstract-method,no-member
-class TurbiniaProcessorBaseAPI(module.BaseModule):
+class TurbiniaAPIProcessorBase(module.BaseModule):
   """Base class for processing with Turbinia.
 
   Attributes:
@@ -44,7 +45,7 @@ class TurbiniaProcessorBaseAPI(module.BaseModule):
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    self._output_path = str()
+    self.output_path = str()
     self.client = None
     self.instance = None
     self.project = str()
@@ -62,7 +63,6 @@ class TurbiniaProcessorBaseAPI(module.BaseModule):
         '.plaso', 'BinaryExtractorTask.tar.gz', 'hashes.json',
         'fraken_stdout.log', 'loki_stdout.log'
     ]
-
     os.environ['GRPC_POLL_STRATEGY'] = 'poll'
 
   def _isInterestingPath(self, path):
@@ -151,7 +151,8 @@ class TurbiniaProcessorBaseAPI(module.BaseModule):
         return extracted_path
 
     except turbinia_api_lib.ApiException as exception:
-      self.ModuleError(f'Unable to download task data: {exception}', critical=False)
+      self.ModuleError(
+        f'Unable to download task data: {exception}', critical=False)
     except OSError as exception:
       self.ModuleError(f'Unable to write to file: {exception}', critical=False)
 
@@ -189,7 +190,7 @@ class TurbiniaProcessorBaseAPI(module.BaseModule):
         self.client)
     try:
       api_response = api_instance.read_config()
-      self._output_path = api_response.get('OUTPUT_DIR')
+      self.output_path = api_response.get('OUTPUT_DIR')
     except turbinia_api_lib.ApiException as exception:
       self.ModuleError({exception}, critical=True)
 
@@ -291,7 +292,7 @@ class TurbiniaProcessorBaseAPI(module.BaseModule):
 
           for path in current_saved_paths:
             if path not in processed_paths and self._isInterestingPath(
-                path) and path.startswith(self._output_path):
+                path) and path.startswith(self.output_path):
               processed_paths.add(path)
               self.logger.info(
                   f'New output file {path} found for task {task_id}')
@@ -299,7 +300,7 @@ class TurbiniaProcessorBaseAPI(module.BaseModule):
 
       except turbinia_api_lib.ApiException as exception:
         retries += 1
-        self.logger.warning(f'Retrying after exception: {exception}')
+        self.logger.warning(f'Retrying after exception: {exception.body}')
 
   def TurbiniaFinishReport(self, request_id: str) -> Dict[str, Any]:
     """This method generates a Turbinia report for a given request ID."""

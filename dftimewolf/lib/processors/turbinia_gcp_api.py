@@ -9,13 +9,13 @@ import magic
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers, interface
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.processors.turbinia_base_api import TurbiniaProcessorBaseAPI
+from dftimewolf.lib.processors.turbinia_base_api import TurbiniaAPIProcessorBase
 
 if TYPE_CHECKING:
   from dftimewolf.lib import state
 
 
-class TurbiniaAPIGCPProcessor(TurbiniaProcessorBaseAPI,
+class TurbiniaAPIGCPProcessor(TurbiniaAPIProcessorBase,
                               module.ThreadAwareModule):
   """Processes Google Cloud (GCP) disks with Turbinia.
 
@@ -37,7 +37,7 @@ class TurbiniaAPIGCPProcessor(TurbiniaProcessorBaseAPI,
           the entire recipe to fail if the module encounters an error.
     """
     module.ThreadAwareModule.__init__(self, state, name=name, critical=critical)
-    TurbiniaProcessorBaseAPI.__init__(self, self.logger)
+    TurbiniaAPIProcessorBase.__init__(self, self.logger)
 
   def _BuildContainer(
       self, path: str,
