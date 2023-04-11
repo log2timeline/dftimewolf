@@ -15,19 +15,23 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 os.environ['TURBINIA_CONFIG_PATH'] = os.path.join(current_dir, 'test_data')
 # pylint: disable=wrong-import-position
 from dftimewolf.lib.containers import containers
-from dftimewolf.lib.processors import turbinia_artifact
-
 from dftimewolf import config
 
-# Manually set TURBINIA_PROJECT to the value we expect.
-# pylint: disable=wrong-import-position, wrong-import-order
-from turbinia import config as turbinia_config
-from turbinia import message as turbinia_message
+HAS_TURBINIA = False
 
-turbinia_config.TURBINIA_PROJECT = 'turbinia-project'
+try:
+  from dftimewolf.lib.processors import turbinia_artifact
+  from turbinia import config as turbinia_config
+  from turbinia import message as turbinia_message
+  # Manually set TURBINIA_PROJECT to the value we expect.
+  turbinia_config.TURBINIA_PROJECT = 'turbinia-project'
+  HAS_TURBINIA = True
+except ImportError:
+  pass
+
 YARA_RULE = """rule dummy { condition: false }"""
 
-
+@unittest.skipIf(not HAS_TURBINIA, 'Missing Turbinia dependency.')
 class TurbiniaArtifactProcessorTest(unittest.TestCase):
   """Tests for the Turbinia processor."""
 
