@@ -2,7 +2,7 @@
 """Processes GCP cloud disks using Turbinia."""
 
 import os
-from typing import Dict, List, Optional, TYPE_CHECKING, Any, Type, Union
+from typing import Optional, TYPE_CHECKING, Type, Union
 
 import magic
 
@@ -15,7 +15,8 @@ from turbinia import evidence
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers, interface
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.processors.turbinia_base_legacy import TurbiniaProcessorBaseLegacy
+from dftimewolf.lib.processors.turbinia_base_legacy import (
+    TurbiniaProcessorBaseLegacy)
 
 if TYPE_CHECKING:
   from dftimewolf.lib import state

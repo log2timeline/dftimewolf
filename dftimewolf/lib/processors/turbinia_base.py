@@ -71,7 +71,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     ]
     os.environ['GRPC_POLL_STRATEGY'] = 'poll'
 
-  def _isInterestingPath(self, path):
+  def _isInterestingPath(self, path: str) -> bool:
     """Checks if a path is interesting for the processor."""
     for suffix in self.extentions:
       return bool(path.endswith(suffix))
@@ -126,7 +126,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     return local_path
 
   def _DownloadFilesFromAPI(
-      self, task_data: Dict[str, List[str]], path: str) -> str:
+      self, task_data: Dict[str, List[str]], path: str) -> Optional[str]:
     """Downloads task output data from the Turbinia API server.
 
     Args:
@@ -202,7 +202,7 @@ class TurbiniaProcessorBase(module.BaseModule):
       api_response = api_instance.read_config()
       self.output_path = api_response.get('OUTPUT_DIR')
     except turbinia_api_lib.ApiException as exception:
-      self.ModuleError({exception}, critical=True)
+      self.ModuleError(exception.body, critical=True)
 
   def TurbiniaStart(
       self,
@@ -220,12 +220,15 @@ class TurbiniaProcessorBase(module.BaseModule):
     Returns:
       Turbinia request ID.
     """
-    request_id = None
+    request_id = ''
     api_instance = turbinia_requests_api.TurbiniaRequestsApi(self.client)
     yara_text = ''
     jobs_denylist = [
         'StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob'
     ]
+    if not evidence:
+      self.ModuleError('No evidence to process', critical=True)
+
     evidence_name = evidence.get('type')
     if yara_rules:
       yara_text = self.DEFAULT_YARA_MODULES + '\n'.join(list(yara_rules))
@@ -239,7 +242,7 @@ class TurbiniaProcessorBase(module.BaseModule):
         'yara_rules': yara_text
     }
     if self.sketch_id:
-      request_options['sketch_id'] = self.sketch_id
+      request_options['sketch_id'] = str(self.sketch_id)
 
     if self.turbinia_recipe:
       request_options['recipe_name'] = self.turbinia_recipe
@@ -287,6 +290,9 @@ class TurbiniaProcessorBase(module.BaseModule):
     processed_paths = set()
     api_instance = turbinia_requests_api.TurbiniaRequestsApi(self.client)
     status = 'running'
+    if not request_id:
+      self.ModuleError('No request ID provided', critical=True)
+
     while status == 'running' and retries < 3:
       time.sleep(interval)
       try:
@@ -312,11 +318,11 @@ class TurbiniaProcessorBase(module.BaseModule):
         retries += 1
         self.logger.warning(f'Retrying after exception: {exception.body}')
 
-  def TurbiniaFinishReport(self, request_id: str) -> Dict[str, Any]:
+  def TurbiniaFinishReport(self, request_id: str) -> str:
     """This method generates a Turbinia report for a given request ID."""
     api_instance = turbinia_requests_api.TurbiniaRequestsApi(self.client)
     request_data = api_instance.get_request_status(request_id)
     if request_data:
-      report = turbinia_formatter.RequestMarkdownReport(
+      report: str = turbinia_formatter.RequestMarkdownReport(
           request_data=request_data).generate_markdown()
     return report

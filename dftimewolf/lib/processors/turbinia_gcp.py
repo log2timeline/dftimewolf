@@ -2,7 +2,7 @@
 """Processes GCP cloud disks using Turbinia."""
 
 import os
-from typing import Optional, TYPE_CHECKING, Type, Union
+from typing import Any, Dict, Optional, TYPE_CHECKING, Type, Union
 
 import magic
 
@@ -72,7 +72,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase,
       turbinia_recipe: Union[str, None],
       turbinia_zone: str,
       turbinia_api: str,
-      incident_id: int,
+      incident_id: str,
       sketch_id: int,
       disk_names: str = '') -> None:
     """Sets up the object attributes.
@@ -84,7 +84,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase,
       turbinia_api (str): Turbinia API endpoint.
       turbinia_recipe (str): Turbinia recipe name.
       turbinia_zone (str): GCP zone in which the Turbinia server is running.
-      incident_id (int): The incident ID.
+      incident_id (str): The incident ID.
       sketch_id (int): The sketch ID.
       disk_names (str): names of the disks to process.
     """
@@ -117,8 +117,8 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase,
   # pylint: disable=arguments-renamed
   def Process(self, disk_container: containers.GCEDisk) -> None:
     """Process a GCE Disk with Turbinia."""
-    request_id = None
-    task_data = {}
+    request_id = ''
+    task_data: Dict[str, Any] = {}
     report = ''
     evidence = {
         'type': 'GoogleCloudDisk',
@@ -156,6 +156,9 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase,
 
     request_id = self.TurbiniaStart(
         evidence, threat_intel_indicators, yara_rules)
+    if not request_id:
+      self.ModuleError('Turbinia request failed', critical=True)
+
     self.PublishMessage(f'Turbinia request ID: {request_id}')
 
     for task_data, path_to_collect in self.TurbiniaWait(request_id):
