@@ -4,7 +4,7 @@ Threaded version of existing Timesketch module."""
 
 import time
 import uuid
-from typing import Optional, List, Type, Union, Set
+from typing import Optional, List, Type, Union
 
 from timesketch_import_client import importer
 from timesketch_api_client import sketch as ts_sketch
@@ -149,7 +149,7 @@ class TimesketchExporter(module.ThreadAwareModule):
   def _WaitForTimelines(self) -> None:
     """Waits for all timelines in a sketch to be processed.
 
-    Runs analyzers on timelines that are ready.  
+    Runs analyzers on timelines that are ready.
     """
     time.sleep(5)  # Give Timesketch time to populate recently added timelines.
     sketch = self.timesketch_api.get_sketch(self.sketch_id)

@@ -995,7 +995,7 @@ name = "filelock"
 version = "3.11.0"
 description = "A platform independent file lock."
 category = "main"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "filelock-3.11.0-py3-none-any.whl", hash = "sha256:f08a52314748335c6460fc8fe40cd5638b85001225db78c2aa01c8c0db83b318"},
@@ -1459,7 +1459,7 @@ name = "google-cloud-storage"
 version = "2.2.1"
 description = "Google Cloud Storage API client library"
 category = "main"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "google-cloud-storage-2.2.1.tar.gz", hash = "sha256:0244f4612710cb5ec445fc6774387564e23f9823363fb408b28724e2102401b7"},
@@ -4055,4 +4055,4 @@ turbinia-legacy = ["turbinia"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "43e63c6e6688fccf35556103f792fd743bc519a317d731ecc151da2062094513"
+content-hash = "8e0429e785882641dd238f27812dd9976dc6d47450f1c1ca32e08ded0d8836f9"

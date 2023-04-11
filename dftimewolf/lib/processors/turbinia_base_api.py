@@ -75,7 +75,7 @@ class TurbiniaAPIProcessorBase(module.BaseModule):
       tgzfile: tarfile.TarFile,
       path_to_collect: str) -> List[tarfile.TarInfo]:
     """Filters a TarFile object for a specific path.
-    
+
     Pre-condition: tgzfile must be a valid TarFile object.
 
     Args:
@@ -94,7 +94,7 @@ class TurbiniaAPIProcessorBase(module.BaseModule):
 
   def _ExtractFiles(self, tgz_path: str, path_to_collect: str) -> str:
     """Extracts files which appear in a Turbinia task's saved_paths attribute
-    
+
     Pre-condition(s): The effective UID can read and write to the temporary
         directory. file_path must be a path to a valid tgz file containing
         Turbinia task output files.
@@ -121,7 +121,7 @@ class TurbiniaAPIProcessorBase(module.BaseModule):
 
   def _DownloadFilesFromAPI(
       self, task_data: Dict[str, List[str]], path: str) -> str:
-    """Downloads task output data from the Turbinia API server. 
+    """Downloads task output data from the Turbinia API server.
 
     Args:
       task_data: Response from a /api/request/{request_id} API call.
