@@ -20,12 +20,12 @@ class SSHMultiplexer(unittest.TestCase):
     local_ssh_multiplexer = ssh_multiplexer.SSHMultiplexer(test_state)
     self.assertIsNotNone(local_ssh_multiplexer)
 
-  @mock.patch.object(ssh_multiplexer, 'time')
+  @mock.patch.object(ssh_multiplexer, 'uuid')
   @mock.patch('subprocess.call')
-  def testProcess(self, mock_call, mock_time):
+  def testProcess(self, mock_call, mock_uuid):
     """Tests the SSH CLI has the expected parameters."""
     mock_call.return_value = 0
-    mock_time.time_ns.return_value = 123456789
+    mock_uuid.uuid4.return_value = '8f473cb2-db6d-4ce5-8d81-ed15d4f38fc5'
     test_state = state.DFTimewolfState(config.Config)
     ssh_multi = ssh_multiplexer.SSHMultiplexer(test_state)
     ssh_multi.SetUp('fakehost', 'fakeuser', None, ['-o', "ProxyCommand='test'"])
@@ -35,17 +35,17 @@ class SSHMultiplexer(unittest.TestCase):
       'ssh', '-q', '-l', 'fakeuser',
       '-o', 'ControlMaster=auto',
       '-o', 'ControlPersist=yes',
-      '-o', 'ControlPath=~/.ssh/ctrl-dftw-123456789-%C',
+      '-o', 'ControlPath=~/.ssh/ctrl-dftw-8f473cb2-db6d-4ce5-8d81-ed15d4f38fc5',
       '-o', "ProxyCommand='test'",
       'fakehost', 'true',
     ])
 
-  @mock.patch.object(ssh_multiplexer, 'time')
+  @mock.patch.object(ssh_multiplexer, 'uuid')
   @mock.patch('subprocess.call')
-  def testCleanup(self, mock_call, mock_time):
+  def testCleanup(self, mock_call, mock_uuid):
     """Tests that the SSH CLI is called with the expected arguments."""
     mock_call.return_value = 0
-    mock_time.time_ns.return_value = 123456789
+    mock_uuid.uuid4.return_value = '8f473cb2-db6d-4ce5-8d81-ed15d4f38fc5'
     test_state = state.DFTimewolfState(config.Config)
     ssh_multi = ssh_multiplexer.SSHMultiplexer(test_state)
     ssh_multi.SetUp('fakehost', 'fakeuser', None, [])
@@ -53,7 +53,8 @@ class SSHMultiplexer(unittest.TestCase):
 
     mock_call.assert_called_with([
       'ssh', '-O', 'exit', '-o',
-      'ControlPath=~/.ssh/ctrl-dftw-123456789-%C', 'fakehost'
+      'ControlPath=~/.ssh/ctrl-dftw-8f473cb2-db6d-4ce5-8d81-ed15d4f38fc5',
+      'fakehost'
     ])
 
 
