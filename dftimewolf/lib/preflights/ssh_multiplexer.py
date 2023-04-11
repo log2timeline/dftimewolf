@@ -1,7 +1,6 @@
 """Opens an SSH connection to a server using ControlMaster directives."""
 
 import subprocess
-import time
 import uuid
 
 from typing import Optional, List
