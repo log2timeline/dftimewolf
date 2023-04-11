@@ -83,6 +83,7 @@ class TurbiniaBaseTest(unittest.TestCase):
     for task, path in self.turbinia_processor.TurbiniaWait(TASK_ID):
       # Check that the task and path are correct for a PlasoParserTask
       if task["id"] == TASK_ID:
+        self.assertEqual(task, self._request_status["tasks"][0])
         self.assertEqual(path, TEST_TASK_PATH)
       break
 
