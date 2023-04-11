@@ -44,7 +44,10 @@ class ModulesManager(object):
       type: the module class, which is a subclass of BaseModule, or None if
           no corresponding module was found.
     """
-    return cls._module_classes[name]
+    class_type = None
+    if name in cls._module_classes:
+      class_type = cls._module_classes[name]
+    return class_type
 
   @classmethod
   def RegisterModule(cls, module_class: Type['module.BaseModule']) -> None:

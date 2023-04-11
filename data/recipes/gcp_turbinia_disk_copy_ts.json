@@ -46,17 +46,19 @@
         }
       }, {
         "wants": ["GCEDiskCopy"],
-        "name": "TurbiniaAPIGCPProcessor",
+        "name": "TurbiniaGCPProcessor",
         "args": {
-            "turbinia_config_file": null,
             "disk_names": null,
             "project": "@analysis_project_name",
             "turbinia_recipe": "@turbinia_recipe",
+            "turbinia_auth": "@turbinia_auth",
             "turbinia_zone": "@turbinia_zone",
+            "turbinia_api": "@turbinia_api",
+            "incident_id": "@incident_id",
             "sketch_id": "@sketch_id"
         }
     }, {
-        "wants": ["TurbiniaAPIGCPProcessor"],
+        "wants": ["TurbiniaGCPProcessor"],
         "name": "TimesketchExporter",
         "args": {
             "incident_id": "@incident_id",
@@ -71,6 +73,8 @@
         ["analysis_project_name", "Name of the project containing the Turbinia instance.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9]{4,28}[a-z0-9]$"}],
         ["--turbinia_recipe", "The Turbinia recipe name to use for evidence processing.", null],
         ["--turbinia_zone", "The GCP zone the disk to process and Turbinia workers are in.", "us-central1-f", {"format": "gcp_zone"}],
+        ["--turbinia_auth", "Flag to indicate whether Turbinia API server requires authentication.", false],
+        ["--turbinia_api", "Turbinia API server endpoint.", "http://127.0.0.1:8000"],
         ["--incident_id", "Incident ID (used for Timesketch description and to label the VM with).", null],
         ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
