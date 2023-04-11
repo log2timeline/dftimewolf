@@ -6,19 +6,20 @@ import tempfile
 
 from typing import Optional, TYPE_CHECKING, Type
 
+# pylint: disable=import-error
 from turbinia import TurbiniaException, evidence
 from turbinia import config as turbinia_config
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers, interface
 from dftimewolf.lib.modules import manager as modules_manager
+# pylint: disable=line-too-long
 from dftimewolf.lib.processors.turbinia_base_legacy import TurbiniaProcessorBaseLegacy
 
 if TYPE_CHECKING:
   from dftimewolf.lib import state
 
 # pylint: disable=no-member
-
 class TurbiniaArtifactProcessorLegacy(TurbiniaProcessorBaseLegacy,
                                 module.ThreadAwareModule):
   """Processes Exported GRR Artifacts with Turbinia.
