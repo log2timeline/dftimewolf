@@ -2,12 +2,9 @@
 """Processes GCP cloud disks using Turbinia."""
 
 import os
-from typing import Dict, List, Optional, TYPE_CHECKING, Any, Type, Union
+from typing import Optional, TYPE_CHECKING, Type, Union
 
 import magic
-from turbinia import TurbiniaException
-from turbinia import config as turbinia_config  #pylint: disable=unused-import
-from turbinia import evidence
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers, interface
@@ -18,17 +15,19 @@ if TYPE_CHECKING:
   from dftimewolf.lib import state
 
 
-class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
+class TurbiniaGCPProcessor(TurbiniaProcessorBase,
+                              module.ThreadAwareModule):
   """Processes Google Cloud (GCP) disks with Turbinia.
 
   Attributes:
     disk_name (str): name of the disk to process.
   """
 
-  def __init__(self,
-               state: "state.DFTimewolfState",
-               name: Optional[str]=None,
-               critical: bool=False) -> None:
+  def __init__(
+      self,
+      state: "state.DFTimewolfState",
+      name: Optional[str] = None,
+      critical: bool = False) -> None:
     """Initializes a Turbinia Google Cloud (GCP) disks processor.
 
     Args:
@@ -40,39 +39,64 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     module.ThreadAwareModule.__init__(self, state, name=name, critical=critical)
     TurbiniaProcessorBase.__init__(self, self.logger)
 
+  def _BuildContainer(
+      self, path: str,
+      description: str) -> containers.interface.AttributeContainer:
+    """Builds a container from a path."""
+    container: Union[containers.File, containers.ThreatIntelligence]
+    if path.endswith('BinaryExtractorTask.tar.gz'):
+      self.PublishMessage(f'Found BinaryExtractorTask result: {path}')
+      container = containers.ThreatIntelligence(
+          name='BinaryExtractorResults', indicator=None, path=path)
+    elif path.endswith('hashes.json'):
+      self.PublishMessage(f'Found hashes.json: {path}')
+      container = containers.ThreatIntelligence(
+          name='ImageExportHashes', indicator=None, path=path)
+    elif path.endswith('.plaso'):
+      self.PublishMessage(f'Found plaso result: {path}')
+      container = containers.File(name=description, path=path)
+    elif magic.from_file(path, mime=True).startswith('text'):
+      self.PublishMessage(f'Found result: {path}')
+      container = containers.File(name=description, path=path)
+    else:
+      self.PublishMessage(
+          f'Skipping result of type {magic.from_file(path)} at: {path}')
+
+    return container
+
   # pylint: disable=arguments-differ
-  def SetUp(self,
-            turbinia_config_file: Union[str, None],
-            project: str,
-            turbinia_recipe: Union[str, None],
-            turbinia_zone: str,
-            sketch_id: int,
-            disk_names: str = '') -> None:
+  def SetUp(
+      self,
+      project: str,
+      turbinia_auth: bool,
+      turbinia_recipe: Union[str, None],
+      turbinia_zone: str,
+      turbinia_api: str,
+      incident_id: int,
+      sketch_id: int,
+      disk_names: str = '') -> None:
     """Sets up the object attributes.
 
     Args:
-      turbinia_config_file (str): Full path to the Turbinia config file to use.
       disk_names (str): names of the disks to process.
       project (str): name of the GCP project containing the disk to process.
+      turbinia_auth (bool): Turbinia auth flag.
+      turbinia_api (str): Turbinia API endpoint.
       turbinia_recipe (str): Turbinia recipe name.
       turbinia_zone (str): GCP zone in which the Turbinia server is running.
-      sketch_id (int): The Timesketch sketch ID.
+      incident_id (int): The incident ID.
+      sketch_id (int): The sketch ID.
+      disk_names (str): names of the disks to process.
     """
-    self.turbinia_config_file = turbinia_config_file
-
     if disk_names:
       for disk in disk_names.strip().split(','):
         if not disk:
           continue
-        self.StoreContainer(containers.GCEDisk(
-            name=disk,
-            project=project))
+        self.StoreContainer(containers.GCEDisk(name=disk, project=project))
 
-    try:
-      self.TurbiniaSetUp(project, turbinia_recipe, turbinia_zone, sketch_id)
-    except TurbiniaException as exception:
-      self.ModuleError(str(exception), critical=True)
-      return
+    self.TurbiniaSetUp(
+        project, turbinia_auth, turbinia_recipe, turbinia_zone, turbinia_api,
+        incident_id, sketch_id)
 
   def PreProcess(self) -> None:
     """Ensure ForensicsVM containers from previous modules are processed.
@@ -87,29 +111,33 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       if container.evidence_disk and container.evidence_disk.name:
         self.StoreContainer(
             containers.GCEDisk(
-                name=container.evidence_disk.name,
-                project=self.project))
+                name=container.evidence_disk.name, project=self.project))
     self.state.DedupeContainers(containers.GCEDisk)
 
   # pylint: disable=arguments-renamed
   def Process(self, disk_container: containers.GCEDisk) -> None:
     """Process a GCE Disk with Turbinia."""
+    request_id = None
+    task_data = {}
+    report = ''
+    evidence = {
+        'type': 'GoogleCloudDisk',
+        'disk_name': disk_container.name,
+        'project': self.project,
+        'zone': self.turbinia_zone
+    }
+    description = f'{self.project}-{disk_container.name}'
     if disk_container.project != self.project:
-      self.logger.info(f'Found disk "{disk_container.name}" but skipping as it '
+      self.logger.info(
+          f'Found disk "{disk_container.name}" but skipping as it '
           f'is in a different project "{disk_container.project}".')
       return
 
     log_file_path = os.path.join(
-        self._output_path, f'{disk_container.name}-turbinia.log')
-
+        self.output_path, f'{disk_container.name}-turbinia.log')
     self.logger.info(f'Turbinia log file: {log_file_path}')
     self.logger.info(
         f'Using disk {disk_container.name} from previous collector')
-
-    evidence_ = evidence.GoogleCloudDisk(
-        disk_name=disk_container.name,
-        project=self.project,
-        zone=self.turbinia_zone)
 
     threat_intel_indicators = None
     threatintel = self.GetContainers(containers.ThreatIntelligence)
@@ -121,69 +149,38 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     yara_rules = None
     yara_containers = self.GetContainers(containers.YaraRule)
     if yara_containers:
-      self.logger.info(f'Sending {len(yara_containers)} Yara rules to Turbinia '
+      self.logger.info(
+          f'Sending {len(yara_containers)} Yara rules to Turbinia '
           'Plaso worker...')
       yara_rules = [rule.rule_text for rule in yara_containers]
 
-    try:
-      request_id = self.TurbiniaStart(
-          evidence_, threat_intel_indicators, yara_rules)
-      self.PublishMessage(f'Turbinia request ID: {request_id}')
-      task_data, report = self.TurbiniaWait(request_id)
-    except TurbiniaException as exception:
-      self.ModuleError(str(exception), critical=True)
+    request_id = self.TurbiniaStart(
+        evidence, threat_intel_indicators, yara_rules)
+    self.PublishMessage(f'Turbinia request ID: {request_id}')
 
-    self.StoreContainer(containers.Report(
-        module_name='TurbiniaProcessor', text=report, text_format='markdown'))
-
-    local_paths, gs_paths = self._DeterminePaths(task_data)
-
-    if not local_paths and not gs_paths:
-      self.ModuleError(
-          'No interesting files found in Turbinia output.', critical=True)
-
-    timeline_label = f'{self.project}-{disk_container.name}'
-    # Any local files that exist we can add immediately to the output
-    all_local_paths = [
-        (timeline_label, p) for p in local_paths if os.path.exists(p)]
-
-    try:
-      downloaded_gs_paths = self._DownloadFilesFromGCS(timeline_label, gs_paths)
-    except TurbiniaException as exception:
-      # Don't add a critical error for now, until we start raising errors
-      # instead of returning manually each
-      self.ModuleError(str(exception), critical=False)
-
-    all_local_paths.extend(downloaded_gs_paths)
-    self.logger.info(f'Collected {len(all_local_paths)} results')
-
-    if not all_local_paths:
-      self.ModuleError('No interesting files could be found.', critical=True)
-
-    container: Union[containers.File, containers.ThreatIntelligence]
-    for description, path in all_local_paths:
-      if path.endswith('BinaryExtractorTask.tar.gz'):
-        self.PublishMessage(f'Found BinaryExtractorTask result: {path}')
-        container = containers.ThreatIntelligence(
-            name='BinaryExtractorResults', indicator=None, path=path)
-      elif path.endswith('hashes.json'):
-        self.PublishMessage(f'Found hashes.json: {path}')
-        container = containers.ThreatIntelligence(
-            name='ImageExportHashes', indicator=None, path=path)
-      elif path.endswith('.plaso'):
-        self.PublishMessage(f'Found plaso result: {path}')
-        container = containers.File(name=description, path=path)
-      elif magic.from_file(path, mime=True).startswith('text'):
-        self.PublishMessage(f'Found result: {path}')
-        container = containers.File(name=description, path=path)
-      else:
-        self.PublishMessage(
-            f'Skipping result of type {magic.from_file(path)} at: {path}')
+    for task_data, path_to_collect in self.TurbiniaWait(request_id):
+      task_id = task_data.get('id', 'unknown')
+      # Any local files that exist we can add immediately to the output
+      path = self._DownloadFilesFromAPI(task_data, path_to_collect)
+      if not path:
+        self.logger.debug(
+            f'No interesting output files could be found for task {task_id}')
         continue
-      self.StoreContainer(container)
-  # pylint: enable=arguments-renamed
 
-  def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
+      container = self._BuildContainer(path, description)
+      self.StreamContainer(container)
+
+    # Generate a Turbinia report and store it in the state.
+    report = self.TurbiniaFinishReport(request_id)
+    self.StoreContainer(
+        containers.Report(
+            module_name='TurbiniaProcessor',
+            text=report,
+            text_format='markdown'))
+    self.PublishMessage(report)
+
+  @staticmethod
+  def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
     return containers.GCEDisk
 
   def GetThreadPoolSize(self) -> int:

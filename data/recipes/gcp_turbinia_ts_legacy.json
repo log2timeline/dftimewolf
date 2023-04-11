@@ -11,7 +11,7 @@
     }],
     "modules": [{
         "wants": [],
-        "name": "TurbiniaGCPProcessor",
+        "name": "TurbiniaGCPProcessorLegacy",
         "args": {
             "turbinia_config_file": null,
             "disk_names": "@disk_names",
@@ -21,7 +21,7 @@
             "sketch_id": "@sketch_id"
         }
     }, {
-        "wants": ["TurbiniaGCPProcessor"],
+        "wants": ["TurbiniaGCPProcessorLegacy"],
         "name": "TimesketchExporter",
         "args": {
             "incident_id": "@incident_id",

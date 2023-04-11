@@ -33,6 +33,14 @@ NEW_ISSUE_URL = 'https://github.com/log2timeline/dftimewolf/issues/new'
 
 TELEMETRY = telemetry
 
+# Turbinia backwards compatibility check
+HAS_TURBINIA = False
+try:
+  import turbinia
+  HAS_TURBINIA = True
+except ImportError:
+  pass
+
 class DFTimewolfState(object):
   """The main State class.
 
@@ -101,6 +109,11 @@ class DFTimewolfState(object):
     """
     for module in self.recipe['modules'] + self.recipe.get('preflights', []):
       name = module['name']
+      if name.endswith('Legacy') and not HAS_TURBINIA:
+        msg = (f'Skipping legacy Turbinia module {name} because Turbinia'
+               'is not installed.')
+        print(msg)
+        continue
       if name not in module_locations:
         msg = (f'In {self.recipe["name"]}: module {name} cannot be found. '
                'It may not have been declared.')
@@ -134,14 +147,14 @@ class DFTimewolfState(object):
     for module_definition in module_definitions + preflight_definitions:
       # Combine CLI args with args from the recipe description
       module_name = module_definition['name']
-      module_class = modules_manager.ModulesManager.GetModuleByName(module_name)
-
       runtime_name = module_definition.get('runtime_name')
       if not runtime_name:
         runtime_name = module_name
-      # pytype: disable=wrong-arg-types
-      self._module_pool[runtime_name] = module_class(self, name=runtime_name)
-      # pytype: enable=wrong-arg-types
+      module_class = modules_manager.ModulesManager.GetModuleByName(module_name)
+      if module_class:
+        # pytype: disable=wrong-arg-types
+        self._module_pool[runtime_name] = module_class(self, name=runtime_name)
+        # pytype: enable=wrong-arg-types
 
   def FormatExecutionPlan(self) -> str:
     """Formats execution plan.

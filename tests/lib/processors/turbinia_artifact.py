@@ -20,7 +20,7 @@ from dftimewolf import config
 HAS_TURBINIA = False
 
 try:
-  from dftimewolf.lib.processors import turbinia_artifact
+  from dftimewolf.lib.processors import turbinia_artifact_legacy
   from turbinia import config as turbinia_config
   from turbinia import message as turbinia_message
   # Manually set TURBINIA_PROJECT to the value we expect.
@@ -38,7 +38,7 @@ class TurbiniaArtifactProcessorTest(unittest.TestCase):
   def testInitialization(self):
     """Tests that the processor can be initialized."""
     test_state = state.DFTimewolfState(config.Config)
-    turbinia_processor = turbinia_artifact.TurbiniaArtifactProcessor(test_state)
+    turbinia_processor = turbinia_artifact_legacy.TurbiniaArtifactProcessor(test_state)
     self.assertIsNotNone(turbinia_processor)
 
   @mock.patch('turbinia.client.get_turbinia_client')
@@ -46,7 +46,7 @@ class TurbiniaArtifactProcessorTest(unittest.TestCase):
   def testSetup(self, _mock_TurbiniaClient):
     """Tests that the processor is set up correctly."""
     test_state = state.DFTimewolfState(config.Config)
-    turbinia_processor = turbinia_artifact.TurbiniaArtifactProcessor(test_state)
+    turbinia_processor = turbinia_artifact_legacy.TurbiniaArtifactProcessor(test_state)
     turbinia_processor.SetUp(
         turbinia_config_file=None,
         project='turbinia-project',
@@ -74,7 +74,7 @@ class TurbiniaArtifactProcessorTest(unittest.TestCase):
         received from the state.
     """
     test_state = state.DFTimewolfState(config.Config)
-    turbinia_processor = turbinia_artifact.TurbiniaArtifactProcessor(test_state)
+    turbinia_processor = turbinia_artifact_legacy.TurbiniaArtifactProcessor(test_state)
     turbinia_processor.StoreContainer(
         containers.RemoteFSPath(hostname='remotehost', path='/tmp/file.ext'))
     turbinia_processor.SetUp(
