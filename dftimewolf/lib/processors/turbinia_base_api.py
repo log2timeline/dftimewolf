@@ -25,13 +25,19 @@ class TurbiniaAPIProcessorBase(module.BaseModule):
 
   Attributes:
     client (TurbiniaClient): Turbinia client.
+    client_config (dict): Turbinia client config.
+    extentions (List[str]): List of file extentions to look for.
+    incident_id (str): The Timesketch incident id.
     instance (str): name of the Turbinia instance
+    logger (WolfLogger): logger.
     project (str): name of the GCP project containing the disk to process.
     sketch_id (int): The Timesketch sketch id
     turbinia_recipe (str): Turbinia recipe name.
     turbinia_region (str): GCP region in which the Turbinia server is running.
     turbinia_zone (str): GCP zone in which the Turbinia server is running.
     turbinia_api (str): Turbinia API endpoint.
+    turbinia_auth (bool): Turbinia auth flag.
+    parallel_count (int): Number of threads to use.
   """
 
   DEFAULT_YARA_MODULES = 'import "pe"\nimport "math"\nimport "hash"\n\n'
@@ -167,14 +173,13 @@ class TurbiniaAPIProcessorBase(module.BaseModule):
       incident_id: str, sketch_id: int) -> None:
     """Sets up the object attributes.
 
-    Raises:
-      TurbiniaException: For errors in setting up the Turbinia client.
-
     Args:
       project (str): name of the GCP project containing the disk to process.
       turbinia_recipe (str): Turbinia recipe name.
       turbinia_zone (str): GCP zone in which the Turbinia server is running.
-      incident_id (int): The Timesketch sketch ID.
+      turbinia_api (str): URL of the Turbinia API server.
+      incident_id (str): The incident ID.
+      sketch_id (int): The sketch ID.
     """
     self.project = project
     self.turbinia_auth = turbinia_auth

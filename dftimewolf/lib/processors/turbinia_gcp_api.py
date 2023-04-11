@@ -81,9 +81,12 @@ class TurbiniaAPIGCPProcessor(TurbiniaAPIProcessorBase,
       disk_names (str): names of the disks to process.
       project (str): name of the GCP project containing the disk to process.
       turbinia_auth (bool): Turbinia auth flag.
+      turbinia_api (str): Turbinia API endpoint.
       turbinia_recipe (str): Turbinia recipe name.
       turbinia_zone (str): GCP zone in which the Turbinia server is running.
-      incident_id (int): The Timesketch sketch ID.
+      incident_id (int): The incident ID.
+      sketch_id (int): The sketch ID.
+      disk_names (str): names of the disks to process.
     """
     if disk_names:
       for disk in disk_names.strip().split(','):
