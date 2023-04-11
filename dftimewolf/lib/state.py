@@ -36,7 +36,7 @@ TELEMETRY = telemetry
 # Turbinia backwards compatibility check
 HAS_TURBINIA = False
 try:
-  import turbinia
+  import turbinia # pylint: disable=unused-import
   HAS_TURBINIA = True
 except ImportError:
   pass

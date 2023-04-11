@@ -8,10 +8,12 @@ import tempfile
 import time
 from typing import Dict, List, Optional, Tuple, Any, Union
 
+# pylint: disable=import-error
 from turbinia import TurbiniaException
 from turbinia import client as turbinia_client
 from turbinia import config as turbinia_config
 from turbinia import evidence, output_manager
+
 from dftimewolf.lib.logging_utils import WolfLogger
 
 
