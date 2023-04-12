@@ -8,6 +8,11 @@ import tempfile
 import time
 from typing import Dict, List, Optional, Tuple, Any, Union, Generator
 
+from google_auth_oauthlib import flow
+from google.oauth2.credentials import Credentials
+from google.auth.transport.requests import Request
+from google.auth import exceptions as google_exceptions
+
 import turbinia_api_lib
 from turbinia_client.helpers import formatter as turbinia_formatter
 from turbinia_api_lib.api import (turbinia_requests_api,
@@ -16,10 +21,7 @@ from turbinia_api_lib.api import turbinia_request_results_api
 
 from dftimewolf.lib.logging_utils import WolfLogger
 from dftimewolf.lib import module
-from google_auth_oauthlib import flow
-from google.oauth2.credentials import Credentials
-from google.auth.transport.requests import Request
-from google.auth import exceptions as google_exceptions
+
 
 # pylint: disable=abstract-method,no-member
 class TurbiniaProcessorBase(module.BaseModule):
@@ -175,7 +177,7 @@ class TurbiniaProcessorBase(module.BaseModule):
 
   def _get_oauth2_credentials(
       self,
-      credentials_path: str, 
+      credentials_path: str,
       client_secrets_path: str) -> Optional[str]:
     """Authenticates the user using Google OAuth services."""
     scopes = ['openid', 'https://www.googleapis.com/auth/userinfo.email']
