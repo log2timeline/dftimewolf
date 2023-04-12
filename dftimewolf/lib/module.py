@@ -120,6 +120,12 @@ class BaseModule(object):
 
     error = errors.DFTimewolfError(
         message, name=self.name, stacktrace=stacktrace, critical=critical)
+    TELEMETRY.LogTelemetry(
+        'error_detail', message, self.name, self.state.recipe['name']
+    )
+    TELEMETRY.LogTelemetry(
+        'error_stacktrace', stacktrace, self.name, self.state.recipe['name']
+    )
     self.state.AddError(error)
     if critical:
       self.logger.critical(error.message)
