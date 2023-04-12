@@ -9,7 +9,6 @@ import time
 from typing import Dict, List, Optional, Tuple, Any, Union, Generator
 
 import turbinia_api_lib
-from turbinia_client.helpers import auth_helper
 from turbinia_client.helpers import formatter as turbinia_formatter
 from turbinia_api_lib.api import (turbinia_requests_api,
                                   turbinia_configuration_api)
@@ -17,7 +16,10 @@ from turbinia_api_lib.api import turbinia_request_results_api
 
 from dftimewolf.lib.logging_utils import WolfLogger
 from dftimewolf.lib import module
-
+from google_auth_oauthlib import flow
+from google.oauth2.credentials import Credentials
+from google.auth.transport.requests import Request
+from google.auth import exceptions as google_exceptions
 
 # pylint: disable=abstract-method,no-member
 class TurbiniaProcessorBase(module.BaseModule):
@@ -63,6 +65,10 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.turbinia_zone = str()
     self.turbinia_api = str()
     self.client_config = None
+    self.credentials_path = os.path.join(
+        os.path.expanduser('~'),".dftimewolf_turbinia.token")
+    self.client_secrets_path = os.path.join(
+        os.path.expanduser('~'),".dftimewolf_turbinia_secrets.json")
     self.parallel_count = 5  # Arbitrary, used by ThreadAwareModule
     self.logger = logger
     self.extentions = [
@@ -167,6 +173,55 @@ class TurbiniaProcessorBase(module.BaseModule):
 
     return result
 
+  def _get_oauth2_credentials(
+      self,
+      credentials_path: str, 
+      client_secrets_path: str) -> Optional[str]:
+    """Authenticates the user using Google OAuth services."""
+    scopes = ['openid', 'https://www.googleapis.com/auth/userinfo.email']
+    credentials = None
+
+    # Load credentials file if it exists
+    if os.path.exists(credentials_path):
+      try:
+        credentials = Credentials.from_authorized_user_file(
+            credentials_path, scopes)
+      except ValueError as exception:
+        msg = f'Error loading credentials: {exception!s}'
+        self.ModuleError(msg, critical=True)
+      # Refresh credentials using existing refresh_token
+      if credentials and credentials.refresh_token:
+        self.logger.debug(
+            'Found a refresh token. Requesting new id_token...')
+        try:
+          credentials.refresh(Request())
+        except google_exceptions.RefreshError as exception:
+          self.logger.debug(
+              f'Error refreshing credentials: {exception!s}')
+    else:
+      # No credentials file, acquire new credentials from secrets file.
+      self.logger.debug(
+          'Could not find existing credentials. Requesting new tokens.')
+      try:
+        appflow = flow.InstalledAppFlow.from_client_secrets_file(
+            client_secrets_path, scopes)
+      except FileNotFoundError as exception:
+        msg = f'Client secrets file not found: {exception!s}'
+        self.ModuleError(msg, critical=True)
+
+      self.logger.info(
+          'Starting local HTTP server on localhost:8888 for OAUTH flow. '
+          'If running dftimewolf remotely over SSH you will need to tunnel '
+          'port 8888.')
+      appflow.run_local_server(host='localhost', port=8888)
+      credentials = appflow.credentials
+
+      # Save credentials
+      with open(credentials_path, 'w', encoding='utf-8') as token:
+        token.write(credentials.to_json())
+
+    return credentials.id_token
+
   def TurbiniaSetUp(
       self, project: str, turbinia_auth: bool,
       turbinia_recipe: Union[str, None], turbinia_zone: str, turbinia_api: str,
@@ -191,8 +246,11 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.client_config = turbinia_api_lib.Configuration(host=self.turbinia_api)
     # Check if Turbinia requires authentication.
     if self.turbinia_auth:
-      self.client_config.access_token = auth_helper.get_oauth2_credentials(
+      self.client_config.access_token = self._get_oauth2_credentials(
           self.credentials_path, self.client_secrets_path)
+      if not self.client_config.access_token:
+        self.ModuleError(
+            'Unable to authenticate to Turbinia API server', critical=True)
     self.client = turbinia_api_lib.ApiClient(self.client_config)
 
     # We need to get the output path from the Turbinia server.
