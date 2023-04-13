@@ -124,7 +124,8 @@ class BaseModule(object):
         'error_detail', message, self.name, self.state.recipe.get('name', 'N/A')
     )
     TELEMETRY.LogTelemetry(
-        'error_stacktrace', stacktrace, self.name, self.state.get('name', 'N/A')
+        'error_stacktrace', stacktrace, self.name,
+        self.state.recipe.get('name', 'N/A')
     )
     self.state.AddError(error)
     if critical:
