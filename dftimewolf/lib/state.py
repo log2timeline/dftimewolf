@@ -33,13 +33,6 @@ NEW_ISSUE_URL = 'https://github.com/log2timeline/dftimewolf/issues/new'
 
 TELEMETRY = telemetry
 
-# Turbinia backwards compatibility check
-HAS_TURBINIA = False
-try:
-  import turbinia # pylint: disable=unused-import
-  HAS_TURBINIA = True
-except ImportError:
-  pass
 
 class DFTimewolfState(object):
   """The main State class.
@@ -109,10 +102,10 @@ class DFTimewolfState(object):
     """
     for module in self.recipe['modules'] + self.recipe.get('preflights', []):
       name = module['name']
-      if name.endswith('Legacy') and not HAS_TURBINIA:
-        msg = (f'Skipping legacy Turbinia module {name} because Turbinia'
+      if name.endswith('Legacy'):
+        msg = (f'Skipping legacy module {name} because Turbinia'
                'is not installed.')
-        print(msg)
+        logger.warning(msg)
         continue
       if name not in module_locations:
         msg = (f'In {self.recipe["name"]}: module {name} cannot be found. '
