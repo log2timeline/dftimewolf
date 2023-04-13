@@ -41,7 +41,8 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase,
 
   def _BuildContainer(
       self, path: str,
-      description: str) -> containers.interface.AttributeContainer:
+      description: str) -> Union[containers.File,
+                                 containers.ThreatIntelligence]:
     """Builds a container from a path."""
     container: Union[containers.File, containers.ThreatIntelligence]
     if path.endswith('BinaryExtractorTask.tar.gz'):
@@ -162,11 +163,11 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase,
     self.PublishMessage(f'Turbinia request ID: {request_id}')
 
     for task_data, path_to_collect in self.TurbiniaWait(request_id):
-      task_id = task_data.get('id', 'unknown')
+      task_id = task_data.get('id')
       # Any local files that exist we can add immediately to the output
       path = self._DownloadFilesFromAPI(task_data, path_to_collect)
       if not path:
-        self.logger.debug(
+        self.logger.warning(
             f'No interesting output files could be found for task {task_id}')
         continue
 

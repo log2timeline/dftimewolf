@@ -77,8 +77,8 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
         'Processing remote FS path {0:s} from previous collector'.format(
             container.path))
 
-    evidence_ = {'type': 'CompressedDirectory', 'source_path': container.path}
-    request_id = self.TurbiniaStart(evidence_)
+    evidence = {'type': 'CompressedDirectory', 'source_path': container.path}
+    request_id = self.TurbiniaStart(evidence)
     self.PublishMessage(f'Turbinia request ID: {request_id}')
 
     for task, path in self.TurbiniaWait(request_id):
