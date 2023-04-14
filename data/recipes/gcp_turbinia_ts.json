@@ -41,7 +41,7 @@
         ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
         ["--turbinia_recipe", "The Turbinia recipe name to use for evidence processing.", null],
-        ["--turbinia_auth", "Flag to indicate whether Turbinia API server requires authentication.", true],
+        ["--turbinia_auth", "Flag to indicate whether Turbinia API server requires authentication.", false],
         ["--turbinia_api", "Turbinia API server endpoint.", "http://127.0.0.1:8000"],
         ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true]
     ]
