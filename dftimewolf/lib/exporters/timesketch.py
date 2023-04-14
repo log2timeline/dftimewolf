@@ -4,11 +4,13 @@ Threaded version of existing Timesketch module."""
 
 import time
 import uuid
-from typing import Optional, List, Type, Union
+from typing import Optional, List, Type, Union, Set
 
 from timesketch_import_client import importer
 from timesketch_api_client import sketch as ts_sketch
 from timesketch_api_client import client as ts_client  # pylint: disable=unused-import,line-too-long  # used for typing
+from timesketch_api_client import error as ts_error
+from timesketch_api_client import analyzer as ts_analyzer
 
 from dftimewolf.lib import module, timesketch_utils
 from dftimewolf.lib.containers import containers, interface
@@ -42,10 +44,11 @@ class TimesketchExporter(module.ThreadAwareModule):
     self.incident_id = None  # type: Union[str, None]
     self.sketch_id = 0  # type: int
     self.timesketch_api = None  # type: ts_client.TimesketchApi
-    self._analyzers = []  # type: List[str]
+    self._analyzers = ['account_finder', 'browser_search']  # type: List[str]
     self.wait_for_timelines = False  # type: bool
     self.host_url = None  # type: Union[str, None]
     self.sketch = None  # type: ts_sketch.Sketch
+    self._processed_timelines: Set[int] = set()
 
   def SetUp(
       self,  # pylint: disable=arguments-differ
@@ -151,48 +154,52 @@ class TimesketchExporter(module.ThreadAwareModule):
 
     Runs analyzers on timelines that are ready.
     """
-    time.sleep(5)  # Give Timesketch time to populate recently added timelines.
     sketch = self.timesketch_api.get_sketch(self.sketch_id)
     timelines = sketch.list_timelines()
-    self.logger.info(f'Found {len(timelines)} timelines to process')
+    self.logger.info(
+        f'Found {len(timelines)} timelines for sketch {self.sketch_id}')
     while timelines:
       for timeline in timelines:
-        self.logger.info(f'Waiting for timeline {timeline.name} to be ready')
         # if the timeline is is a final state, pop it from the list
         if timeline.status in ['fail', 'ready', 'timeout', 'archived']:
           timelines.remove(timeline)
           # if the timeline is ready, run the analyzers
-          if timeline.status == 'ready':
+          if timeline.status == 'ready' and (
+              not timeline.id in self._processed_timelines):
+            self._processed_timelines.add(timeline.id)
             self._RunAnalyzers(timeline.name)
-      time.sleep(10)
+        else:
+          self.logger.info(f'Waiting for timeline {timeline.name} to be ready')
+      time.sleep(30)
 
   def _RunAnalyzers(self, timeline_name: str) -> None:
     """Runs analyzers on a timeline."""
-    for analyzer in self._analyzers:
+    if not self._analyzers:
       self.logger.info(
-          "Running analyzer {0:s} on timeline {1:s}".format(
-              analyzer, timeline_name))
-      results = self.sketch.run_analyzer(
-          analyzer_name=analyzer, timeline_name=timeline_name)
+          'No analyzers to run on timeline {0:s}.'.format(timeline_name))
+      return
 
+    timeline = self.sketch.get_timeline(timeline_name=timeline_name)
+    self.logger.info(
+        "Running analyzers {0!s} on timeline {1:s}".format(
+            self._analyzers, timeline_name))
+    try:
+      # By default run_analyzers() ignores analyzers that have already been run
+      results: List[ts_analyzer.AnalyzerResult] = timeline.run_analyzers(
+          analyzer_names=self._analyzers)
       if not results:
         self.logger.info(
-            'Analyzer [{0:s}] not able to run on {1:s}'.format(
-                analyzer, timeline_name))
-        continue
-
-      # Unknown why, but we get a list of 2 identical result objects
-      results = results[0]
-      session_id = results._session_id  # pylint: disable=protected-access
-      if not session_id:
-        self.logger.info(
-            'Analyzer [{0:s}] didn\'t provide any session data'.format(
-                analyzer))
-        continue
-      self.logger.info(
-          'Analyzer: {0:s} is running, session ID: {1:d}'.format(
-              analyzer, session_id))
-      self.logger.info(results.status_string)
+            'No new analyzers to run on timeline {0:s}.'.format(timeline_name))
+        return
+      # Get the last result, which is the most recent run of the analyzers.
+      result = results[-1]
+      for analyzer_name, analyzer_status in result.status_dict.items():
+        self.logger.debug(
+            'Analyzer: {0:s} status: {1!s}'.format(
+            analyzer_name, analyzer_status))
+    except ts_error.UnableToRunAnalyzer as exception:
+      self.ModuleError(
+          'Unable to run analyzer: {0!s}'.format(exception), critical=False)
 
   # pytype: disable=signature-mismatch
   def Process(self, container: containers.File) -> None:
@@ -230,6 +237,8 @@ class TimesketchExporter(module.ThreadAwareModule):
       if streamer.response and container.description:
         streamer.timeline.description = container.description
 
+    if self.wait_for_timelines:
+      self._WaitForTimelines()
 
   def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
     return containers.File
@@ -250,9 +259,6 @@ class TimesketchExporter(module.ThreadAwareModule):
     report_container = containers.Report(
         module_name='TimesketchExporter', text=message, text_format='markdown')
     self.StoreContainer(report_container)
-
-    if self.wait_for_timelines:
-      self._WaitForTimelines()
 
 
 modules_manager.ModulesManager.RegisterModule(TimesketchExporter)
