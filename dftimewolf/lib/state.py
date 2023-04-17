@@ -639,7 +639,7 @@ class DFTimewolfState(object):
                      module_name: str,
                      steps_taken: int,
                      steps_expected: int) -> None:
-    """Currently unsupported with no UI in is use."""
+    """Currently unsupported when no UI is in use."""
     if not self._progress_warning_shown:
       self._progress_warning_shown = True
       logger.debug('ProgressUpdate called in unsupported display mode.')
@@ -649,7 +649,7 @@ class DFTimewolfState(object):
                            thread_id: str,
                            steps_taken: int,
                            steps_expected: int) -> None:
-    """Currently unsupported with no UI in is use."""
+    """Currently unsupported when no UI is in use."""
     if not self._progress_warning_shown:
       self._progress_warning_shown = True
       logger.debug('ProgressUpdate called in unsupported display mode.')
