@@ -162,6 +162,14 @@ class CursesDisplayManagerModuleTest(unittest.TestCase):
         self.m.Stringify(),
         ['     RuntimeName: Postprocessing'])
 
+  def testStringifyRunningWithProgress(self):
+    """Tests display of progress percentage."""
+    self.m.SetStatus(Status.RUNNING)
+    self.m.SetProgress(2, 5)
+    self.assertEqual(
+        self.m.Stringify(),
+        ['     RuntimeName: Running 40.0%'])
+
 
 class CursesDisplayManagerMessageTest(unittest.TestCase):
   """Tests for the Message helper class of the CursesDisplayManager."""
@@ -448,6 +456,7 @@ class CursesDisplayManagerTest(unittest.TestCase):
           'thread_4_0', 'container_4_0')
       self.cdm.UpdateModuleThreadState('4th Module', Status.RUNNING,
           'thread_4_0', 'container_4_4')
+      self.cdm.SetModuleProgress('2nd Module', 2, 5)
       self.cdm.SetModuleThreadProgress('3rd Module', 'thread_3_0', 1, 5)
 
       try:
@@ -474,7 +483,7 @@ class CursesDisplayManagerTest(unittest.TestCase):
           mock.call(3, 0,  '     2nd Preflight: Completed'),
           mock.call(4, 0,  '   Modules:'),
           mock.call(5, 0,  '     1st Module: Completed'),
-          mock.call(6, 0,  '     2nd Module: Running'),
+          mock.call(6, 0,  '     2nd Module: Running 40.0%'),
           mock.call(7, 0,  '     3rd Module: Processing - 1 of 5 containers completed'),
           mock.call(8, 0,  '       thread_3_0: Running 20.0% (container_3_4)'),
           mock.call(9, 0,  '       thread_3_1: Running (container_3_1)'),

@@ -58,10 +58,12 @@ class Module:
     self._threads: Dict[str, _ModuleThread] = {}
     self._threads_containers_max: int = 0
     self._threads_containers_completed: int = 0
+    self._progress: Optional[str] = None
 
   def Stringify(self) -> List[str]:
     """Returns an CursesDisplayManager friendly string describing the module."""
-    module_line = f'     {self.runtime_name}: {self.status.value}'
+    progress = f' {self._progress}' if self._progress else ''
+    module_line = f'     {self.runtime_name}: {self.status.value}{progress}'
     thread_lines = []
 
     if self.status == Status.PENDING and len(self._dependencies) != 0:
@@ -72,9 +74,9 @@ class Module:
       module_line += (f' - {self._threads_containers_completed} of '
           f'{self._threads_containers_max} containers completed')
       for n, t in self._threads.items():
-        percentage = f'{t.progress} ' if t.progress else ''
+        progress = f'{t.progress} ' if t.progress else ''
         thread_lines.append(
-            f'       {n}: {t.status.value} {percentage}({t.container})')
+            f'       {n}: {t.status.value} {progress}({t.container})')
 
     return [module_line] + thread_lines
 
@@ -97,6 +99,17 @@ class Module:
     self._threads[thread] = _ModuleThread(status, container)
     if status == Status.COMPLETED:
       self._threads_containers_completed += 1
+
+  def SetProgress(self,
+                  steps_taken: int,
+                  steps_expected: int) -> None:
+    """Sets the modules progress values.
+
+    Args:
+      steps_taken: The number of steps taken so far.
+      steps_expected: The number of total steps expected for completion.
+    """
+    self._progress = f'{steps_taken / steps_expected * 100:.1f}%'
 
   def SetThreadProgress(self,
                         thread_id: str,
@@ -336,6 +349,27 @@ class CursesDisplayManager:
       self._preflights[module].SetThreadState(thread, status, container)
     if module in self._modules:
       self._modules[module].SetThreadState(thread, status, container)
+
+    self.Draw()
+
+  def SetModuleProgress(self,
+                        module_name: str,
+                        steps_taken: int,
+                        steps_expected: int) -> None:
+    """Sets the progress values for a module.
+
+    Args:
+      module_name: The module in question.
+      steps_taken: The number of steps taken so far.
+      steps_expected: The number of total steps expected for completion.
+
+    Raises:
+      ValueError: If module_name or thread_id is not being tracked.
+    """
+    if module_name not in self._modules:
+      raise ValueError(f'{module_name} not found')
+
+    self._modules[module_name].SetProgress(steps_taken, steps_expected)
 
     self.Draw()
 

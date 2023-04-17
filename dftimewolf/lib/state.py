@@ -635,6 +635,15 @@ class DFTimewolfState(object):
       is_error: True if the message is an error message, False otherwise.
     """
 
+  def ProgressUpdate(self,
+                     module_name: str,
+                     steps_taken: int,
+                     steps_expected: int) -> None:
+    """Currently unsupported with no UI in is use."""
+    if not self._progress_warning_shown:
+      self._progress_warning_shown = True
+      logger.debug('ProgressUpdate called in unsupported display mode.')
+
   def ThreadProgressUpdate(self,
                            module_name: str,
                            thread_id: str,
@@ -813,6 +822,20 @@ class DFTimewolfStateWithCDM(DFTimewolfState):
       message: The message content.
       is_error: True if the message is an error message, False otherwise."""
     self.cursesdm.EnqueueMessage(source, message, is_error)
+
+  def ProgressUpdate(self,
+                     module_name: str,
+                     steps_taken: int,
+                     steps_expected: int) -> None:
+    """Set the current completion status of a module.
+
+    Args:
+      module_name: The module in question.
+      steps_taken: The number of steps taken so far.
+      steps_expected: The number of total steps expected for completion.
+    """
+    self.cursesdm.SetModuleProgress(
+        module_name, steps_taken, steps_expected)
 
   def ThreadProgressUpdate(self,
                            module_name: str,
