@@ -9,7 +9,7 @@ import unittest
 from unittest import mock
 
 from dftimewolf.cli.curses_display_manager import CDMStringIOWrapper, \
-    CursesDisplayManager, Message, Module, Status
+    CursesDisplayManager, Message, Module, Status, _ModuleThread
 
 # pylint: disable=protected-access
 
@@ -62,7 +62,7 @@ class CursesDisplayManagerModuleTest(unittest.TestCase):
         self.m.Stringify(),
         ['     RuntimeName: Error: Sample error message'])
 
-  def testTheadedModule(self):
+  def testThreadedModule(self):
     """Tests the thread tracking components of the cdm.Module."""
     self.m.SetContainerCount(5)
     self.m.SetStatus(Status.PROCESSING)
@@ -76,9 +76,9 @@ class CursesDisplayManagerModuleTest(unittest.TestCase):
     self.assertEqual(self.m._threads_containers_completed, 0)
     self.assertEqual(
         self.m._threads,
-        {'Thread1': {'status': Status.PROCESSING,'container': 'container1'},
-         'Thread2': {'status': Status.PROCESSING,'container': 'container2'},
-         'Thread3': {'status': Status.PROCESSING,'container': 'container3'}})
+        {'Thread1': _ModuleThread(Status.PROCESSING, 'container1'),
+         'Thread2': _ModuleThread(Status.PROCESSING, 'container2'),
+         'Thread3': _ModuleThread(Status.PROCESSING, 'container3')})
     self.assertEqual(
         self.m.Stringify(),
         ['     RuntimeName: Processing - 0 of 5 containers completed',
@@ -93,15 +93,30 @@ class CursesDisplayManagerModuleTest(unittest.TestCase):
     self.assertEqual(self.m._threads_containers_completed, 3)
     self.assertEqual(
         self.m._threads,
-        {'Thread1': {'status': Status.COMPLETED,'container': 'container1'},
-         'Thread2': {'status': Status.COMPLETED,'container': 'container2'},
-         'Thread3': {'status': Status.COMPLETED,'container': 'container3'}})
+        {'Thread1': _ModuleThread(Status.COMPLETED, 'container1'),
+         'Thread2': _ModuleThread(Status.COMPLETED, 'container2'),
+         'Thread3': _ModuleThread(Status.COMPLETED, 'container3')})
     self.assertEqual(
         self.m.Stringify(),
         ['     RuntimeName: Processing - 3 of 5 containers completed',
          '       Thread1: Completed (container1)',
          '       Thread2: Completed (container2)',
          '       Thread3: Completed (container3)'])
+
+  def testThreadedModuleWithProgress(self):
+    """Tests the thread progress display."""
+    self.m.SetContainerCount(2)
+    self.m.SetStatus(Status.PROCESSING)
+
+    self.m.SetThreadState('Thread1', Status.PROCESSING, 'container1')
+    self.m.SetThreadState('Thread2', Status.PROCESSING, 'container2')
+    self.m.SetThreadProgress('Thread1', 1, 10)
+
+    self.assertEqual(
+        self.m.Stringify(),
+        ['     RuntimeName: Processing - 0 of 2 containers completed',
+         '       Thread1: Processing 10.0% (container1)',
+         '       Thread2: Processing (container2)'])
 
   def testStringifyPending(self):
     """Tests the string representation of the module when Pending."""
@@ -433,6 +448,7 @@ class CursesDisplayManagerTest(unittest.TestCase):
           'thread_4_0', 'container_4_0')
       self.cdm.UpdateModuleThreadState('4th Module', Status.RUNNING,
           'thread_4_0', 'container_4_4')
+      self.cdm.SetModuleThreadProgress('3rd Module', 'thread_3_0', 1, 5)
 
       try:
         raise RuntimeError('Test Exception')
@@ -460,7 +476,7 @@ class CursesDisplayManagerTest(unittest.TestCase):
           mock.call(5, 0,  '     1st Module: Completed'),
           mock.call(6, 0,  '     2nd Module: Running'),
           mock.call(7, 0,  '     3rd Module: Processing - 1 of 5 containers completed'),
-          mock.call(8, 0,  '       thread_3_0: Running (container_3_4)'),
+          mock.call(8, 0,  '       thread_3_0: Running 20.0% (container_3_4)'),
           mock.call(9, 0,  '       thread_3_1: Running (container_3_1)'),
           mock.call(10, 0, '       thread_3_2: Running (container_3_2)'),
           mock.call(11, 0, '     4th Module: Processing - 1 of 8 containers completed'),
