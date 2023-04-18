@@ -8,6 +8,7 @@ import logging
 # we import them separately
 from logging import handlers
 import traceback
+import threading
 import sys
 
 from typing import Optional, Type, cast, TypeVar, Dict, Any, Sequence
@@ -215,6 +216,12 @@ class BaseModule(object):
   def SetUp(self, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
     """Sets up necessary module configuration options."""
 
+  def ProgressUpdate(self, steps_taken: int, steps_expected: int) -> None:
+    """Send an update to the state on progress."""
+    self.state.ProgressUpdate(
+        self.name, steps_taken, steps_expected)
+
+
 class PreflightModule(BaseModule):
   """Base class for preflight modules.
 
@@ -315,3 +322,9 @@ class ThreadAwareModule(BaseModule):
     or pop them. Default behaviour is to keep the containers. Override this
     method to return false to pop them from the state."""
     return True
+
+  def ThreadProgressUpdate(self, steps_taken: int, steps_expected: int) -> None:
+    """Send an update to the state on progress."""
+    thread_id = threading.current_thread().getName()
+    self.state.ThreadProgressUpdate(
+        self.name, thread_id, steps_taken, steps_expected)

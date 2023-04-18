@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Curses output management class."""
 
+import dataclasses
 from enum import Enum
 import io
 import textwrap
@@ -28,6 +29,13 @@ class Status(Enum):
   CANCELLED = 'Cancelled'
 
 
+@dataclasses.dataclass
+class _ModuleThread:
+  status: Status
+  container: str
+  progress: Optional[str] = None  # Of the form 'XX.X%'
+
+
 class Module:
   """An object used by the CursesDisplayManager used to represent a DFTW module.
   """
@@ -47,13 +55,15 @@ class Module:
     self.status: Status = Status.PENDING
     self._dependencies: List[str] = dependencies
     self._error_message: str = ''
-    self._threads: Dict[str, Dict[str, Any]] = {}
+    self._threads: Dict[str, _ModuleThread] = {}
     self._threads_containers_max: int = 0
     self._threads_containers_completed: int = 0
+    self._progress: Optional[str] = None
 
   def Stringify(self) -> List[str]:
     """Returns an CursesDisplayManager friendly string describing the module."""
-    module_line = f'     {self.runtime_name}: {self.status.value}'
+    progress = f' {self._progress}' if self._progress else ''
+    module_line = f'     {self.runtime_name}: {self.status.value}{progress}'
     thread_lines = []
 
     if self.status == Status.PENDING and len(self._dependencies) != 0:
@@ -64,8 +74,9 @@ class Module:
       module_line += (f' - {self._threads_containers_completed} of '
           f'{self._threads_containers_max} containers completed')
       for n, t in self._threads.items():
+        progress = f'{t.progress} ' if t.progress else ''
         thread_lines.append(
-            f'       {n}: {t["status"].value} ({t["container"]})')
+            f'       {n}: {t.status.value} {progress}({t.container})')
 
     return [module_line] + thread_lines
 
@@ -85,9 +96,40 @@ class Module:
       status: The current status of the thread.
       container: The name of the container the thread is currently processing.
     """
-    self._threads[thread] = {'status': status, 'container': container}
+    self._threads[thread] = _ModuleThread(status, container)
     if status == Status.COMPLETED:
       self._threads_containers_completed += 1
+
+  def SetProgress(self,
+                  steps_taken: int,
+                  steps_expected: int) -> None:
+    """Sets the modules progress values.
+
+    Args:
+      steps_taken: The number of steps taken so far.
+      steps_expected: The number of total steps expected for completion.
+    """
+    self._progress = f'{steps_taken / steps_expected * 100:.1f}%'
+
+  def SetThreadProgress(self,
+                        thread_id: str,
+                        steps_taken: int,
+                        steps_expected: int) -> None:
+    """Sets a threads progress values.
+
+    Args:
+      thread_id: The thread id in question.
+      steps_taken: The number of steps taken so far.
+      steps_expected: The number of total steps expected for completion.
+
+    Raises:
+      ValueError: if thread_id is not being tracked.
+    """
+    if thread_id not in self._threads:
+      raise ValueError(f'{thread_id} not found')
+
+    self._threads[thread_id].progress = (
+        f'{steps_taken / steps_expected * 100:.1f}%')
 
   def SetError(self, message: str) -> None:
     """Sets the error for the module.
@@ -308,6 +350,50 @@ class CursesDisplayManager:
     if module in self._modules:
       self._modules[module].SetThreadState(thread, status, container)
 
+    self.Draw()
+
+  def SetModuleProgress(self,
+                        module_name: str,
+                        steps_taken: int,
+                        steps_expected: int) -> None:
+    """Sets the progress values for a module.
+
+    Args:
+      module_name: The module in question.
+      steps_taken: The number of steps taken so far.
+      steps_expected: The number of total steps expected for completion.
+
+    Raises:
+      ValueError: If module_name or thread_id is not being tracked.
+    """
+    if module_name not in self._modules:
+      raise ValueError(f'{module_name} not found')
+
+    self._modules[module_name].SetProgress(steps_taken, steps_expected)
+
+    self.Draw()
+
+  def SetModuleThreadProgress(self,
+                              module_name: str,
+                              thread_id: str,
+                              steps_taken: int,
+                              steps_expected: int) -> None:
+    """Sets the thread progress values for a processing thread in a module.
+
+    Args:
+      module_name: The module in question.
+      thread_id: The thread id in question.
+      steps_taken: The number of steps taken so far.
+      steps_expected: The number of total steps expected for completion.
+
+    Raises:
+      ValueError: If module_name or thread_id is not being tracked.
+    """
+    if module_name not in self._modules:
+      raise ValueError(f'{module_name} not found')
+
+    self._modules[module_name].SetThreadProgress(
+        thread_id, steps_taken, steps_expected)
     self.Draw()
 
   def Draw(self) -> None:
