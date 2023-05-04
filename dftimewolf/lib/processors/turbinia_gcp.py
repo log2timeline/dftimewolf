@@ -162,10 +162,10 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase,
 
     self.PublishMessage(f'Turbinia request ID: {request_id}')
 
-    for task_data, path_to_collect in self.TurbiniaWait(request_id):
-      task_id = task_data.get('id')
+    for task, path in self.TurbiniaWait(request_id):
+      task_id = task.get('id')
       # Any local files that exist we can add immediately to the output
-      path = self._DownloadFilesFromAPI(task_data, path_to_collect)
+      path = self._DownloadFilesFromAPI(task_data, path)
       if not path:
         self.logger.warning(
             f'No interesting output files could be found for task {task_id}')
