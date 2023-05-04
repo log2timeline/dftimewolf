@@ -58,6 +58,7 @@ class TurbiniaBaseTest(unittest.TestCase):
   )
   def testTurbiniaStart(self, mock_create_request):
     """Tests the TurbiniaStart method."""
+    print(self.turbinia_processor.__dict__)
     mock_create_request.return_value = {
         "request_id": "41483253079448e59685d88f37ab91f7"
     }

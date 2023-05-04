@@ -164,14 +164,16 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase,
 
     for task, path in self.TurbiniaWait(request_id):
       task_id = task.get('id')
-      # Any local files that exist we can add immediately to the output
+      self.PublishMessage(
+          f'New output file {path} found for task {task_id}')
       path = self._DownloadFilesFromAPI(task_data, path)
       if not path:
         self.logger.warning(
             f'No interesting output files could be found for task {task_id}')
         continue
-
+      self.PublishMessage(f'Downloaded file {path} for task {task_id}')
       container = self._BuildContainer(path, description)
+      self.PublishMessage(f'Streaming container: {container.path}')
       self.StreamContainer(container)
 
     # Generate a Turbinia report and store it in the state.
