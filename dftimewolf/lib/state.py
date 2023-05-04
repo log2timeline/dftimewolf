@@ -69,6 +69,7 @@ class DFTimewolfState(object):
     self.streaming_callbacks = {}  # type: Dict[Type[interface.AttributeContainer], List[Callable[[Any], Any]]]  # pylint: disable=line-too-long
     self._abort_execution = False
     self.stdout_log = True
+    self._progress_warning_shown = False
 
   def _InvokeModulesInThreads(self, callback: Callable[[Any], Any]) -> None:
     """Invokes the callback function on all the modules in separate threads.
@@ -637,7 +638,28 @@ class DFTimewolfState(object):
     Args:
       source: The source of the message.
       message: The message content.
-      is_error: True if the message is an error message, False otherwise."""
+      is_error: True if the message is an error message, False otherwise.
+    """
+
+  def ProgressUpdate(self,
+                     module_name: str,
+                     steps_taken: int,
+                     steps_expected: int) -> None:
+    """Currently unsupported when no UI is in use."""
+    if not self._progress_warning_shown:
+      self._progress_warning_shown = True
+      logger.debug('ProgressUpdate called in unsupported display mode.')
+
+  def ThreadProgressUpdate(self,
+                           module_name: str,
+                           thread_id: str,
+                           steps_taken: int,
+                           steps_expected: int) -> None:
+    """Currently unsupported when no UI is in use."""
+    if not self._progress_warning_shown:
+      self._progress_warning_shown = True
+      logger.debug('ProgressUpdate called in unsupported display mode.')
+
 
 class DFTimewolfStateWithCDM(DFTimewolfState):
   """The main state class, extended to wrap methods with updates to a
@@ -806,3 +828,33 @@ class DFTimewolfStateWithCDM(DFTimewolfState):
       message: The message content.
       is_error: True if the message is an error message, False otherwise."""
     self.cursesdm.EnqueueMessage(source, message, is_error)
+
+  def ProgressUpdate(self,
+                     module_name: str,
+                     steps_taken: int,
+                     steps_expected: int) -> None:
+    """Set the current completion status of a module.
+
+    Args:
+      module_name: The module in question.
+      steps_taken: The number of steps taken so far.
+      steps_expected: The number of total steps expected for completion.
+    """
+    self.cursesdm.SetModuleProgress(
+        module_name, steps_taken, steps_expected)
+
+  def ThreadProgressUpdate(self,
+                           module_name: str,
+                           thread_id: str,
+                           steps_taken: int,
+                           steps_expected: int) -> None:
+    """Set the current completion status of a module thread.
+
+    Args:
+      module_name: The module in question.
+      thread_id: The thread id in question.
+      steps_taken: The number of steps taken so far.
+      steps_expected: The number of total steps expected for completion.
+    """
+    self.cursesdm.SetModuleThreadProgress(
+        module_name, thread_id, steps_taken, steps_expected)
