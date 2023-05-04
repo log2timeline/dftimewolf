@@ -317,7 +317,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     try:
       response = api_instance.create_request(request)
       request_id = response.get('request_id')
-      self.PublishMessage(
+      self.logger.success(
           'Creating Turbinia request {0!s} with evidence {1!s}'.format(
               request_id, evidence_name))
     except turbinia_api_lib.ApiException as exception:
@@ -362,16 +362,12 @@ class TurbiniaProcessorBase(module.BaseModule):
 
         for task in request_data.get('tasks', []):
           current_saved_paths = task.get('saved_paths', [])
-          task_id = task.get('id')
           if not current_saved_paths:
             continue
-
           for path in current_saved_paths:
             if path not in processed_paths and self._isInterestingPath(
                 path) and path.startswith(self.output_path):
               processed_paths.add(path)
-              self.PublishMessage(
-                  f'New output file {path} found for task {task_id}')
               yield task, path
 
       except turbinia_api_lib.ApiException as exception:
