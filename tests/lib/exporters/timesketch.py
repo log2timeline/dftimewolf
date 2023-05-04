@@ -98,12 +98,11 @@ class TimesketchExporterTest(unittest.TestCase):
   @mock.patch('time.sleep')
   @mock.patch('timesketch_import_client.importer.ImportStreamer')
   @mock.patch('dftimewolf.lib.timesketch_utils.GetApiClient')
-  def testWaitForTimeline(
-        self, 
-        mock_GetApiClient, 
-        unused_streamer, 
-        unused_sleep, 
-        mock_RunAnalyzers):
+  def testWaitForTimeline(self,
+      mock_GetApiClient,
+      unused_streamer,
+      unused_sleep,
+      mock_RunAnalyzers):
     """Tests the SetUp function."""
     mock_sketch = mock.Mock(id=1234, my_acl=['write'])
     mock_sketch.api.api_root = 'timesketch.com/api/v1'
