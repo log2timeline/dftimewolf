@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Processes GCP cloud disks using Turbinia."""
 
 import os

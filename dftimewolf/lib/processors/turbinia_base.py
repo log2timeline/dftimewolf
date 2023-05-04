@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Base class for turbinia interactions."""
 
 import getpass
@@ -55,6 +54,7 @@ class TurbiniaProcessorBase(module.BaseModule):
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
+    super(module.BaseModule, self).__init__()
     self.output_path = str()
     self.client = None
     self.instance = None
