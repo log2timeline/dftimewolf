@@ -14,6 +14,7 @@ from dftimewolf.lib.processors.turbinia_base import TurbiniaProcessorBase
 if TYPE_CHECKING:
   from dftimewolf.lib import state
 
+
 # pylint: disable=no-member
 class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
                                 module.ThreadAwareModule):
@@ -37,7 +38,8 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
           the entire recipe to fail if the module encounters an error.
     """
     module.ThreadAwareModule.__init__(self, state, name=name, critical=critical)
-    TurbiniaProcessorBase.__init__(self, self.logger)
+    TurbiniaProcessorBase.__init__(
+        self, state, self.logger, name=name, critical=critical)
     self.output_directory = ''
 
   # pylint: disable=arguments-differ
@@ -65,7 +67,6 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
         project, turbinia_auth, turbinia_recipe, turbinia_zone, turbinia_api,
         incident_id, sketch_id)
 
-
   def Process(self, container: containers.RemoteFSPath) -> None:
     """Process files with Turbinia."""
 
@@ -84,8 +85,7 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
     for task, path in self.TurbiniaWait(request_id):
       # We're only interested in plaso files for the time being.
       if path.endswith('.plaso'):
-        self.PublishMessage(
-          f'Found plaso result for task {task["id"]}: {path}')
+        self.PublishMessage(f'Found plaso result for task {task["id"]}: {path}')
         container = containers.RemoteFSPath(
             path=path, hostname=container.hostname)
         self.StreamContainer(container)
