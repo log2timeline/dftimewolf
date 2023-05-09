@@ -6,6 +6,8 @@ import os
 import mock
 
 from dftimewolf.lib.processors import turbinia_base
+from dftimewolf import config
+from dftimewolf.lib import state
 
 YARA_RULE = """rule dummy { condition: false }"""
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -13,14 +15,16 @@ TASK_ID = "3a5759372b594c0bb2a81cda805ca9a0"
 # pylint: disable=line-too-long
 TEST_TASK_PATH = "/mnt/turbiniavolume/output/3a5759372b594c0bb2a81cda805ca9a0/1680565159-c4e9abd577db475484b2ded34a011b96-PlasoParserTask/c4e9abd577db475484b2ded34a011b96.plaso"
 
+
 class TurbiniaBaseTest(unittest.TestCase):
   """Tests for the Turbinia processor."""
+
   def setUp(self):
     """Tests that the processor can be initialized."""
     self.logger = mock.MagicMock()
+    test_state = state.DFTimewolfState(config.Config)
     self.turbinia_processor = turbinia_base.TurbiniaProcessorBase(
-        self.logger
-    )
+        test_state, self.logger)
     file_path = os.path.join(
         CURRENT_DIR, "test_data", "turbinia_request_status.json")
     self._request_status = json.load(open(file_path))
@@ -67,8 +71,7 @@ class TurbiniaBaseTest(unittest.TestCase):
         "zone": "us-central1-f",
     }
     request_id = self.turbinia_processor.TurbiniaStart(
-        evidence=evidence, yara_rules=YARA_RULE
-    )
+        evidence=evidence, yara_rules=YARA_RULE)
     self.assertEqual(request_id, "41483253079448e59685d88f37ab91f7")
 
   # pylint: disable=line-too-long
@@ -89,8 +92,7 @@ class TurbiniaBaseTest(unittest.TestCase):
 
   def testIsInterestingPath(self):
     """Tests the _isInterestingPath method in TurbiniaProcessorBase."""
-    self.assertTrue(self.turbinia_processor._isInterestingPath(
-        TEST_TASK_PATH))
+    self.assertTrue(self.turbinia_processor._isInterestingPath(TEST_TASK_PATH))
 
   @mock.patch('tempfile.mkdtemp')
   def testExtractPath(self, mock_tempdir):
@@ -102,6 +104,7 @@ class TurbiniaBaseTest(unittest.TestCase):
     local_path = self.turbinia_processor._ExtractFiles(
         file_path, TEST_TASK_PATH)
     self.assertEqual(local_path, expected_local_path)
+
 
 if __name__ == "__main__":
   unittest.main()

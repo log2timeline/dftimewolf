@@ -14,8 +14,7 @@ if TYPE_CHECKING:
   from dftimewolf.lib import state
 
 
-class TurbiniaGCPProcessor(TurbiniaProcessorBase,
-                              module.ThreadAwareModule):
+class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
   """Processes Google Cloud (GCP) disks with Turbinia.
 
   Attributes:
@@ -36,12 +35,12 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase,
           the entire recipe to fail if the module encounters an error.
     """
     module.ThreadAwareModule.__init__(self, state, name=name, critical=critical)
-    TurbiniaProcessorBase.__init__(self, self.logger)
+    TurbiniaProcessorBase.__init__(
+        self, state, self.logger, name=name, critical=critical)
 
   def _BuildContainer(
-      self, path: str,
-      description: str) -> Union[containers.File,
-                                 containers.ThreatIntelligence]:
+      self, path: str, description: str
+  ) -> Union[containers.File, containers.ThreatIntelligence]:
     """Builds a container from a path."""
     container: Union[containers.File, containers.ThreatIntelligence]
     if path.endswith('BinaryExtractorTask.tar.gz'):
@@ -118,7 +117,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase,
   def Process(self, disk_container: containers.GCEDisk) -> None:
     """Process a GCE Disk with Turbinia."""
     request_id = ''
-    task_data: Dict[str, Any] = {}
+    task: Dict[str, Any] = {}
     report = ''
     evidence = {
         'type': 'GoogleCloudDisk',
@@ -163,9 +162,8 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase,
 
     for task, path in self.TurbiniaWait(request_id):
       task_id = task.get('id')
-      self.PublishMessage(
-          f'New output file {path} found for task {task_id}')
-      path = self._DownloadFilesFromAPI(task_data, path)
+      self.PublishMessage(f'New output file {path} found for task {task_id}')
+      path = self._DownloadFilesFromAPI(task, path)
       if not path:
         self.logger.warning(
             f'No interesting output files could be found for task {task_id}')

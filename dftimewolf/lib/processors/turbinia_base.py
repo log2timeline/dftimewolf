@@ -14,8 +14,8 @@ from google.auth import exceptions as google_exceptions
 
 import turbinia_api_lib
 from turbinia_client.helpers import formatter as turbinia_formatter
-from turbinia_api_lib.api import (turbinia_requests_api,
-                                  turbinia_configuration_api)
+from turbinia_api_lib.api import (
+    turbinia_requests_api, turbinia_configuration_api)
 from turbinia_api_lib.api import turbinia_request_results_api
 
 from dftimewolf.lib.logging_utils import WolfLogger
@@ -45,7 +45,13 @@ class TurbiniaProcessorBase(module.BaseModule):
 
   DEFAULT_YARA_MODULES = 'import "pe"\nimport "math"\nimport "hash"\n\n'
 
-  def __init__(self, logger: WolfLogger) -> None:
+  def __init__(
+      self,
+      state: "state_lib.DFTimewolfState",
+      logger: WolfLogger,
+      name: Optional[str] = None,
+      critical: bool = False,
+  ) -> None:
     """Initializes a Turbinia base processor.
 
     Args:
@@ -53,8 +59,12 @@ class TurbiniaProcessorBase(module.BaseModule):
       name (Optional[str]): The module's runtime name.
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
+      logger: A logger instance.
     """
     super(module.BaseModule, self).__init__()
+    self.name = name if name else self.__class__.__name__
+    self.critical = critical
+    self.state = state
     self.output_path = str()
     self.client = None
     self.instance = None
@@ -68,9 +78,9 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.turbinia_api = str()
     self.client_config = None
     self.credentials_path = os.path.join(
-        os.path.expanduser('~'),".dftimewolf_turbinia.token")
+        os.path.expanduser('~'), ".dftimewolf_turbinia.token")
     self.client_secrets_path = os.path.join(
-        os.path.expanduser('~'),".dftimewolf_turbinia_secrets.json")
+        os.path.expanduser('~'), ".dftimewolf_turbinia_secrets.json")
     self.parallel_count = 5  # Arbitrary, used by ThreadAwareModule
     self.logger = logger
     self.extentions = [
@@ -84,10 +94,8 @@ class TurbiniaProcessorBase(module.BaseModule):
     for suffix in self.extentions:
       return bool(path.endswith(suffix))
 
-  def _FilterTarMembers(
-      self,
-      tgzfile: tarfile.TarFile,
-      path_to_collect: str) -> List[tarfile.TarInfo]:
+  def _FilterTarMembers(self, tgzfile: tarfile.TarFile,
+                        path_to_collect: str) -> List[tarfile.TarInfo]:
     """Filters a TarFile object for a specific path.
 
     Pre-condition: tgzfile must be a valid TarFile object.
@@ -133,8 +141,8 @@ class TurbiniaProcessorBase(module.BaseModule):
     local_path = os.path.join(tempdir, path_to_collect.lstrip('/'))
     return local_path
 
-  def _DownloadFilesFromAPI(
-      self, task_data: Dict[str, List[str]], path: str) -> Optional[str]:
+  def _DownloadFilesFromAPI(self, task_data: Dict[str, List[str]],
+                            path: str) -> Optional[str]:
     """Downloads task output data from the Turbinia API server.
 
     Args:
@@ -169,16 +177,14 @@ class TurbiniaProcessorBase(module.BaseModule):
 
     except turbinia_api_lib.ApiException as exception:
       self.ModuleError(
-        f'Unable to download task data: {exception}', critical=False)
+          f'Unable to download task data: {exception}', critical=False)
     except OSError as exception:
       self.ModuleError(f'Unable to write to file: {exception}', critical=False)
 
     return result
 
   def _get_oauth2_credentials(
-      self,
-      credentials_path: str,
-      client_secrets_path: str) -> Optional[str]:
+      self, credentials_path: str, client_secrets_path: str) -> Optional[str]:
     """Authenticates the user using Google OAuth services."""
     scopes = ['openid', 'https://www.googleapis.com/auth/userinfo.email']
     credentials = None
@@ -193,13 +199,11 @@ class TurbiniaProcessorBase(module.BaseModule):
         self.ModuleError(msg, critical=True)
       # Refresh credentials using existing refresh_token
       if credentials and credentials.refresh_token:
-        self.logger.debug(
-            'Found a refresh token. Requesting new id_token...')
+        self.logger.debug('Found a refresh token. Requesting new id_token...')
         try:
           credentials.refresh(Request())
         except google_exceptions.RefreshError as exception:
-          self.logger.debug(
-              f'Error refreshing credentials: {exception!s}')
+          self.logger.debug(f'Error refreshing credentials: {exception!s}')
     else:
       # No credentials file, acquire new credentials from secrets file.
       self.logger.debug(
@@ -232,6 +236,7 @@ class TurbiniaProcessorBase(module.BaseModule):
 
     Args:
       project (str): name of the GCP project containing the disk to process.
+      turbinia_auth (bool): Turbinia auth flag.
       turbinia_recipe (str): Turbinia recipe name.
       turbinia_zone (str): GCP zone in which the Turbinia server is running.
       turbinia_api (str): URL of the Turbinia API server.
@@ -358,7 +363,7 @@ class TurbiniaProcessorBase(module.BaseModule):
       try:
         request_data = api_instance.get_request_status(request_id)
         status = request_data.get('status')
-        self.logger.info(f'Turbinia request {request_id} {status}')
+        self.PublishMessage(f'Turbinia request {request_id} {status}')
 
         for task in request_data.get('tasks', []):
           current_saved_paths = task.get('saved_paths', [])
