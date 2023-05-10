@@ -165,9 +165,8 @@ class TurbiniaProcessorBase(module.BaseModule):
           mode='wb', prefix=f'{filename}', suffix='.tgz', delete=False)
       local_path = file.name
       self.logger.info(f'Saving output for task {task_id} to: {local_path}')
-      # Read the response in chunks and write to the file.
-      for chunk in api_response.read_chunked():
-        file.write(chunk)
+      # Read the response and write to the file.
+      file.write(api_response.read())
       file.close()
 
       # Extract the files from the tgz file.
