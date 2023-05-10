@@ -44,7 +44,7 @@ class TimesketchExporter(module.ThreadAwareModule):
     self.incident_id = None  # type: Union[str, None]
     self.sketch_id = 0  # type: int
     self.timesketch_api = None  # type: ts_client.TimesketchApi
-    self._analyzers = ['account_finder', 'browser_search']  # type: List[str]
+    self._analyzers = []  # type: List[str]
     self.wait_for_timelines = False  # type: bool
     self.host_url = None  # type: Union[str, None]
     self.sketch = None  # type: ts_sketch.Sketch
@@ -164,8 +164,8 @@ class TimesketchExporter(module.ThreadAwareModule):
         if timeline.status in ['fail', 'ready', 'timeout', 'archived']:
           timelines.remove(timeline)
           # if the timeline is ready, run the analyzers
-          if timeline.status == 'ready' and (
-              not timeline.id in self._processed_timelines):
+          if timeline.status == 'ready' and (not timeline.id
+                                             in self._processed_timelines):
             self._processed_timelines.add(timeline.id)
             self._RunAnalyzers(timeline.name)
         else:
@@ -196,7 +196,7 @@ class TimesketchExporter(module.ThreadAwareModule):
       for analyzer_name, analyzer_status in result.status_dict.items():
         self.logger.debug(
             'Analyzer: {0:s} status: {1!s}'.format(
-            analyzer_name, analyzer_status))
+                analyzer_name, analyzer_status))
     except ts_error.UnableToRunAnalyzer as exception:
       self.ModuleError(
           'Unable to run analyzer: {0!s}'.format(exception), critical=False)
