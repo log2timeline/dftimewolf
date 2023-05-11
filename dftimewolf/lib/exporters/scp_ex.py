@@ -3,6 +3,7 @@
 
 import os
 import subprocess
+import tempfile
 
 from typing import List, Optional, Union, Sequence
 
@@ -86,7 +87,13 @@ class SCPExporter(module.BaseModule):
 
     if check_ssh and not self._SSHAvailable():
       self.ModuleError(
-          'Unable to connect to {0:s}.'.format(self._hostname), critical=True)
+          f'Unable to connect to {self._hostname}.', critical=True)
+
+    if not self._destination:
+      if self._upload:
+        self.ModuleError(
+            'Destination path must be specified when uploading.', critical=True)
+      self._destination = tempfile.mkdtemp(prefix='dftimewolf_scp_download_')
 
   def Process(self) -> None:
     """Copies the list of paths to or from the remote host."""
@@ -127,11 +134,13 @@ class SCPExporter(module.BaseModule):
       cmd.extend(self._PrefixRemotePaths(self._paths))
       cmd.extend([self._destination])
 
-    self.logger.debug('Executing SCP command: {0:s}'.format(' '.join(cmd)))
+    self.logger.debug(f'Executing SCP command: {" ".join(cmd)}')
     ret = subprocess.call(cmd)
     if ret != 0:
       self.ModuleError(
           'Failed copying {0!s}'.format(self._paths), critical=True)
+
+    self.logger.success(f"Results copied to {self._destination}")
 
     fspath: Union[containers.File, containers.RemoteFSPath]
     for path_ in self._paths:

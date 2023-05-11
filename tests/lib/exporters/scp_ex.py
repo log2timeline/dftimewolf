@@ -82,6 +82,34 @@ class SCPExporterTest(unittest.TestCase):
         ['scp', '-o', 'foo=bar', '-i', 'fakeid',
         'fakeuser@fakehost:/path1', 'fakeuser@fakehost:/path2', '/destination'])
 
+  @mock.patch('tempfile.mkdtemp')
+  @mock.patch('subprocess.call')
+  def testProcessDownloadNoDestination(self, mock_subprocess_call, mock_mkdtemp):
+    mock_subprocess_call.return_value = 0
+    mock_mkdtemp.return_value = '/tmp/tmpdir'
+    test_state = state.DFTimewolfState(config.Config)
+    scp_exporter = scp_ex.SCPExporter(test_state)
+    scp_exporter.SetUp('/path1,/path2', None, 'fakeuser',
+                       'fakehost', 'fakeid', ['-o', 'foo=bar'],
+                       'download', False, True)
+    scp_exporter.Process()
+    mock_subprocess_call.assert_called_with(
+        ['scp', '-o', 'foo=bar', '-i', 'fakeid',
+        'fakeuser@fakehost:/path1', 'fakeuser@fakehost:/path2', '/tmp/tmpdir'])
+
+  @mock.patch('subprocess.call')
+  def testFailIfUploadWithoutDestination(self, mock_subprocess_call):
+    mock_subprocess_call.return_value = 0
+    """Tests that the specified directory is used if created."""
+    test_state = state.DFTimewolfState(config.Config)
+    scp_exporter = scp_ex.SCPExporter(test_state)
+    with self.assertRaises(errors.DFTimewolfError) as error:
+      scp_exporter.SetUp('/path1,/path2', None, 'fakeuser',
+                         'fakehost', 'fakeid', [], 'upload', False, True)
+    self.assertEquals(
+      error.exception.message,
+      'Destination path must be specified when uploading.')
+
   @mock.patch('subprocess.call')
   def testProcessDownloadMultiplex(self, mock_subprocess_call):
     """Tests that the specified directory is used if created."""
