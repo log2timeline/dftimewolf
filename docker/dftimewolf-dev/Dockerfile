@@ -2,12 +2,13 @@
 FROM ubuntu:22.04
 
 
-RUN apt update && apt install -y --no-install-recommends \
+RUN apt update && apt install -y \
     python3-dev \
     python3-pip \
     build-essential \
     libmagic1 \
-    git
+    git \
+    ssh
 
 RUN pip install --upgrade pip
 RUN pip install poetry
