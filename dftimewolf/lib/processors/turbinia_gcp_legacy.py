@@ -6,6 +6,7 @@ from typing import Optional, TYPE_CHECKING, Type, Union
 import magic
 
 # pylint: disable=import-error
+# pytype: disable=import-error
 from turbinia import TurbiniaException
 from turbinia import config as turbinia_config  #pylint: disable=unused-import
 from turbinia import evidence

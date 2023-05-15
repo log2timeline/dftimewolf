@@ -66,7 +66,9 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
         project, turbinia_auth, turbinia_recipe, turbinia_zone, turbinia_api,
         incident_id, sketch_id)
 
+  # pytype: disable=signature-mismatch
   def Process(self, container: containers.RemoteFSPath) -> None:
+    # pytype: enable=signature-mismatch
     """Process files with Turbinia."""
 
     self.logger.info(

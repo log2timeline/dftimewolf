@@ -7,6 +7,7 @@ import tempfile
 from typing import Optional, TYPE_CHECKING, Type
 
 # pylint: disable=import-error
+# pytype: disable=import-error
 from turbinia import TurbiniaException, evidence
 from turbinia import config as turbinia_config
 
@@ -19,19 +20,21 @@ from dftimewolf.lib.processors.turbinia_base_legacy import TurbiniaProcessorBase
 if TYPE_CHECKING:
   from dftimewolf.lib import state
 
+
 # pylint: disable=no-member
 class TurbiniaArtifactProcessorLegacy(TurbiniaProcessorBaseLegacy,
-                                module.ThreadAwareModule):
+                                      module.ThreadAwareModule):
   """Processes Exported GRR Artifacts with Turbinia.
 
   Attributes:
     directory_path (str): Name of the directory to process.
   """
 
-  def __init__(self,
-               state: "state.DFTimewolfState",
-               name: Optional[str]=None,
-               critical: bool=False) -> None:
+  def __init__(
+      self,
+      state: "state.DFTimewolfState",
+      name: Optional[str] = None,
+      critical: bool = False) -> None:
     """Initializes a Turbinia Artifacts disks processor.
 
     Args:
@@ -45,13 +48,10 @@ class TurbiniaArtifactProcessorLegacy(TurbiniaProcessorBaseLegacy,
     self.output_directory = ''
 
   # pylint: disable=arguments-differ
-  def SetUp(self,
-            turbinia_config_file: Optional[str],
-            project: str,
-            turbinia_recipe: Optional[str],
-            turbinia_zone: str,
-            output_directory: str,
-            sketch_id: int) -> None:
+  def SetUp(
+      self, turbinia_config_file: Optional[str], project: str,
+      turbinia_recipe: Optional[str], turbinia_zone: str, output_directory: str,
+      sketch_id: int) -> None:
     """Sets up the object attributes.
 
     Args:
@@ -74,12 +74,11 @@ class TurbiniaArtifactProcessorLegacy(TurbiniaProcessorBaseLegacy,
       self.ModuleError(str(exception), critical=True)
       return
 
-  def Process(self, container: containers.RemoteFSPath
-              ) -> None:  # pytype: disable=signature-mismatch
+  def Process(self, container: containers.RemoteFSPath) -> None:  # pytype: disable=signature-mismatch
     """Process files with Turbinia."""
 
-    log_file_path = os.path.join(self._output_path,
-        '{0:s}_{1:s}-turbinia.log'.format(
+    log_file_path = os.path.join(
+        self._output_path, '{0:s}_{1:s}-turbinia.log'.format(
             container.hostname, container.path.replace('/', '_')))
     self.logger.info('Turbinia log file: {0:s}'.format(log_file_path))
     self.logger.info(
@@ -122,5 +121,6 @@ class TurbiniaArtifactProcessorLegacy(TurbiniaProcessorBaseLegacy,
 
   def PostProcess(self) -> None:
     pass
+
 
 modules_manager.ModulesManager.RegisterModule(TurbiniaArtifactProcessorLegacy)

@@ -9,6 +9,7 @@ import time
 from typing import Dict, List, Optional, Tuple, Any, Union
 
 # pylint: disable=import-error
+# pytype: disable=import-error
 from turbinia import TurbiniaException
 from turbinia import client as turbinia_client
 from turbinia import config as turbinia_config
@@ -58,8 +59,7 @@ class TurbiniaProcessorBaseLegacy(object):
     os.environ['GRPC_POLL_STRATEGY'] = 'poll'
 
   def _DeterminePaths(
-      self,
-      task_data: List[Dict[str, Any]]) -> Tuple[List[str], List[str]]:
+      self, task_data: List[Dict[str, Any]]) -> Tuple[List[str], List[str]]:
     """Builds lists of local and remote paths from data returned by Turbinia.
 
     This finds all .plaso, hashes.json, and BinaryExtractorTask files in the
@@ -94,8 +94,7 @@ class TurbiniaProcessorBaseLegacy(object):
 
     return local_paths, gs_paths
 
-  def _DownloadFilesFromGCS(self,
-                            timeline_label: str,
+  def _DownloadFilesFromGCS(self, timeline_label: str,
                             gs_paths: List[str]) -> List[Tuple[str, str]]:
     """Downloads files stored in Google Cloud Storage to the local filesystem.
 
@@ -128,11 +127,9 @@ class TurbiniaProcessorBaseLegacy(object):
 
     return local_paths
 
-  def TurbiniaSetUp(self,
-                    project: str,
-                    turbinia_recipe: Union[str, None],
-                    turbinia_zone: str,
-                    sketch_id: int) -> None:
+  def TurbiniaSetUp(
+      self, project: str, turbinia_recipe: Union[str, None], turbinia_zone: str,
+      sketch_id: int) -> None:
     """Sets up the object attributes.
 
     Raises:
@@ -171,10 +168,10 @@ class TurbiniaProcessorBaseLegacy(object):
     self.client = turbinia_client.get_turbinia_client()
 
   def TurbiniaStart(
-    self,
-    evidence_: evidence.Evidence,
-    threat_intel_indicators: Optional[List[Optional[str]]] = None,
-    yara_rules: Optional[List[str]] = None) -> str:
+      self,
+      evidence_: evidence.Evidence,
+      threat_intel_indicators: Optional[List[Optional[str]]] = None,
+      yara_rules: Optional[List[str]] = None) -> str:
     """Creates and sends a Turbinia processing request.
 
     Args:
@@ -218,12 +215,10 @@ class TurbiniaProcessorBaseLegacy(object):
     request.evidence.append(evidence_)
     request_id = request.request_id  # type: str
     self.logger.success(
-      'Creating Turbinia request {0:s} with Evidence {1!s}'.format(
-          request_id, evidence_.name))
+        'Creating Turbinia request {0:s} with Evidence {1!s}'.format(
+            request_id, evidence_.name))
     process_client.send_request(request)
-    self.logger.info(
-        'Started Turbinia request {0:s}'.format(
-            request_id))
+    self.logger.info('Started Turbinia request {0:s}'.format(request_id))
     return request_id
 
   def TurbiniaWait(self, request_id: str) -> Tuple[List[Dict[str, str]], Any]:
