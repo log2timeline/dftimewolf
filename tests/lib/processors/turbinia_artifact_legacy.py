@@ -31,6 +31,7 @@ except ImportError:
 
 YARA_RULE = """rule dummy { condition: false }"""
 
+
 @unittest.skipIf(not HAS_TURBINIA, 'Missing Turbinia dependency.')
 class TurbiniaArtifactProcessorTest(unittest.TestCase):
   """Tests for the Turbinia processor."""
@@ -38,7 +39,7 @@ class TurbiniaArtifactProcessorTest(unittest.TestCase):
   def testInitialization(self):
     """Tests that the processor can be initialized."""
     test_state = state.DFTimewolfState(config.Config)
-    turbinia_processor = turbinia_artifact_legacy.TurbiniaArtifactProcessor(
+    turbinia_processor = turbinia_artifact_legacy.TurbiniaArtifactProcessorLegacy(
         test_state)
     self.assertIsNotNone(turbinia_processor)
 
@@ -47,7 +48,7 @@ class TurbiniaArtifactProcessorTest(unittest.TestCase):
   def testSetup(self, _mock_TurbiniaClient):
     """Tests that the processor is set up correctly."""
     test_state = state.DFTimewolfState(config.Config)
-    turbinia_processor = turbinia_artifact_legacy.TurbiniaArtifactProcessor(
+    turbinia_processor = turbinia_artifact_legacy.TurbiniaArtifactProcessorLegacy(
         test_state)
     turbinia_processor.SetUp(
         turbinia_config_file=None,
@@ -57,7 +58,8 @@ class TurbiniaArtifactProcessorTest(unittest.TestCase):
         output_directory='/tmp/outputdir',
         sketch_id=123)
     # pylint: disable=line-too-long
-    turbinia_processor.client.create_request.return_value = turbinia_message.TurbiniaRequest()
+    turbinia_processor.client.create_request.return_value = turbinia_message.TurbiniaRequest(
+    )
     self.assertEqual(turbinia_processor.project, 'turbinia-project')
     self.assertEqual(turbinia_processor.turbinia_recipe, None)
     self.assertEqual(turbinia_processor.turbinia_zone, 'europe-west1')
@@ -76,8 +78,8 @@ class TurbiniaArtifactProcessorTest(unittest.TestCase):
         received from the state.
     """
     test_state = state.DFTimewolfState(config.Config)
-    turbinia_processor = turbinia_artifact_legacy.TurbiniaArtifactProcessor(
-      test_state)
+    turbinia_processor = turbinia_artifact_legacy.TurbiniaArtifactProcessorLegacy(
+        test_state)
     turbinia_processor.StoreContainer(
         containers.RemoteFSPath(hostname='remotehost', path='/tmp/file.ext'))
     turbinia_processor.SetUp(
@@ -88,7 +90,8 @@ class TurbiniaArtifactProcessorTest(unittest.TestCase):
         output_directory='/tmp/outputdir',
         sketch_id=123)
     # pylint: disable=line-too-long
-    turbinia_processor.client.create_request.return_value = turbinia_message.TurbiniaRequest()
+    turbinia_processor.client.create_request.return_value = turbinia_message.TurbiniaRequest(
+    )
     turbinia_processor.client.get_task_data.return_value = [{
         'saved_paths': [
             '/fake/data.plaso',
