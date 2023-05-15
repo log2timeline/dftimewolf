@@ -22,6 +22,7 @@ from turbinia_api_lib.api import turbinia_request_results_api
 
 from dftimewolf.lib.logging_utils import WolfLogger
 from dftimewolf.lib import module
+# pylint: disable=unused-import
 from dftimewolf.lib import state as state_lib
 
 
@@ -59,10 +60,10 @@ class TurbiniaProcessorBase(module.BaseModule):
 
     Args:
       state (state.DFTimewolfState): recipe state.
+      logger: A logger instance.
       name (Optional[str]): The module's runtime name.
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
-      logger: A logger instance.
     """
     super().__init__(state=state, name=name, critical=critical)
     self.name = name if name else self.__class__.__name__
