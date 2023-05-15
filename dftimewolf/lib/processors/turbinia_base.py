@@ -96,7 +96,9 @@ class TurbiniaProcessorBase(module.BaseModule):
   def _isInterestingPath(self, path: str) -> bool:
     """Checks if a path is interesting for the processor."""
     for suffix in self.extentions:
-      return bool(path.endswith(suffix))
+      if path.endswith(suffix):
+        return True
+    return False
 
   def _FilterTarMembers(self, tgzfile: tarfile.TarFile,
                         path_to_collect: str) -> List[tarfile.TarInfo]:
@@ -187,7 +189,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     return result
 
   def GetCredentials(self, credentials_path: str,
-                     client_secrets_path: str) -> Optional[str]:
+                     client_secrets_path: str) -> Optional[Any]:
     """Authenticates the user using Google OAuth services."""
     scopes = ['openid', 'https://www.googleapis.com/auth/userinfo.email']
     credentials = None
@@ -229,7 +231,10 @@ class TurbiniaProcessorBase(module.BaseModule):
       with open(credentials_path, 'w', encoding='utf-8') as token:
         token.write(credentials.to_json())
 
-    return credentials.id_token
+    if credentials:
+      return credentials.id_token
+
+    return credentials
 
   def TurbiniaSetUp(
       self, project: str, turbinia_auth: bool,
@@ -254,6 +259,9 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.incident_id = incident_id
     self.sketch_id = sketch_id
     self.client_config = turbinia_api_lib.Configuration(host=self.turbinia_api)
+    if not self.client_config:
+      self.ModuleError('Unable to configure Turbinia API server', critical=True)
+      return
     # Check if Turbinia requires authentication.
     if self.turbinia_auth:
       self.client_config.access_token = self.GetCredentials(
@@ -302,7 +310,7 @@ class TurbiniaProcessorBase(module.BaseModule):
       yara_text = self.DEFAULT_YARA_MODULES + '\n'.join(list(yara_rules))
 
     # Build request and request_options objects to send to the API server.
-    request_options = {
+    request_options: Dict[str, Any] = {
         'filter_pattern': threat_intel_indicators,
         'jobs_denylist': jobs_denylist,
         'reason': self.incident_id,
