@@ -133,7 +133,7 @@ class TurbiniaGCPProcessorLegacy(
     try:
       request_id = self.TurbiniaStart(
           evidence_, threat_intel_indicators, yara_rules)
-      self.PublishMessage(f'Turbinia request ID: {request_id}')
+      self.PublishMessage(f'Turbinia request identifier: {request_id}')
       task_data, report = self.TurbiniaWait(request_id)
     except TurbiniaException as exception:
       self.ModuleError(str(exception), critical=True)

@@ -195,7 +195,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       description = f'{self.project}-{request_container.evidence_name}'
       request_id = self._CreateTurbiniaRequest(request_container)
 
-    self.PublishMessage(f'Turbinia request ID: {request_id}')
+    self.PublishMessage(f'Turbinia request identifier: {request_id}')
 
     for task, path in self.TurbiniaWait(request_id):
       task_id = task.get('id')

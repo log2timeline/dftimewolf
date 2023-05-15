@@ -39,6 +39,7 @@ class TurbiniaArtifactProcessorTest(unittest.TestCase):
   def testInitialization(self):
     """Tests that the processor can be initialized."""
     test_state = state.DFTimewolfState(config.Config)
+    # pylint: disable=line-too-long
     turbinia_processor = turbinia_artifact_legacy.TurbiniaArtifactProcessorLegacy(
         test_state)
     self.assertIsNotNone(turbinia_processor)
@@ -48,6 +49,7 @@ class TurbiniaArtifactProcessorTest(unittest.TestCase):
   def testSetup(self, _mock_TurbiniaClient):
     """Tests that the processor is set up correctly."""
     test_state = state.DFTimewolfState(config.Config)
+    # pylint: disable=line-too-long
     turbinia_processor = turbinia_artifact_legacy.TurbiniaArtifactProcessorLegacy(
         test_state)
     turbinia_processor.SetUp(
@@ -78,6 +80,7 @@ class TurbiniaArtifactProcessorTest(unittest.TestCase):
         received from the state.
     """
     test_state = state.DFTimewolfState(config.Config)
+    # pylint: disable=line-too-long
     turbinia_processor = turbinia_artifact_legacy.TurbiniaArtifactProcessorLegacy(
         test_state)
     turbinia_processor.StoreContainer(
