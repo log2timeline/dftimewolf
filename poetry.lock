@@ -3605,13 +3605,13 @@ files = [
 
 [[package]]
 name = "turbinia"
-version = "20220216"
+version = "20230315"
 description = "Automation and Scaling of Digital Forensics Tools"
 category = "main"
 optional = true
 python-versions = "*"
 files = [
-    {file = "turbinia-20220216.tar.gz", hash = "sha256:1c0509ccbfe051cb5cbaadcf4f93bb529ab0981f5dafd8db6c54fa18ef1ae15e"},
+    {file = "turbinia-20230315.tar.gz", hash = "sha256:03ec2fae32c5a3bf121ba75634989ee49f8cf0f9b427feb4eb7baaa4081521d1"},
 ]
 
 [package.dependencies]
