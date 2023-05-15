@@ -125,7 +125,7 @@ class TurbiniaProcessorBase(module.BaseModule):
         Turbinia task output files.
 
     Args:
-      file_path: File path of a Turbinia task output file (tgz).
+      tgz_path: File path of a Turbinia task output file (tgz).
       path_to_collect: A saved path from a Turbinia task.
 
     Returns:
@@ -144,8 +144,8 @@ class TurbiniaProcessorBase(module.BaseModule):
     local_path = os.path.join(tempdir, path_to_collect.lstrip('/'))
     return local_path
 
-  def _DownloadFilesFromAPI(self, task_data: Dict[str, List[str]],
-                            path: str) -> Optional[str]:
+  def DownloadFilesFromAPI(self, task_data: Dict[str, List[str]],
+                           path: str) -> Optional[str]:
     """Downloads task output data from the Turbinia API server.
 
     Args:
@@ -185,8 +185,8 @@ class TurbiniaProcessorBase(module.BaseModule):
 
     return result
 
-  def _get_oauth2_credentials(
-      self, credentials_path: str, client_secrets_path: str) -> Optional[str]:
+  def GetCredentials(self, credentials_path: str,
+                     client_secrets_path: str) -> Optional[str]:
     """Authenticates the user using Google OAuth services."""
     scopes = ['openid', 'https://www.googleapis.com/auth/userinfo.email']
     credentials = None
@@ -255,7 +255,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.client_config = turbinia_api_lib.Configuration(host=self.turbinia_api)
     # Check if Turbinia requires authentication.
     if self.turbinia_auth:
-      self.client_config.access_token = self._get_oauth2_credentials(
+      self.client_config.access_token = self.GetCredentials(
           self.credentials_path, self.client_secrets_path)
       if not self.client_config.access_token:
         self.ModuleError(

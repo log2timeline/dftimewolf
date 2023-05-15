@@ -1,6 +1,5 @@
 """Processes GCP cloud disks using Turbinia."""
 
-import os
 from typing import Any, Dict, Optional, TYPE_CHECKING, Type, Union, Set
 
 import magic
@@ -65,7 +64,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     return container
 
   def _CreateTurbiniaRequest(
-      self, request_container: containers.TurbiniaRequest):
+      self, request_container: containers.TurbiniaRequest) -> str:
     """Creates a new Turbinia request.
 
     Args:
@@ -109,7 +108,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       turbinia_api: str,
       incident_id: str,
       sketch_id: int,
-      request_ids: Set[str] = set(),
+      request_ids: Set[str] = None,
       disk_names: str = '') -> None:
     """Sets up the object attributes.
 
@@ -199,7 +198,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       if not description:
         description = f'{self.project}-{task.get("name")}'
       self.PublishMessage(f'New output file {path} found for task {task_id}')
-      path = self._DownloadFilesFromAPI(task, path)
+      path = self.DownloadFilesFromAPI(task, path)
       if not path:
         self.logger.warning(
             f'No interesting output files could be found for task {task_id}')
