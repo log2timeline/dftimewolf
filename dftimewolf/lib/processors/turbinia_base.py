@@ -399,7 +399,7 @@ class TurbiniaProcessorBase(module.BaseModule):
         self.logger.warning(f'Retrying after exception: {exception.body}')
 
   def TurbiniaFinishReport(self, request_id: str) -> str:
-    """This method generates a Turbinia report for a given request identifier."""
+    """This method generates a report for a Turbinia request."""
     api_instance = turbinia_requests_api.TurbiniaRequestsApi(self.client)
     request_data = api_instance.get_request_status(request_id)
     if request_data:
