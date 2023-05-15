@@ -128,7 +128,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
 
     if (disk_names and request_ids) or (not disk_names and not request_ids):
       self.ModuleError(
-          f'One of disk_names or request_ids must be specified, but not both.',
+          'One of disk_names or request_ids must be specified, but not both.',
           critical=True)
       return
 

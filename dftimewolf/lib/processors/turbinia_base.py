@@ -22,6 +22,7 @@ from turbinia_api_lib.api import turbinia_request_results_api
 
 from dftimewolf.lib.logging_utils import WolfLogger
 from dftimewolf.lib import module
+from dftimewolf.lib import state as state_lib
 
 
 # pylint: disable=abstract-method,no-member
@@ -63,7 +64,7 @@ class TurbiniaProcessorBase(module.BaseModule):
           the entire recipe to fail if the module encounters an error.
       logger: A logger instance.
     """
-    super(module.BaseModule, self).__init__()
+    super().__init__(state=state, name=name, critical=critical)
     self.name = name if name else self.__class__.__name__
     self.critical = critical
     self.state = state
