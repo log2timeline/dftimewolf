@@ -1,7 +1,7 @@
 """Processes GCP cloud disks using Turbinia."""
 
 import os
-from typing import Any, Dict, Optional, TYPE_CHECKING, Type, Union
+from typing import Any, Dict, Optional, TYPE_CHECKING, Type, Union, Set
 
 import magic
 
@@ -18,7 +18,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
   """Processes Google Cloud (GCP) disks with Turbinia.
 
   Attributes:
-    disk_name (str): name of the disk to process.
+    request_ids Set[str]: Turbinia requests for jobs being processed.
   """
 
   def __init__(
@@ -37,6 +37,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     module.ThreadAwareModule.__init__(self, state, name=name, critical=critical)
     TurbiniaProcessorBase.__init__(
         self, state, self.logger, name=name, critical=critical)
+    self.request_ids = set()
 
   def _BuildContainer(
       self, path: str, description: str
@@ -63,6 +64,41 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
 
     return container
 
+  def _CreateTurbiniaRequest(
+      self, request_container: containers.TurbiniaRequest):
+    """Creates a new Turbinia request.
+
+    Args:
+      request_container (containers.TurbiniaRequest): Turbinia request.
+    """
+    evidence = {
+        'type': 'GoogleCloudDisk',
+        'disk_name': request_container.evidence_name,
+        'project': self.project,
+        'zone': self.turbinia_zone
+    }
+    threat_intel_indicators = None
+    threatintel = self.GetContainers(containers.ThreatIntelligence)
+    if threatintel:
+      self.logger.info(
+          f'Sending {len(threatintel)} threatintel to Turbinia GrepWorkers...')
+      threat_intel_indicators = [item.indicator for item in threatintel]
+
+    yara_rules = None
+    yara_containers = self.GetContainers(containers.YaraRule)
+    if yara_containers:
+      self.logger.info(
+          f'Sending {len(yara_containers)} Yara rules to Turbinia '
+          'Plaso worker...')
+      yara_rules = [rule.rule_text for rule in yara_containers]
+
+    request_id = self.TurbiniaStart(
+        evidence, threat_intel_indicators, yara_rules)
+    if not request_id:
+      self.ModuleError('Turbinia request failed', critical=True)
+
+    return request_id
+
   # pylint: disable=arguments-differ
   def SetUp(
       self,
@@ -73,6 +109,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       turbinia_api: str,
       incident_id: str,
       sketch_id: int,
+      request_ids: Set[str] = set(),
       disk_names: str = '') -> None:
     """Sets up the object attributes.
 
@@ -85,13 +122,32 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       turbinia_zone (str): GCP zone in which the Turbinia server is running.
       incident_id (str): The incident ID.
       sketch_id (int): The sketch ID.
+      request_ids Set[str]: Turbinia requests for jobs being processed.
       disk_names (str): names of the disks to process.
     """
+
+    if disk_names and request_ids:
+      self.ModuleError(
+          f'Cannot specify both disk_names and request_ids', critical=True)
+      return
+
+    if request_ids:
+      self.request_ids = {
+          request_ids.strip()
+          for request_ids in request_ids.split(',')
+          if request_ids.strip()
+      }
+      for request_id in self.request_ids:
+        self.StoreContainer(
+            containers.TurbiniaRequest(project=project, request_id=request_id))
+
     if disk_names:
       for disk in disk_names.strip().split(','):
         if not disk:
           continue
-        self.StoreContainer(containers.GCEDisk(name=disk, project=project))
+        self.StoreContainer(
+            containers.TurbiniaRequest(project=project, evidence_name=disk))
+        #self.StoreContainer(containers.GCEDisk(name=disk, project=project))
 
     self.TurbiniaSetUp(
         project, turbinia_auth, turbinia_recipe, turbinia_zone, turbinia_api,
@@ -114,54 +170,33 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     self.state.DedupeContainers(containers.GCEDisk)
 
   # pylint: disable=arguments-renamed
-  def Process(self, disk_container: containers.GCEDisk) -> None:
+  def Process(self, request_container: containers.TurbiniaRequest) -> None:
     """Process a GCE Disk with Turbinia."""
     request_id = ''
     task: Dict[str, Any] = {}
     report = ''
-    evidence = {
-        'type': 'GoogleCloudDisk',
-        'disk_name': disk_container.name,
-        'project': self.project,
-        'zone': self.turbinia_zone
-    }
-    description = f'{self.project}-{disk_container.name}'
-    if disk_container.project != self.project:
+
+    if request_container.project != self.project:
       self.logger.info(
-          f'Found disk "{disk_container.name}" but skipping as it '
-          f'is in a different project "{disk_container.project}".')
+          f'Found disk "{request_container.name}" but skipping as it '
+          f'is in a different project "{request_container.project}".')
       return
 
-    log_file_path = os.path.join(
-        self.output_path, f'{disk_container.name}-turbinia.log')
-    self.logger.info(f'Turbinia log file: {log_file_path}')
-    self.logger.info(
-        f'Using disk {disk_container.name} from previous collector')
-
-    threat_intel_indicators = None
-    threatintel = self.GetContainers(containers.ThreatIntelligence)
-    if threatintel:
-      self.logger.info(
-          f'Sending {len(threatintel)} threatintel to Turbinia GrepWorkers...')
-      threat_intel_indicators = [item.indicator for item in threatintel]
-
-    yara_rules = None
-    yara_containers = self.GetContainers(containers.YaraRule)
-    if yara_containers:
-      self.logger.info(
-          f'Sending {len(yara_containers)} Yara rules to Turbinia '
-          'Plaso worker...')
-      yara_rules = [rule.rule_text for rule in yara_containers]
-
-    request_id = self.TurbiniaStart(
-        evidence, threat_intel_indicators, yara_rules)
-    if not request_id:
-      self.ModuleError('Turbinia request failed', critical=True)
+    if request_container.request_id:
+      # We have a request ID, so we can skip creating a new Turbinia request.
+      request_id = request_container.request_id
+      description = request_container.evidence_name
+    else:
+      # We don't have a request ID, so we need to create a new Turbinia request.
+      description = f'{self.project}-{request_container.evidence_name}'
+      request_id = self._CreateTurbiniaRequest(request_container)
 
     self.PublishMessage(f'Turbinia request ID: {request_id}')
 
     for task, path in self.TurbiniaWait(request_id):
       task_id = task.get('id')
+      if not description:
+        description = f'{self.project}-{task.get("name")}'
       self.PublishMessage(f'New output file {path} found for task {task_id}')
       path = self._DownloadFilesFromAPI(task, path)
       if not path:
@@ -184,7 +219,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
 
   @staticmethod
   def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
-    return containers.GCEDisk
+    return containers.TurbiniaRequest
 
   def GetThreadPoolSize(self) -> int:
     return self.parallel_count

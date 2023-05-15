@@ -5,6 +5,8 @@ import os
 import tarfile
 import tempfile
 import time
+import math
+
 from typing import Dict, List, Optional, Tuple, Any, Union, Generator
 
 from google_auth_oauthlib import flow
@@ -354,15 +356,23 @@ class TurbiniaProcessorBase(module.BaseModule):
     processed_paths = set()
     api_instance = turbinia_requests_api.TurbiniaRequestsApi(self.client)
     status = 'running'
+    running_tasks = 1
     if not request_id:
       self.ModuleError('No request ID provided', critical=True)
 
-    while status == 'running' and retries < 3:
+    while status == 'running' and running_tasks > 0 and retries < 3:
       time.sleep(interval)
       try:
         request_data = api_instance.get_request_status(request_id)
         status = request_data.get('status')
-        self.PublishMessage(f'Turbinia request {request_id} {status}')
+        running_tasks = request_data.get('running_tasks')
+        failed_tasks = request_data.get('failed_tasks')
+        successful_tasks = request_data.get('successful_tasks')
+        task_count = request_data.get('task_count')
+        progress = math.floor(
+            ((failed_tasks + successful_tasks) / task_count) * 100)
+        self.PublishMessage(
+            f'Turbinia request {request_id} is {status}. Progress: {progress}%')
 
         for task in request_data.get('tasks', []):
           current_saved_paths = task.get('saved_paths', [])
