@@ -49,9 +49,10 @@
         "name": "TurbiniaGCPProcessor",
         "args": {
             "disk_names": null,
+            "request_ids": "@request_ids",
             "project": "@analysis_project_name",
-            "turbinia_recipe": "@turbinia_recipe",
             "turbinia_auth": "@turbinia_auth",
+            "turbinia_recipe": "@turbinia_recipe",
             "turbinia_zone": "@turbinia_zone",
             "turbinia_api": "@turbinia_api",
             "incident_id": "@incident_id",
@@ -71,6 +72,7 @@
     "args": [
         ["source_project_name", "Name of the project containing the instance / disks to copy.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9]{4,28}[a-z0-9]$"}],
         ["analysis_project_name", "Name of the project containing the Turbinia instance.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9]{4,28}[a-z0-9]$"}],
+        ["--request_ids", "Turbinia request IDs to process.", null, {"format": "regex", "comma_separated": true, "regex": "^[a-f0-9]{32}$"}],
         ["--turbinia_recipe", "The Turbinia recipe name to use for evidence processing.", null],
         ["--turbinia_zone", "The GCP zone the disk to process and Turbinia workers are in.", "us-central1-f", {"format": "gcp_zone"}],
         ["--turbinia_auth", "Flag to indicate whether Turbinia API server requires authentication.", false],
