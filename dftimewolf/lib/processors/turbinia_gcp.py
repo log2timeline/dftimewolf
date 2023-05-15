@@ -69,6 +69,9 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
 
     Args:
       request_container (containers.TurbiniaRequest): Turbinia request.
+
+    Returns:
+      str: Turbinia request identifier.
     """
     evidence = {
         'type': 'GoogleCloudDisk',

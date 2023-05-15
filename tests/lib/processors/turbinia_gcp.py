@@ -92,6 +92,7 @@ class TurbiniaBaseTest(unittest.TestCase):
 
   def testIsInterestingPath(self):
     """Tests the _isInterestingPath method in TurbiniaProcessorBase."""
+    # pylint: disable=protected-access
     self.assertTrue(self.turbinia_processor._isInterestingPath(TEST_TASK_PATH))
 
   @mock.patch('tempfile.mkdtemp')
@@ -101,6 +102,7 @@ class TurbiniaBaseTest(unittest.TestCase):
     file_path = os.path.join(
         CURRENT_DIR, "test_data", "c4e9abd577db475484b2ded34a011b96.tgz")
     expected_local_path = f"/tmp{TEST_TASK_PATH}"
+    # pylint: disable=protected-access
     local_path = self.turbinia_processor._ExtractFiles(
         file_path, TEST_TASK_PATH)
     self.assertEqual(local_path, expected_local_path)
