@@ -36,13 +36,14 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     module.ThreadAwareModule.__init__(self, state, name=name, critical=critical)
     TurbiniaProcessorBase.__init__(
         self, state, self.logger, name=name, critical=critical)
-    self.request_ids = set()
+    self.request_ids: Set[str] = set()
 
   def _BuildContainer(
       self, path: str, description: str
-  ) -> Union[containers.File, containers.ThreatIntelligence]:
+  ) -> Optional[Union[containers.File, containers.ThreatIntelligence]]:
     """Builds a container from a path."""
-    container: Union[containers.File, containers.ThreatIntelligence]
+    container: Optional[Union[containers.File,
+                              containers.ThreatIntelligence]] = None
     if path.endswith('BinaryExtractorTask.tar.gz'):
       self.PublishMessage(f'Found BinaryExtractorTask result: {path}')
       container = containers.ThreatIntelligence(
@@ -111,7 +112,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       turbinia_api: str,
       incident_id: str,
       sketch_id: int,
-      request_ids: Set[str] = None,
+      request_ids: str = '',
       disk_names: str = '') -> None:
     """Sets up the object attributes.
 
@@ -124,8 +125,8 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       turbinia_zone (str): GCP zone in which the Turbinia server is running.
       incident_id (str): The incident ID.
       sketch_id (int): The sketch ID.
-      request_ids Set[str]: Turbinia requests for jobs being processed.
-      disk_names (str): names of the disks to process.
+      request_ids (str): Turbinia requests for jobs being processed.
+      disk_names (str): Names of the disks to process.
     """
 
     if (disk_names and request_ids) or (not disk_names and not request_ids):
@@ -181,7 +182,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
 
     if request_container.project != self.project:
       self.logger.info(
-          f'Found disk "{request_container.name}" but skipping as it '
+          f'Found disk "{request_container.evidence_name}" but skipping as it '
           f'is in a different project "{request_container.project}".')
       return
 
@@ -201,15 +202,16 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       if not description:
         description = f'{self.project}-{task.get("name")}'
       self.PublishMessage(f'New output file {path} found for task {task_id}')
-      path = self.DownloadFilesFromAPI(task, path)
-      if not path:
+      local_path = self.DownloadFilesFromAPI(task, path)
+      if not local_path:
         self.logger.warning(
             f'No interesting output files could be found for task {task_id}')
         continue
-      self.PublishMessage(f'Downloaded file {path} for task {task_id}')
-      container = self._BuildContainer(path, description)
-      self.PublishMessage(f'Streaming container: {container.path}')
-      self.StreamContainer(container)
+      self.PublishMessage(f'Downloaded file {local_path} for task {task_id}')
+      container = self._BuildContainer(local_path, description)
+      if container:
+        self.PublishMessage(f'Streaming container: {container.path}')
+        self.StreamContainer(container)
 
     # Generate a Turbinia report and store it in the state.
     report = self.TurbiniaFinishReport(request_id)

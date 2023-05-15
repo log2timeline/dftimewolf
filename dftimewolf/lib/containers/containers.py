@@ -714,7 +714,7 @@ class TurbiniaRequest(interface.AttributeContainer):
     self.evidence_name = evidence_name
     self.project = project
 
-  def __str__(self) -> str:
+  def __str__(self) -> Optional[str]:
     """Overrides __str()__."""
     return self.request_id if self.request_id else self.evidence_name
 
