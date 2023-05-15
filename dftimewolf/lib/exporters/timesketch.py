@@ -237,9 +237,6 @@ class TimesketchExporter(module.ThreadAwareModule):
       if streamer.response and container.description:
         streamer.timeline.description = container.description
 
-    if self.wait_for_timelines:
-      self._WaitForTimelines()
-
   def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
     return containers.File
 
@@ -252,6 +249,10 @@ class TimesketchExporter(module.ThreadAwareModule):
   def PostProcess(self) -> None:
     api_root = self.sketch.api.api_root
     host_url = api_root.partition('api/v1')[0]
+
+    if self.wait_for_timelines:
+      self._WaitForTimelines()
+
     sketch_url = '{0:s}sketches/{1:d}/'.format(host_url, self.sketch.id)
     message = 'Your Timesketch URL is: {0:s}'.format(sketch_url)
     self.PublishMessage(message)
