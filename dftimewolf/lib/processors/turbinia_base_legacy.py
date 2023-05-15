@@ -180,7 +180,7 @@ class TurbiniaProcessorBaseLegacy(object):
           the Turbinia grepper module.
       yara_rules: List of Yara rule strings to use in the Turbinia Yara module.
     Returns:
-      Turbinia request ID.
+      Turbinia request identifier.
     """
     evidence_.validate()
     process_client = turbinia_client.get_turbinia_client()  # issues/600

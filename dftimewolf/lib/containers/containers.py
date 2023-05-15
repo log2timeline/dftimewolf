@@ -693,7 +693,8 @@ class TurbiniaRequest(interface.AttributeContainer):
   """Turbinia request container.
 
   Attributes:
-    request_id (str): Turbinia request ID.
+    project (str): name of the GCP project containing the disk to process.
+    request_id (str): Turbinia request identifier.
     evidence_name (str): Name of the evidence being processed.
   """
   CONTAINER_TYPE = 'turbiniarequest'
@@ -706,7 +707,8 @@ class TurbiniaRequest(interface.AttributeContainer):
     """Initializes the Turbinia-request attribute container.
 
     Args:
-      request_id: Turbinia request ID.
+      project (str): name of the GCP project containing the disk to process.
+      request_id: Turbinia request identifier.
       evidence_name: Name of the evidence being processed.
     """
     super().__init__()

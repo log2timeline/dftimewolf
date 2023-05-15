@@ -294,7 +294,7 @@ class TurbiniaProcessorBase(module.BaseModule):
       yara_rules: List of Yara rule strings to use in the Turbinia Yara module.
 
     Returns:
-      Turbinia request ID.
+      Turbinia request identifier.
     """
     request_id = ''
     api_instance = turbinia_requests_api.TurbiniaRequestsApi(self.client)
@@ -354,7 +354,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     The method retries 3 times if there is an API exception.
 
     Args:
-        request_id: Request ID for the Turbinia Job.
+        request_id: Request identifier for the Turbinia Job.
 
     Yields:
         A tuple containing the Turbinia task data and the path that has not been
@@ -399,7 +399,7 @@ class TurbiniaProcessorBase(module.BaseModule):
         self.logger.warning(f'Retrying after exception: {exception.body}')
 
   def TurbiniaFinishReport(self, request_id: str) -> str:
-    """This method generates a Turbinia report for a given request ID."""
+    """This method generates a Turbinia report for a given request identifier."""
     api_instance = turbinia_requests_api.TurbiniaRequestsApi(self.client)
     request_data = api_instance.get_request_status(request_id)
     if request_data:
