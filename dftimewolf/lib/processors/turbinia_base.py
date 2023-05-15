@@ -33,7 +33,7 @@ class TurbiniaProcessorBase(module.BaseModule):
   Attributes:
     client (TurbiniaClient): Turbinia client.
     client_config (dict): Turbinia client config.
-    extentions (List[str]): List of file extentions to look for.
+    extensions (List[str]): List of file extensions to look for.
     incident_id (str): The Timesketch incident id.
     instance (str): name of the Turbinia instance
     logger (WolfLogger): logger.
@@ -87,7 +87,7 @@ class TurbiniaProcessorBase(module.BaseModule):
         os.path.expanduser('~'), ".dftimewolf_turbinia_secrets.json")
     self.parallel_count = 5  # Arbitrary, used by ThreadAwareModule
     self.logger = logger
-    self.extentions = [
+    self.extensions = [
         '.plaso', 'BinaryExtractorTask.tar.gz', 'hashes.json',
         'fraken_stdout.log', 'loki_stdout.log'
     ]
@@ -95,7 +95,7 @@ class TurbiniaProcessorBase(module.BaseModule):
 
   def _isInterestingPath(self, path: str) -> bool:
     """Checks if a path is interesting for the processor."""
-    for suffix in self.extentions:
+    for suffix in self.extensions:
       if path.endswith(suffix):
         return True
     return False
