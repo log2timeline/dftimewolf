@@ -526,7 +526,7 @@ class DFTimewolfState(object):
       finally:
         self.CheckErrors(is_global=True)
 
-  def InstantiateModule(self, module_name: str) -> "BaseModule":
+  def InstantiateModule(self, module_name: str) -> Optional["BaseModule"]:
     """Instantiates an arbitrary dfTimewolf module.
 
     Args:
@@ -534,13 +534,15 @@ class DFTimewolfState(object):
 
     Returns:
       BaseModule: An instance of a dftimewolf Module, which is a subclass of
-          BaseModule.
+          BaseModule, or None if the module could not be found.
     """
     module_class: Optional[Type["BaseModule"]]
     module_class = modules_manager.ModulesManager.GetModuleByName(module_name)
     # pytype: disable=wrong-arg-types
-    return module_class(self)
+    if module_class:
+      return module_class(self)
     # pytype: enable=wrong-arg-types
+    return None
 
   def RunModules(self) -> None:
     """Performs the actual processing for each module in the module pool."""
