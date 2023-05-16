@@ -43,7 +43,7 @@ class SCPExporter(module.BaseModule):
 
   def SetUp(self, # pylint: disable=arguments-differ
             paths: str,
-            destination: str | None,
+            destination: Union[str, None],
             user: str,
             hostname: str,
             id_file: str,
