@@ -83,7 +83,7 @@ class SSHMultiplexer(module.PreflightModule):
       self.logger.error('Error cleaning up the shared SSH connection. Remove '
                         'any lingering ~/.ssh/ctrl-dftw-* files.')
     else:
-      self.logger.info('Succesfully cleaned up SSH connection.')
+      self.logger.info('Successfully cleaned up SSH connection.')
 
 
 
