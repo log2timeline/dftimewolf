@@ -564,6 +564,7 @@ Flow ID: `{3:s}`
     """This module operates on Host containers."""
     return containers.Host
 
+
 class GRRArtifactCollector(GRRFlow):
   """Artifact collector for GRR flows.
 
@@ -1141,7 +1142,7 @@ class GRRFlowCollector(GRRFlow):
     self.flow_id = str()
     self.host: containers.Host
 
-  # pylint: disable=arguments-differ, arguments-renamed
+  # pylint: disable=arguments-differ, arguments-renamed, missing-raises-doc
   def SetUp(self,
             hostnames: str,
             flow_ids: str,
@@ -1182,9 +1183,13 @@ class GRRFlowCollector(GRRFlow):
           try:
             client.Flow(flow_id).Get()
             self.StoreContainer(containers.GrrFlow(host, flow_id))
-          except grr_errors.UnknownError:
-            self.logger.warning(
-                f'Flow {flow_id} not found in {client.client_id}')
+          except Exception as exception:  # pylint: disable=broad-except
+            if all((s in str(exception) for s in [client.client_id, flow_id])):
+              self.logger.warning(
+                  f'Flow {flow_id} not found in {client.client_id}')
+            else:
+              raise exception
+
     self.state.DedupeContainers(containers.GrrFlow)
 
   def Process(self, container: containers.GrrFlow
