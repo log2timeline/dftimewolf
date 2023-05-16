@@ -43,7 +43,7 @@ class SCPExporter(module.BaseModule):
 
   def SetUp(self, # pylint: disable=arguments-differ
             paths: str,
-            destination: str,
+            destination: str | None,
             user: str,
             hostname: str,
             id_file: str,
@@ -140,7 +140,7 @@ class SCPExporter(module.BaseModule):
       self.ModuleError(
           'Failed copying {0!s}'.format(self._paths), critical=True)
 
-    self.logger.success(f"Results copied to {self._destination}")
+    self.logger.success(f'Results copied to {self._destination}')
 
     fspath: Union[containers.File, containers.RemoteFSPath]
     for path_ in self._paths:

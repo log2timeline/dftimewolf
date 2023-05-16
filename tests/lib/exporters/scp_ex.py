@@ -84,7 +84,9 @@ class SCPExporterTest(unittest.TestCase):
 
   @mock.patch('tempfile.mkdtemp')
   @mock.patch('subprocess.call')
-  def testProcessDownloadNoDestination(self, mock_subprocess_call, mock_mkdtemp):
+  def testProcessDownloadNoDestination(
+    self, mock_subprocess_call, mock_mkdtemp):
+    """Tests that not specifying the destination will call mkdtemp."""
     mock_subprocess_call.return_value = 0
     mock_mkdtemp.return_value = '/tmp/tmpdir'
     test_state = state.DFTimewolfState(config.Config)
@@ -100,7 +102,7 @@ class SCPExporterTest(unittest.TestCase):
   @mock.patch('subprocess.call')
   def testFailIfUploadWithoutDestination(self, mock_subprocess_call):
     mock_subprocess_call.return_value = 0
-    """Tests that the specified directory is used if created."""
+    """Tests that the upload module fails if no destination is specified."""
     test_state = state.DFTimewolfState(config.Config)
     scp_exporter = scp_ex.SCPExporter(test_state)
     with self.assertRaises(errors.DFTimewolfError) as error:
@@ -112,7 +114,7 @@ class SCPExporterTest(unittest.TestCase):
 
   @mock.patch('subprocess.call')
   def testProcessDownloadMultiplex(self, mock_subprocess_call):
-    """Tests that the specified directory is used if created."""
+    """Tests that SSH is called with the correct multiplex parameter."""
     mock_subprocess_call.return_value = 0
     test_state = state.DFTimewolfState(config.Config)
     scp_exporter = scp_ex.SCPExporter(test_state)
