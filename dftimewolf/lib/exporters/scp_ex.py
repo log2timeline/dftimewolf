@@ -35,7 +35,7 @@ class SCPExporter(module.BaseModule):
     self._paths = []  # type: List[str]
     self._user = str()
     self._hostname = str()
-    self._destination = str()
+    self._destination = str()  # type: Optional[str]
     self._id_file = str()
     self._extra_ssh_options = []  # type: List[str]
     self._upload = False

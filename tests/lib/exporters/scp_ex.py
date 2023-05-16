@@ -101,14 +101,14 @@ class SCPExporterTest(unittest.TestCase):
 
   @mock.patch('subprocess.call')
   def testFailIfUploadWithoutDestination(self, mock_subprocess_call):
-    mock_subprocess_call.return_value = 0
     """Tests that the upload module fails if no destination is specified."""
+    mock_subprocess_call.return_value = 0
     test_state = state.DFTimewolfState(config.Config)
     scp_exporter = scp_ex.SCPExporter(test_state)
     with self.assertRaises(errors.DFTimewolfError) as error:
       scp_exporter.SetUp('/path1,/path2', None, 'fakeuser',
                          'fakehost', 'fakeid', [], 'upload', False, True)
-    self.assertEquals(
+    self.assertEqual(
       error.exception.message,
       'Destination path must be specified when uploading.')
 
