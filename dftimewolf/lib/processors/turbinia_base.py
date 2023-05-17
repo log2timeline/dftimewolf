@@ -111,7 +111,7 @@ class TurbiniaProcessorBase(module.BaseModule):
 
     Args:
       tgzfile: A TarFile object of a Turbinia task output file.
-      path_to_collect: A path from a Turbinia task.
+      path_to_collect: A saved path from a Turbinia task.
 
     Returns:
       A list of TarInfo objects.
@@ -156,6 +156,7 @@ class TurbiniaProcessorBase(module.BaseModule):
 
     Args:
       task_data: Response from a /api/request/{request_id} API call.
+      path: A saved path from a Turbinia task.
 
     Returns:
       A local path to Turbinia task output files or None if files
@@ -184,8 +185,8 @@ class TurbiniaProcessorBase(module.BaseModule):
       extracted_path = self._ExtractFiles(local_path, path)
       if os.path.exists(extracted_path):
         result = extracted_path
-      self.PublishMessage(
-          f'Extracted output file to {local_path} for task {task_id}')
+        self.PublishMessage(
+            f'Extracted output file to {result} for task {task_id}')
     except turbinia_api_lib.ApiException as exception:
       self.ModuleError(
           f'Unable to download task data: {exception}', critical=False)
