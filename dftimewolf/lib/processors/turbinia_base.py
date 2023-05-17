@@ -168,13 +168,14 @@ class TurbiniaProcessorBase(module.BaseModule):
       task_id = task_data.get('id')
       api_response = api_instance.get_task_output(
           task_id, _preload_content=False)
-      filename = f'{task_id}.tgz'
+      filename = f'{task_id}-'
 
       # Create a temporary file to write the response to.
       file = tempfile.NamedTemporaryFile(
           mode='wb', prefix=f'{filename}', suffix='.tgz', delete=False)
       local_path = file.name
-      self.logger.info(f'Saving output for task {task_id} to: {local_path}')
+      self.logger.info(
+          f'Downloading output for task {task_id} to: {local_path}')
       # Read the response and write to the file.
       file.write(api_response.read())
       file.close()
@@ -183,7 +184,8 @@ class TurbiniaProcessorBase(module.BaseModule):
       extracted_path = self._ExtractFiles(local_path, path)
       if os.path.exists(extracted_path):
         result = extracted_path
-
+      self.PublishMessage(
+          f'Extracted output file to {local_path} for task {task_id}')
     except turbinia_api_lib.ApiException as exception:
       self.ModuleError(
           f'Unable to download task data: {exception}', critical=False)
