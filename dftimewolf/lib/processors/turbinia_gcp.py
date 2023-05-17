@@ -222,7 +222,6 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
         self.logger.warning(
             f'No interesting output files could be found for task {task_id}')
         continue
-      self.PublishMessage(f'Downloaded file {local_path} for task {task_id}')
       container = self._BuildContainer(local_path, description)
       if container:
         self.PublishMessage(f'Streaming container: {container.path}')
