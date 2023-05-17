@@ -176,7 +176,7 @@ class TurbiniaProcessorBase(module.BaseModule):
           mode='wb', prefix=f'{filename}', suffix='.tgz', delete=False)
       local_path = file.name
       self.logger.info(
-          f'Downloading output for task {task_id} to: {local_path}')
+          f'Downloading output for task {task_id} to {local_path}')
       # Read the response and write to the file.
       file.write(api_response.read())
       file.close()
