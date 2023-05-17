@@ -220,7 +220,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
         continue
       container = self._BuildContainer(local_path, description)
       if container:
-        self.PublishMessage(f'Streaming container: {container.path}')
+        self.PublishMessage(f'Streaming container {container.name}')
         self.StreamContainer(container)
 
     # Generate a Turbinia report and store it in the state.
