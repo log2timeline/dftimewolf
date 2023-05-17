@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Base class for turbinia interactions."""
+"""[DEPRECATED] Base class for turbinia interactions."""
 
 import getpass
 import os

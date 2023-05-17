@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Processes a directory of artifacts with Turbinia."""
+"""[DEPRECATED] Processes a directory of artifacts with Turbinia."""
 
 import os
 import tempfile

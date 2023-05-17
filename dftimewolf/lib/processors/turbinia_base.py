@@ -7,7 +7,7 @@ import tempfile
 import time
 import math
 
-from typing import Dict, List, Optional, Tuple, Any, Union, Generator
+from typing import Dict, List, Optional, Tuple, Any, Union, Iterator
 
 from google_auth_oauthlib import flow
 from google.oauth2.credentials import Credentials
@@ -38,6 +38,8 @@ class TurbiniaProcessorBase(module.BaseModule):
     instance (str): name of the Turbinia instance
     logger (WolfLogger): logger.
     project (str): name of the GCP project containing the disk to process.
+    requests_api_instance (turbinia_requests_api.TurbiniaRequestsApi): 
+        Turbinia requests API instance.
     sketch_id (int): The Timesketch sketch id
     turbinia_recipe (str): Turbinia recipe name.
     turbinia_region (str): GCP region in which the Turbinia server is running.
@@ -80,6 +82,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.turbinia_region = None
     self.turbinia_zone = str()
     self.turbinia_api = str()
+    self.requests_api_instance = None
     self.client_config = None
     self.credentials_path = os.path.join(
         os.path.expanduser('~'), ".dftimewolf_turbinia.token")
@@ -155,7 +158,8 @@ class TurbiniaProcessorBase(module.BaseModule):
       task_data: Response from a /api/request/{request_id} API call.
 
     Returns:
-      A local path to Turbinia task output files or None
+      A local path to Turbinia task output files or None if files
+        could not be downloaded.
     """
     result = None
     api_instance = turbinia_request_results_api.TurbiniaRequestResultsApi(
@@ -270,7 +274,8 @@ class TurbiniaProcessorBase(module.BaseModule):
         self.ModuleError(
             'Unable to authenticate to Turbinia API server', critical=True)
     self.client = turbinia_api_lib.ApiClient(self.client_config)
-
+    self.requests_api_instance = turbinia_requests_api.TurbiniaRequestsApi(
+        self.client)
     # We need to get the output path from the Turbinia server.
     api_instance = turbinia_configuration_api.TurbiniaConfigurationApi(
         self.client)
@@ -297,7 +302,6 @@ class TurbiniaProcessorBase(module.BaseModule):
       Turbinia request identifier.
     """
     request_id = ''
-    api_instance = turbinia_requests_api.TurbiniaRequestsApi(self.client)
     yara_text = ''
     jobs_denylist = [
         'StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob'
@@ -331,7 +335,7 @@ class TurbiniaProcessorBase(module.BaseModule):
 
     # Send the request to the API server.
     try:
-      response = api_instance.create_request(request)
+      response = self.requests_api_instance.create_request(request)
       request_id = response.get('request_id')
       self.logger.success(
           'Creating Turbinia request {0!s} with evidence {1!s}'.format(
@@ -340,9 +344,8 @@ class TurbiniaProcessorBase(module.BaseModule):
       self.ModuleError(str(exception), critical=True)
     return request_id
 
-  def TurbiniaWait(
-      self,
-      request_id: str) -> Generator[Tuple[Dict[str, Any], str], None, None]:
+  def TurbiniaWait(self,
+                   request_id: str) -> Iterator[Tuple[Dict[str, Any], str]]:
     """This method waits until a Turbinia request finishes processing.
 
     On each iteration, it checks the status of the request and yields each task
@@ -364,7 +367,6 @@ class TurbiniaProcessorBase(module.BaseModule):
     interval = 30
     retries = 0
     processed_paths = set()
-    api_instance = turbinia_requests_api.TurbiniaRequestsApi(self.client)
     status = 'running'
     running_tasks = 1
     if not request_id:
@@ -373,7 +375,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     while status == 'running' and running_tasks > 0 and retries < 3:
       time.sleep(interval)
       try:
-        request_data = api_instance.get_request_status(request_id)
+        request_data = self.requests_api_instance.get_request_status(request_id)
         status = request_data.get('status')
         running_tasks = request_data.get('running_tasks')
         failed_tasks = request_data.get('failed_tasks')
@@ -400,8 +402,7 @@ class TurbiniaProcessorBase(module.BaseModule):
 
   def TurbiniaFinishReport(self, request_id: str) -> str:
     """This method generates a report for a Turbinia request."""
-    api_instance = turbinia_requests_api.TurbiniaRequestsApi(self.client)
-    request_data = api_instance.get_request_status(request_id)
+    request_data = self.requests_api_instance.get_request_status(request_id)
     if request_data:
       report: str = turbinia_formatter.RequestMarkdownReport(
           request_data=request_data).generate_markdown()

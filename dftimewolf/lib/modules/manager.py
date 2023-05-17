@@ -6,6 +6,7 @@ from typing import Dict, TYPE_CHECKING, Type, List, Optional
 if TYPE_CHECKING:
   from dftimewolf.lib import module
 
+
 class ModulesManager(object):
   """Modules manager."""
 
@@ -44,10 +45,7 @@ class ModulesManager(object):
       type: the module class, which is a subclass of BaseModule, or None if
           no corresponding module was found.
     """
-    class_type = None
-    if name in cls._module_classes:
-      class_type = cls._module_classes[name]
-    return class_type
+    return cls._module_classes.get(name, None)
 
   @classmethod
   def RegisterModule(cls, module_class: Type['module.BaseModule']) -> None:
