@@ -43,22 +43,7 @@
             "output_directory": null,
             "sketch_id": null
         }
-    }, {
-          "wants": ["TurbiniaArtifactProcessor"],
-          "runtime_name": "SCP-Download",
-          "name": "SCPExporter",
-          "args": {
-            "paths": null,
-            "destination": "@local_turbinia_results",
-            "hostname": "@hostname",
-            "user": null,
-            "id_file": null,
-            "extra_ssh_options": [],
-            "check_ssh": true,
-            "direction": "download",
-            "multiplexing": true
-          }
-      }],
+    }],
     "args": [
         ["files", "Paths to process.", null],
         ["--turbinia_recipe", "The Turbinia recipe name to use for evidence processing.", null],
