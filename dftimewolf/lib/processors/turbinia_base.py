@@ -342,6 +342,10 @@ class TurbiniaProcessorBase(module.BaseModule):
               request_id, evidence_name))
     except turbinia_api_lib.ApiException as exception:
       self.ModuleError(str(exception), critical=True)
+
+    if not request_id:
+      self.ModuleError('Unable to create Turbinia request', critical=True)
+
     return request_id
 
   def TurbiniaWait(self,

@@ -135,15 +135,6 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
           critical=True)
       return
 
-    if (not disk_names and not request_ids):
-      if not self.GetContainers(containers.GCEDisk):
-        self.ModuleError(
-            'No disk names or request IDs specified, and there are no disks to '
-            'process from previous modules. '
-            'Please specify disk names or request IDs.',
-            critical=True)
-        return
-
     if request_ids:
       self.request_ids = {
           request_ids.strip()
@@ -160,7 +151,6 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
           continue
         self.StoreContainer(
             containers.TurbiniaRequest(project=project, evidence_name=disk))
-        #self.StoreContainer(containers.GCEDisk(name=disk, project=project))
 
     self.TurbiniaSetUp(
         project, turbinia_auth, turbinia_recipe, turbinia_zone, turbinia_api,
