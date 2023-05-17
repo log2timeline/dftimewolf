@@ -1,4 +1,4 @@
-"""Processes GCP cloud disks using Turbinia."""
+"""[DEPRECATED] Processes GCP cloud disks using Turbinia."""
 
 import os
 from typing import Optional, TYPE_CHECKING, Type, Union

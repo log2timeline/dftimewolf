@@ -168,9 +168,9 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
 
   def PreProcess(self) -> None:
     """Ensures containers from previous modules are processed.
-    
-    GCEDisk containers from preivous modules will be deduplicated, and 
-    TurbiniaRequest containers will be created for each GCEDisk container. 
+
+    GCEDisk containers from preivous modules will be deduplicated, and
+    TurbiniaRequest containers will be created for each GCEDisk container.
     This is necessary because TurbiniaRequest containers are used to track
     Turbinia jobs (e.g. to support resuming a recipe after a failure).
     """

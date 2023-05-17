@@ -104,9 +104,7 @@ class DFTimewolfState(object):
     for module in self.recipe['modules'] + self.recipe.get('preflights', []):
       name = module['name']
       if name.endswith('Legacy'):
-        msg = (
-            f'Skipping legacy module {name} because Turbinia'
-            'is not installed.')
+        msg = f'Skipping legacy module {name}, rename module to use.'
         logger.warning(msg)
         continue
       if name not in module_locations:

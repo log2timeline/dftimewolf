@@ -60,10 +60,12 @@ class TurbiniaBaseTest(unittest.TestCase):
   )
   def testTurbiniaStart(self, mock_create_request):
     """Tests the TurbiniaStart method."""
-    print(self.turbinia_processor.__dict__)
     mock_create_request.return_value = {
         "request_id": "41483253079448e59685d88f37ab91f7"
     }
+    mock_api_instance = mock.MagicMock()
+    mock_api_instance.create_request = mock_create_request
+    self.turbinia_processor.requests_api_instance = mock_api_instance
     evidence = {
         "type": "GoogleCloudDisk",
         "disk_name": "disk-1",
@@ -81,7 +83,9 @@ class TurbiniaBaseTest(unittest.TestCase):
   @mock.patch("time.sleep")
   def testTurbiniaWait(self, mock_get_request_status, _):
     """Tests the TurbiniaWait method."""
-    mock_get_request_status = mock.MagicMock()
+    mock_api_instance = mock.MagicMock()
+    mock_api_instance.create_request = mock_get_request_status
+    self.turbinia_processor.requests_api_instance = mock_api_instance
     mock_get_request_status.return_value = self._request_status
     for task, path in self.turbinia_processor.TurbiniaWait(TASK_ID):
       # Check that the task and path are correct for a PlasoParserTask
