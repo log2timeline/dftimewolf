@@ -379,7 +379,7 @@ class TurbiniaProcessorBase(module.BaseModule):
         failed_tasks = request_data.get('failed_tasks')
         successful_tasks = request_data.get('successful_tasks')
         task_count = request_data.get('task_count')
-        progress = math.floor(
+        progress = math.ceil(
             ((failed_tasks + successful_tasks) / task_count) * 100)
         self.PublishMessage(
             f'Turbinia request {request_id} is {status}. Progress: {progress}%')

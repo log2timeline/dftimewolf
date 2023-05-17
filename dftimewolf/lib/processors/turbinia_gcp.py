@@ -129,11 +129,20 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       disk_names (str): Names of the disks to process.
     """
 
-    if (disk_names and request_ids) or (not disk_names and not request_ids):
+    if (disk_names and request_ids):
       self.ModuleError(
-          'One of disk_names or request_ids must be specified, but not both.',
+          'One of disk_names or request_ids can be specified, but not both.',
           critical=True)
       return
+
+    if (not disk_names and not request_ids):
+      if not self.GetContainers(containers.GCEDisk):
+        self.ModuleError(
+            'No disk names or request IDs specified, and there are no disks to '
+            'process from previous modules. '
+            'Please specify disk names or request IDs.',
+            critical=True)
+        return
 
     if request_ids:
       self.request_ids = {
@@ -158,12 +167,12 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
         incident_id, sketch_id)
 
   def PreProcess(self) -> None:
-    """Ensure ForensicsVM containers from previous modules are processed.
-
-    Before the addition of containers.GCEDiskEvidence, containers.ForensicsVM
-    was used to track disks needing processing by Turbinia via this module. Here
-    we grab those containers and track the disks for processing by this module,
-    for any modules that aren't using the new container yet.
+    """Ensures containers from previous modules are processed.
+    
+    GCEDisk containers from preivous modules will be deduplicated, and 
+    TurbiniaRequest containers will be created for each GCEDisk container. 
+    This is necessary because TurbiniaRequest containers are used to track
+    Turbinia jobs (e.g. to support resuming a recipe after a failure).
     """
     vm_containers = self.GetContainers(containers.ForensicsVM)
     for container in vm_containers:
@@ -171,7 +180,23 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
         self.StoreContainer(
             containers.GCEDisk(
                 name=container.evidence_disk.name, project=self.project))
+
     self.state.DedupeContainers(containers.GCEDisk)
+
+    disk_containers = self.GetContainers(containers.GCEDisk)
+    turb_containers = self.GetContainers(containers.TurbiniaRequest)
+    if not disk_containers and not turb_containers:
+      self.ModuleError(
+          'No disk names or request IDs specified, and there are no valid '
+          'containers to process from previous modules. '
+          'Please specify disk names or request IDs.',
+          critical=True)
+      return
+    for disk_container in disk_containers:
+      self.StoreContainer(
+          containers.TurbiniaRequest(
+              project=disk_container.project,
+              evidence_name=disk_container.name))
 
   # pylint: disable=arguments-renamed
   def Process(self, request_container: containers.TurbiniaRequest) -> None:

@@ -80,12 +80,19 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
     self.PublishMessage(f'Turbinia request ID: {request_id}')
 
     for task, path in self.TurbiniaWait(request_id):
+      # Try to set a descriptive name for the container
+      try:
+        task_name = task['name']
+        task_id = task['id']
+        reason = task['reason']
+        descriptive_name = f'{task_name}-{task_id}-{reason}'
+      except KeyError:
+        descriptive_name = container.path
       # We're only interested in plaso files for the time being.
       if path.endswith('.plaso'):
         self.PublishMessage(f'Found plaso result for task {task["id"]}: {path}')
-        container = containers.RemoteFSPath(
-            path=path, hostname=container.hostname)
-        self.StreamContainer(container)
+        fs_container = containers.File(path=path, name=descriptive_name)
+        self.StreamContainer(fs_container)
 
   @staticmethod
   def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
