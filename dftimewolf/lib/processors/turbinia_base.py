@@ -31,14 +31,14 @@ class TurbiniaProcessorBase(module.BaseModule):
   """Base class for processing with Turbinia.
 
   Attributes:
-    client (TurbiniaClient): Turbinia client.
+    client (turbinia_api_lib.ApiClient): Turbinia client.
     client_config (dict): Turbinia client config.
     extensions (List[str]): List of file extensions to look for.
     incident_id (str): The Timesketch incident id.
     instance (str): name of the Turbinia instance
     logger (WolfLogger): logger.
     project (str): name of the GCP project containing the disk to process.
-    requests_api_instance (turbinia_requests_api.TurbiniaRequestsApi): 
+    requests_api_instance (turbinia_requests_api.TurbiniaRequestsApi):
         Turbinia requests API instance.
     sketch_id (int): The Timesketch sketch id
     turbinia_recipe (str): Turbinia recipe name.
@@ -72,7 +72,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.critical = critical
     self.state = state
     self.output_path = str()
-    self.client = None
+    self.client: turbinia_api_lib.ApiClient = None
     self.instance = None
     self.project = str()
     self.incident_id = str()
@@ -82,7 +82,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.turbinia_region = None
     self.turbinia_zone = str()
     self.turbinia_api = str()
-    self.requests_api_instance = None
+    self.requests_api_instance: turbinia_requests_api.TurbiniaRequestsApi = None
     self.client_config = None
     self.credentials_path = os.path.join(
         os.path.expanduser('~'), ".dftimewolf_turbinia.token")
