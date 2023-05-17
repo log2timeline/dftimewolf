@@ -45,18 +45,14 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     container: Optional[Union[containers.File,
                               containers.ThreatIntelligence]] = None
     if path.endswith('BinaryExtractorTask.tar.gz'):
-      self.PublishMessage(f'Found BinaryExtractorTask result: {path}')
       container = containers.ThreatIntelligence(
           name='BinaryExtractorResults', indicator=None, path=path)
     elif path.endswith('hashes.json'):
-      self.PublishMessage(f'Found hashes.json: {path}')
       container = containers.ThreatIntelligence(
           name='ImageExportHashes', indicator=None, path=path)
     elif path.endswith('.plaso'):
-      self.PublishMessage(f'Found plaso result: {path}')
       container = containers.File(name=description, path=path)
     elif magic.from_file(path, mime=True).startswith('text'):
-      self.PublishMessage(f'Found result: {path}')
       container = containers.File(name=description, path=path)
     else:
       self.PublishMessage(
