@@ -200,18 +200,16 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     if request_container.request_id:
       # We have a request ID, so we can skip creating a new Turbinia request.
       request_id = request_container.request_id
-      description = request_container.evidence_name
     else:
       # We don't have a request ID, so we need to create a new Turbinia request.
-      description = f'{self.project}-{request_container.evidence_name}'
       request_id = self._CreateTurbiniaRequest(request_container)
 
     self.PublishMessage(f'Turbinia request identifier: {request_id}')
 
     for task, path in self.TurbiniaWait(request_id):
       task_id = task.get('id')
-      if not description:
-        description = f'{self.project}-{task.get("name")}'
+      task_name = task.get('name')
+      description = f'{self.project}-{task_name}-{task_id}'
       self.PublishMessage(f'New output file {path} found for task {task_id}')
       local_path = self.DownloadFilesFromAPI(task, path)
       if not local_path:
