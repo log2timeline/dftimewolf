@@ -39,21 +39,21 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     self.request_ids: Set[str] = set()
 
   def _BuildContainer(
-      self, path: str, description: str
+      self, path: str, container_name: str
   ) -> Optional[Union[containers.File, containers.ThreatIntelligence]]:
     """Builds a container from a path."""
     container: Optional[Union[containers.File,
                               containers.ThreatIntelligence]] = None
     if path.endswith('BinaryExtractorTask.tar.gz'):
       container = containers.ThreatIntelligence(
-          name='BinaryExtractorResults', indicator=None, path=path)
+          name=container_name, indicator=None, path=path)
     elif path.endswith('hashes.json'):
       container = containers.ThreatIntelligence(
-          name='ImageExportHashes', indicator=None, path=path)
+          name=container_name, indicator=None, path=path)
     elif path.endswith('.plaso'):
-      container = containers.File(name=description, path=path)
+      container = containers.File(name=container_name, path=path)
     elif magic.from_file(path, mime=True).startswith('text'):
-      container = containers.File(name=description, path=path)
+      container = containers.File(name=container_name, path=path)
     else:
       self.PublishMessage(
           f'Skipping result of type {magic.from_file(path)} at: {path}')
@@ -209,14 +209,14 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     for task, path in self.TurbiniaWait(request_id):
       task_id = task.get('id')
       task_name = task.get('name')
-      description = f'{self.project}-{task_name}-{task_id}'
+      container_name = f'{self.project}-{task_name}-{task_id}'
       self.PublishMessage(f'New output file {path} found for task {task_id}')
       local_path = self.DownloadFilesFromAPI(task, path)
       if not local_path:
         self.logger.warning(
             f'No interesting output files could be found for task {task_id}')
         continue
-      container = self._BuildContainer(local_path, description)
+      container = self._BuildContainer(local_path, container_name)
       if container:
         self.PublishMessage(f'Streaming container {container.name}')
         self.StreamContainer(container)
