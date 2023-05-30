@@ -74,6 +74,8 @@ MODULES = {
   'SSHMultiplexer': 'dftimewolf.lib.preflights.ssh_multiplexer',
   'TimesketchEnhancer': 'dftimewolf.lib.enhancers.timesketch',
   'TimesketchExporter': 'dftimewolf.lib.exporters.timesketch',
+  'TurbiniaArtifactProcessorLegacy': 'dftimewolf.lib.processors.turbinia_artifact_legacy',
+  'TurbiniaGCPProcessorLegacy': 'dftimewolf.lib.processors.turbinia_gcp_legacy',
   'TurbiniaArtifactProcessor': 'dftimewolf.lib.processors.turbinia_artifact',
   'TurbiniaGCPProcessor': 'dftimewolf.lib.processors.turbinia_gcp',
   'VTCollector' : 'dftimewolf.lib.collectors.virustotal',

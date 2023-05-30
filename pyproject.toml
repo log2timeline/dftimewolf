@@ -11,6 +11,8 @@ dftimewolf = 'dftimewolf.cli.dftimewolf_recipes:Main'
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
 docker = "^5.0.3"
+filelock = "*"
+google-cloud-storage = "*"
 google-cloud-logging = "2.3.1"
 google-cloud-bigquery = "*"
 libcloudforensics = "^20220718"
@@ -25,8 +27,13 @@ prettytable = "^3.3.0"
 vt-py = "^0.14.0"
 boto3 = "^1.24.31"
 python-magic = "^0.4.27"
-turbinia = "20220216"
+turbinia = {version = "20230315", optional = true}
+turbinia-api-lib = "*"
+turbinia-client = "*"
 grr-api-client = "^3.4.6"
+
+[tool.poetry.extras]
+turbinia_legacy = ["turbinia"]
 
 [tool.poetry.group.dev.dependencies]
 mock = "^4.0.3"
