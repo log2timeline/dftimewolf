@@ -175,8 +175,7 @@ class TurbiniaProcessorBase(module.BaseModule):
       file = tempfile.NamedTemporaryFile(
           mode='wb', prefix=f'{filename}', suffix='.tgz', delete=False)
       local_path = file.name
-      self.logger.info(
-          f'Downloading output for task {task_id} to {local_path}')
+      self.logger.info(f'Downloading output for task {task_id} to {local_path}')
       # Read the response and write to the file.
       for chunk in api_response.read_chunks():
         file.write(chunk)
@@ -320,6 +319,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     # Build request and request_options objects to send to the API server.
     request_options: Dict[str, Any] = {
         'filter_pattern': threat_intel_indicators,
+        'jobs_allowlist': [],
         'jobs_denylist': jobs_denylist,
         'reason': self.incident_id,
         'requester': getpass.getuser(),
@@ -336,7 +336,7 @@ class TurbiniaProcessorBase(module.BaseModule):
         request_options.pop('jobs_denylist')
         request_options.pop('jobs_allowlist')
       except KeyError as exception:
-        self.logger.warning(f'Unable to remove key: {exception}')
+        self.logger.debug(f'Key: {exception} not found in request options.')
 
     request = {'evidence': evidence, 'request_options': request_options}
 
