@@ -344,8 +344,7 @@ class DFTimewolfTool(object):
     """Runs the modules."""
     logger.info('Running modules...')
     self._state.RunModules()
-    logger.info('Recipe {0:s} executed successfully!'.format(
-        self._recipe['name']))
+    logger.info('Modules run successfully!')
 
   def SetupModules(self) -> None:
     """Sets up the modules."""
