@@ -7,7 +7,5 @@
         "*.py"
     ],
     "python.testing.pytestEnabled": false,
-    "python.testing.unittestEnabled": true,
-    "python.linting.pylintEnabled": true,
-    "python.linting.enabled": true
+    "python.testing.unittestEnabled": true
 }

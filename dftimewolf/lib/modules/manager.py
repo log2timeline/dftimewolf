@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 """Modules manager class."""
 
-from typing import Dict, TYPE_CHECKING, Type, List, Optional
+from typing import Dict, TYPE_CHECKING, Type, List
 
 if TYPE_CHECKING:
   from dftimewolf.lib import module
-
 
 class ModulesManager(object):
   """Modules manager."""
@@ -35,7 +34,7 @@ class ModulesManager(object):
     del cls._module_classes[class_name]
 
   @classmethod
-  def GetModuleByName(cls, name: str) -> Optional[Type['module.BaseModule']]:
+  def GetModuleByName(cls, name: str) -> Type['module.BaseModule']:
     """Retrieves a specific module by its name.
 
     Args:
@@ -45,7 +44,7 @@ class ModulesManager(object):
       type: the module class, which is a subclass of BaseModule, or None if
           no corresponding module was found.
     """
-    return cls._module_classes.get(name, None)
+    return cls._module_classes[name]
 
   @classmethod
   def RegisterModule(cls, module_class: Type['module.BaseModule']) -> None:
