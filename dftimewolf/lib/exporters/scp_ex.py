@@ -40,6 +40,7 @@ class SCPExporter(module.BaseModule):
     self._extra_ssh_options = []  # type: List[str]
     self._upload = False
     self._multiplexing = False
+    self._control_filename: str
 
   def SetUp(self, # pylint: disable=arguments-differ
             paths: str,
@@ -78,6 +79,9 @@ class SCPExporter(module.BaseModule):
     self._user = user
     self._multiplexing = multiplexing
     self._extra_ssh_options = extra_ssh_options
+    self._control_filename = self.state.GetFromCache(
+        'ssh_control', '~/.ssh/ctrl-%C'
+    )
 
     if direction not in ['upload', 'download']:
       self.ModuleError(
@@ -118,7 +122,7 @@ class SCPExporter(module.BaseModule):
     if self._multiplexing:
       cmd.extend([
         '-o', 'ControlMaster=auto',
-        '-o', 'ControlPath=~/.ssh/ctrl-%C',
+        '-o', f'ControlPath={self._control_filename}',
       ])
     if self._extra_ssh_options:
       cmd.extend(self._extra_ssh_options)
@@ -195,7 +199,7 @@ class SCPExporter(module.BaseModule):
       cmd = ['ssh']
 
       if self._multiplexing:
-        cmd.extend(['-o', 'ControlPath=~/.ssh/ctrl-%C'])
+        cmd.extend(['-o', f'ControlPath={self._control_filename}'])
 
       cmd.extend([self._GenerateRemotePrefix()])
       cmd.extend(mkdir_command)
