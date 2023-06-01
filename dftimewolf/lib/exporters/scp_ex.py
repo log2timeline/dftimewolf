@@ -40,6 +40,7 @@ class SCPExporter(module.BaseModule):
     self._extra_ssh_options = []  # type: List[str]
     self._upload = False
     self._multiplexing = False
+    self._control_filename: str
 
   def SetUp(self, # pylint: disable=arguments-differ
             paths: str,
