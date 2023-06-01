@@ -130,7 +130,7 @@ class SCPExporterTest(unittest.TestCase):
         'fakeuser@fakehost:/path1', 'fakeuser@fakehost:/path2', '/destination'])
 
   @mock.patch('subprocess.call')
-  def testProcessDownloadMultiplex(self, mock_subprocess_call):
+  def testProcessDownloadMultiplexCache(self, mock_subprocess_call):
     """Tests that SSH is called with the correct multiplex parameter."""
     mock_subprocess_call.return_value = 0
     test_state = state.DFTimewolfState(config.Config)
