@@ -331,9 +331,12 @@ class TurbiniaProcessorBase(module.BaseModule):
     if self.turbinia_recipe:
       request_options['recipe_name'] = self.turbinia_recipe
       # Remove incompatible options
-      request_options.pop('filter_pattern')
-      request_options.pop('jobs_denylist')
-      request_options.pop('jobs_allowlist')
+      try:
+        request_options.pop('filter_pattern')
+        request_options.pop('jobs_denylist')
+        request_options.pop('jobs_allowlist')
+      except KeyError as exception:
+        self.logger.warning(f'Unable to remove key: {exception}')
 
     request = {'evidence': evidence, 'request_options': request_options}
 
