@@ -200,8 +200,10 @@ class TicketAttribute(interface.AttributeContainer):
   def __eq__(self, other: 'TicketAttribute') -> bool:
     """Override '==' operator. Used only in unit tests."""
     return (
-        self.type == other.type and self.name == other.name and
-        self.value == other.value)
+        self.type == other.type
+        and self.name == other.name
+        and self.value == other.value
+    )
 
   def __str__(self) -> str:
     """Override __str()__."""
@@ -456,9 +458,9 @@ class WorkspaceLogs(interface.AttributeContainer):
       application_name: str,
       path: str,
       filter_expression: str,
-      user_key: Optional[str] = '',
-      start_time: Optional[str] = '',
-      end_time: Optional[str] = '') -> None:
+      user_key: Optional[str ]= '',
+      start_time: Optional[str]='',
+      end_time: Optional[str]='') -> None:
     """Initializes the Workspace logs container.
 
     Args:
@@ -654,7 +656,10 @@ class BigQueryQuery(interface.AttributeContainer):
 
   CONTAINER_TYPE = 'bigquery_query'
 
-  def __init__(self, query: str, description: str, pandas_output: bool) -> None:
+  def __init__(self,
+               query: str,
+               description: str,
+               pandas_output: bool) -> None:
     super(BigQueryQuery, self).__init__()
     self.query = query
     self.description = description
@@ -687,39 +692,3 @@ class Telemetry(interface.AttributeContainer):
   def __str__(self) -> str:
     """Override __str()__."""
     return f'Telemetry<{self.key}:{self.value}>'
-
-
-class TurbiniaRequest(interface.AttributeContainer):
-  """Turbinia request container.
-
-  Attributes:
-    project (str): name of the GCP project containing the disk to process.
-    request_id (str): Turbinia request identifier.
-    evidence_name (str): Name of the evidence being processed.
-  """
-  CONTAINER_TYPE = 'turbiniarequest'
-
-  def __init__(
-      self,
-      project: str,
-      request_id: Optional[str] = None,
-      evidence_name: Optional[str] = None) -> None:
-    """Initializes the Turbinia-request attribute container.
-
-    Args:
-      project (str): name of the GCP project containing the disk to process.
-      request_id: Turbinia request identifier.
-      evidence_name: Name of the evidence being processed.
-    """
-    super().__init__()
-    self.request_id = request_id
-    self.evidence_name = evidence_name
-    self.project = project
-
-  def __str__(self) -> Optional[str]:
-    """Overrides __str()__."""
-    return self.request_id if self.request_id else self.evidence_name
-
-  def __eq__(self, other: TurbiniaRequest) -> bool:
-    """Override __eq__() for this container."""
-    return self.request_id == other.request_id
