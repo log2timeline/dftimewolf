@@ -93,6 +93,8 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
     except exceptions.PermissionDenied as error:
       logger.warning('Permission denied when logging telemetry. '
                      f'Check your Spanner database permissions. {error}')
+    except exceptions.RetryError as error:
+      logger.warning(f'Could not send telemetry: {error}')
     return '\n'.join(entries)
 
   def _GetAllWorkflowTelemetryTransaction(
@@ -137,6 +139,8 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
     except exceptions.PermissionDenied as error:
       logger.warning('Permission denied when logging telemetry. '
                      f'Check your Spanner database permissions. {error}')
+    except exceptions.RetryError as error:
+      logger.warning(f'Could not send telemetry: {error}')
 
   def _LogTelemetryTransaction(
       self, transaction: Any, telemetry: Dict[str, str]) -> None:
