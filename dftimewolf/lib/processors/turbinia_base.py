@@ -177,7 +177,7 @@ class TurbiniaProcessorBase(module.BaseModule):
       local_path = file.name
       self.logger.info(f'Downloading output for task {task_id} to {local_path}')
       # Read the response and write to the file.
-      for chunk in api_response.read_chunks():
+      for chunk in api_response.read_chunked():
         file.write(chunk)
       file.close()
 
