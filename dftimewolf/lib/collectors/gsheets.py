@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """Pulls entries from Google Sheets."""
 
-
 import os.path
 import re
 import tempfile
@@ -31,10 +30,11 @@ class GoogleSheetsCollector(module.BaseModule):
   _CREDENTIALS_FILENAME = '.dftimewolf_google_sheets_credentials.json'
   _CLIENT_SECRET_FILENAME = '.dftimewolf_google_sheets_client_secret.json'
 
-  def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str] = None,
-               critical: bool = False) -> None:
+  def __init__(
+      self,
+      state: DFTimewolfState,
+      name: Optional[str] = None,
+      critical: bool = False) -> None:
     """Initializes a Google Sheets collector."""
     super(GoogleSheetsCollector, self).__init__(
         state, name=name, critical=critical)
@@ -48,10 +48,9 @@ class GoogleSheetsCollector(module.BaseModule):
     self._validate_columns = True
 
   # pylint: disable=arguments-differ
-  def SetUp(self,
-            spreadsheet: str,
-            sheet_names: List[str],
-            validate_columns: bool) -> None:
+  def SetUp(
+      self, spreadsheet: str, sheet_names: List[str],
+      validate_columns: bool) -> None:
     """Sets up a a Google Sheets collector.
 
     Args:
@@ -67,17 +66,17 @@ class GoogleSheetsCollector(module.BaseModule):
     if not sheet_names:
       self._all_sheets = True
     self._validate_columns = validate_columns
-    self._sheets_resource = discovery.build('sheets', 'v4',
-      credentials=self._credentials)
+    self._sheets_resource = discovery.build(
+        'sheets', 'v4', credentials=self._credentials)
 
   def Process(self) -> None:
     """Copies entries from Google Sheets."""
 
     try:
       if not self._sheets_resource:
-        self.ModuleError('Google Sheets API resource was not initialized',
-          critical=True)
-        return #return is required otherwise mypy will complain
+        self.ModuleError(
+            'Google Sheets API resource was not initialized', critical=True)
+        return  #return is required otherwise mypy will complain
 
       # Retrieve list of sheets in the spreadsheet
       # Pylint can't see the spreadsheets method.
@@ -115,15 +114,16 @@ class GoogleSheetsCollector(module.BaseModule):
             f'Downloaded results of sheet "{sheet_title}" to {output_path}')
         output_file.close()
         sheet_csv_file = containers.File(
-            name= self._spreadsheet_id,
+            name=self._spreadsheet_id,
             path=output_path,
-            description= f'{spreadsheet_title}_{sheet_title}')
+            description=f'{spreadsheet_title}_{sheet_title}')
         self.StoreContainer(sheet_csv_file)
 
     except (RefreshError, DefaultCredentialsError) as exception:
-      self.ModuleError('Something is wrong with your gcloud access token or '
-                       'Application Default Credentials. Try running:\n '
-                       '$ gcloud auth application-default login')
+      self.ModuleError(
+          'Something is wrong with your gcloud access token or '
+          'Application Default Credentials. Try running:\n '
+          '$ gcloud auth application-default login')
       self.ModuleError(str(exception), critical=True)
 
   def _GetCredentials(self) -> Credentials:
@@ -146,8 +146,7 @@ class GoogleSheetsCollector(module.BaseModule):
           credentials = Credentials.from_authorized_user_file(
               credentials_path, self.SCOPES)
         except ValueError as exception:
-          self.logger.warning(
-              f'Unable to load credentials: {exception}')
+          self.logger.warning(f'Unable to load credentials: {exception}')
           credentials = None
 
       # If there are no (valid) credentials available, let the user log in.
@@ -188,13 +187,12 @@ class GoogleSheetsCollector(module.BaseModule):
       self.ModuleError(
           f'spreadsheet ID is not in the correct format {spreadsheet}.',
           critical=True)
-      return "" #return is required otherwise mypy will complain
+      return ""  #return is required otherwise mypy will complain
 
     return spreadsheet_match.group(1)
 
-  def _ExtractEntriesFromSheet(self,
-                               spreadsheet_id: str,
-                               sheet_title: str) -> pd.DataFrame | None:
+  def _ExtractEntriesFromSheet(
+      self, spreadsheet_id: str, sheet_title: str) -> pd.DataFrame | None:
     """Extract entries from the sheet inside the spreadsheet.
 
     Args:
@@ -207,9 +205,9 @@ class GoogleSheetsCollector(module.BaseModule):
     """
 
     if not self._sheets_resource:
-      self.ModuleError('Google Sheets API resource was not initialized',
-        critical=True)
-      return None #return is required otherwise mypy will complain
+      self.ModuleError(
+          'Google Sheets API resource was not initialized', critical=True)
+      return None  #return is required otherwise mypy will complain
 
     # Pylint can't see the spreadsheets method.
     # pylint: disable=no-member
@@ -236,19 +234,18 @@ class GoogleSheetsCollector(module.BaseModule):
         self.logger.warning(
             f'Mandatory column "{column}" was not found in sheet \
               "{sheet_title}".')
-        self.logger.warning('Please make sure all mandatory columns are \
-          present:'
-        )
+        self.logger.warning(
+            'Please make sure all mandatory columns are \
+          present:')
         self.logger.warning(
             '"message": String with an informative message of the event')
         self.logger.warning(
-            '"datetime": ISO8601 format for example: 2015-07-24T19:01:01+00:00'
-        )
+            '"datetime": ISO8601 format for example: 2015-07-24T19:01:01+00:00')
         self.logger.warning(
             '"timestamp_desc": String explaining what type of timestamp it is \
-              for example file created'
-        )
+              for example file created')
         return None
     return df
+
 
 modules_manager.ModulesManager.RegisterModule(GoogleSheetsCollector)
