@@ -3,7 +3,7 @@ import datetime
 from dataclasses import dataclass
 import logging
 from typing import Dict, Any, List, Union
-import uuid
+import uuid as uuid_lib
 
 from dftimewolf import config
 
@@ -38,15 +38,12 @@ class TelemetryCollection:
 class BaseTelemetry():
   """Interface for implementing a telemetry module."""
 
-  def __new__(cls, *args: Any, **kwargs: str) -> "BaseTelemetry": # pylint: disable=unused-argument
-    if not hasattr(cls, 'instance'):
-      cls.instance = super(BaseTelemetry, cls).__new__(cls)
-    return cls.instance
-
-  def __init__(self) -> None:
+  def __init__(self, uuid: str | None = None) -> None:
     """Initializes a BaseTelemetry object."""
     super().__init__()
-    self.uuid = str(uuid.uuid4())
+    self.uuid = uuid
+    if not self.uuid:
+      self.uuid = str(uuid_lib.uuid4())
     self.entries = [] # type: List[str]
 
   def FormatTelemetry(self) -> str:
@@ -75,14 +72,17 @@ class BaseTelemetry():
 class GoogleCloudSpannerTelemetry(BaseTelemetry):
   """Sends telemetry data to Google Cloud Spanner."""
 
-  def __init__(self, **kwargs: str) -> None:
+  def __init__(
+      self,
+      project_name: str,
+      instance_name: str,
+      database_name: str,
+      uuid: str | None = None) -> None:
     """Initializes a GoogleCloudSpannerTelemetry object."""
-    if hasattr(self, 'database'):  # Already initialized
-      return
-    super().__init__()
-    spanner_client = spanner.Client(project=kwargs['project_name'])
-    instance = spanner_client.instance(kwargs['instance_name'])
-    self.database = instance.database(kwargs['database_name'])
+    super().__init__(uuid=uuid)
+    spanner_client = spanner.Client(project=project_name)
+    instance = spanner_client.instance(instance_name)
+    self.database = instance.database(database_name)
 
   def FormatTelemetry(self) -> str:
     """Gets all telemetry for a given workflow UUID."""
@@ -152,25 +152,21 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
       values.append(value)
     transaction.insert(table='Telemetry', columns=columns, values=[values])
 
-# pylint: disable=line-too-long
-TELEMETRY = None  # type: Union[BaseTelemetry, GoogleCloudSpannerTelemetry, None]
 
-def GetTelemetry() -> Union[BaseTelemetry, GoogleCloudSpannerTelemetry]:
+def GetTelemetry(uuid: str | None = None) -> Union[BaseTelemetry, GoogleCloudSpannerTelemetry]:
   """Returns the currently configured Telemetry object."""
-  # pylint: disable=global-statement
-  global TELEMETRY
-  if TELEMETRY is None:
-    telemetry_config = config.Config.GetExtra('telemetry')
-    if telemetry_config.get('type') == 'google_cloud_spanner' and HAS_SPANNER:
-      TELEMETRY = GoogleCloudSpannerTelemetry(**telemetry_config['config'])
-    else:
-      TELEMETRY = BaseTelemetry()
-  return TELEMETRY
+  telemetry_config = config.Config.GetExtra('telemetry')
+  if telemetry_config.get('type') == 'google_cloud_spanner' and HAS_SPANNER:
+    return GoogleCloudSpannerTelemetry(**telemetry_config['config'], uuid=uuid)
+  else:
+    return BaseTelemetry(uuid=uuid)
+
 
 def LogTelemetry(key: str, value: str, src_module_name: str, recipe_name: str = '') -> None:
   """"Logs a Telemetry entry using the currently configured Telemetry object."""
   telemetry = GetTelemetry()
   telemetry.LogTelemetry(key, value, src_module_name, recipe_name)
+
 
 def FormatTelemetry() -> str:
   """Formats the telemetry of the currently configured Telemetry object."""

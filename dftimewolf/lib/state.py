@@ -9,7 +9,7 @@ import importlib
 import logging
 import threading
 import traceback
-from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Sequence, Type, Any, TypeVar, cast  # pylint: disable=line-too-long
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Sequence, Type, Any, TypeVar, cast, Union  # pylint: disable=line-too-long
 from dftimewolf.cli import curses_display_manager as cdm
 
 from dftimewolf.config import Config
@@ -25,9 +25,7 @@ if TYPE_CHECKING:
   from dftimewolf.lib import module as dftw_module
 T = TypeVar("T", bound="interface.AttributeContainer")  # pylint: disable=invalid-name,line-too-long
 
-# TODO(tomchop): Consider changing this to `dftimewolf.state` if we ever need
-# more granularity.
-logger = logging.getLogger('dftimewolf')
+logger = logging.getLogger('dftimewolf.state')
 
 NEW_ISSUE_URL = 'https://github.com/log2timeline/dftimewolf/issues/new'
 
@@ -69,6 +67,7 @@ class DFTimewolfState(object):
     self._abort_execution = False
     self.stdout_log = True
     self._progress_warning_shown = False
+    self.telemetry: telemetry.BaseTelemetry | telemetry.GoogleCloudSpannerTelemetry
 
   def _InvokeModulesInThreads(self, callback: Callable[[Any], Any]) -> None:
     """Invokes the callback function on all the modules in separate threads.
@@ -235,7 +234,7 @@ class DFTimewolfState(object):
       telemetry_entry: The telemetry object to store.
     """
     for key, value in telemetry_entry.telemetry.items():
-      TELEMETRY.LogTelemetry(
+      self.telemetry.LogTelemetry(
         key, value, telemetry_entry.module_name, telemetry_entry.recipe
       )
 

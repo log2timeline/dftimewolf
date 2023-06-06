@@ -11,6 +11,7 @@ import os
 import signal
 import sys
 import time
+import uuid
 
 from typing import TYPE_CHECKING, List, Optional, Dict, Any, cast
 from dftimewolf.cli.curses_display_manager import CursesDisplayManager
@@ -106,6 +107,8 @@ class DFTimewolfTool(object):
     self.dry_run = False
     self.cdm = cdm
     self._state: "dftw_state.DFTimewolfState" # for pytype
+    self.uuid = str(uuid.uuid4())
+    self.telemetry = telemetry.GetTelemetry(uuid=self.uuid)
 
     self._DetermineDataFilesPath()
 
@@ -277,9 +280,12 @@ class DFTimewolfTool(object):
       self._state = DFTimewolfStateWithCDM(config.Config, self.cdm)
     else:
       self._state = DFTimewolfState(config.Config)
+
     logger.info('Loading recipe {0:s}...'.format(self._recipe['name']))
     # Raises errors.RecipeParseError on error.
     self._state.LoadRecipe(self._recipe, MODULES)
+
+    self._state.telemetry = self.telemetry
 
     module_cnt = len(self._recipe.get('modules', [])) + \
                  len(self._recipe.get('preflights', []))
@@ -358,7 +364,7 @@ class DFTimewolfTool(object):
 
   def FormatTelemetry(self) -> str:
     """Prints collected telemetry if existing."""
-    return TELEMETRY.FormatTelemetry()
+    return self.telemetry.FormatTelemetry()
 
   def RecipesManager(self) -> recipes_manager.RecipesManager:
     """Returns the recipes manager."""
@@ -414,8 +420,6 @@ def SetupLogging(stdout_log: bool = False) -> None:
   else:
     logger.debug(f'Logging to {logging_utils.DEFAULT_LOG_FILE}')
 
-  logger.success('Success!')
-
 
 def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
   """
@@ -429,7 +433,8 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
 
   # TODO: log errors if this fails.
   tool.LoadConfiguration()
-  TELEMETRY.LogTelemetry('no_curses', str(cdm is None), 'core')
+  tool.telemetry.LogTelemetry('no_curses', str(cdm is None), 'core', 'N/A')
+  logger.success(f'dfTimewolf tool initialized with UUID: {tool.uuid}')
 
   try:
     tool.ReadRecipes()
@@ -458,8 +463,8 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
   recipe_name = tool.state.recipe['name']
 
   for module in sorted(modules):
-    TELEMETRY.LogTelemetry('module', module, 'core', recipe_name)
-  TELEMETRY.LogTelemetry(
+    tool.telemetry.LogTelemetry('module', module, 'core', recipe_name)
+  tool.telemetry.LogTelemetry(
     'workflow_start',
     datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
     'core',
@@ -489,7 +494,7 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
   time_ready = time.time()*1000
   tool.RunPreflights()
   time_preflights = time.time()*1000
-  TELEMETRY.LogTelemetry(
+  tool.telemetry.LogTelemetry(
     'preflights_delta', str(time_preflights - time_ready), 'core', recipe_name)
 
   try:
@@ -501,7 +506,7 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
     return 1
 
   time_setup = time.time()*1000
-  TELEMETRY.LogTelemetry(
+  tool.telemetry.LogTelemetry(
     'setup_delta', str(time_setup - time_preflights), 'core', recipe_name)
 
   try:
@@ -513,13 +518,13 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
     return 1
 
   time_run = time.time()*1000
-  TELEMETRY.LogTelemetry(
+  tool.telemetry.LogTelemetry(
     'run_delta', str(time_run - time_setup), 'core', recipe_name)
 
   tool.CleanUpPreflights()
 
   total_time = time.time()*1000 - time_start
-  TELEMETRY.LogTelemetry('total_time', str(total_time), 'core', recipe_name)
+  tool.telemetry.LogTelemetry('total_time', str(total_time), 'core', recipe_name)
   for telemetry_row in tool.FormatTelemetry().split('\n'):
     logger.debug(telemetry_row)
 
