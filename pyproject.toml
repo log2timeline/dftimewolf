@@ -9,7 +9,7 @@ license = "Apache"
 dftimewolf = 'dftimewolf.cli.dftimewolf_recipes:Main'
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.11"
+python = ">=3.10,<3.11"
 docker = "^5.0.3"
 google-cloud-logging = "2.3.1"
 google-cloud-bigquery = "*"
