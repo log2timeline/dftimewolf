@@ -93,7 +93,8 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
     except exceptions.PermissionDenied as error:
       logger.warning('Permission denied when logging telemetry. '
                      f'Check your Spanner database permissions. {error}')
-    except exceptions.RetryError as error:
+    # We want to catch all exceptions and not interfere with runtime.
+    except Exception as error:  # pylint: disable=broad-except
       logger.warning(f'Could not send telemetry: {error}')
     return '\n'.join(entries)
 
@@ -139,7 +140,8 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
     except exceptions.PermissionDenied as error:
       logger.warning('Permission denied when logging telemetry. '
                      f'Check your Spanner database permissions. {error}')
-    except exceptions.RetryError as error:
+    # We want to catch all exceptions and not interfere with runtime.
+    except Exception as error:  # pylint: disable=broad-except
       logger.warning(f'Could not send telemetry: {error}')
 
   def _LogTelemetryTransaction(
