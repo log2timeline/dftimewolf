@@ -307,7 +307,8 @@ class TurbiniaProcessorBase(module.BaseModule):
     request_id = ''
     yara_text = ''
     jobs_denylist = [
-        'StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob'
+        'StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 
+        'PhotorecJob', 'PsortJob'
     ]
     if not evidence:
       self.ModuleError('No evidence to process', critical=True)
