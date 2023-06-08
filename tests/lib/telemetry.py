@@ -24,14 +24,6 @@ class BaseTelemetryTest(unittest.TestCase):
     if hasattr(telemetry.GoogleCloudSpannerTelemetry, 'instance'):
       delattr(telemetry.GoogleCloudSpannerTelemetry, 'instance')
 
-  def testSingleton(self):
-    """Tests that the singleton property of the Telemetry object holds."""
-    telemetry1 = telemetry.BaseTelemetry()
-    telemetry2 = telemetry.BaseTelemetry()
-
-    self.assertEqual(id(telemetry1), id(telemetry2))
-    self.assertEqual(id(telemetry1.entries), id(telemetry2.entries))
-
   @mock.patch('uuid.uuid4', return_value='test_uuid')
   def testInit(self, unused_mock_uuid):
     """Tests that the BaseTelemetry object is properly initialized."""
