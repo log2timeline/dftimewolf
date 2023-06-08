@@ -57,6 +57,7 @@ class BaseModule(object):
     self.state = state
     self.logger = cast(logging_utils.WolfLogger,
                        logging.getLogger(name=self.name))
+    self.logger.handlers.clear()
     self.logger.propagate = False
     self.SetupLogging()
 
