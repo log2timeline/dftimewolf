@@ -307,7 +307,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     request_id = ''
     yara_text = ''
     jobs_denylist = [
-        'StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 
+        'StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob',
         'PhotorecJob', 'PsortJob'
     ]
     if not evidence:
