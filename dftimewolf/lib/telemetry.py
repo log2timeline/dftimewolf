@@ -80,9 +80,16 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
       uuid: str | None = None) -> None:
     """Initializes a GoogleCloudSpannerTelemetry object."""
     super().__init__(uuid=uuid)
-    spanner_client = spanner.Client(project=project_name)
-    instance = spanner_client.instance(instance_name)
-    self.database = instance.database(database_name)
+    self.project_name = project_name
+    self.instance_name = instance_name
+    self.database_name = database_name
+
+  @property
+  def database(self):
+    """Returns the Spanner database object."""
+    spanner_client = spanner.Client(project=self.project_name)
+    instance = spanner_client.instance(self.instance_name)
+    self.database = instance.database(self.database_name)
 
   def FormatTelemetry(self) -> str:
     """Gets all telemetry for a given workflow UUID."""
