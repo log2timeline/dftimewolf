@@ -276,16 +276,17 @@ class DFTimewolfTool(object):
     self._recipe = self._command_line_options.recipe
     self.dry_run = self._command_line_options.dry_run
 
+    state: DFTimewolfState
     if self.cdm:
-      self._state = DFTimewolfStateWithCDM(config.Config, self.cdm)
+      state = DFTimewolfStateWithCDM(config.Config, self.cdm)
     else:
-      self._state = DFTimewolfState(config.Config)
+      state = DFTimewolfState(config.Config)
+    state.telemetry = self.telemetry
+    self._state = state
 
     logger.info('Loading recipe {0:s}...'.format(self._recipe['name']))
     # Raises errors.RecipeParseError on error.
     self._state.LoadRecipe(self._recipe, MODULES)
-
-    self._state.telemetry = self.telemetry
 
     module_cnt = len(self._recipe.get('modules', [])) + \
                  len(self._recipe.get('preflights', []))
