@@ -123,7 +123,7 @@ class WolfFormatter(logging.Formatter):
     if self.threaded:
       stack = [i.function for i in inspect.stack()]
       if 'Process' in stack:
-        thread_name = threading.current_thread().getName()
+        thread_name = threading.current_thread().name
         message = record.getMessage()
         record.msg = f"[{thread_name}] {message}"
     return super(WolfFormatter, self).format(record)

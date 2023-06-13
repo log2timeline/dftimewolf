@@ -162,16 +162,18 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
     transaction.insert(table='Telemetry', columns=columns, values=[values])
 
 
-def GetTelemetry(uuid: str | None = None) -> Union[BaseTelemetry, GoogleCloudSpannerTelemetry]:
+def GetTelemetry(
+    uuid: str | None = None
+  ) -> Union[BaseTelemetry, GoogleCloudSpannerTelemetry]:
   """Returns the currently configured Telemetry object."""
   telemetry_config = config.Config.GetExtra('telemetry')
   if telemetry_config.get('type') == 'google_cloud_spanner' and HAS_SPANNER:
     return GoogleCloudSpannerTelemetry(**telemetry_config['config'], uuid=uuid)
-  else:
-    return BaseTelemetry(uuid=uuid)
+  return BaseTelemetry(uuid=uuid)
 
 
-def LogTelemetry(key: str, value: str, src_module_name: str, recipe_name: str = '') -> None:
+def LogTelemetry(
+    key: str, value: str, src_module_name: str, recipe_name: str = '') -> None:
   """"Logs a Telemetry entry using the currently configured Telemetry object."""
   telemetry = GetTelemetry()
   telemetry.LogTelemetry(key, value, src_module_name, recipe_name)

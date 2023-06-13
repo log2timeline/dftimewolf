@@ -525,7 +525,8 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
   tool.CleanUpPreflights()
 
   total_time = time.time()*1000 - time_start
-  tool.telemetry.LogTelemetry('total_time', str(total_time), 'core', recipe_name)
+  tool.telemetry.LogTelemetry(
+    'total_time', str(total_time), 'core', recipe_name)
   for telemetry_row in tool.FormatTelemetry().split('\n'):
     logger.debug(telemetry_row)
 

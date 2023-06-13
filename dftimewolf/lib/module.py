@@ -128,8 +128,9 @@ class BaseModule(object):
     error = errors.DFTimewolfError(
         message, name=self.name, stacktrace=stacktrace, critical=critical)
     if self.state.telemetry:
+      recipe_name = self.state.recipe.get('name', 'N/A')
       self.state.telemetry.LogTelemetry(
-          'error_detail', message, self.name, self.state.recipe.get('name', 'N/A')
+          'error_detail',message, self.name, recipe_name
       )
 
     self.state.AddError(error)
@@ -328,6 +329,6 @@ class ThreadAwareModule(BaseModule):
 
   def ThreadProgressUpdate(self, steps_taken: int, steps_expected: int) -> None:
     """Send an update to the state on progress."""
-    thread_id = threading.current_thread().getName()
+    thread_id = threading.current_thread().name
     self.state.ThreadProgressUpdate(
         self.name, thread_id, steps_taken, steps_expected)
