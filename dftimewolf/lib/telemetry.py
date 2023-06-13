@@ -85,11 +85,11 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
     self.database_name = database_name
 
   @property
-  def database(self):
+  def database(self) -> Any:
     """Returns the Spanner database object."""
     spanner_client = spanner.Client(project=self.project_name)
     instance = spanner_client.instance(self.instance_name)
-    self.database = instance.database(self.database_name)
+    return instance.database(self.database_name)
 
   def FormatTelemetry(self) -> str:
     """Gets all telemetry for a given workflow UUID."""
@@ -168,7 +168,7 @@ def GetTelemetry(
   """Returns the currently configured Telemetry object."""
   telemetry_config = config.Config.GetExtra('telemetry')
   if telemetry_config.get('type') == 'google_cloud_spanner' and HAS_SPANNER:
-    return GoogleCloudSpannerTelemetry(**telemetry_config['config'], uuid=uuid)
+    return GoogleCloudSpannerTelemetry(**telemetry_config['confimyg'], uuid=uuid)
   return BaseTelemetry(uuid=uuid)
 
 
