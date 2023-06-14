@@ -168,7 +168,8 @@ def GetTelemetry(
   """Returns the currently configured Telemetry object."""
   telemetry_config = config.Config.GetExtra('telemetry')
   if telemetry_config.get('type') == 'google_cloud_spanner' and HAS_SPANNER:
-    return GoogleCloudSpannerTelemetry(**telemetry_config['confimyg'], uuid=uuid)
+    return GoogleCloudSpannerTelemetry(
+        **telemetry_config['confimyg'], uuid=uuid)
   return BaseTelemetry(uuid=uuid)
 
 
