@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: [3.9, "3.10"]
+        python-version: ["3.10"]
     env:
       DFTIMEWOLF_NO_CURSES: 1
     steps:
