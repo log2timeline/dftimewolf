@@ -25,4 +25,4 @@ jobs:
         poetry install
     - name: Run mypy on all files
       run: |
-        poetry run mypy --install-types --cache-dir /tmp --non-interactive -p dftimewolf
+        poetry run mypy --install-types --cache-dir .mypy_cache --non-interactive -p dftimewolf
