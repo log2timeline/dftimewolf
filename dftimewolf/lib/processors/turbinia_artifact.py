@@ -86,12 +86,20 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
         task_id = task['id']
         reason = task['reason']
         descriptive_name = f'{task_name}-{task_id}-{reason}'
-      except KeyError:
+      except KeyError as exception:
+        self.logger.debug(
+          f'Failed to get task key: {str(exception)}, using path for '
+          f'cotnainer name instead.')
         descriptive_name = container.path
       # We're only interested in plaso files for the time being.
       if path.endswith('.plaso'):
+        local_path = self.DownloadFilesFromAPI(task, path)
+        if not local_path:
+          self.logger.warning(
+              f'No interesting output files could be found for task {task_id}')
+          continue
         self.PublishMessage(f'Found plaso result for task {task["id"]}: {path}')
-        fs_container = containers.File(path=path, name=descriptive_name)
+        fs_container = containers.File(path=local_path, name=descriptive_name)
         self.StreamContainer(fs_container)
 
   @staticmethod
