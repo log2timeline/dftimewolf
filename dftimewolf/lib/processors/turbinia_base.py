@@ -380,16 +380,14 @@ class TurbiniaProcessorBase(module.BaseModule):
     retries = 0
     processed_paths = set()
     status = 'running'
-    running_tasks = 1
     if not request_id:
       self.ModuleError('No request ID provided', critical=True)
 
-    while status == 'running' and running_tasks > 0 and retries < 3:
+    while status == 'running' and retries < 3:
       time.sleep(interval)
       try:
         request_data = self.requests_api_instance.get_request_status(request_id)
         status = request_data.get('status')
-        running_tasks = request_data.get('running_tasks')
         failed_tasks = request_data.get('failed_tasks')
         successful_tasks = request_data.get('successful_tasks')
         task_count = request_data.get('task_count')
