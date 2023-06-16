@@ -683,7 +683,7 @@ class StateWithCDMTest(unittest.TestCase):
     with mock.patch('threading.current_thread') as mock_current_thread, \
         mock.patch.object(cdm, 'UpdateModuleStatus') as mock_update_status, \
         mock.patch.object(cdm, 'UpdateModuleThreadState') as module_update_thread_state:
-      mock_current_thread.return_value.getName.return_value = 'ThreadName'
+      mock_current_thread.return_value.name = 'ThreadName'
       test_state.SetupModules()
       test_state.RunModules()
     # pylint: enable=line-too-long
@@ -714,6 +714,7 @@ class StateWithCDMTest(unittest.TestCase):
             'ThreadName', 'three'),
         mock.call('ThreadAwareConsumerModule', Status.COMPLETED,
             'ThreadName', 'three')], True)
+
     self.assertEqual(module_update_thread_state.call_count, 6)
 
     self.assertEqual(mock_threaded_process.call_count, 3)

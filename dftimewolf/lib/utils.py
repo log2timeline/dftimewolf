@@ -125,6 +125,7 @@ def ImportArgsFromDict(value: Any,
 
 
 # pytype: disable=bad-return-type
+# mypy: disable-error-code="empty-body"
 class FormatterInterface(object):
   """Interface to format text in reports."""
 
@@ -132,7 +133,7 @@ class FormatterInterface(object):
   FORMAT = ''
 
   def IndentStart(self) -> str:
-    """Return formatted text for starting an indent."""
+    """Returns formatted text for starting an indent."""
     pass
 
   def IndentText(self, text: str, level: int=1) -> str:

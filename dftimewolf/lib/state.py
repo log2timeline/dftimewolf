@@ -25,9 +25,7 @@ if TYPE_CHECKING:
   from dftimewolf.lib import module as dftw_module
 T = TypeVar("T", bound="interface.AttributeContainer")  # pylint: disable=invalid-name,line-too-long
 
-# TODO(tomchop): Consider changing this to `dftimewolf.state` if we ever need
-# more granularity.
-logger = logging.getLogger('dftimewolf')
+logger = logging.getLogger('dftimewolf.state')
 
 NEW_ISSUE_URL = 'https://github.com/log2timeline/dftimewolf/issues/new'
 
@@ -69,6 +67,7 @@ class DFTimewolfState(object):
     self._abort_execution = False
     self.stdout_log = True
     self._progress_warning_shown = False
+    self.telemetry: telemetry.BaseTelemetry | telemetry.GoogleCloudSpannerTelemetry | None = None  # pylint: disable=line-too-long
 
   def _InvokeModulesInThreads(self, callback: Callable[[Any], Any]) -> None:
     """Invokes the callback function on all the modules in separate threads.
@@ -235,9 +234,10 @@ class DFTimewolfState(object):
       telemetry_entry: The telemetry object to store.
     """
     for key, value in telemetry_entry.telemetry.items():
-      TELEMETRY.LogTelemetry(
-        key, value, telemetry_entry.module_name, telemetry_entry.recipe
-      )
+      if self.telemetry:
+        self.telemetry.LogTelemetry(
+          key, value, telemetry_entry.module_name, telemetry_entry.recipe
+        )
 
   def GetContainers(self,
                     container_class: Type[T],
@@ -791,7 +791,7 @@ class DFTimewolfStateWithCDM(DFTimewolfState):
       container: The Container being processed by the thread.
       module_name: The runtime name of the module."""
 
-    thread_id = threading.current_thread().getName()
+    thread_id = threading.current_thread().name
     self.cursesdm.UpdateModuleThreadState(
         module_name, cdm.Status.RUNNING, thread_id, str(container))
 

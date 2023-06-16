@@ -9,7 +9,7 @@ license = "Apache"
 dftimewolf = 'dftimewolf.cli.dftimewolf_recipes:Main'
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.11"
+python = ">=3.10,<3.11"
 docker = "^5.0.3"
 google-cloud-logging = "2.3.1"
 google-cloud-bigquery = "*"
@@ -32,7 +32,7 @@ grr-api-client = "^3.4.6"
 mock = "^4.0.3"
 pylint = "2.10.*"
 coverage = "^6.4.2"
-mypy = "^0.961"
+mypy = "*"
 yapf = "^0.32.0"
 types-protobuf = "^3.19.22"
 types-filelock = "^3.2.7"
