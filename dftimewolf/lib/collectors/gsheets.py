@@ -194,7 +194,7 @@ class GoogleSheetsCollector(module.BaseModule):
 
   def _ExtractEntriesFromSheet(self,
                                spreadsheet_id: str,
-                               sheet_title: str) -> pd.DataFrame:
+                               sheet_title: str) -> pd.DataFrame | None:
     """Extract entries from the sheet inside the spreadsheet.
 
     Args:
