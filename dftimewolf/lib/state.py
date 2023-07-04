@@ -64,7 +64,6 @@ class DFTimewolfState(object):
     self.recipe = {} # type: Dict[str, Any]
     self.store = {}  # type: Dict[str, List[interface.AttributeContainer]]
     self.streaming_callbacks = {}  # type: Dict[Type[interface.AttributeContainer], List[Callable[[Any], Any]]]  # pylint: disable=line-too-long
-    self.published_messages = []  # type: List[tuple[str, str, bool]]
     self._abort_execution = False
     self.stdout_log = True
     self._progress_warning_shown = False
@@ -627,16 +626,14 @@ class DFTimewolfState(object):
                      is_error: bool = False) -> None:
     """Receives a message for publishing.
 
-    Published messages are displayed at the module-level. This method just
-    adds the published message to a list of published messages for easier
-    retrieval.
+    The base class does nothing with this (as the method in module also logs the
+    message). This method exists to be overridden for other UIs.
 
     Args:
       source: The source of the message.
       message: The message content.
       is_error: True if the message is an error message, False otherwise.
     """
-    self.published_messages.append((source, message, is_error))
 
   def ProgressUpdate(self,
                      module_name: str,
@@ -824,7 +821,6 @@ class DFTimewolfStateWithCDM(DFTimewolfState):
       source: The source of the message.
       message: The message content.
       is_error: True if the message is an error message, False otherwise."""
-    super().PublishMessage(source, message, is_error)
     self.cursesdm.EnqueueMessage(source, message, is_error)
 
   def ProgressUpdate(self,
