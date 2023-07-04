@@ -96,7 +96,10 @@ class DFTimewolfTool(object):
   _DEFAULT_DATA_FILES_PATH = os.path.join(
       os.sep, 'usr', 'local', 'share', 'dftimewolf')
 
-  def __init__(self, cdm: Optional[CursesDisplayManager] = None) -> None:
+  def __init__(
+      self,
+      cdm: Optional[CursesDisplayManager] = None,
+      workflow_uuid: Optional[str] = None) -> None:
     """Initializes a DFTimewolf tool."""
     super(DFTimewolfTool, self).__init__()
     self._command_line_options: Optional[argparse.Namespace]
@@ -107,7 +110,9 @@ class DFTimewolfTool(object):
     self.dry_run = False
     self.cdm = cdm
     self._state: "dftw_state.DFTimewolfState" # for pytype
-    self.uuid = str(uuid.uuid4())
+    if not workflow_uuid:
+      workflow_uuid = str(uuid.uuid4())
+    self.uuid = workflow_uuid
     self.telemetry = telemetry.GetTelemetry(uuid=self.uuid)
 
     self._DetermineDataFilesPath()
