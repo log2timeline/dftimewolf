@@ -62,8 +62,8 @@ class GCEDiskCopy(module.ThreadAwareModule):
             destination_project_name: Optional[str],
             source_project_name: str,
             destination_zone: str,
-            remote_instance_names: Optional[str],
-            disk_names: Optional[str],
+            remote_instance_names: Optional[str | List[str]],
+            disk_names: Optional[str | List[str]],
             all_disks: bool,
             stop_instances: bool) -> None:
     """Sets up a GCEDiskCopyCollector.
@@ -110,9 +110,16 @@ class GCEDiskCopy(module.ThreadAwareModule):
     else:
       self.destination_project = self.source_project
 
-    self.remote_instance_names = (
-        remote_instance_names.split(',') if remote_instance_names else [])
-    self.disk_names = disk_names.split(',') if disk_names else []
+    if isinstance(remote_instance_names, str):
+      self.remote_instance_names = (
+          remote_instance_names.split(',') if remote_instance_names else [])
+    else:
+      self.remote_instance_names = remote_instance_names if remote_instance_names else []
+
+    if isinstance(disk_names, str):
+      self.disk_names = disk_names.split(',') if disk_names else []
+    else:
+      self.disk_names = disk_names if disk_names else []
     self.all_disks = all_disks
     self.stop_instances = stop_instances
 
