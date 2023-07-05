@@ -114,12 +114,12 @@ class GCEDiskCopy(module.ThreadAwareModule):
       self.remote_instance_names = (
           remote_instance_names.split(',') if remote_instance_names else [])
     else:
-      self.remote_instance_names = remote_instance_names if remote_instance_names else []
+      self.remote_instance_names = remote_instance_names or []
 
     if isinstance(disk_names, str):
       self.disk_names = disk_names.split(',') if disk_names else []
     else:
-      self.disk_names = disk_names if disk_names else []
+      self.disk_names = disk_names or []
     self.all_disks = all_disks
     self.stop_instances = stop_instances
 
