@@ -219,14 +219,11 @@ class BaseModule(object):
   def SetUp(self, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
     """Sets up necessary module configuration options."""
 
-<<<<<<< HEAD
   def ProgressUpdate(self, steps_taken: int, steps_expected: int) -> None:
     """Send an update to the state on progress."""
     self.state.ProgressUpdate(
         self.name, steps_taken, steps_expected)
 
-=======
->>>>>>> a21f99e (merge)
 
 class PreflightModule(BaseModule):
   """Base class for preflight modules.
