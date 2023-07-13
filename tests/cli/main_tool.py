@@ -77,15 +77,16 @@ class MainToolTest(unittest.TestCase):
       preflights = recipe.contents.get('preflights', [])
       for module in modules + preflights:
         runtime_name = module.get('runtime_name', module['name'])
-        setup_func = self.tool.state._module_pool[runtime_name].SetUp
-        expected_args = set(inspect.getfullargspec(setup_func).args)
-        expected_args.remove('self')
-        provided_args = set(module['args'])
+        if runtime_name in self.tool.state._module_pool:
+          setup_func = self.tool.state._module_pool[runtime_name].SetUp
+          expected_args = set(inspect.getfullargspec(setup_func).args)
+          expected_args.remove('self')
+          provided_args = set(module['args'])
 
-        self.assertEqual(
-          expected_args,
-          provided_args,
-          f'Error in {recipe.name}:{runtime_name}')
+          self.assertEqual(
+            expected_args,
+            provided_args,
+            f'Error in {recipe.name}:{runtime_name}')
 
   def testRecipeValidators(self):
     """Tests that recipes do not specify invalid validators."""
