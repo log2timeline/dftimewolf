@@ -231,7 +231,7 @@ class TurbiniaProcessorBase(module.BaseModule):
           'Starting local HTTP server on localhost:8888 for OAUTH flow. '
           'If running dftimewolf remotely over SSH you will need to tunnel '
           'port 8888.')
-      appflow.run_local_server(host='localhost', port=8888)
+      appflow.run_local_server(host='localhost', port=8888, open_browser=False)
       credentials = appflow.credentials
 
       # Save credentials
