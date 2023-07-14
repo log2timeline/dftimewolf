@@ -13,6 +13,8 @@ from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 
+DOCKER_IMAGE = 'log2timeline/plaso:latest'
+
 
 class LocalPlasoProcessor(module.BaseModule):
   """Processes a list of file paths with Plaso (log2timeline).
@@ -47,7 +49,7 @@ class LocalPlasoProcessor(module.BaseModule):
     client = docker.from_env()  # type: ignore
     try:
       # Checks if image exists locally, does not pull from registry.
-      client.images.get("log2timeline/plaso:latest")
+      client.images.get(DOCKER_IMAGE)
       return True
     except docker.errors.ImageNotFound: # type: ignore
       return False
@@ -66,8 +68,13 @@ class LocalPlasoProcessor(module.BaseModule):
         }
     }
     client = docker.from_env()  # type: ignore
+    self.logger.info(f'Running a Docker container with image {DOCKER_IMAGE}')
     client.containers.run(
-        "log2timeline/plaso:latest", volumes=volumes, command=command)
+        DOCKER_IMAGE,
+        volumes=volumes,
+        command=command,
+        auto_remove=True)
+    self.logger.info('Docker container finished running and is auto-removed.')
 
   def _LocalPlasoRun(self, command: List[str]) -> None:
     try:
@@ -96,16 +103,15 @@ class LocalPlasoProcessor(module.BaseModule):
     if use_docker:
       if not self._CheckDockerImage():
         self.ModuleError(
-            'Docker image log2timeline/plaso not found. To fix: \n'
-            '  "docker pull log2timeline/plaso"',
+            f'Docker image {DOCKER_IMAGE} not found. To fix: \n'
+            f'  "docker pull {DOCKER_IMAGE}"',
             critical=True)
       self._use_docker = True
     elif not self._DeterminePlasoPath():
       self.ModuleError(
           'Could not run log2timeline.py from PATH or a local '
           'Docker image. To fix: \n'
-          '  "apt install plaso-tools" or "docker pull '
-          'log2timeline/plaso"',
+          f'  "apt install plaso-tools" or "docker pull {DOCKER_IMAGE}"',
           critical=True)
 
   def _processContainer(
@@ -158,6 +164,7 @@ class LocalPlasoProcessor(module.BaseModule):
     full_cmd = ' '.join(cmd)
     self.logger.info('Running external command: "{0:s}"'.format(full_cmd))
     if self._use_docker:
+      self.logger.info('Running Docker image {IMAGE}')
       self._DockerPlasoRun(path, full_cmd, plaso_input_dir, plaso_output_dir)
     else:
       self._LocalPlasoRun(cmd)
