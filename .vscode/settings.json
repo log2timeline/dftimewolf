@@ -8,6 +8,6 @@
     ],
     "python.testing.pytestEnabled": false,
     "python.testing.unittestEnabled": true,
-    "python.linting.pylintEnabled": true,
+    "python.linting.mypyEnabled": true,
     "python.linting.enabled": true
 }

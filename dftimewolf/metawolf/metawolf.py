@@ -546,7 +546,7 @@ class Metawolf(cmd2.Cmd):
       if len(user_input) < 2:
         # No output ID provided, output latest run.
         last_run_process = max(
-          self.processes, key=lambda p: p.output_id)  # type: ignore
+          self.processes, key=lambda p: p.output_id)
         if last_run_process:
           read_output(last_run_process)
           return
