@@ -17,7 +17,8 @@
       "wants": ["VTCollector"],
       "name": "LocalPlasoProcessor",
       "args": {
-        "timezone": null
+        "timezone": null,
+        "use_docker": true
       }
     }
   ],
