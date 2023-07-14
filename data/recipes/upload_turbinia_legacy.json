@@ -1,0 +1,71 @@
+{
+    "name": "upload_turbinia_legacy",
+    "short_description": "Uploads arbitrary files to Turbinia and downloads results.",
+    "description": "Uploads arbitrary files to Turbinia for processing. The recipe will wait for Turbinia to return with results and will download them back to the filesystem. The Turbinia system needs to be accessible via SSH.",
+    "modules": [{
+      "wants": [],
+      "name": "FilesystemCollector",
+      "args": {
+          "paths": "@files"
+      }
+    }, {
+      "wants": ["FilesystemCollector"],
+      "name": "LocalFilesystemCopy",
+      "args": {
+          "target_directory": "@directory",
+          "compress": true
+      }
+    }, {
+          "wants": ["LocalFilesystemCopy"],
+          "runtime_name": "SCP-Upload",
+          "name": "SCPExporter",
+          "args": {
+            "paths": null,
+            "destination": "@destination_turbinia_dir",
+            "hostname": "@hostname",
+            "user": null,
+            "id_file": null,
+            "extra_ssh_options": [],
+            "check_ssh": true,
+            "direction": "upload",
+            "multiplexing": true
+          }
+    }, {
+        "wants": ["SCP-Upload"],
+        "name": "TurbiniaArtifactProcessorLegacy",
+        "args": {
+            "turbinia_config_file": "@turbinia_config",
+            "project": null,
+            "turbinia_recipe": "@turbinia_recipe",
+            "turbinia_zone": "@turbinia_zone",
+            "output_directory": null,
+            "sketch_id": null
+        }
+    }, {
+          "wants": ["TurbiniaArtifactProcessorLegacy"],
+          "runtime_name": "SCP-Download",
+          "name": "SCPExporter",
+          "args": {
+            "paths": null,
+            "destination": "@local_turbinia_results",
+            "hostname": "@hostname",
+            "user": null,
+            "id_file": null,
+            "extra_ssh_options": [],
+            "check_ssh": true,
+            "direction": "download",
+            "multiplexing": true
+          }
+      }],
+    "args": [
+        ["files", "Paths to process.", null],
+        ["--turbinia_recipe", "The Turbinia recipe name to use for evidence processing.", null],
+        ["--destination_turbinia_dir", "Destination path in Turbinia host to write the files to.", null],
+        ["--hostname", "Remote host.", null, {"format": "hostname"}],
+        ["--directory", "Directory in which to copy and compress files.", null],
+        ["--turbinia_config", "Turbinia config file to use.", null],
+        ["--local_turbinia_results", "Directory where Turbinia results will be downloaded to.", null],
+        ["--turbinia_zone", "The GCP zone the disk to process and Turbinia workers are in.", "us-central1-f", {"format": "gcp_zone"}],
+        ["--sketch_id", "Timesketch sketch ID.", null, {"format": "regex", "regex": "^\\d+$"}]
+    ]
+  }
