@@ -87,8 +87,8 @@ class LocalPlasoProcessor(module.BaseModule):
 
     if l2t_status:
       message = (
-          'The log2timeline command {0:s} failed: {1!s}.'
-          ' Check log file for details.').format(' '.join(command), error)
+          f'The log2timeline command {" ".join(command)} failed: {str(error)}.'
+          ' Check log file for details.')
       self.ModuleError(message, critical=True)
 
   def SetUp(self, timezone: Optional[str], use_docker: bool) -> None:  # pylint: disable=arguments-differ
@@ -152,19 +152,19 @@ class LocalPlasoProcessor(module.BaseModule):
 
     # And now, the crux of the command.
     # Generate a new storage file for each plaso run
-    plaso_output_file = '{0:s}.plaso'.format(uuid.uuid4().hex)
+    plaso_output_file = f'{uuid.uuid4().hex}.plaso'.format()
     plaso_output_path = os.path.join(plaso_output_dir, plaso_output_file)
     cmd.extend(['--storage-file', plaso_output_path, plaso_input_dir])
 
     plaso_storage_file_path = os.path.join(self._output_path, plaso_output_file)
 
-    self.logger.info('Log file: {0:s}'.format(plaso_storage_file_path))
+    self.logger.info(f'Log file: {plaso_storage_file_path}')
 
     # Run the l2t command
     full_cmd = ' '.join(cmd)
-    self.logger.info('Running external command: "{0:s}"'.format(full_cmd))
+    self.logger.info(f'Running external command: "{full_cmd}"')
     if self._use_docker:
-      self.logger.info('Running Docker image {IMAGE}')
+      self.logger.info(f'Running Docker image {DOCKER_IMAGE}')
       self._DockerPlasoRun(path, full_cmd, plaso_input_dir, plaso_output_dir)
     else:
       self._LocalPlasoRun(cmd)
