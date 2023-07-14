@@ -44,12 +44,12 @@ class LocalPlasoProcessor(module.BaseModule):
 
   def _CheckDockerImage(self) -> bool:
     """Checks if an image is available on the local Docker installation."""
-    client = docker.from_env()  # type:ignore
+    client = docker.from_env()  # type: ignore
     try:
       # Checks if image exists locally, does not pull from registry.
       client.images.get("log2timeline/plaso:latest")
       return True
-    except docker.errors.ImageNotFound:  # type:ignore
+    except docker.errors.ImageNotFound: # type: ignore
       return False
 
   def _DockerPlasoRun(
@@ -84,15 +84,21 @@ class LocalPlasoProcessor(module.BaseModule):
           ' Check log file for details.').format(' '.join(command), error)
       self.ModuleError(message, critical=True)
 
-  def SetUp(self, timezone: Optional[str] = None) -> None:  # pylint: disable=arguments-differ
+  def SetUp(self, timezone: Optional[str], use_docker: bool) -> None:  # pylint: disable=arguments-differ
     """Sets up the local time zone with Plaso (log2timeline) should use.
 
     Args:
-      timezone (Optional[str]): name of the local time zone.
+      timezone: name of the local time zone.
+      use_docker: Whether to force usage of the Docker plaso image or not.
     """
     self._timezone = timezone
     self._output_path = tempfile.mkdtemp()
-    if self._CheckDockerImage():
+    if use_docker:
+      if not self._CheckDockerImage():
+        self.ModuleError(
+            'Docker image log2timeline/plaso not found. To fix: \n'
+            '  "docker pull log2timeline/plaso"',
+            critical=True)
       self._use_docker = True
     elif not self._DeterminePlasoPath():
       self.ModuleError(
