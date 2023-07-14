@@ -13,6 +13,8 @@ from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 
+DOCKER_IMAGE = 'log2timeline/plaso:latest'
+
 
 class LocalPlasoProcessor(module.BaseModule):
   """Processes a list of file paths with Plaso (log2timeline).
@@ -47,7 +49,7 @@ class LocalPlasoProcessor(module.BaseModule):
     client = docker.from_env()  # type: ignore
     try:
       # Checks if image exists locally, does not pull from registry.
-      client.images.get("log2timeline/plaso:latest")
+      client.images.get(DOCKER_IMAGE)
       return True
     except docker.errors.ImageNotFound: # type: ignore
       return False
@@ -66,8 +68,13 @@ class LocalPlasoProcessor(module.BaseModule):
         }
     }
     client = docker.from_env()  # type: ignore
+    self.logger.info(f'Running a Docker container with image {DOCKER_IMAGE}')
     client.containers.run(
-        "log2timeline/plaso:latest", volumes=volumes, command=command)
+        DOCKER_IMAGE,
+        volumes=volumes,
+        command=command,
+        auto_remove=True)
+    self.logger.info('Docker container finished running and is auto-removed.')
 
   def _LocalPlasoRun(self, command: List[str]) -> None:
     try:
@@ -80,8 +87,8 @@ class LocalPlasoProcessor(module.BaseModule):
 
     if l2t_status:
       message = (
-          'The log2timeline command {0:s} failed: {1!s}.'
-          ' Check log file for details.').format(' '.join(command), error)
+          f'The log2timeline command {" ".join(command)} failed: {str(error)}.'
+          ' Check log file for details.')
       self.ModuleError(message, critical=True)
 
   def SetUp(self, timezone: Optional[str], use_docker: bool) -> None:  # pylint: disable=arguments-differ
@@ -96,16 +103,15 @@ class LocalPlasoProcessor(module.BaseModule):
     if use_docker:
       if not self._CheckDockerImage():
         self.ModuleError(
-            'Docker image log2timeline/plaso not found. To fix: \n'
-            '  "docker pull log2timeline/plaso"',
+            f'Docker image {DOCKER_IMAGE} not found. To fix: \n'
+            f'  "docker pull {DOCKER_IMAGE}"',
             critical=True)
       self._use_docker = True
     elif not self._DeterminePlasoPath():
       self.ModuleError(
           'Could not run log2timeline.py from PATH or a local '
           'Docker image. To fix: \n'
-          '  "apt install plaso-tools" or "docker pull '
-          'log2timeline/plaso"',
+          f'  "apt install plaso-tools" or "docker pull {DOCKER_IMAGE}"',
           critical=True)
 
   def _processContainer(
@@ -146,18 +152,19 @@ class LocalPlasoProcessor(module.BaseModule):
 
     # And now, the crux of the command.
     # Generate a new storage file for each plaso run
-    plaso_output_file = '{0:s}.plaso'.format(uuid.uuid4().hex)
+    plaso_output_file = f'{uuid.uuid4().hex}.plaso'.format()
     plaso_output_path = os.path.join(plaso_output_dir, plaso_output_file)
     cmd.extend(['--storage-file', plaso_output_path, plaso_input_dir])
 
     plaso_storage_file_path = os.path.join(self._output_path, plaso_output_file)
 
-    self.logger.info('Log file: {0:s}'.format(plaso_storage_file_path))
+    self.logger.info(f'Log file: {plaso_storage_file_path}')
 
     # Run the l2t command
     full_cmd = ' '.join(cmd)
-    self.logger.info('Running external command: "{0:s}"'.format(full_cmd))
+    self.logger.info(f'Running external command: "{full_cmd}"')
     if self._use_docker:
+      self.logger.info(f'Running Docker image {DOCKER_IMAGE}')
       self._DockerPlasoRun(path, full_cmd, plaso_input_dir, plaso_output_dir)
     else:
       self._LocalPlasoRun(cmd)

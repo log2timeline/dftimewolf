@@ -98,7 +98,8 @@ class LocalPlasoTest(unittest.TestCase):
     self.assertEqual((
         'Could not run log2timeline.py from PATH or a local Docker image. '
         'To fix: \n'
-        '  "apt install plaso-tools" or "docker pull log2timeline/plaso"'),
+        '  "apt install plaso-tools" or '
+        '"docker pull log2timeline/plaso:latest"'),
                      error.exception.message)
 
 if __name__ == '__main__':
