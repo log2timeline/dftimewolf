@@ -44,12 +44,12 @@ class LocalPlasoProcessor(module.BaseModule):
 
   def _CheckDockerImage(self) -> bool:
     """Checks if an image is available on the local Docker installation."""
-    client = docker.from_env()  # type:ignore
+    client = docker.from_env()
     try:
       # Checks if image exists locally, does not pull from registry.
       client.images.get("log2timeline/plaso:latest")
       return True
-    except docker.errors.ImageNotFound:  # type:ignore
+    except docker.errors.ImageNotFound:
       return False
 
   def _DockerPlasoRun(
@@ -65,7 +65,7 @@ class LocalPlasoProcessor(module.BaseModule):
             'mode': 'rw'
         }
     }
-    client = docker.from_env()  # type: ignore
+    client = docker.from_env()
     client.containers.run(
         "log2timeline/plaso:latest", volumes=volumes, command=command)
 
