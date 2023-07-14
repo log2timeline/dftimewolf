@@ -42,7 +42,7 @@ class LocalPlasoTest(unittest.TestCase):
     local_plaso_processor = localplaso.LocalPlasoProcessor(test_state)
     local_plaso_processor.StoreContainer(
         containers.File(name='test', path='/notexist/test'))
-    local_plaso_processor.SetUp()
+    local_plaso_processor.SetUp(timezone=None, use_docker=False)
     local_plaso_processor.Process()
     mock_Popen.assert_called_once()
     args = mock_Popen.call_args[0][0]  # Get positional arguments of first call
@@ -60,7 +60,7 @@ class LocalPlasoTest(unittest.TestCase):
     local_plaso_processor = localplaso.LocalPlasoProcessor(test_state)
     local_plaso_processor.StoreContainer(
         containers.File(name='test', path='/notexist/test'))
-    local_plaso_processor.SetUp()
+    local_plaso_processor.SetUp(timezone=None, use_docker=True)
     local_plaso_processor.Process()
     mock_docker().containers.run.assert_called_once()
     args = mock_docker().containers.run.call_args[1]
@@ -94,38 +94,12 @@ class LocalPlasoTest(unittest.TestCase):
         message="")
     local_plaso_processor = localplaso.LocalPlasoProcessor(test_state)
     with self.assertRaises(errors.DFTimewolfError) as error:
-      local_plaso_processor.SetUp()
+      local_plaso_processor.SetUp(timezone=None, use_docker=False)
     self.assertEqual((
         'Could not run log2timeline.py from PATH or a local Docker image. '
         'To fix: \n'
         '  "apt install plaso-tools" or "docker pull log2timeline/plaso"'),
                      error.exception.message)
-
-  @mock.patch('os.path.isfile')
-  @mock.patch('docker.from_env')
-  def testPlasoPreferredInstallation(self, mock_docker, mock_exists):
-    """Tests that SetUp prefers Docker plaso installation over native."""
-    test_state = state.DFTimewolfState(config.Config)
-    mock_exists.return_value = True
-    mock_docker.return_value = mock.MagicMock()
-    local_plaso_processor = localplaso.LocalPlasoProcessor(test_state)
-    local_plaso_processor.SetUp()
-    # pylint: disable=protected-access
-    self.assertTrue(local_plaso_processor._use_docker)
-
-  @mock.patch('os.path.isfile')
-  @mock.patch('docker.from_env')
-  def testNativePlasoSetup(self, mock_docker, mock_exists):
-    """Tests that SetUp chooses native plaso if no Dockerized installation."""
-    test_state = state.DFTimewolfState(config.Config)
-    mock_exists.return_value = True
-    mock_docker().images.get.side_effect = docker.errors.ImageNotFound(
-        message="")
-    local_plaso_processor = localplaso.LocalPlasoProcessor(test_state)
-    local_plaso_processor.SetUp()
-    # pylint: disable=protected-access
-    self.assertFalse(local_plaso_processor._use_docker)
-
 
 if __name__ == '__main__':
   unittest.main()
