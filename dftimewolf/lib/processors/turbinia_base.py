@@ -165,6 +165,7 @@ class TurbiniaProcessorBase(module.BaseModule):
         could not be downloaded.
     """
     result = None
+    self.RefreshClientCredentials()
     api_instance = turbinia_request_results_api.TurbiniaRequestResultsApi(
         self.client)
     try:
@@ -242,12 +243,15 @@ class TurbiniaProcessorBase(module.BaseModule):
 
     return credentials
 
-  def RefreshClientCredentials(self) -> None:
+  def RefreshClientCredentials(self) -> bool:
     """Refreshes credentials and initializes new API client."""
+    refresh = False
     if self.credentials and self.credentials.expired:
       self.credentials = self.GetCredentials(
           self.credentials_path, self.client_secrets_path)
-    self.client = self.InitializeTurbiniaApiClient(self.credentials)
+      self.client = self.InitializeTurbiniaApiClient(self.credentials)
+      refresh = True
+    return bool(refresh)
 
   def InitializeTurbiniaApiClient(
       self, credentials: Credentials) -> turbinia_api_lib.ApiClient:
@@ -406,6 +410,10 @@ class TurbiniaProcessorBase(module.BaseModule):
     while status == 'running' and retries < 3:
       time.sleep(interval)
       try:
+        if self.RefreshClientCredentials():
+          # pylint: disable=line-too-long
+          self.requests_api_instance = turbinia_requests_api.TurbiniaRequestsApi(
+              self.client)
         request_data = self.requests_api_instance.get_request_status(request_id)
         status = request_data.get('status')
         failed_tasks = request_data.get('failed_tasks')
@@ -432,6 +440,10 @@ class TurbiniaProcessorBase(module.BaseModule):
 
   def TurbiniaFinishReport(self, request_id: str) -> str:
     """This method generates a report for a Turbinia request."""
+    if self.RefreshClientCredentials():
+      # pylint: disable=line-too-long
+      self.requests_api_instance = turbinia_requests_api.TurbiniaRequestsApi(
+          self.client)
     request_data = self.requests_api_instance.get_request_status(request_id)
     if request_data:
       report: str = turbinia_formatter.RequestMarkdownReport(
