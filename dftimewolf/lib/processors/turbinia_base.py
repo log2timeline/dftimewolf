@@ -7,6 +7,7 @@ import tempfile
 import time
 import math
 
+from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Any, Union, Iterator
 
 from google_auth_oauthlib import flow
@@ -33,6 +34,7 @@ class TurbiniaProcessorBase(module.BaseModule):
   Attributes:
     client (turbinia_api_lib.ApiClient): Turbinia client.
     client_config (dict): Turbinia client config.
+    credentials google.oauth2.credentials.Credentials: User Oauth2 credentials.
     extensions (List[str]): List of file extensions to look for.
     incident_id (str): The Timesketch incident id.
     instance (str): name of the Turbinia instance
@@ -68,32 +70,33 @@ class TurbiniaProcessorBase(module.BaseModule):
           the entire recipe to fail if the module encounters an error.
     """
     super().__init__(state=state, name=name, critical=critical)
-    self.name = name if name else self.__class__.__name__
+    self.client: turbinia_api_lib.ApiClient | None = None
+    self.client_config: turbinia_api_lib.Configuration | None = None
+    self.client_secrets_path = os.path.join(
+        os.path.expanduser('~'), ".dftimewolf_turbinia_secrets.json")
+    self.credentials_path = os.path.join(
+        os.path.expanduser('~'), ".dftimewolf_turbinia.token")
+    self.credentials: Credentials | None = None
     self.critical = critical
-    self.state = state
-    self.output_path = str()
-    self.client: turbinia_api_lib.ApiClient = None
+    self.extensions = [
+        '.plaso', 'BinaryExtractorTask.tar.gz', 'hashes.json',
+        'fraken_stdout.log', 'loki_stdout.log'
+    ]
     self.instance = None
-    self.project = str()
     self.incident_id = str()
+    self.logger = logger
+    self.name = name if name else self.__class__.__name__
+    self.output_path = str()
+    self.parallel_count = 5  # Arbitrary, used by ThreadAwareModule
+    self.project = str()
+    self.requests_api_instance: turbinia_requests_api.TurbiniaRequestsApi = None
     self.sketch_id = int()
+    self.state = state
     self.turbinia_auth = bool()
     self.turbinia_recipe = str()  # type: Any
     self.turbinia_region = None
     self.turbinia_zone = str()
     self.turbinia_api = str()
-    self.requests_api_instance: turbinia_requests_api.TurbiniaRequestsApi = None
-    self.client_config = None
-    self.credentials_path = os.path.join(
-        os.path.expanduser('~'), ".dftimewolf_turbinia.token")
-    self.client_secrets_path = os.path.join(
-        os.path.expanduser('~'), ".dftimewolf_turbinia_secrets.json")
-    self.parallel_count = 5  # Arbitrary, used by ThreadAwareModule
-    self.logger = logger
-    self.extensions = [
-        '.plaso', 'BinaryExtractorTask.tar.gz', 'hashes.json',
-        'fraken_stdout.log', 'loki_stdout.log'
-    ]
     os.environ['GRPC_POLL_STRATEGY'] = 'poll'
 
   def _isInterestingPath(self, path: str) -> bool:
@@ -238,10 +241,50 @@ class TurbiniaProcessorBase(module.BaseModule):
       with open(credentials_path, 'w', encoding='utf-8') as token:
         token.write(credentials.to_json())
 
-    if credentials:
-      return credentials.id_token
-
     return credentials
+
+  def CheckExpiredCredentials(self) -> bool:
+    """Checks if an authentication token is expired."""
+    is_expired = False
+    if self.credentials and self.credentials.expiry:
+      expiry: datetime = datetime.strptime(
+          self.credentials.expiry.rstrip("Z").split(".")[0], "%Y-%m-%dT%H:%M:%S"
+      )
+    if expiry < datetime.now():
+      self.logger.info('Token expired, renewing credentials.')
+      is_expired = True
+    return bool(is_expired)
+
+  def RefreshCredentials(self) -> Credentials:
+    """Refreshes credentials if the token is expired."""
+    if self.CheckExpiredCredentials():
+      self.credentials = self.GetCredentials(
+          self.credentials_path, self.client_secrets_path)
+    self.client = self.InitializeTurbiniaApiClient(self.credentials)
+
+  def InitializeTurbiniaApiClient(
+      self, credentials: Credentials) -> turbinia_api_lib.ApiClient:
+    """Creates a Turbinia API client object.
+
+    This method also runs the authentication flow if needed.
+
+    Returns:
+      turbinia_api_lib.ApiClient: A Turbinia API client object.
+    """
+    self.client_config = turbinia_api_lib.Configuration(host=self.turbinia_api)
+    if not self.client_config:
+      self.ModuleError('Unable to configure Turbinia API server', critical=True)
+    # Check if Turbinia requires authentication.
+    if self.turbinia_auth:
+      if not credentials:
+        self.credentials = self.GetCredentials(
+            self.credentials_path, self.client_secrets_path)
+      if self.credentials and self.credentials.id_token:
+        self.client_config.access_token = self.credentials.id_token
+      else:
+        self.ModuleError(
+            'Unable to obtain id_token from identity provider', critical=True)
+    return turbinia_api_lib.ApiClient(self.client_config)
 
   def TurbiniaSetUp(
       self, project: str, turbinia_auth: bool,
@@ -266,17 +309,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.incident_id = incident_id
     self.sketch_id = sketch_id
     self.client_config = turbinia_api_lib.Configuration(host=self.turbinia_api)
-    if not self.client_config:
-      self.ModuleError('Unable to configure Turbinia API server', critical=True)
-      return
-    # Check if Turbinia requires authentication.
-    if self.turbinia_auth:
-      self.client_config.access_token = self.GetCredentials(
-          self.credentials_path, self.client_secrets_path)
-      if not self.client_config.access_token:
-        self.ModuleError(
-            'Unable to authenticate to Turbinia API server', critical=True)
-    self.client = turbinia_api_lib.ApiClient(self.client_config)
+    self.client = self.InitializeTurbiniaApiClient(self.credentials)
     self.requests_api_instance = turbinia_requests_api.TurbiniaRequestsApi(
         self.client)
     # We need to get the output path from the Turbinia server.
