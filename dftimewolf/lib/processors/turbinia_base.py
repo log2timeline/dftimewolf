@@ -243,24 +243,9 @@ class TurbiniaProcessorBase(module.BaseModule):
 
     return credentials
 
-  def CheckExpiredCredentials(self) -> bool:
-    """Checks if an authentication token is expired."""
-    is_expired = False
-    expiry: datetime | None = None
-    if self.credentials and self.credentials.expiry:
-      expiry = datetime.strptime(
-          self.credentials.expiry.rstrip("Z").split(".")[0], "%Y-%m-%dT%H:%M:%S"
-      )
-    else:
-      self.logger.error('Unable to determine token expiration time.')
-    if expiry and expiry < datetime.now():
-      self.logger.info('Token expired, renewing credentials.')
-      is_expired = True
-    return bool(is_expired)
-
   def RefreshClientCredentials(self) -> None:
     """Refreshes credentials and initializes new API client."""
-    if self.CheckExpiredCredentials():
+    if self.credentials and self.credentials.expired:
       self.credentials = self.GetCredentials(
           self.credentials_path, self.client_secrets_path)
     self.client = self.InitializeTurbiniaApiClient(self.credentials)
