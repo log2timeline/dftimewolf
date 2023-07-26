@@ -237,7 +237,8 @@ class TurbiniaProcessorBase(module.BaseModule):
       appflow.run_local_server(host='localhost', port=8888, open_browser=False)
       credentials = appflow.credentials
 
-      # Save credentials
+    # Save credentials
+    if credentials:
       with open(credentials_path, 'w', encoding='utf-8') as token:
         token.write(credentials.to_json())
 
