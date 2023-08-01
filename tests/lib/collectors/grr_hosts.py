@@ -88,19 +88,6 @@ class GRRFlowTests(unittest.TestCase):
     self.assertEqual(flow_id, 'F:12345')
     mock_CreateFlow.assert_called_once_with(name="FlowName", args="FlowArgs")
 
-  @mock.patch('grr_api_client.client.ClientBase.CreateFlow')
-  def testLaunchFlowKeepalive(self, mock_CreateFlow):
-    """Tests that keepalive flows are correctly created."""
-    mock_CreateFlow.return_value = mock_grr_hosts.MOCK_FLOW
-    self.grr_flow_module.keepalive = True
-    flow_id = self.grr_flow_module._LaunchFlow(
-        mock_grr_hosts.MOCK_CLIENT, "FlowName", "FlowArgs")
-    self.assertEqual(flow_id, 'F:12345')
-    self.assertEqual(mock_CreateFlow.call_count, 2)
-    self.assertEqual(
-        mock_CreateFlow.call_args,
-        ((), {'name': 'KeepAlive', 'args': flows_pb2.KeepAliveArgs()}))
-
   @mock.patch('grr_api_client.flow.FlowRef.Get')
   def testAwaitFlow(self, mock_FlowGet):
     """Test that no errors are generated when GRR flow succeeds."""
