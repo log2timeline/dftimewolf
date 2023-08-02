@@ -413,7 +413,7 @@ class TurbiniaProcessorBase(module.BaseModule):
       try:
         if self.RefreshClientCredentials():
           self.requests_api_instance = (
-            turbinia_requests_api.TurbiniaRequestsApi(self.client)
+              turbinia_requests_api.TurbiniaRequestsApi(self.client)
           )
         request_data = self.requests_api_instance.get_request_status(request_id)
         status = request_data.get('status')
@@ -447,11 +447,12 @@ class TurbiniaProcessorBase(module.BaseModule):
   def TurbiniaFinishReport(self, request_id: str) -> str:
     """This method generates a report for a Turbinia request."""
     if self.RefreshClientCredentials():
-      self.requests_api_instance =  turbinia_requests_api.TurbiniaRequestsApi(
-        self.client
+      self.requests_api_instance = turbinia_requests_api.TurbiniaRequestsApi(
+          self.client
       )
     request_data = self.requests_api_instance.get_request_status(request_id)
     if request_data:
       report: str = turbinia_formatter.RequestMarkdownReport(
-          request_data=request_data).generate_markdown()
+          request_data=request_data
+      ).generate_markdown()
     return report
