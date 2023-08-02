@@ -7,7 +7,7 @@ import mock
 
 import turbinia_api_lib
 
-from google.auth.credentials import Credentials
+from google.oauth2.credentials import Credentials
 
 from dftimewolf.lib.processors import turbinia_base
 from dftimewolf import config
