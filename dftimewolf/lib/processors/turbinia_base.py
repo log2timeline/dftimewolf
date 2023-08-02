@@ -412,26 +412,31 @@ class TurbiniaProcessorBase(module.BaseModule):
       time.sleep(interval)
       try:
         if self.RefreshClientCredentials():
-          # pylint: disable=line-too-long
-          self.requests_api_instance = turbinia_requests_api.TurbiniaRequestsApi(
-              self.client)
+          self.requests_api_instance = (
+            turbinia_requests_api.TurbiniaRequestsApi(self.client)
+          )
         request_data = self.requests_api_instance.get_request_status(request_id)
         status = request_data.get('status')
         failed_tasks = request_data.get('failed_tasks')
         successful_tasks = request_data.get('successful_tasks')
         task_count = request_data.get('task_count')
         progress = math.ceil(
-            ((failed_tasks + successful_tasks) / task_count) * 100)
+            ((failed_tasks + successful_tasks) / task_count) * 100
+        )
         self.PublishMessage(
-            f'Turbinia request {request_id} is {status}. Progress: {progress}%')
+            f'Turbinia request {request_id} is {status}. Progress: {progress}%'
+        )
 
         for task in request_data.get('tasks', []):
           current_saved_paths = task.get('saved_paths', [])
           if not current_saved_paths:
             continue
           for path in current_saved_paths:
-            if path not in processed_paths and self._isInterestingPath(
-                path) and path.startswith(self.output_path):
+            if (
+                path not in processed_paths
+                and self._isInterestingPath(path)
+                and path.startswith(self.output_path)
+            ):
               processed_paths.add(path)
               yield task, path
 
@@ -442,9 +447,9 @@ class TurbiniaProcessorBase(module.BaseModule):
   def TurbiniaFinishReport(self, request_id: str) -> str:
     """This method generates a report for a Turbinia request."""
     if self.RefreshClientCredentials():
-      # pylint: disable=line-too-long
-      self.requests_api_instance = turbinia_requests_api.TurbiniaRequestsApi(
-          self.client)
+      self.requests_api_instance =  turbinia_requests_api.TurbiniaRequestsApi(
+        self.client
+      )
     request_data = self.requests_api_instance.get_request_status(request_id)
     if request_data:
       report: str = turbinia_formatter.RequestMarkdownReport(
