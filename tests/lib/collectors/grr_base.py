@@ -109,7 +109,7 @@ class GRRBaseModuleTest(unittest.TestCase):
 
     mock_publish_message.assert_has_calls([
       # pylint: disable=line-too-long
-      mock.call('Approval needed at: http://fake/endpoint/#/users/nobody/approvals/client/abcd/dcba', False)
+      mock.call('Approval needed at: http://fake/endpoint/v2/clients/abcd/users/nobody/approvals/dcba', False)
       # pylint: enable=line-too-long
     ])
     self.assertEqual(mock_publish_message.call_count, 1)
