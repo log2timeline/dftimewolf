@@ -373,6 +373,8 @@ class TurbiniaProcessorBase(module.BaseModule):
       self.logger.success(
           'Creating Turbinia request {0!s} with evidence {1!s}'.format(
               request_id, evidence_name))
+      self.logger.success(
+          'Turbinia request status at {0!s}'.format(self.turbinia_api))
     except turbinia_api_lib.ApiException as exception:
       self.ModuleError(str(exception), critical=True)
 
