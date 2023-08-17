@@ -370,9 +370,11 @@ class TurbiniaProcessorBase(module.BaseModule):
     try:
       response = self.requests_api_instance.create_request(request)
       request_id = response.get('request_id')
-      self.logger.success(
+      self.PublishMessage(
           'Creating Turbinia request {0!s} with evidence {1!s}'.format(
               request_id, evidence_name))
+      self.PublishMessage(
+          'Turbinia request status at {0!s}'.format(self.turbinia_api))
     except turbinia_api_lib.ApiException as exception:
       self.ModuleError(str(exception), critical=True)
 
