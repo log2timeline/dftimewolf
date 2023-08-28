@@ -64,8 +64,9 @@ if [[ "$*" =~ "include-timesketch" ]]; then
     export PLASO_PPA_TRACK="stable"
     export OPENSEARCH_VERSION=1.2.2
     echo "Cloning Timesketch from Github"
-    git clone https://github.com/google/timesketch.git
+    git clone https://github.com/tomchop/timesketch.git
     cd timesketch
+    git checkout betterocker
     cd docker
     cd e2e
     echo "Running the Timesketch docker-compose script"
