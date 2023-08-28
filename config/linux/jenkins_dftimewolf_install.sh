@@ -66,7 +66,7 @@ if [[ "$*" =~ "include-timesketch" ]]; then
     echo "Cloning Timesketch from Github"
     git clone https://github.com/tomchop/timesketch.git
     cd timesketch
-    git checkout betterocker
+    git checkout betterdocker
     cd docker
     cd e2e
     echo "Running the Timesketch docker-compose script"
