@@ -405,7 +405,7 @@ The export is performed via bit streaming the the disk bytes to GCS. This will a
 
 The exported images names are appended by `.tar.gz.`
 
-The compute engine default service account in the source project must have sufficient permissions to Create and List Storage objects on the corresponding storage bucket/folder. 
+The compute engine default service account in the source project must have sufficient permissions to Create and List Storage objects on the corresponding storage bucket/folder.
 
 **CLI parameters:**
 
@@ -719,7 +719,7 @@ Parameter|Default value|Description
 `--boot_disk_size`|`50.0`|The size of the analysis VM boot disk (in GB).
 `--boot_disk_type`|`'pd-standard'`|Disk type to use [pd-standard, pd-ssd]
 `--image_project`|`'ubuntu-os-cloud'`|Name of the project where the analysis VM image is hosted.
-`--image_family`|`'ubuntu-1804-lts'`|Name of the image to use to create the analysis VM.
+`--image_family`|`'ubuntu-2204-lts'`|Name of the image to use to create the analysis VM.
 
 
 
@@ -859,7 +859,7 @@ Collects specific files from one or more GRR hosts.
 
 **Details:**
 
-Collects specific files from one or more GRR hosts. Files can be a glob pattern (e.g. `/tmp/*.so`) and support GRR variable interpolation (e.g. `%%users.localappdata%%/Directory/`) 
+Collects specific files from one or more GRR hosts. Files can be a glob pattern (e.g. `/tmp/*.so`) and support GRR variable interpolation (e.g. `%%users.localappdata%%/Directory/`)
 
 **CLI parameters:**
 
@@ -1587,4 +1587,3 @@ Modules: `WorkspaceAuditCollector`, `WorkspaceAuditTimesketch`, `TimesketchExpor
 ![workspace_user_login_ts](_static/graphviz/workspace_user_login_ts.png)
 
 ----
-

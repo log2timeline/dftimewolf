@@ -42,7 +42,7 @@
         "boot_disk_type": "@boot_disk_type",
         "cpu_cores": "@cpu_cores",
         "image_project": "ubuntu-os-cloud",
-        "image_family": "ubuntu-1804-lts",
+        "image_family": "ubuntu-2204-lts",
         "create_analysis_vm": "@create_analysis_vm"
       }
     }
