@@ -36,9 +36,6 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
   """Launches and collects GRR flows.
 
   Modules that use GRR flows or interact with hosts should extend this class.
-
-  Attributes:
-    keepalive (bool): True if the GRR keepalive functionality should be used.
   """
   _CHECK_APPROVAL_INTERVAL_SEC = 10
   _CHECK_FLOW_INTERVAL_SEC = 10
@@ -60,7 +57,6 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     """
     module.ThreadAwareModule.__init__(self, state, name=name, critical=critical)
     GRRBaseModule.__init__(self)
-    self.keepalive = False
     self._skipped_flows = []  # type: List[Tuple[str, str]]
     self.skip_offline_clients = False
 
@@ -216,7 +212,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
 
   # TODO: change object to more specific GRR type information.
   def _LaunchFlow(self, client: Client, name: str, args: str) -> str:
-    """Creates the specified flow, setting KeepAlive if requested.
+    """Creates the specified flow.
 
     Args:
       client (object): GRR Client object on which to launch the flow.
@@ -242,12 +238,6 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
 
     flow_id = str(grr_flow.flow_id)  # pytype: disable=attribute-error
     self.PublishMessage(f'{flow_id}: Scheduled')
-
-    if self.keepalive:
-      keepalive_flow = client.CreateFlow(
-          name='KeepAlive', args=flows_pb2.KeepAliveArgs())
-      self.logger.info(
-          f'KeepAlive Flow:{keepalive_flow.flow_id:s} scheduled')
 
     return flow_id
 
