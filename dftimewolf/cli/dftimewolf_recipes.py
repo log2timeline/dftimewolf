@@ -546,11 +546,10 @@ def Main() -> int:
   Returns:
     int: 0 on success, 1 otherwise.
   """
-  no_curses = any([bool(os.environ.get('DFTIMEWOLF_NO_CURSES')),
-                   not sys.stdout.isatty(),
-                   not sys.stdin.isatty()])
-  SetupLogging(no_curses)
-  if any([no_curses, '-h' in sys.argv, '--help' in sys.argv]):
+  curses = bool(os.environ.get('DFTIMEWOLF_CURSES'))
+  SetupLogging(curses)
+
+  if any([not curses, '-h' in sys.argv, '--help' in sys.argv]):
     return RunTool()
 
   cursesdisplaymanager = CursesDisplayManager()
