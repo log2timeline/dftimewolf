@@ -273,11 +273,14 @@ class CursesDisplayManager:
     _, x = self._stdscr.getmaxyx()
 
     lines = []
+    width = x - self._messages_longest_source_len - 8
+    if width < 1:
+      width = 1
 
     for m in self._messages:
       lines.extend(
         textwrap.wrap(m.Stringify(self._messages_longest_source_len),
-                      width=x - self._messages_longest_source_len - 8,
+                      width=width,
                       initial_indent='  ', subsequent_indent='    ',
                       replace_whitespace=False, break_long_words=False))
 
