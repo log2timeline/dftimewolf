@@ -273,9 +273,7 @@ class CursesDisplayManager:
     _, x = self._stdscr.getmaxyx()
 
     lines = []
-    width = x - self._messages_longest_source_len - 8
-    if width < 1:
-      width = 1
+    width = max(x - self._messages_longest_source_len - 8, 1)
 
     for m in self._messages:
       lines.extend(
