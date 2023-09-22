@@ -9,7 +9,7 @@ import importlib
 import logging
 import threading
 import traceback
-from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Sequence, Type, Any, TypeVar, cast  # pylint: disable=line-too-long
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Sequence, Type, Any, TypeVar, cast, Union  # pylint: disable=line-too-long
 from dftimewolf.cli import curses_display_manager as cdm
 
 from dftimewolf.config import Config
@@ -68,7 +68,7 @@ class DFTimewolfState(object):
     self._abort_execution = False
     self.stdout_log = True
     self._progress_warning_shown = False
-    self.telemetry: telemetry.BaseTelemetry | telemetry.GoogleCloudSpannerTelemetry | None = None  # pylint: disable=line-too-long
+    self.telemetry: Union[telemetry.BaseTelemetry, telemetry.GoogleCloudSpannerTelemetry, None]  # pylint: disable=line-too-long
 
   def _InvokeModulesInThreads(self, callback: Callable[[Any], Any]) -> None:
     """Invokes the callback function on all the modules in separate threads.

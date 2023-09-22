@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Copies GCE Disks across projects."""
 
-from typing import List, Optional, Dict, Type
+from typing import List, Optional, Dict, Type, Union
 
 from googleapiclient.errors import HttpError
 from libcloudforensics import errors as lcf_errors
@@ -62,8 +62,8 @@ class GCEDiskCopy(module.ThreadAwareModule):
             destination_project_name: Optional[str],
             source_project_name: str,
             destination_zone: str,
-            remote_instance_names: Optional[str | List[str]],
-            disk_names: Optional[str | List[str]],
+            remote_instance_names: Union[str, List[str]],
+            disk_names: Union[str, List[str]],
             all_disks: bool,
             stop_instances: bool) -> None:
     """Sets up a GCEDiskCopyCollector.
