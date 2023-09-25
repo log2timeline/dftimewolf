@@ -68,7 +68,7 @@ class DFTimewolfState(object):
     self._abort_execution = False
     self.stdout_log = True
     self._progress_warning_shown = False
-    self.telemetry: Union[telemetry.BaseTelemetry, telemetry.GoogleCloudSpannerTelemetry, None]  # pylint: disable=line-too-long
+    self.telemetry: Union[telemetry.BaseTelemetry, telemetry.GoogleCloudSpannerTelemetry, None] = None # pylint: disable=line-too-long
 
   def _InvokeModulesInThreads(self, callback: Callable[[Any], Any]) -> None:
     """Invokes the callback function on all the modules in separate threads.
