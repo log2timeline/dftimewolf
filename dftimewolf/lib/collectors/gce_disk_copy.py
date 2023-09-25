@@ -62,8 +62,8 @@ class GCEDiskCopy(module.ThreadAwareModule):
             destination_project_name: Optional[str],
             source_project_name: str,
             destination_zone: str,
-            remote_instance_names: Union[str, List[str]],
-            disk_names: Union[str, List[str]],
+            remote_instance_names: Union[str, List[str], None],
+            disk_names: Union[str, List[str], None],
             all_disks: bool,
             stop_instances: bool) -> None:
     """Sets up a GCEDiskCopyCollector.
