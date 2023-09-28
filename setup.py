@@ -64,6 +64,7 @@ else:
       """Builds an MSI."""
       # Command bdist_msi does not support the library version, neither a date
       # as a version but if we suffix it with .1 everything is fine.
+      # pytype: disable=attribute-error
       self.distribution.metadata.version += '.1'
 
       bdist_msi.run(self)
@@ -160,7 +161,7 @@ dftimewolf_long_description = (
     'dfTimeWolf, a framework for orchestrating forensic collection, processing'
     ' and data export.')
 
-setup(  # pytype: disable=attribute-error
+setup(  # pytype: disable=wrong-arg-types
     name='dftimewolf',
     version=dftimewolf.__version__,
     description=dftimewolf_description,
