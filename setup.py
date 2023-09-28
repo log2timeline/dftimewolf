@@ -85,7 +85,9 @@ else:
       if issubclass(BdistRPMCommand, object):
         spec_file = super(BdistRPMCommand, self)._make_spec_file()
       else:
-        spec_file = bdist_rpm._make_spec_file(self)  # pytype: disable=attribute-error
+        # pytype: disable=attribute-error
+        spec_file = bdist_rpm._make_spec_file(self)
+        # pytype: enable=attribute-error
 
       if sys.version_info[0] < 3:
         python_package = 'python'
@@ -158,7 +160,7 @@ dftimewolf_long_description = (
     'dfTimeWolf, a framework for orchestrating forensic collection, processing'
     ' and data export.')
 
-setup(  # pylint: disable=attribute-error
+setup(  # pytype: disable=attribute-error
     name='dftimewolf',
     version=dftimewolf.__version__,
     description=dftimewolf_description,
