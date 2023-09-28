@@ -590,6 +590,89 @@ class CursesDisplayManagerTest(unittest.TestCase):
       self.assertEqual(mock_addstr.call_count, 12)
       # pylint: enable=line-too-long
 
+  def testNarrowWindow(self):
+    """Tests drawing with a narrow window."""
+    with mock.patch('curses.cbreak'), \
+        mock.patch('curses.noecho'), \
+        mock.patch('curses.initscr'):
+      self.cdm.StartCurses()
+
+    with mock.patch.object(self.cdm._stdscr, 'getmaxyx') as mock_getmaxyx, \
+        mock.patch.object(self.cdm, 'Draw'):
+      mock_getmaxyx.return_value = 50, 5
+
+      self.cdm.SetRecipe('Recipe name')
+      self.cdm.EnqueuePreflight('First Preflight', [], '1st Preflight')
+      self.cdm.EnqueuePreflight('Second Preflight', [], '2nd Preflight')
+      self.cdm.EnqueueModule('First Module', [], '1st Module')
+      self.cdm.EnqueueModule('Second Module', ['1st Module'], '2nd Module')
+      self.cdm.EnqueueModule('Third Module', ['1st Module'], '3rd Module')
+      self.cdm.EnqueueModule('Fourth Module', ['1st Module'], '4th Module')
+      self.cdm.EnqueueModule('Fifth Module',
+          ['2nd Module', '3rd Module', '4th Module'], '5th Module')
+      self.cdm.UpdateModuleStatus('1st Preflight', Status.COMPLETED)
+      self.cdm.UpdateModuleStatus('2nd Preflight', Status.COMPLETED)
+      self.cdm.UpdateModuleStatus('1st Module', Status.COMPLETED)
+      self.cdm.UpdateModuleStatus('2nd Module', Status.RUNNING)
+      self.cdm.UpdateModuleStatus('3rd Module', Status.PROCESSING)
+      self.cdm.UpdateModuleStatus('4th Module', Status.PROCESSING)
+      self.cdm.SetThreadedModuleContainerCount('3rd Module', 5)
+      self.cdm.SetThreadedModuleContainerCount('4th Module', 8)
+      self.cdm.UpdateModuleThreadState('3rd Module', Status.RUNNING,
+          'thread_3_0', 'container_3_0')
+      self.cdm.UpdateModuleThreadState('3rd Module', Status.RUNNING,
+          'thread_3_1', 'container_3_1')
+      self.cdm.UpdateModuleThreadState('3rd Module', Status.RUNNING,
+          'thread_3_2', 'container_3_2')
+      self.cdm.UpdateModuleThreadState('3rd Module', Status.COMPLETED,
+          'thread_3_0', 'container_3_0')
+      self.cdm.UpdateModuleThreadState('3rd Module', Status.RUNNING,
+          'thread_3_0', 'container_3_4')
+      self.cdm.UpdateModuleThreadState('4th Module', Status.RUNNING,
+          'thread_4_0', 'container_4_0')
+      self.cdm.UpdateModuleThreadState('4th Module', Status.RUNNING,
+          'thread_4_1', 'container_4_1')
+      self.cdm.UpdateModuleThreadState('4th Module', Status.RUNNING,
+          'thread_4_2', 'container_4_2')
+      self.cdm.UpdateModuleThreadState('4th Module', Status.COMPLETED,
+          'thread_4_0', 'container_4_0')
+      self.cdm.UpdateModuleThreadState('4th Module', Status.RUNNING,
+          'thread_4_0', 'container_4_4')
+
+      try:
+        raise RuntimeError('Test Exception')
+      except RuntimeError as e:
+        self.cdm.SetException(e)
+
+      for i in range(10):
+        self.cdm.EnqueueMessage('source', f'Message {i}')
+
+    with mock.patch.object(self.cdm._stdscr, 'getmaxyx') as mock_getmaxyx, \
+        mock.patch.object(self.cdm._stdscr, 'clear') as mock_clear, \
+        mock.patch.object(self.cdm._stdscr, 'addstr') as mock_addstr:
+      mock_getmaxyx.return_value = 50, 5
+      mock_addstr.side_effect = [None, None, None, None, None, None, None, None,
+                                 curses.error(), None, None, None]
+
+      self.cdm.Draw()
+
+      mock_clear.assert_called_once_with()
+      # pylint: disable=line-too-long
+      mock_addstr.assert_has_calls([
+          mock.call(0, 0,  ' Reci'),
+          mock.call(1, 0,  '   Pr'),
+          mock.call(2, 0,  '     '),
+          mock.call(3, 0,  '     '),
+          mock.call(4, 0,  '   Mo'),
+          mock.call(5, 0,  '     '),
+          mock.call(6, 0,  '     '),
+          mock.call(7, 0,  '     '),
+          mock.call(8, 0,  '     '),
+          mock.call(47, 0, '*****'),
+          mock.call(48, 0, '*** T'),
+          mock.call(49, 0, '*****')])
+      self.assertEqual(mock_addstr.call_count, 12)
+
   def testWindowResizeDraw(self):
     """Tests resizing the window."""
     with mock.patch('curses.cbreak'), \

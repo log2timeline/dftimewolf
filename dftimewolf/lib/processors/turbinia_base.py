@@ -69,13 +69,13 @@ class TurbiniaProcessorBase(module.BaseModule):
           the entire recipe to fail if the module encounters an error.
     """
     super().__init__(state=state, name=name, critical=critical)
-    self.client: turbinia_api_lib.ApiClient | None = None
-    self.client_config: turbinia_api_lib.Configuration | None = None
+    self.client: Optional[turbinia_api_lib.ApiClient] = None
+    self.client_config: Optional[turbinia_api_lib.Configuration] = None
     self.client_secrets_path = os.path.join(
         os.path.expanduser('~'), ".dftimewolf_turbinia_secrets.json")
     self.credentials_path = os.path.join(
         os.path.expanduser('~'), ".dftimewolf_turbinia.token")
-    self.credentials: Credentials | None = None
+    self.credentials: Optional[Credentials] = None
     self.critical = critical
     self.extensions = [
         '.plaso', 'BinaryExtractorTask.tar.gz', 'hashes.json',
@@ -370,9 +370,11 @@ class TurbiniaProcessorBase(module.BaseModule):
     try:
       response = self.requests_api_instance.create_request(request)
       request_id = response.get('request_id')
-      self.logger.success(
+      self.PublishMessage(
           'Creating Turbinia request {0!s} with evidence {1!s}'.format(
               request_id, evidence_name))
+      self.PublishMessage(
+          'Turbinia request status at {0!s}'.format(self.turbinia_api))
     except turbinia_api_lib.ApiException as exception:
       self.ModuleError(str(exception), critical=True)
 
@@ -412,26 +414,31 @@ class TurbiniaProcessorBase(module.BaseModule):
       time.sleep(interval)
       try:
         if self.RefreshClientCredentials():
-          # pylint: disable=line-too-long
-          self.requests_api_instance = turbinia_requests_api.TurbiniaRequestsApi(
-              self.client)
+          self.requests_api_instance = (
+              turbinia_requests_api.TurbiniaRequestsApi(self.client)
+          )
         request_data = self.requests_api_instance.get_request_status(request_id)
         status = request_data.get('status')
         failed_tasks = request_data.get('failed_tasks')
         successful_tasks = request_data.get('successful_tasks')
         task_count = request_data.get('task_count')
         progress = math.ceil(
-            ((failed_tasks + successful_tasks) / task_count) * 100)
+            ((failed_tasks + successful_tasks) / task_count) * 100
+        )
         self.PublishMessage(
-            f'Turbinia request {request_id} is {status}. Progress: {progress}%')
+            f'Turbinia request {request_id} is {status}. Progress: {progress}%'
+        )
 
         for task in request_data.get('tasks', []):
           current_saved_paths = task.get('saved_paths', [])
           if not current_saved_paths:
             continue
           for path in current_saved_paths:
-            if path not in processed_paths and self._isInterestingPath(
-                path) and path.startswith(self.output_path):
+            if (
+                path not in processed_paths
+                and self._isInterestingPath(path)
+                and path.startswith(self.output_path)
+            ):
               processed_paths.add(path)
               yield task, path
 
@@ -442,11 +449,12 @@ class TurbiniaProcessorBase(module.BaseModule):
   def TurbiniaFinishReport(self, request_id: str) -> str:
     """This method generates a report for a Turbinia request."""
     if self.RefreshClientCredentials():
-      # pylint: disable=line-too-long
       self.requests_api_instance = turbinia_requests_api.TurbiniaRequestsApi(
-          self.client)
+          self.client
+      )
     request_data = self.requests_api_instance.get_request_status(request_id)
     if request_data:
       report: str = turbinia_formatter.RequestMarkdownReport(
-          request_data=request_data).generate_markdown()
+          request_data=request_data
+      ).generate_markdown()
     return report

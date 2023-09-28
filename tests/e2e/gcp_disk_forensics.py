@@ -79,7 +79,7 @@ RECIPE = {
                 'boot_disk_type': 'pd-standard',
                 'cpu_cores': 4,
                 'image_project': 'ubuntu-os-cloud',
-                'image_family': 'ubuntu-1804-lts',
+                'image_family': 'ubuntu-2204-lts',
                 'create_analysis_vm': True,
             }
         }
