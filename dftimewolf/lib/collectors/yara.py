@@ -104,6 +104,9 @@ class LocalYaraCollector(module.BaseModule):
 
   def Process(self) -> None:
     """Collects Yara rules from a path in the local filesystem."""
+    if not self.rules_path:
+      return
+
     with open(self.rules_path, 'r') as rules_file:
       rules = rules_file.read()
 
