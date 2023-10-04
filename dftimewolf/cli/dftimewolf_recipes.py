@@ -116,6 +116,7 @@ class DFTimewolfTool(object):
       workflow_uuid = str(uuid.uuid4())
     self.uuid = workflow_uuid
 
+    self.InitializeTelemetry()
     self._DetermineDataFilesPath()
 
   @property
