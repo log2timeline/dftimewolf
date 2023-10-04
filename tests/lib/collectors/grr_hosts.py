@@ -225,7 +225,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
         grr_server_url='http://fake/endpoint',
         grr_username='user',
         grr_password='password',
-        max_file_size=1234,
+        max_file_size='1234',
         approvers='approver1,approver2',
         verify=False,
         skip_offline_clients=False
@@ -277,7 +277,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
         grr_server_url='http://fake/endpoint',
         grr_username='user',
         grr_password='password',
-        max_file_size=1234,
+        max_file_size='1234',
         approvers='approver1,approver2',
         verify=False,
         skip_offline_clients=False
@@ -326,7 +326,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
         grr_server_url='http://fake/endpoint',
         grr_username='user',
         grr_password='password',
-        max_file_size=1234,
+        max_file_size='1234',
         approvers='approver1,approver2',
         verify=False,
         skip_offline_clients=False
@@ -371,7 +371,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
         grr_server_url='http://fake/endpoint',
         grr_username='user',
         grr_password='password',
-        max_file_size=1234,
+        max_file_size='1234',
         approvers='approver1,approver2',
         verify=False,
         skip_offline_clients=False
@@ -446,7 +446,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
         approvers='approver1,approver2',
         verify=False,
         skip_offline_clients=False,
-        max_file_size=1234,
+        max_file_size='1234',
     )
     self.grr_artifact_collector.StoreContainer(
         containers.Host(hostname='container.host'))
