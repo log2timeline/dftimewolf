@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """Definition of modules for collecting Yara rules from TIPs."""
 
+import os
 from typing import Optional
 
 import requests
-
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
@@ -78,6 +78,41 @@ class YetiYaraCollector(module.BaseModule):
           name=rule['name'], rule_text=rule['pattern'])
       self.StoreContainer(container)
 
+
+class LocalYaraCollector(module.BaseModule):
+  """Collect of Yara rules from the local filesystem.
+
+  Attributes:
+    rules_path: Local filesystem path towards a file containing Yara rules.
+  """
+  def __init__(self,
+              state: DFTimewolfState,
+              name: Optional[str]=None,
+              critical: bool=False) -> None:
+    """Initializes a YaraCollector module."""
+    super(LocalYaraCollector, self).__init__(state, name=name, critical=critical)
+
+  def SetUp(self, rules_path: str) -> None:
+    """Sets up the YaraCollector module.
+
+    Args:
+      rules_path: Path to a file containing Yara rules.
+    """
+    self.rules_path = rules_path
+
+  def Process(self) -> None:
+    """Collects Yara rules from a path in the local filesystem."""
+    with open(self.rules_path, 'r') as rules_file:
+      rules = rules_file.read()
+
+    filename = os.path.basename(self.rules_path)
+    rule_count = rules.count('rule ')
+    self.logger.info(f'Collected {rule_count} Yara rules from {self.rules_path}')
+
+    container = containers.YaraRule(name=filename, rule_text=rules)
+    self.StoreContainer(container)
+
+
 modules_manager.ModulesManager.RegisterModules([
-    YetiYaraCollector,
+    YetiYaraCollector, LocalYaraCollector
 ])
