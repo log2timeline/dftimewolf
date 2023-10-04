@@ -90,9 +90,11 @@ class LocalYaraCollector(module.BaseModule):
               name: Optional[str]=None,
               critical: bool=False) -> None:
     """Initializes a YaraCollector module."""
-    super(LocalYaraCollector, self).__init__(state, name=name, critical=critical)
+    super(LocalYaraCollector, self).__init__(
+        state, name=name, critical=critical)
+    self.rules_path = ''
 
-  def SetUp(self, rules_path: str) -> None:
+  def SetUp(self, rules_path: str) -> None: # pylint: disable=arguments-differ
     """Sets up the YaraCollector module.
 
     Args:
@@ -107,7 +109,8 @@ class LocalYaraCollector(module.BaseModule):
 
     filename = os.path.basename(self.rules_path)
     rule_count = rules.count('rule ')
-    self.logger.info(f'Collected {rule_count} Yara rules from {self.rules_path}')
+    self.logger.info(
+        f'Collected {rule_count} Yara rules from {self.rules_path}')
 
     container = containers.YaraRule(name=filename, rule_text=rules)
     self.StoreContainer(container)
