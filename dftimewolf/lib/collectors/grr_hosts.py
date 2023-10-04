@@ -616,7 +616,7 @@ class GRRArtifactCollector(GRRFlow):
             grr_server_url: str,
             grr_username: str,
             grr_password: str,
-            max_file_size: Optional[int],
+            max_file_size: Optional[str],
             approvers: Optional[str]=None,
             verify: bool=True,
             skip_offline_clients: bool=False
@@ -633,7 +633,7 @@ class GRRArtifactCollector(GRRFlow):
       grr_server_url (str): GRR server URL.
       grr_username (str): GRR username.
       grr_password (str): GRR password.
-      max_file_size (str): Maximum file size to collect (in bytes).
+      max_file_size (Optional[str]): Maximum file size to collect (in bytes).
       approvers (Optional[str]): list of GRR approval recipients.
       verify (Optional[bool]): True to indicate GRR server's x509 certificate
           should be verified.
@@ -659,7 +659,7 @@ class GRRArtifactCollector(GRRFlow):
 
     self.use_raw_filesystem_access = use_raw_filesystem_access
     if max_file_size:
-      self.max_file_size = max_file_size
+      self.max_file_size = int(max_file_size, 0)
 
   def Process(self, container: containers.Host
               ) -> None:  # pytype: disable=signature-mismatch

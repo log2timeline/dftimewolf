@@ -64,6 +64,7 @@ else:
       """Builds an MSI."""
       # Command bdist_msi does not support the library version, neither a date
       # as a version but if we suffix it with .1 everything is fine.
+      # pytype: disable=attribute-error
       self.distribution.metadata.version += '.1'
 
       bdist_msi.run(self)
@@ -85,7 +86,9 @@ else:
       if issubclass(BdistRPMCommand, object):
         spec_file = super(BdistRPMCommand, self)._make_spec_file()
       else:
+        # pytype: disable=attribute-error
         spec_file = bdist_rpm._make_spec_file(self)
+        # pytype: enable=attribute-error
 
       if sys.version_info[0] < 3:
         python_package = 'python'
@@ -158,7 +161,7 @@ dftimewolf_long_description = (
     'dfTimeWolf, a framework for orchestrating forensic collection, processing'
     ' and data export.')
 
-setup(
+setup(  # pytype: disable=wrong-arg-types
     name='dftimewolf',
     version=dftimewolf.__version__,
     description=dftimewolf_description,
