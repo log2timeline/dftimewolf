@@ -115,8 +115,8 @@ class DFTimewolfTool(object):
     if not workflow_uuid:
       workflow_uuid = str(uuid.uuid4())
     self.uuid = workflow_uuid
-    self.telemetry = telemetry.GetTelemetry(uuid=self.uuid)
 
+    self.InitializeTelemetry()
     self._DetermineDataFilesPath()
 
   @property
@@ -377,6 +377,10 @@ class DFTimewolfTool(object):
   def RecipesManager(self) -> recipes_manager.RecipesManager:
     """Returns the recipes manager."""
     return self._recipes_manager
+
+  def InitializeTelemetry(self) -> None:
+    """Initializes the telemetry object."""
+    self.telemetry = telemetry.GetTelemetry(uuid=self.uuid)
 
 
 def SignalHandler(*unused_argvs: Any) -> None:
