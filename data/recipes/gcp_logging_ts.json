@@ -1,0 +1,50 @@
+{
+  "name": "gcp_logging_ts",
+  "short_description": "Collects logs from a GCP project and sends them to Timesketch.",
+  "description": "Collects logs from a GCP project and sends them to Timesketch. https://cloud.google.com/logging/docs/view/query-library for example queries.",
+  "preflights": [
+    {
+      "wants": [],
+      "name": "GCPTokenCheck",
+      "args": {
+        "project_name": "@project_name"
+      }
+    }
+  ],
+  "modules": [
+    {
+      "wants": [],
+      "name": "GCPLogsCollector",
+      "args": {
+        "project_name": "@project_name",
+        "filter_expression": "@filter_expression",
+        "backoff": "@backoff",
+        "delay": "@delay"
+      }
+    },
+    {
+      "wants": [
+        "GCPLogsCollector"
+      ],
+      "name": "TimesketchExporter",
+      "args": {
+        "incident_id": "@incident_id",
+        "token_password": "@token_password",
+        "sketch_id": "@sketch_id",
+        "analyzers": "@analyzers",
+        "wait_for_timelines": "@wait_for_timelines"
+      }
+    }
+  ],
+  "args": [
+    ["project_name", "Name of the GCP project to collect logs from.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9]{4,28}[a-z0-9]$"}],
+    ["filter_expression", "Filter expression to use to query GCP logs. See https://cloud.google.com/logging/docs/view/query-library for examples.", "resource.type = 'gce_instance'"],
+    ["--backoff", "If GCP Cloud Logging API query limits are exceeded, retry with an increased delay between each query to try complete the query at a slower rate.", false],
+    ["--delay", "Number of seconds to wait between each GCP Cloud Logging query to avoid hitting API query limits", 0, {"format": "regex", "regex": "^\\d+$"}],
+    ["--analyzers", "Timesketch analyzers to run.", null],
+    ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
+    ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
+    ["--incident_id", "Incident ID (used for Timesketch description).", null],
+    ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true]
+  ]
+}

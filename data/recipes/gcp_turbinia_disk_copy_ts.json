@@ -20,6 +20,12 @@
     }],
     "modules": [{
         "wants": [],
+        "name": "LocalYaraCollector",
+        "args": {
+          "rules_path": "@yara_rules_path"
+        }
+      }, {
+        "wants": [],
         "name": "GCEDiskCopy",
         "args": {
           "destination_project_name": "@analysis_project_name",
@@ -41,11 +47,11 @@
           "boot_disk_type": "@boot_disk_type",
           "cpu_cores": "@cpu_cores",
           "image_project": "ubuntu-os-cloud",
-          "image_family": "ubuntu-1804-lts",
+          "image_family": "ubuntu-2204-lts",
           "create_analysis_vm": "@create_analysis_vm"
         }
       }, {
-        "wants": ["GCEDiskCopy"],
+        "wants": ["GCEDiskCopy", "LocalYaraCollector"],
         "name": "TurbiniaGCPProcessor",
         "args": {
             "disk_names": null,
@@ -73,6 +79,7 @@
         ["source_project_name", "Name of the project containing the instance / disks to copy.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9]{4,28}[a-z0-9]$"}],
         ["analysis_project_name", "Name of the project containing the Turbinia instance.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9]{4,28}[a-z0-9]$"}],
         ["--request_ids", "Comma separated Turbinia request identifiers to process.", null, {"format": "regex", "comma_separated": true, "regex": "^[a-f0-9]{32}$"}],
+        ["--yara_rules_path", "Paths to Yara rules sent to Turbinia for processing.", null],
         ["--turbinia_recipe", "The Turbinia recipe name to use for evidence processing.", null],
         ["--turbinia_zone", "The GCP zone the disk to process and Turbinia workers are in.", "us-central1-f", {"format": "gcp_zone"}],
         ["--turbinia_auth", "Flag to indicate whether Turbinia API server requires authentication.", false],
@@ -90,6 +97,6 @@
         ["--boot_disk_size", "The size of the analysis VM boot disk (in GB).", 50, {"format": "regex", "regex": "^\\d+$"}],
         ["--boot_disk_type", "Disk type to use [pd-standard, pd-ssd]", "pd-standard", {"format": "regex", "regex": "^pd-((ssd)|(standard))$"}],
         ["--image_project", "Name of the project where the analysis VM image is hosted.", "ubuntu-os-cloud"],
-        ["--image_family", "Name of the image to use to create the analysis VM.", "ubuntu-1804-lts"]
+        ["--image_family", "Name of the image to use to create the analysis VM.", "ubuntu-2204-lts"]
     ]
 }

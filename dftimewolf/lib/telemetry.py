@@ -2,7 +2,7 @@
 import datetime
 from dataclasses import dataclass
 import logging
-from typing import Dict, Any, List, Union
+from typing import Dict, Any, List, Union, Optional
 import uuid as uuid_lib
 
 from dftimewolf import config
@@ -38,7 +38,7 @@ class TelemetryCollection:
 class BaseTelemetry():
   """Interface for implementing a telemetry module."""
 
-  def __init__(self, uuid: str | None = None) -> None:
+  def __init__(self, uuid: Optional[str] = None) -> None:
     """Initializes a BaseTelemetry object."""
     super().__init__()
     self.uuid = uuid
@@ -77,7 +77,7 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
       project_name: str,
       instance_name: str,
       database_name: str,
-      uuid: str | None = None) -> None:
+      uuid: Optional[str] = None) -> None:
     """Initializes a GoogleCloudSpannerTelemetry object."""
     super().__init__(uuid=uuid)
     self.project_name = project_name
@@ -163,7 +163,7 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
 
 
 def GetTelemetry(
-    uuid: str | None = None
+    uuid: Optional[str] = None
   ) -> Union[BaseTelemetry, GoogleCloudSpannerTelemetry]:
   """Returns the currently configured Telemetry object."""
   telemetry_config = config.Config.GetExtra('telemetry')

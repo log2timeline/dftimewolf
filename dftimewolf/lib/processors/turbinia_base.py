@@ -69,13 +69,13 @@ class TurbiniaProcessorBase(module.BaseModule):
           the entire recipe to fail if the module encounters an error.
     """
     super().__init__(state=state, name=name, critical=critical)
-    self.client: turbinia_api_lib.ApiClient | None = None
-    self.client_config: turbinia_api_lib.Configuration | None = None
+    self.client: Optional[turbinia_api_lib.ApiClient] = None
+    self.client_config: Optional[turbinia_api_lib.Configuration] = None
     self.client_secrets_path = os.path.join(
         os.path.expanduser('~'), ".dftimewolf_turbinia_secrets.json")
     self.credentials_path = os.path.join(
         os.path.expanduser('~'), ".dftimewolf_turbinia.token")
-    self.credentials: Credentials | None = None
+    self.credentials: Optional[Credentials] = None
     self.critical = critical
     self.extensions = [
         '.plaso', 'BinaryExtractorTask.tar.gz', 'hashes.json',
