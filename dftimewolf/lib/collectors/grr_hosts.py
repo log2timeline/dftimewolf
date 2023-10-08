@@ -658,8 +658,8 @@ class GRRArtifactCollector(GRRFlow):
     self.state.DedupeContainers(containers.Host)
 
     self.use_raw_filesystem_access = use_raw_filesystem_access
-    if max_file_size:
-      self.max_file_size = int(max_file_size, 0)
+    if max_file_size and isinstance(max_file_size, str):
+      self.max_file_size = int(max_file_size)
 
   def Process(self, container: containers.Host
               ) -> None:  # pytype: disable=signature-mismatch
@@ -814,7 +814,7 @@ class GRRFileCollector(GRRFlow):
     if self.action is None:
       self.ModuleError(f"Invalid action {action!s}",
                        critical=True)
-    if max_file_size:
+    if max_file_size and isinstance(max_file_size, str):
       self.max_file_size = int(max_file_size)
 
   def Process(self, container: containers.Host
