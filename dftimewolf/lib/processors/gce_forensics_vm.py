@@ -160,6 +160,9 @@ class GCEForensicsVM(module.BaseModule):
       self.logger.info('Pausing 10 seconds to allow OS to boot before attaching'
           ' evidence disks')
       time.sleep(10)
+    # In Running boot might be ongoing, thus the additinal wait
+    # https://cloud.google.com/compute/docs/instances/instance-life-cycle
+    time.sleep(20)
 
     for d in disks:
       if d.project != self.project.project_id:
