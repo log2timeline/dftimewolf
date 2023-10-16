@@ -1,6 +1,14 @@
 # Use the official Docker Hub Ubuntu 20.04 base image
 FROM ubuntu:22.04
 
+RUN apt-get update && apt-get upgrade -y
+RUN apt-get install -y --no-install-recommends \
+    software-properties-common \
+    gpg-agent
+
+RUN add-apt-repository ppa:gift/stable -y
+RUN apt-get update
+RUN apt-get -y install plaso-tools
 
 RUN apt update && apt install -y --no-install-recommends \
     python3-dev \
@@ -9,24 +17,19 @@ RUN apt update && apt install -y --no-install-recommends \
     git \
     ssh
 
-# Install Plaso
-RUN add-apt-repository -y ppa:gift/stable
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    plaso-tools
-
 RUN pip install --upgrade pip
 RUN pip install poetry
 
-# /app is defined as the mount in the docker-compose.yaml file and should
-# point to the root of the dftimewolf install
+# # /app is defined as the mount in the docker-compose.yaml file and should
+# # point to the root of the dftimewolf install
 ADD . /app
 WORKDIR /app
 
 RUN poetry install --with dev
 
-# Copy the entrypoint script into the container
-COPY ./docker/dftimewolf-dev/docker-entrypoint.sh /
+# # Copy the entrypoint script into the container
+COPY ./docker/dftimewolf-release/docker-entrypoint.sh /
 RUN chmod a+x /docker-entrypoint.sh
 
-# Load the entrypoint script to be run later
+# # Load the entrypoint script to be run later
 ENTRYPOINT ["/docker-entrypoint.sh"]

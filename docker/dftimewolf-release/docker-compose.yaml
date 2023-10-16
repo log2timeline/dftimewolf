@@ -2,9 +2,11 @@ version: '3.3'
 services:
 
   dftw:
+    container_name: dftw
     build:
       context: ../../
-      dockerfile: ./docker/dftimewolf-dev/Dockerfile
+      dockerfile: ./docker/dftimewolf-release/Dockerfile
+    platform: linux/amd64
     environment:
       - DFTIMEWOLF_NO_CURSES=1
     entrypoint:
