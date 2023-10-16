@@ -3,13 +3,10 @@ set -e
 
 PYTHONPATH="/app"
 
-echo "Running entrypoint.sh"
-echo "PYTHONPATH: $PYTHONPATH"
-echo "arg passed: $1"
-
 # Pass all args to dftimewolf
 if [[ "$1" =~ 'dftimewolf' ]]; then
-    poetry run dftimewolf "$@"
+    # poetry run is a bit slower than using the virtualenv directly
+    $PYBIN -m dftimewolf.cli.dftimewolf_recipes "${@:2}"
 fi
 
 # Run a custom command on container start

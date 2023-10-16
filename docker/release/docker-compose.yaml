@@ -5,13 +5,17 @@ services:
     container_name: dftw
     build:
       context: ../../
-      dockerfile: ./docker/dftimewolf-release/Dockerfile
+      dockerfile: ./docker/release/Dockerfile
     platform: linux/amd64
     environment:
       - DFTIMEWOLF_NO_CURSES=1
-    entrypoint:
-      - /docker-entrypoint.sh
     volumes:
-      - ../../:/app/
+      - ${HOME}/.dftimewolfrc:/root/.dftimewolfrc
+    entrypoint:
+      /docker-entrypoint.sh
     stdin_open: true # docker run -i
     tty: true        # docker run -t
+
+networks:
+  default:
+    name: dftimewolf_network
