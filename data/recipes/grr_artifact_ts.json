@@ -31,7 +31,10 @@
         "name": "TimesketchExporter",
         "args": {
             "incident_id": "@reason",
-            "token_password": "@token_password",
+            "token_password": null,
+            "endpoint": "@endpoint",
+            "username": "@username",
+            "password": "@password",
             "sketch_id": "@sketch_id",
             "analyzers": "@analyzers",
             "wait_for_timelines": "@wait_for_timelines"
@@ -48,6 +51,9 @@
         ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true],
         ["--analyzers", "Timesketch analyzers to run", null],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
+        ["--endpoint", "Timesketch endpoint", null],
+        ["--username", "Username for Timesketch server.", null],
+        ["--password", "Password for Timesketch server.", null],
         ["--incident_id", "Incident ID (used for Timesketch description).", null],
         ["--grr_server_url", "GRR endpoint.", "http://localhost:8000", {"format": "url"}],
         ["--verify", "Whether to verify the GRR TLS certificate.", true],

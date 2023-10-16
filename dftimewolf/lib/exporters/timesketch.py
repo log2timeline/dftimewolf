@@ -53,10 +53,13 @@ class TimesketchExporter(module.ThreadAwareModule):
   # pylint: disable=arguments-differ
   def SetUp(
       self,
-      incident_id: None = None,
-      sketch_id: Optional[int] = 0,
-      analyzers: None = None,
-      token_password: str = '',
+      incident_id: str,
+      sketch_id: Optional[int],
+      analyzers: list[str],
+      token_password: str,
+      endpoint: Optional[str],
+      username: Optional[str],
+      password: Optional[str],
       wait_for_timelines: bool = False) -> None:
     """Setup a connection to a Timesketch server and create a sketch if needed.
 
@@ -76,8 +79,14 @@ class TimesketchExporter(module.ThreadAwareModule):
     """
     self.wait_for_timelines = wait_for_timelines
 
-    self.timesketch_api = timesketch_utils.GetApiClient(
-        self.state, token_password=token_password)
+    if token_password:
+      self.logger.info('Using token password from recipe config.')
+      self.timesketch_api = timesketch_utils.GetApiClient(
+          self.state, token_password=token_password)
+    elif endpoint and username and password:
+      self.timesketch_api = ts_client.TimesketchApi(
+          endpoint, username, password)
+
     if not self.timesketch_api:
       self.ModuleError(
           'Unable to get a Timesketch API client, try deleting the files '
