@@ -3,8 +3,7 @@ services:
 
   dftw:
     container_name: dftw
-    image:
-      image: tomchop/dftimewolf
+    image: yetiplatform/yeti-frontend:latest
     build:
       context: ../../
       dockerfile: ./docker/release/Dockerfile
