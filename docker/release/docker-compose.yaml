@@ -3,6 +3,8 @@ services:
 
   dftw:
     container_name: dftw
+    image:
+      image: tomchop/dftimewolf
     build:
       context: ../../
       dockerfile: ./docker/release/Dockerfile
