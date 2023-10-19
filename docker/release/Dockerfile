@@ -15,17 +15,17 @@ RUN apt install -y --no-install-recommends \
     python3-pip \
     libmagic1 \
     ssh \
+    git \
     && apt-get clean && rm -rf /var/cache/apt/* /var/lib/apt/lists/*
 
 RUN pip install --upgrade pip
 RUN pip install poetry
-
-# /app is defined as the mount in the docker-compose.yaml file and should
-# point to the root of the dftimewolf install
-ADD . /app
+RUN git clone https://github.com/tomchop/dftimewolf.git /app && cd /app && git checkout docker --
 WORKDIR /app
-
 RUN poetry install --with dev
+
+# replace by git clone, or pip install, when script stabilizes
+ADD . .
 
 # Copy the entrypoint script into the container
 COPY ./docker/release/docker-entrypoint.sh /
