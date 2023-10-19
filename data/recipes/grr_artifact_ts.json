@@ -24,7 +24,7 @@
         "name": "LocalPlasoProcessor",
         "args": {
             "timezone": null,
-            "use_docker": true
+            "use_docker": "@user_docker"
         }
     }, {
         "wants": ["LocalPlasoProcessor"],
@@ -32,9 +32,9 @@
         "args": {
             "incident_id": "@reason",
             "token_password": null,
-            "endpoint": "@endpoint",
-            "username": "@username",
-            "password": "@password",
+            "endpoint": "@timesketch_endpoint",
+            "username": "@timesketch_username",
+            "password": "@timesketch_password",
             "sketch_id": "@sketch_id",
             "analyzers": "@analyzers",
             "wait_for_timelines": "@wait_for_timelines"
@@ -51,15 +51,16 @@
         ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true],
         ["--analyzers", "Timesketch analyzers to run", null],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
-        ["--endpoint", "Timesketch endpoint", null],
-        ["--username", "Username for Timesketch server.", null],
-        ["--password", "Password for Timesketch server.", null],
+        ["--timesketch_endpoint", "Timesketch endpoint", null],
+        ["--timesketch_username", "Username for Timesketch server.", null],
+        ["--timesketch_password", "Password for Timesketch server.", null],
         ["--incident_id", "Incident ID (used for Timesketch description).", null],
         ["--grr_server_url", "GRR endpoint.", "http://localhost:8000", {"format": "url"}],
         ["--verify", "Whether to verify the GRR TLS certificate.", true],
         ["--skip_offline_clients", "Whether to skip clients that are offline.", false],
         ["--grr_username", "GRR username", "admin"],
         ["--grr_password", "GRR password", "admin"],
+        ["--user_docker", "Whether the LocalPlasoProcessor should use Docker or not.", true],
         ["--max_file_size", "Maximum size of files to collect (in bytes).", 5368709120, {"format": "regex", "regex": "^\\d+$"}]
     ]
 }

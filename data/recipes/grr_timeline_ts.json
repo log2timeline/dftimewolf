@@ -23,7 +23,7 @@
     "name": "LocalPlasoProcessor",
     "args": {
       "timezone": null,
-      "use_docker": true
+      "use_docker": "@use_docker"
     }
   }, {
     "wants": ["LocalPlasoProcessor"],
@@ -33,7 +33,10 @@
       "token_password": "@token_password",
       "sketch_id": "@sketch_id",
       "analyzers": null,
-      "wait_for_timelines": "@wait_for_timelines"
+      "wait_for_timelines": "@wait_for_timelines",
+      "endpoint": "@timesketch_endpoint",
+      "username": "@timesketch_username",
+      "password": "@timesketch_password"
     }
   }, {
     "wants": ["TimesketchExporter"],
@@ -45,7 +48,10 @@
       "include_stories": false,
       "token_password": "@token_password",
       "max_checks": 0,
-      "formatter": "html"
+      "formatter": "html",
+      "endpoint": "@timesketch_endpoint",
+      "username": "@timesketch_username",
+      "password": "@timesketch_password"
     }
   }],
   "args": [
@@ -56,10 +62,14 @@
     ["--approvers", "Comma-separated list of usernames to ask for approval.", null],
     ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
     ["--grr_server_url", "GRR endpoint.", "http://localhost:8000", {"format": "url"}],
+    ["--timesketch_endpoint", "Timesketch endpoint", null],
+    ["--timesketch_username", "Username for Timesketch server.", null],
+    ["--timesketch_password", "Password for Timesketch server.", null],
     ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
     ["--timesketch_quick", "Skip waiting for analyzers to complete their run.", false],
     ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true],
     ["--grr_username", "GRR username.", "admin"],
-    ["--grr_password", "GRR password.", "admin"]
+    ["--grr_password", "GRR password.", "admin"],
+    ["--user_docker", "Whether the LocalPlasoProcessor should use Docker or not.", true]
   ]
 }

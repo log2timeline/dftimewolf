@@ -2,8 +2,11 @@
 """Timesketch enhancer that exports Timesketch results."""
 
 import time
+from typing import TYPE_CHECKING
+from typing import List
+from typing import Optional
 
-from typing import List, Optional, TYPE_CHECKING
+from timesketch_api_client import client as ts_client
 
 from dftimewolf.lib import module
 from dftimewolf.lib import timesketch_utils
@@ -11,14 +14,13 @@ from dftimewolf.lib import utils
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 
-
 if TYPE_CHECKING:
-  from dftimewolf.lib import state as dftw_state
-  from timesketch_api_client import client
+  from timesketch_api_client import aggregation as ts_aggregation
+  from timesketch_api_client import search as ts_search
   from timesketch_api_client import sketch as ts_sketch
   from timesketch_api_client import story as ts_story
-  from timesketch_api_client import search as ts_search
-  from timesketch_api_client import aggregation as ts_aggregation
+
+  from dftimewolf.lib import state as dftw_state
 
 
 class TimesketchEnhancer(module.BaseModule):
@@ -43,7 +45,7 @@ class TimesketchEnhancer(module.BaseModule):
 
   # For pytype
   _formatter: utils.FormatterInterface
-  timesketch_api: "client.TimesketchApi"
+  timesketch_api: "ts_client.TimesketchApi"
 
   def __init__(self,
                state: "dftw_state.DFTimewolfState",
@@ -58,13 +60,16 @@ class TimesketchEnhancer(module.BaseModule):
     self._searches_to_skip = []  # type: List[str]
 
   def SetUp(self,  # pylint: disable=arguments-differ
-            wait_for_analyzers: bool=True,
-            searches_to_skip: str='',
-            aggregations_to_skip: str='',
-            include_stories: bool=False,
-            token_password: str='',
-            max_checks: int=0,
-            formatter: str='html') -> None:
+            wait_for_analyzers: bool,
+            searches_to_skip: Optional[str],
+            aggregations_to_skip: Optional[str],
+            include_stories: bool,
+            token_password: Optional[str],
+            endpoint: Optional[str],
+            username: Optional[str],
+            password: Optional[str],
+            max_checks: int,
+            formatter: str) -> None:
     """Sets up a Timesketch Enhancer module.
 
     Args:
@@ -94,8 +99,12 @@ class TimesketchEnhancer(module.BaseModule):
           be used for text formatting in reports. Valid options are:
           "html" or "markdown", defaults to "html".
     """
-    self.timesketch_api = timesketch_utils.GetApiClient(
-        self.state, token_password=token_password)
+    if token_password:
+      self.timesketch_api = timesketch_utils.GetApiClient(
+          self.state, token_password=token_password)
+    elif endpoint and username and password:
+      self.timesketch_api = ts_client.TimesketchApi(
+          endpoint, username, password)
 
     if not (self.timesketch_api or self.timesketch_api.session):
       self.ModuleError(
