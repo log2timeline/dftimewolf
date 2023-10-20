@@ -370,7 +370,8 @@ class TurbiniaProcessorBase(module.BaseModule):
 
     # Send the request to the API server.
     try:
-      response = self.requests_api_instance.create_request(request) # type: ignore
+      response = self.requests_api_instance.create_request(
+        request) # type: ignore
       request_id = response.get('request_id')
       self.PublishMessage(
           'Creating Turbinia request {0!s} with evidence {1!s}'.format(
