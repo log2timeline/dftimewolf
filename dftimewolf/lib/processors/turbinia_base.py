@@ -31,7 +31,7 @@ class TurbiniaProcessorBase(module.BaseModule):
   """Base class for processing with Turbinia.
 
   Attributes:
-    client (turbinia_api_lib.ApiClient): Turbinia client.
+    client (turbinia_api_lib.api_client.ApiClient): Turbinia client.
     client_config (dict): Turbinia client config.
     credentials google.oauth2.credentials.Credentials: User Oauth2 credentials.
     extensions (List[str]): List of file extensions to look for.
@@ -69,8 +69,8 @@ class TurbiniaProcessorBase(module.BaseModule):
           the entire recipe to fail if the module encounters an error.
     """
     super().__init__(state=state, name=name, critical=critical)
-    self.client: Optional[turbinia_api_lib.ApiClient] = None
-    self.client_config: Optional[turbinia_api_lib.Configuration] = None
+    self.client: Optional[turbinia_api_lib.api_client.ApiClient] = None
+    self.client_config: Optional[turbinia_api_lib.configuration.Configuration] = None
     self.client_secrets_path = os.path.join(
         os.path.expanduser('~'), ".dftimewolf_turbinia_secrets.json")
     self.credentials_path = os.path.join(
@@ -169,7 +169,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     api_instance = turbinia_request_results_api.TurbiniaRequestResultsApi(
         self.client)
     try:
-      task_id = task_data.get('id')
+      task_id: str = str(task_data.get('id'))
       api_response = api_instance.get_task_output_with_http_info(
           task_id, _preload_content=False)
       filename = f'{task_id}-'
@@ -180,7 +180,8 @@ class TurbiniaProcessorBase(module.BaseModule):
       local_path = file.name
       self.logger.info(f'Downloading output for task {task_id} to {local_path}')
       # Read the response and write to the file.
-      file.write(api_response.raw_data)
+      if api_response.raw_data:
+        file.write(api_response.raw_data)
       file.close()
 
       # Extract the files from the tgz file.
@@ -189,7 +190,7 @@ class TurbiniaProcessorBase(module.BaseModule):
         result = extracted_path
         self.PublishMessage(
             f'Extracted output file to {result} for task {task_id}')
-    except turbinia_api_lib.ApiException as exception:
+    except turbinia_api_lib.exceptions.ApiException as exception:
       self.ModuleError(
           f'Unable to download task data: {exception}', critical=False)
     except OSError as exception:
@@ -254,15 +255,15 @@ class TurbiniaProcessorBase(module.BaseModule):
     return bool(refresh)
 
   def InitializeTurbiniaApiClient(
-      self, credentials: Credentials) -> turbinia_api_lib.ApiClient:
+      self, credentials: Credentials) -> turbinia_api_lib.api_client.ApiClient:
     """Creates a Turbinia API client object.
 
     This method also runs the authentication flow if needed.
 
     Returns:
-      turbinia_api_lib.ApiClient: A Turbinia API client object.
+      turbinia_api_lib.api_client.ApiClient: A Turbinia API client object.
     """
-    self.client_config = turbinia_api_lib.Configuration(host=self.turbinia_api)
+    self.client_config = turbinia_api_lib.configuration.Configuration(host=self.turbinia_api)
     if not self.client_config:
       self.ModuleError('Unable to configure Turbinia API server', critical=True)
     # Check if Turbinia requires authentication.
@@ -275,7 +276,7 @@ class TurbiniaProcessorBase(module.BaseModule):
       else:
         self.ModuleError(
             'Unable to obtain id_token from identity provider', critical=True)
-    return turbinia_api_lib.ApiClient(self.client_config)
+    return turbinia_api_lib.api_client.ApiClient(self.client_config)
 
   def TurbiniaSetUp(
       self, project: str, turbinia_auth: bool,
@@ -299,7 +300,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.turbinia_zone = turbinia_zone
     self.incident_id = incident_id
     self.sketch_id = sketch_id
-    self.client_config = turbinia_api_lib.Configuration(host=self.turbinia_api)
+    self.client_config = turbinia_api_lib.configuration.Configuration(host=self.turbinia_api)
     self.client = self.InitializeTurbiniaApiClient(self.credentials)
     self.requests_api_instance = turbinia_requests_api.TurbiniaRequestsApi(
         self.client)
@@ -309,7 +310,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     try:
       api_response = api_instance.read_config()
       self.output_path = api_response.get('OUTPUT_DIR')
-    except turbinia_api_lib.ApiException as exception:
+    except turbinia_api_lib.exceptions.ApiException as exception:
       self.ModuleError(exception.body, critical=True)
 
   def TurbiniaStart(
@@ -374,7 +375,7 @@ class TurbiniaProcessorBase(module.BaseModule):
               request_id, evidence_name))
       self.PublishMessage(
           'Turbinia request status at {0!s}'.format(self.turbinia_api))
-    except turbinia_api_lib.ApiException as exception:
+    except turbinia_api_lib.exceptions.ApiException as exception:
       self.ModuleError(str(exception), critical=True)
 
     if not request_id:
@@ -441,7 +442,7 @@ class TurbiniaProcessorBase(module.BaseModule):
               processed_paths.add(path)
               yield task, path
 
-      except turbinia_api_lib.ApiException as exception:
+      except turbinia_api_lib.exceptions.ApiException as exception:
         retries += 1
         self.logger.warning(f'Retrying after exception: {exception.body}')
 
