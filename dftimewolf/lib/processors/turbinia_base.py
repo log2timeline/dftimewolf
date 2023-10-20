@@ -1,5 +1,4 @@
 """Base class for turbinia interactions."""
-
 import getpass
 import os
 import tarfile
@@ -25,7 +24,7 @@ from dftimewolf.lib import module
 # pylint: disable=unused-import
 from dftimewolf.lib import state as state_lib
 
-
+# mypy: disable-error-code="attr-defined"
 # pylint: disable=abstract-method,no-member
 class TurbiniaProcessorBase(module.BaseModule):
   """Base class for processing with Turbinia.
@@ -70,6 +69,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     """
     super().__init__(state=state, name=name, critical=critical)
     self.client: Optional[turbinia_api_lib.api_client.ApiClient] = None
+    # pylint: disable=line-too-long
     self.client_config: Optional[turbinia_api_lib.configuration.Configuration] = None
     self.client_secrets_path = os.path.join(
         os.path.expanduser('~'), ".dftimewolf_turbinia_secrets.json")
@@ -88,7 +88,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.output_path = str()
     self.parallel_count = 5  # Arbitrary, used by ThreadAwareModule
     self.project = str()
-    self.requests_api_instance: turbinia_requests_api.TurbiniaRequestsApi = None
+    self.requests_api_instance: turbinia_requests_api.TurbiniaRequestsApi = None # type: ignore
     self.sketch_id = int()
     self.state = state
     self.turbinia_auth = bool()
@@ -263,7 +263,8 @@ class TurbiniaProcessorBase(module.BaseModule):
     Returns:
       turbinia_api_lib.api_client.ApiClient: A Turbinia API client object.
     """
-    self.client_config = turbinia_api_lib.configuration.Configuration(host=self.turbinia_api)
+    self.client_config = turbinia_api_lib.configuration.Configuration(
+        host=self.turbinia_api)
     if not self.client_config:
       self.ModuleError('Unable to configure Turbinia API server', critical=True)
     # Check if Turbinia requires authentication.
@@ -300,7 +301,8 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.turbinia_zone = turbinia_zone
     self.incident_id = incident_id
     self.sketch_id = sketch_id
-    self.client_config = turbinia_api_lib.configuration.Configuration(host=self.turbinia_api)
+    self.client_config = turbinia_api_lib.configuration.Configuration(
+      host=self.turbinia_api)
     self.client = self.InitializeTurbiniaApiClient(self.credentials)
     self.requests_api_instance = turbinia_requests_api.TurbiniaRequestsApi(
         self.client)
@@ -368,7 +370,7 @@ class TurbiniaProcessorBase(module.BaseModule):
 
     # Send the request to the API server.
     try:
-      response = self.requests_api_instance.create_request(request)
+      response = self.requests_api_instance.create_request(request) # type: ignore
       request_id = response.get('request_id')
       self.PublishMessage(
           'Creating Turbinia request {0!s} with evidence {1!s}'.format(
