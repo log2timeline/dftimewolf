@@ -169,9 +169,9 @@ class TurbiniaProcessorBase(module.BaseModule):
     api_instance = turbinia_request_results_api.TurbiniaRequestResultsApi(
         self.client)
     try:
-      task_id: str = str(task_data.get('id'))
+      task_id = task_data.get('id')
       api_response = api_instance.get_task_output_with_http_info(
-          task_id, _preload_content=False)
+          task_id, _preload_content=False)  # type: ignore
       filename = f'{task_id}-'
 
       # Create a temporary file to write the response to.
