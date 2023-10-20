@@ -1,4 +1,5 @@
 """Base class for turbinia interactions."""
+
 import getpass
 import os
 import tarfile
