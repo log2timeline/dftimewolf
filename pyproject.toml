@@ -28,8 +28,8 @@ vt-py = "^0.14.0"
 boto3 = "^1.24.31"
 python-magic = "^0.4.27"
 turbinia = {version = "20230315", optional = true}
-turbinia-api-lib = "*"
-turbinia-client = "*"
+turbinia-api-lib = "^1.0.2"
+turbinia-client = "^1.0.3"
 grr-api-client = "^3.4.6"
 
 [tool.poetry.extras]
