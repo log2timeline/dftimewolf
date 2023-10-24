@@ -59,7 +59,7 @@ class TimesketchEnhancer(module.BaseModule):
     self._wait_for_analyzers = True  # type: bool
     self._searches_to_skip = []  # type: List[str]
 
-  def SetUp(self,  # pylint: disable=arguments-differ
+  def SetUp(self,  # pylint: disable=arguments-differ,too-many-arguments
             wait_for_analyzers: bool,
             searches_to_skip: Optional[str],
             aggregations_to_skip: Optional[str],
