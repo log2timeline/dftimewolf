@@ -55,7 +55,7 @@ class TimesketchExporter(module.ThreadAwareModule):
       self,
       incident_id: str,
       sketch_id: Optional[int],
-      analyzers: list[str],
+      analyzers: str,
       token_password: str,
       endpoint: Optional[str],
       username: Optional[str],
