@@ -33,7 +33,7 @@ class TimesketchExporterTest(unittest.TestCase):
     test_state = state.DFTimewolfState(config.Config)
     timesketch_exporter = timesketch.TimesketchExporter(test_state)
     timesketch_exporter.SetUp(
-        incident_id=None,
+        incident_id='ticketId',
         sketch_id=1234,
         analyzers=None,
         token_password='blah',
@@ -56,7 +56,7 @@ class TimesketchExporterTest(unittest.TestCase):
     timesketch_exporter = timesketch.TimesketchExporter(test_state)
     with self.assertRaises(errors.DFTimewolfError) as error:
       timesketch_exporter.SetUp(
-          incident_id=None,
+          incident_id='ticketId',
           sketch_id=1234,
           analyzers=None,
           token_password='blah',
@@ -83,7 +83,7 @@ class TimesketchExporterTest(unittest.TestCase):
     test_state.recipe = {'name': 'test_recipe'}
     timesketch_exporter = timesketch.TimesketchExporter(test_state)
     timesketch_exporter.SetUp(
-        incident_id=None,
+        incident_id='ticketId',
         sketch_id=None,
         analyzers=None,
         token_password='blah',
@@ -136,7 +136,7 @@ class TimesketchExporterTest(unittest.TestCase):
     test_state.recipe = {'name': 'test_recipe'}
     timesketch_exporter = timesketch.TimesketchExporter(test_state)
     timesketch_exporter.SetUp(
-        incident_id=None,
+        incident_id='ticketId',
         sketch_id=None,
         analyzers=None,
         wait_for_timelines=True,
