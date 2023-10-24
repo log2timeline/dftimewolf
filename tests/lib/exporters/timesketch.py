@@ -35,7 +35,11 @@ class TimesketchExporterTest(unittest.TestCase):
     timesketch_exporter.SetUp(
         incident_id=None,
         sketch_id=1234,
-        analyzers=None
+        analyzers=None,
+        token_password='blah',
+        endpoint=None,
+        username=None,
+        password=None,
     )
     self.assertEqual(timesketch_exporter.sketch_id, 1234)
     mock_api_client.get_sketch.assert_called_with(1234)
@@ -54,7 +58,11 @@ class TimesketchExporterTest(unittest.TestCase):
       timesketch_exporter.SetUp(
           incident_id=None,
           sketch_id=1234,
-          analyzers=None
+          analyzers=None,
+          token_password='blah',
+          endpoint=None,
+          username=None,
+          password=None,
       )
 
     self.assertEqual(
@@ -77,7 +85,11 @@ class TimesketchExporterTest(unittest.TestCase):
     timesketch_exporter.SetUp(
         incident_id=None,
         sketch_id=None,
-        analyzers=None
+        analyzers=None,
+        token_password='blah',
+        endpoint=None,
+        username=None,
+        password=None,
     )
     test_container = containers.File('file.ext', '/tmp/file.ext')
     timesketch_exporter.PreProcess()
@@ -127,7 +139,11 @@ class TimesketchExporterTest(unittest.TestCase):
         incident_id=None,
         sketch_id=None,
         analyzers=None,
-        wait_for_timelines=True
+        wait_for_timelines=True,
+        token_password='blah',
+        endpoint=None,
+        username=None,
+        password=None,
     )
     test_container = containers.File('file.ext', '/tmp/file.ext')
     timesketch_exporter.PreProcess()
