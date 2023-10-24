@@ -15,7 +15,7 @@ RUN apt install -y --no-install-recommends \
     python3-pip \
     libmagic1 \
     unzip \
-    && apt-get clean && rm -rf /var/cache/apt/* /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/cache/apt/* /var/lib/apt/lists/* && apt-get autoremove -y
 
 RUN pip install --upgrade pip
 RUN pip install poetry
