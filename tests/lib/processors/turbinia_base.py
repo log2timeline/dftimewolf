@@ -150,7 +150,7 @@ class TurbiniaBaseTest(unittest.TestCase):
     mock_get_credentials.return_value = mock_credentials
     result = self.turbinia_processor.InitializeTurbiniaApiClient(None)
     mock_get_credentials.assert_called_once()
-    self.assertIsInstance(result, turbinia_api_lib.ApiClient)
+    self.assertIsInstance(result, turbinia_api_lib.api_client.ApiClient)
 
   @mock.patch('dftimewolf.lib.processors.turbinia_base.TurbiniaProcessorBase.GetCredentials')
   def testInitializeTurbiniaApiClient(self, mock_get_credentials):
@@ -164,7 +164,7 @@ class TurbiniaBaseTest(unittest.TestCase):
     mock_get_credentials.return_value = mock_credentials
     result = self.turbinia_processor.InitializeTurbiniaApiClient(mock_credentials)
     mock_get_credentials.assert_not_called()
-    self.assertIsInstance(result, turbinia_api_lib.ApiClient)
+    self.assertIsInstance(result, turbinia_api_lib.api_client.ApiClient)
 
 if __name__ == "__main__":
   unittest.main()
