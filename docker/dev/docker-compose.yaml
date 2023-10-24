@@ -4,12 +4,11 @@ services:
   dftw:
     build:
       context: ../../
-      dockerfile: ./docker/dftimewolf-dev/Dockerfile
+      dockerfile: ./docker/dev/Dockerfile
     environment:
       - DFTIMEWOLF_NO_CURSES=1
     entrypoint:
       - /docker-entrypoint.sh
-    command: ['envshell']
     volumes:
       - ../../:/app/
     stdin_open: true # docker run -i

@@ -21,7 +21,7 @@ WORKDIR /app
 RUN poetry install --with dev
 
 # Copy the entrypoint script into the container
-COPY ./docker/dftimewolf-dev/docker-entrypoint.sh /
+COPY ./docker/dev/docker-entrypoint.sh /
 RUN chmod a+x /docker-entrypoint.sh
 
 # Load the entrypoint script to be run later
