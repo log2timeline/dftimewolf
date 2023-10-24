@@ -5,8 +5,6 @@ services:
     build:
       context: ../../
       dockerfile: ./docker/dftimewolf-dev/Dockerfile
-    environment:
-      - DFTIMEWOLF_NO_CURSES=1
     entrypoint:
       - /docker-entrypoint.sh
     command: ['envshell']
