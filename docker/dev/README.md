@@ -7,7 +7,7 @@ various Python version installs or packages.
 ## Building the image
 
 ```bash
-cd docker/dftimewolf-dev
+cd docker/dev
 docker compose build
 ```
 
@@ -22,7 +22,7 @@ docker compose up -d
 Make sure you have Docker installed (sudoless) and run:
 
 ```bash
-cd docker/dftimewolf-dev
+cd docker/dev
 docker-compose run --rm dftw tests
 ```
 
@@ -36,7 +36,7 @@ code repo on `/app` in the container, and tests are run from there.
 ## Shell access
 
 ```bash
-$ cd docker/dftimewolf-dev
+$ cd docker/dev
 $ docker-compose run --rm dftw envshell
 (dftimewolf-py3.10) root@f3a2cc77dc3e:/app# python -m unittest discover -s tests -p '*.py'
 ```
