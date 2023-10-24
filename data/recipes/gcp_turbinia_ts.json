@@ -29,6 +29,9 @@
         "args": {
             "incident_id": "@incident_id",
             "token_password": "@token_password",
+            "endpoint": "@timesketch_endpoint",
+            "username": "@timesketch_username",
+            "password": "@timesketch_password",
             "sketch_id": "@sketch_id",
             "analyzers": null,
             "wait_for_timelines": "@wait_for_timelines"
@@ -41,6 +44,9 @@
         ["--request_ids", "Comma separated Turbinia request identifiers to process. This parameter can only be used if --disk_names is not provided.", null, {"format": "regex", "comma_separated": true, "regex": "^[a-f0-9]{32}$"}],
         ["--incident_id", "Incident ID (used for Timesketch description).", null],
         ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
+        ["--timesketch_endpoint", "Timesketch endpoint", null],
+        ["--timesketch_username", "Username for Timesketch server.", null],
+        ["--timesketch_password", "Password for Timesketch server.", null],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
         ["--turbinia_recipe", "The Turbinia recipe name to use for evidence processing.", null],
         ["--turbinia_auth", "Flag to indicate whether Turbinia API server requires authentication.", false],
