@@ -51,7 +51,7 @@
         ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true],
         ["--analyzers", "Timesketch analyzers to run", null],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
-        ["--timesketch_endpoint", "Timesketch endpoint", null],
+        ["--timesketch_endpoint", "Timesketch endpoint", "http://localhost:5000/"],
         ["--timesketch_username", "Username for Timesketch server.", null],
         ["--timesketch_password", "Password for Timesketch server.", null],
         ["--incident_id", "Incident ID (used for Timesketch description).", null],

@@ -62,7 +62,7 @@
     ["--approvers", "Comma-separated list of usernames to ask for approval.", null],
     ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
     ["--grr_server_url", "GRR endpoint.", "http://localhost:8000", {"format": "url"}],
-    ["--timesketch_endpoint", "Timesketch endpoint", null],
+    ["--timesketch_endpoint", "Timesketch endpoint", "http://localhost:5000/"],
     ["--timesketch_username", "Username for Timesketch server.", null],
     ["--timesketch_password", "Password for Timesketch server.", null],
     ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],

@@ -38,7 +38,7 @@
         ["--profile_name", "A profile name to use when looking for Azure credentials.", null],
         ["--incident_id", "Incident ID (used for Timesketch description).", null],
         ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
-        ["--timesketch_endpoint", "Timesketch endpoint", null],
+        ["--timesketch_endpoint", "Timesketch endpoint", "http://localhost:5000/"],
         ["--timesketch_username", "Username for Timesketch server.", null],
         ["--timesketch_password", "Password for Timesketch server.", null],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],

@@ -44,7 +44,7 @@
         ["instance_id", "Identifier for GCE instance (Instance ID).", null, {"format": "regex", "regex": "^[a-z][-a-z0-9]{0,61}[a-z0-9]?$"}],
         ["--incident_id", "Incident ID (used for Timesketch description).", null],
         ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
-        ["--timesketch_endpoint", "Timesketch endpoint", null],
+        ["--timesketch_endpoint", "Timesketch endpoint", "http://localhost:5000/"],
         ["--timesketch_username", "Username for Timesketch server.", null],
         ["--timesketch_password", "Password for Timesketch server.", null],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],

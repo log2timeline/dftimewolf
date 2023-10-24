@@ -26,7 +26,7 @@
         ["files", "Comma-separated list of paths to CSV files or Plaso storage files.", null],
         ["--analyzers", "Timesketch analyzers to run.", null],
         ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
-        ["--timesketch_endpoint", "Timesketch endpoint", null],
+        ["--timesketch_endpoint", "Timesketch endpoint", "http://localhost:5000/"],
         ["--timesketch_username", "Username for Timesketch server.", null],
         ["--timesketch_password", "Password for Timesketch server.", null],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
