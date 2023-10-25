@@ -850,5 +850,6 @@ modules_manager.ModulesManager.RegisterModules([
     GRRHuntArtifactCollector,
     GRRHuntFileCollector,
     GRRHuntOsqueryCollector,
+    GRRHuntYaraScanner,
     GRRHuntDownloader,
     GRRHuntOsqueryDownloader])
