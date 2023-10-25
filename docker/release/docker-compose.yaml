@@ -1,0 +1,22 @@
+version: '3.3'
+services:
+
+  dftw:
+    container_name: dftw
+    image: log2timeline/dftimewolf:latest
+    build:
+      context: ../../
+      dockerfile: ./docker/release/Dockerfile
+    platform: linux/amd64
+    environment:
+      - DFTIMEWOLF_NO_CURSES=1
+    volumes:
+      - ${HOME}/.dftimewolfrc:/root/.dftimewolfrc
+    entrypoint:
+      /docker-entrypoint.sh
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+
+networks:
+  default:
+    name: dftimewolf_network

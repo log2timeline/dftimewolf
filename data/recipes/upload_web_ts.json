@@ -14,6 +14,9 @@
         "args": {
             "incident_id": "@incident_id",
             "token_password": "@token_password",
+            "endpoint": "@timesketch_endpoint",
+            "username": "@timesketch_username",
+            "password": "@timesketch_password",
             "sketch_id": "@sketch_id",
             "wait_for_timelines": true,
             "analyzers": "browser_search,browser_timeframe,account_finder,phishy_domains,evtx_gap,login,win_crash,safebrowsing,chain,"
@@ -28,12 +31,18 @@
             "include_stories": "@timesketch_include_stories",
             "token_password": "@token_password",
             "max_checks": "@analyzer_max_checks",
-            "formatter": "html"
+            "formatter": "html",
+            "endpoint": "@timesketch_endpoint",
+            "username": "@timesketch_username",
+            "password": "@timesketch_password"
     }
     }],
     "args": [
         ["files", "Comma-separated list of paths to CSV files or Plaso storage files.", null],
         ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
+        ["--timesketch_endpoint", "Timesketch endpoint", "http://localhost:5000/"],
+        ["--timesketch_username", "Username for Timesketch server.", null],
+        ["--timesketch_password", "Password for Timesketch server.", null],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
         ["--incident_id", "Incident ID (used for Timesketch description).", null],
         ["--wait_for_analyzers", "Wait for analyzers until they complete their run, if set to False the TS enhancer will be skipped.", true],
