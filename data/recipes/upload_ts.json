@@ -14,6 +14,9 @@
         "args": {
             "incident_id": "@incident_id",
             "token_password": "@token_password",
+            "endpoint": "@timesketch_endpoint",
+            "username": "@timesketch_username",
+            "password": "@timesketch_password",
             "sketch_id": "@sketch_id",
             "analyzers": "@analyzers",
             "wait_for_timelines": "@wait_for_timelines"
@@ -23,6 +26,9 @@
         ["files", "Comma-separated list of paths to CSV files or Plaso storage files.", null],
         ["--analyzers", "Timesketch analyzers to run.", null],
         ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
+        ["--timesketch_endpoint", "Timesketch endpoint", "http://localhost:5000/"],
+        ["--timesketch_username", "Username for Timesketch server.", null],
+        ["--timesketch_password", "Password for Timesketch server.", null],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
         ["--incident_id", "Incident ID (used for Timesketch description).", null],
         ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true]
