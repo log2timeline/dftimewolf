@@ -2,22 +2,21 @@
 """Definition of modules for collecting data from GRR Hunts."""
 
 import os
+import re
 import tempfile
 import zipfile
 from typing import List, Optional, Set, Tuple, Union
 
+import pandas as pd
+import yaml
 from grr_api_client.hunt import Hunt
 from grr_response_proto import flows_pb2 as grr_flows
 from grr_response_proto import osquery_pb2 as osquery_flows
-from grr_response_proto.flows_pb2 import ArtifactCollectorFlowArgs
-from grr_response_proto.flows_pb2 import FileFinderArgs
-import pandas as pd
-import yaml
 
 from dftimewolf.lib import module
-from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.collectors import grr_base
 from dftimewolf.lib.containers import containers
+from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 
@@ -45,49 +44,70 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
     self.match_mode = ""
     self.client_operating_systems : Set[str] = set()
     self.client_labels : List[str] = []
+    self.hunt_runner_args = None  # type: Optional[grr_flows.HuntRunnerArgs]
 
   def HuntSetup(
       self,
       match_mode: Optional[str],
       client_operating_systems: Optional[str],
-      client_labels: Optional[str]) -> None:
+      client_labels: Optional[str],
+      extra_hunt_runner_args) -> None:
     """Setup hunt client filter arguments.
 
     Args:
-      match_mode (Optional[str]): match mode of the client rule set (ALL or
-          ANY).
-      client_operating_systems (Optional[str]): a comma separated list of client
-          OS types (win, osx or linux).
-      client_labels (Optional[str]): a comma separated list of client labels.
+      match_mode: match mode of the client rule set (ALL or ANY).
+      client_operating_systems: a comma separated list of client OS types (win,
+          osx or linux).
+      client_labels: a comma separated list of client labels.
     """
+    runner_args = self.grr_api.types.CreateHuntRunnerArgs()
+    runner_args.description = self.reason
+
     if match_mode:
       if match_mode.lower() not in ('all', 'any'):
         self.ModuleError(f'Unknown match mode {self.match_mode}', critical=True)
-
-      self.match_mode = match_mode.lower()
+      match_mode = match_mode.lower()
+      if match_mode == 'any':
+        match_mode = runner_args.client_rule_set.MATCH_ANY
+      elif match_mode == 'all':
+        match_mode = runner_args.client_rule_set.MATCH_ALL
+      runner_args.client_rule_set.match_mode = match_mode
 
     if client_operating_systems:
       normalised_client_operating_systems = set(
           os.lower() for os in client_operating_systems.split(',')
           if os.lower() in ('win', 'osx', 'linux'))
-
-      if not normalised_client_operating_systems:
-        self.ModuleError('No valid client operating systems in argument '
-                         f'"{client_operating_systems}"', critical=True)
-
-      self.client_operating_systems = normalised_client_operating_systems
+      for client_os in normalised_client_operating_systems:
+        os_rule = runner_args.client_rule_set.rules.add()
+        os_rule.rule_type = os_rule.OS
+        if client_os == 'win':
+          os_rule.os.os_windows = True
+        elif client_os == 'osx':
+          os_rule.os.os_darwin = True
+        elif client_os == 'linux':
+          os_rule.os.os_linux = True
 
     if client_labels:
-      self.client_labels = list(client_labels.split(','))
+      for client_label in list(client_labels.split(',')):
+        label_rule = runner_args.client_rule_set.rules.add()
+        label_rule.rule_type = label_rule.LABEL
+        label_rule.label.label_names.append(client_label)
+
+    for key, value in extra_hunt_runner_args.items():
+      setattr(runner_args, key, value)
+
+    self.hunt_runner_args = runner_args
+
 
   # TODO: change object to more specific GRR type information.
   def _CreateHunt(
       self,
-      name: str,
-      args: Union[
-          ArtifactCollectorFlowArgs,
-          FileFinderArgs,
-          osquery_flows.OsqueryFlowArgs]
+      flow_name: str,
+      flow_args: Union[
+          grr_flows.ArtifactCollectorFlowArgs,
+          grr_flows.FileFinderArgs,
+          osquery_flows.OsqueryFlowArgs,
+          grr_flows.YaraProcessScanRequest]
     ) -> Hunt:
     """Creates a GRR hunt.
 
@@ -102,39 +122,10 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
     Raises:
       DFTimewolfError: if approval is needed and approvers were not specified.
     """
-    runner_args = self.grr_api.types.CreateHuntRunnerArgs()
-    runner_args.description = self.reason
-
-    if self.match_mode:
-      if self.match_mode == 'any':
-        match_mode = runner_args.client_rule_set.MATCH_ANY
-      elif self.match_mode == 'all':
-        match_mode = runner_args.client_rule_set.MATCH_ALL
-
-      runner_args.client_rule_set.match_mode = match_mode
-
-    if self.client_labels:
-      for client_label in self.client_labels:
-        label_rule = runner_args.client_rule_set.rules.add()
-
-        label_rule.rule_type = label_rule.LABEL
-        label_rule.label.label_names.append(client_label)
-
-    if self.client_operating_systems:
-      for client_operating_system in self.client_operating_systems:
-        os_rule = runner_args.client_rule_set.rules.add()
-
-        os_rule.rule_type = os_rule.OS
-
-        if client_operating_system == 'win':
-          os_rule.os.os_windows = True
-        elif client_operating_system == 'osx':
-          os_rule.os.os_darwin = True
-        elif client_operating_system == 'linux':
-          os_rule.os.os_linux = True
-
     hunt = self.grr_api.CreateHunt(
-        flow_name=name, flow_args=args, hunt_runner_args=runner_args)
+        flow_name=flow_name,
+        flow_args=flow_args,
+        hunt_runner_args=self.hunt_runner_args)
 
     self.PublishMessage(f'{hunt.hunt_id}: Hunt created')
     try:
@@ -412,6 +403,107 @@ class GRRHuntOsqueryCollector(GRRHunt):
       hunt_args.ignore_stderr_errors = self.ignore_stderr_errors
 
       self._CreateHunt('OsqueryFlow', hunt_args)
+
+class GRRHuntYaraScanner(GRRHunt):
+  """Yara collector for a GRR Hunt.
+
+  Attributes:
+    timeout_millis (int): the number of milliseconds before osquery timeouts.
+    ignore_stderr_errors (bool): ignore stderr errors from osquery.
+  """
+
+  DEFAULT_OSQUERY_TIMEOUT_MILLIS = 300000
+
+  def __init__(self,
+               state: DFTimewolfState,
+               name: Optional[str] = None,
+               critical: bool = False) -> None:
+    """Initializes a GRR file collector hunt.
+
+    Args:
+      state (DFTimewolfState): recipe state.
+      name (Optional[str]): The module's runtime name.
+      critical (bool): True if the module is critical, which causes
+          the entire recipe to fail if the module encounters an error.
+    """
+    super().__init__(state, name=name, critical=critical)
+    self.process_ignorelist_regex = ''
+
+  # pylint: disable=arguments-differ,too-many-arguments
+  def SetUp(self,
+            reason: str,
+            grr_server_url: str,
+            grr_username: str,
+            grr_password: str,
+            approvers: str,
+            verify: bool,
+            match_mode: Optional[str],
+            client_operating_systems: Optional[str],
+            client_labels: Optional[str],
+            client_limit: Optional[int],
+            process_ignorelist: List[str],
+            ) -> None:
+    """Initializes a GRR Hunt Osquery collector.
+
+    Args:
+      reason: justification for GRR access.
+      grr_server_url: GRR server URL.
+      grr_username: GRR username.
+      grr_password: GRR password.
+      approvers: comma-separated GRR approval recipients.
+      verify (bool): True to indicate GRR server's x509 certificate
+          should be verified.
+      match_mode: match mode of the client rule set.
+          (all/ALL or any/ANY).
+      client_operating_systems: a comma separated list of
+          client OS types (win, osx or linux).
+      client_labels: a comma separated list of client labels.
+      client_limit: The number of clients to run the hunt on. 0 for no limit.
+      process_ignorelist: A list of process executable paths to ignore.
+    """
+    self.GrrSetUp(
+        reason, grr_server_url, grr_username, grr_password, approvers=approvers,
+        verify=verify, message_callback=self.PublishMessage)
+
+    if isinstance(process_ignorelist, list):
+      joined = "|".join(process_ignorelist)
+    elif isinstance(process_ignorelist, str):
+      joined = process_ignorelist
+
+    self.process_ignorelist_regex = r"(?i)^(?!" + joined + r").*"
+    if not re.compile(self.process_ignorelist_regex):
+      self.ModuleError('Invalid regex for process_ignorelist', critical=True)
+
+    extra_hunt_runner_args = {
+        'client_limit': client_limit,
+        'client_rate': 1000,
+        'crash_limit': 1000,
+        'per_client_cpu_limit': 2000,
+        'avg_cpu_seconds_per_client_limit': 2000,
+        'network_bytes_limit': 10*1024*1024*1024,
+    }
+
+    self.HuntSetup(
+        match_mode,
+        client_operating_systems,
+        client_labels,
+        extra_hunt_runner_args=extra_hunt_runner_args)
+
+  def Process(self) -> None:
+    """Starts a new Osquery GRR hunt."""
+    yara_containers = self.GetContainers(containers.YaraRule)
+    final_rule_text = "\n\n".join(
+        [container.rule_text for container in yara_containers])
+
+    flow_args = grr_flows.YaraProcessScanRequest(
+      yara_signature=final_rule_text,
+      ignore_grr_process=True,
+      process_regex=self.process_ignorelist_regex,
+      dump_process_on_match=True,
+      process_dump_size_limit= 256 * 1024 * 1024,
+    )
+
+    self._CreateHunt('YaraProcessScan', flow_args)
 
 
 class GRRHuntDownloaderBase(GRRHunt):
