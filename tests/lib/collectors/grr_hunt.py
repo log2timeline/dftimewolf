@@ -346,6 +346,7 @@ class GRRHuntYara(unittest.TestCase):
     self.grr_hunt_yara = grr_hunt.GRRHuntYaraScanner(self.test_state)
     self.grr_hunt_yara.SetUp(
         reason='random reason',
+        hunt_description='random description',
         grr_server_url='http://fake/endpoint',
         grr_username='admin',
         grr_password='admin',
@@ -355,7 +356,7 @@ class GRRHuntYara(unittest.TestCase):
         client_operating_systems='win,linux',
         client_labels='label1',
         client_limit=999,
-        process_ignorelist='\\.exe',
+        process_ignorelist=['\\.exe', 'ignore1'],
     )
 
   def testInitialization(self):
@@ -380,7 +381,7 @@ class GRRHuntYara(unittest.TestCase):
         rule_text='rule test { strings: $a = \"0123456\" condition: $a }'))
 
     expected_runner_args = flows_pb2.HuntRunnerArgs(
-      description='random reason'
+      description='random description'
     )
     expected_runner_args.client_rule_set.match_mode = expected_runner_args.client_rule_set.MATCH_ALL
     rule = expected_runner_args.client_rule_set.rules.add()
@@ -408,7 +409,7 @@ class GRRHuntYara(unittest.TestCase):
                           '\n\nrule test { strings: $a = \"0123456\" condition: '
                           '$a }'),
           ignore_grr_process=True,
-          process_regex=r"(?i)^(?!\.exe).*",
+          process_regex=r"(?i)^(?!\.exe|ignore1).*",
           dump_process_on_match=True,
           process_dump_size_limit= 268_435_456,
       ),

@@ -45,6 +45,7 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
     self.client_operating_systems : Set[str] = set()
     self.client_labels : List[str] = []
     self.hunt_runner_args = None  # type: Optional[grr_flows.HuntRunnerArgs]
+    self.hunt_description = ''
 
   def HuntSetup(
       self,
@@ -61,7 +62,7 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
       client_labels: a comma separated list of client labels.
     """
     runner_args = self.grr_api.types.CreateHuntRunnerArgs()
-    runner_args.description = self.reason
+    runner_args.description = self.hunt_description or self.reason
 
     if match_mode:
       if match_mode.lower() not in ('all', 'any'):
@@ -428,6 +429,7 @@ class GRRHuntYaraScanner(GRRHunt):
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
             reason: str,
+            hunt_description: str,
             grr_server_url: str,
             grr_username: str,
             grr_password: str,
@@ -436,7 +438,7 @@ class GRRHuntYaraScanner(GRRHunt):
             match_mode: Optional[str],
             client_operating_systems: Optional[str],
             client_labels: Optional[str],
-            client_limit: Optional[str],
+            client_limit: str,
             process_ignorelist: List[str],
             ) -> None:
     """Initializes a GRR Hunt Osquery collector.
@@ -478,6 +480,8 @@ class GRRHuntYaraScanner(GRRHunt):
         'avg_cpu_seconds_per_client_limit': 2000,
         'network_bytes_limit': 10*1024*1024*1024,
     }
+
+    self.hunt_description = hunt_description
 
     self.HuntSetup(
         match_mode,
