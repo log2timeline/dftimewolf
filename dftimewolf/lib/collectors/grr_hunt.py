@@ -100,7 +100,7 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
 
 
   # TODO: change object to more specific GRR type information.
-  def _CreateHunt(
+  def _CreateAndStartHunt(
       self,
       flow_name: str,
       flow_args: Union[
@@ -109,7 +109,7 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
           osquery_flows.OsqueryFlowArgs,
           grr_flows.YaraProcessScanRequest]
     ) -> Hunt:
-    """Creates a GRR hunt.
+    """Creates a GRR hunt and starts it, waiting for approvals.
 
     Args:
       name (str): name of the hunt.
@@ -224,7 +224,7 @@ class GRRHuntArtifactCollector(GRRHunt):
         ignore_interpolation_errors=True,
         apply_parsers=False,
         max_file_size=self.max_file_size)
-    self._CreateHunt('ArtifactCollectorFlow', hunt_args)
+    self._CreateAndStartHunt('ArtifactCollectorFlow', hunt_args)
 
 
 class GRRHuntFileCollector(GRRHunt):
@@ -322,7 +322,7 @@ class GRRHuntFileCollector(GRRHunt):
     hunt_args = grr_flows.FileFinderArgs(
         paths=self.file_path_list,
         action=hunt_action)
-    self._CreateHunt('FileFinder', hunt_args)
+    self._CreateAndStartHunt('FileFinder', hunt_args)
 
 
 class GRRHuntOsqueryCollector(GRRHunt):
@@ -402,7 +402,7 @@ class GRRHuntOsqueryCollector(GRRHunt):
       hunt_args.timeout_millis = self.timeout_millis
       hunt_args.ignore_stderr_errors = self.ignore_stderr_errors
 
-      self._CreateHunt('OsqueryFlow', hunt_args)
+      self._CreateAndStartHunt('OsqueryFlow', hunt_args)
 
 class GRRHuntYaraScanner(GRRHunt):
   """Yara collector for a GRR Hunt.
@@ -503,9 +503,7 @@ class GRRHuntYaraScanner(GRRHunt):
       process_dump_size_limit= 256 * 1024 * 1024,
     )
 
-    hunt = self._CreateHunt('YaraProcessScan', flow_args)
-    self.PublishMessage(f'Starting hunt {hunt.hunt_id}')
-    hunt.Start()
+    self._CreateAndStartHunt('YaraProcessScan', flow_args)
 
 
 
