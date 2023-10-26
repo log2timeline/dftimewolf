@@ -77,15 +77,11 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
       normalised_client_operating_systems = set(
           os.lower() for os in client_operating_systems.split(',')
           if os.lower() in ('win', 'osx', 'linux'))
-      for client_os in normalised_client_operating_systems:
-        os_rule = runner_args.client_rule_set.rules.add()
-        os_rule.rule_type = os_rule.OS
-        if client_os == 'win':
-          os_rule.os.os_windows = True
-        elif client_os == 'osx':
-          os_rule.os.os_darwin = True
-        elif client_os == 'linux':
-          os_rule.os.os_linux = True
+      os_rule = runner_args.client_rule_set.rules.add()
+      os_rule.rule_type = os_rule.OS
+      os_rule.os.os_windows = 'win' in normalised_client_operating_systems
+      os_rule.os.os_darwin = 'osx' in normalised_client_operating_systems
+      os_rule.os.os_linux = 'linux' in normalised_client_operating_systems
 
     if client_labels:
       for client_label in list(client_labels.split(',')):

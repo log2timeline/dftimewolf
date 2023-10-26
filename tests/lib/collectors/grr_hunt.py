@@ -352,7 +352,7 @@ class GRRHuntYara(unittest.TestCase):
         approvers='approver1,approver2',
         verify=False,
         match_mode='all',
-        client_operating_systems='win',
+        client_operating_systems='win,linux',
         client_labels='label1',
         client_limit=999,
         process_ignorelist='\\.exe',
@@ -386,6 +386,8 @@ class GRRHuntYara(unittest.TestCase):
     rule = expected_runner_args.client_rule_set.rules.add()
     rule.rule_type = rule.OS
     rule.os.os_windows = True
+    rule.os.os_linux = True
+    rule.os.os_darwin = False
 
     rule = expected_runner_args.client_rule_set.rules.add()
     rule.rule_type = rule.LABEL
