@@ -503,7 +503,10 @@ class GRRHuntYaraScanner(GRRHunt):
       process_dump_size_limit= 256 * 1024 * 1024,
     )
 
-    self._CreateHunt('YaraProcessScan', flow_args)
+    hunt = self._CreateHunt('YaraProcessScan', flow_args)
+    self.PublishMessage(f'Starting hunt {hunt.hunt_id}')
+    hunt.Start()
+
 
 
 class GRRHuntDownloaderBase(GRRHunt):
