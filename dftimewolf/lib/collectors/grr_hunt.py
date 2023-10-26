@@ -440,7 +440,7 @@ class GRRHuntYaraScanner(GRRHunt):
             match_mode: Optional[str],
             client_operating_systems: Optional[str],
             client_labels: Optional[str],
-            client_limit: Optional[int],
+            client_limit: Optional[str],
             process_ignorelist: List[str],
             ) -> None:
     """Initializes a GRR Hunt Osquery collector.
@@ -475,7 +475,7 @@ class GRRHuntYaraScanner(GRRHunt):
       self.ModuleError('Invalid regex for process_ignorelist', critical=True)
 
     extra_hunt_runner_args = {
-        'client_limit': client_limit,
+        'client_limit': int(client_limit),
         'client_rate': 1000,
         'crash_limit': 1000,
         'per_client_cpu_limit': 2000,
