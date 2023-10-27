@@ -5,7 +5,7 @@ import os
 import re
 import tempfile
 import zipfile
-from typing import List, Optional, Set, Tuple, Union
+from typing import List, Optional, Set, Tuple, Union, Dict
 
 import pandas as pd
 import yaml
@@ -41,18 +41,18 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
                critical: bool = False):
     module.BaseModule.__init__(self, state, name=name, critical=critical)
     grr_base.GRRBaseModule.__init__(self)
-    self.match_mode = ""
+    self.match_mode: str = ""
     self.client_operating_systems : Set[str] = set()
     self.client_labels : List[str] = []
     self.hunt_runner_args = None  # type: Optional[grr_flows.HuntRunnerArgs]
-    self.hunt_description = ''
+    self.hunt_description: str = ''
 
   def HuntSetup(
       self,
       match_mode: Optional[str],
       client_operating_systems: Optional[str],
       client_labels: Optional[str],
-      extra_hunt_runner_args) -> None:
+      extra_hunt_runner_args: Dict[str, str]) -> None:
     """Setup hunt client filter arguments.
 
     Args:
@@ -60,6 +60,7 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
       client_operating_systems: a comma separated list of client OS types (win,
           osx or linux).
       client_labels: a comma separated list of client labels.
+      extra_hunt_runner_args: extra arguments to pass to the hunt runner proto.
     """
     runner_args = self.grr_api.types.CreateHuntRunnerArgs()
     runner_args.description = self.hunt_description or self.reason
@@ -446,7 +447,7 @@ class GRRHuntYaraScanner(GRRHunt):
             client_operating_systems: Optional[str],
             client_labels: Optional[str],
             client_limit: str,
-            process_ignorelist: List[str],
+            process_ignorelist: List[str] | str,
             ) -> None:
     """Initializes a GRR Hunt Osquery collector.
 
@@ -464,7 +465,8 @@ class GRRHuntYaraScanner(GRRHunt):
           client OS types (win, osx or linux).
       client_labels: a comma separated list of client labels.
       client_limit: The number of clients to run the hunt on. 0 for no limit.
-      process_ignorelist: A list of process executable paths to ignore.
+      process_ignorelist: A list of strings process executable paths to ignore.
+          Can also be passed in one string as a comma-separated list processes.
     """
     self.GrrSetUp(
         reason, grr_server_url, grr_username, grr_password, approvers=approvers,

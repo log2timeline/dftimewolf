@@ -138,14 +138,12 @@ class GRRBaseModule(object):
             reason=self.reason, notified_users=self.approvers)
         approval_sent = True
         if hasattr(approval, 'client_id'):
-          approval_url = ('{0:s}/v2/clients/{1:s}/users/{2:s}/approvals/{3:s}'.
-                          format(self.grr_url, approval.client_id,
-                                approval.username,
-                                approval.approval_id))
+          approval_url = (
+            f'{self.grr_url}/v2/clients/{approval.client_id}/users/'
+            f'{approval.username}/approvals/{approval.approval_id}')
         elif hasattr(approval, 'hunt_id'):
-          approval_url = ('{0:s}/v2/hunts/{1:s}/users/{2:s}/approvals/{3:s}'.
-                          format(self.grr_url, approval.hunt_id,
-                                approval.username,
-                                approval.approval_id))
+          approval_url = (
+            f'{self.grr_url}/v2/hunts/{approval.hunt_id}/users/'
+            f'{approval.username}/approvals/{approval.approval_id}')
         logger.info(f'{grr_object}: approval request sent to: '
             f'{self.approvers} (reason: {self.reason})')
