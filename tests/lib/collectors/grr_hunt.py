@@ -405,7 +405,7 @@ class GRRHuntYara(unittest.TestCase):
     mock_CreateHunt.assert_called_with(
       flow_name='YaraProcessScan',
       flow_args=flows_pb2.YaraProcessScanRequest(
-          yara_signature=('import "pe"\nimport "math"\n\nrule test { '
+          yara_signature=('import "math"\nimport "pe"\n\nrule test { '
                           'strings: $a = "abcdefg" condition: $a and pe.DLL }'
                           '\n\nrule test { strings: $a = "0123456" condition:'
                           ' $a and math.entropy($a) }'),

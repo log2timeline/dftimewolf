@@ -52,7 +52,7 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
       match_mode: Optional[str],
       client_operating_systems: Optional[str],
       client_labels: Optional[str],
-      extra_hunt_runner_args: Dict[str, str]) -> None:
+      extra_hunt_runner_args: Dict[str, str | int]) -> None:
     """Setup hunt client filter arguments.
 
     Args:
@@ -512,7 +512,7 @@ class GRRHuntYaraScanner(GRRHunt):
     concatenated_rules = "\n\n".join(
         [container.rule_text for container in yara_containers])
 
-    final_rule_text = "\n".join(selected_headers) + "\n\n" + concatenated_rules
+    final_rule_text = "\n".join(sorted(selected_headers)) + "\n\n" + concatenated_rules
 
     flow_args = grr_flows.YaraProcessScanRequest(
       yara_signature=final_rule_text,
