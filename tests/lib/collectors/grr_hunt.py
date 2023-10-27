@@ -373,12 +373,14 @@ class GRRHuntYara(unittest.TestCase):
     self.test_state.StoreContainer(
       containers.YaraRule(
         name='test',
-        rule_text='rule test { strings: $a = \"abcdefg\" condition: $a }'))
+        rule_text=('rule test { strings: $a = "abcdefg" condition: '
+                   '$a and pe.DLL }')))
 
     self.test_state.StoreContainer(
       containers.YaraRule(
         name='test2',
-        rule_text='rule test { strings: $a = \"0123456\" condition: $a }'))
+        rule_text=('rule test { strings: $a = "0123456" condition: '
+                   '$a and math.entropy($a) }')))
 
     expected_runner_args = flows_pb2.HuntRunnerArgs(
       description='random description'
@@ -405,9 +407,10 @@ class GRRHuntYara(unittest.TestCase):
     mock_CreateHunt.assert_called_with(
       flow_name='YaraProcessScan',
       flow_args=flows_pb2.YaraProcessScanRequest(
-          yara_signature=('rule test { strings: $a = \"abcdefg\" condition: $a }'
-                          '\n\nrule test { strings: $a = \"0123456\" condition: '
-                          '$a }'),
+          yara_signature=('import "pe"\nimport "math"\n\nrule test { '
+                          'strings: $a = "abcdefg" condition: $a and pe.DLL }'
+                          '\n\nrule test { strings: $a = "0123456" condition:'
+                          ' $a and math.entropy($a) }'),
           ignore_grr_process=True,
           process_regex=r"(?i)^(?!\.exe|ignore1).*",
           dump_process_on_match=True,

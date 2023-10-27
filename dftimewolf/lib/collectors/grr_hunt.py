@@ -411,6 +411,13 @@ class GRRHuntYaraScanner(GRRHunt):
 
   DEFAULT_OSQUERY_TIMEOUT_MILLIS = 300000
 
+  YARA_MODULES = {
+    "hash.": "import \"hash\"",
+    "pe.": "import \"pe\"",
+    "elf.": "import \"elf\"",
+    "math.": "import \"math\"",
+  }
+
   def __init__(self,
                state: DFTimewolfState,
                name: Optional[str] = None,
@@ -492,8 +499,18 @@ class GRRHuntYaraScanner(GRRHunt):
   def Process(self) -> None:
     """Starts a new Osquery GRR hunt."""
     yara_containers = self.GetContainers(containers.YaraRule)
-    final_rule_text = "\n\n".join(
+
+    selected_headers = set()
+    for rule in yara_containers:
+      for prefix, header in self.YARA_MODULES.items():
+        condition = rule.rule_text.split("condition:")[1]
+        if prefix in condition:
+          selected_headers.add(header)
+
+    concatenated_rules = "\n\n".join(
         [container.rule_text for container in yara_containers])
+
+    final_rule_text = "\n".join(selected_headers) + "\n\n" + concatenated_rules
 
     flow_args = grr_flows.YaraProcessScanRequest(
       yara_signature=final_rule_text,
