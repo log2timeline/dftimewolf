@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Tests the GRR hunt collectors."""
 
 import unittest
@@ -17,7 +16,6 @@ from dftimewolf.lib.containers import containers
 from tests.lib.collectors.test_data import mock_grr_hosts
 
 
-# Mocking of classes.
 # pylint: disable=invalid-name,arguments-differ
 class GRRHuntArtifactCollectorTest(unittest.TestCase):
   """Tests for the GRR artifact collector."""
@@ -418,8 +416,6 @@ class GRRHuntYara(unittest.TestCase):
       ),
       hunt_runner_args=expected_runner_args
     )
-
-
 
 
 if __name__ == '__main__':
