@@ -353,7 +353,7 @@ class GRRHuntYara(unittest.TestCase):
         match_mode='all',
         client_operating_systems='win,linux',
         client_labels='label1',
-        client_limit=999,
+        client_limit='999',
         process_ignorelist=['\\.exe', 'ignore1'],
     )
 
