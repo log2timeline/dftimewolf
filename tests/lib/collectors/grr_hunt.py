@@ -362,7 +362,8 @@ class GRRHuntYara(unittest.TestCase):
     runner_args = self.grr_hunt_yara.hunt_runner_args
     assert runner_args is not None
     self.assertEqual(
-      runner_args.client_rule_set.match_mode, runner_args.client_rule_set.MATCH_ALL)
+      runner_args.client_rule_set.match_mode,
+      runner_args.client_rule_set.MATCH_ALL)
     self.assertTrue(runner_args.client_rule_set.rules[0].os.os_windows)
     self.assertEqual(
       runner_args.client_rule_set.rules[1].label.label_names, ['label1'])
