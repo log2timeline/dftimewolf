@@ -360,14 +360,18 @@ class GRRHuntYara(unittest.TestCase):
   def testInitialization(self):
     """Tests that the collector is correctly initialized."""
     runner_args = self.grr_hunt_yara.hunt_runner_args
-    self.assertEqual(runner_args.client_rule_set.match_mode, runner_args.client_rule_set.MATCH_ALL)
+    assert runner_args is not None
+    self.assertEqual(
+      runner_args.client_rule_set.match_mode, runner_args.client_rule_set.MATCH_ALL)
     self.assertTrue(runner_args.client_rule_set.rules[0].os.os_windows)
-    self.assertEqual(runner_args.client_rule_set.rules[1].label.label_names, ['label1'])
+    self.assertEqual(
+      runner_args.client_rule_set.rules[1].label.label_names, ['label1'])
     self.assertEqual(runner_args.client_limit, 999)
     self.assertEqual(runner_args.avg_cpu_seconds_per_client_limit, 2000)
 
   @mock.patch('grr_api_client.api.GrrApi.CreateHunt')
   def testProcess(self, mock_CreateHunt):
+    """Tests that the Process function is correctly called."""
     self.test_state.StoreContainer(
       containers.YaraRule(
         name='test',
@@ -383,7 +387,8 @@ class GRRHuntYara(unittest.TestCase):
     expected_runner_args = flows_pb2.HuntRunnerArgs(
       description='random description'
     )
-    expected_runner_args.client_rule_set.match_mode = expected_runner_args.client_rule_set.MATCH_ALL
+    expected_runner_args.client_rule_set.match_mode = \
+        expected_runner_args.client_rule_set.MATCH_ALL
     rule = expected_runner_args.client_rule_set.rules.add()
     rule.rule_type = rule.OS
     rule.os.os_windows = True
