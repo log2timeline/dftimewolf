@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """Tests the GRR hunt collectors."""
 
 import unittest
@@ -17,7 +16,6 @@ from dftimewolf.lib.containers import containers
 from tests.lib.collectors.test_data import mock_grr_hosts
 
 
-# Mocking of classes.
 # pylint: disable=invalid-name,arguments-differ
 class GRRHuntArtifactCollectorTest(unittest.TestCase):
   """Tests for the GRR artifact collector."""
@@ -333,6 +331,97 @@ class GRRHuntOsqueryDownloader(unittest.TestCase):
     self.assertIn('Incorrect results format from', error.exception.message)
     self.assertIn('Possibly not an osquery hunt.', error.exception.message)
     self.assertTrue(error.exception.critical)
+
+
+class GRRHuntYara(unittest.TestCase):
+  """Tests for the GRR Osquery hunt downloader."""
+
+  @mock.patch('grr_api_client.connectors.HttpConnector')
+  def setUp(self, mock_InitHttp):
+    self.mock_grr_api = mock.Mock()
+    mock_InitHttp.return_value = self.mock_grr_api
+    self.test_state = state.DFTimewolfState(config.Config)
+    self.grr_hunt_yara = grr_hunt.GRRHuntYaraScanner(self.test_state)
+    self.grr_hunt_yara.SetUp(
+        reason='random reason',
+        hunt_description='random description',
+        grr_server_url='http://fake/endpoint',
+        grr_username='admin',
+        grr_password='admin',
+        approvers='approver1,approver2',
+        verify=False,
+        match_mode='all',
+        client_operating_systems='win,linux',
+        client_labels='label1',
+        client_limit=999,
+        process_ignorelist=['\\.exe', 'ignore1'],
+    )
+
+  def testInitialization(self):
+    """Tests that the collector is correctly initialized."""
+    runner_args = self.grr_hunt_yara.hunt_runner_args
+    assert runner_args is not None
+    self.assertEqual(
+      runner_args.client_rule_set.match_mode,
+      runner_args.client_rule_set.MATCH_ALL)
+    self.assertTrue(runner_args.client_rule_set.rules[0].os.os_windows)
+    self.assertEqual(
+      runner_args.client_rule_set.rules[1].label.label_names, ['label1'])
+    self.assertEqual(runner_args.client_limit, 999)
+    self.assertEqual(runner_args.avg_cpu_seconds_per_client_limit, 2000)
+
+  @mock.patch('grr_api_client.api.GrrApi.CreateHunt')
+  def testProcess(self, mock_CreateHunt):
+    """Tests that the Process function is correctly called."""
+    self.test_state.StoreContainer(
+      containers.YaraRule(
+        name='test',
+        rule_text=('rule test { strings: $a = "abcdefg" condition: '
+                   '$a and pe.DLL }')))
+
+    self.test_state.StoreContainer(
+      containers.YaraRule(
+        name='test2',
+        rule_text=('rule test { strings: $a = "0123456" condition: '
+                   '$a and math.entropy($a) }')))
+
+    expected_runner_args = flows_pb2.HuntRunnerArgs(
+      description='random description'
+    )
+    expected_runner_args.client_rule_set.match_mode = \
+        expected_runner_args.client_rule_set.MATCH_ALL
+    rule = expected_runner_args.client_rule_set.rules.add()
+    rule.rule_type = rule.OS
+    rule.os.os_windows = True
+    rule.os.os_linux = True
+    rule.os.os_darwin = False
+
+    rule = expected_runner_args.client_rule_set.rules.add()
+    rule.rule_type = rule.LABEL
+    rule.label.label_names.append('label1')
+
+    expected_runner_args.client_limit = 999
+    expected_runner_args.client_rate= 1000
+    expected_runner_args.crash_limit = 1000
+    expected_runner_args.per_client_cpu_limit = 2000
+    expected_runner_args.avg_cpu_seconds_per_client_limit = 2000
+    expected_runner_args.network_bytes_limit = 10_737_418_240
+
+    self.grr_hunt_yara.Process()
+    mock_CreateHunt.assert_called_with(
+      flow_name='YaraProcessScan',
+      flow_args=flows_pb2.YaraProcessScanRequest(
+          yara_signature=('import "math"\nimport "pe"\n\nrule test { '
+                          'strings: $a = "abcdefg" condition: $a and pe.DLL }'
+                          '\n\nrule test { strings: $a = "0123456" condition:'
+                          ' $a and math.entropy($a) }'),
+          ignore_grr_process=True,
+          process_regex=r"(?i)^(?!\.exe|ignore1).*",
+          dump_process_on_match=True,
+          process_dump_size_limit= 268_435_456,
+      ),
+      hunt_runner_args=expected_runner_args
+    )
 
 
 if __name__ == '__main__':
