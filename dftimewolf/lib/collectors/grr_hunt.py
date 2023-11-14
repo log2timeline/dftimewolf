@@ -52,7 +52,7 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
       match_mode: Optional[str],
       client_operating_systems: Optional[str],
       client_labels: Optional[str],
-      extra_hunt_runner_args: Dict[str, str | int]) -> None:
+      extra_hunt_runner_args: Union[Dict[str, Union[str, int]], None] = None) -> None:
     """Setup hunt client filter arguments.
 
     Args:
@@ -62,6 +62,9 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
       client_labels: a comma separated list of client labels.
       extra_hunt_runner_args: extra arguments to pass to the hunt runner proto.
     """
+    if not extra_hunt_runner_args:
+      extra_hunt_runner_args = {}
+
     runner_args = self.grr_api.types.CreateHuntRunnerArgs()
     runner_args.description = self.hunt_description or self.reason
 
@@ -447,7 +450,7 @@ class GRRHuntYaraScanner(GRRHunt):
             client_operating_systems: Optional[str],
             client_labels: Optional[str],
             client_limit: str,
-            process_ignorelist: List[str] | str,
+            process_ignorelist: Union[List[str], str],
             ) -> None:
     """Initializes a GRR Hunt Osquery collector.
 
