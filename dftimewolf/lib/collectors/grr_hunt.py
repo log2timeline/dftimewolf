@@ -485,7 +485,7 @@ class GRRHuntYaraScanner(GRRHunt):
     if not re.compile(self.process_ignorelist_regex):
       self.ModuleError('Invalid regex for process_ignorelist', critical=True)
 
-    extra_hunt_runner_args = {
+    extra_hunt_runner_args: Dict[str, Union[str, int]] = {
         'client_limit': int(client_limit),
         'client_rate': 1000,
         'crash_limit': 1000,
