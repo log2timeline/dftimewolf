@@ -359,6 +359,7 @@ class GRRHuntYara(unittest.TestCase):
 
   def testInitialization(self):
     """Tests that the collector is correctly initialized."""
+    # pylint: disable=attribute-error
     runner_args = self.grr_hunt_yara.hunt_runner_args
     assert runner_args is not None
     self.assertEqual(
