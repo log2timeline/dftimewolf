@@ -74,8 +74,8 @@ if [[ "$*" =~ "include-timesketch" ]]; then
     echo "Sleeping 300 seconds..."
     /bin/sleep 300
     cd ../../..
-    cp config/linux/timesketchrc ~/.timesketchrc
-    cp config/linux/timesketch.token ~/.timesketch.token
+    # cp config/linux/timesketchrc ~/.timesketchrc
+    # cp config/linux/timesketch.token ~/.timesketch.token
 fi
 
 if [[ "$*" =~ "include-plaso" ]]; then
