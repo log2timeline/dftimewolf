@@ -336,6 +336,12 @@ class GRRHuntOsqueryDownloader(unittest.TestCase):
 class GRRHuntYara(unittest.TestCase):
   """Tests for the GRR Osquery hunt downloader."""
 
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.test_state = None
+    self.grr_hunt_yara = None
+    self.mock_grr_api = None
+
   @mock.patch('grr_api_client.connectors.HttpConnector')
   def setUp(self, mock_InitHttp):
     self.mock_grr_api = mock.Mock()
@@ -359,7 +365,6 @@ class GRRHuntYara(unittest.TestCase):
 
   def testInitialization(self):
     """Tests that the collector is correctly initialized."""
-    # pylint: disable=attribute-error
     runner_args = self.grr_hunt_yara.hunt_runner_args
     assert runner_args is not None
     self.assertEqual(
