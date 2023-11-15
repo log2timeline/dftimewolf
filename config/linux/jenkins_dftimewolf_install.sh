@@ -62,7 +62,7 @@ fi
 if [[ "$*" =~ "include-timesketch" ]]; then
     # Start the Timesketch server container.
     export PLASO_PPA_TRACK="stable"
-    export OPENSEARCH_VERSION=1.2.2
+    export OPENSEARCH_VERSION="2.9.0"
     echo "Cloning Timesketch from Github"
     git clone https://github.com/google/timesketch.git
     cd timesketch
