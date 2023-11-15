@@ -75,8 +75,6 @@ if [[ "$*" =~ "include-timesketch" ]]; then
     /bin/sleep 300
     cd ../../..
     echo "Credentials for e2e tests are set in https://github.com/google/timesketch/blob/master/docker/e2e/docker-compose.yml"
-    # cp config/linux/timesketchrc ~/.timesketchrc
-    # cp config/linux/timesketch.token ~/.timesketch.token
 fi
 
 if [[ "$*" =~ "include-plaso" ]]; then
