@@ -1,0 +1,16 @@
+{
+  "name": "yaratest",
+  "short_description": "Collects results from BigQuery and uploads them to Timesketch.",
+  "description": "Collects results from BigQuery in JSONL form, dumps them to the filesystem, and uploads them to Timesketch.",
+  "preflights": [],
+  "modules": [
+    {
+      "wants": [],
+      "name": "LocalYaraCollector",
+      "args": {
+        "rules_path": "@rules_path"
+      }
+    }
+  ],
+  "args": [["rules_path", "Path to rules", null]]
+}
