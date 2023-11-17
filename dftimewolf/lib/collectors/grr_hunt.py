@@ -44,7 +44,7 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
     self.match_mode: str = ""
     self.client_operating_systems : Set[str] = set()
     self.client_labels : List[str] = []
-    self.hunt_runner_args = None  # type: Optional[grr_flows.HuntRunnerArgs]
+    self.hunt_runner_args: grr_flows.HuntRunnerArgs = grr_flows.HuntRunnerArgs()
     self.hunt_description: str = ''
 
   def HuntSetup(
