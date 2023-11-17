@@ -338,16 +338,16 @@ class GRRHuntYara(unittest.TestCase):
 
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.test_state = None
-    self.grr_hunt_yara = None
+    self.test_state = state.DFTimewolfState(config.Config)
+    self.grr_hunt_yara:grr_hunt.GRRHuntYaraScanner = (
+        grr_hunt.GRRHuntYaraScanner(self.test_state)
+    )
     self.mock_grr_api = None
 
   @mock.patch('grr_api_client.connectors.HttpConnector')
   def setUp(self, mock_InitHttp):
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
-    self.test_state = state.DFTimewolfState(config.Config)
-    self.grr_hunt_yara = grr_hunt.GRRHuntYaraScanner(self.test_state)
     self.grr_hunt_yara.SetUp(
         reason='random reason',
         hunt_description='random description',
