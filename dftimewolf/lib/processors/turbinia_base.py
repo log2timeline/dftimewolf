@@ -113,11 +113,10 @@ class TurbiniaProcessorBase(module.BaseModule):
       if not data_attribute:
         if data_attribute := getattr(data, 'raw_data'):
           response = json.loads(data_attribute)
-      return response
     except (
       AttributeError, json.JSONDecodeError) as exception:
       self.ModuleError(str(exception), critical=True)
-
+    return response
 
   def _isInterestingPath(self, path: str) -> bool:
     """Checks if a path is interesting for the processor."""

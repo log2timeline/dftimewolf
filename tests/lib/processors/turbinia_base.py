@@ -46,7 +46,7 @@ class TurbiniaBaseTest(unittest.TestCase):
 
   # pylint: disable=line-too-long
   @mock.patch(
-      "turbinia_api_lib.api.turbinia_configuration_api.TurbiniaConfigurationApi.read_config"
+      "turbinia_api_lib.api.turbinia_configuration_api.TurbiniaConfigurationApi.read_config_with_http_info"
   )
   def testTurbiniaSetup(self, _mock_read_config):
     """Tests the TurbiniaSetup method."""
@@ -71,7 +71,7 @@ class TurbiniaBaseTest(unittest.TestCase):
 
   # pylint: disable=line-too-long
   @mock.patch(
-      "turbinia_api_lib.api.turbinia_requests_api.TurbiniaRequestsApi.create_request"
+      "turbinia_api_lib.api.turbinia_requests_api.TurbiniaRequestsApi.create_request_with_http_info"
   )
   def testTurbiniaStart(self, mock_create_request):
     """Tests the TurbiniaStart method."""
@@ -93,7 +93,7 @@ class TurbiniaBaseTest(unittest.TestCase):
 
   # pylint: disable=line-too-long
   @mock.patch(
-      "turbinia_api_lib.api.turbinia_requests_api.TurbiniaRequestsApi.get_request_status"
+      "turbinia_api_lib.api.turbinia_requests_api.TurbiniaRequestsApi.get_request_status_with_http_info"
   )
   @mock.patch("time.sleep")
   def testTurbiniaWait(self, mock_get_request_status, _):
