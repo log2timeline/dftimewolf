@@ -1193,7 +1193,8 @@ class GRRFlowCollector(GRRFlow):
       DFTimewolfError: if no files specified
     """
     # We don't need clients to be online to grab the flows.
-    client = self._GetClientBySelector(container.hostname, discard_inactive=False)
+    client = self._GetClientBySelector(
+        container.hostname, discard_inactive=False)
     self._AwaitFlow(client, container.flow_id)
     self._CheckSkippedFlows()
     collected_flow_data = self._DownloadFiles(client, container.flow_id)
