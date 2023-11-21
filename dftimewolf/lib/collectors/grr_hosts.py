@@ -134,7 +134,8 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     return result
 
   # TODO: change object to more specific GRR type information.
-  def _GetClientBySelector(self, selector: str, discard_inactive: bool = True) -> Client:
+  def _GetClientBySelector(
+      self, selector: str, discard_inactive: bool = True) -> Client:
     """Searches GRR by selector and get the latest active client.
 
     Args:
@@ -167,13 +168,13 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       clients = self._FilterActiveClients(clients)
       if not clients:
         self.ModuleError(
-              f'{len(result)} inactive/old clients were found '
+              f'{len(clients)} inactive/old clients were found '
               f'for selector: "{selector}", none of them '
               'has been active in the last 30 days.', critical=True)
 
     if len(clients) > 1:
       self.ModuleError(
-            f'Multiple hosts ({len(result)}) with the same '
+            f'Multiple hosts ({len(clients)}) with the same '
             f'selector: "{selector}" have been found.\n'
             'Please use e.g. client ID instead of the hostname.',
             critical=True)
