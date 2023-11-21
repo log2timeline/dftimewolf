@@ -114,7 +114,7 @@ class TurbiniaProcessorBase(module.BaseModule):
         if data_attribute := getattr(data, 'raw_data'):
           response = json.loads(data_attribute)
     except (
-      AttributeError, json.JSONDecodeError) as exception:
+        AttributeError, json.JSONDecodeError) as exception:
       self.ModuleError(str(exception), critical=True)
     return response
 
@@ -335,8 +335,6 @@ class TurbiniaProcessorBase(module.BaseModule):
       self.output_path = decoded_response.get('OUTPUT_DIR')
     except turbinia_api_lib.exceptions.ApiException as exception:
       self.ModuleError(exception.body, critical=True)
-    except json.decoder.JSONDecodeError as exception:
-      self.ModuleError(exception.msg, critical=True)
 
   def TurbiniaStart(
       self,
@@ -483,7 +481,8 @@ class TurbiniaProcessorBase(module.BaseModule):
           self.client
       )
     request_data = (
-      self.requests_api_instance.get_request_status_with_http_info(request_id))
+        self.requests_api_instance.get_request_status_with_http_info(
+            request_id))
     request_data = self._decode_api_response(request_data)
     if request_data:
       report: str = turbinia_formatter.RequestMarkdownReport(
