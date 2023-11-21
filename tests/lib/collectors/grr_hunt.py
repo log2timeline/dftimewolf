@@ -336,12 +336,18 @@ class GRRHuntOsqueryDownloader(unittest.TestCase):
 class GRRHuntYara(unittest.TestCase):
   """Tests for the GRR Osquery hunt downloader."""
 
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.test_state = state.DFTimewolfState(config.Config)
+    self.grr_hunt_yara:grr_hunt.GRRHuntYaraScanner = (
+        grr_hunt.GRRHuntYaraScanner(self.test_state)
+    )
+    self.mock_grr_api = None
+
   @mock.patch('grr_api_client.connectors.HttpConnector')
   def setUp(self, mock_InitHttp):
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
-    self.test_state = state.DFTimewolfState(config.Config)
-    self.grr_hunt_yara = grr_hunt.GRRHuntYaraScanner(self.test_state)
     self.grr_hunt_yara.SetUp(
         reason='random reason',
         hunt_description='random description',
