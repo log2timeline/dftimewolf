@@ -134,12 +134,14 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     return result
 
   # TODO: change object to more specific GRR type information.
-  def _GetClientBySelector(self, selector: str) -> Client:
+  def _GetClientBySelector(self, selector: str, discard_inactive: bool = True) -> Client:
     """Searches GRR by selector and get the latest active client.
 
     Args:
       selector (str): selector to search for. This can be a hostname or GRR
           client ID.
+      discard_inactive: Whether to filter out clients that are considered
+          inactive (one month since last check-in).
 
     Returns:
       object: GRR API Client object
@@ -156,26 +158,27 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
           selector, exception
       ), critical=True)
 
-    result = self._FilterSelectionCriteria(selector, search_result)
+    clients = self._FilterSelectionCriteria(selector, search_result)
 
-    if not result:
+    if not clients:
       self.ModuleError(f'Could not get client for {selector:s}', critical=True)
 
-    active_clients = self._FilterActiveClients(result)
-    if len(active_clients) >1:
-      self.ModuleError(
-            'Multiple hosts ({0:d}) with the same '
-            'FQDN: "{1:s}" have been active in the last month.\n'
-            'Please use client ID instead of the hostname.'.format(
-                len(active_clients), selector), critical=True)
-    if not active_clients:
-      self.ModuleError(
-            '{0:d} inactive/old clients were found '
-            'for selector: "{1:s}", non of them '
-            'has been active in the last 30 days.'.format(
-                len(result), selector), critical=True)
+    if discard_inactive:
+      clients = self._FilterActiveClients(clients)
+      if not clients:
+        self.ModuleError(
+              f'{len(result)} inactive/old clients were found '
+              f'for selector: "{selector}", none of them '
+              'has been active in the last 30 days.', critical=True)
 
-    last_seen, client = active_clients[0]
+    if len(clients) > 1:
+      self.ModuleError(
+            f'Multiple hosts ({len(result)}) with the same '
+            f'selector: "{selector}" have been found.\n'
+            'Please use e.g. client ID instead of the hostname.',
+            critical=True)
+
+    last_seen, client = clients[0]
     # Remove microseconds and create datetime object
     last_seen_datetime = datetime.datetime.utcfromtimestamp(
         last_seen / 1000000)
@@ -185,7 +188,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
         datetime.datetime.utcnow() - last_seen_datetime).total_seconds()
     last_seen_minutes = int(round(last_seen_seconds / 60))
 
-    self.logger.info(f'Found active client: {client.client_id:s}')
+    self.logger.info(f'Found client: {client.client_id:s}')
     self.logger.info('Client last seen: {0:s} ({1:d} minutes ago)'.format(
         last_seen_datetime.strftime('%Y-%m-%dT%H:%M:%S+0000'),
         last_seen_minutes))
