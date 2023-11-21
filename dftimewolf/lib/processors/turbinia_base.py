@@ -1,6 +1,7 @@
 """Base class for turbinia interactions."""
 
 import getpass
+import json
 import os
 import tarfile
 import tempfile
@@ -19,6 +20,7 @@ from turbinia_client.helpers import formatter as turbinia_formatter
 from turbinia_api_lib.api import (
     turbinia_requests_api, turbinia_configuration_api)
 from turbinia_api_lib.api import turbinia_request_results_api
+from turbinia_api_lib.api_response import ApiResponse
 
 from dftimewolf.lib.logging_utils import WolfLogger
 from dftimewolf.lib import module
@@ -98,6 +100,23 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.turbinia_zone = str()
     self.turbinia_api = str()
     os.environ['GRPC_POLL_STRATEGY'] = 'poll'
+
+  def _decode_api_response(self, data: Any) -> Any:
+    """Decodes ApiResponse data into a Python object."""
+    if not isinstance(data, ApiResponse):
+      return data
+    data_attribute = None
+    response = ''
+    try:
+      if data_attribute := getattr(data, 'data'):
+        response = data_attribute
+      if not data_attribute:
+        if data_attribute := getattr(data, 'raw_data'):
+          response = json.loads(data_attribute)
+    except (
+        AttributeError, json.JSONDecodeError) as exception:
+      self.ModuleError(str(exception), critical=True)
+    return response
 
   def _isInterestingPath(self, path: str) -> bool:
     """Checks if a path is interesting for the processor."""
@@ -311,8 +330,9 @@ class TurbiniaProcessorBase(module.BaseModule):
     api_instance = turbinia_configuration_api.TurbiniaConfigurationApi(
         self.client)
     try:
-      api_response = api_instance.read_config()
-      self.output_path = api_response.get('OUTPUT_DIR')
+      api_response = api_instance.read_config_with_http_info()
+      decoded_response = self._decode_api_response(api_response)
+      self.output_path = decoded_response.get('OUTPUT_DIR')
     except turbinia_api_lib.exceptions.ApiException as exception:
       self.ModuleError(exception.body, critical=True)
 
@@ -371,9 +391,10 @@ class TurbiniaProcessorBase(module.BaseModule):
 
     # Send the request to the API server.
     try:
-      response = self.requests_api_instance.create_request(
+      api_response = self.requests_api_instance.create_request_with_http_info(
         request) # type: ignore
-      request_id = response.get('request_id')
+      decoded_response = self._decode_api_response(api_response)
+      request_id = decoded_response.get('request_id')
       self.PublishMessage(
           'Creating Turbinia request {0!s} with evidence {1!s}'.format(
               request_id, evidence_name))
@@ -421,7 +442,10 @@ class TurbiniaProcessorBase(module.BaseModule):
           self.requests_api_instance = (
               turbinia_requests_api.TurbiniaRequestsApi(self.client)
           )
-        request_data = self.requests_api_instance.get_request_status(request_id)
+        request_data = (
+          self.requests_api_instance.get_request_status_with_http_info(
+            request_id))
+        request_data = self._decode_api_response(request_data)
         status = request_data.get('status')
         failed_tasks = request_data.get('failed_tasks')
         successful_tasks = request_data.get('successful_tasks')
@@ -456,7 +480,10 @@ class TurbiniaProcessorBase(module.BaseModule):
       self.requests_api_instance = turbinia_requests_api.TurbiniaRequestsApi(
           self.client
       )
-    request_data = self.requests_api_instance.get_request_status(request_id)
+    request_data = (
+        self.requests_api_instance.get_request_status_with_http_info(
+            request_id))
+    request_data = self._decode_api_response(request_data)
     if request_data:
       report: str = turbinia_formatter.RequestMarkdownReport(
           request_data=request_data
