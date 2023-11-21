@@ -224,7 +224,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
         except RuntimeError as exception:
           message = (f'An error occurred while streaming the container to a '
               f'downstream module. Check the downstream module logs for '
-              f'additional nformation. {exception}')
+              f'additional information. {exception}')
           self.logger.error(message)
     # Generate a Turbinia report and store it in the state.
     report = self.TurbiniaFinishReport(request_id)
