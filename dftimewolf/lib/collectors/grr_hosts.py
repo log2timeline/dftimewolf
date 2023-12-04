@@ -390,7 +390,7 @@ Scanned rules:
 
 * {2:s}
 
-Flow ID: `{3:s}`
+Flow ID: {3:s}
   """
 
   # pylint: disable=arguments-differ
@@ -546,11 +546,12 @@ Flow ID: `{3:s}`
             'grr_client': client.client_id,
             'grr_fqdn': client.data.os_info.fqdn,
             'pid': process.pid,
-            'process': process.exe,
             'username': process.username,
-            'cwd': process.cwd,
             'rule_name': match.rule_name,
-            'string_matches': sorted(list(string_matches))
+            'string_matches': sorted(list(string_matches)),
+            'cmdline': ' '.join(process.cmdline),
+            'process': process.exe,
+            'cwd': process.cwd,
         })
     return pd.DataFrame(entries)
 
