@@ -1059,6 +1059,7 @@ class GRRYaraScannerTest(unittest.TestCase):
           'grr_fqdn': 'tomchop',
           'pid': 12345,
           'process': 'C:\\temp\\bad.exe',
+          'cmdline': 'C:\\temp\\bad.exe arg1 arg2',
           'username': 'tomchop',
           'cwd': 'C:\\temp',
           'rule_name': 'badstring',
@@ -1067,7 +1068,9 @@ class GRRYaraScannerTest(unittest.TestCase):
         {
           'grr_client': 'C.0000000000000001',
           'grr_fqdn': 'tomchop',
-          'pid': 12345, 'process': 'C:\\temp\\bad.exe',
+          'pid': 12345,
+          'process': 'C:\\temp\\bad.exe',
+          'cmdline': 'C:\\temp\\bad.exe arg1 arg2',
           'username': 'tomchop',
           'cwd': 'C:\\temp',
           'rule_name': 'superbadstring',
