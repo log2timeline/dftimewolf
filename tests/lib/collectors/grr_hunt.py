@@ -423,8 +423,8 @@ class GRRHuntYara(unittest.TestCase):
                           '\n\nrule test { strings: $a = "0123456" condition:'
                           ' $a and math.entropy($a) }'),
           ignore_grr_process=True,
-          process_regex=r"(?i)^(?!\.exe|ignore1).*",
-          cmdline_regex=r"(?i)^(?!svchost(.exe)? -k secsvcs).*",
+          process_regex=r"(?i)^(?!.*((\.exe|ignore1)).*",
+          cmdline_regex=r"(?i)^(?!.*(svchost(.exe)? -k secsvcs)).*",
           dump_process_on_match=True,
           process_dump_size_limit= 268_435_456,
       ),
