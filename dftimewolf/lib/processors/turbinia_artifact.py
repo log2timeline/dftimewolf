@@ -62,11 +62,14 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
       self.PublishMessage(
           f'Turbinia results will be dumped to {self.output_directory}')
 
-    sketch_id = int(sketch_id) if sketch_id else 0
-
     self.TurbiniaSetUp(
-        project, turbinia_auth, turbinia_recipe, turbinia_zone, turbinia_api,
-        incident_id, sketch_id)
+        project,
+        turbinia_auth,
+        turbinia_recipe,
+        turbinia_zone,
+        turbinia_api,
+        incident_id,
+        int(sketch_id) if sketch_id else 0)
 
   # pytype: disable=signature-mismatch
   def Process(self, container: containers.RemoteFSPath) -> None:
