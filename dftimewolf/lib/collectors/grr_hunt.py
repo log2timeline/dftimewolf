@@ -487,14 +487,14 @@ class GRRHuntYaraScanner(GRRHunt):
     elif isinstance(process_ignorelist, str):
       joined = process_ignorelist
 
-    self.process_ignorelist_regex = r"(?i)^(?!" + joined + r").*"
+    self.process_ignorelist_regex = r"(?i)^(?!.*(" + joined + r")).*"
 
     if isinstance(cmdline_ignorelist, list):
       joined = "|".join(cmdline_ignorelist)
     elif isinstance(cmdline_ignorelist, str):
       joined = cmdline_ignorelist
 
-    self.cmdline_ignorelist_regex = r"(?i)^(?!" + joined + r").*"
+    self.cmdline_ignorelist_regex = r"(?i)^(?!.*(" + joined + r")).*"
 
     if not re.compile(self.process_ignorelist_regex):
       self.ModuleError('Invalid regex for process_ignorelist', critical=True)
