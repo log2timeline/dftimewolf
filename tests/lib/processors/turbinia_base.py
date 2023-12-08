@@ -58,14 +58,14 @@ class TurbiniaBaseTest(unittest.TestCase):
         turbinia_zone="us-central1f",
         turbinia_api="http://localhost:8001",
         incident_id="123456789",
-        sketch_id="12345",
+        sketch_id=12345,
     )
     self.assertEqual(self.turbinia_processor.project, "turbinia-project")
     self.assertEqual(self.turbinia_processor.turbinia_zone, "us-central1f")
     self.assertEqual(
         self.turbinia_processor.turbinia_api, "http://localhost:8001")
     self.assertEqual(self.turbinia_processor.incident_id, "123456789")
-    self.assertEqual(self.turbinia_processor.sketch_id, "12345")
+    self.assertEqual(self.turbinia_processor.sketch_id, 12345)
     self.assertEqual(self.turbinia_processor.output_path, "/tmp")
     self.assertEqual(self.turbinia_processor.turbinia_recipe, None)
 
@@ -88,7 +88,7 @@ class TurbiniaBaseTest(unittest.TestCase):
         "zone": "us-central1-f",
     }
     request_id = self.turbinia_processor.TurbiniaStart(
-        evidence=evidence, yara_rules=YARA_RULE)
+        evidence=evidence, threat_intel_indicators=None, yara_rules=YARA_RULE)
     self.assertEqual(request_id, "41483253079448e59685d88f37ab91f7")
 
   # pylint: disable=line-too-long
