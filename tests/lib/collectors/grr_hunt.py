@@ -361,6 +361,7 @@ class GRRHuntYara(unittest.TestCase):
         client_labels='label1',
         client_limit='999',
         process_ignorelist=['\\.exe', 'ignore1'],
+        cmdline_ignorelist=['svchost(.exe)? -k secsvcs'],
     )
 
   def testInitialization(self):
@@ -423,6 +424,7 @@ class GRRHuntYara(unittest.TestCase):
                           ' $a and math.entropy($a) }'),
           ignore_grr_process=True,
           process_regex=r"(?i)^(?!\.exe|ignore1).*",
+          cmdline_regex=r"(?i)^(?!svchost(.exe)? -k secsvcs).*",
           dump_process_on_match=True,
           process_dump_size_limit= 268_435_456,
       ),
