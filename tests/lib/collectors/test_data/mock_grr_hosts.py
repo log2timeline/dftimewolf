@@ -138,6 +138,7 @@ MOCK_YARASCAN_PAYLOAD = flows_pb2.YaraProcessScanMatch(
         exe='C:\\temp\\bad.exe',
         username='tomchop',
         cwd='C:\\temp',
+        cmdline=['C:\\temp\\bad.exe', 'arg1', 'arg2'],
     ),
     match=[
         flows_pb2.YaraMatch(

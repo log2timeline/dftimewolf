@@ -437,6 +437,7 @@ class GRRHuntYaraScanner(GRRHunt):
     """
     super().__init__(state, name=name, critical=critical)
     self.process_ignorelist_regex = ''
+    self.cmdline_ignorelist_regex = ''
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
@@ -452,6 +453,7 @@ class GRRHuntYaraScanner(GRRHunt):
             client_labels: Optional[str],
             client_limit: str,
             process_ignorelist: Union[List[str], str],
+            cmdline_ignorelist: Union[List[str], str],
             ) -> None:
     """Initializes a GRR Hunt Osquery collector.
 
@@ -470,7 +472,11 @@ class GRRHuntYaraScanner(GRRHunt):
       client_labels: a comma separated list of client labels.
       client_limit: The number of clients to run the hunt on. 0 for no limit.
       process_ignorelist: A list of strings process executable paths to ignore.
-          Can also be passed in one string as a comma-separated list processes.
+          Can also be passed in one string as a comma-separated list of
+          processes.
+      cmdline_ignorelist: A list of strings process command lines to ignore.
+          Can also be passed in one string as a comma-separated list of
+          cmdlines.
     """
     self.GrrSetUp(
         reason, grr_server_url, grr_username, grr_password, approvers=approvers,
@@ -482,8 +488,18 @@ class GRRHuntYaraScanner(GRRHunt):
       joined = process_ignorelist
 
     self.process_ignorelist_regex = r"(?i)^(?!" + joined + r").*"
+
+    if isinstance(cmdline_ignorelist, list):
+      joined = "|".join(cmdline_ignorelist)
+    elif isinstance(cmdline_ignorelist, str):
+      joined = cmdline_ignorelist
+
+    self.cmdline_ignorelist_regex = r"(?i)^(?!" + joined + r").*"
+
     if not re.compile(self.process_ignorelist_regex):
       self.ModuleError('Invalid regex for process_ignorelist', critical=True)
+    if not re.compile(self.cmdline_ignorelist_regex):
+      self.ModuleError('Invalid regex for cmdline_ignorelist', critical=True)
 
     extra_hunt_runner_args: Dict[str, Union[str, int]] = {
         'client_limit': int(client_limit),
@@ -523,6 +539,7 @@ class GRRHuntYaraScanner(GRRHunt):
       yara_signature=final_rule_text,
       ignore_grr_process=True,
       process_regex=self.process_ignorelist_regex,
+      cmdline_regex=self.cmdline_ignorelist_regex,
       dump_process_on_match=True,
       process_dump_size_limit= 256 * 1024 * 1024,
     )
