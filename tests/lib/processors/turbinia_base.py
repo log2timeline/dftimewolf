@@ -73,8 +73,11 @@ class TurbiniaBaseTest(unittest.TestCase):
   @mock.patch(
       "turbinia_api_lib.api.turbinia_requests_api.TurbiniaRequestsApi.create_request_with_http_info"
   )
-  def testTurbiniaStart(self, mock_create_request):
+  # mock getpass.getuser
+  @mock.patch('getpass.getuser')
+  def testTurbiniaStart(self, mock_getuser, mock_create_request):
     """Tests the TurbiniaStart method."""
+    mock_getuser.return_value = 'test_runner'
     mock_create_request.return_value = {
         "request_id": "41483253079448e59685d88f37ab91f7"
     }
@@ -88,8 +91,27 @@ class TurbiniaBaseTest(unittest.TestCase):
         "zone": "us-central1-f",
     }
     request_id = self.turbinia_processor.TurbiniaStart(
-        evidence=evidence, threat_intel_indicators=None, yara_rules=YARA_RULE)
+        evidence=evidence,
+        threat_intel_indicators=['str1'],
+        yara_rules=[YARA_RULE]
+    )
+    expected_params = {
+      'evidence': {
+        'type': 'GoogleCloudDisk',
+        'disk_name': 'disk-1',
+        'project': 'project-1',
+        'zone': 'us-central1-f'
+        },
+      'request_options': {
+        'filter_pattern': ['str1'],
+        'jobs_allowlist': [],
+        'jobs_denylist': ['StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob', 'PsortJob'],
+        'reason': '',
+        'requester': 'test_runner',
+        'yara_rules': 'import "pe"\nimport "math"\nimport "hash"\n\nrule dummy { condition: false }'}
+    }
     self.assertEqual(request_id, "41483253079448e59685d88f37ab91f7")
+    mock_create_request.assert_called_once_with(expected_params)
 
   # pylint: disable=line-too-long
   @mock.patch(
