@@ -482,6 +482,10 @@ class GRRHuntYaraScanner(GRRHunt):
         reason, grr_server_url, grr_username, grr_password, approvers=approvers,
         verify=verify, message_callback=self.PublishMessage)
 
+    if process_ignorelist and cmdline_ignorelist:
+      raise DFTimewolfError(
+          'Only one of process_ignorelist or cmd_ignorelist can be specified')
+
     if process_ignorelist:
       if isinstance(process_ignorelist, list):
         process_joined = "|".join(process_ignorelist)
