@@ -275,7 +275,9 @@ class TurbiniaProcessorBase(module.BaseModule):
     return bool(refresh)
 
   def InitializeTurbiniaApiClient(
-      self, credentials: Credentials) -> turbinia_api_lib.api_client.ApiClient:
+      self,
+      credentials: Optional[Credentials]
+    ) -> turbinia_api_lib.api_client.ApiClient:
     """Creates a Turbinia API client object.
 
     This method also runs the authentication flow if needed.
