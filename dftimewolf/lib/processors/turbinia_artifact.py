@@ -45,7 +45,7 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
   def SetUp(
       self, project: str, turbinia_auth: bool, turbinia_recipe: Optional[str],
       turbinia_zone: str, turbinia_api: str, output_directory: str,
-      incident_id: str, sketch_id: int) -> None:
+      incident_id: str, sketch_id: str) -> None:
     """Sets up the object attributes.
 
     Args:
@@ -54,7 +54,7 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
       turbinia_recipe (str): Turbinia recipe name.
       turbinia_zone (str): GCP zone in which the Turbinia server is running.
       output_directory (str): Name of the directory to process.
-      sketch_id (int): The Timesketch sketch ID.
+      sketch_id (str): The Timesketch sketch ID.
     """
     self.output_directory = output_directory
     if not self.output_directory:
@@ -63,8 +63,13 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
           f'Turbinia results will be dumped to {self.output_directory}')
 
     self.TurbiniaSetUp(
-        project, turbinia_auth, turbinia_recipe, turbinia_zone, turbinia_api,
-        incident_id, sketch_id)
+        project,
+        turbinia_auth,
+        turbinia_recipe,
+        turbinia_zone,
+        turbinia_api,
+        incident_id,
+        int(sketch_id) if sketch_id else 0)
 
   # pytype: disable=signature-mismatch
   def Process(self, container: containers.RemoteFSPath) -> None:

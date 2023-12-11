@@ -375,7 +375,7 @@ class TurbiniaProcessorBase(module.BaseModule):
         'yara_rules': yara_text
     }
     if self.sketch_id:
-      request_options['sketch_id'] = int(self.sketch_id)
+      request_options['sketch_id'] = self.sketch_id
 
     if self.turbinia_recipe:
       request_options['recipe_name'] = self.turbinia_recipe
