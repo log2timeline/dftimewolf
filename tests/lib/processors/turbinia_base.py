@@ -73,7 +73,6 @@ class TurbiniaBaseTest(unittest.TestCase):
   @mock.patch(
       "turbinia_api_lib.api.turbinia_requests_api.TurbiniaRequestsApi.create_request_with_http_info"
   )
-  # mock getpass.getuser
   @mock.patch('getpass.getuser')
   def testTurbiniaStart(self, mock_getuser, mock_create_request):
     """Tests the TurbiniaStart method."""
