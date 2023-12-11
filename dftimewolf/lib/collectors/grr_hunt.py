@@ -436,8 +436,8 @@ class GRRHuntYaraScanner(GRRHunt):
           the entire recipe to fail if the module encounters an error.
     """
     super().__init__(state, name=name, critical=critical)
-    self.process_ignorelist_regex = ''
-    self.cmdline_ignorelist_regex = ''
+    self.process_ignorelist_regex = None
+    self.cmdline_ignorelist_regex = None
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
@@ -482,23 +482,27 @@ class GRRHuntYaraScanner(GRRHunt):
         reason, grr_server_url, grr_username, grr_password, approvers=approvers,
         verify=verify, message_callback=self.PublishMessage)
 
-    if isinstance(process_ignorelist, list):
-      joined = "|".join(process_ignorelist)
-    elif isinstance(process_ignorelist, str):
-      joined = process_ignorelist
+    if process_ignorelist:
+      if isinstance(process_ignorelist, list):
+        process_joined = "|".join(process_ignorelist)
+      elif isinstance(process_ignorelist, str):
+        process_joined = process_ignorelist
 
-    self.process_ignorelist_regex = r"(?i)^(?!.*(" + joined + r")).*"
+      self.process_ignorelist_regex = r"(?i)^(?!.*(" + process_joined + r")).*"
 
-    if isinstance(cmdline_ignorelist, list):
-      joined = "|".join(cmdline_ignorelist)
-    elif isinstance(cmdline_ignorelist, str):
-      joined = cmdline_ignorelist
+    if cmdline_ignorelist:
+      if isinstance(cmdline_ignorelist, list):
+        cmdline_joined = "|".join(cmdline_ignorelist)
+      elif isinstance(cmdline_ignorelist, str):
+        cmdline_joined = cmdline_ignorelist
 
-    self.cmdline_ignorelist_regex = r"(?i)^(?!.*(" + joined + r")).*"
+      self.cmdline_ignorelist_regex = r"(?i)^(?!.*(" + cmdline_joined + r")).*"
 
-    if not re.compile(self.process_ignorelist_regex):
+    if self.process_ignorelist_regex and \
+        not re.compile(self.process_ignorelist_regex):
       self.ModuleError('Invalid regex for process_ignorelist', critical=True)
-    if not re.compile(self.cmdline_ignorelist_regex):
+    if self.cmdline_ignorelist_regex and \
+        not re.compile(self.cmdline_ignorelist_regex):
       self.ModuleError('Invalid regex for cmdline_ignorelist', critical=True)
 
     extra_hunt_runner_args: Dict[str, Union[str, int]] = {
