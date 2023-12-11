@@ -361,7 +361,7 @@ class GRRHuntYara(unittest.TestCase):
         client_labels='label1',
         client_limit='999',
         process_ignorelist=['\\.exe', 'ignore1'],
-        cmdline_ignorelist=['svchost(.exe)? -k secsvcs'],
+        cmdline_ignorelist=None,
     )
 
   def testInitialization(self):
@@ -424,13 +424,86 @@ class GRRHuntYara(unittest.TestCase):
                           ' $a and math.entropy($a) }'),
           ignore_grr_process=True,
           process_regex=r"(?i)^(?!.*(\.exe|ignore1)).*",
-          cmdline_regex=r"(?i)^(?!.*(svchost(.exe)? -k secsvcs)).*",
+          cmdline_regex=None,
           dump_process_on_match=True,
           process_dump_size_limit= 268_435_456,
       ),
       hunt_runner_args=expected_runner_args
     )
 
+  @mock.patch('grr_api_client.connectors.HttpConnector')
+  @mock.patch('grr_api_client.api.GrrApi.CreateHunt')
+  def testSetupIgnorelists(self,
+                           unused_mock_CreateHunt,
+                           unused_mock_http_connector):
+    """Tests that the Process function is correctly called."""
+    grr_hunt_yara:grr_hunt.GRRHuntYaraScanner = (
+        grr_hunt.GRRHuntYaraScanner(self.test_state)
+    )
+    grr_hunt_yara.SetUp(
+        reason='random reason',
+        hunt_description='random description',
+        grr_server_url='http://fake/endpoint',
+        grr_username='admin',
+        grr_password='admin',
+        approvers='approver1,approver2',
+        verify=False,
+        match_mode='all',
+        client_operating_systems='win,linux',
+        client_labels='label1',
+        client_limit='999',
+        process_ignorelist=['\\.exe', 'onlyprocesses'],
+        cmdline_ignorelist=None,
+    )
 
-if __name__ == '__main__':
-  unittest.main()
+    self.assertEqual(grr_hunt_yara.cmdline_ignorelist_regex, None)
+    self.assertEqual(
+      grr_hunt_yara.process_ignorelist_regex,
+      r'(?i)^(?!.*(\.exe|onlyprocesses)).*')
+
+    grr_hunt_yara:grr_hunt.GRRHuntYaraScanner = (
+        grr_hunt.GRRHuntYaraScanner(self.test_state)
+    )
+    grr_hunt_yara.SetUp(
+        reason='random reason',
+        hunt_description='random description',
+        grr_server_url='http://fake/endpoint',
+        grr_username='admin',
+        grr_password='admin',
+        approvers='approver1,approver2',
+        verify=False,
+        match_mode='all',
+        client_operating_systems='win,linux',
+        client_labels='label1',
+        client_limit='999',
+        process_ignorelist=None,
+        cmdline_ignorelist=['my cmd --line', 'onlycmdlines'],
+    )
+
+    self.assertEqual(
+      grr_hunt_yara.cmdline_ignorelist_regex,
+      '(?i)^(?!.*(my cmd --line|onlycmdlines)).*')
+    self.assertEqual(grr_hunt_yara.process_ignorelist_regex, None)
+
+    grr_hunt_yara:grr_hunt.GRRHuntYaraScanner = (
+        grr_hunt.GRRHuntYaraScanner(self.test_state)
+    )
+    with self.assertRaises(errors.DFTimewolfError) as error:
+      grr_hunt_yara.SetUp(
+          reason='random reason',
+          hunt_description='random description',
+          grr_server_url='http://fake/endpoint',
+          grr_username='admin',
+          grr_password='admin',
+          approvers='approver1,approver2',
+          verify=False,
+          match_mode='all',
+          client_operating_systems='win,linux',
+          client_labels='label1',
+          client_limit='999',
+          process_ignorelist=['explorer.exe'],
+          cmdline_ignorelist=['my cmd --line', 'onlycmdlines'],
+      )
+    self.assertEqual(
+        error.exception.message,
+        'Only one of process_ignorelist or cmd_ignorelist can be specified')

@@ -434,10 +434,14 @@ class GRRHuntYaraScanner(GRRHunt):
       name (Optional[str]): The module's runtime name.
       critical (bool): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
+
+    Raises:
+      DFTimewolfError: if both process_ignorelist and cmdline_ignorelist
+          are specified.
     """
     super().__init__(state, name=name, critical=critical)
-    self.process_ignorelist_regex = ''
-    self.cmdline_ignorelist_regex = ''
+    self.process_ignorelist_regex: Optional[str] = None
+    self.cmdline_ignorelist_regex: Optional[str] = None
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
@@ -452,8 +456,8 @@ class GRRHuntYaraScanner(GRRHunt):
             client_operating_systems: Optional[str],
             client_labels: Optional[str],
             client_limit: str,
-            process_ignorelist: Union[List[str], str],
-            cmdline_ignorelist: Union[List[str], str],
+            process_ignorelist: Union[List[str], str, None],
+            cmdline_ignorelist: Union[List[str], str, None],
             ) -> None:
     """Initializes a GRR Hunt Osquery collector.
 
@@ -477,28 +481,40 @@ class GRRHuntYaraScanner(GRRHunt):
       cmdline_ignorelist: A list of strings process command lines to ignore.
           Can also be passed in one string as a comma-separated list of
           cmdlines.
+
+    Raises:
+      DFTimewolfError: if both process_ignorelist and cmdline_ignorelist are
+          set
     """
     self.GrrSetUp(
         reason, grr_server_url, grr_username, grr_password, approvers=approvers,
         verify=verify, message_callback=self.PublishMessage)
 
-    if isinstance(process_ignorelist, list):
-      joined = "|".join(process_ignorelist)
-    elif isinstance(process_ignorelist, str):
-      joined = process_ignorelist
+    if process_ignorelist and cmdline_ignorelist:
+      raise DFTimewolfError(
+          'Only one of process_ignorelist or cmd_ignorelist can be specified')
 
-    self.process_ignorelist_regex = r"(?i)^(?!.*(" + joined + r")).*"
+    if process_ignorelist:
+      if isinstance(process_ignorelist, list):
+        process_joined = "|".join(process_ignorelist)
+      elif isinstance(process_ignorelist, str):
+        process_joined = process_ignorelist
 
-    if isinstance(cmdline_ignorelist, list):
-      joined = "|".join(cmdline_ignorelist)
-    elif isinstance(cmdline_ignorelist, str):
-      joined = cmdline_ignorelist
+      self.process_ignorelist_regex = r"(?i)^(?!.*(" + process_joined + r")).*"
 
-    self.cmdline_ignorelist_regex = r"(?i)^(?!.*(" + joined + r")).*"
+    if cmdline_ignorelist:
+      if isinstance(cmdline_ignorelist, list):
+        cmdline_joined = "|".join(cmdline_ignorelist)
+      elif isinstance(cmdline_ignorelist, str):
+        cmdline_joined = cmdline_ignorelist
 
-    if not re.compile(self.process_ignorelist_regex):
+      self.cmdline_ignorelist_regex = r"(?i)^(?!.*(" + cmdline_joined + r")).*"
+
+    if self.process_ignorelist_regex and \
+        not re.compile(self.process_ignorelist_regex):
       self.ModuleError('Invalid regex for process_ignorelist', critical=True)
-    if not re.compile(self.cmdline_ignorelist_regex):
+    if self.cmdline_ignorelist_regex and \
+        not re.compile(self.cmdline_ignorelist_regex):
       self.ModuleError('Invalid regex for cmdline_ignorelist', critical=True)
 
     extra_hunt_runner_args: Dict[str, Union[str, int]] = {
