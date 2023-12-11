@@ -433,7 +433,9 @@ class GRRHuntYara(unittest.TestCase):
 
   @mock.patch('grr_api_client.connectors.HttpConnector')
   @mock.patch('grr_api_client.api.GrrApi.CreateHunt')
-  def testSetupIgnorelists(self, mock_CreateHunt, mock_http_connector):
+  def testSetupIgnorelists(self,
+                           unused_mock_CreateHunt,
+                           unused_mock_http_connector):
     """Tests that the Process function is correctly called."""
     grr_hunt_yara:grr_hunt.GRRHuntYaraScanner = (
         grr_hunt.GRRHuntYaraScanner(self.test_state)
@@ -454,8 +456,10 @@ class GRRHuntYara(unittest.TestCase):
         cmdline_ignorelist=None,
     )
 
-    self.assertEquals(grr_hunt_yara.cmdline_ignorelist_regex, None)
-    self.assertEquals(grr_hunt_yara.process_ignorelist_regex, '(?i)^(?!.*(\.exe|onlyprocesses)).*')
+    self.assertEqual(grr_hunt_yara.cmdline_ignorelist_regex, None)
+    self.assertEqual(
+      grr_hunt_yara.process_ignorelist_regex,
+      r'(?i)^(?!.*(\.exe|onlyprocesses)).*')
 
     grr_hunt_yara:grr_hunt.GRRHuntYaraScanner = (
         grr_hunt.GRRHuntYaraScanner(self.test_state)
@@ -476,8 +480,10 @@ class GRRHuntYara(unittest.TestCase):
         cmdline_ignorelist=['my cmd --line', 'onlycmdlines'],
     )
 
-    self.assertEquals(grr_hunt_yara.cmdline_ignorelist_regex, '(?i)^(?!.*(my cmd --line|onlycmdlines)).*')
-    self.assertEquals(grr_hunt_yara.process_ignorelist_regex, None)
+    self.assertEqual(
+      grr_hunt_yara.cmdline_ignorelist_regex,
+      '(?i)^(?!.*(my cmd --line|onlycmdlines)).*')
+    self.assertEqual(grr_hunt_yara.process_ignorelist_regex, None)
 
     grr_hunt_yara:grr_hunt.GRRHuntYaraScanner = (
         grr_hunt.GRRHuntYaraScanner(self.test_state)

@@ -434,10 +434,14 @@ class GRRHuntYaraScanner(GRRHunt):
       name (Optional[str]): The module's runtime name.
       critical (bool): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
+
+    Raises:
+      DFTimewolfError: if both process_ignorelist and cmdline_ignorelist
+          are specified.
     """
     super().__init__(state, name=name, critical=critical)
-    self.process_ignorelist_regex = None
-    self.cmdline_ignorelist_regex = None
+    self.process_ignorelist_regex: Optional[str] = None
+    self.cmdline_ignorelist_regex: Optional[str] = None
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
@@ -452,8 +456,8 @@ class GRRHuntYaraScanner(GRRHunt):
             client_operating_systems: Optional[str],
             client_labels: Optional[str],
             client_limit: str,
-            process_ignorelist: Union[List[str], str],
-            cmdline_ignorelist: Union[List[str], str],
+            process_ignorelist: Union[List[str], str, None],
+            cmdline_ignorelist: Union[List[str], str, None],
             ) -> None:
     """Initializes a GRR Hunt Osquery collector.
 
@@ -477,6 +481,10 @@ class GRRHuntYaraScanner(GRRHunt):
       cmdline_ignorelist: A list of strings process command lines to ignore.
           Can also be passed in one string as a comma-separated list of
           cmdlines.
+
+    Raises:
+      DFTimewolfError: if both process_ignorelist and cmdline_ignorelist are
+          set
     """
     self.GrrSetUp(
         reason, grr_server_url, grr_username, grr_password, approvers=approvers,
