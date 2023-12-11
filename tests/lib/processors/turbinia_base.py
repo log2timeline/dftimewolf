@@ -65,7 +65,7 @@ class TurbiniaBaseTest(unittest.TestCase):
     self.assertEqual(
         self.turbinia_processor.turbinia_api, "http://localhost:8001")
     self.assertEqual(self.turbinia_processor.incident_id, "123456789")
-    self.assertEqual(self.turbinia_processor.sketch_id, "12345")
+    self.assertEqual(self.turbinia_processor.sketch_id, 12345)
     self.assertEqual(self.turbinia_processor.output_path, "/tmp")
     self.assertEqual(self.turbinia_processor.turbinia_recipe, None)
 
@@ -88,8 +88,29 @@ class TurbiniaBaseTest(unittest.TestCase):
         "zone": "us-central1-f",
     }
     request_id = self.turbinia_processor.TurbiniaStart(
-        evidence=evidence, yara_rules=YARA_RULE)
+        evidence=evidence,
+        threat_intel_indicators=['str1'],
+        yara_rules=[YARA_RULE]
+    )
+    expected_params = {
+      'evidence': {
+        'type': 'GoogleCloudDisk',
+        'disk_name': 'disk-1',
+        'project': 'project-1',
+        'zone': 'us-central1-f'
+        },
+      'request_options': {
+        'filter_pattern': ['str1'],
+        'jobs_allowlist': [],
+        'jobs_denylist': ['StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob', 'PsortJob'],
+        'reason': '',
+        'requester':
+        'tomchop',
+        'yara_rules': 'import "pe"\nimport "math"\nimport "hash"\n\nrule dummy { condition: false }'}
+    }
     self.assertEqual(request_id, "41483253079448e59685d88f37ab91f7")
+    # breakpoint()
+    mock_create_request.assert_called_once_with(expected_params)
 
   # pylint: disable=line-too-long
   @mock.patch(
