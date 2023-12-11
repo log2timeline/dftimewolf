@@ -73,8 +73,11 @@ class TurbiniaBaseTest(unittest.TestCase):
   @mock.patch(
       "turbinia_api_lib.api.turbinia_requests_api.TurbiniaRequestsApi.create_request_with_http_info"
   )
-  def testTurbiniaStart(self, mock_create_request):
+  # mock getpass.getuser
+  @mock.patch('getpass.getuser')
+  def testTurbiniaStart(self, mock_getuser, mock_create_request):
     """Tests the TurbiniaStart method."""
+    mock_getuser.return_value = 'test_runner'
     mock_create_request.return_value = {
         "request_id": "41483253079448e59685d88f37ab91f7"
     }
@@ -104,8 +107,7 @@ class TurbiniaBaseTest(unittest.TestCase):
         'jobs_allowlist': [],
         'jobs_denylist': ['StringsJob', 'BinaryExtractorJob', 'BulkExtractorJob', 'PhotorecJob', 'PsortJob'],
         'reason': '',
-        'requester':
-        'tomchop',
+        'requester': 'test_runner',
         'yara_rules': 'import "pe"\nimport "math"\nimport "hash"\n\nrule dummy { condition: false }'}
     }
     self.assertEqual(request_id, "41483253079448e59685d88f37ab91f7")
