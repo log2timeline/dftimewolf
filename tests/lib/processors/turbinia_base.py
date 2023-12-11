@@ -111,7 +111,6 @@ class TurbiniaBaseTest(unittest.TestCase):
         'yara_rules': 'import "pe"\nimport "math"\nimport "hash"\n\nrule dummy { condition: false }'}
     }
     self.assertEqual(request_id, "41483253079448e59685d88f37ab91f7")
-    # breakpoint()
     mock_create_request.assert_called_once_with(expected_params)
 
   # pylint: disable=line-too-long
