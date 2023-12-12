@@ -114,7 +114,7 @@ class WolfFormatter(logging.Formatter):
       str: The formatted message string.
     """
     if self.colorize:
-      message = record.getMessage()
+      message = record.msg
       loglevel_color = LEVEL_COLOR_MAP.get(record.levelname)
       if loglevel_color:
         message = loglevel_color + message + RESET_SEQ
@@ -124,6 +124,6 @@ class WolfFormatter(logging.Formatter):
       stack = [i.function for i in inspect.stack()]
       if 'Process' in stack:
         thread_name = threading.current_thread().name
-        message = record.getMessage()
+        message = record.msg
         record.msg = f"[{thread_name}] {message}"
     return super(WolfFormatter, self).format(record)
