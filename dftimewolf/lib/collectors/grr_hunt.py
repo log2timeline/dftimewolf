@@ -444,6 +444,7 @@ class GRRHuntYaraScanner(GRRHunt):
     super().__init__(state, name=name, critical=critical)
     self.process_ignorelist_regex: Optional[str] = None
     self.cmdline_ignorelist_regex: Optional[str] = None
+    self.dump_process_on_match: bool = False
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
