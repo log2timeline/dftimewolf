@@ -423,6 +423,8 @@ class GRRHuntYaraScanner(GRRHunt):
     "math.": "import \"math\"",
   }
 
+  FLOW_NAME = 'YaraProcessScan'
+
   def __init__(self,
                state: DFTimewolfState,
                name: Optional[str] = None,
@@ -442,6 +444,7 @@ class GRRHuntYaraScanner(GRRHunt):
     super().__init__(state, name=name, critical=critical)
     self.process_ignorelist_regex: Optional[str] = None
     self.cmdline_ignorelist_regex: Optional[str] = None
+    self.dump_process_on_match: bool = False
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
@@ -458,6 +461,7 @@ class GRRHuntYaraScanner(GRRHunt):
             client_limit: str,
             process_ignorelist: Union[List[str], str, None],
             cmdline_ignorelist: Union[List[str], str, None],
+            dump_process_on_match: bool,
             ) -> None:
     """Initializes a GRR Hunt Osquery collector.
 
@@ -476,11 +480,12 @@ class GRRHuntYaraScanner(GRRHunt):
       client_labels: a comma separated list of client labels.
       client_limit: The number of clients to run the hunt on. 0 for no limit.
       process_ignorelist: A list of strings process executable paths to ignore.
-          Can also be passed in one string as a comma-separated list of
+          Can also be passed in one string as a pipe-separated list of
           processes.
       cmdline_ignorelist: A list of strings process command lines to ignore.
-          Can also be passed in one string as a comma-separated list of
+          Can also be passed in one string as a pipe-separated list of
           cmdlines.
+      dump_process_on_match: Whether to dump the memory of any matching process.
 
     Raises:
       DFTimewolfError: if both process_ignorelist and cmdline_ignorelist are
@@ -489,6 +494,8 @@ class GRRHuntYaraScanner(GRRHunt):
     self.GrrSetUp(
         reason, grr_server_url, grr_username, grr_password, approvers=approvers,
         verify=verify, message_callback=self.PublishMessage)
+
+    self.dump_process_on_match = dump_process_on_match
 
     if process_ignorelist and cmdline_ignorelist:
       raise DFTimewolfError(
@@ -556,11 +563,11 @@ class GRRHuntYaraScanner(GRRHunt):
       ignore_grr_process=True,
       process_regex=self.process_ignorelist_regex,
       cmdline_regex=self.cmdline_ignorelist_regex,
-      dump_process_on_match=True,
+      dump_process_on_match=self.dump_process_on_match,
       process_dump_size_limit= 256 * 1024 * 1024,
     )
 
-    self._CreateAndStartHunt('YaraProcessScan', flow_args)
+    self._CreateAndStartHunt(self.FLOW_NAME, flow_args)
 
 
 
