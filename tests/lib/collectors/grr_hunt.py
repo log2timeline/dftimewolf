@@ -362,6 +362,7 @@ class GRRHuntYara(unittest.TestCase):
         client_limit='999',
         process_ignorelist=['\\.exe', 'ignore1'],
         cmdline_ignorelist=None,
+        dump_process_on_match=False
     )
 
   def testInitialization(self):
@@ -425,7 +426,7 @@ class GRRHuntYara(unittest.TestCase):
           ignore_grr_process=True,
           process_regex=r"(?i)^(?!.*(\.exe|ignore1)).*",
           cmdline_regex=None,
-          dump_process_on_match=True,
+          dump_process_on_match=False,
           process_dump_size_limit= 268_435_456,
       ),
       hunt_runner_args=expected_runner_args
@@ -454,6 +455,7 @@ class GRRHuntYara(unittest.TestCase):
         client_limit='999',
         process_ignorelist=['\\.exe', 'onlyprocesses'],
         cmdline_ignorelist=None,
+        dump_process_on_match=False
     )
 
     self.assertEqual(grr_hunt_yara.cmdline_ignorelist_regex, None)
@@ -478,6 +480,7 @@ class GRRHuntYara(unittest.TestCase):
         client_limit='999',
         process_ignorelist=None,
         cmdline_ignorelist=['my cmd --line', 'onlycmdlines'],
+        dump_process_on_match=False
     )
 
     self.assertEqual(
@@ -503,6 +506,7 @@ class GRRHuntYara(unittest.TestCase):
           client_limit='999',
           process_ignorelist=['explorer.exe'],
           cmdline_ignorelist=['my cmd --line', 'onlycmdlines'],
+          dump_process_on_match=False,
       )
     self.assertEqual(
         error.exception.message,
