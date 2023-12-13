@@ -480,10 +480,10 @@ class GRRHuntYaraScanner(GRRHunt):
       client_labels: a comma separated list of client labels.
       client_limit: The number of clients to run the hunt on. 0 for no limit.
       process_ignorelist: A list of strings process executable paths to ignore.
-          Can also be passed in one string as a comma-separated list of
+          Can also be passed in one string as a pipe-separated list of
           processes.
       cmdline_ignorelist: A list of strings process command lines to ignore.
-          Can also be passed in one string as a comma-separated list of
+          Can also be passed in one string as a pipe-separated list of
           cmdlines.
       dump_process_on_match: Whether to dump the memory of any matching process.
 
