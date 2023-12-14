@@ -400,7 +400,11 @@ def SignalHandler(*unused_argvs: Any) -> None:
 
 
 def SetupLogging(stdout_log: bool = False) -> None:
-  """Sets up a logging handler with dftimewolf's custom formatter."""
+  """Sets up a logging handler with dftimewolf's custom formatter.
+
+  Args:
+    stdout_log (bool): Whether to log to stdout as well as a file.
+  """
   # Add a custom level name
   logging.addLevelName(logging_utils.SUCCESS, 'SUCCESS')
 
@@ -552,11 +556,9 @@ def Main() -> int:
   Returns:
     int: 0 on success, 1 otherwise.
   """
-  no_curses = any([bool(os.environ.get('DFTIMEWOLF_NO_CURSES')),
-                   not sys.stdout.isatty(),
-                   not sys.stdin.isatty()])
-  SetupLogging(no_curses)
-  if any([no_curses, '-h' in sys.argv, '--help' in sys.argv]):
+  enable_curses = bool(os.environ.get('DFTIMEWOLF_CURSES'))
+  SetupLogging(stdout_log=not enable_curses)
+  if any([not enable_curses, '-h' in sys.argv, '--help' in sys.argv]):
     return RunTool()
 
   cursesdisplaymanager = CursesDisplayManager()

@@ -8,8 +8,6 @@ services:
       context: ../../
       dockerfile: ./docker/release/Dockerfile
     platform: linux/amd64
-    environment:
-      - DFTIMEWOLF_NO_CURSES=1
     volumes:
       - ${HOME}/.dftimewolfrc:/root/.dftimewolfrc
     entrypoint:
