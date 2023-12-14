@@ -557,7 +557,7 @@ def Main() -> int:
     int: 0 on success, 1 otherwise.
   """
   enable_curses = bool(os.environ.get('DFTIMEWOLF_CURSES'))
-  SetupLogging(stdout_log=(not enable_curses))
+  SetupLogging(stdout_log=not enable_curses)
   if any([not enable_curses, '-h' in sys.argv, '--help' in sys.argv]):
     return RunTool()
 
