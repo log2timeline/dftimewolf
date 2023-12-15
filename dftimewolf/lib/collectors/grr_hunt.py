@@ -524,10 +524,11 @@ class GRRHuntYaraScanner(GRRHunt):
         not re.compile(self.cmdline_ignorelist_regex):
       self.ModuleError('Invalid regex for cmdline_ignorelist', critical=True)
 
-    if set(client_operating_systems.split(',')) - {'win', 'osx', 'linux'}:
-      self.ModuleError(
-          'client_operating_systems must be one or more of "win", "osx", '
-          '"linux"', critical=True)
+    if client_operating_systems is not None:
+      if set(client_operating_systems.split(',')) - {'win', 'osx', 'linux'}:
+        self.ModuleError(
+            'client_operating_systems must be one or more of "win", "osx", '
+            '"linux"', critical=True)
 
     extra_hunt_runner_args: Dict[str, Union[str, int]] = {
         'client_limit': int(client_limit),
