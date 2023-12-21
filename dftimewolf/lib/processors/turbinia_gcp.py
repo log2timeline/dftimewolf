@@ -150,7 +150,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
 
     self.TurbiniaSetUp(
         project, turbinia_auth, turbinia_recipe, turbinia_zone, turbinia_api,
-        incident_id, sketch_id)
+        incident_id, int(sketch_id) if sketch_id else 0)
 
   def PreProcess(self) -> None:
     """Ensures containers from previous modules are processed.
