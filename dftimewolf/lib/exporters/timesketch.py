@@ -82,7 +82,7 @@ class TimesketchExporter(module.ThreadAwareModule):
           in the Timesketch server or not.
     """
     self.wait_for_timelines = wait_for_timelines
-
+    breakpoint()
     if token_password:
       self.logger.info('Using token password from recipe config.')
       self.timesketch_api = timesketch_utils.GetApiClient(
