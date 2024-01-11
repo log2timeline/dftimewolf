@@ -83,13 +83,17 @@ class TimesketchExporter(module.ThreadAwareModule):
     """
     self.wait_for_timelines = wait_for_timelines
     breakpoint()
-    if token_password:
+    if endpoint and username and password:
+      self.timesketch_api = ts_client.TimesketchApi(
+          endpoint, username, password)
+    elif token_password:
       self.logger.info('Using token password from recipe config.')
       self.timesketch_api = timesketch_utils.GetApiClient(
           self.state, token_password=token_password)
-    elif endpoint and username and password:
-      self.timesketch_api = ts_client.TimesketchApi(
-          endpoint, username, password)
+    else:
+      self.logger.info(
+          'No username / password or token password specified, getting config')
+      self.timesketch_api = timesketch_utils.GetApiClient(self.state)
 
     if not self.timesketch_api:
       self.ModuleError(
