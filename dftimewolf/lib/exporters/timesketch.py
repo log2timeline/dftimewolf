@@ -82,7 +82,6 @@ class TimesketchExporter(module.ThreadAwareModule):
           in the Timesketch server or not.
     """
     self.wait_for_timelines = wait_for_timelines
-    breakpoint()
     if endpoint and username and password:
       self.timesketch_api = ts_client.TimesketchApi(
           endpoint, username, password)
@@ -92,7 +91,7 @@ class TimesketchExporter(module.ThreadAwareModule):
           self.state, token_password=token_password)
     else:
       self.logger.info(
-          'No username / password or token password specified, getting config')
+          'No username / password or token password specified, creating config')
       self.timesketch_api = timesketch_utils.GetApiClient(self.state)
 
     if not self.timesketch_api:
