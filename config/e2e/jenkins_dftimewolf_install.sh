@@ -79,7 +79,6 @@ fi
 
 if [[ "$*" =~ "include-plaso" ]]; then
     echo "Installing plaso"
-    sudo apt-get -qq -y install plaso-tools
     docker pull log2timeline/plaso:latest
 fi
 
