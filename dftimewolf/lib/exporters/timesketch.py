@@ -153,6 +153,11 @@ class TimesketchExporter(module.ThreadAwareModule):
       timesketch_api_client.Sketch: An instance of the sketch object.
     """
     if incident_id:
+      if len(incident_id) > 230:
+        self.logger.warning(
+          'Provided "incident_id" is > 230 characters. It will be truncated!'
+          )
+        incident_id = incident_id[:227]+'...'
       sketch_name = 'Sketch for incident ID: ' + incident_id
     else:
       sketch_name = 'Untitled sketch'
