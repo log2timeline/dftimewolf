@@ -3,6 +3,7 @@
 from typing import Any, Dict, Optional, TYPE_CHECKING, Type, Union, Set
 
 import magic
+import pandas as pd
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers, interface
@@ -40,9 +41,16 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
 
   def _BuildContainer(
       self, path: str, container_name: str
-  ) -> Optional[Union[containers.File, containers.ThreatIntelligence]]:
+  ) -> Optional[
+          Union[
+            containers.DataFrame,
+            containers.File,
+            containers.ThreatIntelligence
+          ]
+        ]:
     """Builds a container from a path."""
-    container: Optional[Union[containers.File,
+    container: Optional[Union[containers.DataFrame,
+                              containers.File,
                               containers.ThreatIntelligence]] = None
     if path.endswith('BinaryExtractorTask.tar.gz'):
       container = containers.ThreatIntelligence(
@@ -52,6 +60,11 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
           name=container_name, indicator=None, path=path)
     elif path.endswith('.plaso'):
       container = containers.File(name=container_name, path=path)
+    elif path.endswith('fraken_stdout.log'):
+      container = containers.DataFrame(
+          name='Yara results as produced by Fraken',
+          data_frame=pd.read_json(path),
+          description='Yara results as produced by Fraken')
     elif magic.from_file(path, mime=True).startswith('text'):
       container = containers.File(name=container_name, path=path)
     else:
