@@ -184,6 +184,7 @@ class TurbiniaProcessorBase(module.BaseModule):
       A local path to Turbinia task output files or None if files
         could not be downloaded.
     """
+    HTTP_TIMEOUT = (30, 600) # Connection, Read timeout in seconds.
     result = None
     self.RefreshClientCredentials()
     api_instance = turbinia_request_results_api.TurbiniaRequestResultsApi(
@@ -191,7 +192,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     try:
       task_id = task_data.get('id')
       api_response = api_instance.get_task_output_with_http_info(
-          task_id, _preload_content=False)  # type: ignore
+          task_id, _preload_content=False, _request_timeout=HTTP_TIMEOUT)  # type: ignore
       filename = f'{task_id}-'
 
       # Create a temporary file to write the response to.
