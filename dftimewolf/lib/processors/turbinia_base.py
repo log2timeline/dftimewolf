@@ -192,10 +192,9 @@ class TurbiniaProcessorBase(module.BaseModule):
         self.client)
     try:
       task_id = task_data.get('id')
+      # pylint: disable=line-too-long
       api_response = api_instance.get_task_output_with_http_info(
-          task_id,
-          _preload_content=False,
-          _request_timeout=self.HTTP_TIMEOUT)  # type: ignore
+          task_id,  _preload_content=False, _request_timeout=self.HTTP_TIMEOUT)  # type: ignore
       filename = f'{task_id}-'
 
       # Create a temporary file to write the response to.
