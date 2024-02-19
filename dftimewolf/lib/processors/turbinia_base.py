@@ -219,7 +219,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     return result
 
   def GetCredentials(self, credentials_path: str,
-                     client_secrets_path: str) -> Optional[Any]:
+                     client_secrets_path: str) -> Optional[Credentials]:
     """Authenticates the user using Google OAuth services."""
     scopes = ['openid', 'https://www.googleapis.com/auth/userinfo.email']
     credentials = None
