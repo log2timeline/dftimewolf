@@ -393,6 +393,13 @@ Scanned rules:
 Flow ID: {3:s}
   """
 
+  YARA_MODULES = {
+    "hash.": "import \"hash\"",
+    "pe.": "import \"pe\"",
+    "elf.": "import \"elf\"",
+    "math.": "import \"math\"",
+  }
+
   # pylint: disable=arguments-differ
   def __init__(self,
                state: DFTimewolfState,
@@ -443,13 +450,23 @@ Flow ID: {3:s}
     This is so we only launch one GRR Flow per host, instead of N Flows for N
     rules that were stored upstream.
     """
-    yara_rules = self.GetContainers(containers.YaraRule)
-    if not yara_rules:
+    yara_containers = self.GetContainers(containers.YaraRule)
+    if not yara_containers:
       self.logger.warning('No Yara rules found.')
       return
-    self.rule_text = '\n'.join([r.rule_text for r in yara_rules])
-    self.rule_count = len(yara_rules)
-    self.rule_names = ', '.join([r.name for r in yara_rules])
+
+    selected_headers = set()
+    for rule in yara_containers:
+      for prefix, header in self.YARA_MODULES.items():
+        condition = rule.rule_text.split("condition:")[1]
+        if prefix in condition:
+          selected_headers.add(header)
+
+    concatenated_rules = '\n\n'.join([r.rule_text for r in yara_containers])
+    final_rule_text = '\n'.join(selected_headers) + '\n\n' + concatenated_rules
+    self.rule_text = final_rule_text
+    self.rule_count = len(yara_containers)
+    self.rule_names = ', '.join([r.name for r in yara_containers])
     self._grouping = f'# GRR Yara Scan - {datetime.datetime.now()}'
 
   def Process(self, container: containers.Host

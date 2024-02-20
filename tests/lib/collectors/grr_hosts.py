@@ -969,7 +969,8 @@ class GRRYaraScannerTest(unittest.TestCase):
     self.grr_yara_scanner.StoreContainer(
       containers.YaraRule(
         name="test_rule",
-        rule_text="rule test_rule { condition: true }")
+        rule_text=('rule test_rule { condition: true and '
+                   'hash.sha256("") != "" }'))
     )
 
   @mock.patch('grr_api_client.api.InitHttp')
@@ -1078,6 +1079,37 @@ class GRRYaraScannerTest(unittest.TestCase):
         }
       ]
     )
+
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow')
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRROsqueryCollector.'
+              '_DownloadResults')
+  @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._LaunchFlow')
+  @mock.patch('grr_api_client.flow.FlowBase.Get')
+  @mock.patch('grr_api_client.api.InitHttp')
+  def testPreProcess(
+    self,
+    mock_InitHttp,
+    mock_Get,
+    unused_mock_LaunchFlow,
+    unused_mock_DownloadResults,
+    unused_mock_AwaitFlow):
+    self.grr_yara_scanner.SetUp(
+        reason='Random reason',
+        hostnames='C.0000000000000001',
+        process_regex='.*',
+        grr_server_url='http://fake/endpoint',
+        grr_username='user',
+        grr_password='password',
+        approvers='approver1,approver2',
+        verify=False,
+        skip_offline_clients=False
+    )
+    self.grr_yara_scanner.PreProcess()
+    self.assertEqual(
+      self.grr_yara_scanner.rule_text,
+      'import "hash"\n\nrule test_rule { condition: true and'
+      ' hash.sha256("") != "" }')
+
 
 if __name__ == '__main__':
   unittest.main()
