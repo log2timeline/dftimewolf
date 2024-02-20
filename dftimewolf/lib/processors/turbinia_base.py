@@ -272,6 +272,8 @@ class TurbiniaProcessorBase(module.BaseModule):
     """Refreshes credentials and initializes new API client."""
     refresh = False
     if self.credentials and self.credentials.expired:
+      self.PublishMessage(
+          "Turbinia credentials invalid or expired. Re-authenticating...")
       self.credentials = self.GetCredentials(
           self.credentials_path, self.client_secrets_path)
       self.client = self.InitializeTurbiniaApiClient(self.credentials)
@@ -397,6 +399,11 @@ class TurbiniaProcessorBase(module.BaseModule):
 
     # Send the request to the API server.
     try:
+      # Refresh token if needed
+      if self.RefreshClientCredentials():
+        self.requests_api_instance = (
+            turbinia_requests_api.TurbiniaRequestsApi(self.client)
+        )
       api_response = self.requests_api_instance.create_request_with_http_info(
         request) # type: ignore
       decoded_response = self._decode_api_response(api_response)
@@ -444,6 +451,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     while status == 'running' and retries < 3:
       time.sleep(interval)
       try:
+        # Refresh token if needed
         if self.RefreshClientCredentials():
           self.requests_api_instance = (
               turbinia_requests_api.TurbiniaRequestsApi(self.client)
@@ -476,12 +484,14 @@ class TurbiniaProcessorBase(module.BaseModule):
               processed_paths.add(path)
               yield task, path
 
-      except turbinia_api_lib.exceptions.ApiException as exception:
+      except (turbinia_api_lib.exceptions.ApiException,
+          turbinia_api_lib.exceptions.UnauthorizedException) as exception:
         retries += 1
         self.logger.warning(f'Retrying after exception: {exception.body}')
 
   def TurbiniaFinishReport(self, request_id: str) -> str:
     """This method generates a report for a Turbinia request."""
+    # Refresh token if needed
     if self.RefreshClientCredentials():
       self.requests_api_instance = turbinia_requests_api.TurbiniaRequestsApi(
           self.client
