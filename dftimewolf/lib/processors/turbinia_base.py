@@ -54,7 +54,7 @@ class TurbiniaProcessorBase(module.BaseModule):
   """
 
   DEFAULT_YARA_MODULES = 'import "pe"\nimport "math"\nimport "hash"\n\n'
-  HTTP_TIMEOUT = (30,600) # Connection, Read timeout in seconds.
+  HTTP_TIMEOUT = (30, 600) # Connection, Read timeout in seconds.
 
   def __init__(
       self,
