@@ -1091,11 +1091,12 @@ class GRRYaraScannerTest(unittest.TestCase):
   @mock.patch('grr_api_client.api.InitHttp')
   def testPreProcess(
     self,
-    mock_InitHttp,
-    mock_Get,
+    unused_mock_InitHttp,
+    unused_mock_Get,
     unused_mock_LaunchFlow,
     unused_mock_DownloadResults,
     unused_mock_AwaitFlow):
+    """Tests that the prexes are appended to a Yara rule that uses modules."""
     self.grr_yara_scanner.SetUp(
         reason='Random reason',
         hostnames='C.0000000000000001',
