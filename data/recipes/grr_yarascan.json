@@ -18,7 +18,8 @@
         "args": {
           "hostnames": "@hostnames",
           "reason": "@reason",
-          "process_regex": "(?i)^(?!fleetspeak\\.exe|gagent\\.exe).*",
+          "process_ignorelist": "fleetspeak\\.exe|gagent\\.exe",
+          "cmdline_ignorelist": null,
           "grr_server_url": "@grr_server_url",
           "grr_username": "@grr_username",
           "grr_password": "@grr_password",

@@ -407,7 +407,8 @@ Flow ID: {3:s}
                critical: bool=False) -> None:
     super(GRRYaraScanner, self).__init__(
           state, name=name, critical=critical)
-    self.process_regex = ''
+    self.process_ignorelist_regex = ''
+    self.cmdline_ignorelist_regex = ''
     self.rule_text = ''
     self.rule_count = 0
     self._grouping = ''
@@ -416,7 +417,8 @@ Flow ID: {3:s}
   def SetUp(self,
             reason: str,
             hostnames: str,
-            process_regex: str,
+            process_ignorelist: str,
+            cmdline_ignorelist: str,
             grr_server_url: str,
             grr_username: str,
             grr_password: str,
@@ -436,13 +438,39 @@ Flow ID: {3:s}
         self.StoreContainer(containers.Host(hostname=hostname))
     self.state.DedupeContainers(containers.Host)
 
-    self.process_regex = process_regex
-    if self.process_regex:
+    if process_ignorelist and cmdline_ignorelist:
+      raise DFTimewolfError(
+          'Only one of process_ignorelist or cmd_ignorelist can be specified')
+
+    if process_ignorelist:
+      if isinstance(process_ignorelist, list):
+        process_joined = "|".join(process_ignorelist)
+      elif isinstance(process_ignorelist, str):
+        process_joined = process_ignorelist
+
+      self.process_ignorelist_regex = r"(?i)^(?!.*(" + process_joined + r")).*"
+
+    if cmdline_ignorelist:
+      if isinstance(cmdline_ignorelist, list):
+        cmdline_joined = "|".join(cmdline_ignorelist)
+      elif isinstance(cmdline_ignorelist, str):
+        cmdline_joined = cmdline_ignorelist
+
+      self.cmdline_ignorelist_regex = r"(?i)^(?!.*(" + cmdline_joined + r")).*"
+
+    if self.process_ignorelist_regex:
       try:
-        re.compile(self.process_regex)
-      except re.error as error:
+        re.compile(self.process_ignorelist_regex)
+      except re.error as exception:
         self.ModuleError(
-            f'Invalid process_regex: {error}', critical=True)
+          f'Invalid regex for process_ignorelist: {exception}', critical=True)
+
+    if self.cmdline_ignorelist_regex:
+      try:
+        re.compile(self.cmdline_ignorelist_regex)
+      except re.error as exception:
+        self.ModuleError(
+          f'Invalid regex for cmdline_ignorelist: {exception}', critical=True)
 
   def PreProcess(self) -> None:
     """Concatenates Yara rules into one stacked rule.
@@ -484,7 +512,8 @@ Flow ID: {3:s}
       flow_args = flows_pb2.YaraProcessScanRequest(
         yara_signature=self.rule_text,
         ignore_grr_process=True,
-        process_regex=self.process_regex,
+        process_regex=self.process_ignorelist_regex,
+        cmdline_regex=self.cmdline_ignorelist_regex,
         dump_process_on_match=False
       )
 

@@ -979,7 +979,8 @@ class GRRYaraScannerTest(unittest.TestCase):
     self.grr_yara_scanner.SetUp(
         reason='Random reason',
         hostnames='C.0000000000000001',
-        process_regex='.*',
+        process_ignorelist='.*',
+        cmdline_ignorelist=None,
         grr_server_url='http://fake/endpoint',
         grr_username='user',
         grr_password='password',
@@ -996,7 +997,8 @@ class GRRYaraScannerTest(unittest.TestCase):
       self.grr_yara_scanner.SetUp(
           reason='Random reason',
           hostnames='C.0000000000000001',
-          process_regex='(((((((',
+          process_ignorelist='(((((((',
+          cmdline_ignorelist=None,
           grr_server_url='http://fake/endpoint',
           grr_username='user',
           grr_password='password',
@@ -1005,8 +1007,8 @@ class GRRYaraScannerTest(unittest.TestCase):
           skip_offline_clients=False
       )
     self.assertEqual(
-        'Invalid process_regex: missing ), unterminated subpattern at '
-        'position 6',
+        'Invalid regex for process_ignorelist: missing ), unterminated '
+        'subpattern at position 15',
         error.exception.message)
 
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow')
@@ -1033,7 +1035,8 @@ class GRRYaraScannerTest(unittest.TestCase):
     self.grr_yara_scanner.SetUp(
         reason='Random reason',
         hostnames='C.0000000000000001',
-        process_regex='.*',
+        process_ignorelist='.*',
+        cmdline_ignorelist=None,
         grr_server_url='http://fake/endpoint',
         grr_username='user',
         grr_password='password',
@@ -1096,7 +1099,8 @@ class GRRYaraScannerTest(unittest.TestCase):
     self.grr_yara_scanner.SetUp(
         reason='Random reason',
         hostnames='C.0000000000000001',
-        process_regex='.*',
+        process_ignorelist='.*',
+        cmdline_ignorelist=None,
         grr_server_url='http://fake/endpoint',
         grr_username='user',
         grr_password='password',
