@@ -517,12 +517,19 @@ class GRRHuntYaraScanner(GRRHunt):
 
       self.cmdline_ignorelist_regex = r"(?i)^(?!.*(" + cmdline_joined + r")).*"
 
-    if self.process_ignorelist_regex and \
-        not re.compile(self.process_ignorelist_regex):
-      self.ModuleError('Invalid regex for process_ignorelist', critical=True)
-    if self.cmdline_ignorelist_regex and \
-        not re.compile(self.cmdline_ignorelist_regex):
-      self.ModuleError('Invalid regex for cmdline_ignorelist', critical=True)
+    if self.process_ignorelist_regex:
+      try:
+        re.compile(self.process_ignorelist_regex)
+      except re.error as exception:
+        self.ModuleError(
+          f'Invalid regex for process_ignorelist: {exception}', critical=True)
+
+    if self.cmdline_ignorelist_regex:
+      try:
+        re.compile(self.cmdline_ignorelist_regex)
+      except re.error as exception:
+        self.ModuleError(
+          f'Invalid regex for cmdline_ignorelist: {exception}', critical=True)
 
     if client_operating_systems is not None:
       if set(client_operating_systems.split(',')) - {'win', 'osx', 'linux'}:
