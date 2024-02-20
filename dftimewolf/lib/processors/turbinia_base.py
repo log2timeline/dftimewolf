@@ -476,7 +476,8 @@ class TurbiniaProcessorBase(module.BaseModule):
               processed_paths.add(path)
               yield task, path
 
-      except turbinia_api_lib.exceptions.ApiException as exception:
+      except (turbinia_api_lib.exceptions.ApiException,
+          turbinia_api_lib.exceptions.UnauthorizedException) as exception:
         retries += 1
         self.logger.warning(f'Retrying after exception: {exception.body}')
 
