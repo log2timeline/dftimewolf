@@ -6,6 +6,7 @@ import os
 import tarfile
 import tempfile
 import time
+import traceback
 import math
 
 from typing import Dict, List, Optional, Tuple, Any, Union, Iterator
@@ -53,6 +54,7 @@ class TurbiniaProcessorBase(module.BaseModule):
   """
 
   DEFAULT_YARA_MODULES = 'import "pe"\nimport "math"\nimport "hash"\n\n'
+  HTTP_TIMEOUT = (30, 600) # Connection, Read timeout in seconds.
 
   def __init__(
       self,
@@ -190,8 +192,9 @@ class TurbiniaProcessorBase(module.BaseModule):
         self.client)
     try:
       task_id = task_data.get('id')
+      # pylint: disable=line-too-long
       api_response = api_instance.get_task_output_with_http_info(
-          task_id, _preload_content=False)  # type: ignore
+          task_id,  _preload_content=False, _request_timeout=self.HTTP_TIMEOUT)  # type: ignore
       filename = f'{task_id}-'
 
       # Create a temporary file to write the response to.
@@ -211,8 +214,9 @@ class TurbiniaProcessorBase(module.BaseModule):
         self.PublishMessage(
             f'Extracted output file to {result} for task {task_id}')
     except turbinia_api_lib.exceptions.ApiException as exception:
+      trace = traceback.format_exc()
       self.ModuleError(
-          f'Unable to download task data: {exception}', critical=False)
+          f'Unable to download task data: {exception} {trace}', critical=False)
     except OSError as exception:
       self.ModuleError(f'Unable to write to file: {exception}', critical=False)
 
