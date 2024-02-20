@@ -414,7 +414,7 @@ Flow ID: {3:s}
     self._grouping = ''
     self.rule_names = ''
 
-  # pylint: too-many-arguments
+  # pylint: disable=too-many-arguments
   def SetUp(self,
             reason: str,
             hostnames: str,
