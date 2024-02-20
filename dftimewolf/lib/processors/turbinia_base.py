@@ -272,7 +272,8 @@ class TurbiniaProcessorBase(module.BaseModule):
     """Refreshes credentials and initializes new API client."""
     refresh = False
     if self.credentials and self.credentials.expired:
-      self.PublishMessage("Credentials invalid or expired. Re-authenticating...")
+      self.PublishMessage(
+          "Turbinia credentials invalid or expired. Re-authenticating...")
       self.credentials = self.GetCredentials(
           self.credentials_path, self.client_secrets_path)
       self.client = self.InitializeTurbiniaApiClient(self.credentials)
