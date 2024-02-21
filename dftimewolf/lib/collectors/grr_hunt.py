@@ -463,7 +463,7 @@ class GRRHuntYaraScanner(GRRHunt):
             cmdline_ignorelist: Union[List[str], str, None],
             dump_process_on_match: bool,
             ) -> None:
-    """Initializes a GRR Hunt Osquery collector.
+    """Initializes a GRR Yara Hunt collector.
 
     Args:
       reason: justification for GRR access.

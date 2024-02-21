@@ -400,6 +400,8 @@ Flow ID: {3:s}
     "math.": "import \"math\"",
   }
 
+  FLOW_NAME = 'YaraProcessScan'
+
   # pylint: disable=arguments-differ
   def __init__(self,
                state: DFTimewolfState,
@@ -413,6 +415,7 @@ Flow ID: {3:s}
     self.rule_count = 0
     self._grouping = ''
     self.rule_names = ''
+    self.dump_process_on_match = False
 
   # pylint: disable=too-many-arguments
   def SetUp(self,
@@ -420,6 +423,7 @@ Flow ID: {3:s}
             hostnames: str,
             process_ignorelist: str,
             cmdline_ignorelist: str,
+            dump_process_on_match: bool,
             grr_server_url: str,
             grr_username: str,
             grr_password: str,
@@ -473,6 +477,8 @@ Flow ID: {3:s}
         self.ModuleError(
           f'Invalid regex for cmdline_ignorelist: {exception}', critical=True)
 
+    self.dump_process_on_match = dump_process_on_match
+
   def PreProcess(self) -> None:
     """Concatenates Yara rules into one stacked rule.
 
@@ -515,10 +521,10 @@ Flow ID: {3:s}
         ignore_grr_process=True,
         process_regex=self.process_ignorelist_regex,
         cmdline_regex=self.cmdline_ignorelist_regex,
-        dump_process_on_match=False
+        dump_process_on_match=self.dump_process_on_match,
       )
 
-      flow_id = self._LaunchFlow(client, 'YaraProcessScan', flow_args)
+      flow_id = self._LaunchFlow(client, self.FLOW_NAME, flow_args)
       self.logger.info(
         f'Launched flow {flow_id} on {client.client_id} ({grr_hostname})')
 
