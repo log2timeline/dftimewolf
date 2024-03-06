@@ -43,7 +43,7 @@ class LLMProcessorBase(module.BaseModule):
     self.logger = logger
     self.model_name = None
     self.task = None
-    self.columns_to_processs = None
+    self.columns_to_process = None
 
   # pylint: disable=arguments-differ
   def SetUp(self, task: str, model_name: str, columns_to_process: str) -> None:
