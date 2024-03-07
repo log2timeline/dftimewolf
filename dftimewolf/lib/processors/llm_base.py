@@ -1,5 +1,5 @@
 """Base class for LLM provider interactions."""
-from typing import Optional
+from typing import FrozenSet, List, Optional
 
 import pandas as pd
 
@@ -19,9 +19,9 @@ class LLMProcessorBase(module.BaseModule):
     model_name (str): the name of the model to use.
     task (str): the (L)LM task or pipeline to process.
   """
-  SUPPORTED_MODELS = frozenset([])
+  SUPPORTED_MODELS: FrozenSet[str] = frozenset([])
 
-  SUPPORTED_TASKS = frozenset([])
+  SUPPORTED_TASKS: FrozenSet[str] = frozenset([])
 
   def __init__(
       self,
@@ -40,10 +40,10 @@ class LLMProcessorBase(module.BaseModule):
           the entire recipe to fail if the module encounters an error.
     """
     super().__init__(state=state, name=name, critical=critical)
-    self.logger = logger
-    self.model_name = None
-    self.task = None
-    self.columns_to_process = None
+    self.logger: logging_utils.WolfLogger = logger
+    self.model_name: Optional[str] = None
+    self.task: Optional[str] = None
+    self.columns_to_process: List[str] = []
 
   # pylint: disable=arguments-differ
   def SetUp(self, task: str, model_name: str, columns_to_process: str) -> None:

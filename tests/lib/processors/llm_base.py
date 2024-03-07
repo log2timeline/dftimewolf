@@ -27,7 +27,7 @@ class LLMProcessorBaseTest(unittest.TestCase):
         state=self.test_state, logger=self.logger)
     self.assertIsNotNone(llm_base_processor)
     self.assertIsNone(llm_base_processor.model_name)
-    self.assertIsNone(llm_base_processor.columns_to_process)
+    self.assertEqual(llm_base_processor.columns_to_process, [])
     self.assertIsNone(llm_base_processor.task)
     self.assertEqual(llm_base_processor.logger, self.logger)
 
