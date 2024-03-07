@@ -6,8 +6,7 @@ import pandas as pd
 
 from dftimewolf import config
 from dftimewolf.lib.containers import containers
-from dftimewolf.lib import module
-from dftimewolf.lib import state
+from dftimewolf.lib import state_lib
 from dftimewolf.lib import errors
 from dftimewolf.lib.processors import llm_base
 from dftimewolf.lib.logging_utils import WolfLogger
@@ -18,7 +17,7 @@ class LLMProcessorBaseTest(unittest.TestCase):
   def setUp(self):
     """Tests that the processor can be initialized."""
     #self.logger = WolfLogger('test')
-    self.test_state = state.DFTimewolfState(config.Config)
+    self.test_state = state_lib.DFTimewolfState(config.Config)
     self.logger = WolfLogger(name='test logger')
 
   def testInitialization(self):
@@ -37,7 +36,7 @@ class LLMProcessorBaseTest(unittest.TestCase):
         state=self.test_state, logger=self.logger)
     with self.assertRaisesRegex(
         errors.DFTimewolfError,
-        r'is not supported by the LLM processor') as error:
+        r'is not supported by the LLM processor'):
       llm_base_processor.SetUp(
           'unknown', model_name='unknown', columns_to_process='a,b,c')
 

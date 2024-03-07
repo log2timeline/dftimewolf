@@ -5,7 +5,7 @@ import pandas as pd
 
 from dftimewolf.lib import logging_utils
 from dftimewolf.lib import module
-from dftimewolf.lib import state
+from dftimewolf.lib import state_lib
 from dftimewolf.lib.containers import containers
 
 
@@ -25,7 +25,7 @@ class LLMProcessorBase(module.BaseModule):
 
   def __init__(
       self,
-      state: state.DFTimewolfState,
+      state: state_lib.DFTimewolfState,
       logger: logging_utils.WolfLogger,
       name: Optional[str] = None,
       critical: bool = False,
@@ -68,7 +68,7 @@ class LLMProcessorBase(module.BaseModule):
     self.model_name = model_name
 
     self.columns_to_process = [x for x in columns_to_process.split(',') if x]
-    if not len(self.columns_to_process):
+    if len(self.columns_to_process) == 0:
       self.ModuleError('No columns to process', critical=True)
 
   def _ProcessDataFrame(self, dataframe: pd.DataFrame) -> None:
@@ -81,7 +81,7 @@ class LLMProcessorBase(module.BaseModule):
       dataframe: the Pandas dataframe to process.
 
     Raises:
-      ValueError if the dataframe does not contain the specified columns.
+      ValueError: if the dataframe does not contain the specified columns.
     """
     if not set(dataframe.columns).issuperset(self.columns_to_process):
       raise ValueError(
