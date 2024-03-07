@@ -6,7 +6,7 @@ import pandas as pd
 
 from dftimewolf import config
 from dftimewolf.lib.containers import containers
-from dftimewolf.lib import state_lib
+from dftimewolf.lib import state as state_lib
 from dftimewolf.lib import errors
 from dftimewolf.lib.processors import llm_base
 from dftimewolf.lib.logging_utils import WolfLogger
