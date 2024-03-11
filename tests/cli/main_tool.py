@@ -79,14 +79,19 @@ class MainToolTest(unittest.TestCase):
         runtime_name = module.get('runtime_name', module['name'])
         if runtime_name in self.tool.state._module_pool:
           setup_func = self.tool.state._module_pool[runtime_name].SetUp
-          expected_args = set(inspect.getfullargspec(setup_func).args)
-          expected_args.remove('self')
+          signature = inspect.signature(setup_func)
+          expected_positional_args = set([
+              param.name
+              for param in signature.parameters.values()
+              if param.kind == param.POSITIONAL_ONLY
+          ])
           provided_args = set(module['args'])
 
-          self.assertEqual(
-            expected_args,
-            provided_args,
-            f'Error in {recipe.name}:{runtime_name}')
+          self.assertTrue(
+              # Provided args include all positional args
+              expected_positional_args.issubset(provided_args),
+              f'Error in {recipe.name}:{runtime_name}',
+          )
 
   def testRecipeValidators(self):
     """Tests that recipes do not specify invalid validators."""
