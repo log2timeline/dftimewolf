@@ -80,11 +80,11 @@ class MainToolTest(unittest.TestCase):
         if runtime_name in self.tool.state._module_pool:
           setup_func = self.tool.state._module_pool[runtime_name].SetUp
           signature = inspect.signature(setup_func)
-          expected_positional_args = set([
+          expected_positional_args = {
               param.name
               for param in signature.parameters.values()
               if param.kind == param.POSITIONAL_ONLY
-          ])
+          }
           provided_args = set(module['args'])
 
           self.assertTrue(
