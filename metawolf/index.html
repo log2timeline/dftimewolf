@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://dfTimewolf.com/metawolf/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Metawolf - dfTimewolf</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Metawolf";
+        var mkdocs_page_input_path = "metawolf.md";
+        var mkdocs_page_url = "/metawolf/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="..">
+          <img src="../_static/logo.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../getting-started/">Getting started</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../user-manual/">User manual</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../developers-guide/">Developers' guide</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../module-writing-basics/">Module writing basics</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../architecture/">Architecture</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Metawolf</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#using-metawolf">Using Metawolf</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#sessions">Sessions</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#parameters">Parameters</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#recipes">Recipes</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#outputs">Outputs</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#other-features">Other features</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#metawolfs-sessions">Metawolf's sessions</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../recipe-list/">Recipe list</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../recipe-caveat/">Recipe caveats</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">dfTimewolf</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Metawolf</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="metawolf">Metawolf<a class="headerlink" href="#metawolf" title="Permanent link">&para;</a></h1>
+<p>Metawolf is a meterpreter-like shell for DFTimewolf. It allows you to browse, configure and run available recipes. Metawolf is sessionized, meaning you can have various sessions with various configurations and run multiple recipes at a time.</p>
+<p><img alt="metawolf_welcome" src="../_static/metawolf_welcome.png" /></p>
+<h2 id="using-metawolf">Using Metawolf<a class="headerlink" href="#using-metawolf" title="Permanent link">&para;</a></h2>
+<p>First of all, open a metawolf shell by running:</p>
+<pre><code>python dftimewolf/metawolf/metawolf.py
+</code></pre>
+<h3 id="sessions">Sessions<a class="headerlink" href="#sessions" title="Permanent link">&para;</a></h3>
+<p><code>new</code>: Create a new Metawolf session.</p>
+<p><code>set -s[ession] xxx</code>: Set the current session to session <code>xxx</code>.</p>
+<p><code>show -s[essions]</code>: Show existing Metawolf sessions, including:
+  - Any recipe in use in the session.
+  - The status of the latest recipe run for that session.</p>
+<h3 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h3>
+<p><code>set</code> is the main interaction point of Metawolf. It is used to:
+- Set which recipe to use
+- Set the recipe's parameters
+- Set any other Metawolf parameter</p>
+<p>Currently, the following syntaxes are supported:</p>
+<p><code>set</code>: Display current settable parameters with a short description.</p>
+<p><code>set xxx yyy</code>: Set parameter <code>xxx</code> with value <code>yyy</code>. This only works if <code>xxx</code> is a settable parameter (i.e. if it is displayed in the output of the <code>set</code> command).</p>
+<p><code>set -r[ecipe] xxx</code>: Set the current recipe to recipe <code>xxx</code>.</p>
+<p><code>set -a[ll]</code>: If a recipe is set, <code>set -a</code> loops through the recipe's parameters and prompts you to enter a value for each parameter. Inputs are verified against the expected parameter's type.</p>
+<p><img alt="metawolf_setall" src="../_static/metawolf_setall.png" /></p>
+<h3 id="recipes">Recipes<a class="headerlink" href="#recipes" title="Permanent link">&para;</a></h3>
+<p>Once a recipe is loaded and its parameters set, the following actions are available:</p>
+<p><code>run</code>: Run the recipe with the current parameters.</p>
+<p><code>kill xxx</code>: Kill currently running recipe whose command identifier is <code>xxx</code>.</p>
+<h3 id="outputs">Outputs<a class="headerlink" href="#outputs" title="Permanent link">&para;</a></h3>
+<p>To monitor a running recipe:</p>
+<p><code>show -rn[-running]</code>: Show various information about running recipes. Available information:
+  - <code>session_id</code>: The session ID this recipe run belongs to.
+  - <code>command_id</code>: A command identifier for the recipe. This is mainly useful to e.g. <code>kill</code> a recipe run.
+  - <code>timestamp</code>: Timestamp at which the recipe was run.
+  - <code>command</code>: The full DFTimewolf command corresponding to the recipe run.
+  - <code>status</code>: The status of the recipe run. Can be one of <code>[Running, Completed, Failed, Interrupted]</code>.
+  - <code>output_id</code>: A simple identifier linking a recipe run to its output. This is used to display the current output of the recipe run.</p>
+<p><code>show -o[output] output_id</code>: Display the current output of the recipe run.</p>
+<p><code>show -rs[-recipes]</code>: Show DFTimewolf available recipes.</p>
+<p><code>show -r[ecipe] recipe_name</code>: Show details about a particular recipe.</p>
+<p><img alt="metawolf_run" src="../_static/metawolf_run.png" /></p>
+<h3 id="other-features">Other features<a class="headerlink" href="#other-features" title="Permanent link">&para;</a></h3>
+<p><code>quit</code>: Quit Metawolf.</p>
+<p><code>clean</code>: Clean the current recipe run data.</p>
+<p><code>clear</code>: Clean the current settables values.</p>
+<p><code>reload</code>: Reload the recipe's default arguments' values.</p>
+<p>Metawolf uses <code>cmd2</code>, so features of <code>cmd2</code> are available, such as <code>help</code> or history of inputs.</p>
+<h2 id="metawolfs-sessions">Metawolf's sessions<a class="headerlink" href="#metawolfs-sessions" title="Permanent link">&para;</a></h2>
+<p>Metawolf saves its current state in a JSON file formatted as follow:</p>
+<pre><code class="language-json">{
+    &quot;last_active_session&quot;: &quot;session&quot;, // Session ID of the latest active session
+    &quot;session_id_1&quot;: {
+        &quot;last_active_recipe&quot;: &quot;recipe&quot;, // Recipe name of the latest active recipe
+        &quot;recipe&quot;: {
+            // Recipe details
+        },
+        &quot;processes&quot;: {
+            &quot;command_id&quot;: {
+                // Processes details
+            }
+        }
+    },
+    &quot;session_id_2&quot;: {
+        &quot;...&quot;
+    }
+}
+</code></pre>
+<p>Any input processed by Metawolf will trigger the session file to be updated with the latest available information. If quitting Metawolf while processes are still running, Metawolf will offer you the option to keep processes running in the background. If you choose to do so, upon restarting Metawolf, Metawolf will attempt to retrieve the process from the system to allow live tracking.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../architecture/" class="btn btn-neutral float-left" title="Architecture"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../recipe-list/" class="btn btn-neutral float-right" title="Recipe list">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../architecture/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../recipe-list/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
