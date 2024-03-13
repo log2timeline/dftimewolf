@@ -258,6 +258,7 @@ class TimesketchExporter(module.ThreadAwareModule):
             critical=False)
       if streamer.response and container.description:
         streamer.timeline.description = container.description
+  # pytype: enable=signature-mismatch
 
   def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
     return containers.File

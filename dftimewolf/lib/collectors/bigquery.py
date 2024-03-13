@@ -76,6 +76,11 @@ class BigQueryCollector(module.ThreadAwareModule):
         )
       self.ModuleError(str(exception), critical=True)
 
+    except Exception as error:  # pylint: disable=broad-except
+      self.ModuleError(
+          f'Unknown exception encountered: {str(error)}',
+          critical=True)
+
     out_container: Union[containers.DataFrame, containers.File]
     if container.pandas_output:
       out_container = containers.DataFrame(
