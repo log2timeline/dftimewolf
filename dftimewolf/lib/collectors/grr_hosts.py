@@ -40,6 +40,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
   _CHECK_APPROVAL_INTERVAL_SEC = 10
   _CHECK_FLOW_INTERVAL_SEC = 10
   _MAX_OFFLINE_TIME_SEC = 3600  # One hour
+  _LARGE_FILE_SIZE_THRESHOLD = 1 * 1024 * 1024 * 1024  # 1 GB
 
   _CLIENT_ID_REGEX = re.compile(r'^c\.[0-9a-f]{16}$', re.IGNORECASE)
 
@@ -317,6 +318,30 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
               client_id, flow_id, self.reason
         ))
 
+  def _DownloadArchive(self, flow, flow_output_dir):
+    output_file_path = os.path.join(self.output_path, f"{flow.flow_id}.zip")
+    file_archive = flow.GetFilesArchive()
+    file_archive.WriteToFile(output_file_path)
+    with zipfile.ZipFile(output_file_path) as archive:
+      archive.extractall(path=flow_output_dir)
+    os.remove(output_file_path)
+
+  def _DownloadBlobs(self, client, files, flow_output_dir):
+    for file in files:
+      vfspath = re.sub("^([a-zA-Z]:)/(.*)$", "fs/os/\\1/\\2", file)
+      filename = os.path.basename(vfspath)
+      base_dir = os.path.join(flow_output_dir, os.path.dirname(vfspath))
+      os.makedirs(base_dir, exists=True)
+
+      f = client.File(vfspath)
+      with open(os.path.join(base_dir, filename), "wb") as out:
+        f.GetBlobWithOffset(0).WriteToStream(out)
+
+  def _DownloadTimeline(self, flow, flow_output_dir):
+    final_bodyfile_path = os.path.join(flow_output_dir, f"{flow.flow_id}_timeline.body")
+    file_archive = flow.GetCollectedTimelineBody()
+    file_archive.WriteToFile(final_bodyfile_path)
+
   # TODO: change object to more specific GRR type information.
   def _DownloadFiles(self, client: Client, flow_id: str) -> Optional[str]:
     """Download files/results from the specified flow.
@@ -329,44 +354,35 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       str: path containing the downloaded files.
     """
     grr_flow = client.Flow(flow_id)
-    is_timeline_flow = False
-    if grr_flow.Get().data.name == 'TimelineFlow':
-      is_timeline_flow = True
-      output_file_path = os.path.join(
-          self.output_path, '.'.join((flow_id, 'body')))
-    else:
-      output_file_path = os.path.join(
-          self.output_path, '.'.join((flow_id, 'zip')))
 
-    if os.path.exists(output_file_path):
-      self.logger.info(
-          f'{output_file_path:s} already exists: Skipping')
-      return None
-
-    if is_timeline_flow:
-      file_archive = grr_flow.GetCollectedTimelineBody()
-    else:
-      file_archive = grr_flow.GetFilesArchive()
-
-    file_archive.WriteToFile(output_file_path)
-
-    # Unzip archive for processing and remove redundant zip
     fqdn = client.data.os_info.fqdn.lower()
-    client_output_folder = os.path.join(self.output_path, fqdn, flow_id)
-    if not os.path.isdir(client_output_folder):
-      os.makedirs(client_output_folder)
+    flow_output_dir = os.path.join(self.output_path, fqdn, flow_id)
+    if not os.path.isdir(flow_output_dir):
+      os.makedirs(flow_output_dir, exist_ok=True)
 
-    if is_timeline_flow:
-      shutil.copy2(
-          output_file_path,
-          os.path.join(client_output_folder,
-                       f'{flow_id}_timeline.body'))
+    if grr_flow.Get().data.name == "TimelineFlow":
+      self._DownloadTimeline(grr_flow, flow_output_dir)
+      return flow_output_dir
+
+    results = grr_flow.ListResults()
+    files = []
+    large_files = False
+    for result in results:
+      filepath = result.payload.pathspec.path
+      if result.payload.st_size > self._LARGE_FILE_SIZE_THRESHOLD:
+        self.logger.warning(f"Large file detected: {filepath}")
+        large_files = True
+      files.append(filepath)
+
+    if large_files:
+      self.logger.warning(
+        "Large files detected, downloading blobs instead of archive..."
+      )
+      self._DownloadBlobs(grr_flow, flow_output_dir)
     else:
-      with zipfile.ZipFile(output_file_path) as archive:
-        archive.extractall(path=client_output_folder)
-    os.remove(output_file_path)
+      self._DownloadArchive(grr_flow, flow_output_dir)
 
-    return client_output_folder
+    return flow_output_dir
 
   def GetThreadPoolSize(self) -> int:
     """Thread pool size."""
