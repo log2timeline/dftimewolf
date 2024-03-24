@@ -361,6 +361,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       os.makedirs(flow_output_dir, exist_ok=True)
 
     if grr_flow.Get().data.name == "TimelineFlow":
+      self.logger.info("Downloading timeline from GRR")
       self._DownloadTimeline(grr_flow, flow_output_dir)
       return flow_output_dir
 
@@ -378,8 +379,9 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       self.logger.warning(
         "Large files detected, downloading blobs instead of archive..."
       )
-      self._DownloadBlobs(grr_flow, flow_output_dir)
+      self._DownloadBlobs(client, files, flow_output_dir)
     else:
+      self.logger.info("Downloading file archive from GRR")
       self._DownloadArchive(grr_flow, flow_output_dir)
 
     return flow_output_dir
