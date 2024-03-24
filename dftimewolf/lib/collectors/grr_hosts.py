@@ -331,7 +331,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       vfspath = re.sub("^([a-zA-Z]:)/(.*)$", "fs/os/\\1/\\2", file)
       filename = os.path.basename(vfspath)
       base_dir = os.path.join(flow_output_dir, os.path.dirname(vfspath))
-      os.makedirs(base_dir, exists=True)
+      os.makedirs(base_dir, exist_ok=True)
 
       f = client.File(vfspath)
       with open(os.path.join(base_dir, filename), "wb") as out:
