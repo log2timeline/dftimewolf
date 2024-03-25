@@ -8,4 +8,6 @@
     ],
     "python.testing.pytestEnabled": false,
     "python.testing.unittestEnabled": true,
+    "editor.formatOnSaveMode": "modifications",
+    "editor.tabSize": 2,
 }
