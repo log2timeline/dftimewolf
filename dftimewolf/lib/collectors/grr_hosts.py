@@ -326,9 +326,13 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       archive.extractall(path=flow_output_dir)
     os.remove(output_file_path)
 
-  def _DownloadBlobs(self, client, files, flow_output_dir):
-    for file in files:
-      vfspath = re.sub("^([a-zA-Z]:)/(.*)$", "fs/os/\\1/\\2", file)
+  def _DownloadBlobs(self, client, pathspecs, flow_output_dir):
+    for pathspec in pathspecs:
+      if pathspec.nested_path.path_type == pathspec.nested_path.NTFS:
+        vfspath = vfspath = f"/fs/ntfs{pathspec.path}{pathspec.nested_path.path}"
+      else:
+        vfspath = re.sub("^([a-zA-Z]:)/(.*)$", "fs/os/\\1/\\2", pathspec.path)
+
       filename = os.path.basename(vfspath)
       base_dir = os.path.join(flow_output_dir, os.path.dirname(vfspath))
       os.makedirs(base_dir, exist_ok=True)
@@ -366,20 +370,21 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       return flow_output_dir
 
     results = grr_flow.ListResults()
-    files = []
+    pathspecs = []
     large_files = False
     for result in results:
       filepath = result.payload.pathspec.path
       if result.payload.st_size > self._LARGE_FILE_SIZE_THRESHOLD:
-        self.logger.warning(f"Large file detected: {filepath}")
+        size_gb = result.payload.st_size / 1024 / 1024 / 1024
+        self.logger.warning(f"Large file detected: {filepath} ({size_gb:.2f} GB)")
         large_files = True
-      files.append(filepath)
+      pathspecs.append(result.payload.pathspec)
 
     if large_files:
       self.logger.warning(
         "Large files detected, downloading blobs instead of archive..."
       )
-      self._DownloadBlobs(client, files, flow_output_dir)
+      self._DownloadBlobs(client, pathspecs, flow_output_dir)
     else:
       self.logger.info("Downloading file archive from GRR")
       self._DownloadArchive(grr_flow, flow_output_dir)
