@@ -190,35 +190,44 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.RefreshClientCredentials()
     api_instance = turbinia_request_results_api.TurbiniaRequestResultsApi(
         self.client)
-    try:
-      task_id = task_data.get('id')
-      # pylint: disable=line-too-long
-      api_response = api_instance.get_task_output_with_http_info(
-          task_id,  _preload_content=False, _request_timeout=self.HTTP_TIMEOUT)  # type: ignore
-      filename = f'{task_id}-'
+    task_id = task_data.get('id')
+    filename = f'{task_id}-'
+    retries = 0
+    # pylint: disable=line-too-long
+    self.logger.info(f'Downloading output for task {task_id}')
+    while retries < 3:
+      try:
+        api_response = api_instance.get_task_output_with_http_info(
+            task_id,  _preload_content=False, _request_timeout=self.HTTP_TIMEOUT)  # type: ignore
 
-      # Create a temporary file to write the response to.
-      file = tempfile.NamedTemporaryFile(
-          mode='wb', prefix=f'{filename}', suffix='.tgz', delete=False)
-      local_path = file.name
-      self.logger.info(f'Downloading output for task {task_id} to {local_path}')
-      # Read the response and write to the file.
-      if api_response.raw_data:
-        file.write(api_response.raw_data)
-      file.close()
+        # Read the response and write to the file.
+        if api_response and api_response.raw_data:
+          # Create a temporary file to write the response to.
+          file = tempfile.NamedTemporaryFile(
+              mode='wb', prefix=f'{filename}', suffix='.tgz', delete=False)
+          local_path = file.name
+          self.logger.info(f'Saving output for task {task_id} to {local_path}')
+          file.write(api_response.raw_data)
+          file.close()
 
-      # Extract the files from the tgz file.
-      extracted_path = self._ExtractFiles(local_path, path)
-      if os.path.exists(extracted_path):
-        result = extracted_path
-        self.PublishMessage(
-            f'Extracted output file to {result} for task {task_id}')
-    except turbinia_api_lib.exceptions.ApiException as exception:
-      trace = traceback.format_exc()
-      self.ModuleError(
-          f'Unable to download task data: {exception} {trace}', critical=False)
-    except OSError as exception:
-      self.ModuleError(f'Unable to write to file: {exception}', critical=False)
+          # Extract the files from the tgz file.
+          extracted_path = self._ExtractFiles(local_path, path)
+          if os.path.exists(extracted_path):
+            result = extracted_path
+            self.PublishMessage(
+                f'Extracted output file to {result} for task {task_id}')
+          return result
+      except (turbinia_api_lib.exceptions.ApiException,
+          turbinia_api_lib.exceptions.UnauthorizedException) as exception:
+        retries += 1
+        trace = traceback.format_exc()
+        self.logger.warning(f'Retrying after 3 seconds: {exception}{trace}')
+        time.sleep(3)
+      except OSError as exception:
+        self.ModuleError(f'Unable to write to file: {exception}', critical=True)
+
+    if not result:
+      self.ModuleError(f'Unable to download data for task {task_id}', critical=True)
 
     return result
 
@@ -293,6 +302,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     """
     self.client_config = turbinia_api_lib.configuration.Configuration(
         host=self.turbinia_api)
+    self.client_config.retries = 3
     if not self.client_config:
       self.ModuleError('Unable to configure Turbinia API server', critical=True)
     # Check if Turbinia requires authentication.
@@ -487,8 +497,8 @@ class TurbiniaProcessorBase(module.BaseModule):
       except (turbinia_api_lib.exceptions.ApiException,
           turbinia_api_lib.exceptions.UnauthorizedException) as exception:
         retries += 1
-        self.logger.warning(f'Retrying after exception: {exception.body}')
-
+        self.logger.warning(f'Retrying after 3 seconds: {exception.body}')
+        time.sleep(3)
   def TurbiniaFinishReport(self, request_id: str) -> str:
     """This method generates a report for a Turbinia request."""
     # Refresh token if needed
