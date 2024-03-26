@@ -194,7 +194,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     filename = f'{task_id}-'
     retries = 0
     # pylint: disable=line-too-long
-    self.logger.info(f'Downloading output for task {task_id}')
+    self.PublishMessage(f'Downloading output for task {task_id}')
     while retries < 3:
       try:
         api_response = api_instance.get_task_output_with_http_info(
@@ -206,7 +206,7 @@ class TurbiniaProcessorBase(module.BaseModule):
           file = tempfile.NamedTemporaryFile(
               mode='wb', prefix=f'{filename}', suffix='.tgz', delete=False)
           local_path = file.name
-          self.logger.info(f'Saving output for task {task_id} to {local_path}')
+          self.PublishMessage(f'Saving output for task {task_id} to {local_path}')
           file.write(api_response.raw_data)
           file.close()
 
