@@ -302,7 +302,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     """
     self.client_config = turbinia_api_lib.configuration.Configuration(
         host=self.turbinia_api)
-    self.client_config.retries = 3
+    self.client_config.retries = 3 # type: ignore
     if not self.client_config:
       self.ModuleError('Unable to configure Turbinia API server', critical=True)
     # Check if Turbinia requires authentication.
