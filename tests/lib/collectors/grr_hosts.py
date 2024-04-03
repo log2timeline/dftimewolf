@@ -135,13 +135,13 @@ class GRRFlowTests(unittest.TestCase):
   @mock.patch("grr_api_client.flow.FlowBase.ListResults")
   def testDownloadArtifactFilesForFlow(
     self,
-    mock_ListResults,
+    unused_mock_ListResults,
     mock_Get,
     mock_GetFilesArchive,
     mock_ZipFile,
     mock_makedirs,
     mock_isdir,
-    mock_remove,
+    unused_mock_remove,
   ):
     """Test if results are downloaded & unzipped in the correct directories."""
     # Change output_path to something constant so we can easily assert
@@ -156,7 +156,9 @@ class GRRFlowTests(unittest.TestCase):
     mock_GetFilesArchive.assert_called_once()
     mock_ZipFile.assert_called_once_with('/tmp/random/F:12345.zip')
     mock_isdir.assert_called_once_with('/tmp/random/tomchop/F:12345')
-    mock_makedirs.assert_called_once_with("/tmp/random/tomchop/F:12345", exist_ok=True)
+    mock_makedirs.assert_called_once_with(
+      "/tmp/random/tomchop/F:12345", exist_ok=True
+    )
     mock_remove.assert_called_once_with('/tmp/random/F:12345.zip')
 
   @mock.patch('os.remove')
@@ -190,7 +192,9 @@ class GRRFlowTests(unittest.TestCase):
     mock_GetFilesArchive.assert_not_called()
     mock_ZipFile.assert_not_called()
     mock_isdir.assert_called_once_with('/tmp/random/tomchop/F:12345')
-    mock_makedirs.assert_called_once_with("/tmp/random/tomchop/F:12345", exist_ok=True)
+    mock_makedirs.assert_called_once_with(
+      "/tmp/random/tomchop/F:12345", exist_ok=True
+    )
 
 
 class GRRArtifactCollectorTest(unittest.TestCase):

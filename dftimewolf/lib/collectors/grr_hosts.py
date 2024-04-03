@@ -5,7 +5,6 @@ from concurrent.futures import ThreadPoolExecutor
 import datetime
 import os
 import re
-import shutil
 import time
 import zipfile
 from typing import List, Optional, Tuple, Type
@@ -318,9 +317,9 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
               client_id, flow_id, self.reason
         ))
 
-  def _DownloadArchive(self, flow, flow_output_dir):
-    output_file_path = os.path.join(self.output_path, f"{flow.flow_id}.zip")
-    file_archive = flow.GetFilesArchive()
+  def _DownloadArchive(self, grr_flow, flow_output_dir):
+    output_file_path = os.path.join(self.output_path, f"{grr_flow.flow_id}.zip")
+    file_archive = grr_flow.GetFilesArchive()
     file_archive.WriteToFile(output_file_path)
     with zipfile.ZipFile(output_file_path) as archive:
       archive.extractall(path=flow_output_dir)
@@ -342,10 +341,14 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
         with open(os.path.join(base_dir, filename), "wb") as out:
           f.GetBlobWithOffset(0).WriteToStream(out)
       except grr_errors.ResourceNotFoundError as e:
-        self.logger.warning(f"Failed to download blob {filename} from {vfspath}: {e}")
+        self.logger.warning(
+          f"Failed to download blob {filename} from {vfspath}: {e}"
+        )
 
   def _DownloadTimeline(self, flow, flow_output_dir):
-    final_bodyfile_path = os.path.join(flow_output_dir, f"{flow.flow_id}_timeline.body")
+    final_bodyfile_path = os.path.join(
+      flow_output_dir, f"{flow.flow_id}_timeline.body"
+    )
     file_archive = flow.GetCollectedTimelineBody()
     file_archive.WriteToFile(final_bodyfile_path)
 
@@ -379,7 +382,9 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       filepath = result.payload.pathspec.path
       if result.payload.st_size > self._LARGE_FILE_SIZE_THRESHOLD:
         size_gb = result.payload.st_size / 1024 / 1024 / 1024
-        self.logger.warning(f"Large file detected: {filepath} ({size_gb:.2f} GB)")
+        self.logger.warning(
+          f"Large file detected: {filepath} ({size_gb:.2f} GB)"
+        )
         large_files = True
       pathspecs.append(result.payload.pathspec)
 

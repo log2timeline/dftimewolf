@@ -60,3 +60,4 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 indent-width = 2
+line-length = 80
