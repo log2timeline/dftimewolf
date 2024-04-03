@@ -328,18 +328,21 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
 
   def _DownloadBlobs(self, client, pathspecs, flow_output_dir):
     for pathspec in pathspecs:
-      if pathspec.nested_path.path_type == pathspec.nested_path.NTFS:
-        vfspath = f"/fs/ntfs{pathspec.path}{pathspec.nested_path.path}"
+      if pathspec.nested_path.pathtype == pathspec.nested_path.NTFS:
+        vfspath = f"fs/ntfs{pathspec.path}{pathspec.nested_path.path}"
       else:
-        vfspath = re.sub("^([a-zA-Z]:)/(.*)$", "fs/os/\\1/\\2", pathspec.path)
-
+        vfspath = re.sub("^([a-zA-Z]:)?/(.*)$", "fs/os/\\1/\\2", pathspec.path)
       filename = os.path.basename(vfspath)
       base_dir = os.path.join(flow_output_dir, os.path.dirname(vfspath))
       os.makedirs(base_dir, exist_ok=True)
 
       f = client.File(vfspath)
-      with open(os.path.join(base_dir, filename), "wb") as out:
-        f.GetBlobWithOffset(0).WriteToStream(out)
+      self.logger.debug(f"Downloading blob {filename} from {vfspath}")
+      try:
+        with open(os.path.join(base_dir, filename), "wb") as out:
+          f.GetBlobWithOffset(0).WriteToStream(out)
+      except grr_errors.ResourceNotFoundError as e:
+        self.logger.warning(f"Failed to download blob {filename} from {vfspath}: {e}")
 
   def _DownloadTimeline(self, flow, flow_output_dir):
     final_bodyfile_path = os.path.join(flow_output_dir, f"{flow.flow_id}_timeline.body")
