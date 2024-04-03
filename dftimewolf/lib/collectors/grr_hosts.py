@@ -329,7 +329,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
   def _DownloadBlobs(self, client, pathspecs, flow_output_dir):
     for pathspec in pathspecs:
       if pathspec.nested_path.path_type == pathspec.nested_path.NTFS:
-        vfspath = vfspath = f"/fs/ntfs{pathspec.path}{pathspec.nested_path.path}"
+        vfspath = f"/fs/ntfs{pathspec.path}{pathspec.nested_path.path}"
       else:
         vfspath = re.sub("^([a-zA-Z]:)/(.*)$", "fs/os/\\1/\\2", pathspec.path)
 
