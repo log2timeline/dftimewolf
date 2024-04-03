@@ -318,11 +318,13 @@ class Resource():
     """Returns a dictionary representation of the resource object."""
     creation_timestamp = ""
     if self.creation_timestamp:
+      assert self.creation_timestamp is not None
       creation_timestamp = self.creation_timestamp.astimezone(
         datetime.timezone.utc
       ).strftime("%Y-%m-%dT%H:%M:%SZ")
     deletion_timestamp = ""
     if self.deletion_timestamp:
+      assert self.deletion_timestamp is not None
       deletion_timestamp = self.deletion_timestamp.astimezone(
         datetime.timezone.utc
       ).strftime("%Y-%m-%dT%H:%M:%SZ")
