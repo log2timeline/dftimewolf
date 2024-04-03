@@ -317,7 +317,9 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
               client_id, flow_id, self.reason
         ))
 
-  def _DownloadArchive(self, grr_flow, flow_output_dir):
+  def _DownloadArchive(
+    self, grr_flow: Client.Flow, flow_output_dir: str
+  ) -> None:
     output_file_path = os.path.join(self.output_path, f"{grr_flow.flow_id}.zip")
     file_archive = grr_flow.GetFilesArchive()
     file_archive.WriteToFile(output_file_path)
@@ -325,7 +327,9 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       archive.extractall(path=flow_output_dir)
     os.remove(output_file_path)
 
-  def _DownloadBlobs(self, client, pathspecs, flow_output_dir):
+  def _DownloadBlobs(
+    self, client: Client, pathspecs: Client.Flow, flow_output_dir: str
+  ) -> None:
     for pathspec in pathspecs:
       if pathspec.nested_path.pathtype == pathspec.nested_path.NTFS:
         vfspath = f"fs/ntfs{pathspec.path}{pathspec.nested_path.path}"
@@ -345,11 +349,13 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
           f"Failed to download blob {filename} from {vfspath}: {e}"
         )
 
-  def _DownloadTimeline(self, flow, flow_output_dir):
+  def _DownloadTimeline(
+    self, grr_flow: Client.Flow, flow_output_dir: str
+  ) -> None:
     final_bodyfile_path = os.path.join(
-      flow_output_dir, f"{flow.flow_id}_timeline.body"
+      flow_output_dir, f"{grr_flow.flow_id}_timeline.body"
     )
-    file_archive = flow.GetCollectedTimelineBody()
+    file_archive = grr_flow.GetCollectedTimelineBody()
     file_archive.WriteToFile(final_bodyfile_path)
 
   # TODO: change object to more specific GRR type information.
