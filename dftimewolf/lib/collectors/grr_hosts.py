@@ -1412,7 +1412,7 @@ class GRRTimelineCollector(GRRFlow):
       self._AwaitFlow(client, flow_id)
       temp_directory = tempfile.mkdtemp()
       collected_timeline = self._DownloadTimeline(
-        client, flow_id, temp_directory
+        client, Client.Flow(flow_id), temp_directory
       )
       self.PublishMessage(f"{flow_id}: Downloaded: {collected_timeline}")
       cont = containers.File(
