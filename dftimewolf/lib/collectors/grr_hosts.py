@@ -351,12 +351,14 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
 
   def _DownloadTimeline(
     self, grr_flow: Client.Flow, flow_output_dir: str
-  ) -> None:
+  ) -> str:
     final_bodyfile_path = os.path.join(
       flow_output_dir, f"{grr_flow.flow_id}_timeline.body"
     )
     file_archive = grr_flow.GetCollectedTimelineBody()
     file_archive.WriteToFile(final_bodyfile_path)
+
+    return final_bodyfile_path
 
   # TODO: change object to more specific GRR type information.
   def _DownloadFiles(self, client: Client, flow_id: str) -> Optional[str]:

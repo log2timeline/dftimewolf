@@ -141,7 +141,7 @@ class GRRFlowTests(unittest.TestCase):
     mock_ZipFile,
     mock_makedirs,
     mock_isdir,
-    unused_mock_remove,
+    mock_remove,
   ):
     """Test if results are downloaded & unzipped in the correct directories."""
     # Change output_path to something constant so we can easily assert
