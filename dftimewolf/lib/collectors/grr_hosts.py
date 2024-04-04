@@ -1420,36 +1420,6 @@ class GRRTimelineCollector(GRRFlow):
       )
       self.StoreContainer(cont)
 
-  # def _DownloadTimeline(self, client: Client, flow_id: str) -> Optional[str]:
-  #   """Download a timeline in BODY format from the specified flow.
-  #   Args:
-  #     client (object): GRR Client object to which to download flow data from.
-  #     flow_id (str): GRR identifier of the flow.
-  #   Returns:
-  #     str: path of downloaded files.
-  #   """
-  #   extension = 'body' if self._timeline_format == 1 else 'raw'
-  #   output_file_path = os.path.join(
-  #       self.output_path, '.'.join((flow_id, extension)))
-
-  #   if os.path.exists(output_file_path):
-  #     self.logger.info(
-  #         f'{output_file_path:s} already exists: Skipping')
-  #     return None
-
-  #   grr_flow = client.Flow(flow_id)
-  #   if self._timeline_format == 1:
-  #     ntfs_inodes = client.data.os_info.system.lower() == 'windows'
-  #     timeline = grr_flow.GetCollectedTimelineBody(
-  #         timestamp_subsecond_precision=True,
-  #         inode_ntfs_file_reference_format=ntfs_inodes,
-  #         backslash_escape=True)
-  #   else:
-  #     timeline = grr_flow.GetCollectedTimeline(self._timeline_format)
-  #   timeline.WriteToFile(output_file_path)
-
-  #   return output_file_path
-
   def PreProcess(self) -> None:
     """Not implemented."""
 
