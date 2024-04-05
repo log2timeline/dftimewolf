@@ -176,7 +176,7 @@ class GRRFlowTests(unittest.TestCase):
     mock_ZipFile,
     mock_makedirs,
     mock_isdir,
-    mock_remove,
+    unused_mock_remove,
   ):
     """Tests if timeline results are downloaded in the correct directories."""
     # Change output_path to something constant so we can easily assert
@@ -831,8 +831,11 @@ class GRRTimelineCollectorTest(unittest.TestCase):
       self.grr_timeline_collector.Process(c)
     self.grr_timeline_collector.PostProcess()
 
-    mock_DownloadTimeline.assert_called_once_with(
-        mock_grr_hosts.MOCK_CLIENT_RECENT, 'F:12345')
+    args, _ = mock_DownloadTimeline.call_args
+    self.assertEqual(args[0], mock_grr_hosts.MOCK_CLIENT_RECENT)
+    self.assertEqual(args[1].flow_id, "F:12345")
+    self.assertTrue(args[2].startswith("/tmp/"))
+
     results = self.grr_timeline_collector.GetContainers(containers.File)
     self.assertEqual(len(results), 1)
     result = results[0]
