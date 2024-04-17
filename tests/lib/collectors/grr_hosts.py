@@ -126,8 +126,7 @@ class GRRFlowTests(unittest.TestCase):
     with six.assertRaisesRegex(self, DFTimewolfError, error_msg):
       self.grr_flow_module._AwaitFlow(mock_grr_hosts.MOCK_CLIENT, "F:12345")
 
-  @mock.patch('os.remove')
-  @mock.patch('os.path.isdir')
+  @mock.patch("os.remove")
   @mock.patch('os.makedirs')
   @mock.patch('zipfile.ZipFile')
   @mock.patch('grr_api_client.flow.FlowBase.GetFilesArchive')
@@ -140,29 +139,25 @@ class GRRFlowTests(unittest.TestCase):
     mock_GetFilesArchive,
     mock_ZipFile,
     mock_makedirs,
-    mock_isdir,
     mock_remove,
   ):
     """Test if results are downloaded & unzipped in the correct directories."""
     # Change output_path to something constant so we can easily assert
     # if calls were done correctly.
-    self.grr_flow_module.output_path = '/tmp/random'
-    mock_isdir.return_value = False  # Return false so makedirs is called
+    self.grr_flow_module.output_path = "/tmp/random"
     mock_Get.return_value.data.name = 'ArtifactFlow'
 
     return_value = self.grr_flow_module._DownloadFiles(
         mock_grr_hosts.MOCK_CLIENT, 'F:12345')
     self.assertEqual(return_value, '/tmp/random/tomchop/F:12345')
     mock_GetFilesArchive.assert_called_once()
-    mock_ZipFile.assert_called_once_with('/tmp/random/F:12345.zip')
-    mock_isdir.assert_called_once_with('/tmp/random/tomchop/F:12345')
+    mock_ZipFile.assert_called_once_with("/tmp/random/F:12345.zip")
     mock_makedirs.assert_called_once_with(
       "/tmp/random/tomchop/F:12345", exist_ok=True
     )
     mock_remove.assert_called_once_with('/tmp/random/F:12345.zip')
 
-  @mock.patch('os.remove')
-  @mock.patch('os.path.isdir')
+  @mock.patch("os.remove")
   @mock.patch('os.makedirs')
   @mock.patch("zipfile.ZipFile")
   @mock.patch('grr_api_client.flow.FlowBase.GetFilesArchive')
@@ -175,14 +170,12 @@ class GRRFlowTests(unittest.TestCase):
     mock_GetFilesArchive,
     mock_ZipFile,
     mock_makedirs,
-    mock_isdir,
     unused_mock_remove,
   ):
     """Tests if timeline results are downloaded in the correct directories."""
     # Change output_path to something constant so we can easily assert
     # if calls were done correctly.
-    self.grr_flow_module.output_path = '/tmp/random'
-    mock_isdir.return_value = False  # Return false so makedirs is called
+    self.grr_flow_module.output_path = "/tmp/random"
     mock_Get.return_value.data.name = 'TimelineFlow'
 
     return_value = self.grr_flow_module._DownloadFiles(
@@ -191,7 +184,6 @@ class GRRFlowTests(unittest.TestCase):
     mock_GetCollectedTimelineBody.assert_called_once()
     mock_GetFilesArchive.assert_not_called()
     mock_ZipFile.assert_not_called()
-    mock_isdir.assert_called_once_with('/tmp/random/tomchop/F:12345')
     mock_makedirs.assert_called_once_with(
       "/tmp/random/tomchop/F:12345", exist_ok=True
     )
