@@ -318,6 +318,14 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
   def _DownloadArchive(
     self, grr_flow: Client.Flow, flow_output_dir: str
   ) -> None:
+    """Request an archive of files from GRR, download and extract it.
+
+    This does not work on larger files, use _DownloadBlobs instead.
+
+    Args:
+      grr_flow: GRR Flow object to download files from.
+      flow_output_dir: Directory to extract the downloaded files.
+    """
     output_file_path = os.path.join(self.output_path, f"{grr_flow.flow_id}.zip")
     file_archive = grr_flow.GetFilesArchive()
     file_archive.WriteToFile(output_file_path)
@@ -326,8 +334,18 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     os.remove(output_file_path)
 
   def _DownloadBlobs(
-    self, client: Client, pathspecs: Client.Flow, flow_output_dir: str
+    self,
+    client: Client,
+    pathspecs: List["jobs_pb2.PathSpec"],
+    flow_output_dir: str,
   ) -> None:
+    """Download an individual collected file from GRR to the local filesystem.
+
+    Args:
+      client: GRR Client object to download blobs from.
+      pathspecs: List of pathspecs to download blobs from.
+      flow_output_dir: Directory to store the downloaded files.
+    """
     for pathspec in pathspecs:
       if pathspec.nested_path.pathtype == pathspec.nested_path.NTFS:
         vfspath = f"fs/ntfs{pathspec.path}{pathspec.nested_path.path}"
@@ -353,6 +371,16 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     grr_flow: Client.Flow,
     flow_output_dir: str,
   ) -> str:
+    """Downloads a bodyfile timeline from a GRR client.
+
+    Args:
+      client: GRR Client object to download the timeline from.
+      grr_flow: GRR TimelineFlow object to download the timeline from.
+      flow_output_dir: Directory to store the downloaded timeline.
+
+    Returns:
+      Full path to the downloaded timeline.
+    """
     final_bodyfile_path = os.path.join(
       flow_output_dir, f"{grr_flow.flow_id}_timeline.body"
     )
@@ -365,13 +393,12 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     timeline.WriteToFile(final_bodyfile_path)
     return final_bodyfile_path
 
-  # TODO: change object to more specific GRR type information.
   def _DownloadFiles(self, client: Client, flow_id: str) -> Optional[str]:
     """Download files/results from the specified flow.
 
     Args:
-      client (object): GRR Client object to which to download flow data from.
-      flow_id (str): GRR identifier of the flow.
+      client: GRR Client object to which to download flow data from.
+      flow_id: GRR identifier of the flow.
 
     Returns:
       str: path containing the downloaded files.
@@ -380,8 +407,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
 
     fqdn = client.data.os_info.fqdn.lower()
     flow_output_dir = os.path.join(self.output_path, fqdn, flow_id)
-    if not os.path.isdir(flow_output_dir):
-      os.makedirs(flow_output_dir, exist_ok=True)
+    os.makedirs(flow_output_dir, exist_ok=True)
 
     if grr_flow.Get().data.name == "TimelineFlow":
       self.logger.info("Downloading timeline from GRR")
