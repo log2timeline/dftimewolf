@@ -131,7 +131,7 @@ class GRRFlowTests(unittest.TestCase):
   @mock.patch('zipfile.ZipFile')
   @mock.patch('grr_api_client.flow.FlowBase.GetFilesArchive')
   @mock.patch('grr_api_client.flow.FlowBase.Get')
-  @mock.patch("grr_api_client.flow.FlowBase.ListResults")
+  @mock.patch('grr_api_client.flow.FlowBase.ListResults')
   def testDownloadArtifactFilesForFlow(
     self,
     unused_mock_ListResults,
