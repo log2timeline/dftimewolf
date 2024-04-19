@@ -576,8 +576,9 @@ class GRRHuntYaraScanner(GRRHunt):
       ignore_grr_process=True,
       process_regex=self.process_ignorelist_regex,
       cmdline_regex=self.cmdline_ignorelist_regex,
+      skip_mapped_files=False,
       dump_process_on_match=self.dump_process_on_match,
-      process_dump_size_limit= 256 * 1024 * 1024,
+      process_dump_size_limit=256 * 1024 * 1024,
     )
 
     self._CreateAndStartHunt(self.FLOW_NAME, flow_args)

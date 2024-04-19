@@ -591,6 +591,7 @@ Flow ID: {3:s}
         ignore_grr_process=True,
         process_regex=self.process_ignorelist_regex,
         cmdline_regex=self.cmdline_ignorelist_regex,
+        skip_mapped_files=False,
         dump_process_on_match=self.dump_process_on_match,
       )
 
