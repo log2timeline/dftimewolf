@@ -102,7 +102,7 @@ class TimesketchExporterTest(unittest.TestCase):
     self.assertEqual(report.module_name, 'TimesketchExporter')
     self.assertEqual(
         report.text,
-        'Your Timesketch URL is: timesketch.com/sketches/1234/')
+        'Your Timesketch URL is: timesketch.com/sketch/1234/')
     self.assertEqual(report.text_format, 'markdown')
 
   # pylint: disable=invalid-name
