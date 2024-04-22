@@ -663,7 +663,7 @@ Flow ID: {3:s}
 
     entries = []
     for r in results:
-      if not isinstance(r.payload, flows_pb2.YaraProcessScanResponse):
+      if not isinstance(r.payload, flows_pb2.YaraProcessScanMatch):
         continue
       process = r.payload.process
       for match in r.payload.match:
