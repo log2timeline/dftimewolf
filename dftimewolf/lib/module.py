@@ -71,7 +71,7 @@ class BaseModule(object):
     self.logger.addHandler(file_handler)
 
     if self.state.stdout_log:
-      console_handler = logging.StreamHandler()
+      console_handler = logging.StreamHandler(stream=sys.stdout)
       formatter = logging_utils.WolfFormatter(
           random_color=True)
       console_handler.setFormatter(formatter)

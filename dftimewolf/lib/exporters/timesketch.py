@@ -276,7 +276,7 @@ class TimesketchExporter(module.ThreadAwareModule):
     if self.wait_for_timelines:
       self._WaitForTimelines()
 
-    sketch_url = '{0:s}sketches/{1:d}/'.format(host_url, self.sketch.id)
+    sketch_url = '{0:s}sketch/{1:d}/'.format(host_url, self.sketch.id)
     message = 'Your Timesketch URL is: {0:s}'.format(sketch_url)
     self.PublishMessage(message)
 

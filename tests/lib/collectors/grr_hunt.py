@@ -426,6 +426,7 @@ class GRRHuntYara(unittest.TestCase):
           ignore_grr_process=True,
           process_regex=r"(?i)^(?!.*(\.exe|ignore1)).*",
           cmdline_regex=None,
+          skip_mapped_files=False,
           dump_process_on_match=False,
           process_dump_size_limit= 268_435_456,
       ),

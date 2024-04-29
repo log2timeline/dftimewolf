@@ -1,20 +1,18 @@
 # -*- coding: utf-8 -*-
 """Definition of modules for collecting data from GRR hosts."""
 
-from concurrent.futures import ThreadPoolExecutor
 import datetime
 import os
 import re
-import shutil
+import tempfile
 import time
 import zipfile
+from concurrent.futures import ThreadPoolExecutor
 from typing import List, Optional, Tuple, Type
 
 import pandas as pd
-
 from grr_api_client import errors as grr_errors
-from grr_api_client import flow
-from grr_api_client import utils
+from grr_api_client import flow, utils
 from grr_api_client.client import Client
 from grr_response_proto import flows_pb2, jobs_pb2, timeline_pb2
 from grr_response_proto import osquery_pb2 as osquery_flows
@@ -25,7 +23,6 @@ from dftimewolf.lib.containers import containers, interface
 from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
-
 
 GRR_THREAD_POOL_SIZE = 10 # Arbitrary
 
@@ -40,6 +37,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
   _CHECK_APPROVAL_INTERVAL_SEC = 10
   _CHECK_FLOW_INTERVAL_SEC = 10
   _MAX_OFFLINE_TIME_SEC = 3600  # One hour
+  _LARGE_FILE_SIZE_THRESHOLD = 1 * 1024 * 1024 * 1024  # 1 GB
 
   _CLIENT_ID_REGEX = re.compile(r'^c\.[0-9a-f]{16}$', re.IGNORECASE)
 
@@ -317,56 +315,128 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
               client_id, flow_id, self.reason
         ))
 
-  # TODO: change object to more specific GRR type information.
+  def _DownloadArchive(
+    self, grr_flow: Client.Flow, flow_output_dir: str
+  ) -> None:
+    """Request an archive of files from GRR, download and extract it.
+
+    This does not work on larger files, use _DownloadBlobs instead.
+
+    Args:
+      grr_flow: GRR Flow object to download files from.
+      flow_output_dir: Directory to extract the downloaded files.
+    """
+    output_file_path = os.path.join(self.output_path, f"{grr_flow.flow_id}.zip")
+    file_archive = grr_flow.GetFilesArchive()
+    file_archive.WriteToFile(output_file_path)
+    with zipfile.ZipFile(output_file_path) as archive:
+      archive.extractall(path=flow_output_dir)
+    os.remove(output_file_path)
+
+  def _DownloadBlobs(
+    self,
+    client: Client,
+    pathspecs: List["jobs_pb2.PathSpec"],
+    flow_output_dir: str,
+  ) -> None:
+    """Download an individual collected file from GRR to the local filesystem.
+
+    Args:
+      client: GRR Client object to download blobs from.
+      pathspecs: List of pathspecs to download blobs from.
+      flow_output_dir: Directory to store the downloaded files.
+    """
+    for pathspec in pathspecs:
+      if pathspec.nested_path.pathtype == pathspec.nested_path.NTFS:
+        vfspath = f"fs/ntfs{pathspec.path}{pathspec.nested_path.path}"
+      else:
+        vfspath = re.sub("^([a-zA-Z]:)?/(.*)$", "fs/os/\\1/\\2", pathspec.path)
+      filename = os.path.basename(vfspath)
+      base_dir = os.path.join(flow_output_dir, os.path.dirname(vfspath))
+      os.makedirs(base_dir, exist_ok=True)
+
+      f = client.File(vfspath)
+      self.logger.debug(f"Downloading blob {filename} from {vfspath}")
+      try:
+        with open(os.path.join(base_dir, filename), "wb") as out:
+          f.GetBlobWithOffset(0).WriteToStream(out)
+      except grr_errors.ResourceNotFoundError as e:
+        self.logger.warning(
+          f"Failed to download blob {filename} from {vfspath}: {e}"
+        )
+
+  def _DownloadTimeline(
+    self,
+    client: Client,
+    grr_flow: Client.Flow,
+    flow_output_dir: str,
+  ) -> str:
+    """Downloads a bodyfile timeline from a GRR client.
+
+    Args:
+      client: GRR Client object to download the timeline from.
+      grr_flow: GRR TimelineFlow object to download the timeline from.
+      flow_output_dir: Directory to store the downloaded timeline.
+
+    Returns:
+      Full path to the downloaded timeline.
+    """
+    final_bodyfile_path = os.path.join(
+      flow_output_dir, f"{grr_flow.flow_id}_timeline.body"
+    )
+    ntfs_inodes = client.data.os_info.system.lower() == "windows"
+    timeline = grr_flow.GetCollectedTimelineBody(
+      timestamp_subsecond_precision=True,
+      inode_ntfs_file_reference_format=ntfs_inodes,
+      backslash_escape=True,
+    )
+    timeline.WriteToFile(final_bodyfile_path)
+    return final_bodyfile_path
+
   def _DownloadFiles(self, client: Client, flow_id: str) -> Optional[str]:
     """Download files/results from the specified flow.
 
     Args:
-      client (object): GRR Client object to which to download flow data from.
-      flow_id (str): GRR identifier of the flow.
+      client: GRR Client object to which to download flow data from.
+      flow_id: GRR identifier of the flow.
 
     Returns:
       str: path containing the downloaded files.
     """
     grr_flow = client.Flow(flow_id)
-    is_timeline_flow = False
-    if grr_flow.Get().data.name == 'TimelineFlow':
-      is_timeline_flow = True
-      output_file_path = os.path.join(
-          self.output_path, '.'.join((flow_id, 'body')))
-    else:
-      output_file_path = os.path.join(
-          self.output_path, '.'.join((flow_id, 'zip')))
 
-    if os.path.exists(output_file_path):
-      self.logger.info(
-          f'{output_file_path:s} already exists: Skipping')
-      return None
-
-    if is_timeline_flow:
-      file_archive = grr_flow.GetCollectedTimelineBody()
-    else:
-      file_archive = grr_flow.GetFilesArchive()
-
-    file_archive.WriteToFile(output_file_path)
-
-    # Unzip archive for processing and remove redundant zip
     fqdn = client.data.os_info.fqdn.lower()
-    client_output_folder = os.path.join(self.output_path, fqdn, flow_id)
-    if not os.path.isdir(client_output_folder):
-      os.makedirs(client_output_folder)
+    flow_output_dir = os.path.join(self.output_path, fqdn, flow_id)
+    os.makedirs(flow_output_dir, exist_ok=True)
 
-    if is_timeline_flow:
-      shutil.copy2(
-          output_file_path,
-          os.path.join(client_output_folder,
-                       f'{flow_id}_timeline.body'))
+    if grr_flow.Get().data.name == "TimelineFlow":
+      self.logger.info("Downloading timeline from GRR")
+      self._DownloadTimeline(client, grr_flow, flow_output_dir)
+      return flow_output_dir
+
+    results = grr_flow.ListResults()
+    pathspecs = []
+    large_files = False
+    for result in results:
+      filepath = result.payload.pathspec.path
+      if result.payload.st_size > self._LARGE_FILE_SIZE_THRESHOLD:
+        size_gb = result.payload.st_size / 1024 / 1024 / 1024
+        self.logger.warning(
+          f"Large file detected: {filepath} ({size_gb:.2f} GB)"
+        )
+        large_files = True
+      pathspecs.append(result.payload.pathspec)
+
+    if large_files:
+      self.logger.warning(
+        "Large files detected, downloading blobs instead of archive..."
+      )
+      self._DownloadBlobs(client, pathspecs, flow_output_dir)
     else:
-      with zipfile.ZipFile(output_file_path) as archive:
-        archive.extractall(path=client_output_folder)
-    os.remove(output_file_path)
+      self.logger.info("Downloading file archive from GRR")
+      self._DownloadArchive(grr_flow, flow_output_dir)
 
-    return client_output_folder
+    return flow_output_dir
 
   def GetThreadPoolSize(self) -> int:
     """Thread pool size."""
@@ -521,6 +591,7 @@ Flow ID: {3:s}
         ignore_grr_process=True,
         process_regex=self.process_ignorelist_regex,
         cmdline_regex=self.cmdline_ignorelist_regex,
+        skip_mapped_files=False,
         dump_process_on_match=self.dump_process_on_match,
       )
 
@@ -592,6 +663,8 @@ Flow ID: {3:s}
 
     entries = []
     for r in results:
+      if not isinstance(r.payload, flows_pb2.YaraProcessScanMatch):
+        continue
       process = r.payload.process
       for match in r.payload.match:
         string_matches = set(sm.string_id for sm in match.string_matches)
@@ -762,7 +835,8 @@ class GRRArtifactCollector(GRRFlow):
           use_raw_filesystem_access=self.use_raw_filesystem_access,
           ignore_interpolation_errors=True,
           apply_parsers=False,
-          max_file_size=self.max_file_size)
+          max_file_size=self.max_file_size,
+          implementation_type=jobs_pb2.PathSpec.ImplementationType.DIRECT)
       flow_id = self._LaunchFlow(client, 'ArtifactCollectorFlow', flow_args)
       if not flow_id:
         msg = f'Flow could not be launched on {client.client_id:s}.'
@@ -1365,44 +1439,15 @@ class GRRTimelineCollector(GRRFlow):
       timeline_args = timeline_pb2.TimelineArgs(root=root_path,)
       flow_id = self._LaunchFlow(client, 'TimelineFlow', timeline_args)
       self._AwaitFlow(client, flow_id)
-      collected_flow_data = self._DownloadTimeline(client, flow_id)
-      if collected_flow_data:
-        self.PublishMessage(f'{flow_id}: Downloaded: {collected_flow_data}')
-        cont = containers.File(
-            name=client.data.os_info.fqdn.lower(),
-            path=collected_flow_data
-        )
-        self.StoreContainer(cont)
-
-  def _DownloadTimeline(self, client: Client, flow_id: str) -> Optional[str]:
-    """Download a timeline in BODY format from the specified flow.
-    Args:
-      client (object): GRR Client object to which to download flow data from.
-      flow_id (str): GRR identifier of the flow.
-    Returns:
-      str: path of downloaded files.
-    """
-    extension = 'body' if self._timeline_format == 1 else 'raw'
-    output_file_path = os.path.join(
-        self.output_path, '.'.join((flow_id, extension)))
-
-    if os.path.exists(output_file_path):
-      self.logger.info(
-          f'{output_file_path:s} already exists: Skipping')
-      return None
-
-    grr_flow = client.Flow(flow_id)
-    if self._timeline_format == 1:
-      ntfs_inodes = client.data.os_info.system.lower() == 'windows'
-      timeline = grr_flow.GetCollectedTimelineBody(
-          timestamp_subsecond_precision=True,
-          inode_ntfs_file_reference_format=ntfs_inodes,
-          backslash_escape=True)
-    else:
-      timeline = grr_flow.GetCollectedTimeline(self._timeline_format)
-    timeline.WriteToFile(output_file_path)
-
-    return output_file_path
+      temp_directory = tempfile.mkdtemp()
+      collected_timeline = self._DownloadTimeline(
+        client, client.Flow(flow_id), temp_directory
+      )
+      self.PublishMessage(f"{flow_id}: Downloaded: {collected_timeline}")
+      cont = containers.File(
+        name=client.data.os_info.fqdn.lower(), path=collected_timeline
+      )
+      self.StoreContainer(cont)
 
   def PreProcess(self) -> None:
     """Not implemented."""

@@ -316,39 +316,33 @@ class Resource():
 
   def AsDict(self) -> Dict[str, Any]:
     """Returns a dictionary representation of the resource object."""
+    creation_timestamp = ""
+    if self.creation_timestamp:
+      assert self.creation_timestamp is not None
+      creation_timestamp = self.creation_timestamp.astimezone(
+        datetime.timezone.utc
+      ).strftime("%Y-%m-%dT%H:%M:%SZ")
+    deletion_timestamp = ""
+    if self.deletion_timestamp:
+      assert self.deletion_timestamp is not None
+      deletion_timestamp = self.deletion_timestamp.astimezone(
+        datetime.timezone.utc
+      ).strftime("%Y-%m-%dT%H:%M:%SZ")
     return {
-        'id':
-        self.id,
-        'name':
-        self.name,
-        'type':
-        self.type,
-        'project_id':
-        self.project_id,
-        'location':
-        self.location,
-        'created_by':
-        self.created_by,
-        'creator_ip_address':
-        self.creator_ip_address,
-        'creator_useragent':
-        self.creator_useragent,
-        'deleted_by':
-        self.deleted_by,
-        'deleter_ip_address':
-        self.deleter_ip_address,
-        'deleter_useragent':
-        self.deleter_useragent,
-        'resource_name':
-        self.resource_name,
-        'creation_timestamp':
-        self.creation_timestamp.astimezone(
-            datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
-        if self.creation_timestamp else '',
-        'deletion_timestamp':
-        self.deletion_timestamp.astimezone(
-            datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
-        if self.deletion_timestamp else ''
+      "id": self.id,
+      "name": self.name,
+      "type": self.type,
+      "project_id": self.project_id,
+      "location": self.location,
+      "created_by": self.created_by,
+      "creator_ip_address": self.creator_ip_address,
+      "creator_useragent": self.creator_useragent,
+      "deleted_by": self.deleted_by,
+      "deleter_ip_address": self.deleter_ip_address,
+      "deleter_useragent": self.deleter_useragent,
+      "resource_name": self.resource_name,
+      "creation_timestamp": creation_timestamp,
+      "deletion_timestamp": deletion_timestamp,
     }
 
   def ToDataFrame(self) -> pd.DataFrame:
