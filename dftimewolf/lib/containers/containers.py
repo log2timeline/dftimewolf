@@ -673,8 +673,8 @@ class SQLQuery(interface.AttributeContainer):
   """SQL Query container.
 
   Attributes:
-    query (str): The SQL query string..
-    description (str): A description of the query.
+    query: The SQL query string.
+    description: A description of the query.
   """
 
   CONTAINER_TYPE = "sql_query"
@@ -753,7 +753,7 @@ class GRRArtifact(interface.AttributeContainer):
   """GRR Artifact container.
 
   Attributes:
-    name (str): Name of the GRR artifact.
+    name: Name of the GRR artifact.
   """
 
   CONTAINER_TYPE = "grr_artifact"
