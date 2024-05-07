@@ -669,6 +669,30 @@ class BigQueryQuery(interface.AttributeContainer):
     return self.description
 
 
+class SQLQuery(interface.AttributeContainer):
+  """SQL Query container.
+
+  Attributes:
+    query (str): The SQL query string..
+    description (str): A description of the query.
+  """
+
+  CONTAINER_TYPE = "sql_query"
+
+  def __init__(self, query: str, description: str) -> None:
+    super(SQLQuery, self).__init__()
+    self.query = query
+    self.description = description
+
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return self.description
+
+  def __eq__(self, other: SQLQuery) -> bool:
+    """Override __eq__() for this container."""
+    return self.query == other.query
+
+
 class Telemetry(interface.AttributeContainer):
   """Attribute container for Telemetry.
 
@@ -723,3 +747,24 @@ class TurbiniaRequest(interface.AttributeContainer):
   def __eq__(self, other: TurbiniaRequest) -> bool:
     """Override __eq__() for this container."""
     return self.request_id == other.request_id
+
+
+class GRRArtifact(interface.AttributeContainer):
+  """GRR Artifact container.
+
+  Attributes:
+    name (str): Name of the GRR artifact.
+  """
+
+  CONTAINER_TYPE = "grr_artifact"
+
+  def __init__(self, name: str):
+    self.name = name
+
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return self.name
+
+  def __eq__(self, other: GRRArtifact) -> bool:
+    """Override __eq__() for this container."""
+    return self.name == other.name
