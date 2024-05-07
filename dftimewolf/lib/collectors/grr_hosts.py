@@ -799,6 +799,15 @@ class GRRArtifactCollector(GRRFlow):
     Raises:
       DFTimewolfError: if no artifacts specified nor resolved by platform.
     """
+
+    if not self.artifacts:
+      artifact_containers = self.GetContainers(containers.GRRArtifact)
+      self.logger.info(
+        "GRR artifact containers were found: {0!s}".format(artifact_containers)
+      )
+      if artifact_containers:
+        self.artifacts = [artifact.name for artifact in artifact_containers]
+
     for client in self._FindClients([container.hostname]):
       system_type = client.data.os_info.system
       self.logger.info(f'System type: {system_type:s}')

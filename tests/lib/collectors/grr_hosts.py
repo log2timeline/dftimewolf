@@ -412,12 +412,14 @@ class GRRArtifactCollectorTest(unittest.TestCase):
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._LaunchFlow')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._FindClients')
-  def testProcessFromContainers(self,
-                                mock_FindClients,
-                                unused_LaunchFlow,
-                                unused_DownloadFiles,
-                                unused_AwaitFlow,
-                                mock_InitHttp):
+  def testProcessFromHostContainers(
+    self,
+    mock_FindClients,
+    unused_LaunchFlow,
+    unused_DownloadFiles,
+    unused_AwaitFlow,
+    mock_InitHttp,
+  ):
     """Tests that processing works when only containers are passed."""
     mock_InitHttp.return_value = self.mock_grr_api
     self.grr_artifact_collector = grr_hosts.GRRArtifactCollector(
@@ -447,6 +449,66 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     self.grr_artifact_collector.PostProcess()
 
     mock_FindClients.assert_called_with(['container.host'])
+
+  @mock.patch("grr_api_client.api.InitHttp")
+  @mock.patch("dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow")
+  @mock.patch("dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles")
+  @mock.patch("dftimewolf.lib.collectors.grr_hosts.GRRFlow._LaunchFlow")
+  @mock.patch("dftimewolf.lib.collectors.grr_hosts.GRRFlow._FindClients")
+  def testProcessFromArtifactContainers(
+    self,
+    mock_FindClients,
+    mock_LaunchFlow,
+    mock_DownloadFiles,
+    unused_AwaitFlow,
+    mock_InitHttp,
+  ):
+    """Tests that processing works when only containers are passed."""
+    mock_FindClients.return_value = [mock_grr_hosts.MOCK_CLIENT]
+    mock_InitHttp.return_value = self.mock_grr_api
+    self.grr_artifact_collector = grr_hosts.GRRArtifactCollector(
+      self.test_state
+    )
+    mock_DownloadFiles.return_value = "/tmp/tmpRandom/tomchop"
+
+    self.grr_artifact_collector.SetUp(
+      hostnames="C.0000000000000000",
+      artifacts=None,
+      extra_artifacts="AnotherArtifact",
+      use_raw_filesystem_access=False,
+      reason="Random reason",
+      grr_server_url="http://fake/endpoint",
+      grr_username="user",
+      grr_password="password",
+      approvers="approver1,approver2",
+      verify=False,
+      skip_offline_clients=False,
+      max_file_size="1234",
+    )
+    self.grr_artifact_collector.StoreContainer(
+      containers.GRRArtifact(name="ForensicArtifact1")
+    )
+    self.grr_artifact_collector.StoreContainer(
+      containers.GRRArtifact(name="ForensicArtifact2")
+    )
+
+    self.grr_artifact_collector.PreProcess()
+    in_containers = self.test_state.GetContainers(
+      self.grr_artifact_collector.GetThreadOnContainerType()
+    )
+    for c in in_containers:
+      self.grr_artifact_collector.Process(c)
+    self.grr_artifact_collector.PostProcess()
+
+    actual_flow_proto = mock_LaunchFlow.call_args_list[0][0][2]
+    self.assertListEqual(
+      sorted(actual_flow_proto.artifact_list),
+      [
+        "AnotherArtifact",
+        "ForensicArtifact1",
+        "ForensicArtifact2",
+      ],
+    )
 
 
 class GRRFileCollectorTest(unittest.TestCase):
