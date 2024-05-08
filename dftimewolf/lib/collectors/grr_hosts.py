@@ -409,7 +409,8 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     flow_output_dir = os.path.join(self.output_path, fqdn, flow_id)
     os.makedirs(flow_output_dir, exist_ok=True)
 
-    if grr_flow.Get().data.name == "TimelineFlow":
+    flow_name = grr_flow.Get().data.name
+    if flow_name == "TimelineFlow":
       self.logger.info("Downloading timeline from GRR")
       self._DownloadTimeline(client, grr_flow, flow_output_dir)
       return flow_output_dir
@@ -418,14 +419,17 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     pathspecs = []
     large_files = False
     for result in results:
-      filepath = result.payload.pathspec.path
-      if result.payload.st_size > self._LARGE_FILE_SIZE_THRESHOLD:
-        size_gb = result.payload.st_size / 1024 / 1024 / 1024
+      stat_entry = result.payload
+      if flow_name == "CollectBrowserHistory":
+        stat_entry = result.payload.stat_entry
+      if stat_entry.st_size > self._LARGE_FILE_SIZE_THRESHOLD:
+        size_gb = stat_entry.st_size / 1024 / 1024 / 1024
         self.logger.warning(
-          f"Large file detected: {filepath} ({size_gb:.2f} GB)"
+          "Large file detected:"
+          f" {stat_entry.pathspec.path} ({size_gb:.2f} GB)"
         )
         large_files = True
-      pathspecs.append(result.payload.pathspec)
+      pathspecs.append(stat_entry.pathspec)
 
     if large_files:
       self.logger.warning(
