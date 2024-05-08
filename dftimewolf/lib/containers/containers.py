@@ -680,7 +680,7 @@ class SQLQuery(interface.AttributeContainer):
   CONTAINER_TYPE = "sql_query"
 
   def __init__(self, query: str, description: str) -> None:
-    super(SQLQuery, self).__init__()
+    super().__init__()
     self.query = query
     self.description = description
 
@@ -759,6 +759,7 @@ class GRRArtifact(interface.AttributeContainer):
   CONTAINER_TYPE = "grr_artifact"
 
   def __init__(self, name: str):
+    super().__init__()
     self.name = name
 
   def __str__(self) -> str:
