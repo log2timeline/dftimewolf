@@ -418,15 +418,18 @@ def SetupLogging(stdout_log: bool = False) -> None:
   root_handler.addFilter(lambda x: False)
   root_log.addHandler(root_handler)
 
-  # We want all DEBUG messages and above.
-  # TODO(tomchop): Consider making this a parameter in the future.
-  logger.setLevel(logging.DEBUG)
+  debug = bool(os.environ.get("DFTIMEWOLF_DEBUG"))
+  if debug:
+    logger.setLevel(logging.DEBUG)
+  else:
+    logger.setLevel(logging.INFO)
   logger.propagate = False
 
   # File handler needs go be added first because it doesn't format messages
   # with color
   file_handler = logging.FileHandler(logging_utils.DEFAULT_LOG_FILE)
   file_handler.setFormatter(logging_utils.WolfFormatter(colorize=False))
+  file_handler.setLevel(logging.DEBUG)  # Always log DEBUG logs to files.
   logger.addHandler(file_handler)
 
   if stdout_log:

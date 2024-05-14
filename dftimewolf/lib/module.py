@@ -7,6 +7,7 @@ import logging
 # Some AttributeErrors occurred when trying to access logging.handlers, so
 # we import them separately
 from logging import handlers
+import os
 import traceback
 import threading
 import sys
@@ -62,12 +63,17 @@ class BaseModule(object):
 
   def SetupLogging(self, threaded: bool = False) -> None:
     """Sets up stream and file logging for a specific module."""
-    self.logger.setLevel(logging.DEBUG)
+    debug = bool(os.environ.get("DFTIMEWOLF_DEBUG"))
+    if debug:
+      self.logger.setLevel(logging.DEBUG)
+    else:
+      self.logger.setLevel(logging.INFO)
 
     file_handler = handlers.RotatingFileHandler(logging_utils.DEFAULT_LOG_FILE)
     file_handler.setFormatter(logging_utils.WolfFormatter(
         colorize=False,
         threaded=threaded))
+    file_handler.setLevel(logging.DEBUG)  # Always log DEBUG to file
     self.logger.addHandler(file_handler)
 
     if self.state.stdout_log:
@@ -151,7 +157,7 @@ class BaseModule(object):
     if is_error:
       self.logger.error(message)
     else:
-      self.logger.info(message)
+      self.logger.success(message)
     self.state.PublishMessage(self.name, message, is_error)
 
   def StoreContainer(self, container: "interface.AttributeContainer") -> None:
