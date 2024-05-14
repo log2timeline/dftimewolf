@@ -36,7 +36,7 @@ turbinia_legacy = ["turbinia"]
 
 [tool.poetry.group.dev.dependencies]
 mock = "^4.0.3"
-pylint = "2.10.*"
+pylint = "^3.1.1"
 coverage = "^6.4.2"
 mypy = "*"
 types-protobuf = "^3.19.22"
