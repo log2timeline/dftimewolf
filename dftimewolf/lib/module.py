@@ -128,6 +128,8 @@ class BaseModule(object):
           self.state.recipe.get('name', 'N/A')
         )
 
+    self.PublishMessage(message, is_error=True)
+
     error = errors.DFTimewolfError(
         message, name=self.name, stacktrace=stacktrace, critical=critical)
     if self.state.telemetry:
