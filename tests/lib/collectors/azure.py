@@ -221,23 +221,39 @@ class AzureCollectorTest(unittest.TestCase):
   @mock.patch('libcloudforensics.providers.azure.internal.compute.AZComputeVirtualMachine.GetBootDisk')
   @mock.patch('libcloudforensics.providers.azure.internal.compute.AZCompute.GetDisk')
   @mock.patch('libcloudforensics.providers.azure.internal.compute.AZComputeVirtualMachine.ListDisks')
-  @mock.patch('libcloudforensics.providers.azure.internal.compute.AZCompute.GetInstance')
+  @mock.patch(
+    "libcloudforensics.providers.azure.internal.compute.AZCompute.GetInstance"
+  )
+  @mock.patch("libcloudforensics.providers.azure.forensics.StartAnalysisVm")
+  @mock.patch("libcloudforensics.providers.azure.internal.compute.AZCompute")
   # We're manually calling protected functions
   # pylint: disable=protected-access, invalid-name
-  def testFindDisksToCopy(self,
-                          mock_GetInstance,
-                          mock_ListDisks,
-                          mock_GetDisk,
-                          mock_GetBootDisk,
-                          mock_GetCredentials,
-                          mock_GetOrCreateResourceGroup):
+  def testFindDisksToCopy(
+    self,
+    mock_AZCompute,
+    mock_StartAnalysisVm,
+    mock_GetInstance,
+    mock_ListDisks,
+    mock_GetDisk,
+    mock_GetBootDisk,
+    mock_GetCredentials,
+    mock_GetOrCreateResourceGroup,
+  ):
     """Tests the FindDisksToCopy function with different SetUp() calls."""
     test_state = state.DFTimewolfState(config.Config)
+    mock_StartAnalysisVm.return_value = (FAKE_ANALYSIS_VM, None)
     azure_collector = azure.AzureCollector(test_state)
     mock_ListDisks.return_value = {
         FAKE_BOOT_DISK.name: FAKE_BOOT_DISK,
         FAKE_DISK.name: FAKE_DISK
     }
+    AZComputeMock = mock.Mock()
+    mock_AZCompute.return_value = AZComputeMock
+    AZComputeMock.GetInstance = mock_GetInstance
+    AZComputeMock.GetDisk = mock_GetDisk
+    AZComputeMock.GetBootDisk = mock_GetBootDisk
+    AZComputeMock.ListDisks = mock_ListDisks
+
     mock_GetDisk.return_value = FAKE_DISK
     mock_GetInstance.return_value = FAKE_INSTANCE
     mock_GetBootDisk.return_value = FAKE_BOOT_DISK
