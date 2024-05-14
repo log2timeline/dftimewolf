@@ -2,6 +2,7 @@
 
 from typing import Any, Dict, Optional, TYPE_CHECKING, Type, Union, Set
 
+import cProfile
 import magic
 import pandas as pd
 
@@ -38,6 +39,16 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     TurbiniaProcessorBase.__init__(
         self, state, self.logger, name=name, critical=critical)
     self.request_ids: Set[str] = set()
+    self.profiler = cProfile.Profile(subcalls=True, builtins=False)
+    self.profiler_methods = [
+        '_CreateTurbiniaRequest',
+        'DownloadFilesFromAPI',
+        'InitializeTurbiniaApiClient',
+        'TurbiniaSetUp',
+        'TurbiniaStart',
+        'TurbiniaWait',
+        'TurbiniaFinishReport',
+    ]
 
   def _BuildContainer(
       self, path: str, container_name: str
@@ -209,6 +220,8 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
           f'Found disk "{request_container.evidence_name}" but skipping as it '
           f'is in a different project "{request_container.project}".')
       return
+    
+    self.profiler.enable()
 
     if request_container.request_id:
       # We have a request ID, so we can skip creating a new Turbinia request.
@@ -241,12 +254,27 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
           self.logger.error(message)
     # Generate a Turbinia report and store it in the state.
     report = self.TurbiniaFinishReport(request_id)
+    # Stop profiler
+    self.profiler.disable()
+
     self.StoreContainer(
         containers.Report(
             module_name='TurbiniaProcessor',
             text=report,
             text_format='markdown'))
     self.PublishMessage(report)
+
+    # Store profiler telemetry
+    telemetry_entry = {}
+    for profiler_entry in self.profiler.getstats():  # pytype: disable=attribute-error
+      method_name = profiler_entry.code.co_name  # pytype: disable=attribute-error
+      if method_name in self.profiler_methods:
+        telemetry_entry[method_name] = (
+            f'callcount: {str(profiler_entry.callcount)}, '
+            f'tottime :{str(round(profiler_entry.totaltime, 10))},'
+            f'inlinetime: {str(round(profiler_entry.inlinetime, 10))}'
+        )
+    self.LogTelemetry(telemetry_entry)
 
   @staticmethod
   def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
