@@ -182,12 +182,16 @@ class GoogleCloudDiskExportStream(GoogleCloudDiskExportBase):
           container = containers.URL(path=disk_path_gcs)
           self.StoreContainer(container)
           self.PublishMessage(
-              f'Disk "{archived_disk}" exported. Incident ID: {incident_id} '
-              f'Output path: { disk_path_gcs}. To import this disk as '
-              'an image in a different project. Please use: \n'
-              f'gcloud compute images import {archived_disk} '
-              f'--source-file {disk_path_gcs} --data-disk '
-              '--project={{PROJECT_ID}}')
+            f'Disk "{archived_disk}" exported. Output path: {disk_path_gcs} '
+          )
+          self.logger.info(
+            "To import this disk as an image in a different project, please use"
+            " the following command: "
+          )
+          self.logger.info(
+            f"  gcloud compute images import {archived_disk} --source-file "
+            f"{disk_path_gcs} --data-disk --project={{PROJECT_ID}}"
+          )
 
     export_instance.Delete()
 

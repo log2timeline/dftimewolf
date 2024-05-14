@@ -194,7 +194,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     filename = f'{task_id}-'
     retries = 0
     # pylint: disable=line-too-long
-    self.PublishMessage(f'Downloading output for task {task_id}')
+    self.logger.info(f"Downloading output for task {task_id}")
     while retries < 3:
       try:
         api_response = api_instance.get_task_output_with_http_info(
@@ -215,7 +215,8 @@ class TurbiniaProcessorBase(module.BaseModule):
           if os.path.exists(extracted_path):
             result = extracted_path
             self.PublishMessage(
-                f'Extracted output file to {result} for task {task_id}')
+              f"Extracted output of task {task_id} to {result}"
+            )
           return result
       except (turbinia_api_lib.exceptions.ApiException,
           turbinia_api_lib.exceptions.UnauthorizedException) as exception:
@@ -281,8 +282,9 @@ class TurbiniaProcessorBase(module.BaseModule):
     """Refreshes credentials and initializes new API client."""
     refresh = False
     if self.credentials and self.credentials.expired:
-      self.PublishMessage(
-          "Turbinia credentials invalid or expired. Re-authenticating...")
+      self.logger.warning(
+        "Turbinia credentials invalid or expired. Re-authenticating..."
+      )
       self.credentials = self.GetCredentials(
           self.credentials_path, self.client_secrets_path)
       self.client = self.InitializeTurbiniaApiClient(self.credentials)
@@ -418,11 +420,13 @@ class TurbiniaProcessorBase(module.BaseModule):
         request) # type: ignore
       decoded_response = self._decode_api_response(api_response)
       request_id = decoded_response.get('request_id')
-      self.PublishMessage(
-          'Creating Turbinia request {0!s} with evidence {1!s}'.format(
-              request_id, evidence_name))
-      self.PublishMessage(
-          'Turbinia request status at {0!s}'.format(self.turbinia_api))
+      self.logger.info(
+        f"Creating Turbinia request {str(request_id)} with "
+        f"evidence {str(evidence_name)}"
+      )
+      self.logger.debug(
+        "Turbinia request status at {0!s}".format(self.turbinia_api)
+      )
     except turbinia_api_lib.exceptions.ApiException as exception:
       self.ModuleError(str(exception), critical=True)
 
@@ -477,8 +481,8 @@ class TurbiniaProcessorBase(module.BaseModule):
         progress = math.ceil(
             ((failed_tasks + successful_tasks) / task_count) * 100
         )
-        self.PublishMessage(
-            f'Turbinia request {request_id} is {status}. Progress: {progress}%'
+        self.logger.info(
+          f"Turbinia request {request_id} is {status}. Progress: {progress}%"
         )
 
         for task in request_data.get('tasks', []):

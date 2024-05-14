@@ -41,7 +41,7 @@ class YetiYaraCollector(module.BaseModule):
       api_key: The Yeti API key to use.
       api_root: The Yeti HTTP API root, e.g. http://localhost:8080/api/
     """
-    self.logger.info(f'Name filter: {rule_name_filter}')
+    self.logger.debug(f"Name filter: {rule_name_filter}")
     self.rule_name_filter = rule_name_filter or ''
     self.api_key = api_key
     self.api_root = api_root

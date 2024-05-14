@@ -76,9 +76,11 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
     # pytype: enable=signature-mismatch
     """Process files with Turbinia."""
 
-    self.logger.info(
-        'Processing remote FS path {0:s} from previous collector'.format(
-            container.path))
+    self.logger.debug(
+      "Processing remote FS path {0:s} from previous collector".format(
+        container.path
+      )
+    )
 
     evidence = {'type': 'CompressedDirectory', 'source_path': container.path}
     request_id = self.TurbiniaStart(evidence)

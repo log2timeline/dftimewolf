@@ -164,7 +164,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
       container: GCEDisk container referencing the disk to copy.
     """
     if container.project != self.source_project.project_id:
-      self.logger.info(f'Skipping {container.name} not in source project')
+      self.logger.debug(f"Skipping {container.name} not in source project")
     self.logger.info(f'Disk copy of {container.name} started...')
 
     try:

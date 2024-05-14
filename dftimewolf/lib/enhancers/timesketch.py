@@ -380,7 +380,7 @@ class TimesketchEnhancer(module.BaseModule):
           'a sketch.')
       self.ModuleError(message, critical=True)
 
-    self.logger.info('Waiting for analyzers to complete their run.')
+    self.logger.info("Waiting for analyzers to complete their run...")
 
     summary_lines = [self._formatter.Heading('Timesketch Run', level=1)]
     summary_lines.append(self._formatter.Paragraph(

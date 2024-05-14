@@ -48,7 +48,7 @@ class GCPLogsCollector(module.BaseModule):
     output_file = tempfile.NamedTemporaryFile(
         mode='w', delete=False, encoding='utf-8', suffix='.jsonl')
     output_path = output_file.name
-    self.logger.info(f'Downloading logs to {output_path}')
+    self.PublishMessage(f"Downloading logs to {output_path}")
     return output_file, output_path
 
   def SetupLoggingClient(self) -> Any:
@@ -102,29 +102,38 @@ class GCPLogsCollector(module.BaseModule):
         time.sleep(self._delay)
         page = next(pages)
       except google_api_exceptions.TooManyRequests as exception:
-        self.PublishMessage('Hit quota limit requesting GCP logs.')
-        self.logger.debug(f'exception: {exception}')
+        self.logger.warning("Hit quota limit requesting GCP logs.")
+        self.logger.debug(f"exception: {exception}")
         if self._backoff is True:
-          self.PublishMessage('Retrying in 60 seconds with a slower query \
-            rate.')
-          self.PublishMessage('Due to the GCP logging API, the query must \
-            restart from the beginning')
+          self.logger.debug(
+            "Retrying in 60 seconds with a slower query \
+            rate."
+          )
+          self.logger.debug(
+            "Due to the GCP logging API, the query must \
+            restart from the beginning"
+          )
           time.sleep(60)
           if self._delay == 0:
             self._delay = 1
           else:
             self._delay *= backoff_multiplier
-          self.logger.debug('Setting up new logging client.')
+          self.logger.debug("Setting up new logging client.")
           logging_client = self.SetupLoggingClient()
           pages = self.ListPages(logging_client)
-          self.PublishMessage(f'Restarting query with an API request rate \
-            of 1 per {self._delay}s')
+          self.logger.debug(f"Restarting query with an API request rate \
+            of 1 per {self._delay}s")
           output_file, output_path = self.OutputFile()
         else:
-          self.PublishMessage('Exponential backoff was not enabled, so \
-            query has exited.')
-          self.PublishMessage('The collection is most likely \
-            incomplete.', is_error=True)
+          self.logger.debug(
+            "Exponential backoff was not enabled, so \
+            query has exited."
+          )
+          self.logger.debug(
+            "The collection is most likely \
+            incomplete.",
+            is_error=True,
+          )
       except StopIteration:
         break
 

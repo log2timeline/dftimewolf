@@ -219,7 +219,7 @@ class GRRHuntArtifactCollector(GRRHunt):
     Raises:
       RuntimeError: if no items specified for collection.
     """
-    self.logger.info(f'Artifacts to be collected: {self.artifacts!s}')
+    self.logger.debug(f"Artifacts to be collected: {self.artifacts!s}")
     hunt_args = grr_flows.ArtifactCollectorFlowArgs(
         artifact_list=self.artifacts,
         use_raw_filesystem_access=self.use_raw_filesystem_access,
@@ -312,10 +312,8 @@ class GRRHuntFileCollector(GRRHunt):
     Raises:
       RuntimeError: if no items specified for collection.
     """
-    self.logger.info(
-        f'Hunt to collect {len(self.file_path_list):d} items')
-    self.logger.info(
-        f'Files to be collected: {self.file_path_list!s}')
+    self.logger.debug(f"Hunt to collect {len(self.file_path_list):d} items")
+    self.logger.debug(f"Files to be collected: {self.file_path_list!s}")
     hunt_action = grr_flows.FileFinderAction(
         action_type=grr_flows.FileFinderAction.DOWNLOAD,
         download=grr_flows.FileFinderDownloadActionOptions(
@@ -718,8 +716,7 @@ class GRRHuntDownloader(GRRHuntDownloaderBase):
         self.output_path, '.'.join((self.hunt_id, 'zip')))
 
     if os.path.exists(output_file_path):
-      self.logger.info(
-          f'{output_file_path:s} already exists: Skipping')
+      self.logger.debug(f"{output_file_path:s} already exists: Skipping")
       return []
 
     try:

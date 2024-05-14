@@ -68,13 +68,13 @@ class LocalPlasoProcessor(module.BaseModule):
         }
     }
     client = docker.from_env()  # type: ignore
-    self.logger.info(f'Running a Docker container with image {DOCKER_IMAGE}')
+    self.logger.debug(f"Running a Docker container with image {DOCKER_IMAGE}")
     client.containers.run(
         DOCKER_IMAGE,
         volumes=volumes,
         command=command,
         auto_remove=True)
-    self.logger.info('Docker container finished running and is auto-removed.')
+    self.logger.debug("Docker container finished running and is auto-removed.")
 
   def _LocalPlasoRun(self, command: List[str]) -> None:
     try:
@@ -164,7 +164,7 @@ class LocalPlasoProcessor(module.BaseModule):
     full_cmd = ' '.join(cmd)
     self.logger.info(f'Running external command: "{full_cmd}"')
     if self._use_docker:
-      self.logger.info(f'Running Docker image {DOCKER_IMAGE}')
+      self.logger.info(f"Running Docker image {DOCKER_IMAGE}")
       self._DockerPlasoRun(path, full_cmd, plaso_input_dir, plaso_output_dir)
     else:
       self._LocalPlasoRun(cmd)

@@ -149,7 +149,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       DFTimewolfError: if no client ID found for selector.
     """
     # Search for the selector in GRR
-    self.logger.info(f'Searching for client: {selector:s}')
+    self.logger.debug(f"Searching for client: {selector:s}")
     try:
       search_result = self.grr_api.SearchClients(selector)
     except grr_errors.UnknownError as exception:
@@ -188,9 +188,11 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     last_seen_minutes = int(round(last_seen_seconds / 60))
 
     self.logger.info(f'Found client: {client.client_id:s}')
-    self.logger.info('Client last seen: {0:s} ({1:d} minutes ago)'.format(
-        last_seen_datetime.strftime('%Y-%m-%dT%H:%M:%S+0000'),
-        last_seen_minutes))
+    self.logger.debug(
+      "Client last seen: {0:s} ({1:d} minutes ago)".format(
+        last_seen_datetime.strftime("%Y-%m-%dT%H:%M:%S+0000"), last_seen_minutes
+      )
+    )
 
     return client
 
@@ -239,7 +241,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       return ''
 
     flow_id = str(grr_flow.flow_id)  # pytype: disable=attribute-error
-    self.PublishMessage(f'{flow_id}: Scheduled')
+    self.PublishMessage(f"{flow_id}: Flow scheduled")
 
     return flow_id
 
@@ -256,7 +258,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     """
     self.logger.info(f'{flow_id:s}: Waiting to finish')
     if self.skip_offline_clients:
-      self.logger.info('Client will be skipped if offline.')
+      self.logger.debug("Client will be skipped if offline.")
 
     while True:
       try:
@@ -411,7 +413,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
 
     flow_name = grr_flow.Get().data.name
     if flow_name == "TimelineFlow":
-      self.logger.info("Downloading timeline from GRR")
+      self.logger.debug("Downloading timeline from GRR")
       self._DownloadTimeline(client, grr_flow, flow_output_dir)
       return flow_output_dir
 
@@ -437,7 +439,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       )
       self._DownloadBlobs(client, pathspecs, flow_output_dir)
     else:
-      self.logger.info("Downloading file archive from GRR")
+      self.logger.debug("Downloading file archive from GRR")
       self._DownloadArchive(grr_flow, flow_output_dir)
 
     return flow_output_dir
@@ -583,8 +585,9 @@ Flow ID: {3:s}
     if not self.rule_count:
       return
 
-    self.logger.info(
-      f'Running {self.rule_count} Yara sigs against {container.hostname}')
+    self.logger.debug(
+      f"Running {self.rule_count} Yara sigs against {container.hostname}"
+    )
 
     hits = 0
     flows = []
@@ -615,8 +618,9 @@ Flow ID: {3:s}
         grr_flow.flow_id,
         not yara_hits_df.empty))
       if yara_hits_df.empty:
-        self.logger.info(f'{flow_id}: No Yara hits on {grr_hostname}'
-                         f' ({client.client_id})')
+        self.PublishMessage(
+          f"{flow_id}: No Yara hits on {grr_hostname}" f" ({client.client_id})"
+        )
         continue
 
       self.PublishMessage(f'{flow_id}: found Yara hits on {grr_hostname}'
@@ -806,7 +810,7 @@ class GRRArtifactCollector(GRRFlow):
 
     if not self.artifacts:
       artifact_containers = self.GetContainers(containers.GRRArtifact)
-      self.logger.info(
+      self.logger.debug(
         "GRR artifact containers were found: {0!s}".format(artifact_containers)
       )
       if artifact_containers:
@@ -814,25 +818,25 @@ class GRRArtifactCollector(GRRFlow):
 
     for client in self._FindClients([container.hostname]):
       system_type = client.data.os_info.system
-      self.logger.info(f'System type: {system_type:s}')
+      self.logger.debug(f"System type: {system_type:s}")
 
       # If the list is supplied by the user via a flag, honor that.
       artifact_list = []
       if self.artifacts:
-        self.logger.info(
-            f'Artifacts to be collected: {self.artifacts!s}')
+        self.logger.debug(f"Artifacts to be collected: {self.artifacts!s}")
         artifact_list = self.artifacts
       else:
         default_artifacts = self.artifact_registry.get(system_type, None)
         if default_artifacts:
-          self.logger.info(
-              'Collecting default artifacts for {0:s}: {1:s}'.format(
-                  system_type, ', '.join(default_artifacts)))
+          self.logger.debug(
+            "Collecting default artifacts for {0:s}: {1:s}".format(
+              system_type, ", ".join(default_artifacts)
+            )
+          )
           artifact_list.extend(default_artifacts)
 
       if self.extra_artifacts:
-        self.logger.info(
-            f'Throwing in an extra {self.extra_artifacts!s}')
+        self.logger.debug(f"Throwing in an extra {self.extra_artifacts!s}")
         artifact_list.extend(self.extra_artifacts)
         artifact_list = list(set(artifact_list))
 
@@ -840,7 +844,7 @@ class GRRArtifactCollector(GRRFlow):
         return
 
       if client.data.os_info.system.lower() == 'windows':
-        self.logger.info('Switching to raw filesystem access for Windows.')
+        self.logger.debug("Switching to raw filesystem access for Windows.")
         self.use_raw_filesystem_access = True
 
       flow_args = flows_pb2.ArtifactCollectorFlowArgs(
@@ -1006,8 +1010,9 @@ class GRRFileCollector(GRRFlow):
       message = 'Would fetch 0 files - bailing out instead.'
       self.logger.critical(message)
       raise DFTimewolfError(message, critical=False)
-    self.logger.info(
-        f'Filefinder to collect {len(self.files):d} items on each host')
+    self.logger.debug(
+      f"Filefinder to collect {len(self.files):d} items on each host"
+    )
 
   def PostProcess(self) -> None:
     """Check if we're skipping any offline clients."""
@@ -1107,7 +1112,7 @@ class GRROsqueryCollector(GRRFlow):
     list_results = list(grr_flow.ListResults())
 
     if not list_results:
-      self.logger.info(f'No rows returned for flow ID {str(grr_flow)}')
+      self.logger.warning(f"No rows returned for flow ID {str(grr_flow)}")
       return list_results
 
     results = []
@@ -1224,8 +1229,7 @@ class GRROsqueryCollector(GRRFlow):
 
     manifest_file_path = os.path.join(self.directory, 'MANIFEST.csv')
 
-    self.logger.info(
-        f'Saving osquery flow results to {manifest_file_path}')
+    self.PublishMessage(f"Saving osquery flow results to {manifest_file_path}")
 
     with open(manifest_file_path, mode='w') as manifest_fd:
       manifest_fd.write('"Flow ID","Hostname","GRR Client Id","Osquery"\n')
@@ -1246,7 +1250,7 @@ class GRROsqueryCollector(GRRFlow):
         with open(output_file_path, mode='w') as fd:
           container.data_frame.to_csv(fd)
 
-        self.logger.info(f'Saved {output_file_path}.')
+        self.PublishMessage(f"Saved OSQuery dataframe to {output_file_path}.")
 
         manifest_fd.write(f'"{flow_id}","{hostname}","{client_id}","{query}"\n')
 
@@ -1446,8 +1450,9 @@ class GRRTimelineCollector(GRRFlow):
       root_path = self.root_path
       if not root_path:
         return
-      self.logger.info(
-          f'Timeline to start from "{root_path.decode():s}" items')
+      self.logger.debug(
+        f'Timeline to start from "{root_path.decode():s}" items'
+      )
 
       timeline_args = timeline_pb2.TimelineArgs(root=root_path,)
       flow_id = self._LaunchFlow(client, 'TimelineFlow', timeline_args)

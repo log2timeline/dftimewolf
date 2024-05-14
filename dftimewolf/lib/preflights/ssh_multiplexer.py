@@ -65,8 +65,7 @@ class SSHMultiplexer(module.PreflightModule):
     if self.extra_ssh_options:
       command.extend(self.extra_ssh_options)
     command.extend([self.hostname, 'true'])  # execute `true` and return
-    self.PublishMessage(
-        f'Opening shared SSH connection to: {" ".join(command)}')
+    self.logger.debug(f'Opening shared SSH connection to: {" ".join(command)}')
     ret = subprocess.call(command)
     if ret != 0:
       self.ModuleError(
@@ -84,8 +83,7 @@ class SSHMultiplexer(module.PreflightModule):
       self.logger.error('Error cleaning up the shared SSH connection. Remove '
                         'any lingering ~/.ssh/ctrl-dftw-* files.')
     else:
-      self.logger.info('Successfully cleaned up SSH connection.')
-
+      self.logger.debug("Successfully cleaned up SSH connection.")
 
 
 modules_manager.ModulesManager.RegisterModule(SSHMultiplexer)
