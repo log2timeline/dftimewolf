@@ -9,13 +9,11 @@ license = "Apache"
 dftimewolf = 'dftimewolf.cli.dftimewolf_recipes:Main'
 
 [tool.poetry.dependencies]
-python = ">=3.9,<=3.11.5"
-docker = "^5.0.3"
+python = ">=3.11,<=3.13"
 filelock = "*"
 google-cloud-storage = "*"
-google-cloud-logging = "2.3.1"
+google-cloud-logging = "*"
 google-cloud-bigquery = "*"
-libcloudforensics = "^20220718"
 PyPDF2 = "^2.6.0"
 six = "^1.16.0"
 timesketch-import-client = "^20210602"
@@ -27,17 +25,19 @@ prettytable = "^3.3.0"
 vt-py = "^0.14.0"
 boto3 = "^1.24.31"
 python-magic = "^0.4.27"
-turbinia = {version = "20230315", optional = true}
 turbinia-api-lib = "^1.0.2"
 turbinia-client = "^1.0.3"
 grr-api-client = "^3.4.6"
+libcloudforensics = {git = "https://github.com/google/cloud-forensics-utils.git"}
+docker = "^7.0.0"
+setuptools = "^69.5.1"  # needed by docker
 
 [tool.poetry.extras]
 turbinia_legacy = ["turbinia"]
 
 [tool.poetry.group.dev.dependencies]
 mock = "^4.0.3"
-pylint = "2.10.*"
+pylint = "^3.1.1"
 coverage = "^6.4.2"
 mypy = "*"
 types-protobuf = "^3.19.22"
