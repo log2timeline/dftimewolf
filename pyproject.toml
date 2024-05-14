@@ -29,7 +29,7 @@ python-magic = "^0.4.27"
 turbinia-api-lib = "^1.0.2"
 turbinia-client = "^1.0.3"
 grr-api-client = "^3.4.6"
-libcloudforensics = {git = "https://github.com/tomchop/cloud-forensics-utils.git", rev = "deps"}
+libcloudforensics = {git = "https://github.com/google/cloud-forensics-utils.git"}
 
 [tool.poetry.extras]
 turbinia_legacy = ["turbinia"]

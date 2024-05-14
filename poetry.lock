@@ -1702,9 +1702,9 @@ urllib3 = {version = ">=1.25.4,<2.1", markers = "python_version >= \"3.10\""}
 
 [package.source]
 type = "git"
-url = "https://github.com/tomchop/cloud-forensics-utils.git"
-reference = "deps"
-resolved_reference = "0689093b328037a8693b8e95d1a08752b618fd24"
+url = "https://github.com/google/cloud-forensics-utils.git"
+reference = "HEAD"
+resolved_reference = "d62b18629dfa73a3d7734250564cc0e639db1d5d"
 
 [[package]]
 name = "libcst"
@@ -3594,4 +3594,4 @@ turbinia-legacy = []
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<=3.13"
-content-hash = "702f7cf556f5d06346d088d55a3b16f222341dafe8c411f8eee98e447225924c"
+content-hash = "fc3ee4d31c0e528920f289e54f05e3f592ed860e9c9a72b0544de3c0fc4199c5"
