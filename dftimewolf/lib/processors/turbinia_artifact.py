@@ -105,7 +105,7 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
           self.logger.warning(
               f'No interesting output files could be found for task {task_id}')
           continue
-        self.logging.info(f'Found plaso result for task {task["id"]}: {path}')
+        self.logger.info(f'Found plaso result for task {task["id"]}: {path}')
         fs_container = containers.File(path=local_path, name=descriptive_name)
         self.StreamContainer(fs_container)
 
