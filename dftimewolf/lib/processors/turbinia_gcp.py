@@ -126,10 +126,9 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     """Returns a dictionary with telemetry data."""
     # Store profiler telemetry
     telemetry_entry = {}
-    for profiler_entry in ( 
+    for profiler_entry in (
         self.profiler.getstats()):  # pytype: disable=attribute-error
-      # pytype: disable=attribute-error
-      if isinstance(profiler_entry.code, str):
+      if isinstance(profiler_entry.code, str):  # pytype: disable=attribute-error
         method_name = profiler_entry.code
       else:
         method_name = profiler_entry.code.co_name
@@ -139,7 +138,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
             f'tottime :{str(round(profiler_entry.totaltime * 1000, 10))},'
             f'inlinetime: {str(round(profiler_entry.inlinetime * 1000, 10))}'
         )
-      return telemetry_entry
+    return telemetry_entry
 
   # pylint: disable=arguments-differ
   def SetUp(
