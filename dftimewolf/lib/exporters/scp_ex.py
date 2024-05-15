@@ -138,6 +138,7 @@ class SCPExporter(module.BaseModule):
       cmd.extend(self._PrefixRemotePaths(self._paths))
       cmd.extend([self._destination])
 
+    self.logger.info("Opening SSH connection...")
     self.logger.debug(f'Executing SCP command: {" ".join(cmd)}')
     ret = subprocess.call(cmd)
     if ret != 0:
