@@ -363,7 +363,7 @@ class DFTimewolfState(object):
     time_start = time.time()
     module.Process()
     total_time = utils.CalculateRunTime(time_start)
-    self.telemetry.LogTelemetry(
+    TELEMETRY.LogTelemetry(
       'total_time', str(total_time), 'core', self.recipe.get('name', 'no_name'))
 
   def _RunModuleProcessThreaded(
@@ -397,7 +397,7 @@ class DFTimewolfState(object):
         time_start = time.time()
         futures.append(executor.submit(module.Process, c))
         total_time = utils.CalculateRunTime(time_start)
-        self.telemetry.LogTelemetry(
+        TELEMETRY.LogTelemetry(
           'total_time', str(total_time), 'core', self.recipe.get('name', 'no_name'))
     return futures
 

@@ -269,7 +269,10 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     for profiler_entry in ( 
         self.profiler.getstats()):  # pytype: disable=attribute-error
       # pytype: disable=attribute-error
-      method_name = profiler_entry.code.co_name
+      if isinstance(profiler_entry.code, str):
+        method_name = profiler_entry.code
+      else:
+        method_name = profiler_entry.code.co_name
       if method_name in self.profiler_methods:
         telemetry_entry[method_name] = (
             f'callcount: {str(profiler_entry.callcount)}, '
