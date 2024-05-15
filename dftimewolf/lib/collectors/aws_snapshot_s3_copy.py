@@ -1,7 +1,6 @@
 # Lint as: python3
 """Copies AWS EBS snapshots into AWS S3."""
 
-import threading
 import time
 from typing import Any, Optional, Type, List
 import boto3

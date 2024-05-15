@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 """Contains dummy modules used in thread aware tests."""
 
-from typing import Dict, Any, TypeVar
+from typing import TypeVar
 import threading
 import time
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import interface
-from dftimewolf.lib.containers import containers
 
 
 _T = TypeVar('TestContainer')

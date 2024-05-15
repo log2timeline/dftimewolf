@@ -92,18 +92,12 @@ disable=assignment-from-none,
         consider-using-f-string,
         deprecated-pragma,
         duplicate-code,
-        eq-without-hash,
         file-ignored,
         fixme,
         locally-disabled,
-        locally-enabled,
         logging-format-interpolation,
         logging-fstring-interpolation,
-        metaclass-assignment,
         missing-param-doc,
-        no-absolute-import,
-        no-self-use,
-        parameter-unpacking,
         raise-missing-from,
         raw-checker-failed,
         super-with-arguments,
@@ -621,5 +615,5 @@ preferred-modules=
 
 # Exceptions that will emit a warning when being caught. Defaults to
 # "BaseException, Exception".
-overgeneral-exceptions=BaseException,
-                       Exception
+overgeneral-exceptions=builtins.BaseException,
+                       builtins.Exception
