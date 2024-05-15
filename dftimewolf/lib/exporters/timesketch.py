@@ -86,12 +86,13 @@ class TimesketchExporter(module.ThreadAwareModule):
       self.timesketch_api = ts_client.TimesketchApi(
           endpoint, username, password)
     elif token_password:
-      self.logger.info('Using token password from recipe config.')
+      self.logger.debug("Using token password from recipe config.")
       self.timesketch_api = timesketch_utils.GetApiClient(
           self.state, token_password=token_password)
     else:
-      self.logger.info(
-          'No username / password or token password specified, creating config')
+      self.logger.debug(
+        "No username / password or token password specified, creating config"
+      )
       self.timesketch_api = timesketch_utils.GetApiClient(self.state)
 
     if not self.timesketch_api:
@@ -130,7 +131,7 @@ class TimesketchExporter(module.ThreadAwareModule):
 
     self.sketch = self.state.GetFromCache('timesketch_sketch')
     if not self.sketch and self.sketch_id:
-      self.logger.info('Using exiting sketch: {0:d}'.format(self.sketch_id))
+      self.logger.info("Using existing sketch: {0:d}".format(self.sketch_id))
       self.sketch = self.timesketch_api.get_sketch(self.sketch_id)
 
     # Create the sketch if no sketch was stored in the cache.
@@ -178,8 +179,9 @@ class TimesketchExporter(module.ThreadAwareModule):
     """
     sketch = self.timesketch_api.get_sketch(self.sketch_id)
     timelines = sketch.list_timelines()
-    self.logger.info(
-        f'Found {len(timelines)} timelines for sketch {self.sketch_id}')
+    self.logger.debug(
+      f"Found {len(timelines)} timelines for sketch {self.sketch_id}"
+    )
     while timelines:
       for timeline in timelines:
         # if the timeline is is a final state, pop it from the list
@@ -210,8 +212,9 @@ class TimesketchExporter(module.ThreadAwareModule):
       results: List[ts_analyzer.AnalyzerResult] = timeline.run_analyzers(
           analyzer_names=self._analyzers)
       if not results:
-        self.logger.info(
-            'No new analyzers to run on timeline {0:s}.'.format(timeline_name))
+        self.logger.debug(
+          "No new analyzers to run on timeline {0:s}.".format(timeline_name)
+        )
         return
       # Get the last result, which is the most recent run of the analyzers.
       result = results[-1]
@@ -243,7 +246,9 @@ class TimesketchExporter(module.ThreadAwareModule):
 
     # Give each timeline a unique name
     timeline_name = f'{timeline_name}_{rand}'
-    self.logger.info('Uploading {0:s} ...'.format(timeline_name))
+    self.logger.info(
+      f"Uploading timeline {timeline_name} to sketch {self.sketch_id}..."
+    )
 
     with importer.ImportStreamer() as streamer:
       streamer.set_sketch(self.sketch)

@@ -76,9 +76,11 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
     # pytype: enable=signature-mismatch
     """Process files with Turbinia."""
 
-    self.logger.info(
-        'Processing remote FS path {0:s} from previous collector'.format(
-            container.path))
+    self.logger.debug(
+      "Processing remote FS path {0:s} from previous collector".format(
+        container.path
+      )
+    )
 
     evidence = {'type': 'CompressedDirectory', 'source_path': container.path}
     request_id = self.TurbiniaStart(evidence)
@@ -103,7 +105,7 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
           self.logger.warning(
               f'No interesting output files could be found for task {task_id}')
           continue
-        self.PublishMessage(f'Found plaso result for task {task["id"]}: {path}')
+        self.logger.info(f'Found plaso result for task {task["id"]}: {path}')
         fs_container = containers.File(path=local_path, name=descriptive_name)
         self.StreamContainer(fs_container)
 

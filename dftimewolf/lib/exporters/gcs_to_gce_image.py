@@ -129,7 +129,7 @@ class GCSToGCEImage(module.ThreadAwareModule):
       # Assign role to cloudbuild account
       self._AssignRolesToCloudBuild(self.role_name)
 
-      self.logger.info("Pausing 30 seconds to allow permissions to propagate")
+      self.logger.debug("Pausing 30 seconds to allow permissions to propagate")
       time.sleep(30)
     except HttpError as exception:
       # IAM service raises googleapiclient.errors.HttpError

@@ -95,7 +95,7 @@ class GoogleSheetsCollector(module.BaseModule):
         if not self._all_sheets and sheet_title not in self._sheet_names:
           continue
 
-        self.logger.info(f'Parsing sheet: {sheet_title}')
+        self.logger.debug(f"Parsing sheet: {sheet_title}")
 
         df = self._ExtractEntriesFromSheet(self._spreadsheet_id, sheet_title)
 
@@ -105,8 +105,9 @@ class GoogleSheetsCollector(module.BaseModule):
         output_file = tempfile.NamedTemporaryFile(
             mode='w', delete=False, encoding='utf-8', suffix='.csv')
         output_path = output_file.name
-        self.logger.info(
-            f'Downloading results of sheet "{sheet_title}" to {output_path}')
+        self.logger.debug(
+          f'Downloading results of sheet "{sheet_title}" to {output_path}'
+        )
 
         df.to_csv(index=False, na_rep='NaN', path_or_buf=output_file)
 

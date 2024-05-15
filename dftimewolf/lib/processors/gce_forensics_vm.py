@@ -118,10 +118,11 @@ class GCEForensicsVM(module.BaseModule):
           'gcp-forensics-vm',
           common.COMPUTE_NAME_LIMIT)
     self.PublishMessage(f'Your analysis VM will be: {analysis_vm_name}')
-    self.PublishMessage('Complimentary gcloud command:')
-    self.PublishMessage(
-        f'gcloud compute ssh --project {self.project.project_id} '
-        f'{analysis_vm_name} --zone {self.project.default_zone}')
+    self.logger.info("Complimentary gcloud command:")
+    self.logger.info(
+      f"gcloud compute ssh --project {self.project.project_id} "
+      f"{analysis_vm_name} --zone {self.project.default_zone}"
+    )
     self.StoreContainer(
         containers.TicketAttribute(
             name=self._ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME,
@@ -143,7 +144,7 @@ class GCEForensicsVM(module.BaseModule):
       self.logger.error(f'Could not create VM: {exception}')
       self.ModuleError(str(exception), critical=True)
     if not created:
-      self.PublishMessage(f'Instance {analysis_vm_name} exists: reusing.')
+      self.logger.debug(f"Instance {analysis_vm_name} exists: reusing.")
     if self._gcp_label:
       self.analysis_vm.AddLabels(self._gcp_label)
       self.analysis_vm.GetBootDisk().AddLabels(self._gcp_label)
@@ -157,8 +158,10 @@ class GCEForensicsVM(module.BaseModule):
     # Sleep until status is RUNNING before attaching disks. Possible values:
     # https://cloud.google.com/compute/docs/reference/rest/v1/instances/get
     if disks and self.analysis_vm.GetPowerState() != 'RUNNING':
-      self.logger.info('Pausing 10 seconds to allow OS to boot before attaching'
-          ' evidence disks')
+      self.logger.debug(
+        "Pausing 10 seconds to allow OS to boot before attaching"
+        " evidence disks"
+      )
       time.sleep(10)
     # In Running boot might be ongoing, thus the additinal wait
     # https://cloud.google.com/compute/docs/instances/instance-life-cycle

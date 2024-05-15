@@ -79,8 +79,9 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     elif magic.from_file(path, mime=True).startswith('text'):
       container = containers.File(name=container_name, path=path)
     else:
-      self.PublishMessage(
-          f'Skipping result of type {magic.from_file(path)} at: {path}')
+      self.logger.debug(
+        f"Skipping result of type {magic.from_file(path)} at: {path}"
+      )
 
     return container
 
@@ -254,7 +255,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       task_id = task.get('id')
       task_name = task.get('name')
       container_name = f'{self.project}-{task_name}-{task_id}'
-      self.PublishMessage(f'New output file {path} found for task {task_id}')
+      self.logger.info(f"New output file {path} found for task {task_id}")
       local_path = self.DownloadFilesFromAPI(task, path)
       if not local_path:
         self.logger.warning(
@@ -262,7 +263,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
         continue
       container = self._BuildContainer(local_path, container_name)
       if container:
-        self.PublishMessage(f'Streaming container {container.name}')
+        self.logger.debug(f"Streaming container {container.name}")
         try:
           self.StreamContainer(container)
         except RuntimeError as exception:

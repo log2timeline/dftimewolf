@@ -103,25 +103,22 @@ class GCPCloudResourceTree(module.BaseModule):
       return
 
     if self.mode == gcp_crt_helper.OperatingMode.OFFLINE:
-      self.logger.info('Starting module in offline mode.')
+      self.logger.debug("Starting module in offline mode.")
       # Get the file containers created by the previous module in the recipe
       file_containers = self.GetContainers(containers.File)
 
       # Loop over the file containers and parse the content of each to fill the
       # resources dictionary
       for file_container in file_containers:
-        self.logger.info(
-            f'Loading file from file system container: {file_container.path}')
+        self.logger.debug(
+          f"Loading file from file system container: {file_container.path}"
+        )
         self._ParseLogMessagesFromFileContainer(file_container)
 
     elif self.mode == gcp_crt_helper.OperatingMode.ONLINE:
-      self.logger.info('Starting module in online mode.')
+      self.logger.debug("Starting module in online mode.")
       self._GetListOfResources(self.project_id)
       self._GetResourcesMetaDataFromLogs(self.project_id)
-
-    else:
-      self.PublishMessage(
-          'Invalid operating mode. Supported modes are "online" or "offline"')
 
     self._BuildResourcesParentRelationships()
 
@@ -159,7 +156,7 @@ class GCPCloudResourceTree(module.BaseModule):
       out_file.write(str(resource_to_output))
 
     # Dump the resource tree to CLI
-    self.PublishMessage(str(resource_to_output))
+    self.logger.debug(str(resource_to_output))
 
     # Store the resource tree in a DataFrame container
     dataframe_container = containers.DataFrame(
@@ -390,7 +387,7 @@ class GCPCloudResourceTree(module.BaseModule):
         start_timestamp = self.period_covered_by_retrieved_logs['end']
       self.period_covered_by_retrieved_logs['end'] = end_timestamp
 
-    self.PublishMessage(f"""Retrieving logs from {start_timestamp.astimezone(
+    self.logger.info(f"""Retrieving logs from {start_timestamp.astimezone(
       datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")} to {
         end_timestamp.astimezone(datetime.timezone.utc).strftime(
             "%Y-%m-%dT%H:%M:%SZ")}.""")
@@ -535,8 +532,9 @@ class GCPCloudResourceTree(module.BaseModule):
                 'callerSuppliedUserAgent')
 
       else:
-        self.PublishMessage(
-            f'Log message type {log_message_type} not supported')
+        self.logger.warning(
+          f"Log message type {log_message_type} not supported"
+        )
         resource = None
 
       if resource:

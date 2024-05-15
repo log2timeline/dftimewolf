@@ -133,8 +133,7 @@ class WorkspaceAuditCollector(module.BaseModule):
     # the meet application
     if application_name == 'meet' and '-' in filter_expression:
       filter_expression = filter_expression.replace('-', '')
-      self.logger.info(
-        "Found '-' delimiter in the meeting_id and removed it!")
+      self.logger.debug("Found '-' delimiter in the meeting_id and removed it!")
 
     self._credentials = self._GetCredentials()
     self._application_name = application_name
@@ -168,7 +167,7 @@ class WorkspaceAuditCollector(module.BaseModule):
     output_file = tempfile.NamedTemporaryFile(
         mode='w', delete=False, encoding='utf-8', suffix='.jsonl')
     output_path = output_file.name
-    self.logger.info(f'Downloading logs to {output_path:s}')
+    self.PublishMessage(f"Downloading logs to {output_path:s}")
 
     audit_resource = self._BuildAuditResource(self._credentials)
     request_parameters = {

@@ -51,7 +51,7 @@ class VTCollector(module.BaseModule):
       try:
         download_link_list = self._getDownloadLinks(vt_hash)
       except vt.error.APIError:
-        self.logger.info(f'Hash not found on VT: {vt_hash}')
+        self.logger.warning(f"Hash not found on VT: {vt_hash}")
 
       for download_link in download_link_list:
         filename = f'{vt_hash}.{self.vt_type}'
@@ -123,7 +123,7 @@ class VTCollector(module.BaseModule):
       BufferedWriter of the written file
       None: if nothing is found
     """
-    self.logger.info(f'Download link {urllib.parse.quote(download_link)}')
+    self.logger.debug(f"Download link {urllib.parse.quote(download_link)}")
 
     download = self.client.get(download_link)
     if download.status == 200:
@@ -132,11 +132,10 @@ class VTCollector(module.BaseModule):
       if len(file_content) == 0:
         return None
       download_file_path = os.path.join(self.directory, filename)
-      self.logger.info(
-          f'Downloaded file will be written to: {download_file_path}')
       file = open(download_file_path, "wb")
       file.write(file_content)
       file.close()
+      self.PublishMessage(f"File downloaded to: {download_file_path}")
 
     assert isinstance(file, BufferedWriter)
 
@@ -213,8 +212,8 @@ class VTCollector(module.BaseModule):
     for analysis in vt_data:
       if analysis['attributes'][f'has_{self.vt_type}']:
         analysis_link = f'{analysis["links"]["self"]}/{self.vt_type}'
-        self.logger.info(
-            f'{self.vt_type} for {vt_hash}: {urllib.parse.quote(analysis_link)}'
+        self.logger.debug(
+          f"{self.vt_type} for {vt_hash}: {urllib.parse.quote(analysis_link)}"
         )
         return_list.append(analysis_link)
 
