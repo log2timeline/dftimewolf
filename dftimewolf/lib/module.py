@@ -128,8 +128,6 @@ class BaseModule(object):
           self.state.recipe.get('name', 'N/A')
         )
 
-    self.PublishMessage(message, is_error=True)
-
     error = errors.DFTimewolfError(
         message, name=self.name, stacktrace=stacktrace, critical=critical)
     if self.state.telemetry:
@@ -139,18 +137,23 @@ class BaseModule(object):
       )
 
     self.state.AddError(error)
+    self.PublishMessage(message, is_error=True, is_critical=critical)
     if critical:
-      self.logger.critical(error.message)
       raise error
-    self.logger.error(error.message)
 
-  def PublishMessage(self, message: str, is_error: bool = False) -> None:
+  def PublishMessage(
+      self, message: str, is_error: bool = False, is_critical: bool = False
+  ) -> None:
     """Logs a message, and sends the message to the state.
 
     Args:
       message: The message content.
-      is_error: True if the message is an error message, False otherwise."""
-    if is_error:
+      is_error: True if the message is an error message, False otherwise.
+      is_critical: True if the message is a critical error.
+    """
+    if is_critical:
+      self.logger.critical(message)
+    elif is_error:
       self.logger.error(message)
     else:
       self.logger.info(message)
