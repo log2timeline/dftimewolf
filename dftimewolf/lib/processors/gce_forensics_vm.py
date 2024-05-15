@@ -2,7 +2,7 @@
 """Creates an analysis VM and attaches GCP disks to it for analysis."""
 
 import time
-from typing import List, Optional, Dict
+from typing import Optional, Dict
 
 from libcloudforensics import errors as lcf_errors
 from libcloudforensics.providers.gcp import forensics as gcp_forensics

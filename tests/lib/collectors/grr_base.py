@@ -83,7 +83,7 @@ class GRRBaseModuleTest(unittest.TestCase):
         approvers='approver1@example.com,approver2@example.com',
         verify=True
     )
-    # pylint: disable=protected-access
+    # pylint: disable=protected-access,invalid-name
     grr_base_module._CHECK_APPROVAL_INTERVAL_SEC = 0
     mock_grr_object = MockGRRObject()
     mock_forbidden_function = mock.Mock(

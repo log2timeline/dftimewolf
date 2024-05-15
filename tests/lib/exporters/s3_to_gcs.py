@@ -6,7 +6,6 @@ import unittest
 
 import mock
 from libcloudforensics.providers.gcp.internal import project as gcp_project
-from libcloudforensics.providers.gcp.internal import compute
 
 from dftimewolf import config
 from dftimewolf.lib import state

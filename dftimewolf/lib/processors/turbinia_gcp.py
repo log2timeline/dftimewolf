@@ -129,7 +129,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     telemetry_entry = {}
     for profiler_entry in (
         self.profiler.getstats()):  # pytype: disable=attribute-error
-      if isinstance(profiler_entry.code, str):  # pytype: disable=attribute-error
+      if isinstance(profiler_entry.code, str):
         method_name = profiler_entry.code
       else:
         method_name = profiler_entry.code.co_name
@@ -232,7 +232,6 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     """Process a GCE Disk with Turbinia."""
     request_id = ''
     task: Dict[str, Any] = {}
-    report = ''
 
     if request_container.project != self.project:
       self.logger.info(
@@ -273,8 +272,14 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
           self.logger.error(message)
     # Generate a Turbinia report and store it in the state.
     report = self.TurbiniaFinishReport(request_id)
+
     # Stop profiler
     self.profiler.disable()
+    telemetry_entry = self.GetTelemetryEntry()
+    self.LogTelemetry(telemetry_entry)
+
+    if not report:
+      return
 
     self.StoreContainer(
         containers.Report(
@@ -282,8 +287,6 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
             text=report,
             text_format='markdown'))
     self.PublishMessage(report)
-    telemetry_entry = self.GetTelemetryEntry()
-    self.LogTelemetry(telemetry_entry)
 
   @staticmethod
   def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:

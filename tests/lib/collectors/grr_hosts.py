@@ -48,6 +48,7 @@ class GRRFlowTests(unittest.TestCase):
         verify=True,
         skip_offline_clients=False
     )
+    # pylint: disable=invalid-name
     self.grr_flow_module._CHECK_FLOW_INTERVAL_SEC = 1
 
   def testInitialization(self):

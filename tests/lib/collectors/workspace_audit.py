@@ -8,7 +8,6 @@ import datetime
 from dftimewolf.lib import errors
 from dftimewolf.lib import state
 from dftimewolf.lib.collectors import workspace_audit
-from dftimewolf.lib.containers import containers
 
 from dftimewolf import config
 

@@ -500,6 +500,7 @@ class GRRHuntYaraScanner(GRRHunt):
           'Only one of process_ignorelist or cmd_ignorelist can be specified')
 
     if process_ignorelist:
+      process_joined = ""
       if isinstance(process_ignorelist, list):
         process_joined = "|".join(process_ignorelist)
       elif isinstance(process_ignorelist, str):
@@ -508,6 +509,7 @@ class GRRHuntYaraScanner(GRRHunt):
       self.process_ignorelist_regex = r"(?i)^(?!.*(" + process_joined + r")).*"
 
     if cmdline_ignorelist:
+      cmdline_joined = ""
       if isinstance(cmdline_ignorelist, list):
         cmdline_joined = "|".join(cmdline_ignorelist)
       elif isinstance(cmdline_ignorelist, str):

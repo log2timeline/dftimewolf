@@ -25,4 +25,5 @@ jobs:
         poetry install
     - name: Run pylint on dftimewolf and tests
       run: |
-        poetry run pylint --rcfile=.pylintrc dftimewolf tests
+        poetry run pylint --rcfile=.pylintrc tests
+        poetry run pylint --rcfile=.pylintrc dftimewolf
