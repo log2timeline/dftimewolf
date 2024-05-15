@@ -214,9 +214,7 @@ class TurbiniaProcessorBase(module.BaseModule):
           extracted_path = self._ExtractFiles(local_path, path)
           if os.path.exists(extracted_path):
             result = extracted_path
-            self.PublishMessage(
-              f"Extracted output of task {task_id} to {result}"
-            )
+            self.logging.info(f"Extracted output of task {task_id} to {result}")
           return result
       except (turbinia_api_lib.exceptions.ApiException,
           turbinia_api_lib.exceptions.UnauthorizedException) as exception:
