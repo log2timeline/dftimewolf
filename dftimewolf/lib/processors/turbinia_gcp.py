@@ -220,7 +220,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
           f'Found disk "{request_container.evidence_name}" but skipping as it '
           f'is in a different project "{request_container.project}".')
       return
-    
+
     self.profiler.enable()
 
     if request_container.request_id:
@@ -266,13 +266,15 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
 
     # Store profiler telemetry
     telemetry_entry = {}
-    for profiler_entry in self.profiler.getstats():  # pytype: disable=attribute-error
-      method_name = profiler_entry.code.co_name  # pytype: disable=attribute-error
+    for profiler_entry in ( 
+        self.profiler.getstats()):  # pytype: disable=attribute-error
+      # pytype: disable=attribute-error
+      method_name = profiler_entry.code.co_name
       if method_name in self.profiler_methods:
         telemetry_entry[method_name] = (
             f'callcount: {str(profiler_entry.callcount)}, '
-            f'tottime :{str(round(profiler_entry.totaltime, 10))},'
-            f'inlinetime: {str(round(profiler_entry.inlinetime, 10))}'
+            f'tottime :{str(round(profiler_entry.totaltime * 1000, 10))},'
+            f'inlinetime: {str(round(profiler_entry.inlinetime * 1000, 10))}'
         )
     self.LogTelemetry(telemetry_entry)
 

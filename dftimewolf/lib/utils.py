@@ -8,6 +8,7 @@ import re
 import string
 import tarfile
 import tempfile
+import time
 from typing import Any, Dict, Optional, Type
 
 import pandas as pd
@@ -16,6 +17,11 @@ from dftimewolf.config import Config
 
 TOKEN_REGEX = re.compile(r'\@([\w_]+)')
 
+
+def CalculateRunTime(time_start: float) -> float:
+  """Calculates a time delta used for runtime calulcations."""
+  total_time = (time.time() * 1000) - (time_start * 1000)
+  return round(total_time, 8)
 
 def Compress(source_path: str, output_directory: Optional[str]=None) -> str:
   """Compresses files.
