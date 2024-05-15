@@ -125,14 +125,11 @@ class GCPLogsCollector(module.BaseModule):
             of 1 per {self._delay}s")
           output_file, output_path = self.OutputFile()
         else:
-          self.logger.debug(
-            "Exponential backoff was not enabled, so \
-            query has exited."
+          self.logger.warning(
+            "Exponential backoff was not enabled, so query has exited."
           )
-          self.logger.debug(
-            "The collection is most likely \
-            incomplete.",
-            is_error=True,
+          self.logger.warning(
+            "The collection is most likely incomplete.",
           )
       except StopIteration:
         break
