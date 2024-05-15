@@ -9,7 +9,9 @@ from dftimewolf.lib import module
 from dftimewolf.lib.containers import interface
 
 
-_T = TypeVar('TestContainer')
+_T = TypeVar("TestContainer")  # pylint: disable=typevar-name-mismatch
+
+
 class TestContainer(interface.AttributeContainer):
   """Test attribute container."""
 

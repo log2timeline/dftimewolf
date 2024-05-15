@@ -90,6 +90,8 @@ confidence=
 disable=assignment-from-none,
         bad-inline-option,
         consider-using-f-string,
+        consider-using-generator,
+        consider-using-max-builtin,
         deprecated-pragma,
         duplicate-code,
         file-ignored,
@@ -98,6 +100,7 @@ disable=assignment-from-none,
         logging-format-interpolation,
         logging-fstring-interpolation,
         missing-param-doc,
+        missing-timeout,
         raise-missing-from,
         raw-checker-failed,
         super-with-arguments,
@@ -276,7 +279,7 @@ argument-naming-style=snake_case
 # Regular expression matching correct argument names. Overrides argument-
 # naming-style. If left empty, argument names will be checked with the set
 # naming style.
-argument-rgx=(([a-z][a-z0-9_]*)|(_[a-z0-9_]*))$
+; argument-rgx=(([a-z][a-z0-9_]*)|(_[a-z0-9_]*))$
 
 # Naming style matching correct attribute names.
 attr-naming-style=snake_case
@@ -284,7 +287,7 @@ attr-naming-style=snake_case
 # Regular expression matching correct attribute names. Overrides attr-naming-
 # style. If left empty, attribute names will be checked with the set naming
 # style.
-attr-rgx=(([a-z][a-z0-9_]*)|(_[a-z0-9_]*))$
+; attr-rgx=(([a-z][a-z0-9_]*)|(_[a-z0-9_]*))$
 
 # Bad variable names which should always be refused, separated by a comma.
 bad-names=foo,
@@ -305,6 +308,7 @@ class-attribute-naming-style=any
 # attribute-naming-style. If left empty, class attribute names will be checked
 # with the set naming style.
 class-attribute-rgx=([A-Za-z_][A-Za-z0-9_]*|(__.*__))$
+class-const-rgx=([A-Za-z_][A-Za-z0-9_]*|(__.*__))$
 
 # Naming style matching correct class constant names.
 class-const-naming-style=UPPER_CASE

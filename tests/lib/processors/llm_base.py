@@ -40,13 +40,14 @@ class LLMProcessorBaseTest(unittest.TestCase):
       llm_base_processor.SetUp(
           'unknown', model_name='unknown', columns_to_process='a,b,c')
 
-    llm_base_processor.SUPPORTED_TASKS = frozenset(['patched_task'])
+    llm_base_processor.SUPPORTED_TASKS = frozenset(["patched_task"])  # pylint: disable=invalid-name
     with self.assertRaisesRegex(
         errors.DFTimewolfError, r'is not supported by the LLM processor'):
       llm_base_processor.SetUp(
           task='patched_task', model_name='unknown', columns_to_process='a,b,c')
 
-    llm_base_processor.SUPPORTED_MODELS = frozenset(['patched_model'])
+    # pylint: disable=invalid-name
+    llm_base_processor.SUPPORTED_MODELS = frozenset(["patched_model"])  # pylint: disable=invalid-name
     with self.assertRaisesRegex(
         errors.DFTimewolfError, r'No columns to process'):
       llm_base_processor.SetUp(

@@ -241,6 +241,8 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
           self.logger.error(message)
     # Generate a Turbinia report and store it in the state.
     report = self.TurbiniaFinishReport(request_id)
+    if not report:
+      return
     self.StoreContainer(
         containers.Report(
             module_name='TurbiniaProcessor',

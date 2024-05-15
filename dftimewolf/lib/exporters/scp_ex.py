@@ -180,6 +180,7 @@ class SCPExporter(module.BaseModule):
       str: the remote prefix e.g. 'user@host'
     """
     user = ''
+    prefix = ''
     if self._user:
       user = '{0:s}@'.format(self._user)
     if self._hostname:

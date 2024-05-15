@@ -125,6 +125,7 @@ class GCPCloudResourceTree(module.BaseModule):
 
     self._BuildResourcesParentRelationships()
 
+    resource = None
     if self.resource_id:
       resource = self.resources_dict.get(self.resource_id)
     elif self.resource_name:
