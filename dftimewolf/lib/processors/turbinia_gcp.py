@@ -122,6 +122,25 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
 
     return request_id
 
+  def GetTelemetryEntry(self) -> Dict[str, str]:
+    """Returns a dictionary with telemetry data."""
+    # Store profiler telemetry
+    telemetry_entry = {}
+    for profiler_entry in ( 
+        self.profiler.getstats()):  # pytype: disable=attribute-error
+      # pytype: disable=attribute-error
+      if isinstance(profiler_entry.code, str):
+        method_name = profiler_entry.code
+      else:
+        method_name = profiler_entry.code.co_name
+      if method_name in self.profiler_methods:
+        telemetry_entry[method_name] = (
+            f'callcount: {str(profiler_entry.callcount)}, '
+            f'tottime :{str(round(profiler_entry.totaltime * 1000, 10))},'
+            f'inlinetime: {str(round(profiler_entry.inlinetime * 1000, 10))}'
+        )
+      return telemetry_entry
+
   # pylint: disable=arguments-differ
   def SetUp(
       self,
@@ -263,22 +282,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
             text=report,
             text_format='markdown'))
     self.PublishMessage(report)
-
-    # Store profiler telemetry
-    telemetry_entry = {}
-    for profiler_entry in ( 
-        self.profiler.getstats()):  # pytype: disable=attribute-error
-      # pytype: disable=attribute-error
-      if isinstance(profiler_entry.code, str):
-        method_name = profiler_entry.code
-      else:
-        method_name = profiler_entry.code.co_name
-      if method_name in self.profiler_methods:
-        telemetry_entry[method_name] = (
-            f'callcount: {str(profiler_entry.callcount)}, '
-            f'tottime :{str(round(profiler_entry.totaltime * 1000, 10))},'
-            f'inlinetime: {str(round(profiler_entry.inlinetime * 1000, 10))}'
-        )
+    telemetry_entry = self.GetTelemetryEntry()
     self.LogTelemetry(telemetry_entry)
 
   @staticmethod

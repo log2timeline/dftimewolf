@@ -19,7 +19,10 @@ TOKEN_REGEX = re.compile(r'\@([\w_]+)')
 
 
 def CalculateRunTime(time_start: float) -> float:
-  """Calculates a time delta used for runtime calulcations."""
+  """Calculates a time delta used for runtime calulcations.
+  
+  Returns the value in milliseconds rounded to 10 decimals.
+  """
   total_time = (time.time() * 1000) - (time_start * 1000)
   return round(total_time, 10)
 
