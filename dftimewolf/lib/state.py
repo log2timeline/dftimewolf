@@ -241,8 +241,9 @@ class DFTimewolfState(object):
       telemetry_entry: The telemetry object to store.
     """
     for key, value in telemetry_entry.telemetry.items():
-      TELEMETRY.LogTelemetry(
-          key, value, telemetry_entry.module_name, telemetry_entry.recipe)
+      if self.telemetry is not None:
+        self.telemetry.LogTelemetry(
+            key, value, telemetry_entry.module_name, telemetry_entry.recipe)
 
   def GetContainers(
       self,
