@@ -66,7 +66,7 @@ class AWSVolumeSnapshotCollector(module.BaseModule):
         response = ec2.create_snapshot(VolumeId=volume)
         snapshot_ids.append(response['SnapshotId'])
 
-      self.logger.info('Waiting for snapshot completion')
+      self.logger.debug("Waiting for snapshot completion")
       ec2.get_waiter('snapshot_completed').wait(SnapshotIds=snapshot_ids)
       self.logger.info(f'Snapshots complete: {",".join(snapshot_ids):s}')
     except ec2.exceptions.ClientError as exception:

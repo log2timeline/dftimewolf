@@ -105,8 +105,9 @@ class S3ToGCSCopy(module.ThreadAwareModule):
               ) -> None:  # pytype: disable=signature-mismatch
     """Creates and exports disk image to the output bucket."""
     if self.filter and not self.filter.match(container.path):
-      self.logger.info('{0:s} does not match filter. Skipping.'.
-          format(container.path))
+      self.logger.debug(
+        "{0:s} does not match filter. Skipping.".format(container.path)
+      )
       return
 
     # Grab the first AWS Availability Zone in the region. AWS availability zones

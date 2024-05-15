@@ -2,6 +2,7 @@
 
 from typing import Any, Dict, Optional, TYPE_CHECKING, Type, Union, Set
 
+import cProfile
 import magic
 import pandas as pd
 
@@ -38,6 +39,16 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     TurbiniaProcessorBase.__init__(
         self, state, self.logger, name=name, critical=critical)
     self.request_ids: Set[str] = set()
+    self.profiler = cProfile.Profile(subcalls=True, builtins=False)
+    self.profiler_methods = [
+        '_CreateTurbiniaRequest',
+        'DownloadFilesFromAPI',
+        'InitializeTurbiniaApiClient',
+        'TurbiniaSetUp',
+        'TurbiniaStart',
+        'TurbiniaWait',
+        'TurbiniaFinishReport',
+    ]
 
   def _BuildContainer(
       self, path: str, container_name: str
@@ -68,8 +79,9 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     elif magic.from_file(path, mime=True).startswith('text'):
       container = containers.File(name=container_name, path=path)
     else:
-      self.PublishMessage(
-          f'Skipping result of type {magic.from_file(path)} at: {path}')
+      self.logger.debug(
+        f"Skipping result of type {magic.from_file(path)} at: {path}"
+      )
 
     return container
 
@@ -110,6 +122,24 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       self.ModuleError('Turbinia request failed', critical=True)
 
     return request_id
+
+  def GetTelemetryEntry(self) -> Dict[str, str]:
+    """Returns a dictionary with telemetry data."""
+    # Store profiler telemetry
+    telemetry_entry = {}
+    for profiler_entry in (
+        self.profiler.getstats()):  # pytype: disable=attribute-error
+      if isinstance(profiler_entry.code, str):  # pytype: disable=attribute-error
+        method_name = profiler_entry.code
+      else:
+        method_name = profiler_entry.code.co_name
+      if method_name in self.profiler_methods:
+        telemetry_entry[method_name] = (
+            f'callcount: {str(profiler_entry.callcount)}, '
+            f'tottime :{str(round(profiler_entry.totaltime * 1000, 10))},'
+            f'inlinetime: {str(round(profiler_entry.inlinetime * 1000, 10))}'
+        )
+    return telemetry_entry
 
   # pylint: disable=arguments-differ
   def SetUp(
@@ -210,6 +240,8 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
           f'is in a different project "{request_container.project}".')
       return
 
+    self.profiler.enable()
+
     if request_container.request_id:
       # We have a request ID, so we can skip creating a new Turbinia request.
       request_id = request_container.request_id
@@ -223,7 +255,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       task_id = task.get('id')
       task_name = task.get('name')
       container_name = f'{self.project}-{task_name}-{task_id}'
-      self.PublishMessage(f'New output file {path} found for task {task_id}')
+      self.logger.info(f"New output file {path} found for task {task_id}")
       local_path = self.DownloadFilesFromAPI(task, path)
       if not local_path:
         self.logger.warning(
@@ -231,7 +263,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
         continue
       container = self._BuildContainer(local_path, container_name)
       if container:
-        self.PublishMessage(f'Streaming container {container.name}')
+        self.logger.debug(f"Streaming container {container.name}")
         try:
           self.StreamContainer(container)
         except RuntimeError as exception:
@@ -241,8 +273,15 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
           self.logger.error(message)
     # Generate a Turbinia report and store it in the state.
     report = self.TurbiniaFinishReport(request_id)
+    
+    # Stop profiler
+    self.profiler.disable()
+    telemetry_entry = self.GetTelemetryEntry()
+    self.LogTelemetry(telemetry_entry)
+    
     if not report:
       return
+
     self.StoreContainer(
         containers.Report(
             module_name='TurbiniaProcessor',

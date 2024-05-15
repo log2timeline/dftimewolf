@@ -7,6 +7,7 @@ import logging
 # Some AttributeErrors occurred when trying to access logging.handlers, so
 # we import them separately
 from logging import handlers
+import os
 import traceback
 import threading
 import sys
@@ -62,12 +63,17 @@ class BaseModule(object):
 
   def SetupLogging(self, threaded: bool = False) -> None:
     """Sets up stream and file logging for a specific module."""
-    self.logger.setLevel(logging.DEBUG)
+    debug = bool(os.environ.get("DFTIMEWOLF_DEBUG"))
+    if debug:
+      self.logger.setLevel(logging.DEBUG)
+    else:
+      self.logger.setLevel(logging.INFO)
 
     file_handler = handlers.RotatingFileHandler(logging_utils.DEFAULT_LOG_FILE)
     file_handler.setFormatter(logging_utils.WolfFormatter(
         colorize=False,
         threaded=threaded))
+    file_handler.setLevel(logging.DEBUG)  # Always log DEBUG to file
     self.logger.addHandler(file_handler)
 
     if self.state.stdout_log:
@@ -137,21 +143,26 @@ class BaseModule(object):
       )
 
     self.state.AddError(error)
+    self.PublishMessage(message, is_error=True, is_critical=critical)
     if critical:
-      self.logger.critical(error.message)
       raise error
-    self.logger.error(error.message)
 
-  def PublishMessage(self, message: str, is_error: bool = False) -> None:
+  def PublishMessage(
+      self, message: str, is_error: bool = False, is_critical: bool = False
+  ) -> None:
     """Logs a message, and sends the message to the state.
 
     Args:
       message: The message content.
-      is_error: True if the message is an error message, False otherwise."""
-    if is_error:
+      is_error: True if the message is an error message, False otherwise.
+      is_critical: True if the message is a critical error.
+    """
+    if is_critical:
+      self.logger.critical(message)
+    elif is_error:
       self.logger.error(message)
     else:
-      self.logger.info(message)
+      self.logger.success(message)
     self.state.PublishMessage(self.name, message, is_error)
 
   def StoreContainer(self, container: "interface.AttributeContainer") -> None:

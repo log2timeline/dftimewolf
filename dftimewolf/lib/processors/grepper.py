@@ -54,8 +54,9 @@ class GrepperSearch(module.BaseModule):
       log_file_path = os.path.join(self._output_path, 'grepper.log')
       self.logger.info('Log file: {0:s}'.format(log_file_path))
 
-      self.logger.info('Walking through dir (absolute) = {0:s}'.format(
-          os.path.abspath(path)))
+      self.logger.debug(
+        "Walking through dir (absolute) = {0:s}".format(os.path.abspath(path))
+      )
       try:
         for root, _, files in os.walk(path):
           for filename in sorted(files):
@@ -75,7 +76,7 @@ class GrepperSearch(module.BaseModule):
                 self._final_output += '\n' + output
               else:
                 self._final_output = output
-              self.logger.info(output)
+              self.logger.debug(output)
       except OSError as exception:
         self.ModuleError(str(exception), critical=True)
       # Catch all remaining errors since we want to gracefully report them

@@ -76,11 +76,12 @@ class GCEImageFromDisk(module.ThreadAwareModule):
     # GCEDisk containers may come from other modules for other projects. Check
     # we only are operating on the intended project.
     if container.project != self.source_project:
-      self.logger.info(
-          f'Skipping "{container.name}" due to source project mismatch')
+      self.logger.debug(
+        f'Skipping "{container.name}" due to source project mismatch'
+      )
       return
 
-    self.logger.info(f'Creating image from disk {container.name}')
+    self.logger.debug(f"Creating image from disk {container.name}")
 
     source_disk = GoogleComputeDisk(self.source_project,
                                     self.source_zone,
@@ -97,8 +98,9 @@ class GCEImageFromDisk(module.ThreadAwareModule):
     self.StoreContainer(
         containers.GCEImage(image.name, self.dest_project))
 
-    self.logger.info(
-        f'Image {image.name} from {container.name} finished creation')
+    self.logger.debug(
+      f"Image {image.name} from {container.name} finished creation"
+    )
 
   def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
     return containers.GCEDisk

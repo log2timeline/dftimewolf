@@ -138,6 +138,7 @@ class SCPExporter(module.BaseModule):
       cmd.extend(self._PrefixRemotePaths(self._paths))
       cmd.extend([self._destination])
 
+    self.logger.info("Opening SSH connection...")
     self.logger.debug(f'Executing SCP command: {" ".join(cmd)}')
     ret = subprocess.call(cmd)
     if ret != 0:
@@ -151,11 +152,11 @@ class SCPExporter(module.BaseModule):
       file_name = os.path.basename(path_)
       full_path = os.path.join(self._destination, file_name)
       if self._upload:
-        self.PublishMessage(f'Remote filesystem path {full_path}')
+        self.logger.info(f"Remote filesystem path {full_path}")
         fspath = containers.RemoteFSPath(
             path=full_path, hostname=self._hostname)
       else:
-        self.PublishMessage(f'Local filesystem path {full_path}')
+        self.logger.info(f"Local filesystem path {full_path}")
         fspath = containers.File(name=file_name, path=full_path)
 
       self.StoreContainer(fspath)
@@ -204,13 +205,15 @@ class SCPExporter(module.BaseModule):
 
       cmd.extend([self._GenerateRemotePrefix()])
       cmd.extend(mkdir_command)
-      self.logger.info(
-        'Creating destination directory {0:s} on host {1:s}'.format(
-            self._destination, self._hostname))
+      self.logger.debug(
+        "Creating destination directory {0:s} on host {1:s}".format(
+          self._destination, self._hostname
+        )
+      )
     else:
       cmd = mkdir_command
 
-    self.logger.info('Shelling out: {0:s}'.format(' '.join(cmd)))
+    self.logger.debug("Shelling out: {0:s}".format(" ".join(cmd)))
     ret = subprocess.call(cmd)
     if ret != 0:
       self.ModuleError(
