@@ -178,7 +178,6 @@ class GoogleCloudDiskExportStream(GoogleCloudDiskExportBase):
         if archived_disk == disk.name:
           value_tuple = key_value_dict['value'].partition(r'\n')
           disk_path_gcs = value_tuple[-1]
-          incident_id = value_tuple[0]
           container = containers.URL(path=disk_path_gcs)
           self.StoreContainer(container)
           self.PublishMessage(
