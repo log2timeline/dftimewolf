@@ -232,7 +232,6 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     """Process a GCE Disk with Turbinia."""
     request_id = ''
     task: Dict[str, Any] = {}
-    report = ''
 
     if request_container.project != self.project:
       self.logger.info(
@@ -273,12 +272,12 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
           self.logger.error(message)
     # Generate a Turbinia report and store it in the state.
     report = self.TurbiniaFinishReport(request_id)
-    
+
     # Stop profiler
     self.profiler.disable()
     telemetry_entry = self.GetTelemetryEntry()
     self.LogTelemetry(telemetry_entry)
-    
+
     if not report:
       return
 
