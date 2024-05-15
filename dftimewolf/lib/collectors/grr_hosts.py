@@ -419,23 +419,32 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
 
     results = grr_flow.ListResults()
     pathspecs = []
-    large_files = False
+    large_files = []
+    collect_browser_flow = False
     for result in results:
       stat_entry = result.payload
       if flow_name == "CollectBrowserHistory":
         stat_entry = result.payload.stat_entry
+        collect_browser_flow = True
       if stat_entry.st_size > self._LARGE_FILE_SIZE_THRESHOLD:
         size_gb = stat_entry.st_size / 1024 / 1024 / 1024
         self.logger.warning(
           "Large file detected:"
           f" {stat_entry.pathspec.path} ({size_gb:.2f} GB)"
         )
-        large_files = True
+        large_files.append(size_gb)
       pathspecs.append(stat_entry.pathspec)
 
     if large_files:
       self.logger.warning(
-        "Large files detected, downloading blobs instead of archive..."
+        f'Large files detected ({", ".join(large_files)} GB), downloading'
+        ' blobs instead of archive.'
+      )
+      self._DownloadBlobs(client, pathspecs, flow_output_dir)
+    elif collect_browser_flow:
+      self.logger.debug(
+        "CollectBrowserHistory flow detected, downloading blobs instead of"
+        " archive..."
       )
       self._DownloadBlobs(client, pathspecs, flow_output_dir)
     else:
