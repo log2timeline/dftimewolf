@@ -7,6 +7,7 @@ Use it to track errors, abort on global failures, clean up after modules, etc.
 from concurrent.futures import ThreadPoolExecutor, Future
 import importlib
 import logging
+import time
 import threading
 import traceback
 from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Sequence, Type, Any, TypeVar, cast, Union  # pylint: disable=line-too-long
@@ -240,8 +241,9 @@ class DFTimewolfState(object):
       telemetry_entry: The telemetry object to store.
     """
     for key, value in telemetry_entry.telemetry.items():
-      TELEMETRY.LogTelemetry(
-          key, value, telemetry_entry.module_name, telemetry_entry.recipe)
+      if self.telemetry is not None:
+        self.telemetry.LogTelemetry(
+            key, value, telemetry_entry.module_name, telemetry_entry.recipe)
 
   def GetContainers(
       self,
@@ -359,7 +361,10 @@ class DFTimewolfState(object):
 
     Args:
       module: The module to run Process() on."""
+    time_start = time.time()
     module.Process()
+    total_time = utils.CalculateRunTime(time_start)
+    module.LogTelemetry({'total_time': str(total_time)})
 
   def _RunModuleProcessThreaded(
       self, module: ThreadAwareModule) -> List[Future]:  # type: ignore
@@ -389,8 +394,10 @@ class DFTimewolfState(object):
             f'Launching {module.name}.Process thread with {str(c)} from '
             f'{c.metadata.get(interface.METADATA_KEY_SOURCE_MODULE, "Unknown")}'
         )
+        time_start = time.time()
         futures.append(executor.submit(module.Process, c))
-
+        total_time = utils.CalculateRunTime(time_start)
+        module.LogTelemetry({'total_time': str(total_time)})
     return futures
 
   def _RunModulePreProcess(self, module: ThreadAwareModule) -> None:
