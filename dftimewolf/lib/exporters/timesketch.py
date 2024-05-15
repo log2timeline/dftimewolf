@@ -131,7 +131,7 @@ class TimesketchExporter(module.ThreadAwareModule):
 
     self.sketch = self.state.GetFromCache('timesketch_sketch')
     if not self.sketch and self.sketch_id:
-      self.logger.info('Using exiting sketch: {0:d}'.format(self.sketch_id))
+      self.logger.info("Using existing sketch: {0:d}".format(self.sketch_id))
       self.sketch = self.timesketch_api.get_sketch(self.sketch_id)
 
     # Create the sketch if no sketch was stored in the cache.
@@ -246,7 +246,9 @@ class TimesketchExporter(module.ThreadAwareModule):
 
     # Give each timeline a unique name
     timeline_name = f'{timeline_name}_{rand}'
-    self.logger.info('Uploading {0:s} ...'.format(timeline_name))
+    self.logger.info(
+      f"Uploading timeline {timeline_name} to sketch {self.sketch_id}..."
+    )
 
     with importer.ImportStreamer() as streamer:
       streamer.set_sketch(self.sketch)
