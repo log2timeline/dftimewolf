@@ -353,7 +353,7 @@ class TurbiniaProcessorBase(module.BaseModule):
       self.output_path = decoded_response.get('OUTPUT_DIR')
     except turbinia_api_lib.exceptions.ApiException as exception:
       self.logger.info("Error connecting to Turbinia API server, please "
-          "make fsure you configured the Turbinia recipe "
+          "make sure you configured the Turbinia recipe "
           "parameters correctly.")
       self.ModuleError(exception.body, critical=True)
 
