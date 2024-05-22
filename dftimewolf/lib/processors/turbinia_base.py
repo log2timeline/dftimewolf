@@ -181,17 +181,17 @@ class TurbiniaProcessorBase(module.BaseModule):
     Args:
       file_path: Path to the file to be uploaded.
     """
+    path_str = file_path.as_posix()
     if not file_path.exists():
-      self.ModuleError(f'File {file_path} not found.', critical=True)
-
+      self.ModuleError(f'File {path_str} not found.', critical=True)
     self.RefreshClientCredentials()
 
     api_instance = turbinia_evidence_api.TurbiniaEvidenceApi(
         self.client)
     api_response = api_instance.upload_evidence_with_http_info(
-        files=file_path, ticket_id=None, calculate_hash=False)
+        files=path_str, ticket_id=None, calculate_hash=False)
     if not api_response:
-      self.ModuleError(f'Error uploading file {file_path}', critical=True)
+      self.ModuleError(f'Error uploading file {path_str}', critical=True)
 
     for file_entry in api_response.raw_data:
       self.logger.info(
