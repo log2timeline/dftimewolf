@@ -10,6 +10,7 @@ import traceback
 import math
 
 from typing import Dict, List, Optional, Tuple, Any, Union, Iterator
+from pathlib import Path
 
 from google_auth_oauthlib import flow
 from google.oauth2.credentials import Credentials
@@ -19,7 +20,7 @@ from google.auth import exceptions as google_exceptions
 import turbinia_api_lib
 from turbinia_client.helpers import formatter as turbinia_formatter
 from turbinia_api_lib.api import (
-    turbinia_requests_api, turbinia_configuration_api)
+    turbinia_requests_api, turbinia_configuration_api, turbinia_evidence_api)
 from turbinia_api_lib.api import turbinia_request_results_api
 from turbinia_api_lib.api_response import ApiResponse
 
@@ -173,6 +174,29 @@ class TurbiniaProcessorBase(module.BaseModule):
 
     local_path = os.path.join(tempdir, path_to_collect.lstrip('/'))
     return local_path
+
+  def UploadEvidence(self, file_path: Path) -> None:
+    """Uploads files to Turbinia via the API server.
+    
+    Args:
+      file_path: Path to the file to be uploaded.
+    """
+    if not file_path.exists():
+      self.ModuleError(f'File {file_path} not found.', critical=True)
+
+    self.RefreshClientCredentials()
+
+    api_instance = turbinia_evidence_api.TurbiniaEvidenceApi(
+        self.client)
+    api_response = api_instance.upload_evidence_with_http_info(
+        files=file_path, ticket_id=None, calculate_hash=False)
+    if not api_response:
+      self.ModuleError(f'Error uploading file {file_path}', critical=True)
+
+    for file_entry in api_response.raw_data:
+      self.logger.info(
+          f'Uploaded {file_entry.get("original_name")} to '
+          f'{file_entry.get("file_path")}')
 
   def DownloadFilesFromAPI(self, task_data: Dict[str, List[str]],
                            path: str) -> Optional[str]:
