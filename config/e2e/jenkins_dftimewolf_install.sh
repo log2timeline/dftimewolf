@@ -8,7 +8,8 @@ set -e
 
 sudo add-apt-repository ppa:gift/dev -y
 sudo apt-get update -qq
-# Ubuntu 20.04 comes with python 3.8, we only support >= 3.9
+# Ubuntu 20.04 comes with python 3.8, we only support >= 3.11
+sudo apt-get install python3.11
 sudo apt-get install -y python3-pip
 sudo apt-get install --reinstall python3-apt
 python3 --version
@@ -90,4 +91,5 @@ fi
 
 echo "Installing dftimewolf requirements via Poetry"
 # Install dftimewolf's pinned requirements
+poetry env use /usr/bin/python3.11
 poetry install
