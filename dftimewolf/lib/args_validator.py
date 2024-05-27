@@ -23,7 +23,7 @@ class AbstractValidator(abc.ABC):
   @abc.abstractmethod
   def Validate(self,
                argument_value: str,
-               recipe_argument: resources.RecipeArgument) -> Any:
+               recipe_argument: resources.RecipeArgument) -> str:
     """Validates an argument value.
 
     Args:
@@ -74,9 +74,9 @@ class CommaSeparatedValidator(AbstractValidator):
 
     valid_arguments = [
         self.ValidateSingle(item, recipe_argument) for item in arguments]
-    valid_arguments = ','.join(valid_arguments)
+    argument_string = ','.join(valid_arguments)
 
-    return valid_arguments
+    return argument_string
 
   @abc.abstractmethod
   def ValidateSingle(self,
@@ -689,7 +689,7 @@ class ValidatorsManager:
       raise errors.RecipeArgsValidatorError(
           f'{validator_name} is not a registered validator')
 
-    validator_class = cls._validator_classes.get(validator_name)
+    validator_class = cls._validator_classes[validator_name]
     validator = validator_class()
 
     return validator.Validate(argument_value, recipe_argument)

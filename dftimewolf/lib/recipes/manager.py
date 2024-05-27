@@ -17,7 +17,7 @@ class RecipesManager(object):
   # Allow a previously registered recipe to be overridden.
   ALLOW_RECIPE_OVERRIDE = False
 
-  _recipes = {}  # type: Dict[str, Recipe]
+  _recipes = {}  # type: Dict[str, resources.Recipe]
 
   def _ReadRecipeFromFileObject(
       self,

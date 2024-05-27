@@ -111,22 +111,23 @@ class DFTimewolfTool(object):
     self._data_files_path = ''
     self._recipes_manager = recipes_manager.RecipesManager()
     self._recipe = {}  # type: Dict[str, Any]
-    self._state = None
-    self.telemetry = None
-    self._command_line_options = []
+    self._state = None  # type: Optional[DFTimewolfState]
+    self._command_line_options = argparse.Namespace()
     self.dry_run = False
     self.cdm = cdm
-    self._state: "dftw_state.DFTimewolfState" # for pytype
+    # self._state: "dftw_state.DFTimewolfState" # for pytype
     if not workflow_uuid:
       workflow_uuid = str(uuid.uuid4())
     self.uuid = workflow_uuid
 
-    self.InitializeTelemetry()
+    self.telemetry = self.InitializeTelemetry()
     self._DetermineDataFilesPath()
 
   @property
   def state(self) -> "dftw_state.DFTimewolfState":
     """Returns the internal state object."""
+    if not self._state:
+      raise errors.CriticalError('State not initialized')
     return self._state
 
   def _AddRecipeOptions(self, argument_parser: argparse.ArgumentParser) -> None:
@@ -316,8 +317,8 @@ class DFTimewolfTool(object):
       expanded_argument = self._SubstituteValidationParameters(arg)
 
       switch = expanded_argument.switch.replace('--', '')
-      argument_mandatory = (switch == arg.switch)
-      argument_set = (switch in self.state.command_line_options)
+      argument_mandatory = switch == arg.switch
+      argument_set = switch in self.state.command_line_options
 
       if argument_mandatory or argument_set:
         argument_value = self.state.command_line_options[switch]
@@ -343,14 +344,15 @@ class DFTimewolfTool(object):
       raise errors.RecipeArgsValidatorError(
           'At least one argument failed validation')
 
-  def _SubstituteValidationParameters(self, arg: "resources.RecipeArgument"):
+  def _SubstituteValidationParameters(
+      self, arg: "resources.RecipeArgument") -> "resources.RecipeArgument":
     """Replaces parameters in the format specification of an argument validator.
 
     Args:
-      arg: argument definition to replace parameters in.
+      arg: recipe argument to replace parameters in.
 
     Returns:
-      argument definition with placeholders replaced.
+      recipe argument with placeholders replaced.
     """
     if arg.validation_params is not None:
       for key, value in arg.validation_params.items():
@@ -364,7 +366,7 @@ class DFTimewolfTool(object):
   def RunPreflights(self) -> None:
     """Runs preflight modules."""
     logger.info('Running preflights...')
-    self._state.RunPreflights()
+    self.state.RunPreflights()
 
   def ReadRecipes(self) -> None:
     """Reads the recipe files."""
@@ -376,7 +378,7 @@ class DFTimewolfTool(object):
   def RunModules(self) -> None:
     """Runs the modules."""
     logger.info('Running modules...')
-    self._state.RunModules()
+    self.state.RunModules()
     logger.info('Modules run successfully!')
 
   def SetupModules(self) -> None:
@@ -384,12 +386,12 @@ class DFTimewolfTool(object):
     # TODO: refactor to only load modules that are used by the recipe.
 
     logger.info('Setting up modules...')
-    self._state.SetupModules()
+    self.state.SetupModules()
     logger.info('Modules successfully set up!')
 
   def CleanUpPreflights(self) -> None:
     """Calls the preflight's CleanUp functions."""
-    self._state.CleanUpPreflights()
+    self.state.CleanUpPreflights()
 
   def FormatTelemetry(self) -> str:
     """Prints collected telemetry if existing."""
@@ -399,9 +401,9 @@ class DFTimewolfTool(object):
     """Returns the recipes manager."""
     return self._recipes_manager
 
-  def InitializeTelemetry(self) -> None:
+  def InitializeTelemetry(self) -> telemetry.BaseTelemetry:
     """Initializes the telemetry object."""
-    self.telemetry = telemetry.GetTelemetry(uuid=self.uuid)
+    return telemetry.GetTelemetry(uuid=self.uuid)
 
 
 def SignalHandler(*unused_argvs: Any) -> None:
@@ -469,7 +471,7 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
     int: 0 DFTimewolf could be run successfully, 1 otherwise.
   """
   time_start = time.time()*1000
-  tool = DFTimewolfTool(cdm)
+  tool = DFTimewolfTool(cdm) # type: DFTimewolfTool
 
   # TODO: log errors if this fails.
   tool.LoadConfiguration()
@@ -504,11 +506,11 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
 
   for module in sorted(modules):
     tool.telemetry.LogTelemetry('module', module, 'core', recipe_name)
-  tool.telemetry.LogTelemetry(
-    'workflow_start',
-    datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-    'core',
-    recipe_name)
+    tool.telemetry.LogTelemetry(
+      'workflow_start',
+      datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+      'core',
+      recipe_name)
 
   # Interpolate arguments into recipe
   recipe = tool.state.recipe
