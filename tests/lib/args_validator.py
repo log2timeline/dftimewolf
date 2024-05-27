@@ -4,6 +4,7 @@ import unittest
 import mock
 
 from dftimewolf.lib import args_validator
+from dftimewolf.lib import resources
 from dftimewolf.lib import errors
 
 
@@ -13,15 +14,17 @@ class DefaultValidatorTest(unittest.TestCase):
   def setUp(self):
     """Setup."""
     self.validator = args_validator.DefaultValidator()
+    self.recipe_argument = resources.RecipeArgument()
+    self.recipe_argument.switch = 'default'
 
-  def test_Init(self):
+  def testInit(self):
     """Tests initialisation."""
     self.assertEqual(self.validator.NAME, 'default')
 
-  def test_ValidateSuccess(self):
+  def testValidateSuccess(self):
     """Test for Default Validator."""
-    val, _ = self.validator.Validate('operand', {})
-    self.assertTrue(val)
+    val = self.validator.Validate('test', self.recipe_argument)
+    self.assertEqual(val, 'test')
 
 
 # pylint: disable=abstract-class-instantiated
@@ -29,11 +32,11 @@ class DefaultValidatorTest(unittest.TestCase):
 class CommaSeparatedValidatorTest(unittest.TestCase):
   """Tests CommaSeparatedValidator."""
 
-  def test_Init(self):
-    """Tests initialisation.
+  def testInit(self):
+    """Tests initialization.
 
     Really, CommaSeparatedValidator is an abstract class so should never be
-    instantiated, but we're doing this for unit tests so we can test the
+    instantiated, but we're doing this for unit tests, so we can test the
     non-abstract method."""
     args_validator.CommaSeparatedValidator.__abstractmethods__=set()
 
@@ -45,45 +48,60 @@ class CommaSeparatedValidatorTest(unittest.TestCase):
       mock_init.assert_called_once()
     # pylint: enable=unused-variable
 
-  def test_Validate(self):
+  def testValidate(self):
     """Tests validation."""
     args_validator.CommaSeparatedValidator.__abstractmethods__=set()
 
+    recipe_argument = resources.RecipeArgument()
+    recipe_argument.switch = 'testcommaseparated'
+
     with mock.patch.object(args_validator.CommaSeparatedValidator,
                            'ValidateSingle',
-                           return_value=(True, '')) as mock_validatesingle:
+                           side_effect=lambda x, y: x) as mock_validatesingle:
       validator = args_validator.CommaSeparatedValidator()
-      val, _ = validator.Validate('one,two,three', {'comma_separated': True})
+      recipe_argument.validation_params = {'comma_separated': True}
+      val = validator.Validate('one,two,three', recipe_argument)
       self.assertEqual(mock_validatesingle.call_count, 3)
-      self.assertTrue(val)
+      self.assertEqual(val,'one,two,three')
 
     with mock.patch.object(args_validator.CommaSeparatedValidator,
                            'ValidateSingle',
-                           return_value=(True, '')) as mock_validatesingle:
+                           side_effect=lambda x, y: x) as mock_validatesingle:
       validator = args_validator.CommaSeparatedValidator()
-      val, _ = validator.Validate('one,two,three', {'comma_separated': False})
+      recipe_argument.validation_params = {'comma_separated': False}
+      val = validator.Validate('one,two,three', recipe_argument)
       self.assertEqual(mock_validatesingle.call_count, 1)
-      self.assertTrue(val)
+      self.assertEqual(val,'one,two,three')
 
     with mock.patch.object(args_validator.CommaSeparatedValidator,
                            'ValidateSingle',
-                           return_value=(True, '')):
+                           side_effect=lambda x, y: x):
       validator = args_validator.CommaSeparatedValidator()
-      val, _ = validator.Validate('one,two,three', {})
+      recipe_argument.validation_params = {}
+      val = validator.Validate('one,two,three', recipe_argument)
       self.assertEqual(mock_validatesingle.call_count, 1)
-      self.assertTrue(val)
+      self.assertEqual(val, 'one,two,three')
 
-  def test_ValidateFailure(self):
+  def testValidateFailure(self):
     """Tests validation failure."""
-    with mock.patch.object(args_validator.CommaSeparatedValidator,
+    def FailingValidateSingle(argument_value, _):
+      if argument_value == 'three':
+        raise errors.RecipeArgsValidationFailure(
+            'failingvalidatesingle',
+            'three',
+            'CommaSeperatedValidator',
+            'TestDescription')
+      return argument_value
+
+    with (mock.patch.object(args_validator.CommaSeparatedValidator,
                            'ValidateSingle',
-                           side_effect=[(True, ''),
-                                        (False, 'Failure1'),
-                                        (False, 'Failure2')]):
+                           side_effect=FailingValidateSingle)):
       validator = args_validator.CommaSeparatedValidator()
-      val, msg = validator.Validate('one,two,three', {'comma_separated': True})
-      self.assertFalse(val)
-      self.assertEqual(msg, 'Failure1\nFailure2')
+      argument_definition = resources.RecipeArgument()
+      argument_definition.validation_params = {'comma_separated': True}
+      with self.assertRaises(errors.RecipeArgsValidationFailure):
+        _ = validator.Validate('one,two,three', argument_definition)
+
 # pylint: enable=abstract-class-instantiated
 # pytype: enable=not-instantiable
 
@@ -94,27 +112,30 @@ class AWSRegionValidatorTest(unittest.TestCase):
   def setUp(self):
     """Setup."""
     self.validator = args_validator.AWSRegionValidator()
+    self.recipe_argument = resources.RecipeArgument()
+    self.recipe_argument.switch = 'testawsregion'
 
-  def test_Init(self):
+  def testInit(self):
     """Tests initialisation."""
     self.assertEqual(self.validator.NAME, 'aws_region')
 
-  def test_ValidateSuccess(self):
+  def testValidateSuccess(self):
     """Test that correct values do not throw an exception."""
     regions = ['ap-southeast-2', 'us-east-1', 'me-central-1']
 
-    for r in regions:
-      val, _ = self.validator.Validate(r, {})
-      self.assertTrue(val)
+    for region in regions:
+      val = self.validator.Validate(region, self.recipe_argument)
+      self.assertEqual(val, region)
 
-  def test_ValidateFailure(self):
+  def testValidateFailure(self):
     """Tests invalid values correctly throw an exception."""
     regions = ['invalid', '123456']
 
     for r in regions:
-      val, msg = self.validator.Validate(r, {})
-      self.assertFalse(val)
-      self.assertEqual(msg, 'Invalid AWS Region name')
+      with self.assertRaisesRegex(
+          errors.RecipeArgsValidationFailure,
+          'Invalid AWS Region name'):
+        _ = self.validator.Validate(r, self.recipe_argument)
 
 
 class AzureRegionValidatorTest(unittest.TestCase):
@@ -123,27 +144,30 @@ class AzureRegionValidatorTest(unittest.TestCase):
   def setUp(self):
     """Setup."""
     self.validator = args_validator.AzureRegionValidator()
+    self.recipe_argument = resources.RecipeArgument()
+    self.recipe_argument.switch = 'testazureregion'
 
-  def test_Init(self):
+  def testInit(self):
     """Tests initialisation."""
     self.assertEqual(self.validator.NAME, 'azure_region')
 
-  def test_ValidateSuccess(self):
+  def testValidateSuccess(self):
     """Test that correct values do not throw an exception."""
     regions = ['eastasia', 'norwaywest', 'westindia']
 
-    for r in regions:
-      val, _ = self.validator.Validate(r, {})
-      self.assertTrue(val)
+    for region in regions:
+      val  = self.validator.Validate(region, self.recipe_argument)
+      self.assertEqual(val, region)
 
-  def test_ValidateFailure(self):
+  def testValidateFailure(self):
     """Tests invalid values correctly throw an exception."""
     regions = ['invalid', '123456']
 
-    for r in regions:
-      val, msg = self.validator.Validate(r, {})
-      self.assertFalse(val)
-      self.assertEqual(msg, 'Invalid Azure Region name')
+    for region in regions:
+      with self.assertRaisesRegex(
+          errors.RecipeArgsValidationFailure,
+          'Invalid Azure Region name'):
+        _ = self.validator.Validate(region, self.recipe_argument)
 
 
 class GCPZoneValidatorTest(unittest.TestCase):
@@ -152,27 +176,29 @@ class GCPZoneValidatorTest(unittest.TestCase):
   def setUp(self):
     """Setup."""
     self.validator = args_validator.GCPZoneValidator()
+    self.recipe_argument = resources.RecipeArgument()
+    self.recipe_argument.switch = 'testgcpzone'
 
-  def test_Init(self):
+  def testInit(self):
     """Tests initialisation."""
     self.assertEqual(self.validator.NAME, 'gcp_zone')
 
-  def test_ValidateSuccess(self):
+  def testValidateSuccess(self):
     """Test that correct values do not throw an exception."""
     zones = ['asia-east1-a', 'europe-west2-a', 'us-central1-f']
 
-    for z in zones:
-      val, _ = self.validator.Validate(z, {})
-      self.assertTrue(val)
+    for zone in zones:
+      val = self.validator.Validate(zone, self.recipe_argument)
+      self.assertEqual(val, zone)
 
-  def test_ValidateFailure(self):
+  def testValidateFailure(self):
     """Tests invalid values correctly throw an exception."""
     zones = ['nope', '123456']
 
-    for z in zones:
-      val, msg = self.validator.Validate(z, {})
-      self.assertFalse(val)
-      self.assertEqual(msg, 'Invalid GCP Zone name')
+    for zone in zones:
+      with self.assertRaisesRegex(
+          errors.RecipeArgsValidationFailure, 'Invalid GCP Zone name'):
+        _ = self.validator.Validate(zone, self.recipe_argument)
 
 
 class RegexValidatorTest(unittest.TestCase):
@@ -181,34 +207,38 @@ class RegexValidatorTest(unittest.TestCase):
   def setUp(self):
     """Setup."""
     self.validator = args_validator.RegexValidator()
+    self.recipe_argument = resources.RecipeArgument()
+    self.recipe_argument.switch = 'testregex'
+    self.recipe_argument.validation_params = {'comma_separated': True}
 
-  def test_Init(self):
+  def testInit(self):
     """Tests initialisation."""
     self.assertEqual(self.validator.NAME, 'regex')
 
-  def test_ValidateSuccess(self):
+  def testValidateSuccess(self):
     """Test that correct values do not throw an exception."""
     values = ['abcdef', 'bcdefg', 'abcdef,bcdefg']
-    params = {'comma_separated': True, 'regex': '.?bcdef.?'}
-    for v in values:
-      val, _ = self.validator.Validate(v, params)
-      self.assertTrue(val)
+    self.recipe_argument.validation_params['regex'] = '.?bcdef.?'
+    for value in values:
+      valid_value = self.validator.Validate(value, self.recipe_argument)
+      self.assertEqual(valid_value, value)
 
-  def test_ValidateFailure(self):
+  def testValidateFailure(self):
     """Test Regex test failure."""
-    params = {'comma_separated': True, 'regex': '.?bcdef.?'}
+    self.recipe_argument.validation_params['regex'] = '.?bcdef.?'
 
-    val, msg = self.validator.Validate('tuvwxy', params)
-    self.assertFalse(val)
-    self.assertEqual(msg, '"tuvwxy" does not match regex /.?bcdef.?/')
+    with self.assertRaisesRegex(
+        errors.RecipeArgsValidationFailure,
+        "does not match regex /.\?bcdef.\?"): # pylint: disable=anomalous-backslash-in-string
+      _ = self.validator.Validate('tuvwxy', self.recipe_argument)
 
-  def test_RequiredParam(self):
+  def testRequiredParam(self):
     """Tests an error is thrown is the regex param is missing."""
-    params = {'comma_separated': True}
+    self.recipe_argument.validation_params['regex'] = None
     with self.assertRaisesRegex(
         errors.RecipeArgsValidatorError,
         'Missing validator parameter: regex'):
-      self.validator.Validate('tuvwxy', params)
+      self.validator.Validate('tuvwxy', self.recipe_argument)
 
 
 class SubnetValidatorTest(unittest.TestCase):
@@ -217,28 +247,31 @@ class SubnetValidatorTest(unittest.TestCase):
   def setUp(self):
     """Setup."""
     self.validator = args_validator.SubnetValidator()
+    self.recipe_argument = resources.RecipeArgument()
+    self.recipe_argument.switch = 'testsubnet'
+    self.recipe_argument.validation_params = {'comma_separated': True}
 
-  def test_Init(self):
+
+  def testInit(self):
     """Tests initialisation."""
     self.assertEqual(self.validator.NAME, 'subnet')
 
-  def test_ValidateSuccess(self):
+  def testValidateSuccess(self):
     """Test that correct values do not throw an exception."""
     values = ['1.2.3.4/32','192.168.0.0/24','1.2.3.4/32,192.168.0.0/24']
-    params = {'comma_separated': True}
-    for v in values:
-      val, _ = self.validator.Validate(v, params)
-      self.assertTrue(val)
+    for value in values:
+      valid_value = self.validator.Validate(value, self.recipe_argument)
+      self.assertEqual(valid_value, value)
 
-  def test_ValidateFailure(self):
+  def testValidateFailure(self):
     """Test Subnet test failure."""
     values = ['1.2.3.4/33', '267.0.0.1/32', 'text']
-    params = {'comma_separated': True}
 
     for value in values:
-      val, msg = self.validator.Validate(value, params)
-      self.assertFalse(val)
-      self.assertEqual(msg, f'{value} is not a valid subnet.')
+      with self.assertRaisesRegex(
+          errors.RecipeArgsValidationFailure,
+          'Not a valid subnet'):
+        _ = self.validator.Validate(value, self.recipe_argument)
 
 
 class DatetimeValidatorTest(unittest.TestCase):
@@ -249,25 +282,28 @@ class DatetimeValidatorTest(unittest.TestCase):
   def setUp(self):
     """Setup."""
     self.validator = args_validator.DatetimeValidator()
+    self.recipe_argument = resources.RecipeArgument()
+    self.recipe_argument.switch = 'testdatetime'
 
-  def test_Init(self):
+  def testInit(self):
     """Tests initialisation."""
     self.assertEqual(self.validator.NAME, 'datetime')
 
-  def test_RequiredParam(self):
+  def testRequiredParam(self):
     """Tests an error is thrown if format_string is missing."""
     with self.assertRaisesRegex(
         errors.RecipeArgsValidatorError,
         'Missing validator parameter: format_string'):
-      self.validator.Validate('value', {})
+      self.validator.Validate('value', self.recipe_argument)
 
-  def test_ValidateSuccess(self):
+  def testValidateSuccess(self):
     """Tests a successful validation."""
-    val, _ = self.validator.Validate(
-        '2023-12-31 23:29:59', {'format_string': self.FORMAT_STRING})
-    self.assertTrue(val)
+    self.recipe_argument.validation_params['format_string'] = self.FORMAT_STRING
+    date = '2023-12-31 23:29:59'
+    val = self.validator.Validate(date, self.recipe_argument)
+    self.assertEqual(val, date)
 
-  def test_ValidateSuccessWithOrder(self):
+  def testValidateSuccessWithOrder(self):
     """Tests validation success with order parameters."""
     first = '2023-01-01 00:00:00'
     second = '2023-01-02 00:00:00'
@@ -275,40 +311,35 @@ class DatetimeValidatorTest(unittest.TestCase):
     fourth = '2023-01-04 00:00:00'
     fifth = '2023-01-05 00:00:00'
 
-    params = {
-      'format_string': self.FORMAT_STRING,
-      'before': fourth,
-      'after': second
-    }
+    self.recipe_argument.validation_params['format_string'] = self.FORMAT_STRING
+    self.recipe_argument.validation_params['before'] = fourth
+    self.recipe_argument.validation_params['after'] = second
 
-    val, _ = self.validator.Validate(third, params)
-    self.assertTrue(val)
+    val = self.validator.Validate(third, self.recipe_argument)
+    self.assertEqual(val, third)
 
-    val, msg = self.validator.Validate(first, params)
-    self.assertFalse(val)
-    self.assertEqual(
-        msg,
-        f'{first} is before {second} but it should be the other way around')
+    with self.assertRaisesRegex(
+        errors.RecipeArgsValidationFailure,
+        f'{first} is before {second} but it should be the other way around'):
+      _ = self.validator.Validate(first, self.recipe_argument)
 
-    val, msg = self.validator.Validate(fifth, params)
-    self.assertFalse(val)
-    self.assertEqual(
-        msg,
-        f'{fourth} is before {fifth} but it should be the other way around')
+    with self.assertRaisesRegex(
+        errors.RecipeArgsValidationFailure,
+        f'{fourth} is before {fifth} but it should be the other way around'):
+      _ = self.validator.Validate(fifth, self.recipe_argument)
 
-  def test_ValidateFailureInvalidFormat(self):
+  def testValidateFailureInvalidFormat(self):
     """Tests invalid date formats correctly fail."""
     values = ['value', '2023-12-31', '2023-31-12 23:29:59']
-    for v in values:
-      val, msg = self.validator.Validate(
-          v, {'format_string': self.FORMAT_STRING})
-      self.assertFalse(val)
-      self.assertEqual(
-          msg,
-          f"time data '{v}' does not match format '{self.FORMAT_STRING}'")
+    self.recipe_argument.validation_params['format_string'] = self.FORMAT_STRING
+    for value in values:
+      with self.assertRaisesRegex(
+          errors.RecipeArgsValidationFailure,
+          f'does not match format {self.FORMAT_STRING}'):
+        _ = self.validator.Validate(value, self.recipe_argument)
 
   # pylint: disable=protected-access
-  def test_ValidateOrder(self):
+  def testValidateOrder(self):
     """Tests the _ValidateOrder method."""
     first = '2023-01-01 00:00:00'
     second = '2023-01-02 00:00:00'
@@ -328,12 +359,14 @@ class HostnameValidatorTest(unittest.TestCase):
   def setUp(self):
     """Setup."""
     self.validator = args_validator.HostnameValidator()
+    self.recipe_argument = resources.RecipeArgument()
+    self.recipe_argument.switch = 'testhostname'
 
-  def test_Init(self):
+  def testInit(self):
     """Tests initialization."""
     self.assertEqual(self.validator.NAME, 'hostname')
 
-  def test_ValidateSuccess(self):
+  def testValidateSuccess(self):
     """Test successful validation."""
     fqdns = [
       'github.com',
@@ -344,39 +377,44 @@ class HostnameValidatorTest(unittest.TestCase):
       'grr-server'
     ]
     for fqdn in fqdns:
-      val, _ = self.validator.Validate(fqdn, {})
+      val = self.validator.Validate(fqdn, self.recipe_argument)
       self.assertTrue(val)
 
-    val, _ = self.validator.Validate(','.join(fqdns), {'comma_separated': True})
+    self.recipe_argument.validation_params['comma_separated'] = True
+    val = self.validator.Validate(','.join(fqdns), self.recipe_argument)
     self.assertTrue(val)
 
-  def test_ValidationFailure(self):
+  def testValidationFailure(self):
     """Tests validation failures."""
     fqdns = ['a-.com', '-a.com']
     for fqdn in fqdns:
-      val, msg = self.validator.Validate(fqdn, {})
-      self.assertFalse(val)
-      self.assertEqual(msg, f"'{fqdn}' is an invalid hostname.")
+      with self.assertRaisesRegex(errors.RecipeArgsValidationFailure,
+                                  'Not a valid hostname'):
+        _ = self.validator.Validate(fqdn, self.recipe_argument)
 
-    val, msg =self.validator.Validate(
-        ','.join(fqdns), {'comma_separated': True})
-    self.assertFalse(val)
-    self.assertEqual(msg, ("'a-.com' is an invalid hostname.\n"
-                           "'-a.com' is an invalid hostname."))
+    self.recipe_argument.validation_params['comma_separated'] = True
+    with self.assertRaisesRegex(
+        errors.RecipeArgsValidationFailure,
+        'Not a valid hostname'):
+      _ = self.validator.Validate(','.join(fqdns), self.recipe_argument)
 
-  def test_ValidationFailureWithFQDNOnly(self):
+
+  def testValidationFailureWithFQDNOnly(self):
     """tests validation fails for flat names when FQDN_ONLY is set."""
     fqdns = ['localhost', 'grr-server']
+    self.recipe_argument.validation_params['comma_separated'] = False
+    self.recipe_argument.validation_params['fqdn_only'] = True
     for fqdn in fqdns:
-      val, msg = self.validator.Validate(fqdn, {'fqdn_only': True})
-      self.assertFalse(val)
-      self.assertEqual(msg, f"'{fqdn}' is an invalid hostname.")
+      with self.assertRaisesRegex(
+          errors.RecipeArgsValidationFailure,
+          'Not a valid hostname'):
+        _ = self.validator.Validate(fqdn, self.recipe_argument)
 
-    val, msg =self.validator.Validate(
-        ','.join(fqdns), {'comma_separated': True, 'fqdn_only': True})
-    self.assertFalse(val)
-    self.assertEqual(msg, ("'localhost' is an invalid hostname.\n"
-                           "'grr-server' is an invalid hostname."))
+    self.recipe_argument.validation_params['comma_separated'] = True
+    with self.assertRaisesRegex(
+        errors.RecipeArgsValidationFailure,
+        'Not a valid hostname'):
+      _ = self.validator.Validate(','.join(fqdns), self.recipe_argument)
 
 
 class GRRHostValidatorTest(unittest.TestCase):
@@ -385,38 +423,40 @@ class GRRHostValidatorTest(unittest.TestCase):
   def setUp(self):
     """Setup."""
     self.validator = args_validator.GRRHostValidator()
+    self.recipe_argument = resources.RecipeArgument()
+    self.recipe_argument.switch = 'testgrrhost'
 
-  def test_Init(self):
+  def testInit(self):
     """Tests initialization."""
     self.assertEqual(self.validator.NAME, 'grr_host')
 
-  def test_ValidateSuccess(self):
+  def testValidateSuccess(self):
     """Test successful validation."""
-    fqdns = ['C.1facf5562db006ad',
+    client_ids = ['C.1facf5562db006ad',
              'grr-client-ubuntu.c.ramoj-playground.internal',
              'grr-client']
-    for fqdn in fqdns:
-      val, _ = self.validator.Validate(fqdn, {})
-      self.assertTrue(val)
+    for client_id in client_ids:
+      val = self.validator.Validate(client_id, self.recipe_argument)
+      self.assertEqual(val, client_id)
 
-    val, _ = self.validator.Validate(','.join(fqdns), {'comma_separated': True})
-    self.assertTrue(val)
+    self.recipe_argument.validation_params['comma_separated'] = True
+    val = self.validator.Validate(','.join(client_ids), self.recipe_argument)
+    self.assertEqual(val, ','.join(client_ids))
 
-  def test_ValidationFailure(self):
+  def testValidationFailure(self):
     """Tests validation failures."""
     fqdns = ['a-.com', 'C.a', 'C.01234567890123456789']
     for fqdn in fqdns:
-      val, msg = self.validator.Validate(fqdn, {})
-      self.assertFalse(val)
-      self.assertEqual(msg, f"'{fqdn}' is an invalid Grr host ID.")
+      with self.assertRaisesRegex(
+          errors.RecipeArgsValidationFailure,
+          'Not a GRR host identifier'):
+        _ = self.validator.Validate(fqdn, self.recipe_argument)
 
-    val, msg = self.validator.Validate(','.join(fqdns),
-                                       {'comma_separated': True})
-    self.assertFalse(val)
-    self.assertEqual(msg,
-                     ("'a-.com' is an invalid Grr host ID.\n"
-                      "'C.a' is an invalid Grr host ID.\n"
-                      "'C.01234567890123456789' is an invalid Grr host ID."))
+    self.recipe_argument.validation_params['comma_separated'] = True
+    with self.assertRaisesRegex(
+        errors.RecipeArgsValidationFailure,
+        'Not a GRR host identifier'):
+      _ = self.validator.Validate(','.join(fqdns), self.recipe_argument)
 
 
 class URLValidatorTest(unittest.TestCase):
@@ -425,12 +465,14 @@ class URLValidatorTest(unittest.TestCase):
   def setUp(self):
     """Setup."""
     self.validator = args_validator.URLValidator()
+    self.recipe_argument = resources.RecipeArgument()
+    self.recipe_argument.switch = 'testurl'
 
-  def test_Init(self):
+  def testInit(self):
     """Tests initialization."""
     self.assertEqual(self.validator.NAME, 'url')
 
-  def test_ValidateSuccess(self):
+  def testValidateSuccess(self):
     """Test successful validation."""
     fqdns = [
         'http://10.100.0.100:8080',
@@ -443,100 +485,102 @@ class URLValidatorTest(unittest.TestCase):
         'https://grr.ramoj-playground.internal',
     ]
     for fqdn in fqdns:
-      val, _ = self.validator.Validate(fqdn, {})
+      val = self.validator.Validate(fqdn, self.recipe_argument)
       self.assertTrue(val, f'{fqdn} failed validation')
 
-    val, _ = self.validator.Validate(','.join(fqdns), {'comma_separated': True})
+    self.recipe_argument.validation_params['comma_separated'] = True
+    val = self.validator.Validate(','.join(fqdns), self.recipe_argument)
     self.assertTrue(val)
 
-  def test_ValidationFailure(self):
+  def testValidationFailure(self):
     """Tests validation failures."""
     fqdns = [
         'value',
         '10.100.0.100',  # Needs scheme
-        'http://one.*.com'
     ]
     for fqdn in fqdns:
-      val, msg = self.validator.Validate(fqdn, {})
-    self.assertFalse(val)
-    self.assertEqual(msg, f"'{fqdn}' is an invalid URL.")
+      with self.assertRaisesRegex(
+          errors.RecipeArgsValidationFailure,
+          "Not a valid URL"):
+        _ = self.validator.Validate(fqdn, self.recipe_argument)
 
-    val, msg = self.validator.Validate(','.join(fqdns),
-                                       {'comma_separated': True})
-    self.assertFalse(val)
-    self.assertEqual(msg, ("'value' is an invalid URL.\n"
-                           "'10.100.0.100' is an invalid URL.\n"
-                           "'http://one.*.com' is an invalid URL."))
-
-
-# pylint: disable=protected-access
-class ValidatorManagerTest(unittest.TestCase):
-  """Tests the validatorManager class."""
-
-  def setUp(self):
-    """SetUp."""
-    self.vm = args_validator.ValidatorManager()
-
-  def test_Init(self):
-    """Tests initialisation."""
-    self.assertIsInstance(self.vm._default_validator,
-                          args_validator.DefaultValidator)
-
-    self.assertEqual(len(self.vm._validators), 9)
-
-    self.assertIn('aws_region', self.vm._validators)
-    self.assertIn('azure_region', self.vm._validators)
-    self.assertIn('datetime', self.vm._validators)
-    self.assertIn('gcp_zone', self.vm._validators)
-    self.assertIn('grr_host', self.vm._validators)
-    self.assertIn('hostname', self.vm._validators)
-    self.assertIn('regex', self.vm._validators)
-    self.assertIn('subnet', self.vm._validators)
-    self.assertIn('url', self.vm._validators)
-
-    self.assertIsInstance(self.vm._validators['aws_region'],
-                          args_validator.AWSRegionValidator)
-    self.assertIsInstance(self.vm._validators['azure_region'],
-                          args_validator.AzureRegionValidator)
-    self.assertIsInstance(self.vm._validators['datetime'],
-                          args_validator.DatetimeValidator)
-    self.assertIsInstance(self.vm._validators['gcp_zone'],
-                          args_validator.GCPZoneValidator)
-    self.assertIsInstance(self.vm._validators['grr_host'],
-                          args_validator.GRRHostValidator)
-    self.assertIsInstance(self.vm._validators['hostname'],
-                          args_validator.HostnameValidator)
-    self.assertIsInstance(self.vm._validators['regex'],
-                          args_validator.RegexValidator)
-    self.assertIsInstance(self.vm._validators['subnet'],
-                          args_validator.SubnetValidator)
-    self.assertIsInstance(self.vm._validators['url'],
-                          args_validator.URLValidator)
-
-  def test_Validation(self):
-    """Tests validation."""
-    val, _ = self.vm.Validate(
-        '192.168.0.0/24', {'format': 'subnet', 'comma_separated': False})
-    self.assertTrue(val)
-
-  def test_DefaultValidation(self):
-    """Tests param validation with DefaultValidator."""
-    val, _ = self.vm.Validate('operand', {})
-    self.assertTrue(val)
-
-  def test_ValidationFailure(self):
-    """Tests validation failure."""
-    val, msg = self.vm.Validate('invalid',
-                                {'format': 'subnet', 'comma_separated': False})
-    self.assertFalse(val)
-    self.assertEqual(msg, 'invalid is not a valid subnet.')
-
-  def test_InvalidValidator(self):
-    """Tests an exception is thrown if an invalid validator is specified."""
+    self.recipe_argument.validation_params['comma_separated'] = True
     with self.assertRaisesRegex(
-        errors.RecipeArgsValidatorError,
-        'invalid is not a valid validator name'):
-      self.vm.Validate('operand', {'format': 'invalid'})
+        errors.RecipeArgsValidationFailure, "Error: Not a valid URL"):
+      _ = self.validator.Validate(','.join(fqdns), self.recipe_argument)
+
+
+class _TestValidator(args_validator.AbstractValidator):
+  """Validator class for unit tests."""
+  NAME = 'test'
+
+  def Validate(self, argument_value, recipe_argument):
+    return argument_value
+
+class _TestValidator2(args_validator.AbstractValidator):
+  """Validator class for unit tests."""
+  NAME = 'test2'
+
+  def Validate(self, argument_value, recipe_argument):
+    return argument_value
+
+
+# Tests for the ValidatorsManager class.
+# pylint: disable=protected-access
+class ValidatorsManagerTest(unittest.TestCase):
+  """Tests for the modules manager."""
+
+  # pylint: disable=protected-access
+  def testModuleRegistration(self):
+    """Tests the RegisterModule and DeregisterModule functions."""
+    number_of_module_classes = len(
+        args_validator.ValidatorsManager._validator_classes)
+
+    args_validator.ValidatorsManager.RegisterValidator(_TestValidator)
+    self.assertEqual(
+        len(args_validator.ValidatorsManager._validator_classes),
+        number_of_module_classes + 1)
+
+    args_validator.ValidatorsManager.DeregisterValidator(_TestValidator)
+    self.assertEqual(
+        len(args_validator.ValidatorsManager._validator_classes),
+        number_of_module_classes)
+
+
+  def testRegisterModules(self):
+    """Tests the RegisterModules function."""
+    number_of_module_classes = len(
+        args_validator.ValidatorsManager._validator_classes)
+
+    args_validator.ValidatorsManager.RegisterValidators(
+        [_TestValidator, _TestValidator2])
+    self.assertEqual(
+        len(args_validator.ValidatorsManager._validator_classes),
+        number_of_module_classes + 2)
+
+    args_validator.ValidatorsManager.DeregisterValidator(_TestValidator)
+    args_validator.ValidatorsManager.DeregisterValidator(_TestValidator2)
+
+    self.assertEqual(
+        number_of_module_classes,
+        len(args_validator.ValidatorsManager._validator_classes))
+
+
+  def testValidate(self):
+    """Tests the Validate function."""
+    recipe_argument = resources.RecipeArgument()
+    recipe_argument.validation_params = {'format': 'test'}
+
+    args_validator.ValidatorsManager.RegisterValidator(_TestValidator)
+
+    validation_result = args_validator.ValidatorsManager.Validate(
+        'test', recipe_argument)
+    self.assertEqual(validation_result, 'test')
+
+    recipe_argument.validation_params['format'] = 'does_not_exist'
+    with self.assertRaisesRegex(
+        errors.RecipeArgsValidatorError, 'not a registered validator'):
+      args_validator.ValidatorsManager.Validate('test', recipe_argument)
 
 
 if __name__ == '__main__':

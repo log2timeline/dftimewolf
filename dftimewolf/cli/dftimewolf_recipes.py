@@ -28,6 +28,7 @@ from dftimewolf.lib import utils
 
 if TYPE_CHECKING:
   from dftimewolf.lib import state as dftw_state
+  from dftimewolf.lib import resources
 
 TELEMETRY = telemetry
 
@@ -110,7 +111,9 @@ class DFTimewolfTool(object):
     self._data_files_path = ''
     self._recipes_manager = recipes_manager.RecipesManager()
     self._recipe = {}  # type: Dict[str, Any]
-    self._args_validator = args_validator.ValidatorManager()
+    self._state = None
+    self.telemetry = None
+    self._command_line_options = []
     self.dry_run = False
     self.cdm = cdm
     self._state: "dftw_state.DFTimewolfState" # for pytype
@@ -310,28 +313,26 @@ class DFTimewolfTool(object):
     error_messages = []
 
     for arg in recipe.args:
-      try:
-        # If any @params are in the validator options, substitute them in.
-        if arg.format is not None:
-          for key in arg.format:
-            if isinstance(arg.format[key], str) and '@' in arg.format[key]:
-              to_substitute = arg.format[key].replace('@', '')
-              if to_substitute in self.state.command_line_options:
-                arg.format[key] = self.state.command_line_options[to_substitute]
+      expanded_argument = self._SubstituteValidationParameters(arg)
 
-        switch = arg.switch.replace('--', '')
-        if (switch == arg.switch or  # Ignore optional args, unless present
-            self.state.command_line_options[switch] is not None):
-          value, message = self._args_validator.Validate(
-              self.state.command_line_options[switch], arg.format)
-          if not value:
-            error_messages.append(
-                f'Argument validation error: "{arg.switch}" with value '
-                f'"{self.state.command_line_options[switch]}" gave error: '
-                f'{str(message)}')
-      except errors.RecipeArgsValidatorError as exception:
-        error_messages.append(f'Argument validation error: "{arg.switch}" with '
-            f'value "{self.state.command_line_options[switch]}" gave error: '
+      switch = expanded_argument.switch.replace('--', '')
+      argument_mandatory = (switch == arg.switch)
+      argument_set = (switch in self.state.command_line_options)
+
+      if argument_mandatory or argument_set:
+        argument_value = self.state.command_line_options[switch]
+        try:
+          valid_value = args_validator.ValidatorsManager.Validate(
+              str(argument_value), arg)
+          self.state.command_line_options[switch] = valid_value
+        except errors.RecipeArgsValidationFailure as exception:
+          error_messages.append(
+              f'Invalid argument: "{arg.switch}" with value "{argument_value}".'
+              f' Error: {str(exception)}')
+        except errors.RecipeArgsValidatorError as exception:
+          error_messages.append(
+            f'Argument validation error: "{arg.switch}" with '
+            f'value "{argument_value}". Error: '
             f'{str(exception)}')
 
     if error_messages:
@@ -341,6 +342,24 @@ class DFTimewolfTool(object):
         logger.critical(message)
       raise errors.RecipeArgsValidatorError(
           'At least one argument failed validation')
+
+  def _SubstituteValidationParameters(self, arg: "resources.RecipeArgument"):
+    """Replaces parameters in the format specification of an argument validator.
+
+    Args:
+      arg: argument definition to replace parameters in.
+
+    Returns:
+      argument definition with placeholders replaced.
+    """
+    if arg.validation_params is not None:
+      for key, value in arg.validation_params.items():
+        if isinstance(value, str) and '@' in value:
+          to_substitute = value.replace('@', '')
+          if to_substitute in self.state.command_line_options:
+            arg.validation_params[key] = (
+                self.state.command_line_options[to_substitute])
+    return arg
 
   def RunPreflights(self) -> None:
     """Runs preflight modules."""

@@ -52,8 +52,8 @@ MOCK_DFTIMEWOLF_RECIPE = {
         description='foo',
         contents={'name': 'recipe_test'},
         args=[
-            resources.RecipeArgs('argument_1_test', '', None),
-            resources.RecipeArgs('--argument_2_test', '', None)]
+            resources.RecipeArgument('argument_1_test', '', None),
+            resources.RecipeArgument('--argument_2_test', '', None)]
     )
 }
 

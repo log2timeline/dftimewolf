@@ -43,6 +43,44 @@ class CommandLineParseError(DFTimewolfError):
 class CriticalError(DFTimewolfError):
   """Critical error that should abort the whole workflow."""
 
+class RecipeArgsValidationFailure(DFTimewolfError):
+  """Error that indicates a recipe argument is invalid.
+
+  Attributes:
+    switch (str): The name of the argument that is invalid.
+    argument_value (str): The value of the argument that is invalid.
+    description (str): Description of why the argument is invalid.
+    message (str): The error message.
+    name (str): Name of the module that generated the error.
+    stacktrace (Optional[str]): Stacktrace leading to the error.
+    critical (Optional[bool]): Whether the error is critical or not. Critical
+        errors interrupt the recipe execution flow.
+    unexpected (Optional[bool]): Whether the error is unexpected.
+  """
+
+  def __init__(self,
+               switch: str,
+               argument_value: str,
+               validator: str,
+               description: str,
+               name: Optional[str]=None,
+               stacktrace: Optional[str]=None,
+               critical: bool=False,
+               unexpected: bool=False) -> None:
+    """Initializes the DFTimewolfError with provided or default message."""
+    self.name = name
+    self.stacktrace = stacktrace
+    self.critical = critical
+    self.unexpected = unexpected
+    self.switch = switch
+    self.argument_value = argument_value
+    self.validator = validator
+    self.description = description
+    message = (f'Invalid argument: "{switch}" with value "{argument_value}". '
+               f'Determined by "{validator}" validator. Error: {description}')
+    super(DFTimewolfError, self).__init__(message)
+
+
 
 class RecipeArgsValidatorError(DFTimewolfError):
   """Fatal error in recipe argument validation."""

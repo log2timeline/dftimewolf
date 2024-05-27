@@ -27,7 +27,7 @@ NESTED_ARG_RECIPE = {
 }
 
 NESTED_ARG_RECIPE_ARGS = [
-    resources.RecipeArgs(*arg) for arg in NESTED_ARG_RECIPE['args']]
+    resources.RecipeArgument(*arg) for arg in NESTED_ARG_RECIPE['args']]
 
 class MainToolTest(unittest.TestCase):
   """Tests for main tool functions."""
@@ -96,12 +96,12 @@ class MainToolTest(unittest.TestCase):
     for recipe in self.tool._recipes_manager.GetRecipes():
       self.tool._state.LoadRecipe(recipe.contents, dftimewolf_recipes.MODULES)
       for arg in recipe.args:
-        if arg.format:
+        if arg.validation_params:
           self.assertIn(
-              arg.format['format'],
+              arg.validation_params['format'],
               self.tool._args_validator._validators.keys(),
               f'Error in {recipe.name}:{arg.switch} - '
-              f'Invalid validator {arg.format["format"]}.')
+              f'Invalid validator {arg.validation_params["format"]}.')
 
   def testRecipeWithNestedArgs(self):
     """Tests that a recipe with args referenced in other args is populated."""
@@ -121,7 +121,7 @@ class MainToolTest(unittest.TestCase):
     # of 'arg2'
     for arg in NESTED_ARG_RECIPE_ARGS:
       if arg.switch == 'arg2':
-        self.assertEqual(arg.format['other_arg'], 'First')
+        self.assertEqual(arg.validation_params['other_arg'], 'First')
 
   def testFailingArgValidation(self):
     """Tests that a recipe fails when args don't validate."""
