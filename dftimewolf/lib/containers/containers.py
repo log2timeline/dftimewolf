@@ -787,13 +787,21 @@ class TimesketchSavedSearch(interface.AttributeContainer):
 
   CONTAINER_TYPE = 'timesketch_saved_search'
 
-  def __init__(self, name: str, description: str, query: str):
+  def __init__(
+    self,
+    name: str,
+    description: str,
+    query: str,
+    date: datetime.datetime | None = None,
+    minutes_before: int = 5,
+    minutes_after: int = 5,
+  ):
     self.name = name
     self.description = description
     self.query = query
-    self.date: datetime.datetime | None = None
-    self.minutes_before: int | None = None
-    self.minutes_after: int | None = None
+    self.date = date
+    self.minutes_before = minutes_before
+    self.minutes_after = minutes_after
 
   def __str__(self) -> str:
     """Override __str()__."""
