@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import datetime
+
 from typing import Optional, Union, List, TYPE_CHECKING, Dict, Any
 
 from dftimewolf.lib.containers import interface
@@ -20,7 +22,8 @@ class FSPath(interface.AttributeContainer):
   Attributes:
     path (str): Filesystem path.
   """
-  CONTAINER_TYPE = 'fspath'
+
+  CONTAINER_TYPE = "fspath"
 
   def __init__(self, path: str) -> None:
     """Initializes the FSPath object.
@@ -43,7 +46,8 @@ class RemoteFSPath(FSPath):
     hostname (str): Hostname where the file is located.
     path (str): Filesystem path.
   """
-  CONTAINER_TYPE = 'remotefspath'
+
+  CONTAINER_TYPE = "remotefspath"
 
   def __init__(self, path: str, hostname: str) -> None:
     """Initializes the FSPath object.
@@ -57,7 +61,7 @@ class RemoteFSPath(FSPath):
 
   def __str__(self) -> str:
     """Override __str()__."""
-    return f'{self.hostname}:{self.path}'
+    return f"{self.hostname}:{self.path}"
 
 
 class Report(interface.AttributeContainer):
@@ -69,14 +73,16 @@ class Report(interface.AttributeContainer):
     text_format (str): format of text in the report. Must be either 'plaintext'
       or 'markdown'.
   """
-  CONTAINER_TYPE = 'report'
+
+  CONTAINER_TYPE = "report"
 
   def __init__(
-      self,
-      module_name: str,
-      text: str,
-      text_format: str = 'plaintext',
-      metadata: Optional[Dict[str, Any]] = None) -> None:
+    self,
+    module_name: str,
+    text: str,
+    text_format: str = "plaintext",
+    metadata: Optional[Dict[str, Any]] = None,
+  ) -> None:
     """Initializes the analysis report.
 
     Args:
@@ -94,7 +100,7 @@ class Report(interface.AttributeContainer):
 
   def __str__(self) -> str:
     """Override __str()__."""
-    return f'{self.module_name} Report'
+    return f"{self.module_name} Report"
 
 
 class GCPLogs(interface.AttributeContainer):
@@ -106,7 +112,8 @@ class GCPLogs(interface.AttributeContainer):
     path (str): path to a GCP log file.
     project_name (str): name of the project that was queried.
   """
-  CONTAINER_TYPE = 'gcp_logs'
+
+  CONTAINER_TYPE = "gcp_logs"
 
   def __init__(self, path: str, filter_expression: str, project_name: str):
     """Initializes the GCP logs container.
@@ -124,7 +131,7 @@ class GCPLogs(interface.AttributeContainer):
 
   def __str__(self) -> str:
     """Override __str()__."""
-    return f'{self.project_name}:{self.path}'
+    return f"{self.project_name}:{self.path}"
 
 
 class ThreatIntelligence(interface.AttributeContainer):
@@ -135,7 +142,8 @@ class ThreatIntelligence(interface.AttributeContainer):
     indicator (string): regular expression relevant to a threat.
     path (string): path to the indicator data (e.g. file).
   """
-  CONTAINER_TYPE = 'threat_intelligence'
+
+  CONTAINER_TYPE = "threat_intelligence"
 
   def __init__(self, name: str, indicator: Optional[str], path: str) -> None:
     """Initializes the Threat Intelligence container.
@@ -152,7 +160,7 @@ class ThreatIntelligence(interface.AttributeContainer):
 
   def __str__(self) -> str:
     """Override __str()__."""
-    return f'{self.name}:{self.indicator}:{self.path}'
+    return f"{self.name}:{self.indicator}:{self.path}"
 
 
 class YaraRule(interface.AttributeContainer):
@@ -162,7 +170,8 @@ class YaraRule(interface.AttributeContainer):
     name: The name of the Yara rule.
     rule_text: The actual Yara rule string.
   """
-  CONTAINER_TYPE = 'yara_rule'
+
+  CONTAINER_TYPE = "yara_rule"
 
   def __init__(self, name: str, rule_text: str) -> None:
     super(YaraRule, self).__init__()
@@ -182,7 +191,8 @@ class TicketAttribute(interface.AttributeContainer):
     name (str): Name of the attribute.
     value (str): Value of the attribute.
   """
-  CONTAINER_TYPE = 'ticketattribute'
+
+  CONTAINER_TYPE = "ticketattribute"
 
   def __init__(self, type_: str, name: str, value: str) -> None:
     """Initializes the attribute.
@@ -197,11 +207,13 @@ class TicketAttribute(interface.AttributeContainer):
     self.name = name
     self.value = value
 
-  def __eq__(self, other: 'TicketAttribute') -> bool:
+  def __eq__(self, other: "TicketAttribute") -> bool:
     """Override '==' operator. Used only in unit tests."""
     return (
-        self.type == other.type and self.name == other.name and
-        self.value == other.value)
+      self.type == other.type
+      and self.name == other.name
+      and self.value == other.value
+    )
 
   def __str__(self) -> str:
     """Override __str()__."""
@@ -216,10 +228,12 @@ class File(interface.AttributeContainer):
     path (str): Full path to the file.
     description (str): Longer description of the file.
   """
-  CONTAINER_TYPE = 'file'
+
+  CONTAINER_TYPE = "file"
 
   def __init__(
-      self, name: str, path: str, description: Optional[str] = None) -> None:
+    self, name: str, path: str, description: Optional[str] = None
+  ) -> None:
     """Initializes the attribute.
 
     Args:
@@ -236,7 +250,7 @@ class File(interface.AttributeContainer):
     """Override __str()__."""
     if self.path.endswith(self.name):
       return self.path
-    return f'{self.path}/{self.name}'
+    return f"{self.path}/{self.name}"
 
   def __eq__(self, other: File) -> bool:
     """Override __eq__() for this container."""
@@ -251,10 +265,12 @@ class Directory(interface.AttributeContainer):
     path (str): Full path to the directory.
     description (str): Longer description of the directory.
   """
-  CONTAINER_TYPE = 'directory'
+
+  CONTAINER_TYPE = "directory"
 
   def __init__(
-      self, name: str, path: str, description: Optional[str] = None) -> None:
+    self, name: str, path: str, description: Optional[str] = None
+  ) -> None:
     """Initializes the attribute.
 
     Args:
@@ -283,12 +299,15 @@ class ForensicsVM(interface.AttributeContainer):
     platform (str): The cloud platform where the VM is located. One of
         {gcp,aws,azure}.
   """
-  CONTAINER_TYPE = 'forensics_vm'
+
+  CONTAINER_TYPE = "forensics_vm"
 
   def __init__(
-      self, name: str, evidence_disk: Union["GoogleComputeDisk", "AWSVol",
-                                            "AZComputeDisk", None],
-      platform: str) -> None:
+    self,
+    name: str,
+    evidence_disk: Union["GoogleComputeDisk", "AWSVol", "AZComputeDisk", None],
+    platform: str,
+  ) -> None:
     super(ForensicsVM, self).__init__()
     self.name = name
     self.evidence_disk = evidence_disk
@@ -305,7 +324,8 @@ class URL(interface.AttributeContainer):
   Attributes:
     path (str): The full path to the URL.
   """
-  CONTAINER_TYPE = 'url'
+
+  CONTAINER_TYPE = "url"
 
   def __init__(self, path: str) -> None:
     super(URL, self).__init__()
@@ -323,7 +343,8 @@ class GCEDisk(interface.AttributeContainer):
     name (str): The disk name.
     project (str): The project the disk lives in.
   """
-  CONTAINER_TYPE = 'gcedisk'
+
+  CONTAINER_TYPE = "gcedisk"
 
   def __init__(self, name: str, project: str) -> None:
     super(GCEDisk, self).__init__()
@@ -336,7 +357,7 @@ class GCEDisk(interface.AttributeContainer):
 
   def __str__(self) -> str:
     """Override __str()__."""
-    return f'{self.project}:{self.name}'
+    return f"{self.project}:{self.name}"
 
 
 class GCEImage(interface.AttributeContainer):
@@ -345,7 +366,8 @@ class GCEImage(interface.AttributeContainer):
   Attributes:
     name (str): The image name.
   """
-  CONTAINER_TYPE = 'gceimage'
+
+  CONTAINER_TYPE = "gceimage"
 
   def __init__(self, name: str, project: str) -> None:
     super(GCEImage, self).__init__()
@@ -354,7 +376,7 @@ class GCEImage(interface.AttributeContainer):
 
   def __str__(self) -> str:
     """Override __str()__."""
-    return f'{self.project}:{self.name}'
+    return f"{self.project}:{self.name}"
 
 
 class DataFrame(interface.AttributeContainer):
@@ -369,15 +391,16 @@ class DataFrame(interface.AttributeContainer):
         exporter modules.
   """
 
-  CONTAINER_TYPE = 'data_frame'
+  CONTAINER_TYPE = "data_frame"
 
   def __init__(
-      self,
-      data_frame: "pandas.DataFrame",
-      description: str,
-      name: str,
-      source: Optional[str] = None,
-      metadata: Optional[Dict[str, Any]] = None) -> None:
+    self,
+    data_frame: "pandas.DataFrame",
+    description: str,
+    name: str,
+    source: Optional[str] = None,
+    metadata: Optional[Dict[str, Any]] = None,
+  ) -> None:
     super(DataFrame, self).__init__(metadata=metadata)
     self.data_frame = data_frame
     self.description = description
@@ -397,9 +420,9 @@ class Host(interface.AttributeContainer):
     platform (str): The host's platform. One of {win, linux, macos, unknown}.
   """
 
-  CONTAINER_TYPE = 'host'
+  CONTAINER_TYPE = "host"
 
-  def __init__(self, hostname: str, platform: str = 'unknown') -> None:
+  def __init__(self, hostname: str, platform: str = "unknown") -> None:
     super(Host, self).__init__()
     self.hostname = hostname
     self.platform = platform
@@ -421,7 +444,7 @@ class GrrFlow(interface.AttributeContainer):
     flow_id (str): A hexadecimal flow ID.
   """
 
-  CONTAINER_TYPE = 'grr_flow'
+  CONTAINER_TYPE = "grr_flow"
 
   def __init__(self, hostname: str, flow: str) -> None:
     super(GrrFlow, self).__init__()
@@ -430,7 +453,7 @@ class GrrFlow(interface.AttributeContainer):
 
   def __str__(self) -> str:
     """Override __str()__."""
-    return f'{self.hostname}:{self.flow_id}'
+    return f"{self.hostname}:{self.flow_id}"
 
   def __eq__(self, other: GrrFlow) -> bool:
     """Override __eq__() for this container."""
@@ -449,16 +472,18 @@ class WorkspaceLogs(interface.AttributeContainer):
     start_time (Optional[str]): Beginning of the time period the results cover.
     end_time (Optional[str]): End of the time period the results cover.
   """
-  CONTAINER_TYPE = 'workspace_logs'
+
+  CONTAINER_TYPE = "workspace_logs"
 
   def __init__(
-      self,
-      application_name: str,
-      path: str,
-      filter_expression: str,
-      user_key: Optional[str] = '',
-      start_time: Optional[str] = '',
-      end_time: Optional[str] = '') -> None:
+    self,
+    application_name: str,
+    path: str,
+    filter_expression: str,
+    user_key: Optional[str] = "",
+    start_time: Optional[str] = "",
+    end_time: Optional[str] = "",
+  ) -> None:
     """Initializes the Workspace logs container.
 
     Args:
@@ -482,7 +507,7 @@ class WorkspaceLogs(interface.AttributeContainer):
 
   def __str__(self) -> str:
     """Override __str()__."""
-    return f'{self.application_name}:{self.path}'
+    return f"{self.application_name}:{self.path}"
 
 
 class GCSObject(interface.AttributeContainer):
@@ -491,7 +516,8 @@ class GCSObject(interface.AttributeContainer):
   Attributes:
     path (str): GCS object path.
   """
-  CONTAINER_TYPE = 'gcs_object'
+
+  CONTAINER_TYPE = "gcs_object"
 
   def __init__(self, path: str):
     """Initializes the GCS object container.
@@ -500,10 +526,10 @@ class GCSObject(interface.AttributeContainer):
       path (str): GCS object paths.
     """
     super(GCSObject, self).__init__()
-    if path.startswith('gs://'):
+    if path.startswith("gs://"):
       self.path = path
     else:
-      self.path = 'gs://' + path
+      self.path = "gs://" + path
 
   def __str__(self) -> str:
     """Override __str()__."""
@@ -517,7 +543,7 @@ class AWSS3Object(interface.AttributeContainer):
     path (str): S3 Object path.
   """
 
-  CONTAINER_TYPE = 'aws_s3_object'
+  CONTAINER_TYPE = "aws_s3_object"
 
   def __init__(self, path: str):
     """Initialise an S3Image object.
@@ -526,10 +552,10 @@ class AWSS3Object(interface.AttributeContainer):
       path (str): S3 object path.
     """
     super(AWSS3Object, self).__init__()
-    if path.startswith('s3://'):
+    if path.startswith("s3://"):
       self.path = path
     else:
-      self.path = 's3://' + path
+      self.path = "s3://" + path
 
   def __str__(self) -> str:
     """Override __str()__."""
@@ -542,7 +568,7 @@ class AWSVolume(interface.AttributeContainer):
   Attributes:
     vol_id (str): The volume id (vol-xxxxxxxx)."""
 
-  CONTAINER_TYPE = 'aws_volume'
+  CONTAINER_TYPE = "aws_volume"
 
   def __init__(self, vol_id: str) -> None:
     super(AWSVolume, self).__init__()
@@ -559,7 +585,7 @@ class AWSSnapshot(interface.AttributeContainer):
   Attributes:
     snap_id (str): The snapshot id (snap-xxxxxxxx)."""
 
-  CONTAINER_TYPE = 'aws_snapshot'
+  CONTAINER_TYPE = "aws_snapshot"
 
   def __init__(self, snap_id: str) -> None:
     super(AWSSnapshot, self).__init__()
@@ -581,14 +607,15 @@ class OsqueryQuery(interface.AttributeContainer):
     description (Optional[str]): A description for the query.
   """
 
-  CONTAINER_TYPE = 'osquery_query'
+  CONTAINER_TYPE = "osquery_query"
 
   def __init__(
-      self,
-      query: str,
-      name: Optional[str] = None,
-      platforms: Optional[List[str]] = None,
-      description: Optional[str] = None) -> None:
+    self,
+    query: str,
+    name: Optional[str] = None,
+    platforms: Optional[List[str]] = None,
+    description: Optional[str] = None,
+  ) -> None:
     super(OsqueryQuery, self).__init__()
     self.description = description
     self.name = name
@@ -597,7 +624,7 @@ class OsqueryQuery(interface.AttributeContainer):
 
   def __str__(self) -> str:
     """Override __str()__."""
-    return f'{self.name}'
+    return f"{self.name}"
 
 
 class OsqueryResult(interface.AttributeContainer):
@@ -613,17 +640,18 @@ class OsqueryResult(interface.AttributeContainer):
     client_identifier (Optional[str]): The source GRR client identifier.
   """
 
-  CONTAINER_TYPE = 'osquery_result'
+  CONTAINER_TYPE = "osquery_result"
 
   def __init__(
-      self,
-      data_frame: pandas.DataFrame,
-      hostname: str,
-      query: str,
-      client_identifier: Optional[str] = None,
-      description: Optional[str] = None,
-      flow_identifier: Optional[str] = None,
-      name: Optional[str] = None) -> None:
+    self,
+    data_frame: pandas.DataFrame,
+    hostname: str,
+    query: str,
+    client_identifier: Optional[str] = None,
+    description: Optional[str] = None,
+    flow_identifier: Optional[str] = None,
+    name: Optional[str] = None,
+  ) -> None:
     super(OsqueryResult, self).__init__()
     self.data_frame = data_frame
     self.hostname = hostname
@@ -639,7 +667,7 @@ class OsqueryResult(interface.AttributeContainer):
 
   def __str__(self) -> str:
     """Override __str()__."""
-    return f'{self.hostname}:{self.name}'
+    return f"{self.hostname}:{self.name}"
 
 
 class BigQueryQuery(interface.AttributeContainer):
@@ -652,7 +680,7 @@ class BigQueryQuery(interface.AttributeContainer):
         to disk.
   """
 
-  CONTAINER_TYPE = 'bigquery_query'
+  CONTAINER_TYPE = "bigquery_query"
 
   def __init__(self, query: str, description: str, pandas_output: bool) -> None:
     super(BigQueryQuery, self).__init__()
@@ -701,7 +729,7 @@ class Telemetry(interface.AttributeContainer):
     value: The value of the telemetry.
   """
 
-  CONTAINER_TYPE = 'telemetry'
+  CONTAINER_TYPE = "telemetry"
 
   def __init__(self, key: str, value: str):
     super(Telemetry, self).__init__()
@@ -710,7 +738,7 @@ class Telemetry(interface.AttributeContainer):
 
   def __str__(self) -> str:
     """Override __str()__."""
-    return f'Telemetry<{self.key}:{self.value}>'
+    return f"Telemetry<{self.key}:{self.value}>"
 
 
 class TurbiniaRequest(interface.AttributeContainer):
@@ -721,13 +749,15 @@ class TurbiniaRequest(interface.AttributeContainer):
     request_id (str): Turbinia request identifier.
     evidence_name (str): Name of the evidence being processed.
   """
-  CONTAINER_TYPE = 'turbiniarequest'
+
+  CONTAINER_TYPE = "turbiniarequest"
 
   def __init__(
-      self,
-      project: str,
-      request_id: Optional[str] = None,
-      evidence_name: Optional[str] = None) -> None:
+    self,
+    project: str,
+    request_id: Optional[str] = None,
+    evidence_name: Optional[str] = None,
+  ) -> None:
     """Initializes the Turbinia-request attribute container.
 
     Args:
@@ -767,5 +797,44 @@ class GRRArtifact(interface.AttributeContainer):
     return self.name
 
   def __eq__(self, other: GRRArtifact) -> bool:
+    """Override __eq__() for this container."""
+    return self.name == other.name
+
+
+class TimesketchSavedSearch(interface.AttributeContainer):
+  """Timesketch Saved Search container.
+
+  Attributes:
+    name: Name of the saved search.
+    description: Description of the saved search.
+    query: The search query to save.
+    date: Optional date to restrain the saved search to.
+    interval_before: Number of minutes to include before the date.
+    interval_after: Number of minutes to include after the date.
+  """
+
+  CONTAINER_TYPE = "timesketch_saved_search"
+
+  def __init__(
+    self,
+    name: str,
+    description: str,
+    query: str,
+    date: datetime.datetime | None = None,
+    minutes_before: int = 5,
+    minutes_after: int = 5,
+  ):
+    self.name = name
+    self.description = description
+    self.query = query
+    self.date = date
+    self.minutes_before = minutes_before
+    self.minutes_after = minutes_after
+
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return self.name
+
+  def __eq__(self, other: TimesketchSavedSearch) -> bool:
     """Override __eq__() for this container."""
     return self.name == other.name
