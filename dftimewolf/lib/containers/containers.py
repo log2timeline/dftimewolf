@@ -769,3 +769,32 @@ class GRRArtifact(interface.AttributeContainer):
   def __eq__(self, other: GRRArtifact) -> bool:
     """Override __eq__() for this container."""
     return self.name == other.name
+
+
+class TimesketchSavedSearch(interface.AttributeContainer):
+  """Timesketch Saved Search container.
+
+  Attributes:
+    name: Name of the saved search.
+    description: Description of the saved search.
+    query: The search query to save.
+    date_start: Optional start date filter to apply to the saved search.
+    date_end: Optional end date filter to apply to the saved search.
+  """
+
+  CONTAINER_TYPE = 'timesketch_saved_search'
+
+  def __init__(self, name: str, description: str, query: str):
+    self.name = name
+    self.description = description
+    self.query = query
+    self.date_start: datetime.datetime | None = None
+    self.date_end: datetime.datetime | None = None
+
+  def __str__(self) -> str:
+    """Override __str()__."""
+    return self.name
+
+  def __eq__(self, other: TimesketchSavedSearch) -> bool:
+    """Override __eq__() for this container."""
+    return self.name == other.name
