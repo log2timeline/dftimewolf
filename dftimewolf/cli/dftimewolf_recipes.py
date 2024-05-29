@@ -115,7 +115,6 @@ class DFTimewolfTool(object):
     self._command_line_options = argparse.Namespace()
     self.dry_run = False
     self.cdm = cdm
-    # self._state: "dftw_state.DFTimewolfState" # for pytype
     if not workflow_uuid:
       workflow_uuid = str(uuid.uuid4())
     self.uuid = workflow_uuid
@@ -309,7 +308,11 @@ class DFTimewolfTool(object):
     self._state.command_line_options = vars(self._command_line_options)
 
   def ValidateArguments(self) -> None:
-    """Validate the arguments."""
+    """Validate the arguments.
+
+    Raises:
+      errors.CriticalError: If one or more arguments could not be validated.
+    """
     recipe = self._recipes_manager.Recipes()[self._recipe['name']]
     error_messages = []
 
@@ -341,7 +344,7 @@ class DFTimewolfTool(object):
         if self.cdm:
           self.cdm.EnqueueMessage('dftimewolf', message, True)
         logger.critical(message)
-      raise errors.RecipeArgsValidatorError(
+      raise errors.CriticalError(
           'At least one argument failed validation')
 
   def _SubstituteValidationParameters(
@@ -506,11 +509,12 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
 
   for module in sorted(modules):
     tool.telemetry.LogTelemetry('module', module, 'core', recipe_name)
-    tool.telemetry.LogTelemetry(
-      'workflow_start',
-      datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-      'core',
-      recipe_name)
+
+  tool.telemetry.LogTelemetry(
+    'workflow_start',
+    datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+    'core',
+    recipe_name)
 
   # Interpolate arguments into recipe
   recipe = tool.state.recipe
@@ -521,7 +525,7 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
 
   try:
     tool.ValidateArguments()
-  except errors.RecipeArgsValidatorError as exception:
+  except errors.CriticalError as exception:
     if cdm:
       cdm.EnqueueMessage('dftimewolf', str(exception), True)
     logger.critical(str(exception))

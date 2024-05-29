@@ -100,7 +100,7 @@ class CommaSeparatedValidatorTest(unittest.TestCase):
       argument_definition = resources.RecipeArgument()
       argument_definition.validation_params = {'comma_separated': True}
       with self.assertRaises(errors.RecipeArgsValidationFailure):
-        _ = validator.Validate('one,two,three', argument_definition)
+        validator.Validate('one,two,three', argument_definition)
 
 # pylint: enable=abstract-class-instantiated
 # pytype: enable=not-instantiable
@@ -135,7 +135,7 @@ class AWSRegionValidatorTest(unittest.TestCase):
       with self.assertRaisesRegex(
           errors.RecipeArgsValidationFailure,
           'Invalid AWS Region name'):
-        _ = self.validator.Validate(r, self.recipe_argument)
+        self.validator.Validate(r, self.recipe_argument)
 
 
 class AzureRegionValidatorTest(unittest.TestCase):
@@ -167,7 +167,7 @@ class AzureRegionValidatorTest(unittest.TestCase):
       with self.assertRaisesRegex(
           errors.RecipeArgsValidationFailure,
           'Invalid Azure Region name'):
-        _ = self.validator.Validate(region, self.recipe_argument)
+        self.validator.Validate(region, self.recipe_argument)
 
 
 class GCPZoneValidatorTest(unittest.TestCase):
@@ -198,7 +198,7 @@ class GCPZoneValidatorTest(unittest.TestCase):
     for zone in zones:
       with self.assertRaisesRegex(
           errors.RecipeArgsValidationFailure, 'Invalid GCP Zone name'):
-        _ = self.validator.Validate(zone, self.recipe_argument)
+        self.validator.Validate(zone, self.recipe_argument)
 
 
 class RegexValidatorTest(unittest.TestCase):
@@ -230,7 +230,7 @@ class RegexValidatorTest(unittest.TestCase):
     with self.assertRaisesRegex(
         errors.RecipeArgsValidationFailure,
         "does not match regex /.\?bcdef.\?"): # pylint: disable=anomalous-backslash-in-string
-      _ = self.validator.Validate('tuvwxy', self.recipe_argument)
+      self.validator.Validate('tuvwxy', self.recipe_argument)
 
   def testRequiredParam(self):
     """Tests an error is thrown is the regex param is missing."""
@@ -271,7 +271,7 @@ class SubnetValidatorTest(unittest.TestCase):
       with self.assertRaisesRegex(
           errors.RecipeArgsValidationFailure,
           'Not a valid subnet'):
-        _ = self.validator.Validate(value, self.recipe_argument)
+        self.validator.Validate(value, self.recipe_argument)
 
 
 class DatetimeValidatorTest(unittest.TestCase):
@@ -321,12 +321,12 @@ class DatetimeValidatorTest(unittest.TestCase):
     with self.assertRaisesRegex(
         errors.RecipeArgsValidationFailure,
         f'{first} is before {second} but it should be the other way around'):
-      _ = self.validator.Validate(first, self.recipe_argument)
+      self.validator.Validate(first, self.recipe_argument)
 
     with self.assertRaisesRegex(
         errors.RecipeArgsValidationFailure,
         f'{fourth} is before {fifth} but it should be the other way around'):
-      _ = self.validator.Validate(fifth, self.recipe_argument)
+      self.validator.Validate(fifth, self.recipe_argument)
 
   def testValidateFailureInvalidFormat(self):
     """Tests invalid date formats correctly fail."""
@@ -336,7 +336,7 @@ class DatetimeValidatorTest(unittest.TestCase):
       with self.assertRaisesRegex(
           errors.RecipeArgsValidationFailure,
           f'does not match format {self.FORMAT_STRING}'):
-        _ = self.validator.Validate(value, self.recipe_argument)
+        self.validator.Validate(value, self.recipe_argument)
 
   # pylint: disable=protected-access
   def testValidateOrder(self):
@@ -390,13 +390,13 @@ class HostnameValidatorTest(unittest.TestCase):
     for fqdn in fqdns:
       with self.assertRaisesRegex(errors.RecipeArgsValidationFailure,
                                   'Not a valid hostname'):
-        _ = self.validator.Validate(fqdn, self.recipe_argument)
+        self.validator.Validate(fqdn, self.recipe_argument)
 
     self.recipe_argument.validation_params['comma_separated'] = True
     with self.assertRaisesRegex(
         errors.RecipeArgsValidationFailure,
         'Not a valid hostname'):
-      _ = self.validator.Validate(','.join(fqdns), self.recipe_argument)
+      self.validator.Validate(','.join(fqdns), self.recipe_argument)
 
 
   def testValidationFailureWithFQDNOnly(self):
@@ -408,13 +408,13 @@ class HostnameValidatorTest(unittest.TestCase):
       with self.assertRaisesRegex(
           errors.RecipeArgsValidationFailure,
           'Not a valid hostname'):
-        _ = self.validator.Validate(fqdn, self.recipe_argument)
+        self.validator.Validate(fqdn, self.recipe_argument)
 
     self.recipe_argument.validation_params['comma_separated'] = True
     with self.assertRaisesRegex(
         errors.RecipeArgsValidationFailure,
         'Not a valid hostname'):
-      _ = self.validator.Validate(','.join(fqdns), self.recipe_argument)
+      self.validator.Validate(','.join(fqdns), self.recipe_argument)
 
 
 class GRRHostValidatorTest(unittest.TestCase):
@@ -450,13 +450,13 @@ class GRRHostValidatorTest(unittest.TestCase):
       with self.assertRaisesRegex(
           errors.RecipeArgsValidationFailure,
           'Not a GRR host identifier'):
-        _ = self.validator.Validate(fqdn, self.recipe_argument)
+        self.validator.Validate(fqdn, self.recipe_argument)
 
     self.recipe_argument.validation_params['comma_separated'] = True
     with self.assertRaisesRegex(
         errors.RecipeArgsValidationFailure,
         'Not a GRR host identifier'):
-      _ = self.validator.Validate(','.join(fqdns), self.recipe_argument)
+      self.validator.Validate(','.join(fqdns), self.recipe_argument)
 
 
 class URLValidatorTest(unittest.TestCase):
@@ -502,12 +502,12 @@ class URLValidatorTest(unittest.TestCase):
       with self.assertRaisesRegex(
           errors.RecipeArgsValidationFailure,
           "Not a valid URL"):
-        _ = self.validator.Validate(fqdn, self.recipe_argument)
+        self.validator.Validate(fqdn, self.recipe_argument)
 
     self.recipe_argument.validation_params['comma_separated'] = True
     with self.assertRaisesRegex(
         errors.RecipeArgsValidationFailure, "Error: Not a valid URL"):
-      _ = self.validator.Validate(','.join(fqdns), self.recipe_argument)
+      self.validator.Validate(','.join(fqdns), self.recipe_argument)
 
 
 class _TestValidator(args_validator.AbstractValidator):
@@ -528,41 +528,41 @@ class _TestValidator2(args_validator.AbstractValidator):
 # Tests for the ValidatorsManager class.
 # pylint: disable=protected-access
 class ValidatorsManagerTest(unittest.TestCase):
-  """Tests for the modules manager."""
+  """Tests for the validators manager."""
 
   # pylint: disable=protected-access
-  def testModuleRegistration(self):
-    """Tests the RegisterModule and DeregisterModule functions."""
-    number_of_module_classes = len(
+  def testRegistration(self):
+    """Tests the RegisterValidator and DeregisterValidator functions."""
+    number_of_validator_classes = len(
         args_validator.ValidatorsManager._validator_classes)
 
     args_validator.ValidatorsManager.RegisterValidator(_TestValidator)
     self.assertEqual(
         len(args_validator.ValidatorsManager._validator_classes),
-        number_of_module_classes + 1)
+        number_of_validator_classes + 1)
 
     args_validator.ValidatorsManager.DeregisterValidator(_TestValidator)
     self.assertEqual(
         len(args_validator.ValidatorsManager._validator_classes),
-        number_of_module_classes)
+        number_of_validator_classes)
 
 
-  def testRegisterModules(self):
-    """Tests the RegisterModules function."""
-    number_of_module_classes = len(
+  def testRegisterValidators(self):
+    """Tests the RegisterValidators function."""
+    number_of_validator_classes = len(
         args_validator.ValidatorsManager._validator_classes)
 
     args_validator.ValidatorsManager.RegisterValidators(
         [_TestValidator, _TestValidator2])
     self.assertEqual(
         len(args_validator.ValidatorsManager._validator_classes),
-        number_of_module_classes + 2)
+        number_of_validator_classes + 2)
 
     args_validator.ValidatorsManager.DeregisterValidator(_TestValidator)
     args_validator.ValidatorsManager.DeregisterValidator(_TestValidator2)
 
     self.assertEqual(
-        number_of_module_classes,
+        number_of_validator_classes,
         len(args_validator.ValidatorsManager._validator_classes))
 
 

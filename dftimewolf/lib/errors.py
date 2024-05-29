@@ -5,12 +5,12 @@ class DFTimewolfError(Exception):
   """Class to represent a DFTimewolfError.
 
   Attributes:
-    message (str): The error message.
-    name (str): Name of the module that generated the error.
-    stacktrace (Optional[str]): Stacktrace leading to the error.
-    critical (Optional[bool]): Whether the error is critical or not. Critical
+    message: The error message.
+    name: Name of the module that generated the error.
+    stacktrace: Stacktrace leading to the error.
+    critical: Whether the error is critical or not. Critical
         errors interrupt the recipe execution flow.
-    unexpected (Optional[bool]): Whether the error is unexpected.
+    unexpected: Whether the error is unexpected.
   """
 
   def __init__(self,
@@ -47,15 +47,15 @@ class RecipeArgsValidationFailure(DFTimewolfError):
   """Error that indicates a recipe argument is invalid.
 
   Attributes:
-    switch (str): The name of the argument that is invalid.
-    argument_value (str): The value of the argument that is invalid.
-    description (str): Description of why the argument is invalid.
-    message (str): The error message.
-    name (str): Name of the module that generated the error.
-    stacktrace (Optional[str]): Stacktrace leading to the error.
-    critical (Optional[bool]): Whether the error is critical or not. Critical
+    switch: The name of the argument that is invalid.
+    argument_value: The value of the argument that is invalid.
+    description: Description of why the argument is invalid.
+    message: The error message.
+    name: Name of the module that generated the error.
+    stacktrace: Stacktrace leading to the error.
+    critical: Whether the error is critical or not. Critical
         errors interrupt the recipe execution flow.
-    unexpected (Optional[bool]): Whether the error is unexpected.
+    unexpected: Whether the error is unexpected.
   """
 
   def __init__(self,
