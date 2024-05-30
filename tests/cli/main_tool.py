@@ -137,8 +137,7 @@ class MainToolTest(unittest.TestCase):
     self.tool.ParseArguments(['nested_arg_recipe', 'First', 'Not Second'])
 
     with self.assertRaisesRegex(
-        errors.RecipeArgsValidatorError,
-        'At least one argument failed validation'):
+        errors.CriticalError, 'At least one argument failed validation'):
       self.tool.ValidateArguments()
 
   def testDryRun(self):
