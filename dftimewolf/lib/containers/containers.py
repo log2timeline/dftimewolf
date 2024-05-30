@@ -809,8 +809,8 @@ class TimesketchSavedSearch(interface.AttributeContainer):
     description: Description of the saved search.
     query: The search query to save.
     date: Optional date to restrain the saved search to.
-    interval_before: Number of minutes to include before the date.
-    interval_after: Number of minutes to include after the date.
+    minutes_before: Number of minutes to include before the date.
+    minutes_after: Number of minutes to include after the date.
   """
 
   CONTAINER_TYPE = "timesketch_saved_search"
@@ -824,6 +824,7 @@ class TimesketchSavedSearch(interface.AttributeContainer):
     minutes_before: int = 5,
     minutes_after: int = 5,
   ):
+    super().__init__()
     self.name = name
     self.description = description
     self.query = query

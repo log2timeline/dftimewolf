@@ -8,25 +8,6 @@ from dftimewolf.lib import resources
 from dftimewolf.lib import errors
 
 
-class DefaultValidatorTest(unittest.TestCase):
-  """Tests the Default Validator."""
-
-  def setUp(self):
-    """Setup."""
-    self.validator = args_validator.DefaultValidator()
-    self.recipe_argument = resources.RecipeArgument()
-    self.recipe_argument.switch = 'default'
-
-  def testInit(self):
-    """Tests initialisation."""
-    self.assertEqual(self.validator.NAME, 'default')
-
-  def testValidateSuccess(self):
-    """Test for Default Validator."""
-    val = self.validator.Validate('test', self.recipe_argument)
-    self.assertEqual(val, 'test')
-
-
 # pylint: disable=abstract-class-instantiated
 # pytype: disable=not-instantiable
 class CommaSeparatedValidatorTest(unittest.TestCase):
@@ -582,6 +563,16 @@ class ValidatorsManagerTest(unittest.TestCase):
         errors.RecipeArgsValidatorError, 'not a registered validator'):
       args_validator.ValidatorsManager.Validate('test', recipe_argument)
 
+  def testListValidators(self):
+    """Tests the ListValidators function."""
+    registered_validators = args_validator.ValidatorsManager.ListValidators()
+    self.assertNotIn(_TestValidator.NAME, registered_validators)
+    args_validator.ValidatorsManager.RegisterValidator(_TestValidator)
+
+
+    registered_validators = args_validator.ValidatorsManager.ListValidators()
+    self.assertIn(_TestValidator.NAME, registered_validators)
+    args_validator.ValidatorsManager.DeregisterValidator(_TestValidator)
 
 if __name__ == '__main__':
   unittest.main()

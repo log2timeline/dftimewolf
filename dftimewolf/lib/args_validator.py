@@ -4,7 +4,7 @@ import abc
 import ipaddress
 import re
 
-from typing import Any, Dict, Union, Type, Sequence, Optional
+from typing import Any, Dict, List, Union, Type, Sequence, Optional
 
 import datetime
 from urllib.parse import urlparse
@@ -95,17 +95,6 @@ class CommaSeparatedValidator(AbstractValidator):
       errors.RecipeArgsValidationFailure: If an invalid argument is found.
       errors.RecipeArgsValidatorError: An error in validation.
     """
-
-
-class DefaultValidator(AbstractValidator):
-  """The default validator always returns true."""
-
-  NAME = 'default'
-
-  def Validate(self, argument_value: Any,
-      recipe_argument: resources.RecipeArgument) -> Any:
-    """Always returns the provided argument."""
-    return argument_value
 
 
 class AWSRegionValidator(AbstractValidator):
@@ -595,10 +584,15 @@ class ValidatorsManager:
 
   _validator_classes = {}  # type: Dict[str, Type['AbstractValidator']]
 
-  def __init__(self) -> None:
-    """Initializes a new ValidatorManager."""
-    self._validators: Dict[str, AbstractValidator] = {}
-    self._default_validator: AbstractValidator = DefaultValidator()
+  @classmethod
+  def ListValidators(cls) -> List[str]:
+    """Returns a list of all registered validators.
+
+    Returns:
+      A list of all registered validators.
+    """
+    return list(cls._validator_classes.keys())
+
 
   @classmethod
   def RegisterValidator(cls,
@@ -675,13 +669,14 @@ class ValidatorsManager:
       recipe_argument: The definition of the argument.
 
     Returns:
-      The validated argument value.
+      The validated argument value. If the recipe argument doesn't specify a
+      validator, the argument value is returned unchanged.
 
     Raises:
       errors.RecipeArgsValidationFailure: If the argument is not valid.
       errors.RecipeArgsValidatorError: Raised on validator config errors.
     """
-    validator_name = recipe_argument.validation_params.get('format')
+    validator_name = recipe_argument.validation_params.get('format', '')
     if not validator_name:
       return argument_value
 
