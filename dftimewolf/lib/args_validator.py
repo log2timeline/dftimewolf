@@ -676,7 +676,7 @@ class ValidatorsManager:
       errors.RecipeArgsValidationFailure: If the argument is not valid.
       errors.RecipeArgsValidatorError: Raised on validator config errors.
     """
-    validator_name = recipe_argument.validation_params.get('format', '')
+    validator_name:str = recipe_argument.validation_params.get('format', '')
     if not validator_name:
       return argument_value
 
