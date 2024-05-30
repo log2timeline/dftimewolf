@@ -2,23 +2,33 @@
 """Various dfTimewolf resource objects."""
 
 import dataclasses
-from typing import Any, Dict, List
+from typing import Any, Dict, Sequence
 
 
 @dataclasses.dataclass
-class RecipeArgs:
-  """Dataclass for a single recipe argument."""
+class RecipeArgument:
+  """Dataclass for a single recipe argument.
+
+  Attributes:
+    switch: name of the argument. An argument name starting with '--' indicates
+      that the argument is optional.
+    help_text: human-readable description of the argument.
+    default: default value of the argument.
+    validation_params: format of the argument. Indicates which validator to
+      use to validate the argument, as well as any configuration options for
+      the validator.
+  """
   switch: str = ''
   help_text: str = ''
   default: Any = None
-  format: Dict[str, Any] = dataclasses.field(default_factory=dict)
+  validation_params: Dict[str, Any] = dataclasses.field(default_factory=dict)
 
 
 class Recipe(object):
   """Recipe.
 
   Attributes:
-    args (list[RecipeArgs]): command line arguments of
+    args (Sequence[RecipeArgument]): command line arguments of
         the recipe.
     contents (dict[str, object]): recipe contents.
     description (str): description.
@@ -28,17 +38,17 @@ class Recipe(object):
   def __init__(self,
                description: str,
                contents: Dict[str, Any],
-               args: List[RecipeArgs]) -> None:
+               args: Sequence[RecipeArgument]) -> None:
     """Initializes a recipe.
 
     Args:
       description (str): description.
       contents (dict[str, object]): recipe contents.
-      args (list[tuple[str, str, object]]): command line arguments of
+      args (Sequence[RecipeArgument]): command line arguments of
           the recipe.
     """
     super(Recipe, self).__init__()
-    self.args: List[RecipeArgs] = args
+    self.args: Sequence[RecipeArgument] = args
     self.contents = contents
     self.name = contents['name']  # type: str
     self.description = description
