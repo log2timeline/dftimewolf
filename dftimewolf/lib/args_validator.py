@@ -63,8 +63,8 @@ class CommaSeparatedValidator(AbstractValidator):
       errors.RecipeArgsValidatorError: An error in validation.
     """
     validation_params = recipe_argument.validation_params
-    if 'comma_separated' not in validation_params:
-      validation_params['comma_separated'] = False
+    if "comma_separated" not in validation_params:
+      validation_params["comma_separated"] = False
 
     arguments = []
     if validation_params['comma_separated']:
@@ -676,7 +676,7 @@ class ValidatorsManager:
       errors.RecipeArgsValidationFailure: If the argument is not valid.
       errors.RecipeArgsValidatorError: Raised on validator config errors.
     """
-    validator_name:str = recipe_argument.validation_params.get('format', '')
+    validator_name = str(recipe_argument.validation_params.get("format", ""))
     if not validator_name:
       return argument_value
 
