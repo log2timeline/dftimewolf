@@ -9,7 +9,6 @@ from io import StringIO, TextIOWrapper
 from typing import List, Union, Dict, TextIO
 
 from dftimewolf.lib import errors, resources
-from dftimewolf.lib.resources import Recipe, RecipeArgs
 
 
 class RecipesManager(object):
@@ -18,10 +17,11 @@ class RecipesManager(object):
   # Allow a previously registered recipe to be overridden.
   ALLOW_RECIPE_OVERRIDE = False
 
-  _recipes = {}  # type: Dict[str, Recipe]
+  _recipes = {}  # type: Dict[str, resources.Recipe]
 
   def _ReadRecipeFromFileObject(
-      self, file_object: Union[StringIO, TextIOWrapper, TextIO]) -> Recipe:
+      self,
+      file_object: Union[StringIO, TextIOWrapper, TextIO]) -> resources.Recipe:
     """Reads a recipe from a JSON file-like object.
 
     Args:
@@ -37,15 +37,15 @@ class RecipesManager(object):
 
     args = []
     for arg_list in json_dict['args']:
-      args.append(RecipeArgs(*arg_list))
+      args.append(resources.RecipeArgument(*arg_list))
     del json_dict['args']
 
     return resources.Recipe(description, json_dict, args)
 
-  def DeregisterRecipe(self, recipe: Recipe) -> None:
+  def DeregisterRecipe(self, recipe: resources.Recipe) -> None:
     """Deregisters a recipe.
 
-    The recipe are identified based on their lower case name.
+    The recipes are identified based on their lower case name.
 
     Args:
       recipe (Recipe): the recipe.
@@ -59,7 +59,7 @@ class RecipesManager(object):
 
     del self._recipes[recipe_name]
 
-  def GetRecipes(self) -> List[Recipe]:
+  def GetRecipes(self) -> List[resources.Recipe]:
     """Retrieves the registered recipes.
 
     Returns:
@@ -95,7 +95,7 @@ class RecipesManager(object):
     for file_path in glob.glob(os.path.join(path, '*.json')):
       self.ReadRecipeFromFile(file_path)
 
-  def RegisterRecipe(self, recipe: Recipe) -> None:
+  def RegisterRecipe(self, recipe: resources.Recipe) -> None:
     """Registers a recipe.
 
     The recipe are identified based on their lower case name.
@@ -112,7 +112,7 @@ class RecipesManager(object):
 
     self._recipes[recipe_name] = recipe
 
-  def RegisterRecipes(self, recipes: List[Recipe]) -> None:
+  def RegisterRecipes(self, recipes: List[resources.Recipe]) -> None:
     """Registers recipes.
 
     The recipes are identified based on their lower case name.

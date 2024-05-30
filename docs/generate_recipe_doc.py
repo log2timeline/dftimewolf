@@ -87,7 +87,7 @@ def generate_args_description(recipe):
   formatted_string = 'Parameter|Default value|Description\n'
   formatted_string += '---------|-------------|-----------\n'
   for arg in args:
-    recipe_args = resources.RecipeArgs(*arg)
+    recipe_args = resources.RecipeArgument(*arg)
     formatted_string += (f'`{recipe_args.switch}`|'
                          f'`{repr(recipe_args.default)}`|'
                          f'{recipe_args.help_text}\n')

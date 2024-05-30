@@ -13,7 +13,7 @@ class TestRecipe(resources.Recipe):
   """Test recipe."""
 
   _ARGS = [
-      resources.RecipeArgs('test', 'Test argument', None),
+      resources.RecipeArgument('test', 'Test argument', None),
   ]
 
   _CONTENTS = {

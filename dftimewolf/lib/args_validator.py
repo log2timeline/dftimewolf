@@ -4,12 +4,12 @@ import abc
 import ipaddress
 import re
 
-from typing import Any, Dict, Union, Tuple
+from typing import Any, Dict, List, Union, Type, Sequence, Optional
 
 import datetime
 from urllib.parse import urlparse
 
-from dftimewolf.lib import errors
+from dftimewolf.lib import errors, resources
 
 
 class AbstractValidator(abc.ABC):
@@ -18,103 +18,83 @@ class AbstractValidator(abc.ABC):
   NAME: str = None  # type: ignore
 
   def __init__(self) -> None:
-    """Initialise."""
+    """Initialize."""
 
   @abc.abstractmethod
   def Validate(self,
-               operand: Any,
-               validator_params: Dict[str, Any]) -> Tuple[bool, str]:
-    """Validate the parameter.
+               argument_value: str,
+               recipe_argument: resources.RecipeArgument) -> str:
+    """Validates an argument value.
 
     Args:
-      operand: The argument value to validate.
-      validator_params: Any extra fields to configure the validator. These come
-        from the recipe json.
+      argument_value: The argument value to validate.
+      recipe_argument: The definition of the argument.
 
     Returns:
-      A Tuple:
-        boolean: True if operand passes validation, False otherwise.
-        str: A message for validation failure. Only set if the boolean is false.
+      A valid version of the argument value.
 
     Raises:
-      errors.RecipeArgsValidatorError
+      errors.RecipeArgsValidationFailure: An error in validation.
+      errors.RecipeArgsValidatorError: An error in validation.
     """
 
 
 class CommaSeparatedValidator(AbstractValidator):
-  """Subclass of AbstractValidator that allows for comma separated strings.
+  """Validator for comma separated strings.
 
   Subclasses that override this should implement ValidateSingle instead of
   Validate."""
 
   def Validate(self,
-               operand: str,
-               validator_params: Dict[str, Any]
-               ) -> Tuple[bool, str]:
+               argument_value: str,
+               recipe_argument: resources.RecipeArgument) -> str:
     """Split the string by commas if validator_params['comma_separated'] == True
     and validate each component in ValidateSingle.
 
     Args:
-      operand: The argument value to validate.
-      validator_params: Any extra fields to configure the validator. These come
-        from the recipe json and can include 'comma_separated' - Default False.
+      argument_value: The argument value to validate.
+      recipe_argument: The definition of the argument.
 
     Returns:
-      A Tuple:
-        boolean: True if operand passes validation, False otherwise.
-        str: A message for validation failure. Only set if the boolean is false.
+      A validated version of the parameter.
 
     Raises:
+      errors.RecipeArgsValidationFailure: If an invalid argument is found.
       errors.RecipeArgsValidatorError: An error in validation.
     """
-    if 'comma_separated' not in validator_params:
-      validator_params['comma_separated'] = False
+    validation_params = recipe_argument.validation_params
+    if "comma_separated" not in validation_params:
+      validation_params["comma_separated"] = False
 
-    operands = []
-    if validator_params['comma_separated']:
-      operands = operand.split(',')
+    arguments = []
+    if validation_params['comma_separated']:
+      arguments = argument_value.split(',')
     else:
-      operands.append(operand)
+      arguments.append(argument_value)
 
-    results = [self.ValidateSingle(op, validator_params) for op in operands]
+    valid_arguments = [
+        self.ValidateSingle(item, recipe_argument) for item in arguments]
+    argument_string = ','.join(valid_arguments)
 
-    if not all(r[0] for r in results):
-      return False, '\n'.join([r[1] for r in results if not r[0]])
-    return True, ''
+    return argument_string
 
   @abc.abstractmethod
   def ValidateSingle(self,
-                     operand: str,
-                     validator_params: Dict[str, Any]
-                     ) -> Tuple[bool, str]:
+                     argument_value: str,
+                     recipe_argument: resources.RecipeArgument) -> str:
     """Validate a single operand from a comma separated list.
 
     Args:
-      operand: The argument value to validate.
-      validator_params: Any extra fields to configure the validator. These come
-        from the recipe json.
+      argument_value: The argument value to validate.
+      recipe_argument: The definition of the argument.
 
     Returns:
-      A Tuple:
-        boolean: True if operand passes validation, False otherwise.
-        str: A message for validation failure. Only set if the boolean is false.
+      object: a validated version of the parameter.
 
     Raises:
+      errors.RecipeArgsValidationFailure: If an invalid argument is found.
       errors.RecipeArgsValidatorError: An error in validation.
     """
-
-
-class DefaultValidator(AbstractValidator):
-  """The default validator always returns true."""
-
-  NAME = 'default'
-
-  def Validate(self,
-               operand: Any,
-               validator_params: Dict[str, Any]
-               ) -> Tuple[bool, str]:
-    """Always passes."""
-    return True, ''
 
 
 class AWSRegionValidator(AbstractValidator):
@@ -127,35 +107,42 @@ class AWSRegionValidator(AbstractValidator):
   # Fetched 2023-01-15
   # TODO - Fetch at runtime?
   _regions = {
-    'af-south-1', 'ap-east-1', 'ap-northeast-1', 'ap-northeast-2',
-    'ap-northeast-3', 'ap-south-1', 'ap-south-2', 'ap-southeast-1',
-    'ap-southeast-2', 'ap-southeast-3', 'ap-southeast-4', 'ap-southeast-6',
-    'ca-central-1', 'ca-west-1', 'cn-north-1', 'cn-northwest-1', 'eu-central-1',
-    'eu-central-2', 'eu-north-1', 'eu-south-1', 'eu-south-2', 'eu-west-1',
-    'eu-west-2', 'eu-west-3', 'il-central-1', 'me-central-1', 'me-south-1',
-    'sa-east-1', 'us-east-1', 'us-east-2', 'us-gov-east-1', 'us-gov-west-1',
-    'us-west-1', 'us-west-2'
+      'af-south-1', 'ap-east-1', 'ap-northeast-1', 'ap-northeast-2',
+      'ap-northeast-3', 'ap-south-1', 'ap-south-2', 'ap-southeast-1',
+      'ap-southeast-2', 'ap-southeast-3', 'ap-southeast-4', 'ap-southeast-6',
+      'ca-central-1', 'ca-west-1', 'cn-north-1', 'cn-northwest-1',
+      'eu-central-1',
+      'eu-central-2', 'eu-north-1', 'eu-south-1', 'eu-south-2', 'eu-west-1',
+      'eu-west-2', 'eu-west-3', 'il-central-1', 'me-central-1', 'me-south-1',
+      'sa-east-1', 'us-east-1', 'us-east-2', 'us-gov-east-1', 'us-gov-west-1',
+      'us-west-1', 'us-west-2'
   }
   NAME = 'aws_region'
 
   def Validate(self,
-               operand: Any,
-               validator_params: Dict[str, Any]
-               ) -> Tuple[bool, str]:
+               argument_value: str,
+               recipe_argument: resources.RecipeArgument) -> str:
     """Validate operand is a valid AWS region.
 
     Args:
-      operand: The argument value to validate.
-      validator_params: Unused for this validator.
+      argument_value: The argument value to validate.
+      recipe_argument: The definition of the argument.
 
     Returns:
-      A Tuple:
-        boolean: True if operand is a valid AWS region, False otherwise.
-        str: A message for validation failure. Only set if the boolean is false.
+      A valid AWS region name.
+
+    Raises:
+      RecipeArgsValidationFailure: if the argument value is not a valid AWS
+        region.
     """
-    if operand not in self._regions:
-      return False, 'Invalid AWS Region name'
-    return True, ''
+    if argument_value not in self._regions:
+      raise (errors.RecipeArgsValidationFailure(
+          recipe_argument.switch,
+          argument_value,
+          self.NAME,
+          'Invalid AWS Region name'))
+
+    return argument_value
 
 
 class AzureRegionValidator(AbstractValidator):
@@ -187,82 +174,96 @@ class AzureRegionValidator(AbstractValidator):
   NAME = 'azure_region'
 
   def Validate(self,
-               operand: Any,
-               validator_params: Dict[str, Any]) -> Tuple[bool, str]:
-    """Validate that operand is a valid Azure region.
+               argument_value: str,
+               recipe_argument: resources.RecipeArgument) -> str:
+    """Validate that argument is a valid Azure region.
 
     Args:
-      operand: The argument value to validate.
-      validator_params: Unused for this validator.
+      argument_value: The argument value to validate.
+      recipe_argument: The definition of the argument.
 
     Returns:
-      A Tuple:
-        boolean: True if operand is a valid Azure region, False otherwise.
-        str: A message for validation failure. Only set if the boolean is false.
+      A valid Azure region name.
+
+    Raises:
+      RecipeArgsValidationFailure: If the argument value is not a valid Azure
+        region.
     """
-    if operand not in self._regions:
-      return False, 'Invalid Azure Region name'
-    return True, ''
+    if argument_value not in self._regions:
+      raise (errors.RecipeArgsValidationFailure(
+          recipe_argument.switch,
+          argument_value,
+          self.NAME,
+          'Invalid Azure Region name'))
+
+    return argument_value
 
 
 class GCPZoneValidator(AbstractValidator):
-  """Validates a correct GCP zone."""
+  """Validates a GCP zone."""
 
   # Source: https://cloud.google.com/compute/docs/regions-zones/
   # Fetched 2023-01-13
   # TODO - Fetch at runtime?
   _zones = {
-    'asia-east1-a', 'asia-east1-b', 'asia-east1-c', 'asia-east2-a',
-    'asia-east2-b', 'asia-east2-c', 'asia-northeast1-a', 'asia-northeast1-b',
-    'asia-northeast1-c', 'asia-northeast2-a', 'asia-northeast2-b',
-    'asia-northeast2-c', 'asia-northeast3-a', 'asia-northeast3-b',
-    'asia-northeast3-c', 'asia-south1-a', 'asia-south1-b', 'asia-south1-c',
-    'asia-south2-a', 'asia-south2-b', 'asia-south2-c', 'asia-southeast1-a',
-    'asia-southeast1-b', 'asia-southeast1-c', 'asia-southeast2-a',
-    'asia-southeast2-b', 'asia-southeast2-c', 'australia-southeast1-a',
-    'australia-southeast1-b', 'australia-southeast1-c',
-    'australia-southeast2-a', 'australia-southeast2-b',
-    'australia-southeast2-c', 'europe-central2-a', 'europe-central2-b',
-    'europe-central2-c', 'europe-north1-a', 'europe-north1-b',
-    'europe-north1-c',     'europe-southwest1-a', 'europe-southwest1-b',
-    'europe-southwest1-c', 'europe-west1-b', 'europe-west1-c',
-    'europe-west1-d', 'europe-west2-a', 'europe-west2-b', 'europe-west2-c',
-    'europe-west3-a', 'europe-west3-b', 'europe-west3-c', 'europe-west4-a',
-    'europe-west4-b', 'europe-west4-c', 'europe-west6-a', 'europe-west6-b',
-    'europe-west6-c', 'europe-west8-a', 'europe-west8-b', 'europe-west8-c',
-    'europe-west9-a', 'europe-west9-b', 'europe-west9-c', 'me-west1-a',
-    'me-west1-b', 'me-west1-c', 'northamerica-northeast1-a',
-    'northamerica-northeast1-b', 'northamerica-northeast1-c',
-    'northamerica-northeast2-a', 'northamerica-northeast2-b',
-    'northamerica-northeast2-c', 'southamerica-east1-a', 'southamerica-east1-b',
-    'southamerica-east1-c', 'southamerica-west1-a', 'southamerica-west1-b',
-    'southamerica-west1-c', 'us-central1-a', 'us-central1-b', 'us-central1-c',
-    'us-central1-f', 'us-east1-b', 'us-east1-c', 'us-east1-d', 'us-east4-a',
-    'us-east4-b', 'us-east4-c', 'us-east5-a', 'us-east5-b', 'us-east5-c',
-    'us-south1-a', 'us-south1-b', 'us-south1-c', 'us-west1-a', 'us-west1-b',
-    'us-west1-c', 'us-west2-a', 'us-west2-b', 'us-west2-c', 'us-west3-a',
-    'us-west3-b', 'us-west3-c', 'us-west4-a', 'us-west4-b', 'us-west4-c',
-    'global'
+      'asia-east1-a', 'asia-east1-b', 'asia-east1-c', 'asia-east2-a',
+      'asia-east2-b', 'asia-east2-c', 'asia-northeast1-a', 'asia-northeast1-b',
+      'asia-northeast1-c', 'asia-northeast2-a', 'asia-northeast2-b',
+      'asia-northeast2-c', 'asia-northeast3-a', 'asia-northeast3-b',
+      'asia-northeast3-c', 'asia-south1-a', 'asia-south1-b', 'asia-south1-c',
+      'asia-south2-a', 'asia-south2-b', 'asia-south2-c', 'asia-southeast1-a',
+      'asia-southeast1-b', 'asia-southeast1-c', 'asia-southeast2-a',
+      'asia-southeast2-b', 'asia-southeast2-c', 'australia-southeast1-a',
+      'australia-southeast1-b', 'australia-southeast1-c',
+      'australia-southeast2-a', 'australia-southeast2-b',
+      'australia-southeast2-c', 'europe-central2-a', 'europe-central2-b',
+      'europe-central2-c', 'europe-north1-a', 'europe-north1-b',
+      'europe-north1-c', 'europe-southwest1-a', 'europe-southwest1-b',
+      'europe-southwest1-c', 'europe-west1-b', 'europe-west1-c',
+      'europe-west1-d', 'europe-west2-a', 'europe-west2-b', 'europe-west2-c',
+      'europe-west3-a', 'europe-west3-b', 'europe-west3-c', 'europe-west4-a',
+      'europe-west4-b', 'europe-west4-c', 'europe-west6-a', 'europe-west6-b',
+      'europe-west6-c', 'europe-west8-a', 'europe-west8-b', 'europe-west8-c',
+      'europe-west9-a', 'europe-west9-b', 'europe-west9-c', 'me-west1-a',
+      'me-west1-b', 'me-west1-c', 'northamerica-northeast1-a',
+      'northamerica-northeast1-b', 'northamerica-northeast1-c',
+      'northamerica-northeast2-a', 'northamerica-northeast2-b',
+      'northamerica-northeast2-c', 'southamerica-east1-a',
+      'southamerica-east1-b',
+      'southamerica-east1-c', 'southamerica-west1-a', 'southamerica-west1-b',
+      'southamerica-west1-c', 'us-central1-a', 'us-central1-b', 'us-central1-c',
+      'us-central1-f', 'us-east1-b', 'us-east1-c', 'us-east1-d', 'us-east4-a',
+      'us-east4-b', 'us-east4-c', 'us-east5-a', 'us-east5-b', 'us-east5-c',
+      'us-south1-a', 'us-south1-b', 'us-south1-c', 'us-west1-a', 'us-west1-b',
+      'us-west1-c', 'us-west2-a', 'us-west2-b', 'us-west2-c', 'us-west3-a',
+      'us-west3-b', 'us-west3-c', 'us-west4-a', 'us-west4-b', 'us-west4-c',
+      'global'
   }
   NAME = 'gcp_zone'
 
   def Validate(self,
-               operand: Any,
-               validator_params: Dict[str, Any]) -> Tuple[bool, str]:
+               argument_value: str,
+               recipe_argument: resources.RecipeArgument) -> Any:
     """Validate that operand is a valid GCP zone.
 
     Args:
-      operand: The argument value to validate.
-      validator_params: Unused for this validator.
+      argument_value: The argument value to validate.
+      recipe_argument: The definition of the argument.
 
     Returns:
-      A Tuple:
-        boolean: True if operand is a valid GCP zone, False otherwise.
-        str: A message for validation failure. Only set if the boolean is false.
+      A valid GCP zone name.
+
+    Raises:
+      RecipeArgsValidationFailure: If the argument is not a valid GCP zone.
     """
-    if operand not in self._zones:
-      return False, 'Invalid GCP Zone name'
-    return True, ''
+    if argument_value not in self._zones:
+      raise errors.RecipeArgsValidationFailure(
+          recipe_argument.switch,
+          argument_value,
+          self.NAME,
+          'Invalid GCP Zone name')
+
+    return argument_value
 
 
 class RegexValidator(CommaSeparatedValidator):
@@ -271,33 +272,37 @@ class RegexValidator(CommaSeparatedValidator):
   NAME = 'regex'
 
   def ValidateSingle(self,
-                     operand: str,
-                     validator_params: Dict[str, Any]
-                     ) -> Tuple[bool, str]:
+                     argument_value: str,
+                     recipe_argument: resources.RecipeArgument) -> str:
     """Validate a string according to a regular expression.
 
     Args:
-      operand: The argument value to validate.
-      validator_params: Validator parameters from the json recipe. Must include
-        'regex'.
+      argument_value: The argument value to validate.
+      recipe_argument: The definition of the argument.
 
     Returns:
-      A Tuple:
-        boolean: True if operand matches the regex, False otherwise.
-        str: A message for validation failure. Only set if the boolean is false.
+      str: a valid string.
 
     Raises:
       errors.RecipeArgsValidatorError: If no regex is found to use.
+      errors.RecipeArgsValidationFailure: If the argument value does not match
+        the regex.
     """
-    if 'regex' not in validator_params:
+    expression = recipe_argument.validation_params.get('regex')
+    if expression is None:
       raise errors.RecipeArgsValidatorError(
           'Missing validator parameter: regex')
 
-    regex = re.compile(validator_params['regex'])
-    if not regex.match(str(operand)):
-      return (False,
-          f'"{operand}" does not match regex /{validator_params["regex"]}/')
-    return True, ''
+    regex = re.compile(expression)
+
+    if not regex.match(argument_value):
+      raise errors.RecipeArgsValidationFailure(
+          recipe_argument.switch,
+          argument_value,
+          self.NAME,
+          f'does not match regex /{expression}/')
+
+    return argument_value
 
 
 class SubnetValidator(CommaSeparatedValidator):
@@ -306,25 +311,30 @@ class SubnetValidator(CommaSeparatedValidator):
   NAME = 'subnet'
 
   def ValidateSingle(self,
-                     operand: str,
-                     validator_params: Dict[str, Any]
-                     ) -> Tuple[bool, str]:
-    """Validate that operand is a valid subnet string.
+                     argument_value: str,
+                     recipe_argument: resources.RecipeArgument) -> str:
+    """Validate that the argument_value is a valid subnet string.
 
     Args:
-      operand: The argument value to validate.
-      validator_params: Unused for this validator.
+      argument_value: The argument value to validate.
+      recipe_argument: The definition of the argument.
 
     Returns:
-      A Tuple:
-        boolean: True if operand passes validation, False otherwise.
-        str: A message for validation failure. Only set if the boolean is false.
+      A valid subnet string
+
+    Raises:
+      errors.RecipeArgsValidationFailure: If the argument is not a valid subnet.
     """
     try:
-      ipaddress.ip_network(operand)
+      ipaddress.ip_network(argument_value)
     except ValueError:
-      return False, f'{operand} is not a valid subnet.'
-    return True, ''
+      raise errors.RecipeArgsValidationFailure(
+          recipe_argument.switch,
+          argument_value,
+          self.NAME,
+          'Not a valid subnet')
+
+    return argument_value
 
 
 class DatetimeValidator(AbstractValidator):
@@ -344,7 +354,7 @@ class DatetimeValidator(AbstractValidator):
 
   The argument will then be checked that it is before the date in 'before', and
   after the date in 'after'. Caveat: if a value in before or after is also a
-  parameter, eg with a recipe containing:
+  parameter, e.g. with a recipe containing:
 
   "args": {
     [
@@ -372,64 +382,74 @@ class DatetimeValidator(AbstractValidator):
 
   NAME = 'datetime'
 
-  def Validate(self,
-               operand: Any,
-               validator_params: Dict[str, Any]) -> Tuple[bool, str]:
+  def Validate(self, argument_value: str,
+      recipe_argument: resources.RecipeArgument) -> str:
     """Validate that operand is a valid GCP zone.
 
     Args:
-      operand: The argument value to validate.
-      validator_params: A dict with validator options. Keys:
-        'format_string': A date format string (required)
-        'before': A datetime that the operand must be before (optional)
-        'after': A datetime that the operand must be after (optional)
+      argument_value: The argument value to validate.
+      recipe_argument: The definition of the argument.
 
     Returns:
-      A Tuple:
-        boolean: True if operand passes validation, False otherwise.
-        str: A message for validation failure. Only set if the boolean is false.
+      A valid datetime string.
 
     Raises:
       errors.RecipeArgsValidatorError: An error in validation.
+      errors.RecipeArgsValidationFailure: If the argument is not a valid
+        datetime.
     """
-    if 'format_string' not in validator_params:
+    validation_parameters = recipe_argument.validation_params
+    if 'format_string' not in validation_parameters:
       raise errors.RecipeArgsValidatorError(
           'Missing validator parameter: format_string')
 
     try:
       dt = datetime.datetime.strptime(
-          operand, validator_params['format_string'])
-    except ValueError as exception:  # Date parsing failure
-      return False, str(exception)
+          argument_value, validation_parameters['format_string'])
+    except ValueError:  # Date parsing failure
+      raise errors.RecipeArgsValidationFailure(
+          recipe_argument.switch,
+          argument_value,
+          self.NAME,
+          f'does not match format {validation_parameters["format_string"]}')
 
     try:
-      if 'before' in validator_params and validator_params['before']:
+      if 'before' in validation_parameters and validation_parameters['before']:
         if not self._ValidateOrder(
-            dt, validator_params['before'], validator_params["format_string"]):
-          return False, (f'{validator_params["before"]} is before {dt} but it '
-                         'should be the other way around')
+            dt, validation_parameters['before'],
+            validation_parameters["format_string"]):
+          raise errors.RecipeArgsValidationFailure(
+              recipe_argument.switch,
+              argument_value,
+              self.NAME,
+              (f'{validation_parameters["before"]} is before {dt} but it '
+               'should be the other way around'))
 
-      if 'after' in validator_params and validator_params['after']:
+      if 'after' in validation_parameters and validation_parameters['after']:
         if not self._ValidateOrder(
-            validator_params['after'], dt, validator_params["format_string"]):
-          return False, (f'{dt} is before {validator_params["after"]} but it '
-                         'should be the other way around')
+            validation_parameters['after'], dt,
+            validation_parameters["format_string"]):
+          raise errors.RecipeArgsValidationFailure(
+              recipe_argument.switch,
+              argument_value,
+              self.NAME,
+              (f'{dt} is before {validation_parameters["after"]} but it '
+               'should be the other way around'))
     except ValueError as exception:
       raise errors.RecipeArgsValidatorError(
           f'Error in order comparison: {str(exception)}')
-    return True, ''
-
+    return argument_value
 
   def _ValidateOrder(self,
-                     first: Union[str, datetime.datetime],
-                     second: Union[str, datetime.datetime],
-                     format_string: str) -> bool:
+      first: Union[str, datetime.datetime],
+      second: Union[str, datetime.datetime],
+      format_string: str) -> bool:
     """Validates date ordering.
 
     Args:
       first: The intended earlier date.
       second: The intended later date.
-      format: A format string defining str -> datetime conversion.
+      format_string: A format string defining str -> datetime conversion.
 
     Returns:
       True if the ordering is correct, false otherwise.
@@ -445,8 +465,8 @@ class DatetimeValidator(AbstractValidator):
     return first < second
 
 
-class HostnameValidator(RegexValidator):
-  """Validator for Hostnames.
+class HostnameValidator(CommaSeparatedValidator):
+  """Validator for hostnames.
 
   Can validate flat hostnames and FQDNs. Optionally, can have `fqdn_only`
   specified to require FQDNs and reject flat hostnames."""
@@ -456,169 +476,221 @@ class HostnameValidator(RegexValidator):
   HOSTNAME_REGEX = r'^[-_a-z0-9]{3,64}$'  # Flat names, like 'localhost'
   FQDN_REGEX = (
       r'(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$)')
+
   # Source: https://stackoverflow.com/questions/11809631/fully-qualified-domain-name-validation#20204811  # pylint: disable=line-too-long
   # Retrieved 2023-02-03
 
-  def ValidateSingle(self,
-                     operand: str,
-                     validator_params: Dict[str, Any]
-                     ) -> Tuple[bool, str]:
-    """Validate an FQDN.
+  def ValidateSingle(self, argument_value: str,
+      recipe_argument: resources.RecipeArgument) -> str:
+    """Validate a hostname.
 
     Args:
-      operand: The FQDN to validate.
-      validator_params: May contain `fqdn_only` if flat names should be
-        considered invalid. Default False.
+      argument_value: The hostname to validate.
+      recipe_argument: The definition of the argument.
 
     Returns:
-      A Tuple:
-        boolean: True if operand is a valid FQDN, False otherwise.
-        str: A message for validation failure. Only set if the boolean is false.
+      A valid hostname.
+
+    Raises:
+      errors.RecipeArgsValidationFailure: If the argument is not a valid hostname.
     """
     regexes = [self.FQDN_REGEX]
-    if not validator_params.get(self.FQDN_ONLY_FLAG, False):
+    if not recipe_argument.validation_params.get(self.FQDN_ONLY_FLAG, False):
       regexes.append(self.HOSTNAME_REGEX)
-    results = []
 
     for regex in regexes:
-      validator_params['regex'] = regex
-      results.append(super().ValidateSingle(operand, validator_params))
+      if re.match(regex, argument_value):
+        return argument_value
 
-    if not any(r[0] for r in results):
-      return False, f"'{operand}' is an invalid hostname."
-    return True, ''
+    raise errors.RecipeArgsValidationFailure(
+        recipe_argument.switch,
+        argument_value,
+        self.NAME,
+        'Not a valid hostname')
 
 
 class GRRHostValidator(HostnameValidator):
-  """Validates a GRR hostname.
+  """Validates a GRR host identifier.
 
-  Grr can accept FQDNs, or Grr client IDs, which take the form of
+  GRR can accept FQDNs, or GRR client IDs, which take the form of
   C.1facf5562db006ad.
   """
 
   NAME = 'grr_host'
   GRR_REGEX = r'^C\.[0-9a-f]{16}$'
 
-  def ValidateSingle(self,
-                     operand: str,
-                     validator_params: Dict[str, Any]
-                     ) -> Tuple[bool, str]:
-    """Validate a Grr host ID.
+  def ValidateSingle(self, argument_value: str,
+      recipe_argument: resources.RecipeArgument) -> Any:
+    """Validates a GRR host ID.
 
     Args:
-      operand: The ID to validate.
-      validator_params: Unused for this validator.
+      argument_value: The ID to validate.
+      recipe_argument: Unused for this validator.
 
     Returns:
-      A Tuple:
-        boolean: True if operand is a valid Grr ID, False otherwise.
-        str: A message for validation failure. Only set if the boolean is false.
+      A valid GRR host identifier.
+
+    Raises:
+      errors.RecipeArgsValidationFailure: If the argument value is not a GRR
+        host ID.
     """
-    validator_params['regex'] = self.GRR_REGEX
+    regexes = [self.GRR_REGEX, self.FQDN_REGEX, self.HOSTNAME_REGEX]
 
-    bases = [RegexValidator, HostnameValidator]
-    results = [base.ValidateSingle(self, operand, validator_params)
-               for base in bases]
+    for regex in regexes:
+      if re.match(regex, argument_value):
+        return argument_value
 
-    if not any(r[0] for r in results):
-      return False, f"'{operand}' is an invalid Grr host ID."
-    return True, ''
+    raise errors.RecipeArgsValidationFailure(
+        recipe_argument.switch,
+        argument_value,
+        self.NAME,
+        'Not a GRR host identifier')
 
 
-class URLValidator(HostnameValidator):
+class URLValidator(CommaSeparatedValidator):
   """Validates a URL."""
 
   NAME = "url"
 
   def ValidateSingle(self,
-                     operand: str,
-                     validator_params: Dict[str, Any]
-                     ) -> Tuple[bool, str]:
+                     argument_value: str,
+                     recipe_argument: resources.RecipeArgument) -> str:
     """Validates a URL.
 
     Args:
-      operand: The URL to validate.
-      validator_params: Unused for this validator.
+      argument_value: The URL to validate.
+      recipe_argument: The definition of the argument.
+
 
     Returns:
-      A Tuple:
-        boolean: True if operand is a valid URL, False otherwise.
-        str: A message for validation failure. Only set if the boolean is false.
+      A valid URL string.
+
+    Raises:
+      errors.RecipeArgsValidationFailure: If the argument is not a valid URL.
     """
-    url = urlparse(operand)
-    if not url.hostname:
-      return False, f"'{operand}' is an invalid URL."
+    url = urlparse(argument_value)
+    if not all([url.scheme, url.netloc]):
+      raise errors.RecipeArgsValidationFailure(
+          recipe_argument.switch,
+          argument_value,
+          self.NAME,
+          'Not a valid URL')
 
-    # Test if the FQDN is actually an IP address, which is fine.
-    try:
-      ipaddress.ip_address(url.hostname)
-      return True, ''
-    except ValueError:
-      pass
-
-    validator_params['regex'] = self.HOSTNAME_REGEX
-
-    bases = [RegexValidator, HostnameValidator]
-    results = [base.ValidateSingle(self, url.hostname, validator_params)
-               for base in bases]
-
-    if not any(r[0] for r in results):
-      return False, f"'{operand}' is an invalid URL."
-    return True, ''
+    return argument_value
 
 
-class ValidatorManager:
+class ValidatorsManager:
   """Class that handles validating arguments."""
 
-  def __init__(self) -> None:
-    """Initialise."""
-    self._validators: Dict[str, AbstractValidator] = {}
-    self._default_validator: AbstractValidator = DefaultValidator()
+  _validator_classes = {}  # type: Dict[str, Type['AbstractValidator']]
 
-    self.RegisterValidator(AWSRegionValidator())
-    self.RegisterValidator(AzureRegionValidator())
-    self.RegisterValidator(DatetimeValidator())
-    self.RegisterValidator(HostnameValidator())
-    self.RegisterValidator(GCPZoneValidator())
-    self.RegisterValidator(GRRHostValidator())
-    self.RegisterValidator(RegexValidator())
-    self.RegisterValidator(SubnetValidator())
-    self.RegisterValidator(URLValidator())
+  @classmethod
+  def ListValidators(cls) -> List[str]:
+    """Returns a list of all registered validators.
 
-  def RegisterValidator(self, validator: AbstractValidator) -> None:
+    Returns:
+      A list of all registered validators.
+    """
+    return list(cls._validator_classes.keys())
+
+
+  @classmethod
+  def RegisterValidator(cls,
+                        validator_class: Type['AbstractValidator']) -> None:
     """Register a validator class for usage.
 
     Args:
-      validator: The validator class to register for usage.
-    """
-    self._validators[validator.NAME] = validator
-
-  def Validate(self,
-               operand: Any,
-               validator_params: Dict[str, Any]
-               ) -> Tuple[bool, str]:
-    """Validate a operand.
-
-    Args:
-      operand: The argument value to validate.
-      validator_params: Validator parameters from the json recipe.
-
-    Returns:
-      A Tuple:
-        boolean: True if operand passes validation, False otherwise.
-        str: A message for validation failure. Only set if the boolean is false.
+      validator_class: Class to register.
 
     Raises:
+      KeyError: if there's already a validator class set for the corresponding
+        class name.
+    """
+    class_name = validator_class.NAME
+    if class_name in cls._validator_classes:
+      raise KeyError(
+          'Validator class already set for: {0:s}.'.format(class_name))
+
+    cls._validator_classes[class_name] = validator_class
+
+  @classmethod
+  def DeregisterValidator(cls,
+                          validator_class: Type['AbstractValidator']) -> None:
+    """Deregister a validator class.
+
+    Args:
+      validator_class: Class to deregister.
+
+    Raises:
+      KeyError: if validator class is not set for the corresponding class name.
+    """
+    class_name = validator_class.NAME
+    if class_name not in cls._validator_classes:
+      raise KeyError('Module class not set for: {0:s}.'.format(class_name))
+
+    del cls._validator_classes[class_name]
+
+  @classmethod
+  def RegisterValidators(
+      cls, validator_classes: Sequence[Type['AbstractValidator']]) -> None:
+    """Registers validator classes.
+
+    The module classes are identified based on their class name.
+
+    Args:
+      validator_classes (Sequence[type]): classes to register.
+    Raises:
+      KeyError: if module class is already set for the corresponding class name.
+    """
+    for module_class in validator_classes:
+      cls.RegisterValidator(module_class)
+
+  @classmethod
+  def GetValidatorByName(cls, name: str) -> Optional[Type['AbstractValidator']]:
+    """Retrieves a specific validator by its name.
+
+    Args:
+      name (str): name of the module.
+
+    Returns:
+      type: the module class, which is a subclass of BaseModule, or None if
+          no corresponding module was found.
+    """
+    return cls._validator_classes.get(name, None)
+
+  @classmethod
+  def Validate(cls,
+               argument_value: str,
+               recipe_argument: resources.RecipeArgument) -> str:
+    """Validate an argument value.
+
+    Args:
+      argument_value: The argument value to validate.
+      recipe_argument: The definition of the argument.
+
+    Returns:
+      The validated argument value. If the recipe argument doesn't specify a
+      validator, the argument value is returned unchanged.
+
+    Raises:
+      errors.RecipeArgsValidationFailure: If the argument is not valid.
       errors.RecipeArgsValidatorError: Raised on validator config errors.
     """
-    if 'format' not in validator_params:
-      validator = self._default_validator
-    else:
-      if validator_params['format'] not in self._validators:
-        raise errors.RecipeArgsValidatorError(
-            f'{validator_params["format"]} is not a valid validator name')
+    validator_name = str(recipe_argument.validation_params.get("format", ""))
+    if not validator_name:
+      return argument_value
 
-      validator = self._validators.get(
-          validator_params['format'], self._default_validator)
+    if validator_name not in cls._validator_classes:
+      raise errors.RecipeArgsValidatorError(
+          f'{validator_name} is not a registered validator')
 
-    return validator.Validate(operand, validator_params)
+    validator_class = cls._validator_classes[validator_name]
+    validator = validator_class()
+
+    return validator.Validate(argument_value, recipe_argument)
+
+
+ValidatorsManager.RegisterValidators(
+    [AWSRegionValidator, AzureRegionValidator, DatetimeValidator,
+        HostnameValidator, GCPZoneValidator, GRRHostValidator, RegexValidator,
+        SubnetValidator, URLValidator])

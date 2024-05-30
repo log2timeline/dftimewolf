@@ -8,7 +8,7 @@ import inspect
 
 from dftimewolf.cli import dftimewolf_recipes
 from dftimewolf.lib import state as dftw_state
-from dftimewolf.lib import resources, errors
+from dftimewolf.lib import resources, errors, args_validator
 from dftimewolf import config
 
 # This test recipe requires two args: Anything for arg1, and the word 'Second'
@@ -27,7 +27,7 @@ NESTED_ARG_RECIPE = {
 }
 
 NESTED_ARG_RECIPE_ARGS = [
-    resources.RecipeArgs(*arg) for arg in NESTED_ARG_RECIPE['args']]
+    resources.RecipeArgument(*arg) for arg in NESTED_ARG_RECIPE['args']]
 
 class MainToolTest(unittest.TestCase):
   """Tests for main tool functions."""
@@ -96,12 +96,12 @@ class MainToolTest(unittest.TestCase):
     for recipe in self.tool._recipes_manager.GetRecipes():
       self.tool._state.LoadRecipe(recipe.contents, dftimewolf_recipes.MODULES)
       for arg in recipe.args:
-        if arg.format:
+        if arg.validation_params:
           self.assertIn(
-              arg.format['format'],
-              self.tool._args_validator._validators.keys(),
+              arg.validation_params['format'],
+              args_validator.ValidatorsManager.ListValidators(),
               f'Error in {recipe.name}:{arg.switch} - '
-              f'Invalid validator {arg.format["format"]}.')
+              f'Invalid validator {arg.validation_params["format"]}.')
 
   def testRecipeWithNestedArgs(self):
     """Tests that a recipe with args referenced in other args is populated."""
@@ -121,7 +121,7 @@ class MainToolTest(unittest.TestCase):
     # of 'arg2'
     for arg in NESTED_ARG_RECIPE_ARGS:
       if arg.switch == 'arg2':
-        self.assertEqual(arg.format['other_arg'], 'First')
+        self.assertEqual(arg.validation_params['other_arg'], 'First')
 
   def testFailingArgValidation(self):
     """Tests that a recipe fails when args don't validate."""
@@ -137,8 +137,7 @@ class MainToolTest(unittest.TestCase):
     self.tool.ParseArguments(['nested_arg_recipe', 'First', 'Not Second'])
 
     with self.assertRaisesRegex(
-        errors.RecipeArgsValidatorError,
-        'At least one argument failed validation'):
+        errors.CriticalError, 'At least one argument failed validation'):
       self.tool.ValidateArguments()
 
   def testDryRun(self):
