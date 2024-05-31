@@ -280,7 +280,6 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     self.grr_artifact_collector.PostProcess()
 
     kwargs = mock_ArtifactCollectorFlowArgs.call_args[1]
-    self.assertFalse(kwargs['apply_parsers'])  # default argument
     self.assertTrue(kwargs['ignore_interpolation_errors'])  # default argument
     self.assertFalse(kwargs['use_raw_filesystem_access'])
     self.assertEqual(kwargs['max_file_size'], 1234)

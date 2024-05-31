@@ -859,12 +859,12 @@ class GRRArtifactCollector(GRRFlow):
         self.use_raw_filesystem_access = True
 
       flow_args = flows_pb2.ArtifactCollectorFlowArgs(
-          artifact_list=artifact_list,
-          use_raw_filesystem_access=self.use_raw_filesystem_access,
-          ignore_interpolation_errors=True,
-          apply_parsers=False,
-          max_file_size=self.max_file_size,
-          implementation_type=jobs_pb2.PathSpec.ImplementationType.DIRECT)
+        artifact_list=artifact_list,
+        use_raw_filesystem_access=self.use_raw_filesystem_access,
+        ignore_interpolation_errors=True,
+        max_file_size=self.max_file_size,
+        implementation_type=jobs_pb2.PathSpec.ImplementationType.DIRECT,
+      )
       flow_id = self._LaunchFlow(client, 'ArtifactCollectorFlow', flow_args)
       if not flow_id:
         msg = f'Flow could not be launched on {client.client_id:s}.'
