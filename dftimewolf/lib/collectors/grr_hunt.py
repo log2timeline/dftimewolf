@@ -221,11 +221,11 @@ class GRRHuntArtifactCollector(GRRHunt):
     """
     self.logger.debug(f"Artifacts to be collected: {self.artifacts!s}")
     hunt_args = grr_flows.ArtifactCollectorFlowArgs(
-        artifact_list=self.artifacts,
-        use_raw_filesystem_access=self.use_raw_filesystem_access,
-        ignore_interpolation_errors=True,
-        apply_parsers=False,
-        max_file_size=self.max_file_size)
+      artifact_list=self.artifacts,
+      use_raw_filesystem_access=self.use_raw_filesystem_access,
+      ignore_interpolation_errors=True,
+      max_file_size=self.max_file_size,
+    )
     self._CreateAndStartHunt('ArtifactCollectorFlow', hunt_args)
 
 
