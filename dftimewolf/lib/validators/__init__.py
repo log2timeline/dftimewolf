@@ -2,7 +2,7 @@
 """This file imports Python modules that register validators."""
 from dftimewolf.lib.validators import aws_region
 from dftimewolf.lib.validators import azure_region
-from dftimewolf.lib.validators import datetime
+from dftimewolf.lib.validators import datetime_validator
 from dftimewolf.lib.validators import gcp_zone
 from dftimewolf.lib.validators import grr_host
 from dftimewolf.lib.validators import hostname

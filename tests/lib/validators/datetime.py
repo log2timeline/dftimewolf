@@ -4,7 +4,7 @@
 import unittest
 
 from dftimewolf.lib import errors, resources
-from dftimewolf.lib.validators import datetime
+from dftimewolf.lib.validators import datetime_validator
 
 
 class DatetimeValidatorTest(unittest.TestCase):
