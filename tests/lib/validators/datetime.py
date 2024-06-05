@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Tests for the datetime validator."""
 
+import datetime
 import unittest
 
 from dftimewolf.lib import errors, resources
@@ -22,53 +23,45 @@ class DatetimeValidatorTest(unittest.TestCase):
     """Tests initialisation."""
     self.assertEqual(self.validator.NAME, 'datetime')
 
-  def testRequiredParam(self):
-    """Tests an error is thrown if format_string is missing."""
-    with self.assertRaisesRegex(
-        errors.RecipeArgsValidatorError,
-        'Missing validator parameter: format_string'):
-      self.validator.Validate('value', self.recipe_argument)
-
   def testValidateSuccess(self):
     """Tests a successful validation."""
-    self.recipe_argument.validation_params['format_string'] = self.FORMAT_STRING
-    date = '2023-12-31 23:29:59'
-    val = self.validator.Validate(date, self.recipe_argument)
-    self.assertEqual(val, date)
+    date_value = datetime.datetime(2023, 12, 31, 23, 29, 59)
+    date_string = '2023-12-31 23:29:59'
+    val = self.validator.Validate(date_string, self.recipe_argument)
+    self.assertEqual(val, date_value)
 
   def testValidateSuccessWithOrder(self):
     """Tests validation success with order parameters."""
-    first = '2023-01-01 00:00:00'
-    second = '2023-01-02 00:00:00'
-    third = '2023-01-03 00:00:00'
-    fourth = '2023-01-04 00:00:00'
-    fifth = '2023-01-05 00:00:00'
+    first_string = '2023-01-01 00:00:00'
+    second_string = '2023-01-02 00:00:00'
+    third_string = '2023-01-03 00:00:00'
+    third_datetime = datetime.datetime(2023, 1, 3, 0, 0, 0)
+    fourth_string = '2023-01-04 00:00:00'
+    fifth_string = '2023-01-05 00:00:00'
 
-    self.recipe_argument.validation_params['format_string'] = self.FORMAT_STRING
-    self.recipe_argument.validation_params['before'] = fourth
-    self.recipe_argument.validation_params['after'] = second
+    self.recipe_argument.validation_params['before'] = fourth_string
+    self.recipe_argument.validation_params['after'] = second_string
 
-    val = self.validator.Validate(third, self.recipe_argument)
-    self.assertEqual(val, third)
-
-    with self.assertRaisesRegex(
-        errors.RecipeArgsValidationFailure,
-        f'{first} is before {second} but it should be the other way around'):
-      self.validator.Validate(first, self.recipe_argument)
+    val = self.validator.Validate(third_string, self.recipe_argument)
+    self.assertEqual(val, third_datetime)
 
     with self.assertRaisesRegex(
         errors.RecipeArgsValidationFailure,
-        f'{fourth} is before {fifth} but it should be the other way around'):
-      self.validator.Validate(fifth, self.recipe_argument)
+        'but it should be the other way around'):
+      self.validator.Validate(first_string, self.recipe_argument)
+
+    with self.assertRaisesRegex(
+        errors.RecipeArgsValidationFailure,
+        'but it should be the other way around'):
+      self.validator.Validate(fifth_string, self.recipe_argument)
 
   def testValidateFailureInvalidFormat(self):
     """Tests invalid date formats correctly fail."""
-    values = ['value', '2023-12-31', '2023-31-12 23:29:59']
-    self.recipe_argument.validation_params['format_string'] = self.FORMAT_STRING
+    values = ['value', '2023-06-31', '2023-31-12 23:29:59']
     for value in values:
       with self.assertRaisesRegex(
           errors.RecipeArgsValidationFailure,
-          f'does not match format {self.FORMAT_STRING}'):
+          'is not a valid datetime'):
         self.validator.Validate(value, self.recipe_argument)
 
   # pylint: disable=protected-access
@@ -78,11 +71,11 @@ class DatetimeValidatorTest(unittest.TestCase):
     second = '2023-01-02 00:00:00'
 
     # Correct order passes
-    val = self.validator._ValidateOrder(first, second, self.FORMAT_STRING)
+    val = self.validator._ValidateOrder(first, second)
     self.assertTrue(val)
 
     # Reverse order fails
-    val = self.validator._ValidateOrder(second, first, self.FORMAT_STRING)
+    val = self.validator._ValidateOrder(second, first) #pylint: disable=arguments-out-of-order
     self.assertFalse(val)
 
 if __name__ == '__main__':

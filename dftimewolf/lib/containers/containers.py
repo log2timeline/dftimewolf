@@ -481,21 +481,19 @@ class WorkspaceLogs(interface.AttributeContainer):
     path: str,
     filter_expression: str,
     user_key: Optional[str] = "",
-    start_time: Optional[str] = "",
-    end_time: Optional[str] = "",
+    start_time: Optional[datetime.datetime] = None,
+    end_time: Optional[datetime.datetime] = None,
   ) -> None:
     """Initializes the Workspace logs container.
 
     Args:
-      application_name (str): Name of the application the audit records are for.
-      path (str): path to a Workspace log file.
-      filter_expression (str): Workspace audit logs filter expression
+      application_name: Name of the application the audit records are for.
+      path: path to a Workspace log file.
+      filter_expression: Workspace audit logs filter expression
           used to generate the results.
-      user_key (Optional[str]): user key associated with the audit records.
-      start_time (Optional[str]): Beginning of the time period the results
-          cover. Format yyyy-mm-ddTHH:MM:SSZ.
-      end_time (Optional[str]): End of the time period the results cover. Format
-          yyyy-mm-ddTHH:MM:SSZ.
+      user_key: user key associated with the audit records.
+      start_time: Beginning of the time period the results cover.
+      end_time: End of the time period the results cover.
     """
     super(WorkspaceLogs, self).__init__()
     self.filter_expression = filter_expression

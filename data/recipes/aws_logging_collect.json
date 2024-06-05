@@ -24,7 +24,7 @@
         ["region", "AWS Region", null, {"format": "aws_region"}],
         ["--profile_name", "Name of the AWS profile to collect logs from.", null],
         ["--query_filter", "Filter expression to use to query logs.", null],
-        ["--start_time", "Start time for the query.", null, {"format": "datetime", "format_string": "%Y-%m-%d %H:%M:%S", "before": "@end_time"}],
-        ["--end_time", "End time for the query.", null, {"format": "datetime", "format_string": "%Y-%m-%d %H:%M:%S", "after": "@start_time"}]
+        ["--start_time", "Start time for the query.", null, {"format": "datetime", "before": "@end_time"}],
+        ["--end_time", "End time for the query.", null, {"format": "datetime",  "after": "@start_time"}]
     ]
 }

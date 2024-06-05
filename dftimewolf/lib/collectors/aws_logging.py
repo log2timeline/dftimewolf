@@ -3,7 +3,7 @@
 
 import json
 import tempfile
-from datetime import datetime
+import datetime
 from typing import Any, Dict, Optional
 
 from boto3 import session as boto3_session
@@ -14,6 +14,7 @@ from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 
+AWS_DATE_FORMAT = 'YYYY-MM-DD HH:MM:SS'
 
 class AWSLogsCollector(module.BaseModule):
   """Collector for Amazon Web Services (AWS) logs."""
@@ -26,8 +27,8 @@ class AWSLogsCollector(module.BaseModule):
     super(AWSLogsCollector, self).__init__(state, name=name, critical=critical)
     self._profile_name: Optional[str] = None
     self._query_filter: Optional[str] = None
-    self._start_time: Optional[datetime] = None
-    self._end_time: Optional[datetime] = None
+    self._start_time: Optional[datetime.datetime] = None
+    self._end_time: Optional[datetime.datetime] = None
     self._region: str = None  # type: ignore
 
   # pylint: disable=arguments-differ
@@ -35,27 +36,23 @@ class AWSLogsCollector(module.BaseModule):
             region: str,
             profile_name: Optional[str]=None,
             query_filter: Optional[str]=None,
-            start_time: Optional[str]=None,
-            end_time: Optional[str]=None) -> None:
+            start_time: Optional[datetime.datetime]=None,
+            end_time: Optional[datetime.datetime]=None) -> None:
     """Sets up an AWS logs collector
 
     Args:
-      region (str): An AWS region name.
-      profile_name (str): Optional. The profile name to collect logs with.
-      query_filter (str): Optional. The CloudTrail query filter in the form
+      region: An AWS region name.
+      profile_name: Optional. The profile name to collect logs with.
+      query_filter: Optional. The CloudTrail query filter in the form
         'key,value'
-      start_time (str): Optional. The start time for the query in the format
-        'YYYY-MM-DD HH:MM:SS'
-      end_time (str): Optional. The end time for the query in the format
-        'YYYY-MM-DD HH:MM:SS'
+      start_time: Optional. The start time for the query.
+      end_time: Optional. The end time for the query.
     """
     self._region = region
     self._profile_name = profile_name
     self._query_filter = query_filter
-    if start_time:
-      self._start_time = datetime.fromisoformat(start_time)
-    if end_time:
-      self._end_time = datetime.fromisoformat(end_time)
+    self._start_time = start_time
+    self._end_time = end_time
 
   def Process(self) -> None:
     """Copies logs from an AWS account."""
@@ -91,9 +88,9 @@ class AWSLogsCollector(module.BaseModule):
       filters = [{'AttributeKey': k, 'AttributeValue': v}]
       request_params['LookupAttributes'] = filters
     if self._start_time:
-      request_params['StartTime'] = self._start_time
+      request_params['StartTime'] = self._start_time.strftime(AWS_DATE_FORMAT)
     if self._end_time:
-      request_params['EndTime'] = self._end_time
+      request_params['EndTime'] = self._end_time.strftime(AWS_DATE_FORMAT)
 
     while True:
       try:
