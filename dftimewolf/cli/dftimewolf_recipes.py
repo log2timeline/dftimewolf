@@ -14,11 +14,15 @@ import time
 import uuid
 
 from typing import TYPE_CHECKING, List, Optional, Dict, Any, cast
+
+from dftimewolf.lib.validators import manager as validators_manager
 from dftimewolf.cli.curses_display_manager import CursesDisplayManager
 from dftimewolf.cli.curses_display_manager import CDMStringIOWrapper
 
+# The following import makes sure validators are registered.
+from dftimewolf.lib import validators # pylint: disable=unused-import
+
 # pylint: disable=wrong-import-position
-from dftimewolf.lib import args_validator
 from dftimewolf.lib import logging_utils
 from dftimewolf.lib import telemetry
 from dftimewolf import config
@@ -326,7 +330,7 @@ class DFTimewolfTool(object):
       if argument_mandatory or argument_set:
         argument_value = self.state.command_line_options[switch]
         try:
-          valid_value = args_validator.ValidatorsManager.Validate(
+          valid_value = validators_manager.ValidatorsManager.Validate(
               str(argument_value), arg)
           self.state.command_line_options[switch] = valid_value
         except errors.RecipeArgsValidationFailure as exception:
