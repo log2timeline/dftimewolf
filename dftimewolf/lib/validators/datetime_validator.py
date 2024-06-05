@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """Validator for dates and times"""
 import datetime
+
 from typing import Union
+from dateutil import parser
 
 from dftimewolf.lib import errors, resources, args_validator
 from dftimewolf.lib.validators import manager as validators_manager
@@ -9,53 +11,17 @@ from dftimewolf.lib.validators import manager as validators_manager
 
 
 class DatetimeValidator(args_validator.AbstractValidator):
-  """Validates a datetime string.
+  """Validates a date and time string.
 
-  Requires a format string that defines what the datetime should look like.
+  Accepts dates in ISO2601 format only.
 
-  Optionally, it can confirm order of multiple dates as well. A recipe can
-  specify the following datetime validator:
-
-  {
-    "format": "datetime",
-    "format_string": "%Y-%m-%dT%H:%M:%SZ",
-    "before": "dateX",  # optional
-    "after": "dateY"  # optional
-  }
-
-  The argument will then be checked that it is before the date in 'before', and
-  after the date in 'after'. Caveat: if a value in before or after is also a
-  parameter, e.g. with a recipe containing:
-
-  "args": {
-    [
-      "start_date",
-      "Start date",
-      null,
-      {
-        "format": "datetime",
-        "format_string": "%Y-%m-%dT%H:%M:%SZ",
-        "before": "@end_date"
-      }
-    ], [
-      "end_date",
-      "End date",
-      null,
-      {
-        "format": "datetime",
-        "format_string": "%Y-%m-%dT%H:%M:%SZ",
-        "after": "@start_date"
-      }
-    ],
-    ...
-  then "format_string" must be the same for both args.
   """
 
   NAME = 'datetime'
 
   def Validate(self, argument_value: str,
-      recipe_argument: resources.RecipeArgument) -> str:
-    """Validate that operand is a valid GCP zone.
+      recipe_argument: resources.RecipeArgument) -> datetime.datetime:
+    """Validate that operand is a valid date and time string.
 
     Args:
       argument_value: The argument value to validate.
@@ -75,52 +41,51 @@ class DatetimeValidator(args_validator.AbstractValidator):
           'Missing validator parameter: format_string')
 
     try:
-      dt = datetime.datetime.strptime(
-          argument_value, validation_parameters['format_string'])
-    except ValueError:  # Date parsing failure
+      parsed_datetime = parser.isoparse(argument_value)
+    except (parser.ParserError, ValueError) as exception:
       raise errors.RecipeArgsValidationFailure(
           recipe_argument.switch,
           argument_value,
           self.NAME,
-          f'does not match format {validation_parameters["format_string"]}')
+          f'is not a valid datetime: {str(exception)}')
 
+    before_value = validation_parameters.get('before')
     try:
-      if 'before' in validation_parameters and validation_parameters['before']:
-        if not self._ValidateOrder(
-            dt, validation_parameters['before'],
-            validation_parameters["format_string"]):
+      if before_value:
+        if not self._ValidateOrder(parsed_datetime, before_value):
           raise errors.RecipeArgsValidationFailure(
               recipe_argument.switch,
               argument_value,
               self.NAME,
-              (f'{validation_parameters["before"]} is before {dt} but it '
+              (f'{before_value} is after {parsed_datetime} but it '
                'should be the other way around'))
-
-      if 'after' in validation_parameters and validation_parameters['after']:
-        if not self._ValidateOrder(
-            validation_parameters['after'], dt,
-            validation_parameters["format_string"]):
-          raise errors.RecipeArgsValidationFailure(
-              recipe_argument.switch,
-              argument_value,
-              self.NAME,
-              (f'{dt} is before {validation_parameters["after"]} but it '
-               'should be the other way around'))
-    except ValueError as exception:
+    except (parser.ParserError, ValueError) as exception:
       raise errors.RecipeArgsValidatorError(
           f'Error in order comparison: {str(exception)}')
-    return argument_value
+
+    after_value = validation_parameters.get('after')
+    try:
+      if after_value:
+        if not self._ValidateOrder(after_value, parsed_datetime):
+          raise errors.RecipeArgsValidationFailure(
+              recipe_argument.switch,
+              argument_value,
+              self.NAME,
+              (f'{parsed_datetime} is before {after_value} but it '
+               'should be the other way around'))
+    except (parser.ParserError, ValueError) as exception:
+      raise errors.RecipeArgsValidatorError(
+          f'Error in order comparison: {str(exception)}')
+    return parsed_datetime
 
   def _ValidateOrder(self,
       first: Union[str, datetime.datetime],
-      second: Union[str, datetime.datetime],
-      format_string: str) -> bool:
+      second: Union[str, datetime.datetime]) -> bool:
     """Validates date ordering.
 
     Args:
       first: The intended earlier date.
       second: The intended later date.
-      format_string: A format string defining str -> datetime conversion.
 
     Returns:
       True if the ordering is correct, false otherwise.
@@ -128,11 +93,45 @@ class DatetimeValidator(args_validator.AbstractValidator):
     Raises:
       ValueError: If string -> datetime conversion fails.
     """
+    first_datetime: datetime.datetime
+    second_datetime: datetime.datetime
     if isinstance(first, str):
-      first = datetime.datetime.strptime(first, format_string)
+      first_datetime = parser.isoparse(first)
+    else:
+      first_datetime = first
     if isinstance(second, str):
-      second = datetime.datetime.strptime(second, format_string)
+      second_datetime = parser.isoparse(second)
+    else:
+      second_datetime = second
 
-    return first < second
+    return first_datetime < second_datetime
+
+class EndDateValidator(DatetimeValidator):
+  """A special subclass that sets date times to be the end of day."""
+
+  NAME = 'end_date'
+
+  def Validate(self, argument_value: str,
+      recipe_argument: resources.RecipeArgument) -> datetime.datetime:
+    """Validates a date, and sets the time to 23:59:59 if it's unset.
+
+    Args:
+      argument_value: The argument value to validate.
+      recipe_argument: The definition of the argument.
+
+    Returns:
+      A valid datetime string.
+
+    Raises:
+      errors.RecipeArgsValidatorError: An error in validation.
+      errors.RecipeArgsValidationFailure: If the argument is not a valid
+        datetime.
+
+    """
+    dt = super().Validate(argument_value, recipe_argument)
+    if (dt.hour, dt.minute, dt.second) == (0, 0, 0):
+      dt = dt.replace(hour=23, minute=59, second=59)
+    return dt
+
 
 validators_manager.ValidatorsManager.RegisterValidator(DatetimeValidator)
