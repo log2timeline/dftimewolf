@@ -14,7 +14,7 @@ class DatetimeValidatorTest(unittest.TestCase):
 
   def setUp(self):
     """Setup."""
-    self.validator = datetime.DatetimeValidator()
+    self.validator = datetime_validator.DatetimeValidator()
     self.recipe_argument = resources.RecipeArgument()
     self.recipe_argument.switch = 'testdatetime'
 
