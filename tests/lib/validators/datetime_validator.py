@@ -78,5 +78,23 @@ class DatetimeValidatorTest(unittest.TestCase):
     val = self.validator._ValidateOrder(second, first) #pylint: disable=arguments-out-of-order
     self.assertFalse(val)
 
+class EndTimeValidatorTest(unittest.TestCase):
+  """Tests the EndTimeValidator class."""
+
+  def setUp(self):
+    self.recipe_argument = resources.RecipeArgument()
+    self.recipe_argument.switch = 'end_time'
+    self.validator = datetime_validator.EndTimeValidator()
+
+  def testValidate(self):
+    """Tests the validate method."""
+    timeless_string = '20240101'
+    val = self.validator.Validate(timeless_string, self.recipe_argument)
+    self.assertEqual(val, datetime.datetime(2024, 1, 1, 23, 59, 59))
+
+    string_with_time = '2024-01-01 09:13:00'
+    val = self.validator.Validate(string_with_time, self.recipe_argument)
+    self.assertEqual(val, datetime.datetime(2024, 1, 1, 9, 13, 0))
+
 if __name__ == '__main__':
   unittest.main()

@@ -14,7 +14,6 @@ from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 
-AWS_DATE_FORMAT = 'YYYY-MM-DD HH:MM:SS'
 
 class AWSLogsCollector(module.BaseModule):
   """Collector for Amazon Web Services (AWS) logs."""
@@ -58,7 +57,7 @@ class AWSLogsCollector(module.BaseModule):
     """Copies logs from an AWS account."""
 
     output_file = tempfile.NamedTemporaryFile(
-    mode='w', delete=False, encoding='utf-8', suffix='.jsonl')
+      mode='w', delete=False, encoding='utf-8', suffix='.jsonl')
     output_path = output_file.name
     self.PublishMessage(f"Downloading logs to {output_path:s}")
 
@@ -88,9 +87,9 @@ class AWSLogsCollector(module.BaseModule):
       filters = [{'AttributeKey': k, 'AttributeValue': v}]
       request_params['LookupAttributes'] = filters
     if self._start_time:
-      request_params['StartTime'] = self._start_time.strftime(AWS_DATE_FORMAT)
+      request_params['StartTime'] = self._start_time
     if self._end_time:
-      request_params['EndTime'] = self._end_time.strftime(AWS_DATE_FORMAT)
+      request_params['EndTime'] = self._end_time
 
     while True:
       try:
@@ -108,7 +107,7 @@ class AWSLogsCollector(module.BaseModule):
         request_params['NextToken'] = next_token
       except boto_exceptions.ClientError as exception:
         self.ModuleError('Boto3 client error, check that lookup parameters '
-        'are correct https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_LookupEvents.html')  # pylint: disable=line-too-long
+          'are correct https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_LookupEvents.html')  # pylint: disable=line-too-long
         self.ModuleError(str(exception), critical=True)
 
     self.PublishMessage(f'Downloaded logs to {output_path}')

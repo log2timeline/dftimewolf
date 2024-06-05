@@ -14,13 +14,12 @@ class DatetimeValidator(args_validator.AbstractValidator):
   """Validates a date and time string.
 
   Accepts dates in ISO2601 format only.
-
   """
 
   NAME = 'datetime'
 
   def Validate(self, argument_value: str,
-      recipe_argument: resources.RecipeArgument) -> datetime.datetime:
+              recipe_argument: resources.RecipeArgument) -> datetime.datetime:
     """Validate that operand is a valid date and time string.
 
     Args:
@@ -36,9 +35,6 @@ class DatetimeValidator(args_validator.AbstractValidator):
         datetime.
     """
     validation_parameters = recipe_argument.validation_params
-    if 'format_string' not in validation_parameters:
-      raise errors.RecipeArgsValidatorError(
-          'Missing validator parameter: format_string')
 
     try:
       parsed_datetime = parser.isoparse(argument_value)
@@ -106,10 +102,10 @@ class DatetimeValidator(args_validator.AbstractValidator):
 
     return first_datetime < second_datetime
 
-class EndDateValidator(DatetimeValidator):
+class EndTimeValidator(DatetimeValidator):
   """A special subclass that sets date times to be the end of day."""
 
-  NAME = 'end_date'
+  NAME = 'end_time'
 
   def Validate(self, argument_value: str,
       recipe_argument: resources.RecipeArgument) -> datetime.datetime:
@@ -134,4 +130,5 @@ class EndDateValidator(DatetimeValidator):
     return dt
 
 
-validators_manager.ValidatorsManager.RegisterValidator(DatetimeValidator)
+validators_manager.ValidatorsManager.RegisterValidators(
+    [DatetimeValidator, EndTimeValidator])

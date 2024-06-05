@@ -52,7 +52,7 @@ class WorkspaceAuditTimesketchTest(unittest.TestCase):
     self.assertEqual(
         timesketch_container.name,
         'Workspace chrome logs for testuser@example.com from'
-        ' 2021-08-10T14:21Z to 2021-09-10T14:21Z')
+        ' 2021-08-10T14:21:00 to 2021-09-10T14:21:00')
 
   def testNonExistingEventType(self):
     """Tests that a log with an unknown type is transformed correctly."""

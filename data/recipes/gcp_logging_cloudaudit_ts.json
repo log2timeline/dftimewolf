@@ -42,7 +42,7 @@
     "args": [
         ["project_name", "Name of the GCP project to collect logs from.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9]{4,28}[a-z0-9]$"}],
         ["start_date", "Start date.", null, {"format": "datetime", "before": "@end_date"}],
-        ["end_date", "End date.", null, {"format": "datetime", "after": "@start_date"}],
+        ["end_date", "End date.", null, {"format": "end_time", "after": "@start_date"}],
         ["--incident_id", "Incident ID (used for Timesketch description).", null],
         ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
         ["--timesketch_endpoint", "Timesketch endpoint", "http://localhost:5000/"],

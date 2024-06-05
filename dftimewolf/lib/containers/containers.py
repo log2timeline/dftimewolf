@@ -464,13 +464,13 @@ class WorkspaceLogs(interface.AttributeContainer):
   """Google Workspace logs container.
 
   Attributes:
-    application_name (str): Name of the application the audit records are for
-    filter_expression (str): Workspace audit logs filter expression
-        used to generate the results.
-    path (str): path to a Workspace log file.
-    user_key (str): user key associated with the audit records.
-    start_time (Optional[str]): Beginning of the time period the results cover.
-    end_time (Optional[str]): End of the time period the results cover.
+    application_name: Name of the application the audit records are for
+    filter_expression: Workspace audit logs filter expression used to generate
+      the results.
+    path: path to a Workspace log file.
+    user_key: user key associated with the audit records.
+    start_time: Beginning of the time period the results cover.
+    end_time: End of the time period the results cover.
   """
 
   CONTAINER_TYPE = "workspace_logs"
