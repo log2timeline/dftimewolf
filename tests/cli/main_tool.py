@@ -8,7 +8,12 @@ import inspect
 
 from dftimewolf.cli import dftimewolf_recipes
 from dftimewolf.lib import state as dftw_state
-from dftimewolf.lib import resources, errors, args_validator
+from dftimewolf.lib import resources, errors
+from dftimewolf.lib.validators import manager as validators_manager
+
+# The following import makes sure validators are registered.
+from dftimewolf.lib import validators # pylint: disable=unused-import
+
 from dftimewolf import config
 
 # This test recipe requires two args: Anything for arg1, and the word 'Second'
@@ -99,7 +104,7 @@ class MainToolTest(unittest.TestCase):
         if arg.validation_params:
           self.assertIn(
               arg.validation_params['format'],
-              args_validator.ValidatorsManager.ListValidators(),
+              validators_manager.ValidatorsManager.ListValidators(),
               f'Error in {recipe.name}:{arg.switch} - '
               f'Invalid validator {arg.validation_params["format"]}.')
 
