@@ -22,18 +22,21 @@ class ValidatorsManager:
 
   @classmethod
   def RegisterValidator(
-      cls, validator_class: Type['args_validator.AbstractValidator']) -> None:
+      cls, validator_class: Type['args_validator.AbstractValidator'],
+      override: bool = False) -> None:
     """Register a validator class for usage.
 
     Args:
       validator_class: Class to register.
+      override: Override any existing validator class with the same name.
 
     Raises:
       KeyError: if there's already a validator class set for the corresponding
-        class name.
+        class name and override is not set.
     """
     class_name = validator_class.NAME
-    if class_name in cls._validator_classes:
+
+    if class_name in cls._validator_classes and not override:
       raise KeyError(
           'Validator class already set for: {0:s}.'.format(class_name))
 

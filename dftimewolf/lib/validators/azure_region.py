@@ -3,34 +3,33 @@
 from dftimewolf.lib import errors, resources, args_validator
 from dftimewolf.lib.validators import manager as validators_manager
 
+# Source: az account list-locations | jq -r '.[].name' | sort
+# Fetched 2023-02-07
+# TODO - Fetch at runtime?
+REGIONS = frozenset({
+    'asia', 'asiapacific', 'australia', 'australiacentral',
+    'australiacentral2', 'australiaeast', 'australiasoutheast', 'brazil',
+    'brazilsouth', 'brazilsoutheast', 'canada', 'canadacentral', 'canadaeast',
+    'centralindia', 'centralus', 'centraluseuap', 'centralusstage',
+    'eastasia', 'eastasiastage', 'eastus', 'eastus2', 'eastus2euap',
+    'eastus2stage', 'eastusstage', 'eastusstg', 'europe', 'france',
+    'francecentral', 'francesouth', 'germany', 'germanynorth',
+    'germanywestcentral', 'global', 'india', 'japan', 'japaneast',
+    'japanwest', 'jioindiacentral', 'jioindiawest', 'korea', 'koreacentral',
+    'koreasouth', 'northcentralus', 'northcentralusstage', 'northeurope',
+    'norway', 'norwayeast', 'norwaywest', 'qatarcentral', 'singapore',
+    'southafrica', 'southafricanorth', 'southafricawest', 'southcentralus',
+    'southcentralusstage', 'southcentralusstg', 'southeastasia',
+    'southeastasiastage', 'southindia', 'swedencentral', 'switzerland',
+    'switzerlandnorth', 'switzerlandwest', 'uae', 'uaecentral', 'uaenorth',
+    'uk', 'uksouth', 'ukwest', 'unitedstates', 'unitedstateseuap',
+    'westcentralus', 'westeurope', 'westindia', 'westus', 'westus2',
+    'westus2stage', 'westus3', 'westusstage'})
 
 
 class AzureRegionValidator(args_validator.AbstractValidator):
   """Validates an Azure region."""
 
-  # Source: az account list-locations | jq -r '.[].name' | sort
-  # Fetched 2023-02-07
-  # TODO - Fetch at runtime?
-  _regions = {
-      'asia', 'asiapacific', 'australia', 'australiacentral',
-      'australiacentral2', 'australiaeast', 'australiasoutheast', 'brazil',
-      'brazilsouth', 'brazilsoutheast', 'canada', 'canadacentral', 'canadaeast',
-      'centralindia', 'centralus', 'centraluseuap', 'centralusstage',
-      'eastasia', 'eastasiastage', 'eastus', 'eastus2', 'eastus2euap',
-      'eastus2stage', 'eastusstage', 'eastusstg', 'europe', 'france',
-      'francecentral', 'francesouth', 'germany', 'germanynorth',
-      'germanywestcentral', 'global', 'india', 'japan', 'japaneast',
-      'japanwest', 'jioindiacentral', 'jioindiawest', 'korea', 'koreacentral',
-      'koreasouth', 'northcentralus', 'northcentralusstage', 'northeurope',
-      'norway', 'norwayeast', 'norwaywest', 'qatarcentral', 'singapore',
-      'southafrica', 'southafricanorth', 'southafricawest', 'southcentralus',
-      'southcentralusstage', 'southcentralusstg', 'southeastasia',
-      'southeastasiastage', 'southindia', 'swedencentral', 'switzerland',
-      'switzerlandnorth', 'switzerlandwest', 'uae', 'uaecentral', 'uaenorth',
-      'uk', 'uksouth', 'ukwest', 'unitedstates', 'unitedstateseuap',
-      'westcentralus', 'westeurope', 'westindia', 'westus', 'westus2',
-      'westus2stage', 'westus3', 'westusstage'
-  }
   NAME = 'azure_region'
 
   def Validate(self,
@@ -49,7 +48,7 @@ class AzureRegionValidator(args_validator.AbstractValidator):
       RecipeArgsValidationFailure: If the argument value is not a valid Azure
         region.
     """
-    if argument_value not in self._regions:
+    if argument_value not in REGIONS:
       raise (errors.RecipeArgsValidationFailure(
           recipe_argument.switch,
           argument_value,
