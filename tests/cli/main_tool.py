@@ -34,6 +34,22 @@ NESTED_ARG_RECIPE = {
 NESTED_ARG_RECIPE_ARGS = [
     resources.RecipeArgument(*arg) for arg in NESTED_ARG_RECIPE['args']]
 
+OPTIONAL_ARG_RECIPE = {
+    'name': 'optional_arg_recipe',
+    'short_description': 'Short description.',
+    'preflights': [],
+    'modules': [],
+    'args': [
+        ['mandatory_arg', 'Mandatory Argument', None],
+        ['--optional_arg', 'Optional Argument', None,
+            {'format': 'regex', 'regex': '^Second$'}]
+    ]
+}
+
+OPTIONAL_ARG_RECIPE_ARGS = [
+    resources.RecipeArgument(*arg) for arg in OPTIONAL_ARG_RECIPE['args']]
+
+
 class MainToolTest(unittest.TestCase):
   """Tests for main tool functions."""
 
@@ -160,6 +176,30 @@ class MainToolTest(unittest.TestCase):
         ['--dry_run', 'nested_arg_recipe', 'First', 'Not Second'])
 
     self.assertTrue(self.tool.dry_run)
+
+  def testOptionalArguments(self):
+    """Tests handling of optional arguments."""
+    # pylint: disable=protected-access
+    optional_arg_recipe = resources.Recipe(
+        OPTIONAL_ARG_RECIPE.__doc__,
+        OPTIONAL_ARG_RECIPE,
+        OPTIONAL_ARG_RECIPE_ARGS)
+    self.tool._state = dftw_state.DFTimewolfState(config.Config)
+    self.tool._recipes_manager.RegisterRecipe(optional_arg_recipe)
+    self.tool._state.LoadRecipe(OPTIONAL_ARG_RECIPE, dftimewolf_recipes.MODULES)
+
+    self.tool.ParseArguments(['optional_arg_recipe', 'First'])
+    self.tool.ValidateArguments() # No value for optional arg is ok.
+
+    self.tool.ParseArguments([
+        'optional_arg_recipe', 'First', '--optional_arg', 'Second'])
+    self.tool.ValidateArguments() # Valid value for optional arg is ok.
+
+    # Invalid value for optional arg is not ok.
+    self.tool.ParseArguments([
+        'optional_arg_recipe', 'First', '--optional_arg', 'not_second'])
+    with self.assertRaises(errors.CriticalError):
+      self.tool.ValidateArguments()
 
 
 if __name__ == '__main__':
