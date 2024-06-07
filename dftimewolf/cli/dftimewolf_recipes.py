@@ -325,10 +325,9 @@ class DFTimewolfTool(object):
 
       switch = expanded_argument.switch.replace('--', '')
       argument_mandatory = switch == arg.switch
-      argument_set = switch in self.state.command_line_options
+      argument_value = self.state.command_line_options[switch]
 
-      if argument_mandatory or argument_set:
-        argument_value = self.state.command_line_options[switch]
+      if argument_mandatory or argument_value:
         try:
           valid_value = validators_manager.ValidatorsManager.Validate(
               str(argument_value), arg)
