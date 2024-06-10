@@ -89,5 +89,4 @@ fi
 
 echo "Installing dftimewolf requirements via Poetry"
 # Install dftimewolf's pinned requirements
-poetry env use /usr/bin/python3.11
 poetry install
