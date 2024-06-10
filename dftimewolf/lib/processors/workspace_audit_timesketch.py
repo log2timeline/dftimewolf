@@ -198,12 +198,22 @@ class WorkspaceAuditTimesketch(BaseModule):
 
     timeline_name = 'Workspace {0:s} logs'.format(
         logs_container.application_name)
+
+    if logs_container.start_time:
+      start_time_string = logs_container.start_time.strftime(
+          '%Y-%m-%dT%H:%M:%S')
+    else:
+      start_time_string = ''
+    if logs_container.end_time:
+      end_time_string = logs_container.end_time.strftime('%Y-%m-%dT%H:%M:%S')
+    else:
+      end_time_string = ''
     if logs_container.user_key:
       timeline_name = f'{timeline_name} for {logs_container.user_key}'
     if logs_container.start_time:
-      timeline_name = f'{timeline_name} from {logs_container.start_time}'
+      timeline_name = f'{timeline_name} from {start_time_string}'
     if logs_container.end_time:
-      timeline_name = f'{timeline_name} to {logs_container.end_time}'
+      timeline_name = f'{timeline_name} to {end_time_string}'
     if logs_container.filter_expression:
       timeline_name = (
           f'{timeline_name} filter {logs_container.filter_expression}')

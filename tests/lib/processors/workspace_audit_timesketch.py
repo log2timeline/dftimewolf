@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Tests the Workspace logging timesketch processor."""
-
+import datetime
 import json
 import os
 import unittest
@@ -32,9 +32,14 @@ class WorkspaceAuditTimesketchTest(unittest.TestCase):
     processor = workspace_audit_timesketch.WorkspaceAuditTimesketch(test_state)
     file_path = os.path.join(current_dir, 'test_data', 'empty_file.jsonl')
     workspace_container = containers.WorkspaceLogs(
-        application_name='chrome', filter_expression='', path=file_path,
-        user_key='testuser@example.com', start_time='2021-08-10T14:21Z',
-        end_time='2021-09-10T14:21Z')
+        application_name='chrome',
+        filter_expression='',
+        path=file_path,
+        user_key='testuser@example.com',
+        start_time=datetime.datetime(
+            2021, 8, 10, 14, 21, tzinfo=datetime.timezone.utc),
+        end_time=datetime.datetime(
+            2021, 9, 10, 14, 21, tzinfo=datetime.timezone.utc))
 
     processor.StoreContainer(workspace_container)
     processor.Process()
@@ -47,7 +52,7 @@ class WorkspaceAuditTimesketchTest(unittest.TestCase):
     self.assertEqual(
         timesketch_container.name,
         'Workspace chrome logs for testuser@example.com from'
-        ' 2021-08-10T14:21Z to 2021-09-10T14:21Z')
+        ' 2021-08-10T14:21:00 to 2021-09-10T14:21:00')
 
   def testNonExistingEventType(self):
     """Tests that a log with an unknown type is transformed correctly."""

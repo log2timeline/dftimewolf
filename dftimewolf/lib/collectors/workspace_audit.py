@@ -24,6 +24,7 @@ if TYPE_CHECKING:
   from dftimewolf.lib import state
 
 RE_TIMESTAMP = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$')
+WORKSPACE_TIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 
 class WorkspaceAuditCollector(module.BaseModule):
   """Collector for Google Workspace Audit logs. """
@@ -43,8 +44,8 @@ class WorkspaceAuditCollector(module.BaseModule):
     self._application_name = ''
     self._filter_expression = ''
     self._user_key = 'all'
-    self._start_time = None  # type: Optional[str]
-    self._end_time = None # type: Optional[str]
+    self._start_time = None  # type: Optional[datetime.datetime]
+    self._end_time = None # type: Optional[datetime.datetime]
 
   def _BuildAuditResource(self, credentials: Credentials) -> discovery.Resource:
     """Builds a reports resource object to use to request logs.
@@ -55,8 +56,7 @@ class WorkspaceAuditCollector(module.BaseModule):
     Returns:
       A resource object for interacting with the Workspace audit API.
     """
-    service = discovery.build('admin', 'reports_v1',
-        credentials=credentials)
+    service = discovery.build('admin', 'reports_v1', credentials=credentials)
     return service
 
   def _GetCredentials(self) -> Credentials:
@@ -113,20 +113,19 @@ class WorkspaceAuditCollector(module.BaseModule):
             application_name: str,
             filter_expression: str,
             user_key: str='all',
-            start_time: Optional[str]=None,
-            end_time: Optional[str]=None) -> None:
-    """Sets up a a Workspace Audit logs collector.
+            start_time: Optional[datetime.datetime]=None,
+            end_time: Optional[datetime.datetime]=None) -> None:
+    """Sets up a Workspace Audit logs collector.
 
     Args:
-      application_name (str): name of the application to fetch logs for. See
+      application_name: name of the application to fetch logs for. See
           https://developers.google.com/admin-sdk/reports/reference/rest/v1
           /activities/list#ApplicationName
-      filter_expression (str): Workspace logs filter expression.
-      user_key (Optional[str]): profile ID or email for which data should be
+      filter_expression: Workspace logs filter expression.
+      user_key: profile ID or email for which data should be
           collected. Can be 'all' for all users.
-      start_time (Optional[str]): Beginning of the time period to return results
-          for.
-      end_time (Optional[str]): End of the time period to return results for.
+      start_time: Beginning of the time period to return results for.
+      end_time: End of the time period to return results for.
     """
 
     # Omit '-' delimiter from the filter_expression (meeting_id) for
@@ -140,21 +139,13 @@ class WorkspaceAuditCollector(module.BaseModule):
     self._filter_expression = filter_expression
     self._user_key = user_key
 
-    for time in [start_time, end_time]:
-      if time and not RE_TIMESTAMP.match(time):
-        self.ModuleError(
-          'Invalid timestamp format. Please use YYYY-MM-DDTHH:MM:SSZ.'
-          f' You provided "{time}"',
-          critical=True)
-
     self._end_time = end_time
     self._start_time = start_time
 
     if start_time:
       now = datetime.datetime.now(tz=datetime.timezone.utc)
-      start_datetime = datetime.datetime.fromisoformat(
-        start_time.replace('Z', '+00:00'))
-      if start_datetime < now - datetime.timedelta(days=180):
+
+      if start_time < now - datetime.timedelta(days=180):
         max_date = (now - datetime.timedelta(days=180)).strftime(
           '%Y-%m-%dT%H:%M:%SZ')
         self.ModuleError(
@@ -177,9 +168,11 @@ class WorkspaceAuditCollector(module.BaseModule):
     if self._filter_expression:
       request_parameters['filters'] = self._filter_expression
     if self._start_time:
-      request_parameters['startTime'] = self._start_time
+      request_parameters['startTime'] = self._start_time.strftime(
+          WORKSPACE_TIME_FORMAT)
     if self._end_time:
-      request_parameters['endTime'] = self._end_time
+      request_parameters['endTime'] = self._end_time.strftime(
+          WORKSPACE_TIME_FORMAT)
 
     try:
       # Pylint can't see the activities method.
