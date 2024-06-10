@@ -51,7 +51,7 @@ class GoogleSheetsCollector(module.BaseModule):
   def SetUp(
       self, spreadsheet: str, sheet_names: List[str],
       validate_columns: bool) -> None:
-    """Sets up a a Google Sheets collector.
+    """Sets up a Google Sheets collector.
 
     Args:
       spreadsheet: ID or URL of the sheet to pull data from

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Manager class for validators."""
-from typing import Dict, List, Optional, Sequence, Type
+from typing import Any, Dict, List, Optional, Sequence, Type
 
 from dftimewolf.lib import errors, resources, args_validator
 
@@ -92,7 +92,7 @@ class ValidatorsManager:
   @classmethod
   def Validate(cls,
                argument_value: str,
-               recipe_argument: resources.RecipeArgument) -> str:
+               recipe_argument: resources.RecipeArgument) -> Any:
     """Validate an argument value.
 
     Args:

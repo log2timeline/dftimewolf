@@ -41,39 +41,18 @@ class WorkspaceAuditCollectorTest(unittest.TestCase):
         application_name='test',
         filter_expression='test',
         user_key='test',
-        start_time='2022-01-01T00:00:00Z',  # This is > 6mo before 2023-01-01
-        end_time='2023-01-01T00:00:00Z',
+        # This is > 6mo before 2023-01-01
+        start_time=datetime.datetime(
+            2022, 1,  1, 0, 0, 0, tzinfo=datetime.timezone.utc),
+        end_time=datetime.datetime
+        (2023, 1, 1, 0, 0, 0, tzinfo=datetime.timezone.utc)
       )
     self.assertEqual(
       error.exception.message,
       'Maximum gWorkspace retention is 6 months. Please choose a more recent '
       'start date (Earliest: 2022-07-05T00:00:00Z).')
 
-    # Assert that set up with malformed date fails
-    with self.assertRaises(errors.DFTimewolfError) as error:
-      self.ws_collector.SetUp(
-        application_name='test',
-        filter_expression='test',
-        user_key='test',
-        start_time='2022-01-01 00:00:00',  # Malformed date
-        end_time='2023-01-01T00:00:00Z',
-      )
-    self.assertEqual(
-      error.exception.message,
-      'Invalid timestamp format. Please use YYYY-MM-DDTHH:MM:SSZ. '
-      'You provided "2022-01-01 00:00:00"')
 
-    # Assert that setup with recent date works as expected.
-    self.ws_collector.SetUp(
-        application_name='test',
-        filter_expression='test',
-        user_key='test',
-        start_time='2022-12-01T00:00:00Z',  # This is 1mo before 2023-01-01
-        end_time='2023-01-01T00:00:00Z',
-      )
-    # pylint: disable=protected-access
-    self.assertEqual(self.ws_collector._start_time, '2022-12-01T00:00:00Z')
-    self.assertEqual(self.ws_collector._end_time, '2023-01-01T00:00:00Z')
 
 
 

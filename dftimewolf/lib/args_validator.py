@@ -2,6 +2,8 @@
 
 import abc
 
+from typing import Any
+
 from dftimewolf.lib import resources
 
 
@@ -16,7 +18,7 @@ class AbstractValidator(abc.ABC):
   @abc.abstractmethod
   def Validate(self,
                argument_value: str,
-               recipe_argument: resources.RecipeArgument) -> str:
+               recipe_argument: resources.RecipeArgument) -> Any:
     """Validates an argument value.
 
     Args:

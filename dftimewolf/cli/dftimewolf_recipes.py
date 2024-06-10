@@ -77,7 +77,6 @@ MODULES = {
   'LocalYaraCollector': 'dftimewolf.lib.collectors.yara',
   'OsqueryCollector': 'dftimewolf.lib.collectors.osquery',
   'S3ToGCSCopy': 'dftimewolf.lib.exporters.s3_to_gcs',
-  'SanityChecks': 'dftimewolf.lib.preflights.sanity_checks',
   'SCPExporter': 'dftimewolf.lib.exporters.scp_ex',
   'SSHMultiplexer': 'dftimewolf.lib.preflights.ssh_multiplexer',
   'TimesketchEnhancer': 'dftimewolf.lib.enhancers.timesketch',

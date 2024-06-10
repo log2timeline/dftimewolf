@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Tests the AWS logging collector."""
-
+import datetime
 import unittest
 from unittest import mock
 from datetime import datetime as dt
@@ -32,8 +32,8 @@ class AWSLoggingTest(unittest.TestCase):
         region='fake-region',
         profile_name='default',
         query_filter='Username,fakename',
-        start_time='2021-01-01 00:00:00',
-        end_time='2021-01-02 00:00:00')
+        start_time=datetime.datetime(2021, 1, 1, 0, 0, 0),
+        end_time=datetime.datetime(2021, 1, 2, 0, 0, 0))
 
     # pylint: disable=protected-access
     self.assertEqual(aws_logging_collector._region, 'fake-region')
@@ -61,8 +61,8 @@ class AWSLoggingTest(unittest.TestCase):
     aws_logging_collector.SetUp(
         region='fake-region',
         query_filter='Username,fakename',
-        start_time='2021-01-01 00:00:00',
-        end_time='2021-01-02 00:00:00')
+        start_time=datetime.datetime(2021, 1, 1, 0, 0, 0),
+        end_time=datetime.datetime(2021, 1, 2, 0, 0, 0))
     aws_logging_collector.Process()
 
     mock_session.client.assert_called_with(
