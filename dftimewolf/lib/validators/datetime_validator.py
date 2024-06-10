@@ -105,7 +105,7 @@ class DatetimeValidator(args_validator.AbstractValidator):
 class EndTimeValidator(DatetimeValidator):
   """A special subclass that sets date times to be the end of day."""
 
-  NAME = 'end_time'
+  NAME = 'datetime_end'
 
   def Validate(self, argument_value: str,
       recipe_argument: resources.RecipeArgument) -> datetime.datetime:

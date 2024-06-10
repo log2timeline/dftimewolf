@@ -38,7 +38,7 @@
   "args": [
     ["meeting_id", "ID for the Meeting to look up. (Without the '-' delimiter)", null, {"format": "regex", "regex": "^[a-z]{10}$"}],
     ["--start_time", "Start time.", null, {"format": "datetime", "before": "@end_time"}],
-    ["--end_time", "End time.", null, {"format": "end_time", "after": "@start_time"}],
+    ["--end_time", "End time.", null, {"format": "datetime_end", "after": "@start_time"}],
     ["--incident_id", "Incident ID (used for Timesketch description).", null],
     ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
     ["--timesketch_endpoint", "Timesketch endpoint", "http://localhost:5000/"],

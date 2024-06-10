@@ -57,7 +57,8 @@ class DatetimeValidatorTest(unittest.TestCase):
 
   def testValidateFailureInvalidFormat(self):
     """Tests invalid date formats correctly fail."""
-    values = ['value', '2023-06-31', '2023-31-12 23:29:59']
+    # There is no February 31st
+    values = ['value', '2023-02-31', '2023-31-12 23:29:59']
     for value in values:
       with self.assertRaisesRegex(
           errors.RecipeArgsValidationFailure,

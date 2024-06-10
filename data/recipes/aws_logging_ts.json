@@ -45,7 +45,7 @@
         ["--profile_name", "Name of the AWS profile to collect logs from.", null],
         ["--query_filter", "Filter expression to use to query logs.", null],
         ["--start_time", "Start time for the query.", null, {"format": "datetime", "before": "@end_time"}],
-        ["--end_time", "End time for the query.", null, {"format": "end_time", "after": "@start_time"}],
+        ["--end_time", "End time for the query.", null, {"format": "datetime_end", "after": "@start_time"}],
         ["--incident_id", "Incident ID (used for Timesketch description).", null],
         ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
         ["--timesketch_endpoint", "Timesketch endpoint", "http://localhost:5000/"],
