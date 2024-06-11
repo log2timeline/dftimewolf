@@ -519,13 +519,6 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
     'core',
     recipe_name)
 
-  # Interpolate arguments into recipe
-  recipe = tool.state.recipe
-  for module in recipe.get('preflights', []) + recipe.get('modules', []):
-    module['args'] = utils.ImportArgsFromDict(module['args'],
-                                              tool.state.command_line_options,
-                                              tool.state.config)
-
   try:
     tool.ValidateArguments()
   except errors.CriticalError as exception:
@@ -533,6 +526,13 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
       cdm.EnqueueMessage('dftimewolf', str(exception), True)
     logger.critical(str(exception))
     return 1
+
+  # Interpolate arguments into recipe
+  recipe = tool.state.recipe
+  for module in recipe.get('preflights', []) + recipe.get('modules', []):
+    module['args'] = utils.ImportArgsFromDict(module['args'],
+                                              tool.state.command_line_options,
+                                              tool.state.config)
 
   tool.state.LogExecutionPlan()
 
