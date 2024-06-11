@@ -102,9 +102,9 @@ azure-common==1.1.28; python_version >= "3.6" \
 azure-core==1.24.2; python_version >= "3.6" \
     --hash=sha256:0f3a20d245659bf81fb3670070a5410c8d4a43298d5a981e62dce393000a9084 \
     --hash=sha256:a76856fa83efe1925a4fd917dc179c7daa15917dd71da2774833fa82a96f3dfa
-azure-identity==1.10.0; python_version >= "3.6" \
-    --hash=sha256:656e5034d9cef297cf9b35376ed620085273c18cfa52cea4a625bf0d5d2d6409 \
-    --hash=sha256:b386f1ccbea6a48b9ab7e7f162adc456793c345193a7c1a713959562b08dcbbd
+azure-identity==1.16.1; python_version >= "3.6" \
+    --hash=sha256:6d93f04468f240d59246d8afde3091494a5040d4f141cad0f49fc0c399d0d91e \
+    --hash=sha256:8fb07c25642cd4ac422559a8b50d3e77f73dcc2bbfaba419d06d6c9d7cff6726
 azure-mgmt-compute==23.1.0 \
     --hash=sha256:49dbb0f51006d557cbd0b22999cb9ecf3eabc2be46d96efcc6d651c6b33754b3 \
     --hash=sha256:d028afc4fbbd6796b2604195ffdb1021ef77b18cf01356f810820a52a7e2a12d
