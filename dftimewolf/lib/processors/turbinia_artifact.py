@@ -77,8 +77,8 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
     # pytype: enable=signature-mismatch
     """Process files with Turbinia."""
 
-    self.logger.debug(
-      "Processing remote FS path {0:s} from previous collector".format(
+    self.logger.info(
+      "Processing FS path {0:s} from previous collector".format(
         container.path
       )
     )

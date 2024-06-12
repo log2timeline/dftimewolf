@@ -474,7 +474,7 @@ class TurbiniaProcessorBase(module.BaseModule):
 
     Args:
         request_id: Request identifier for the Turbinia Job.
-
+P
     Yields:
         A tuple containing the Turbinia task data and the path that has not been
           processed yet.
