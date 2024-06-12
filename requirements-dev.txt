@@ -688,9 +688,9 @@ mock==4.0.3; python_version >= "3.6" \
 msal-extensions==1.0.0; python_version >= "3.6" \
     --hash=sha256:c676aba56b0cce3783de1b5c5ecfe828db998167875126ca4b47dc6436451354 \
     --hash=sha256:91e3db9620b822d0ed2b4d1850056a0f133cba04455e62f11612e40f5502f2ee
-msal==1.18.0; python_version >= "3.6" \
-    --hash=sha256:9c10e6cb32e0b6b8eaafc1c9a68bc3b2ff71505e0c5b8200799582d8b9f22947 \
-    --hash=sha256:576af55866038b60edbcb31d831325a1bd8241ed272186e2832968fd4717d202
+msal==1.28.0; python_version >= "3.6" \
+    --hash=sha256:3064f80221a21cd535ad8c3fafbb3a3582cd9c7e9af0bb789ae14f726a0ca99b \
+    --hash=sha256:80bbabe34567cb734efd2ec1869b2d98195c927455369d8077b3c542088c5c9d
 msrest==0.7.1; python_version >= "3.6" \
     --hash=sha256:21120a810e1233e5e6cc7fe40b474eeb4ec6f757a15d7cf86702c369f9567c32 \
     --hash=sha256:6e7661f46f3afd88b75667b7187a92829924446c7ea1d169be8c4bb7eeb788b9
