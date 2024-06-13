@@ -470,9 +470,16 @@ class TurbiniaProcessorBase(module.BaseModule):
         request) # type: ignore
       decoded_response = self._decode_api_response(api_response)
       request_id = decoded_response.get('request_id')
+      evidence_type = evidence.get('type')
+      if evidence_type.lower() == 'googleclouddisk':
+        evidence_path = evidence.get('disk_name')
+      elif evidence_type.lower() in ('rawdisk', 'compresseddirectory'):
+        evidence_path = evidence.get('source_path')
+      else:
+        evidence_path = 'unknown'
       self.logger.info(
         f"Creating Turbinia request {str(request_id)} with "
-        f"evidence {str(evidence_name)} at {evidence['source_path']}"
+        f"evidence {str(evidence_name)} at {evidence_path}"
       )
       self.logger.debug(
         "Turbinia request status at {0!s}".format(self.turbinia_api)
