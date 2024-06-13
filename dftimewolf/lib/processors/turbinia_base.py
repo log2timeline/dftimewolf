@@ -470,7 +470,7 @@ class TurbiniaProcessorBase(module.BaseModule):
         request) # type: ignore
       decoded_response = self._decode_api_response(api_response)
       request_id = decoded_response.get('request_id')
-      evidence_type = evidence.get('type')
+      evidence_type: str = evidence.get('type', '')
       if evidence_type.lower() == 'googleclouddisk':
         evidence_path = evidence.get('disk_name')
       elif evidence_type.lower() in ('rawdisk', 'compresseddirectory'):
