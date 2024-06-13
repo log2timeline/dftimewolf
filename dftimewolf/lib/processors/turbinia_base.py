@@ -185,6 +185,7 @@ class TurbiniaProcessorBase(module.BaseModule):
       File path to the uploaded file.
     """
     path_str = file_path.as_posix()
+    turbinia_evidence_path: str = ''
     if not file_path.exists():
       self.ModuleError(f'File {path_str} not found.', critical=True)
     self.RefreshClientCredentials()
@@ -199,13 +200,22 @@ class TurbiniaProcessorBase(module.BaseModule):
     )
     if not api_response:
       self.ModuleError(f'Error uploading file {path_str}', critical=True)
-    response = json.loads(api_response.raw_data)
-    for file in response:
-      turbinia_evidence_path = file.get('file_path')
-      self.logger.info(
-          f'Uploaded {file.get("original_name")} to {turbinia_evidence_path}'
-      )
+    data: str = str(api_response.raw_data)
+    try:
+      response = json.loads(data)
+    except json.JSONDecodeError as exception:
+      self.logger.error(f'Error decoding API response: {exception}')
       return turbinia_evidence_path
+    if not response:
+      self.logger.error('Did not receive a response from the API server.')
+      return turbinia_evidence_path
+    # The API supports multiple file upload, but we're only sending one.
+    file = response[0]
+    turbinia_evidence_path = file.get('file_path')
+    self.logger.info(
+        f'Uploaded {file.get("original_name")} to {turbinia_evidence_path}'
+    )
+    return turbinia_evidence_path
 
   def DownloadFilesFromAPI(self, task_data: Dict[str, List[str]],
                            path: str) -> Optional[str]:

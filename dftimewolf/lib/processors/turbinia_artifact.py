@@ -85,7 +85,9 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
 
     # Upload evidence file before starting the Turbinia request
     file_path = self.UploadEvidence(Path(container.path))
-
+    if not file_path:
+      self.ModuleError(
+        'There was an error uploading the file to Turbinia', critical=True)
     # Send Turbinia request
     evidence = {'type': 'CompressedDirectory', 'source_path': file_path}
     request_id = self.TurbiniaStart(evidence)
