@@ -27,7 +27,7 @@ boto3 = "^1.24.31"
 python-magic = "^0.4.27"
 turbinia-api-lib = "^1.0.2"
 turbinia-client = "^1.0.3"
-grr-api-client = "^3.4.6"
+grr-api-client = "^3.4.7"
 libcloudforensics = {git = "https://github.com/google/cloud-forensics-utils.git"}
 docker = "^7.0.0"
 setuptools = "^69.5.1"  # needed by docker
