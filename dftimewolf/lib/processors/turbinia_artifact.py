@@ -73,20 +73,21 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
         int(sketch_id) if sketch_id else 0)
 
   # pytype: disable=signature-mismatch
-  def Process(self, container: containers.FSPath) -> None:
+  def Process(self, container: containers.File) -> None:
     # pytype: enable=signature-mismatch
     """Process files with Turbinia."""
 
     self.logger.info(
-      "Processing FS path {0:s} from previous collector".format(
+      "Processing remote FS path {0:s} from previous collector".format(
         container.path
       )
     )
 
-    evidence = {'type': 'CompressedDirectory', 'source_path': container.path}
-
     # Upload evidence file before starting the Turbinia request
-    self.UploadEvidence(Path(container.path))
+    file_path = self.UploadEvidence(Path(container.path))
+
+    # Send Turbinia request
+    evidence = {'type': 'CompressedDirectory', 'source_path': file_path}
     request_id = self.TurbiniaStart(evidence)
     self.PublishMessage(f'Turbinia request ID: {request_id}')
 
@@ -113,9 +114,10 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
         fs_container = containers.File(path=local_path, name=descriptive_name)
         self.StreamContainer(fs_container)
 
+
   @staticmethod
   def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
-    return containers.FSPath
+    return containers.File
 
   def GetThreadPoolSize(self) -> int:
     return self.parallel_count

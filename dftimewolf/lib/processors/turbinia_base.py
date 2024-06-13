@@ -175,28 +175,37 @@ class TurbiniaProcessorBase(module.BaseModule):
     local_path = os.path.join(tempdir, path_to_collect.lstrip('/'))
     return local_path
 
-  def UploadEvidence(self, file_path: Path) -> None:
+  def UploadEvidence(self, file_path: Path) -> Optional[str]:
     """Uploads files to Turbinia via the API server.
     
     Args:
       file_path: Path to the file to be uploaded.
+      
+    Returns:
+      File path to the uploaded file.
     """
     path_str = file_path.as_posix()
     if not file_path.exists():
       self.ModuleError(f'File {path_str} not found.', critical=True)
     self.RefreshClientCredentials()
 
-    api_instance = turbinia_evidence_api.TurbiniaEvidenceApi(
-        self.client)
+    api_instance = turbinia_evidence_api.TurbiniaEvidenceApi(self.client)
+    self.logger.info(
+        f'Uploading evidence at {path_str} for incident {self.incident_id}'
+    )
+    self.logger.info(f'Incident ID: {self.incident_id}')
     api_response = api_instance.upload_evidence_with_http_info(
-        files=path_str, ticket_id=None, calculate_hash=False)
+        [path_str], self.incident_id
+    )
     if not api_response:
       self.ModuleError(f'Error uploading file {path_str}', critical=True)
-
-    for file_entry in api_response.raw_data:
+    response = json.loads(api_response.raw_data)
+    for file in response:
+      turbinia_evidence_path = file.get('file_path')
       self.logger.info(
-          f'Uploaded {file_entry.get("original_name")} to '
-          f'{file_entry.get("file_path")}')
+          f'Uploaded {file.get("original_name")} to {turbinia_evidence_path}'
+      )
+      return turbinia_evidence_path
 
   def DownloadFilesFromAPI(self, task_data: Dict[str, List[str]],
                            path: str) -> Optional[str]:
@@ -278,10 +287,17 @@ class TurbiniaProcessorBase(module.BaseModule):
     else:
       # No credentials file, acquire new credentials from secrets file.
       self.logger.debug(
-          'Could not find existing credentials. Requesting new tokens.')
+          'Could not find existing credentials. Requesting new tokens.'
+      )
       try:
         appflow = flow.InstalledAppFlow.from_client_secrets_file(
-            client_secrets_path, scopes)
+            client_secrets_path, scopes
+        )
+        if appflow:
+          appflow.run_local_server(
+              host='localhost', port=8888, open_browser=False
+          )
+          credentials = appflow.credentials
       except FileNotFoundError as exception:
         msg = f'Client secrets file not found: {exception!s}'
         self.ModuleError(msg, critical=True)
@@ -289,9 +305,8 @@ class TurbiniaProcessorBase(module.BaseModule):
       self.logger.info(
           'Starting local HTTP server on localhost:8888 for OAUTH flow. '
           'If running dftimewolf remotely over SSH you will need to tunnel '
-          'port 8888.')
-      appflow.run_local_server(host='localhost', port=8888, open_browser=False)
-      credentials = appflow.credentials
+          'port 8888.'
+      )
 
     # Save credentials
     if credentials:
@@ -447,7 +462,7 @@ class TurbiniaProcessorBase(module.BaseModule):
       request_id = decoded_response.get('request_id')
       self.logger.info(
         f"Creating Turbinia request {str(request_id)} with "
-        f"evidence {str(evidence_name)}"
+        f"evidence {str(evidence_name)} at {evidence['source_path']}"
       )
       self.logger.debug(
         "Turbinia request status at {0!s}".format(self.turbinia_api)
@@ -484,10 +499,11 @@ P
     retries = 0
     processed_paths = set()
     status = 'running'
+    wait_status = ['running', 'pending']
     if not request_id:
       self.ModuleError('No request ID provided', critical=True)
 
-    while status == 'running' and retries < 3:
+    while status in wait_status and retries < 3:
       time.sleep(interval)
       try:
         # Refresh token if needed
