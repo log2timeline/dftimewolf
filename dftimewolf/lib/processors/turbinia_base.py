@@ -29,6 +29,8 @@ from dftimewolf.lib import module
 # pylint: disable=unused-import
 from dftimewolf.lib import state as state_lib
 
+WAITING_STATES = frozenset(['pending', 'running'])
+
 # mypy: disable-error-code="attr-defined"
 # pylint: disable=abstract-method,no-member
 class TurbiniaProcessorBase(module.BaseModule):
@@ -191,7 +193,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.RefreshClientCredentials()
 
     api_instance = turbinia_evidence_api.TurbiniaEvidenceApi(self.client)
-    self.logger.info(
+    self.PublishMessage(
         f'Uploading evidence at {path_str} for incident {self.incident_id}'
     )
     self.logger.info(f'Incident ID: {self.incident_id}')
@@ -212,7 +214,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     # The API supports multiple file upload, but we're only sending one.
     file = response[0]
     turbinia_evidence_path = file.get('file_path')
-    self.logger.info(
+    self.PublishMessage(
         f'Uploaded {file.get("original_name")} to {turbinia_evidence_path}'
     )
     return turbinia_evidence_path
@@ -237,7 +239,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     filename = f'{task_id}-'
     retries = 0
     # pylint: disable=line-too-long
-    self.logger.info(f"Downloading output for task {task_id}")
+    self.PublishMessage(f"Downloading output for task {task_id}")
     while retries < 3:
       try:
         api_response = api_instance.get_task_output_with_http_info(
@@ -506,7 +508,7 @@ class TurbiniaProcessorBase(module.BaseModule):
 
     Args:
         request_id: Request identifier for the Turbinia Job.
-P
+
     Yields:
         A tuple containing the Turbinia task data and the path that has not been
           processed yet.
