@@ -10,6 +10,7 @@ import traceback
 import math
 
 from typing import Dict, List, Optional, Tuple, Any, Union, Iterator
+from pathlib import Path
 
 from google_auth_oauthlib import flow
 from google.oauth2.credentials import Credentials
@@ -19,7 +20,7 @@ from google.auth import exceptions as google_exceptions
 import turbinia_api_lib
 from turbinia_client.helpers import formatter as turbinia_formatter
 from turbinia_api_lib.api import (
-    turbinia_requests_api, turbinia_configuration_api)
+    turbinia_requests_api, turbinia_configuration_api, turbinia_evidence_api)
 from turbinia_api_lib.api import turbinia_request_results_api
 from turbinia_api_lib.api_response import ApiResponse
 
@@ -27,6 +28,8 @@ from dftimewolf.lib.logging_utils import WolfLogger
 from dftimewolf.lib import module
 # pylint: disable=unused-import
 from dftimewolf.lib import state as state_lib
+
+WAITING_STATES = frozenset(['pending', 'running'])
 
 # mypy: disable-error-code="attr-defined"
 # pylint: disable=abstract-method,no-member
@@ -174,6 +177,48 @@ class TurbiniaProcessorBase(module.BaseModule):
     local_path = os.path.join(tempdir, path_to_collect.lstrip('/'))
     return local_path
 
+  def UploadEvidence(self, file_path: Path) -> Optional[str]:
+    """Uploads files to Turbinia via the API server.
+    
+    Args:
+      file_path: Path to the file to be uploaded.
+      
+    Returns:
+      File path to the uploaded file.
+    """
+    path_str = file_path.as_posix()
+    turbinia_evidence_path: str = ''
+    if not file_path.exists():
+      self.ModuleError(f'File {path_str} not found.', critical=True)
+    self.RefreshClientCredentials()
+
+    api_instance = turbinia_evidence_api.TurbiniaEvidenceApi(self.client)
+    self.PublishMessage(
+        f'Uploading evidence at {path_str} for incident {self.incident_id}'
+    )
+    self.logger.info(f'Incident ID: {self.incident_id}')
+    api_response = api_instance.upload_evidence_with_http_info(
+        [path_str], self.incident_id
+    )
+    if not api_response:
+      self.ModuleError(f'Error uploading file {path_str}', critical=True)
+    data: str = str(api_response.raw_data)
+    try:
+      response = json.loads(data)
+    except json.JSONDecodeError as exception:
+      self.logger.error(f'Error decoding API response: {exception}')
+      return turbinia_evidence_path
+    if not response:
+      self.logger.error('Did not receive a response from the API server.')
+      return turbinia_evidence_path
+    # The API supports multiple file upload, but we're only sending one.
+    file = response[0]
+    turbinia_evidence_path = file.get('file_path')
+    self.PublishMessage(
+        f'Uploaded {file.get("original_name")} to {turbinia_evidence_path}'
+    )
+    return turbinia_evidence_path
+
   def DownloadFilesFromAPI(self, task_data: Dict[str, List[str]],
                            path: str) -> Optional[str]:
     """Downloads task output data from the Turbinia API server.
@@ -194,7 +239,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     filename = f'{task_id}-'
     retries = 0
     # pylint: disable=line-too-long
-    self.logger.info(f"Downloading output for task {task_id}")
+    self.PublishMessage(f"Downloading output for task {task_id}")
     while retries < 3:
       try:
         api_response = api_instance.get_task_output_with_http_info(
@@ -254,10 +299,17 @@ class TurbiniaProcessorBase(module.BaseModule):
     else:
       # No credentials file, acquire new credentials from secrets file.
       self.logger.debug(
-          'Could not find existing credentials. Requesting new tokens.')
+          'Could not find existing credentials. Requesting new tokens.'
+      )
       try:
         appflow = flow.InstalledAppFlow.from_client_secrets_file(
-            client_secrets_path, scopes)
+            client_secrets_path, scopes
+        )
+        if appflow:
+          appflow.run_local_server(
+              host='localhost', port=8888, open_browser=False
+          )
+          credentials = appflow.credentials
       except FileNotFoundError as exception:
         msg = f'Client secrets file not found: {exception!s}'
         self.ModuleError(msg, critical=True)
@@ -265,9 +317,8 @@ class TurbiniaProcessorBase(module.BaseModule):
       self.logger.info(
           'Starting local HTTP server on localhost:8888 for OAUTH flow. '
           'If running dftimewolf remotely over SSH you will need to tunnel '
-          'port 8888.')
-      appflow.run_local_server(host='localhost', port=8888, open_browser=False)
-      credentials = appflow.credentials
+          'port 8888.'
+      )
 
     # Save credentials
     if credentials:
@@ -421,9 +472,16 @@ class TurbiniaProcessorBase(module.BaseModule):
         request) # type: ignore
       decoded_response = self._decode_api_response(api_response)
       request_id = decoded_response.get('request_id')
+      evidence_type: str = evidence.get('type', '')
+      if evidence_type.lower() == 'googleclouddisk':
+        evidence_path = evidence.get('disk_name')
+      elif evidence_type.lower() in ('rawdisk', 'compresseddirectory'):
+        evidence_path = evidence.get('source_path')
+      else:
+        evidence_path = 'unknown'
       self.logger.info(
         f"Creating Turbinia request {str(request_id)} with "
-        f"evidence {str(evidence_name)}"
+        f"evidence {str(evidence_name)} at {evidence_path}"
       )
       self.logger.debug(
         "Turbinia request status at {0!s}".format(self.turbinia_api)
@@ -460,10 +518,11 @@ class TurbiniaProcessorBase(module.BaseModule):
     retries = 0
     processed_paths = set()
     status = 'running'
+    wait_status = ['running', 'pending']
     if not request_id:
       self.ModuleError('No request ID provided', critical=True)
 
-    while status == 'running' and retries < 3:
+    while status in wait_status and retries < 3:
       time.sleep(interval)
       try:
         # Refresh token if needed

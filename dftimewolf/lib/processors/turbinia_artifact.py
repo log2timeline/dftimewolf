@@ -4,6 +4,7 @@
 import tempfile
 
 from typing import Optional, TYPE_CHECKING, Type
+from pathlib import Path
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers, interface
@@ -72,17 +73,23 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
         int(sketch_id) if sketch_id else 0)
 
   # pytype: disable=signature-mismatch
-  def Process(self, container: containers.RemoteFSPath) -> None:
+  def Process(self, container: containers.File) -> None:
     # pytype: enable=signature-mismatch
     """Process files with Turbinia."""
 
-    self.logger.debug(
+    self.logger.info(
       "Processing remote FS path {0:s} from previous collector".format(
         container.path
       )
     )
 
-    evidence = {'type': 'CompressedDirectory', 'source_path': container.path}
+    # Upload evidence file before starting the Turbinia request
+    file_path = self.UploadEvidence(Path(container.path))
+    if not file_path:
+      self.ModuleError(
+        'There was an error uploading the file to Turbinia', critical=True)
+    # Send Turbinia request
+    evidence = {'type': 'CompressedDirectory', 'source_path': file_path}
     request_id = self.TurbiniaStart(evidence)
     self.PublishMessage(f'Turbinia request ID: {request_id}')
 
@@ -109,9 +116,10 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
         fs_container = containers.File(path=local_path, name=descriptive_name)
         self.StreamContainer(fs_container)
 
+
   @staticmethod
   def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
-    return containers.RemoteFSPath
+    return containers.File
 
   def GetThreadPoolSize(self) -> int:
     return self.parallel_count
