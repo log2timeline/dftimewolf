@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """Validator for URLs."""
+from typing import Any
+
 from urllib.parse import urlparse
 
 from dftimewolf.lib import errors, resources, args_validator
@@ -12,7 +14,7 @@ class URLValidator(args_validator.CommaSeparatedValidator):
   NAME = "url"
 
   def ValidateSingle(self,
-                     argument_value: str,
+                     argument_value: Any,
                      recipe_argument: resources.RecipeArgument) -> str:
     """Validates a URL.
 
@@ -27,6 +29,13 @@ class URLValidator(args_validator.CommaSeparatedValidator):
     Raises:
       errors.RecipeArgsValidationFailure: If the argument is not a valid URL.
     """
+    if not isinstance(argument_value, str):
+      raise errors.RecipeArgsValidationFailure(
+          recipe_argument.switch,
+          argument_value,
+          self.NAME,
+          'Argument value must be a string.')
+
     url = urlparse(argument_value)
     if not all([url.scheme, url.netloc]):
       raise errors.RecipeArgsValidationFailure(

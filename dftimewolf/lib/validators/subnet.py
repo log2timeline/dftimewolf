@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Validator for subnets."""
+from typing import Any
 import ipaddress
 
 from dftimewolf.lib import errors, resources, args_validator
@@ -12,7 +13,7 @@ class SubnetValidator(args_validator.CommaSeparatedValidator):
   NAME = 'subnet'
 
   def ValidateSingle(self,
-                     argument_value: str,
+                     argument_value: Any,
                      recipe_argument: resources.RecipeArgument) -> str:
     """Validate that the argument_value is a valid subnet string.
 

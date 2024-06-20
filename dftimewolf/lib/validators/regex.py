@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """Validator for regular expression matches."""
+from typing import Any
+
 import re
 
 from dftimewolf.lib import errors, resources, args_validator
@@ -12,7 +14,7 @@ class RegexValidator(args_validator.CommaSeparatedValidator):
   NAME = 'regex'
 
   def ValidateSingle(self,
-                     argument_value: str,
+                     argument_value: Any,
                      recipe_argument: resources.RecipeArgument) -> str:
     """Validate a string according to a regular expression.
 
@@ -28,6 +30,12 @@ class RegexValidator(args_validator.CommaSeparatedValidator):
       errors.RecipeArgsValidationFailure: If the argument value does not match
         the regex.
     """
+    if not isinstance(argument_value, str):
+      raise errors.RecipeArgsValidationFailure(
+          recipe_argument.switch,
+          argument_value,
+          self.NAME,
+          'Argument value must be a string.')
     expression = recipe_argument.validation_params.get('regex')
     if expression is None:
       raise errors.RecipeArgsValidatorError(

@@ -4,7 +4,7 @@ import abc
 
 from typing import Any
 
-from dftimewolf.lib import resources
+from dftimewolf.lib import errors, resources
 
 
 class AbstractValidator(abc.ABC):
@@ -17,7 +17,7 @@ class AbstractValidator(abc.ABC):
 
   @abc.abstractmethod
   def Validate(self,
-               argument_value: str,
+               argument_value: Any,
                recipe_argument: resources.RecipeArgument) -> Any:
     """Validates an argument value.
 
@@ -41,7 +41,7 @@ class CommaSeparatedValidator(AbstractValidator):
   Validate."""
 
   def Validate(self,
-               argument_value: str,
+               argument_value: Any,
                recipe_argument: resources.RecipeArgument) -> str:
     """Split the string by commas if validator_params['comma_separated'] == True
     and validate each component in ValidateSingle.
@@ -57,6 +57,12 @@ class CommaSeparatedValidator(AbstractValidator):
       errors.RecipeArgsValidationFailure: If an invalid argument is found.
       errors.RecipeArgsValidatorError: An error in validation.
     """
+    if not isinstance(argument_value, str):
+      raise errors.RecipeArgsValidationFailure(
+          recipe_argument.switch,
+          argument_value,
+          self.NAME,
+          'Argument value must be a string.')
     validation_params = recipe_argument.validation_params
     if "comma_separated" not in validation_params:
       validation_params["comma_separated"] = False

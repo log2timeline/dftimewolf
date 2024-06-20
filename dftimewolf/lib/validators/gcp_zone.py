@@ -49,8 +49,8 @@ class GCPZoneValidator(AbstractValidator):
   NAME = 'gcp_zone'
 
   def Validate(self,
-               argument_value: str,
-               recipe_argument: resources.RecipeArgument) -> Any:
+               argument_value: Any,
+               recipe_argument: resources.RecipeArgument) -> str:
     """Validate that argument value is a valid GCP zone.
 
     Args:
