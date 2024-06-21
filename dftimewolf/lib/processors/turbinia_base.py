@@ -97,7 +97,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.parallel_count = 5  # Arbitrary, used by ThreadAwareModule
     self.project = str()
     self.requests_api_instance: turbinia_requests_api.TurbiniaRequestsApi = None # type: ignore
-    self.results_api_isntance: turbinia_request_results_api.TurbiniaRequestResultsApi = None # type: ignore
+    self.results_api_instance: turbinia_request_results_api.TurbiniaRequestResultsApi = None # type: ignore
     self.evidence_api_instance: turbinia_evidence_api.TurbiniaEvidenceApi = None # type: ignore
     self.sketch_id = int()
     self.state = state
@@ -235,7 +235,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     """
     result = None
     if self.RefreshClientCredentials():
-      self.results_api_isntance = (
+      self.results_api_instance = (
           turbinia_request_results_api.TurbiniaRequestResultsApi(self.client))
     task_id = task_data.get('id')
     filename = f'{task_id}-'
@@ -244,7 +244,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.PublishMessage(f"Downloading output for task {task_id}")
     while retries < 3:
       try:
-        api_response = self.results_api_isntance.get_task_output_with_http_info(
+        api_response = self.results_api_instance.get_task_output_with_http_info(
             task_id,  _preload_content=False, _request_timeout=self.HTTP_TIMEOUT)  # type: ignore
 
         # Read the response and write to the file.
@@ -409,7 +409,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.client = self.InitializeTurbiniaApiClient(self.credentials)
     self.requests_api_instance = turbinia_requests_api.TurbiniaRequestsApi(
         self.client)
-    self.results_api_isntance = (
+    self.results_api_instance = (
         turbinia_request_results_api.TurbiniaRequestResultsApi(self.client))
     self.evidence_api_instance = (
         turbinia_evidence_api.TurbiniaEvidenceApi(self.client))
