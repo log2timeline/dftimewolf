@@ -153,11 +153,16 @@ class TurbiniaBaseTest(unittest.TestCase):
                                    mock_get_credentials, mock_initialize_client):
     """Tests the RefreshClientCredentials method."""
     # Set an expired token.
+    self.turbinia_processor.turbinia_auth = True
     self.turbinia_processor.credentials = mock.MagicMock(
         expiry = FAKE_CREDENTIALS['expiry'], expired = True)
-    self.turbinia_processor.RefreshClientCredentials()
+    result_auth = self.turbinia_processor.RefreshClientCredentials()
     mock_get_credentials.assert_called_once()
     mock_initialize_client.assert_called_once()
+    self.turbinia_processor.turbinia_auth = False
+    result_noauth = self.turbinia_processor.RefreshClientCredentials()
+    self.assertTrue(result_auth)
+    self.assertFalse(result_noauth)
 
   @mock.patch('dftimewolf.lib.processors.turbinia_base.TurbiniaProcessorBase.GetCredentials')
   def testInitializeTurbiniaApiClientNoCreds(self, mock_get_credentials):
