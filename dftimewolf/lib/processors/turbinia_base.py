@@ -397,7 +397,7 @@ class TurbiniaProcessorBase(module.BaseModule):
         turbinia_auth_json = json.loads(turbinia_auth.lower())
         self.turbinia_auth = bool(turbinia_auth_json)
     except json.JSONDecodeError as exception:
-      error_message = 'Error parsing turbinbia_auth flag: %s', exception
+      error_message = f'Error parsing turbinbia_auth flag: {str(exception)}'
       self.ModuleError(error_message, critical=True)
     self.turbinia_api = turbinia_api
     self.turbinia_recipe = turbinia_recipe
