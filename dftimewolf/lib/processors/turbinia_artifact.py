@@ -44,9 +44,9 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
 
   # pylint: disable=arguments-differ
   def SetUp(
-      self, project: str, turbinia_auth: bool, turbinia_recipe: Optional[str],
+      self, project: str, turbinia_recipe: Optional[str],
       turbinia_zone: str, turbinia_api: str, output_directory: str,
-      incident_id: str, sketch_id: str) -> None:
+      incident_id: str, sketch_id: str, turbinia_auth: bool = False) -> None:
     """Sets up the object attributes.
 
     Args:
@@ -65,12 +65,12 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
 
     self.TurbiniaSetUp(
         project,
-        turbinia_auth,
         turbinia_recipe,
         turbinia_zone,
         turbinia_api,
         incident_id,
-        int(sketch_id) if sketch_id else 0)
+        int(sketch_id) if sketch_id else 0,
+        turbinia_auth)
 
   # pytype: disable=signature-mismatch
   def Process(self, container: containers.File) -> None:
