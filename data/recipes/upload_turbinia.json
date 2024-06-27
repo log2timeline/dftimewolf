@@ -15,23 +15,8 @@
           "target_directory": "@directory",
           "compress": true
       }
-    }, {
-          "wants": ["LocalFilesystemCopy"],
-          "runtime_name": "SCP-Upload",
-          "name": "SCPExporter",
-          "args": {
-            "paths": null,
-            "destination": "@destination_turbinia_dir",
-            "hostname": "@hostname",
-            "user": null,
-            "id_file": null,
-            "extra_ssh_options": [],
-            "check_ssh": true,
-            "direction": "upload",
-            "multiplexing": true
-          }
-    }, {
-        "wants": ["SCP-Upload"],
+    },  {
+        "wants": ["LocalFilesystemCopy"],
         "name": "TurbiniaArtifactProcessor",
         "args": {
             "project": null,
