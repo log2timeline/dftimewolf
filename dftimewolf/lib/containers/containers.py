@@ -618,7 +618,7 @@ class OsqueryQuery(interface.AttributeContainer):
     platforms: Optional[List[str]] = None,
     description: Optional[str] = None,
     configuration_content: Optional[str] = None,
-    configuration_path: Optional[str] = NoneP
+    configuration_path: Optional[str] = None
   ) -> None:
     super(OsqueryQuery, self).__init__()
     self.description = description
