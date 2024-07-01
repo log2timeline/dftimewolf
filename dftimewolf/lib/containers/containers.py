@@ -607,6 +607,8 @@ class OsqueryQuery(interface.AttributeContainer):
         configuration.
     configuration_path (Optional[str]): The path to an osquery configuration
         file on the client.
+    file_collection_columns (Optional[List[str]]): The list of file collection
+        columns.
   """
 
   CONTAINER_TYPE = "osquery_query"
@@ -618,7 +620,8 @@ class OsqueryQuery(interface.AttributeContainer):
     platforms: Optional[List[str]] = None,
     description: Optional[str] = None,
     configuration_content: Optional[str] = None,
-    configuration_path: Optional[str] = None
+    configuration_path: Optional[str] = None,
+    file_collection_columns: Optional[List[str]] = None
   ) -> None:
     super(OsqueryQuery, self).__init__()
     self.description = description
@@ -627,6 +630,7 @@ class OsqueryQuery(interface.AttributeContainer):
     self.query = query
     self.configuration_content = configuration_content
     self.configuration_path = configuration_path
+    self.file_collection_columns = file_collection_columns
 
   def __str__(self) -> str:
     """Override __str()__."""

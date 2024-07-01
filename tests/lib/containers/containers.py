@@ -113,7 +113,7 @@ class OsqueryQueryDataTest(unittest.TestCase):
 
     expected_attribute_names = [
         'configuration_content', 'configuration_path', 'description',
-        'metadata', 'name', 'platforms', 'query',
+        'file_collection_columns', 'metadata', 'name', 'platforms', 'query',
     ]
 
     attribute_names = sorted(attribute_container.GetAttributeNames())
