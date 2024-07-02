@@ -138,7 +138,7 @@ class OsqueryCollector(module.BaseModule):
                   configuration_content=self.configuration_content,
                   configuration_path=self.configuration_path,
                   file_collection_columns=self.file_collection_columns))
-      else:
+        else:
           self.logger.warning(f'Osquery on line {line_number} of {path} '
                               'does not appear to be valid.')
 
@@ -200,7 +200,7 @@ class OsqueryCollector(module.BaseModule):
         content = json.loads(configuration_content)
       except json.JSONDecodeError as err:
         self.ModuleError(
-            f'Osquery configuration does not contain valid JSON.',
+            'Osquery configuration does not contain valid JSON.',
             critical=True)
       self.configuration_content = json.dumps(content)
 
