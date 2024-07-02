@@ -630,10 +630,7 @@ class OsqueryQuery(interface.AttributeContainer):
     self.query = query
     self.configuration_content = configuration_content
     self.configuration_path = configuration_path
-    if file_collection_columns:
-      self.file_collection_columns = file_collection_columns
-    else:
-      self.file_collection_columns = []
+    self.file_collection_columns = file_collection_columns or []
 
   def __str__(self) -> str:
     """Override __str()__."""
