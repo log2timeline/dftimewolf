@@ -18,10 +18,10 @@ class OsqueryCollector(module.BaseModule):
 
   Attributes:
     osqueries (List[containers.OsqueryQuery]): list of osquery containers.
-    configuration_path (Optional[str]): the path to a configuration file on the
+    configuration_path (str): the path to a configuration file on the
         client.
-    configuration_content (Optional[str]): the JSON configuration content.
-    file_collection_columns (Optional[List[str]]): The list of file collection
+    configuration_content (str): the JSON configuration content.
+    file_collection_columns (List[str]): The list of file collection
         columns.
   """
 
@@ -40,9 +40,9 @@ class OsqueryCollector(module.BaseModule):
     super(OsqueryCollector, self).__init__(
         state, name=name, critical=critical)
     self.osqueries: List[containers.OsqueryQuery] = []
-    self.configuration_path: Optional[str] = None
-    self.configuration_content: Optional[str] = None
-    self.file_collection_columns: Optional[List[str]] = None
+    self.configuration_path: str = ''
+    self.configuration_content: str = ''
+    self.file_collection_columns: List[str] = []
 
   def _ValidateOsquery(self, query: str) -> bool:
     """Validate Osquery query.
@@ -147,9 +147,9 @@ class OsqueryCollector(module.BaseModule):
       self,
       query: str,
       paths: str,
-      remote_configuration_path: Optional[str] = None,
-      local_configuration_path: Optional[str] = None,
-      configuration_content: Optional[str] = None,
+      remote_configuration_path: str = '',
+      local_configuration_path: str = '',
+      configuration_content: str = '',
       file_collection_columns: Optional[str] = None
   ) -> None:
     """Sets up the osquery to collect.
@@ -172,7 +172,7 @@ class OsqueryCollector(module.BaseModule):
       configuration_content: the configuration content.
       local_configuration_path: the path to a local osquery configuration file.
           contents
-      file_collection_columns: The comma-seaparated list of file collection 
+      file_collection_columns: The comma-seaparated list of file collection
           columns names.
     """
     if not query and not paths:
@@ -200,6 +200,10 @@ class OsqueryCollector(module.BaseModule):
             critical=True)
       self.configuration_content = json.dumps(content)
 
+    if file_collection_columns:
+      self.file_collection_columns = [
+          col.strip() for col in file_collection_columns.split(',')]
+
     if query and self._ValidateOsquery(query):
       self.osqueries.append(containers.OsqueryQuery(
           query=query,
@@ -221,11 +225,6 @@ class OsqueryCollector(module.BaseModule):
           self._LoadOsqueryPackToState(path)
         else:
           self._LoadTextFileToState(path)
-
-    if file_collection_columns:
-      self.file_collection_columns = [
-          col.strip() for col in file_collection_columns.split(',')
-      ]
 
     if not self.osqueries:
       self.ModuleError(

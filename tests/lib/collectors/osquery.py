@@ -25,9 +25,9 @@ class OsqueryCollectorTest(unittest.TestCase):
   def testInitialization(self) -> None:
     """Tests that the collector can be initialized."""
     self.assertEqual(self.osquery_collector.osqueries, [])
-    self.assertIsNone(self.osquery_collector.configuration_content)
-    self.assertIsNone(self.osquery_collector.configuration_path)
-    self.assertIsNone(self.osquery_collector.file_collection_columns)
+    self.assertEqual(self.osquery_collector.configuration_content, '')
+    self.assertEqual(self.osquery_collector.configuration_path, '')
+    self.assertEqual(self.osquery_collector.file_collection_columns, [])
 
   def testSetupError(self) -> None:
     """Tests the collector's Setup() function with invalid query, path."""
@@ -154,8 +154,8 @@ class OsqueryCollectorTest(unittest.TestCase):
     containers = self.osquery_collector.GetContainers(OsqueryQuery)
     self.assertEqual(len(containers), 1)
     self.assertEqual(containers[0].query, "SELECT * FROM processes")
-    self.assertIsNone(containers[0].configuration_content)
-    self.assertIsNone(containers[0].configuration_path)
+    self.assertEqual(containers[0].configuration_content, '')
+    self.assertEqual(containers[0].configuration_path, '')
 
   @mock.patch('os.path.exists')
   def testProcessQueryPack(self, mock_exists) -> None:
