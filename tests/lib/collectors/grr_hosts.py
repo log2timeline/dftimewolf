@@ -951,7 +951,10 @@ class GRROsqueryCollectorTest(unittest.TestCase):
     self.grr_osquery_collector = grr_hosts.GRROsqueryCollector(
         self.test_state)
     self.grr_osquery_collector.StoreContainer(
-      containers.OsqueryQuery('SELECT * FROM processes'))
+      containers.OsqueryQuery(
+          'SELECT * FROM processes',
+          configuration_path='/test/path',
+          file_collection_columns=['path']))
     self.grr_osquery_collector.SetUp(
         hostnames='C.0000000000000001',
         reason='Random reason',
@@ -993,7 +996,10 @@ class GRROsqueryCollectorTest(unittest.TestCase):
         osquery_pb2.OsqueryFlowArgs(
             query='SELECT * FROM processes',
             timeout_millis=300000,
-            ignore_stderr_errors=False
+            ignore_stderr_errors=False,
+            configuration_content='',
+            configuration_path='/test/path',
+            file_collection_columns=['path']
         )
     )
 

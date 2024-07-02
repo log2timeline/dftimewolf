@@ -401,6 +401,10 @@ class GRRHuntOsqueryCollector(GRRHunt):
       hunt_args.query = osquery_container.query
       hunt_args.timeout_millis = self.timeout_millis
       hunt_args.ignore_stderr_errors = self.ignore_stderr_errors
+      hunt_args.configuration_content = osquery_container.configuration_content
+      hunt_args.configuration_path = osquery_container.configuration_path
+      hunt_args.file_collection_columns.extend(
+          osquery_container.file_collection_columns)
 
       self._CreateAndStartHunt('OsqueryFlow', hunt_args)
 
