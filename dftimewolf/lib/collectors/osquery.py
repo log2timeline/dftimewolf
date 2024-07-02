@@ -150,7 +150,7 @@ class OsqueryCollector(module.BaseModule):
       remote_configuration_path: Optional[str] = None,
       local_configuration_path: Optional[str] = None,
       configuration_content: Optional[str] = None,
-      file_collection_columns: Optional[List[str]] = None
+      file_collection_columns: Optional[str] = None
   ) -> None:
     """Sets up the osquery to collect.
 
@@ -172,7 +172,8 @@ class OsqueryCollector(module.BaseModule):
       configuration_content: the configuration content.
       local_configuration_path: the path to a local osquery configuration file.
           contents
-      file_collection_columns: The list of file collection columns.
+      file_collection_columns: The comma-seaparated list of file collection 
+          columns names.
     """
     if not query and not paths:
       self.ModuleError('Both query and paths cannot be empty.', critical=True)
