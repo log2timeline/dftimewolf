@@ -69,7 +69,7 @@ class OsqueryCollectorTest(unittest.TestCase):
     """Tests the collector's SetUp() function with invalid configuration."""
     with self.assertRaises(DFTimewolfError) as context:
       self.osquery_collector.SetUp(
-          query='SELECT * FROM processes', paths=None,
+          query='SELECT * FROM processes', paths='',
           configuration_content='test', remote_configuration_path='test')
     self.assertEqual(
         context.exception.message,
@@ -77,7 +77,7 @@ class OsqueryCollectorTest(unittest.TestCase):
 
     with self.assertRaises(DFTimewolfError) as context:
       self.osquery_collector.SetUp(
-          query='SELECT * FROM processes', paths=None,
+          query='SELECT * FROM processes', paths='',
           local_configuration_path ='test', remote_configuration_path='test')
     self.assertEqual(
         context.exception.message,
@@ -85,7 +85,7 @@ class OsqueryCollectorTest(unittest.TestCase):
 
     with self.assertRaises(DFTimewolfError) as context:
       self.osquery_collector.SetUp(
-          query='SELECT * FROM processes', paths=None,
+          query='SELECT * FROM processes', paths='',
           local_configuration_path ='test', configuration_content='test')
     self.assertEqual(
         context.exception.message,
@@ -93,7 +93,7 @@ class OsqueryCollectorTest(unittest.TestCase):
 
     with self.assertRaises(DFTimewolfError) as context:
       self.osquery_collector.SetUp(
-          query='SELECT * from processes', paths=None,
+          query='SELECT * from processes', paths='',
           configuration_content='invalid content')
     self.assertEqual(
         context.exception.message,
