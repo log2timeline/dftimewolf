@@ -163,15 +163,19 @@ class OsqueryCollector(module.BaseModule):
     The GRR osquery flow can also be set up to use a custom osquery
     configuration on invocation (see
     https://osquery.readthedocs.io/en/stable/deployment/configuration/).
-
+    either:
+    * as an existing file on the GRR client using remote_configuration_path
+    * as a temporary file on the GRR client where the content can come from
+    a file, using local_cofiguration_path, on the user's local machine or a 
+    string value, using configuration_content.
+    
     Args:
       query: osquery query.
       paths: osquery filepaths.
       remote_configuration_path: the path to a remote osquery configuration file
           on the GRR client.
-      configuration_content: the configuration content.
+      configuration_content: the configuration content, in JSON format.
       local_configuration_path: the path to a local osquery configuration file.
-          contents
       file_collection_columns: The comma-seaparated list of file collection
           columns names.
     """
