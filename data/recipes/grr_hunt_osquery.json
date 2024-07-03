@@ -7,7 +7,11 @@
         "name": "OsqueryCollector",
         "args": {
             "query": "@osquery_query",
-            "paths": "@osquery_paths"
+            "paths": "@osquery_paths",
+            "remote_configuration_path": "@remote_configuration_path",
+            "local_configuration_path": "@local_configuration_path",
+            "configuration_content": "@configuration_content",
+            "file_collection_columns": "@file_collection_columns"
         }
     },{
         "wants": ["OsqueryCollector"],
@@ -30,6 +34,10 @@
         ["reason", "Reason for collection.", null],
         ["--osquery_query", "Osquery query to hunt for.", null],
         ["--osquery_paths", "Path(s) to text file containing one osquery query per line.", null],
+        ["--remote_configuration_path", "Path to a remote osquery configuration file on the GRR client.", ""],
+        ["--local_configuration_path", "Path to a local osquery configuration file.", ""],
+        ["--configuration_content", "Osquery configuration as a JSON string.", ""],
+        ["--file_collection_columns", "The file collection columns.", ""],
         ["--timeout_millis", "Osquery timeout in milliseconds", 300000, {"format": "regex", "regex": "^\\d+$"}],
         ["--ignore_stderr_errors", "Ignore osquery stderr errors", false],
         ["--approvers", "Emails for GRR approval request.", null],

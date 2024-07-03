@@ -133,7 +133,10 @@ class GRRHuntOsqueryCollectorTest(unittest.TestCase):
     self.grr_hunt_osquery_collector = grr_hunt.GRRHuntOsqueryCollector(
         self.test_state)
     self.grr_hunt_osquery_collector.StoreContainer(
-        containers.OsqueryQuery(query='SELECT * FROM processes'))
+        containers.OsqueryQuery(
+            query='SELECT * FROM processes',
+            configuration_path='/test/path',
+            file_collection_columns=['path']))
     self.grr_hunt_osquery_collector.SetUp(
         reason='random reason',
         timeout_millis=300000,
@@ -157,6 +160,8 @@ class GRRHuntOsqueryCollectorTest(unittest.TestCase):
     self.assertEqual(call_kwargs['flow_args'].timeout_millis,
                      300000)
     self.assertEqual(call_kwargs['flow_args'].ignore_stderr_errors, False)
+    self.assertEqual(call_kwargs['flow_args'].configuration_path, '/test/path')
+    self.assertEqual(call_kwargs['flow_args'].file_collection_columns, ['path'])
     self.assertEqual(call_kwargs['flow_name'], 'OsqueryFlow')
     self.assertEqual(call_kwargs['hunt_runner_args'].description,
                      'random reason')

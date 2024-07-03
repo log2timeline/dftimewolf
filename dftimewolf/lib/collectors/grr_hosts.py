@@ -1069,10 +1069,14 @@ class GRROsqueryCollector(GRRFlow):
       client: the GRR Client.
       osquery_container: the OSQuery.
     """
-    hunt_args = osquery_flows.OsqueryFlowArgs(
-        query=osquery_container.query,
-        timeout_millis=self.timeout_millis,
-        ignore_stderr_errors=self.ignore_stderr_errors)
+    flow_args = osquery_flows.OsqueryFlowArgs()
+    flow_args.query = osquery_container.query
+    flow_args.timeout_millis = self.timeout_millis
+    flow_args.ignore_stderr_errors = self.ignore_stderr_errors
+    flow_args.configuration_content = osquery_container.configuration_content
+    flow_args.configuration_path = osquery_container.configuration_path
+    flow_args.file_collection_columns.extend(
+        osquery_container.file_collection_columns)
 
     try:
       flow_id = self._LaunchFlow(client, 'OsqueryFlow', hunt_args)

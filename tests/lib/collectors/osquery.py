@@ -17,38 +17,35 @@ from dftimewolf.lib.errors import DFTimewolfError
 class OsqueryCollectorTest(unittest.TestCase):
   """Tests for the GRR osquery collector."""
 
+  def setUp(self) -> None:
+    super().setUp()
+    test_state = state.DFTimewolfState(config.Config)
+    self.osquery_collector = osquery.OsqueryCollector(test_state)
+
   def testInitialization(self) -> None:
     """Tests that the collector can be initialized."""
-    test_state = state.DFTimewolfState(config.Config)
-    osquery_collector = osquery.OsqueryCollector(test_state)
-    self.assertIsNotNone(osquery_collector)
+    self.assertEqual(self.osquery_collector.osqueries, [])
+    self.assertEqual(self.osquery_collector.configuration_content, '')
+    self.assertEqual(self.osquery_collector.configuration_path, '')
+    self.assertEqual(self.osquery_collector.file_collection_columns, [])
 
-  def testSetup(self) -> None:
-    """Tests the collector's Setup() function."""
-    test_state = state.DFTimewolfState(config.Config)
-    osquery_collector = osquery.OsqueryCollector(test_state)
-
+  def testSetupError(self) -> None:
+    """Tests the collector's Setup() function with invalid query, path."""
     with self.assertRaises(DFTimewolfError) as context:
-      osquery_collector.SetUp(query='', paths='')
+      self.osquery_collector.SetUp(query='', paths='')
 
     self.assertEqual(
         context.exception.message, 'Both query and paths cannot be empty.')
 
-  def testSetupQuery(self) -> None:
+  def testSetupQueryError(self) -> None:
     """Tests the collector's Setup() function with invalid query parameter."""
-    test_state = state.DFTimewolfState(config.Config)
-    osquery_collector = osquery.OsqueryCollector(test_state)
-
     with self.assertRaises(DFTimewolfError) as context:
-      osquery_collector.SetUp(query='not a query', paths='')
+      self.osquery_collector.SetUp(query='not a query', paths='')
 
     self.assertEqual(context.exception.message, 'No valid osquery collected.')
 
-  def testSetupPaths(self) -> None:
+  def testSetupPathsError(self) -> None:
     """Tests the collector's Setup() method with invalid paths parameter."""
-    test_state = state.DFTimewolfState(config.Config)
-    osquery_collector = osquery.OsqueryCollector(test_state)
-
     test_empty_data = ""
     test_bad_data = "bad"
 
@@ -56,7 +53,7 @@ class OsqueryCollectorTest(unittest.TestCase):
         'builtins.open',
         new=mock.mock_open(read_data=test_empty_data)) as _:
       with self.assertRaises(DFTimewolfError) as context:
-        osquery_collector.SetUp(query='', paths='empty')
+        self.osquery_collector.SetUp(query='', paths='empty')
 
     self.assertEqual(context.exception.message, 'No valid osquery collected.')
 
@@ -64,15 +61,85 @@ class OsqueryCollectorTest(unittest.TestCase):
         'builtins.open',
         new=mock.mock_open(read_data=test_bad_data)) as _:
       with self.assertRaises(DFTimewolfError) as context:
-        osquery_collector.SetUp(query='', paths='fbad')
+        self.osquery_collector.SetUp(query='', paths='fbad')
 
     self.assertEqual(context.exception.message, 'No valid osquery collected.')
+
+  def testSetUpConfigurationError(self) -> None:
+    """Tests the collector's SetUp() function with invalid configuration."""
+    with self.assertRaises(DFTimewolfError) as context:
+      self.osquery_collector.SetUp(
+          query='SELECT * FROM processes', paths='',
+          configuration_content='test', remote_configuration_path='test')
+    self.assertEqual(
+        context.exception.message,
+        'Only one configuration argument can be set.')
+
+    with self.assertRaises(DFTimewolfError) as context:
+      self.osquery_collector.SetUp(
+          query='SELECT * FROM processes', paths='',
+          local_configuration_path ='test', remote_configuration_path='test')
+    self.assertEqual(
+        context.exception.message,
+        'Only one configuration argument can be set.')
+
+    with self.assertRaises(DFTimewolfError) as context:
+      self.osquery_collector.SetUp(
+          query='SELECT * FROM processes', paths='',
+          local_configuration_path ='test', configuration_content='test')
+    self.assertEqual(
+        context.exception.message,
+        'Only one configuration argument can be set.')
+
+    with self.assertRaises(DFTimewolfError) as context:
+      self.osquery_collector.SetUp(
+          query='SELECT * from processes', paths='',
+          configuration_content='invalid content')
+    self.assertEqual(
+        context.exception.message,
+        'Osquery configuration does not contain valid JSON.')
+
+  def testSetUpRemoteConfigurationPath(self) -> None:
+    """Tests the collector's SetUp() function with the remote config path."""
+    self.osquery_collector.SetUp(
+        query='SELECT * from test',
+        paths='ok',
+        remote_configuration_path='/test/path')
+    self.assertEqual(self.osquery_collector.configuration_path, '/test/path')
+
+  def testSetUpLocalConfigurationPath(self) -> None:
+    """Tests the collector's SetUp() function with the local config path."""
+    with mock.patch(
+        'builtins.open',
+        new=mock.mock_open(read_data='{"test": "test"}')) as _:
+      self.osquery_collector.SetUp(
+          query='SELECT * from test',
+          paths='ok',
+          local_configuration_path='test')
+    self.assertEqual(
+        self.osquery_collector.configuration_content, '{"test": "test"}')
+
+  def testSetUpConfigurationContent(self) -> None:
+    """Tests the collector's SetUp() function with configuration content."""
+    self.osquery_collector.SetUp(
+        query='SELECT * from test',
+        paths='ok',
+        configuration_content='{"test": "test"}')
+    self.assertEqual(
+        self.osquery_collector.configuration_content, '{"test": "test"}')
+
+  def testSetUpFileCollectionColumns(self) -> None:
+    """Tests the collector's SetUp() function with file collection columns."""
+    self.osquery_collector.SetUp(
+        query='SELECT * from test',
+        paths='ok',
+        file_collection_columns='a,b')
+    self.assertEqual(
+        self.osquery_collector.file_collection_columns, ['a', 'b'])
 
   @mock.patch('os.path.exists')
   def testProcessTextFile(self, mock_exists) -> None:
     """Tests the collector's Process() function with a text file."""
-    test_state = state.DFTimewolfState(config.Config)
-    osquery_collector = osquery.OsqueryCollector(test_state)
     mock_exists.return_value = True
 
     test_ok_data = "SELECT * FROM processes"
@@ -80,19 +147,19 @@ class OsqueryCollectorTest(unittest.TestCase):
     with mock.patch(
         'builtins.open',
         new=mock.mock_open(read_data=test_ok_data)) as _:
-      osquery_collector.SetUp(query='', paths='ok')
+      self.osquery_collector.SetUp(query='', paths='ok')
 
-    osquery_collector.Process()
+    self.osquery_collector.Process()
 
-    containers = osquery_collector.GetContainers(OsqueryQuery)
+    containers = self.osquery_collector.GetContainers(OsqueryQuery)
     self.assertEqual(len(containers), 1)
     self.assertEqual(containers[0].query, "SELECT * FROM processes")
+    self.assertEqual(containers[0].configuration_content, '')
+    self.assertEqual(containers[0].configuration_path, '')
 
   @mock.patch('os.path.exists')
   def testProcessQueryPack(self, mock_exists) -> None:
     """Tests the collector's Process() function with a Osquery Pack file."""
-    test_state = state.DFTimewolfState(config.Config)
-    osquery_collector = osquery.OsqueryCollector(test_state)
     mock_exists.return_value = True
 
     test_ok_data = json.dumps({
@@ -120,11 +187,11 @@ class OsqueryCollectorTest(unittest.TestCase):
     with mock.patch(
         'builtins.open',
         new=mock.mock_open(read_data=test_ok_data)) as _:
-      osquery_collector.SetUp(query='', paths='ok.json')
+      self.osquery_collector.SetUp(query='', paths='ok.json')
 
-    osquery_collector.Process()
+    self.osquery_collector.Process()
 
-    containers = osquery_collector.GetContainers(OsqueryQuery)
+    containers = self.osquery_collector.GetContainers(OsqueryQuery)
     self.assertEqual(len(containers), 2)
 
     self.assertEqual(containers[0].name, 'query_1')
@@ -138,6 +205,7 @@ class OsqueryCollectorTest(unittest.TestCase):
     self.assertEqual(containers[1].platforms, ['windows'])
     self.assertEqual(containers[1].query,
                      'select * from test where path like \'%user32.dll\';')
+
 
 if __name__ == '__main__':
   unittest.main()
