@@ -6,7 +6,6 @@ import unittest
 
 import mock
 import os
-import six
 import tempfile
 from typing import IO
 
@@ -25,7 +24,6 @@ from dftimewolf.lib import state
 from dftimewolf.lib import errors
 from dftimewolf.lib.collectors import grr_hosts
 from dftimewolf.lib.containers import containers
-from dftimewolf.lib.errors import DFTimewolfError
 
 from google.protobuf import text_format
 
@@ -838,14 +836,18 @@ class GRRTimelineCollectorTest(unittest.TestCase):
   def testProcess(self):
     """Tests the Process method of GRRTimelineCollector."""
     self.grr_timeline_collector._GetClientBySelector = mock.MagicMock()
-    self.grr_timeline_collector._GetClientBySelector.return_value = mock_grr_hosts.MOCK_CLIENT
+    self.grr_timeline_collector._GetClientBySelector.return_value = (
+        mock_grr_hosts.MOCK_CLIENT)
 
-    with (mock.patch('grr_api_client.client.ClientBase.CreateFlow') as mock_createflow,
-          mock.patch('grr_api_client.flow.FlowBase.WaitUntilDone') as mock_waituntildone,
-          mock.patch('grr_api_client.flow.FlowBase.GetCollectedTimelineBody') as mock_getcollectedtimelinebody):
+    with (mock.patch('grr_api_client.client.ClientBase.CreateFlow'
+                     ) as mock_createflow,
+          mock.patch('grr_api_client.flow.FlowBase.WaitUntilDone'
+                     ) as mock_waituntildone,
+          mock.patch('grr_api_client.flow.FlowBase.GetCollectedTimelineBody'
+                     ) as mock_getcollectedtimeline):
       mock_createflow.return_value.flow_id = 'F:12345'
       mock_waituntildone.return_value = None
-      mock_getcollectedtimelinebody.return_value.WriteToFile = _MOCK_WRITE_TO_FILE
+      mock_getcollectedtimeline.return_value.WriteToFile = _MOCK_WRITE_TO_FILE
 
       self.grr_timeline_collector.PreProcess()
       in_containers = self.grr_timeline_collector.GetContainers(
@@ -858,7 +860,9 @@ class GRRTimelineCollectorTest(unittest.TestCase):
           name='TimelineFlow', args=timeline_pb2.TimelineArgs(root=b'/'))
       mock_waituntildone.assert_called_once()
 
-      expected_output_path = os.path.join(self.grr_timeline_collector.output_path, f'{mock_createflow.return_value.flow_id}_timeline.body')
+      expected_output_path = os.path.join(
+        self.grr_timeline_collector.output_path,
+        f'{mock_createflow.return_value.flow_id}_timeline.body')
 
       self.assertTrue(os.path.exists(expected_output_path))
 
