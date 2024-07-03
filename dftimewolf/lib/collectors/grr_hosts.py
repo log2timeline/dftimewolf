@@ -6,9 +6,6 @@ import os
 import pathlib
 import re
 import stat
-import tempfile
-import time
-import zipfile
 from concurrent.futures import ThreadPoolExecutor
 from typing import List, Optional, Tuple, Type
 
@@ -17,6 +14,7 @@ from grr_api_client import errors as grr_errors
 from grr_api_client import flow, utils
 from grr_api_client.client import Client
 from grr_response_proto import flows_pb2, jobs_pb2, timeline_pb2
+from grr_response_proto.api import flow_pb2
 from grr_response_proto import osquery_pb2 as osquery_flows
 
 from dftimewolf.lib import module
@@ -270,7 +268,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     payloads: List["jobs_pb2.PathSpec"],
     flow_output_dir: str,
   ) -> None:
-    """Download an individual collected file from GRR to the local filesystem.
+    """Download individual collected files from GRR to the local filesystem.
 
     Args:
       client: GRR Client object to download blobs from.
@@ -278,15 +276,21 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       flow_output_dir: Directory to store the downloaded files.
     """
     for payload in payloads:
-      if stat.S_ISDIR(payload.stat_entry.st_mode):
+      if hasattr(payload, 'stat'):
+        stats = payload.stat
+      elif hasattr(payload, 'stat_entry'):
+        stats = payload.stat_entry
+      else:
+        raise RuntimeError('Unsupported file collection attempted')
+      if stat.S_ISDIR(stats.st_mode):
         continue
-      if (payload.stat_entry.pathspec.nested_path.pathtype ==
+      if (stats.pathspec.nested_path.pathtype ==
           jobs_pb2.PathSpec.NTFS):
-        vfspath = (f"fs/ntfs{payload.stat_entry.pathspec.path}"
-            f"{payload.stat_entry.pathspec.nested_path.path}")
+        vfspath = (
+            f"fs/ntfs{stats.pathspec.path}{stats.pathspec.nested_path.path}")
       else:
         vfspath = re.sub("^([a-zA-Z]:)?/(.*)$", "fs/os/\\1/\\2",
-                         payload.stat_entry.pathspec.path)
+                         stats.pathspec.path)
       filename = os.path.basename(vfspath)
       base_dir = os.path.join(flow_output_dir, os.path.dirname(vfspath))
       os.makedirs(base_dir, exist_ok=True)
@@ -295,8 +299,9 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       self.logger.debug(f"Downloading blob {filename} from {vfspath}")
       try:
         path = os.path.join(base_dir, filename)
-        if payload.stat_entry.st_size:
+        if stats.st_size:
           with open(path, "wb") as out:
+            self.logger.debug(f'File: {filename}')
             f.GetBlob().WriteToStream(out)
         else:
           pathlib.Path(path).touch()
