@@ -85,8 +85,9 @@ class GRRFlowTests(unittest.TestCase):
     """Tests that GetClientBySelector fetches the correct GRR client."""
     self.mock_grr_api.SearchClients.return_value = \
         mock_grr_hosts.MOCK_CLIENT_LIST
-    client_handle = self.grr_flow_module._GetClientBySelector('tomchop')
-    self.mock_grr_api.SearchClients.assert_called_with('tomchop')
+    client_handle = self.grr_flow_module._GetClientBySelector(
+        'tomchop_username2')
+    self.mock_grr_api.SearchClients.assert_called_with('tomchop_username2')
     self.assertEqual(client_handle.data.client_id, 'C.0000000000000001')
 
   def testGetClientBySelectorError(self):
