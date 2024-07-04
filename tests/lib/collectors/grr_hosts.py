@@ -4,10 +4,11 @@
 
 import unittest
 
-import mock
 import os
 import tempfile
 from typing import IO
+
+import mock
 
 import pandas as pd
 from grr_api_client import errors as grr_errors
@@ -76,17 +77,18 @@ class GRRFlowTests(unittest.TestCase):
     """Tests that GetClientBySelector fetches the most recent GRR client."""
     self.mock_grr_api.SearchClients.return_value = \
         mock_grr_hosts.MOCK_CLIENT_LIST
-    client = self.grr_flow_module._GetClientBySelector('C.0000000000000001')
+    client_handle = self.grr_flow_module._GetClientBySelector(
+        'C.0000000000000001')
     self.mock_grr_api.SearchClients.assert_called_with('C.0000000000000001')
-    self.assertEqual(client.data.client_id, 'C.0000000000000001')
+    self.assertEqual(client_handle.data.client_id, 'C.0000000000000001')
 
   def testGetClientByUsername(self):
     """Tests that GetClientBySelector fetches the correct GRR client."""
     self.mock_grr_api.SearchClients.return_value = \
         mock_grr_hosts.MOCK_CLIENT_LIST
-    client = self.grr_flow_module._GetClientBySelector('tomchop_username2')
-    self.mock_grr_api.SearchClients.assert_called_with('tomchop_username2')
-    self.assertEqual(client.data.client_id, 'C.0000000000000001')
+    client_handle = self.grr_flow_module._GetClientBySelector('tomchop')
+    self.mock_grr_api.SearchClients.assert_called_with('tomchop')
+    self.assertEqual(client_handle.data.client_id, 'C.0000000000000001')
 
   def testGetClientBySelectorError(self):
     """Tests that GetClientBySelector fetches the most recent GRR client."""
@@ -110,10 +112,12 @@ class GRRFlowTests(unittest.TestCase):
   def testDownloadFilesForFlow(self, mock_Get):
     """Test if results are downloaded to the correct directories."""
     mock_Get.return_value.data.name = 'ClientFileFinder'
-    mock_Get.return_value.ListResults.return_value = mock_grr_hosts.MOCK_CFF_RESULTS
+    mock_Get.return_value.ListResults.return_value = (
+        mock_grr_hosts.MOCK_CFF_RESULTS)
 
     mock_client = client.Client(
-        data=text_format.Parse(mock_grr_hosts.client_proto1, client_pb2.ApiClient()),
+        data=text_format.Parse(mock_grr_hosts.client_proto1,
+                               client_pb2.ApiClient()),
         context=True)
     mock_client.File = mock.MagicMock()
     mock_client.File.return_value.GetBlob.return_value.WriteToStream = (
@@ -126,7 +130,8 @@ class GRRFlowTests(unittest.TestCase):
 
       self.assertTrue(
           os.path.exists(
-              os.path.join(local_path, mock_client.data.os_info.fqdn.lower(), 'F:12345', 'fs', 'os', 'directory', 'file')))
+              os.path.join(local_path, mock_client.data.os_info.fqdn.lower(),
+                           'F:12345', 'fs', 'os', 'directory', 'file')))
 
   @mock.patch("os.remove")
   @mock.patch('os.makedirs')
@@ -853,7 +858,7 @@ class GRRTimelineCollectorTest(unittest.TestCase):
       in_containers = self.grr_timeline_collector.GetContainers(
           self.grr_timeline_collector.GetThreadOnContainerType())
       for c in in_containers:
-        self.grr_timeline_collector.Process(c)  # pytype: disable=wrong-arg-types
+        self.grr_timeline_collector.Process(c) # pytype: disable=wrong-arg-types
       self.grr_timeline_collector.PostProcess()
 
       mock_createflow.assert_called_once_with(
