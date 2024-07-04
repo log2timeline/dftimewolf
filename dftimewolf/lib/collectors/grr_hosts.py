@@ -14,7 +14,6 @@ from grr_api_client import errors as grr_errors
 from grr_api_client import flow, utils
 from grr_api_client.client import Client
 from grr_response_proto import flows_pb2, jobs_pb2, timeline_pb2
-from grr_response_proto.api import flow_pb2
 from grr_response_proto import osquery_pb2 as osquery_flows
 
 from dftimewolf.lib import module
@@ -1079,7 +1078,7 @@ class GRROsqueryCollector(GRRFlow):
         osquery_container.file_collection_columns)
 
     try:
-      flow_id = self._LaunchFlow(client, 'OsqueryFlow', hunt_args)
+      flow_id = self._LaunchFlow(client, 'OsqueryFlow', flow_args)
       client.Flow(flow_id).WaitUntilDone()
     except DFTimewolfError as error:
       self.ModuleError(
