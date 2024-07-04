@@ -18,6 +18,7 @@ from grr_response_proto import flows_pb2
 from grr_response_proto import jobs_pb2
 from grr_response_proto import osquery_pb2
 from grr_response_proto import timeline_pb2
+from google.protobuf import text_format
 from tests.lib.collectors.test_data import mock_grr_hosts
 
 from dftimewolf import config
@@ -25,8 +26,6 @@ from dftimewolf.lib import state
 from dftimewolf.lib import errors
 from dftimewolf.lib.collectors import grr_hosts
 from dftimewolf.lib.containers import containers
-
-from google.protobuf import text_format
 
 
 def _MOCK_WRITE_TO_STREAM(out: IO[bytes]):
