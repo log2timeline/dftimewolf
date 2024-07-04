@@ -1,6 +1,7 @@
 """Mocks objects and protos for the GRR Host module tests."""
 
 import datetime
+import mock
 
 from grr_api_client import client
 from grr_api_client import flow
@@ -91,7 +92,8 @@ client_windows_1 = """
 )
 
 MOCK_CLIENT = client.Client(
-    data=text_format.Parse(client_proto1, client_pb2.ApiClient()), context=True)
+    data=text_format.Parse(client_proto1, client_pb2.ApiClient()),
+    context=mock.MagicMock())
 MOCK_CLIENT_RECENT = client.Client(
     data=text_format.Parse(client_proto2, client_pb2.ApiClient()), context=True)
 MOCK_WINDOWS_CLIENT = client.Client(
@@ -160,3 +162,45 @@ MOCK_YARASCAN_PAYLOAD = flows_pb2.YaraProcessScanMatch(
         )
     ]
 )
+
+MOCK_CFF_PAYLOAD_DIRECTORY_TEXT = """
+payload: {
+  [type.googleapis.com/grr.FileFinderResult] {
+    stat_entry {
+      st_mode: 17901
+      pathspec {
+        pathtype: OS
+        path: "/directory"
+        path_options: CASE_LITERAL
+      }
+    }
+  }
+}
+"""
+MOCK_CFF_PAYLOAD_DIRECTORY = flow.FlowResult(
+    data=text_format.Parse(
+        MOCK_CFF_PAYLOAD_DIRECTORY_TEXT, flow_pb2.ApiFlowResult()))
+
+MOCK_CFF_PAYLOAD_FILE_TEXT = """
+payload: {
+  [type.googleapis.com/grr.FileFinderResult] {
+    stat_entry {
+      st_mode: 33184
+      st_size: 1024
+      pathspec {
+        pathtype: OS
+        path: "/directory/file"
+        path_options: CASE_LITERAL
+      }
+    }
+  }
+}
+"""
+MOCK_CFF_PAYLOAD_FILE = flow.FlowResult(
+    data=text_format.Parse(
+        MOCK_CFF_PAYLOAD_FILE_TEXT, flow_pb2.ApiFlowResult()))
+
+MOCK_CFF_RESULTS = [
+    MOCK_CFF_PAYLOAD_DIRECTORY,
+    MOCK_CFF_PAYLOAD_FILE
+]
