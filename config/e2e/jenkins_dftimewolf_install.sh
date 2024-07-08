@@ -74,8 +74,8 @@ if [[ "$*" =~ "include-timesketch" ]]; then
     cd timesketch
     cd docker
     cd e2e
-    echo "Running the Timesketch docker-compose script"
-    sudo -E docker-compose up -d
+    echo "Running the Timesketch docker compose script"
+    sudo -E docker compose up -d
     # Wait for Timesketch to initialize
     echo "Sleeping 300 seconds..."
     /bin/sleep 300
