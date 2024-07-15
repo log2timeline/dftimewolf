@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """Tests the main tool functionality."""
 
-import unittest
 import logging
 import inspect
 
