@@ -6,6 +6,9 @@ import unittest
 import logging
 import inspect
 
+from absl.testing import absltest
+from absl.testing import parameterized
+
 from dftimewolf.cli import dftimewolf_recipes
 from dftimewolf.lib import state as dftw_state
 from dftimewolf.lib import resources, errors
@@ -50,17 +53,32 @@ OPTIONAL_ARG_RECIPE_ARGS = [
     resources.RecipeArgument(*arg) for arg in OPTIONAL_ARG_RECIPE['args']]
 
 
-class MainToolTest(unittest.TestCase):
+def _CreateToolObject():
+  """Creates a DFTimewolfTool object instance."""
+  tool = dftimewolf_recipes.DFTimewolfTool()
+  tool.LoadConfiguration()
+  try:
+    tool.ReadRecipes()
+  except KeyError:
+    # Prevent conflicts from other tests where recipes are still registered.
+    pass
+  return tool
+
+
+def _EnumerateRecipeNames():
+  """Enumerate recipe names for the purposes of generatting parameterised tests.
+  """
+  tool = _CreateToolObject()
+  # pylint: disable=protected-access
+  for recipe in tool._recipes_manager.GetRecipes():
+    yield (recipe.name, recipe.name)
+
+
+class MainToolTest(parameterized.TestCase):
   """Tests for main tool functions."""
 
   def setUp(self):
-    self.tool = dftimewolf_recipes.DFTimewolfTool()
-    self.tool.LoadConfiguration()
-    try:
-      self.tool.ReadRecipes()
-    except KeyError:
-      # Prevent conflicts from other tests where recipes are still registered.
-      pass
+    self.tool = _CreateToolObject()
 
   def tearDown(self):
     # pylint: disable=protected-access
@@ -85,44 +103,46 @@ class MainToolTest(unittest.TestCase):
     self.tool.ParseArguments(['upload_ts', '/tmp/test'])
     self.tool.state.LogExecutionPlan()
 
-  def testRecipeSetupArgs(self):
+  @parameterized.named_parameters(_EnumerateRecipeNames())
+  def testRecipeSetupArgs(self, recipe_name):
     """Checks that all recipes pass the correct arguments to their modules."""
     # We want to access the tool's state object to load recipes and go through
     # modules.
     # pylint: disable=protected-access
     self.tool._state = dftw_state.DFTimewolfState(config.Config)
+    recipe = self.tool._recipes_manager.Recipes()[recipe_name]
 
-    for recipe in self.tool._recipes_manager.GetRecipes():
-      self.tool._state.LoadRecipe(recipe.contents, dftimewolf_recipes.MODULES)
-      modules = recipe.contents['modules']
-      preflights = recipe.contents.get('preflights', [])
-      for module in modules + preflights:
-        runtime_name = module.get('runtime_name', module['name'])
-        if runtime_name in self.tool.state._module_pool:
-          setup_func = self.tool.state._module_pool[runtime_name].SetUp
-          expected_args = set(inspect.getfullargspec(setup_func).args)
-          expected_args.remove('self')
-          provided_args = set(module['args'])
+    self.tool._state.LoadRecipe(recipe.contents, dftimewolf_recipes.MODULES)
+    modules = recipe.contents['modules']
+    preflights = recipe.contents.get('preflights', [])
+    for module in modules + preflights:
+      runtime_name = module.get('runtime_name', module['name'])
+      if runtime_name in self.tool.state._module_pool:
+        setup_func = self.tool.state._module_pool[runtime_name].SetUp
+        expected_args = set(inspect.getfullargspec(setup_func).args)
+        expected_args.remove('self')
+        provided_args = set(module['args'])
 
-          self.assertEqual(
-            expected_args,
-            provided_args,
-            f'Error in {recipe.name}:{runtime_name}')
+        self.assertEqual(
+          expected_args,
+          provided_args,
+          f'Error in {recipe.name}:{runtime_name}')
 
-  def testRecipeValidators(self):
+  @parameterized.named_parameters(_EnumerateRecipeNames())
+  def testRecipeValidators(self, recipe_name):
     """Tests that recipes do not specify invalid validators."""
     # pylint: disable=protected-access
     self.tool._state = dftw_state.DFTimewolfState(config.Config)
+    recipe = self.tool._recipes_manager.Recipes()[recipe_name]
 
-    for recipe in self.tool._recipes_manager.GetRecipes():
-      self.tool._state.LoadRecipe(recipe.contents, dftimewolf_recipes.MODULES)
-      for arg in recipe.args:
-        if arg.validation_params:
-          self.assertIn(
-              arg.validation_params['format'],
-              validators_manager.ValidatorsManager.ListValidators(),
-              f'Error in {recipe.name}:{arg.switch} - '
-              f'Invalid validator {arg.validation_params["format"]}.')
+    self.tool._state.LoadRecipe(recipe.contents, dftimewolf_recipes.MODULES)
+    for arg in recipe.args:
+      if arg.validation_params:
+        self.assertIn(
+            arg.validation_params['format'],
+            validators_manager.ValidatorsManager.ListValidators(),
+            f'Error in {recipe.name}:{arg.switch} - '
+            f'Invalid validator {arg.validation_params["format"]}.')
 
   def testRecipeWithNestedArgs(self):
     """Tests that a recipe with args referenced in other args is populated."""
@@ -203,4 +223,4 @@ class MainToolTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  unittest.main()
+  absltest.main()
