@@ -23,21 +23,21 @@ Make sure you have Docker installed (sudoless) and run:
 
 ```bash
 cd docker/dftimewolf-dev
-docker-compose run --rm dftw tests
+docker compose run --rm dftw tests
 ```
 
 This will build the dfTimewolf Docker image using `docker/dev/Dockerfile`, and
 run the dfTimewolf tests against the version of the code that lives on the host
 filesystem.
 
-The `docker-compose` scripts mounts the top-level directory of the dfTimewolf
+The `docker compose` scripts mounts the top-level directory of the dfTimewolf
 code repo on `/app` in the container, and tests are run from there.
 
 ## Shell access
 
 ```bash
 $ cd docker/dftimewolf-dev
-$ docker-compose run --rm dftw envshell
+$ docker compose run --rm dftw envshell
 (dftimewolf-py3.10) root@f3a2cc77dc3e:/app# python -m unittest discover -s tests -p '*.py'
 ```
 

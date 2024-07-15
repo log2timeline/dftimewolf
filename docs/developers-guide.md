@@ -30,7 +30,7 @@ dependencies in.
 
 ```
 $ cd docker/dev
-$ docker-compose run --rm dftw envshell
+$ docker compose run --rm dftw envshell
 [...]
 (dftimewolf-py3.10) root@3bb3a1ddec53:/app# poetry run dftimewolf -h
 ```
@@ -136,5 +136,5 @@ Docker equivalent:
 
 ```bash
 cd docker/dev
-docker-compose run --rm dftw tests
+docker compose run --rm dftw tests
 ```
