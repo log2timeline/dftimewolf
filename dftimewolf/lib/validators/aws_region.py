@@ -50,6 +50,6 @@ class AWSRegionValidator(args_validator.AbstractValidator):
           self.NAME,
           'Invalid AWS Region name'))
 
-    return argument_value
+    return str(argument_value)
 
 validators_manager.ValidatorsManager.RegisterValidator(AWSRegionValidator)

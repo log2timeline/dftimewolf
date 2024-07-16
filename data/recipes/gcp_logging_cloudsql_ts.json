@@ -17,7 +17,9 @@
         "project_name": "@project_name",
         "filter_expression": "logName:\"projects/@project_name/logs/cloudsql.googleapis.com\" timestamp>\"@start_date\" timestamp<\"@end_date\"",
         "backoff": "@backoff",
-        "delay": "@delay"
+        "delay": "@delay",
+        "start_time": "@start_date",
+        "end_time": "@end_date"
     }
     },
     {

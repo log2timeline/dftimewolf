@@ -57,6 +57,6 @@ class AzureRegionValidator(args_validator.AbstractValidator):
           self.NAME,
           'Invalid Azure Region name'))
 
-    return argument_value
+    return str(argument_value)
 
 validators_manager.ValidatorsManager.RegisterValidator(AzureRegionValidator)

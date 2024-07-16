@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """Reads logs from a GCP cloud project."""
+import datetime
 import json
 import tempfile
 import time
-from typing import Optional, Dict, Any, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 from google.api_core import exceptions as google_api_exceptions
 from google.auth import exceptions as google_auth_exceptions
@@ -15,6 +16,7 @@ from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
+
 
 # Monkey patching the ProtobufEntry because of various issues, notably
 # https://github.com/googleapis/google-cloud-python/issues/7918
@@ -42,6 +44,8 @@ class GCPLogsCollector(module.BaseModule):
     self._project_name = ''
     self._backoff = False
     self._delay = 0
+    self.start_time = None
+    self.end_time = None
 
   def OutputFile(self) -> Tuple[Any, str]:
     """Generate an output file name and path"""
@@ -53,9 +57,6 @@ class GCPLogsCollector(module.BaseModule):
 
   def SetupLoggingClient(self) -> Any:
     """Sets up a GCP Logging Client
-
-    Args:
-      N/A
 
     Returns:
       logging.Client: A GCP logging client
@@ -142,22 +143,52 @@ class GCPLogsCollector(module.BaseModule):
     return output_path
 
   # pylint: disable=arguments-differ
-  def SetUp(self, project_name: str, filter_expression: str, backoff: bool,
-    delay: str) -> None:
+  def SetUp(
+      self,
+      project_name: str,
+      filter_expression: str,
+      backoff: bool,
+      delay: str,
+      start_time: datetime.datetime,
+      end_time: datetime.datetime,
+  ) -> None:
     """Sets up a a GCP logs collector.
 
     Args:
       project_name (str): name of the project to fetch logs from.
       filter_expression (str): GCP advanced logs filter expression.
-      backoff (bool): Retry queries with an increased delay when API \
-        quotas are exceeded.
-      delay (str): Seconds to wait between retreiving results pages to \
-        avoid exceeding API quotas
+      backoff (bool): Retry queries with an increased delay when API quotas are
+        exceeded.
+      delay (str): Seconds to wait between retrieving results pages to avoid
+        exceeding API quotas
+      start_time: start time of the query. This will be used to replace
+        <START_TIME> in the queries.
+      end_time: end time of the query. This will be used to replace <END_TIME>
+        in the queries.
     """
     self._project_name = project_name
-    self._filter_expression = filter_expression
     self._backoff = backoff
     self._delay = int(delay)
+
+    self.start_time = start_time
+    self.end_time = end_time
+
+    if start_time and end_time and start_time > end_time:
+      self.ModuleError(
+          f'Start date "{start_time}" must be before "{end_time}"',
+          critical=True,
+      )
+
+    if self.start_time:
+      filter_expression = filter_expression.replace(
+          '<START_TIME>', self.start_time.strftime('%Y%m%dT%H%M%S%z')
+      )
+    if self.end_time:
+      filter_expression = filter_expression.replace(
+          '<END_TIME>', self.end_time.strftime('%Y%m%dT%H%M%S%z')
+      )
+
+    self._filter_expression = filter_expression
 
   def Process(self) -> None:
     """Copies logs from a cloud project."""

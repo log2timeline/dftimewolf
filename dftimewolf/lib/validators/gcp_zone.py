@@ -70,5 +70,5 @@ class GCPZoneValidator(AbstractValidator):
           self.NAME,
           'Invalid GCP Zone name')
 
-    return argument_value
+    return str(argument_value)
 validators_manager.ValidatorsManager.RegisterValidator(GCPZoneValidator)

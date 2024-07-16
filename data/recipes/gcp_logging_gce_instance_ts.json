@@ -16,7 +16,9 @@
             "project_name": "@project_name",
             "filter_expression": "logName=projects/@project_name/logs/cloudaudit.googleapis.com%2Factivity operation.producer=\"compute.googleapis.com\" resource.labels.instance_id=\"@instance_id\"",
             "backoff": "@backoff",
-            "delay": "@delay"
+            "delay": "@delay",
+            "start_time": null,
+            "end_time": null
         }
     }, {
         "wants": ["GCPLogsCollector"],

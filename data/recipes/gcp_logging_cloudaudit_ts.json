@@ -14,9 +14,11 @@
         "name": "GCPLogsCollector",
         "args": {
             "project_name": "@project_name",
-            "filter_expression": "logName=projects/@project_name/logs/cloudaudit.googleapis.com%2Factivity timestamp>\"@start_date\" timestamp<\"@end_date\"",
+            "filter_expression": "logName=projects/@project_name/logs/cloudaudit.googleapis.com%2Factivity timestamp>\"<START_TIME>\" timestamp<\"<END_TIME>\"",
             "backoff": "@backoff",
-            "delay": "@delay"
+            "delay": "@delay",
+            "start_time": "@start_date",
+            "end_time": "@end_date"
         }
     }, {
         "wants": ["GCPLogsCollector"],

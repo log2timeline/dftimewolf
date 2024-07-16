@@ -36,6 +36,6 @@ class SubnetValidator(args_validator.CommaSeparatedValidator):
           self.NAME,
           'Not a valid subnet')
 
-    return argument_value
+    return str(argument_value)
 
 validators_manager.ValidatorsManager.RegisterValidator(SubnetValidator)
