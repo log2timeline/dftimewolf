@@ -25,7 +25,8 @@ class DatetimeValidatorTest(unittest.TestCase):
 
   def testValidateSuccess(self):
     """Tests a successful validation."""
-    date_value = datetime.datetime(2023, 12, 31, 23, 29, 59)
+    date_value = datetime.datetime(
+        2023, 12, 31, 23, 29, 59, tzinfo=datetime.timezone.utc)
     date_string = '2023-12-31 23:29:59'
     val = self.validator.Validate(date_string, self.recipe_argument)
     self.assertEqual(val, date_value)
@@ -35,7 +36,8 @@ class DatetimeValidatorTest(unittest.TestCase):
     first_string = '2023-01-01 00:00:00'
     second_string = '2023-01-02 00:00:00'
     third_string = '2023-01-03 00:00:00'
-    third_datetime = datetime.datetime(2023, 1, 3, 0, 0, 0, tzinfo=datetime.UTC)
+    third_datetime = datetime.datetime(
+        2023, 1, 3, 0, 0, 0, tzinfo=datetime.timezone.utc)
     fourth_string = '2023-01-04 00:00:00'
     fifth_string = '2023-01-05 00:00:00'
 
@@ -92,12 +94,12 @@ class EndTimeValidatorTest(unittest.TestCase):
     timeless_string = '20240101'
     val = self.validator.Validate(timeless_string, self.recipe_argument)
     self.assertEqual(val, datetime.datetime(
-        2024, 1, 1, 23, 59, 59, tzinfo=datetime.UTC))
+        2024, 1, 1, 23, 59, 59, tzinfo=datetime.timezone.utc))
 
     string_with_time = '2024-01-01 09:13:00'
     val = self.validator.Validate(string_with_time, self.recipe_argument)
     self.assertEqual(val, datetime.datetime(
-        2024, 1, 1, 9, 13, 0, tzinfo=datetime.UTC))
+        2024, 1, 1, 9, 13, 0, tzinfo=datetime.timezone.utc))
 
 if __name__ == '__main__':
   unittest.main()
