@@ -44,8 +44,8 @@ class GCPLogsCollector(module.BaseModule):
     self._project_name = ''
     self._backoff = False
     self._delay = 0
-    self.start_time = None
-    self.end_time = None
+    self.start_time: Optional[datetime.datetime] = None
+    self.end_time: Optional[datetime.datetime] = None
 
   def OutputFile(self) -> Tuple[Any, str]:
     """Generate an output file name and path"""

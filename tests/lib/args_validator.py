@@ -13,7 +13,7 @@ from dftimewolf.lib import errors
 class CommaSeparatedValidatorTest(unittest.TestCase):
   """Tests CommaSeparatedValidator."""
 
-  def testInit(self):
+  def testInit(self) -> None:
     """Tests initialization.
 
     Really, CommaSeparatedValidator is an abstract class so should never be
@@ -29,7 +29,7 @@ class CommaSeparatedValidatorTest(unittest.TestCase):
       mock_init.assert_called_once()
     # pylint: enable=unused-variable
 
-  def testValidate(self):
+  def testValidate(self) -> None:
     """Tests validation."""
     args_validator.CommaSeparatedValidator.__abstractmethods__=set()
 
@@ -63,7 +63,7 @@ class CommaSeparatedValidatorTest(unittest.TestCase):
       self.assertEqual(mock_validatesingle.call_count, 1)
       self.assertEqual(val, 'one,two,three')
 
-  def testValidateFailure(self):
+  def testValidateFailure(self) -> None:
     """Tests validation failure."""
     def FailingValidateSingle(argument_value, _):
       if argument_value == 'three':

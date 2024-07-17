@@ -33,7 +33,7 @@ class DatetimeValidator(args_validator.AbstractValidator):
     # If there's no timezone information, we assume it is UTC.
     if (parsed_datetime.tzinfo is None or
         parsed_datetime.tzinfo.utcoffset(parsed_datetime) is None):
-      parsed_datetime = parsed_datetime.replace(tzinfo=datetime.UTC)
+      parsed_datetime = parsed_datetime.replace(tzinfo=datetime.timezone.utc)
     return parsed_datetime
 
   def Validate(self, argument_value: Any,
