@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Validator for AWS region names."""
+from typing import Any
 from dftimewolf.lib import errors, resources, args_validator
 from dftimewolf.lib.validators import manager as validators_manager
 
@@ -27,7 +28,7 @@ class AWSRegionValidator(args_validator.AbstractValidator):
   NAME = 'aws_region'
 
   def Validate(self,
-               argument_value: str,
+               argument_value: Any,
                recipe_argument: resources.RecipeArgument) -> str:
     """Validate operand is a valid AWS region.
 
@@ -49,6 +50,6 @@ class AWSRegionValidator(args_validator.AbstractValidator):
           self.NAME,
           'Invalid AWS Region name'))
 
-    return argument_value
+    return str(argument_value)
 
 validators_manager.ValidatorsManager.RegisterValidator(AWSRegionValidator)

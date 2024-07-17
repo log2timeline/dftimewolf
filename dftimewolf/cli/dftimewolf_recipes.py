@@ -329,7 +329,7 @@ class DFTimewolfTool(object):
       if argument_mandatory or argument_value is not None:
         try:
           valid_value = validators_manager.ValidatorsManager.Validate(
-              str(argument_value), arg)
+              argument_value, arg)
           self.state.command_line_options[switch] = valid_value
         except errors.RecipeArgsValidationFailure as exception:
           error_messages.append(

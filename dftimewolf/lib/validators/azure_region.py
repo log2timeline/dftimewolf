@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """Validator for Azure region names."""
+from typing import Any
+
 from dftimewolf.lib import errors, resources, args_validator
 from dftimewolf.lib.validators import manager as validators_manager
 
@@ -33,7 +35,7 @@ class AzureRegionValidator(args_validator.AbstractValidator):
   NAME = 'azure_region'
 
   def Validate(self,
-               argument_value: str,
+               argument_value: Any,
                recipe_argument: resources.RecipeArgument) -> str:
     """Validate that argument is a valid Azure region.
 
@@ -55,6 +57,6 @@ class AzureRegionValidator(args_validator.AbstractValidator):
           self.NAME,
           'Invalid Azure Region name'))
 
-    return argument_value
+    return str(argument_value)
 
 validators_manager.ValidatorsManager.RegisterValidator(AzureRegionValidator)

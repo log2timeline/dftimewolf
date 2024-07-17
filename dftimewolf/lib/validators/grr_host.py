@@ -18,8 +18,8 @@ class GRRHostValidator(hostname.HostnameValidator):
   NAME = 'grr_host'
   GRR_REGEX = r'^C\.[0-9a-f]{16}$'
 
-  def ValidateSingle(self, argument_value: str,
-      recipe_argument: resources.RecipeArgument) -> Any:
+  def ValidateSingle(self, argument_value: Any,
+      recipe_argument: resources.RecipeArgument) -> str:
     """Validates a GRR host ID.
 
     Args:
@@ -33,6 +33,13 @@ class GRRHostValidator(hostname.HostnameValidator):
       errors.RecipeArgsValidationFailure: If the argument value is not a GRR
         host ID.
     """
+    if not isinstance(argument_value, str):
+      raise errors.RecipeArgsValidationFailure(
+          recipe_argument.switch,
+          argument_value,
+          self.NAME,
+          'Argument value must be a string.')
+
     regexes = [self.GRR_REGEX, self.FQDN_REGEX, self.HOSTNAME_REGEX]
 
     for regex in regexes:

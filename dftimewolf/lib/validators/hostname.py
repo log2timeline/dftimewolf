@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Validator for hostnames."""
+from typing import Any
 import re
 
 from dftimewolf.lib import errors, resources, args_validator
@@ -21,7 +22,7 @@ class HostnameValidator(args_validator.CommaSeparatedValidator):
   # Source: https://stackoverflow.com/questions/11809631/fully-qualified-domain-name-validation#20204811  # pylint: disable=line-too-long
   # Retrieved 2023-02-03
 
-  def ValidateSingle(self, argument_value: str,
+  def ValidateSingle(self, argument_value: Any,
       recipe_argument: resources.RecipeArgument) -> str:
     """Validate a hostname.
 
@@ -35,6 +36,13 @@ class HostnameValidator(args_validator.CommaSeparatedValidator):
     Raises:
       errors.RecipeArgsValidationFailure: If the argument is not a valid hostname.
     """
+    if not isinstance(argument_value, str):
+      raise errors.RecipeArgsValidationFailure(
+          recipe_argument.switch,
+          argument_value,
+          self.NAME,
+          'Argument value must be a string.')
+
     regexes = [self.FQDN_REGEX]
     if not recipe_argument.validation_params.get(self.FQDN_ONLY_FLAG, False):
       regexes.append(self.HOSTNAME_REGEX)

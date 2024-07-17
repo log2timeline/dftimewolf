@@ -91,7 +91,7 @@ class ValidatorsManager:
 
   @classmethod
   def Validate(cls,
-               argument_value: str,
+               argument_value: Any,
                recipe_argument: resources.RecipeArgument) -> Any:
     """Validate an argument value.
 

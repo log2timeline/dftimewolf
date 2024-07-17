@@ -19,7 +19,9 @@
         "project_name": "@project_name",
         "filter_expression": "@filter_expression",
         "backoff": "@backoff",
-        "delay": "@delay"
+        "delay": "@delay",
+        "start_time": null,
+        "end_time": null
       }
     },
     {
