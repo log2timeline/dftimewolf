@@ -390,8 +390,6 @@ class TurbiniaProcessorBase(module.BaseModule):
     """
     self.project = project
     self.turbinia_auth = turbinia_auth
-    # turbinia_auth is a boolean in the recipe but gets passed as a string
-    # to the module, so we check for the correct type here.
     self.turbinia_api = turbinia_api
     self.turbinia_recipe = turbinia_recipe
     self.turbinia_zone = turbinia_zone
