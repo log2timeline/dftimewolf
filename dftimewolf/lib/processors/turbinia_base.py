@@ -392,13 +392,6 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.turbinia_auth = turbinia_auth
     # turbinia_auth is a boolean in the recipe but gets passed as a string
     # to the module, so we check for the correct type here.
-    try:
-      if isinstance(turbinia_auth, str):
-        turbinia_auth_json = json.loads(turbinia_auth.lower())
-        self.turbinia_auth = bool(turbinia_auth_json)
-    except json.JSONDecodeError as exception:
-      error_message = f'Error parsing turbinbia_auth flag: {str(exception)}'
-      self.ModuleError(error_message, critical=True)
     self.turbinia_api = turbinia_api
     self.turbinia_recipe = turbinia_recipe
     self.turbinia_zone = turbinia_zone

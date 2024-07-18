@@ -109,7 +109,3 @@ dftimewolf/user_config.py
 .DS_Store
 
 *.code-workspace
-
-.devcontainer
-
-.github/dependabot.yml
