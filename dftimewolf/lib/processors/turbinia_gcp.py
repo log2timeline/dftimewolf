@@ -145,14 +145,14 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
   def SetUp(
       self,
       project: str,
-      turbinia_auth: bool,
       turbinia_recipe: Union[str, None],
       turbinia_zone: str,
       turbinia_api: str,
       incident_id: str,
       sketch_id: int,
       request_ids: str = '',
-      disk_names: str = '') -> None:
+      disk_names: str = '',
+      turbinia_auth: bool = False) -> None:
     """Sets up the object attributes.
 
     Args:
@@ -192,8 +192,8 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
             containers.TurbiniaRequest(project=project, evidence_name=disk))
 
     self.TurbiniaSetUp(
-        project, turbinia_auth, turbinia_recipe, turbinia_zone, turbinia_api,
-        incident_id, int(sketch_id) if sketch_id else 0)
+        project, turbinia_recipe, turbinia_zone, turbinia_api,
+        incident_id, int(sketch_id) if sketch_id else 0, turbinia_auth)
 
   def PreProcess(self) -> None:
     """Ensures containers from previous modules are processed.

@@ -97,9 +97,11 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.parallel_count = 5  # Arbitrary, used by ThreadAwareModule
     self.project = str()
     self.requests_api_instance: turbinia_requests_api.TurbiniaRequestsApi = None # type: ignore
+    self.results_api_instance: turbinia_request_results_api.TurbiniaRequestResultsApi = None # type: ignore
+    self.evidence_api_instance: turbinia_evidence_api.TurbiniaEvidenceApi = None # type: ignore
     self.sketch_id = int()
     self.state = state
-    self.turbinia_auth = bool()
+    self.turbinia_auth: bool = False
     self.turbinia_recipe = str()  # type: Any
     self.turbinia_region = None
     self.turbinia_zone = str()
@@ -190,14 +192,14 @@ class TurbiniaProcessorBase(module.BaseModule):
     turbinia_evidence_path: str = ''
     if not file_path.exists():
       self.ModuleError(f'File {path_str} not found.', critical=True)
-    self.RefreshClientCredentials()
-
-    api_instance = turbinia_evidence_api.TurbiniaEvidenceApi(self.client)
+    if self.RefreshClientCredentials():
+      self.evidence_api_instance = turbinia_evidence_api.TurbiniaEvidenceApi(
+          self.client)
     self.PublishMessage(
         f'Uploading evidence at {path_str} for incident {self.incident_id}'
     )
     self.logger.info(f'Incident ID: {self.incident_id}')
-    api_response = api_instance.upload_evidence_with_http_info(
+    api_response = self.evidence_api_instance.upload_evidence_with_http_info(
         [path_str], self.incident_id
     )
     if not api_response:
@@ -232,9 +234,9 @@ class TurbiniaProcessorBase(module.BaseModule):
         could not be downloaded.
     """
     result = None
-    self.RefreshClientCredentials()
-    api_instance = turbinia_request_results_api.TurbiniaRequestResultsApi(
-        self.client)
+    if self.RefreshClientCredentials():
+      self.results_api_instance = (
+          turbinia_request_results_api.TurbiniaRequestResultsApi(self.client))
     task_id = task_data.get('id')
     filename = f'{task_id}-'
     retries = 0
@@ -242,7 +244,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.PublishMessage(f"Downloading output for task {task_id}")
     while retries < 3:
       try:
-        api_response = api_instance.get_task_output_with_http_info(
+        api_response = self.results_api_instance.get_task_output_with_http_info(
             task_id,  _preload_content=False, _request_timeout=self.HTTP_TIMEOUT)  # type: ignore
 
         # Read the response and write to the file.
@@ -329,6 +331,9 @@ class TurbiniaProcessorBase(module.BaseModule):
 
   def RefreshClientCredentials(self) -> bool:
     """Refreshes credentials and initializes new API client."""
+    if not self.turbinia_auth:
+      return False
+
     refresh = False
     if self.credentials and self.credentials.expired:
       self.logger.warning(
@@ -369,9 +374,9 @@ class TurbiniaProcessorBase(module.BaseModule):
     return turbinia_api_lib.api_client.ApiClient(self.client_config)
 
   def TurbiniaSetUp(
-      self, project: str, turbinia_auth: bool,
-      turbinia_recipe: Union[str, None], turbinia_zone: str, turbinia_api: str,
-      incident_id: str, sketch_id: int) -> None:
+      self, project: str, turbinia_recipe: Union[str, None], turbinia_zone: str,
+      turbinia_api: str, incident_id: str, sketch_id: int,
+      turbinia_auth: bool = False) -> None:
     """Sets up the object attributes.
 
     Args:
@@ -395,6 +400,10 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.client = self.InitializeTurbiniaApiClient(self.credentials)
     self.requests_api_instance = turbinia_requests_api.TurbiniaRequestsApi(
         self.client)
+    self.results_api_instance = (
+        turbinia_request_results_api.TurbiniaRequestResultsApi(self.client))
+    self.evidence_api_instance = (
+        turbinia_evidence_api.TurbiniaEvidenceApi(self.client))
     # We need to get the output path from the Turbinia server.
     api_instance = turbinia_configuration_api.TurbiniaConfigurationApi(
         self.client)
