@@ -104,6 +104,9 @@ class MainToolTest(parameterized.TestCase):
 
   @parameterized.named_parameters(_EnumerateRecipeNames())
   def testRecipeSetupArgs(self, recipe_name):
+    self._testRecipeSetupArgs(recipe_name)
+
+  def _testRecipeSetupArgs(self, recipe_name):
     """Checks that all recipes pass the correct arguments to their modules."""
     # We want to access the tool's state object to load recipes and go through
     # modules.
@@ -129,6 +132,9 @@ class MainToolTest(parameterized.TestCase):
 
   @parameterized.named_parameters(_EnumerateRecipeNames())
   def testRecipeValidators(self, recipe_name):
+    self._testRecipeValidators(recipe_name)
+
+  def _testRecipeValidators(self, recipe_name):
     """Tests that recipes do not specify invalid validators."""
     # pylint: disable=protected-access
     self.tool._state = dftw_state.DFTimewolfState(config.Config)
