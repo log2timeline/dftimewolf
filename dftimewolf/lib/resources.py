@@ -2,7 +2,7 @@
 """Various dfTimewolf resource objects."""
 
 import dataclasses
-from typing import Any, Dict, Sequence
+from typing import Any, Dict, Sequence, Optional
 
 
 @dataclasses.dataclass
@@ -63,5 +63,7 @@ class Recipe(object):
         'short_description', 'No description')
     return ' {0:<35s}{1:s}\n'.format(self.name, short_description)
 
-  def GetTestParams(self) -> list[str]:
-    return self.contents.get('test_params', '').split(' ')
+  def GetTestParams(self) -> Optional[list[str]]:
+    if self.contents.get('test_params', None):
+      return self.contents.get('test_params', '').split(' ')
+    return None
