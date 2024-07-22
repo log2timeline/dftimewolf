@@ -70,7 +70,7 @@ def _EnumerateRecipeNames():
   tool = _CreateToolObject()
   # pylint: disable=protected-access
   for recipe in tool._recipes_manager.GetRecipes():
-    yield (recipe.name, recipe.name)
+    yield (f'_{recipe.name}', recipe.name)
 
 
 class MainToolTest(parameterized.TestCase):
@@ -140,6 +140,9 @@ class MainToolTest(parameterized.TestCase):
     self.tool._state = dftw_state.DFTimewolfState(config.Config)
     recipe = self.tool._recipes_manager.Recipes()[recipe_name]
 
+    recipe_args = [recipe_name] + recipe.GetTestParams()
+    self.tool.ParseArguments(recipe_args)
+
     self.tool._state.LoadRecipe(recipe.contents, dftimewolf_recipes.MODULES)
     for arg in recipe.args:
       if arg.validation_params:
@@ -148,6 +151,8 @@ class MainToolTest(parameterized.TestCase):
             validators_manager.ValidatorsManager.ListValidators(),
             f'Error in {recipe.name}:{arg.switch} - '
             f'Invalid validator {arg.validation_params["format"]}.')
+    
+    self.tool.ValidateArguments()
 
   def testRecipeWithNestedArgs(self):
     """Tests that a recipe with args referenced in other args is populated."""

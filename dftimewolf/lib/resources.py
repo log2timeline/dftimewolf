@@ -62,3 +62,6 @@ class Recipe(object):
     short_description = self.contents.get(
         'short_description', 'No description')
     return ' {0:<35s}{1:s}\n'.format(self.name, short_description)
+
+  def GetTestParams(self) -> list[str]:
+    return self.contents.get('test_params', '').split(' ')

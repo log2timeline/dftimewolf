@@ -2,6 +2,7 @@
   "name": "aws_forensics",
   "short_description": "Copies a volume from an AWS account to an analysis VM.",
   "description": "Copies a volume from an AWS account, creates an analysis VM in AWS (with a startup script containing installation instructions for basic forensics tooling), and attaches the copied volume to it.",
+  "test_params": "default us-east-1 incident_id --instance_id i-01234567 --volume_ids vol-01234567",
   "modules": [{
       "wants": [],
       "name": "AWSCollector",
@@ -26,7 +27,7 @@
       ["--instance_id", "Instance ID of the instance to analyze.", null, {"format": "regex", "comma_separated": false, "regex": "^i-[0-9a-f]{8,17}$"}],
       ["--volume_ids", "Comma-separated list of volume IDs to copy.", null, {"format": "regex", "comma_separated": true, "regex": "^vol-[0-9a-f]{8,17}$"}],
       ["--all_volumes", "Copy all volumes in the designated instance. Overrides volume_ids if specified.", false],
-      ["--boot_volume_size", "The size of the analysis VM boot volume (in GB).", 50, {"format": "regex", "regex": "^\\d+$"}],
+      ["--boot_volume_size", "The size of the analysis VM boot volume (in GB).", "50", {"format": "regex", "regex": "^\\d+$"}],
       ["--analysis_zone", "The AWS zone in which to create the VM.", null, {"format": "aws_region"}],
       ["--analysis_profile_name", "Name of the AWS profile to use when creating the analysis VM.", null]
   ]
