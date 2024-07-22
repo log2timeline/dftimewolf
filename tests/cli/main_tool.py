@@ -142,7 +142,6 @@ class MainToolTest(parameterized.TestCase):
 
     test_params = recipe.GetTestParams()
     if test_params:
-      print("Here I am")
       recipe_args = [recipe_name] + test_params
       self.tool.ParseArguments(recipe_args)
 
