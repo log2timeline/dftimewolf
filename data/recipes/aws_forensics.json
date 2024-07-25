@@ -16,7 +16,7 @@
           "volume_ids": "@volume_ids",
           "all_volumes": "@all_volumes",
           "boot_volume_size": "@boot_volume_size",
-          "cpu_cores": 16,
+          "cpu_cores": "16",
           "ami": null
       }
   }],
@@ -27,7 +27,7 @@
       ["--instance_id", "Instance ID of the instance to analyze.", null, {"format": "regex", "comma_separated": false, "regex": "^i-[0-9a-f]{8,17}$"}],
       ["--volume_ids", "Comma-separated list of volume IDs to copy.", null, {"format": "regex", "comma_separated": true, "regex": "^vol-[0-9a-f]{8,17}$"}],
       ["--all_volumes", "Copy all volumes in the designated instance. Overrides volume_ids if specified.", false],
-      ["--boot_volume_size", "The size of the analysis VM boot volume (in GB).", "50", {"format": "regex", "regex": "^\\d+$"}],
+      ["--boot_volume_size", "The size of the analysis VM boot volume (in GB).", "50", {"format": "integer"}],
       ["--analysis_zone", "The AWS zone in which to create the VM.", null, {"format": "aws_region"}],
       ["--analysis_profile_name", "Name of the AWS profile to use when creating the analysis VM.", null]
   ]

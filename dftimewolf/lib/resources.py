@@ -64,6 +64,7 @@ class Recipe(object):
     return ' {0:<35s}{1:s}\n'.format(self.name, short_description)
 
   def GetTestParams(self) -> Optional[list[str]]:
+    """Get the test params from a recipe."""
     if self.contents.get('test_params', None):
-      return self.contents.get('test_params', '').split(' ')
+      return str(self.contents.get('test_params', '')).split(' ')
     return None
