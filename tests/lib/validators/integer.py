@@ -28,22 +28,22 @@ class IntegerValidatorTest(parameterized.TestCase):
     ('fivemill', '5000000', 5000000),
     ('minusfive', '-5', -5),
   )
-  def testValidateSuccess(self, input, expected):
+  def testValidateSuccess(self, in_param, expected):
     """Test that correct values do not throw an exception."""
-    result = self.validator.Validate(input, self.recipe_argument)
+    result = self.validator.Validate(in_param, self.recipe_argument)
     self.assertEqual(result, expected)
 
-  def testValidateFailure(self):
+  @parameterized.named_parameters(
+      ('str', 'foo'),
+      ('float', '5.5')
+  )
+  def testValidateFailure(self, in_param):
     """Test integer test failure."""
-    values = ['foo', '5.5']
-
-    for value in values:
-      with self.assertRaisesRegex(
-          errors.RecipeArgsValidationFailure,
-          'Not a valid integer'):
-        self.validator.Validate(value, self.recipe_argument)
+    with self.assertRaisesRegex(
+        errors.RecipeArgsValidationFailure,
+        'Not a valid integer'):
+      self.validator.Validate(in_param, self.recipe_argument)
 
 
 if __name__ == '__main__':
   absltest.main()
-

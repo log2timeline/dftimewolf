@@ -104,6 +104,7 @@ class MainToolTest(parameterized.TestCase):
 
   @parameterized.named_parameters(_EnumerateRecipeNames())
   def testRecipeSetupArgs(self, recipe_name):
+    """Parameterised version of _testRecipeSetupArgs."""
     self._testRecipeSetupArgs(recipe_name)
 
   def _testRecipeSetupArgs(self, recipe_name):
@@ -132,6 +133,7 @@ class MainToolTest(parameterized.TestCase):
 
   @parameterized.named_parameters(_EnumerateRecipeNames())
   def testRecipeValidators(self, recipe_name):
+    """Parameterised version of _testRecipeValidators."""
     self._testRecipeValidators(recipe_name)
 
   def _testRecipeValidators(self, recipe_name):
@@ -153,7 +155,7 @@ class MainToolTest(parameterized.TestCase):
             validators_manager.ValidatorsManager.ListValidators(),
             f'Error in {recipe.name}:{arg.switch} - '
             f'Invalid validator {arg.validation_params["format"]}.')
-    
+
     if test_params:
       self.tool.ValidateArguments()
 
