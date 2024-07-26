@@ -2,6 +2,7 @@
     "name": "grr_artifact_ts",
     "short_description": "Fetches default ForensicArtifacts from a sequence of GRR hosts, processes them with plaso, and sends the results to Timesketch.",
     "description": "Collect artifacts from hosts using GRR.\n\n- Collect a predefined list of artifacts from hosts using GRR\n- Process them with a local install of plaso\n- Export them to a Timesketch sketch.\n\nThe default set of artifacts is defined in the GRRArtifactCollector module (see the `_DEFAULT_ARTIFACTS_*` class attributes in `grr_hosts.py`), and varies per platform.",
+    "test_params": "C.0123456789012345 reason",
     "modules": [{
         "wants": [],
         "name": "GRRArtifactCollector",
@@ -47,7 +48,7 @@
         ["--extra_artifacts", "Comma-separated list of artifacts to append to the default artifact list.", null],
         ["--use_raw_filesystem_access", "Use raw disk access to fetch artifacts.", false],
         ["--approvers", "Emails for GRR approval request.", null],
-        ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
+        ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "integer"}],
         ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true],
         ["--analyzers", "Timesketch analyzers to run", null],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
@@ -61,6 +62,6 @@
         ["--grr_username", "GRR username", "admin"],
         ["--grr_password", "GRR password", "admin"],
         ["--user_docker", "Whether the LocalPlasoProcessor should use Docker or not.", true],
-        ["--max_file_size", "Maximum size of files to collect (in bytes).", 5368709120, {"format": "regex", "regex": "^\\d+$"}]
+        ["--max_file_size", "Maximum size of files to collect (in bytes).", "5368709120", {"format": "integer"}]
     ]
 }

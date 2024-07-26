@@ -2,6 +2,7 @@
   "name": "gcp_forensics",
   "short_description": "Copies disk from a GCP project to an analysis VM.",
   "description": "Copies a persistent disk from a GCP project to another, creates an analysis VM (with a startup script containing installation instructions for basic forensics tooling) in the destination project, and attaches the copied GCP persistent disk to it.",
+  "test_params": "source-project-name analysis-project-name",
   "preflights": [{
     "wants": [],
     "name": "GCPTokenCheck",
@@ -56,8 +57,8 @@
       ["--all_disks", "Copy all disks in the designated instance. Overrides `disk_names` if specified.", false],
       ["--stop_instances", "Stop the designated instance after copying disks.", false],
       ["--create_analysis_vm", "Create an analysis VM in the destination project.", true],
-      ["--cpu_cores", "Number of CPU cores of the analysis VM.", 4, {"format": "regex", "regex": "^\\d+$"}],
-      ["--boot_disk_size", "The size of the analysis VM boot disk (in GB).", 50, {"format": "regex", "regex": "^\\d+$"}],
+      ["--cpu_cores", "Number of CPU cores of the analysis VM.", "4", {"format": "integer"}],
+      ["--boot_disk_size", "The size of the analysis VM boot disk (in GB).", "50", {"format": "integer"}],
       ["--boot_disk_type", "Disk type to use [pd-standard, pd-ssd].", "pd-standard", {"format": "regex", "regex": "^pd-((ssd)|(standard))$"}],
       ["--zone", "The GCP zone where the Analysis VM and copied disks will be created.", "us-central1-f", {"format": "gcp_zone"}]
   ]

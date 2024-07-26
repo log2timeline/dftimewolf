@@ -2,6 +2,7 @@
   "name": "grr_yarascan",
   "short_description": "Run Yara rules on hosts memory.",
   "description": "Run Yara rules on hosts memory.",
+  "test_params": "reason C.0123456789012345",
   "modules": [
     {
       "wants": [],

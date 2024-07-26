@@ -2,6 +2,7 @@
     "name": "grr_files_collect",
     "short_description": "Collects specific files from one or more GRR hosts.",
     "description": "Collects specific files from one or more GRR hosts. Files can be a glob pattern (e.g. `/tmp/*.so`) and support GRR variable interpolation (e.g. `%%users.localappdata%%/Directory/`) ",
+    "test_params": "C.0123456789012345 reason files directory",
     "modules": [{
         "wants": [],
         "name": "GRRFileCollector",
@@ -40,6 +41,6 @@
         ["--grr_server_url", "GRR endpoint", "http://localhost:8000", {"format": "url"}],
         ["--grr_username", "GRR username", "admin"],
         ["--grr_password", "GRR password", "admin"],
-        ["--max_file_size", "Maximum size of files to collect (in bytes).", 5368709120, {"format": "regex", "regex": "^\\d+$"}]
+        ["--max_file_size", "Maximum size of files to collect (in bytes).", "5368709120", {"format": "integer"}]
     ]
 }

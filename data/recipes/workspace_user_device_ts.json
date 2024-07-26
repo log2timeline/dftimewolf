@@ -1,6 +1,7 @@
 {
   "name": "workspace_user_device_ts",
   "description": "Collects mobile (Device Audit activity) records for a Workspace user and adds them to Timesketch.",
+  "test_params": "username",
   "short_description": "Collects mobile records and adds to Timesketch",
   "preflights": [],
   "modules": [
@@ -41,7 +42,7 @@
     ["--end_time", "End time.", null, {"format": "datetime_end", "after": "@start_time"}],
     ["--filter_expression", "Filter expression to use to query Workspace logs. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list",""],
     ["--incident_id", "Incident ID (used for Timesketch description).", null],
-    ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
+    ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "integer"}],
     ["--timesketch_endpoint", "Timesketch endpoint", "http://localhost:5000/"],
     ["--timesketch_username", "Username for Timesketch server.", null],
     ["--timesketch_password", "Password for Timesketch server.", null],

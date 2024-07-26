@@ -2,6 +2,7 @@
   "name": "gcp_cloud_resource_tree_offline",
   "description": "Generates a parent/children tree for given GCP resource using the supplied exported GCP logs",
   "short_description": "Generates a parent/children tree for given GCP resource using the supplied exported GCP logs",
+  "test_params": "projectid australia-southeast2-a resource_type paths",
   "modules": [{
       "wants": [],
       "name": "FilesystemCollector",
@@ -27,6 +28,5 @@
       ["paths", "Comma-separated paths to GCP log files. Log files should contain log entiries in json format.", null],
       ["--resource_id","Resource id", null],
       ["--resource_name","Resource name", null]
-
   ]
 }

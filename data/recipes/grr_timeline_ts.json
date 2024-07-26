@@ -2,6 +2,7 @@
   "name": "grr_timeline_ts",
   "description": "Uses the GRR TimelineFlow to generate a filesystem timeline and exports it to Timesketch..",
   "short_description": "Runs a TimelineFlow on a set of GRR hosts, generating a filesystem bodyfile for each host. These bodyfiles are processed results with Plaso, and the resulting plaso files are exported to Timesketch.",
+  "test_params": "C.0123456789012345 root_path reason",
   "preflights": [],
   "modules": [{
     "wants": [],
@@ -60,7 +61,7 @@
     ["reason", "Reason for collection.", null],
     ["--skip_offline_clients", "Whether to skip clients that are offline.", false],
     ["--approvers", "Comma-separated list of usernames to ask for approval.", null],
-    ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
+    ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "integer"}],
     ["--grr_server_url", "GRR endpoint.", "http://localhost:8000", {"format": "url"}],
     ["--timesketch_endpoint", "Timesketch endpoint", "http://localhost:5000/"],
     ["--timesketch_username", "Username for Timesketch server.", null],

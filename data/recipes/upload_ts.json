@@ -2,6 +2,7 @@
     "name": "upload_ts",
     "description": "Uploads a CSV or Plaso file to Timesketch.",
     "short_description": "Uploads a local CSV or Plaso file to Timesketch.",
+    "test_params": "files",
     "modules": [{
         "wants": [],
         "name": "FilesystemCollector",
@@ -25,7 +26,7 @@
     "args": [
         ["files", "Comma-separated list of paths to CSV files or Plaso storage files.", null],
         ["--analyzers", "Timesketch analyzers to run.", null],
-        ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
+        ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "integer"}],
         ["--timesketch_endpoint", "Timesketch endpoint", "http://localhost:5000/"],
         ["--timesketch_username", "Username for Timesketch server.", null],
         ["--timesketch_password", "Password for Timesketch server.", null],

@@ -2,6 +2,7 @@
   "name": "vt_evtx",
   "short_description": "Downloads the EVTX files from VirusTotal for a specific hash.",
   "description": "Downloads the EVTX files from VirusTotal sandbox run for a specific hash, processes it with Plaso.",
+  "test_params": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 directory",
   "modules": [
     {
       "wants": [],

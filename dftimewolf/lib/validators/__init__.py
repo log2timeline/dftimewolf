@@ -9,3 +9,4 @@ from dftimewolf.lib.validators import hostname
 from dftimewolf.lib.validators import regex
 from dftimewolf.lib.validators import subnet
 from dftimewolf.lib.validators import url
+from dftimewolf.lib.validators import integer

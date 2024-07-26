@@ -2,6 +2,7 @@
     "name": "bigquery_collect",
     "short_description": "Collects results from BigQuery and dumps them on the filesystem.",
     "description": "Collects results from BigQuery in a GCP project and dumps them in JSONL on the local filesystem.",
+    "test_params": "projectfolder.projectname query description",
     "preflights": [{
       "wants": [],
       "name": "GCPTokenCheck",

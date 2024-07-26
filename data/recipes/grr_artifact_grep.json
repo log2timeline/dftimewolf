@@ -2,6 +2,7 @@
     "name": "grr_artifact_grep",
     "short_description": "Fetches ForensicArtifacts from GRR hosts and runs grep with a list of keywords on them.",
     "description": "Collect ForensicArtifacts from hosts using GRR.\n\n- Collect a predefined list of artifacts from hosts using GRR\n- Process them locally with grep to extract keywords.",
+    "test_params": "C.0123456789012345 reason keywords",
     "modules": [{
         "wants": [],
         "name": "GRRArtifactCollector",
@@ -39,6 +40,6 @@
         ["--skip_offline_clients", "Whether to skip clients that are offline.", false],
         ["--grr_username", "GRR username.", "admin"],
         ["--grr_password", "GRR password.", "admin"],
-        ["--max_file_size", "Maximum size of files to collect (in bytes).", 5368709120, {"format": "regex", "regex": "^\\d+$"}]
+        ["--max_file_size", "Maximum size of files to collect (in bytes).", "5368709120", {"format": "integer"}]
     ]
 }

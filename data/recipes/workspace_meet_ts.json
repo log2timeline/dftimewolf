@@ -1,7 +1,8 @@
 {
   "name": "workspace_meet_ts",
   "short_description": "Collects Meet records and adds them to Timesketch",
-  "description": "Collects Google Workspace audit records for a Google Meet and adds them to Timesketch.",
+  "description": "Collects Google Workspace audit records or a Google Meet and adds them to Timesketch.",
+  "test_params": "abcdefghij",
   "preflights": [],
   "modules": [
     {
@@ -40,7 +41,7 @@
     ["--start_time", "Start time.", null, {"format": "datetime", "before": "@end_time"}],
     ["--end_time", "End time.", null, {"format": "datetime_end", "after": "@start_time"}],
     ["--incident_id", "Incident ID (used for Timesketch description).", null],
-    ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
+    ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "integer"}],
     ["--timesketch_endpoint", "Timesketch endpoint", "http://localhost:5000/"],
     ["--timesketch_username", "Username for Timesketch server.", null],
     ["--timesketch_password", "Password for Timesketch server.", null],

@@ -2,6 +2,7 @@
     "name": "grr_hunt_artifacts",
     "short_description": "Starts a GRR hunt for the default set of artifacts.",
     "description": "Starts a GRR artifact hunt and provides the Hunt ID to the user. Feed the Hunt ID to `grr_huntresults_ts` to process results through Plaso and export them to Timesketch.",
+    "test_params": "artefacts reason",
     "modules": [{
         "wants": [],
         "name": "GRRHuntArtifactCollector",
@@ -29,7 +30,7 @@
         ["--verify", "Whether to verify the GRR TLS certificate.", true],
         ["--grr_username", "GRR username", "admin"],
         ["--grr_password", "GRR password", "admin"],
-        ["--max_file_size", "Maximum size of files to collect (in bytes).", 5368709120, {"format": "regex", "regex": "^\\d+$"}],
+        ["--max_file_size", "Maximum size of files to collect (in bytes).", "5368709120", {"format": "integer"}],
         ["--match_mode", "Match mode of the client rule set (ANY or ALL)", null, {"format": "regex", "regex": "^(ANY)|(ALL)$"}],
         ["--client_operating_systems", "Comma-separated list of client operating systems to filter hosts on (linux, osx, win).", null, {"format": "regex", "regex": "^(linux)|(osx)|(win)$", "comma_separated": true}],
         ["--client_labels", "Comma-separated list of client labels to filter GRR hosts on.", null]

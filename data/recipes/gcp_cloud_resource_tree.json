@@ -2,6 +2,7 @@
   "name": "gcp_cloud_resource_tree",
   "description": "Generates a parent/children tree for given GCP resource by enumerating all the currently available resources. It also will attempt to fill any gaps identified in the tree through querying the GCP logs",
   "short_description": "Generates a parent/children tree for given GCP resource.",
+  "test_params": "projectid australia-southeast2-a resource_type",
   "preflights": [{
     "wants": [],
     "name": "GCPTokenCheck",
