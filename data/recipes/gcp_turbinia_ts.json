@@ -2,6 +2,7 @@
     "name": "gcp_turbinia_ts",
     "short_description": "Processes existing GCP persistent disks with Turbinia project and sends results to Timesketch.",
     "description": "Process GCP persistent disks with Turbinia and send output to Timesketch.\n\nThis processes disks that are already in the project where Turbinia exists. If you want to copy disks from another project, use the `gcp_turbinia_disk_copy_ts` recipe.",
+    "test_params": "analysis-project-name australia-southeast2-a",
     "preflights": [{
       "wants": [],
       "name": "GCPTokenCheck",
@@ -43,7 +44,7 @@
         ["--disk_names", "Comma separated names of GCP persistent disks to process. This parameter can only be used if --request_ids is not provided.", null, {"format": "regex", "comma_separated": true, "regex": "^[a-z][-a-z0-9]{0,61}[a-z0-9]?$"}],
         ["--request_ids", "Comma separated Turbinia request identifiers to process. This parameter can only be used if --disk_names is not provided.", null, {"format": "regex", "comma_separated": true, "regex": "^[a-f0-9]{32}$"}],
         ["--incident_id", "Incident ID (used for Timesketch description).", null],
-        ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
+        ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "integer"}],
         ["--timesketch_endpoint", "Timesketch endpoint", "http://localhost:5000/"],
         ["--timesketch_username", "Username for Timesketch server.", null],
         ["--timesketch_password", "Password for Timesketch server.", null],

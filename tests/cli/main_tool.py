@@ -39,6 +39,7 @@ NESTED_ARG_RECIPE_ARGS = [
 OPTIONAL_ARG_RECIPE = {
     'name': 'optional_arg_recipe',
     'short_description': 'Short description.',
+    # This recipe deliberately has no test_params field
     'preflights': [],
     'modules': [],
     'args': [
@@ -50,6 +51,15 @@ OPTIONAL_ARG_RECIPE = {
 
 OPTIONAL_ARG_RECIPE_ARGS = [
     resources.RecipeArgument(*arg) for arg in OPTIONAL_ARG_RECIPE['args']]
+
+NO_ARG_RECIPE = {
+    'name': 'no_arg_recipe',
+    'short_description': 'Short description.',
+    'test_params': '',
+    'preflights': [],
+    'modules': [],
+    'args': []
+}
 
 
 def _CreateToolObject():
@@ -70,7 +80,7 @@ def _EnumerateRecipeNames():
   tool = _CreateToolObject()
   # pylint: disable=protected-access
   for recipe in tool._recipes_manager.GetRecipes():
-    yield (recipe.name, recipe.name)
+    yield (f'_{recipe.name}', recipe.name)
 
 
 class MainToolTest(parameterized.TestCase):
@@ -104,7 +114,11 @@ class MainToolTest(parameterized.TestCase):
 
   @parameterized.named_parameters(_EnumerateRecipeNames())
   def testRecipeSetupArgs(self, recipe_name):
-    """Checks that all recipes pass the correct arguments to their modules."""
+    """Parameterised version of _testRecipeSetupArgs."""
+    self._testRecipeSetupArgs(recipe_name)
+
+  def _testRecipeSetupArgs(self, recipe_name):
+    """Checks that a recipes passes the correct arguments to their modules."""
     # We want to access the tool's state object to load recipes and go through
     # modules.
     # pylint: disable=protected-access
@@ -129,10 +143,21 @@ class MainToolTest(parameterized.TestCase):
 
   @parameterized.named_parameters(_EnumerateRecipeNames())
   def testRecipeValidators(self, recipe_name):
-    """Tests that recipes do not specify invalid validators."""
+    """Parameterised version of _testRecipeValidators."""
+    self._testRecipeValidators(recipe_name)
+
+  def _testRecipeValidators(self, recipe_name):
+    """Tests that a recipe does not specify invalid validators."""
     # pylint: disable=protected-access
     self.tool._state = dftw_state.DFTimewolfState(config.Config)
     recipe = self.tool._recipes_manager.Recipes()[recipe_name]
+
+    test_params = recipe.GetTestParams()
+    if test_params:
+      recipe_args = [recipe_name] + test_params
+      self.tool.ParseArguments(recipe_args)
+    else:
+      self.fail('No test_params in recipe')
 
     self.tool._state.LoadRecipe(recipe.contents, dftimewolf_recipes.MODULES)
     for arg in recipe.args:
@@ -142,6 +167,40 @@ class MainToolTest(parameterized.TestCase):
             validators_manager.ValidatorsManager.ListValidators(),
             f'Error in {recipe.name}:{arg.switch} - '
             f'Invalid validator {arg.validation_params["format"]}.')
+
+    self.tool.ValidateArguments()
+
+  def testNoArgRecipeValidation(self):
+    """Tests recipe validation when there are no args."""
+    # pylint: disable=protected-access
+    no_arg_recipe = resources.Recipe(
+        NO_ARG_RECIPE.__doc__,
+        NO_ARG_RECIPE,
+        [])
+    self.tool._state = dftw_state.DFTimewolfState(config.Config)
+    self.tool._recipes_manager.RegisterRecipe(no_arg_recipe)
+    self.tool._state.LoadRecipe(NO_ARG_RECIPE, dftimewolf_recipes.MODULES)
+
+    test_params = no_arg_recipe.GetTestParams()
+    recipe_args = [no_arg_recipe.name] + test_params
+
+    self.tool.ParseArguments(recipe_args)
+    self.tool.ValidateArguments()
+
+  def testRecipeWithNoTestParams(self):
+    """Tests that a recipe with no test params specified generates an error."""
+    # pylint: disable=protected-access
+    optional_arg_recipe = resources.Recipe(
+        OPTIONAL_ARG_RECIPE.__doc__,
+        OPTIONAL_ARG_RECIPE,
+        OPTIONAL_ARG_RECIPE_ARGS)
+    self.tool._state = dftw_state.DFTimewolfState(config.Config)
+    self.tool._recipes_manager.RegisterRecipe(optional_arg_recipe)
+    self.tool._state.LoadRecipe(OPTIONAL_ARG_RECIPE, dftimewolf_recipes.MODULES)
+
+    with self.assertRaisesRegex(resources.NoTestParamsError,
+                                'No test parameters specified in recipe'):
+      optional_arg_recipe.GetTestParams()
 
   def testRecipeWithNestedArgs(self):
     """Tests that a recipe with args referenced in other args is populated."""

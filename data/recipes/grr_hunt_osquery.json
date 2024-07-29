@@ -2,6 +2,7 @@
     "name": "grr_hunt_osquery",
     "short_description": "Starts a GRR hunt for an Osquery flow.",
     "description": "Starts a GRR osquery hunt and provides the Hunt ID to the user.",
+    "test_params": "reason",
     "modules": [{
         "wants": [],
         "name": "OsqueryCollector",
@@ -38,7 +39,7 @@
         ["--local_configuration_path", "Path to a local osquery configuration file.", ""],
         ["--configuration_content", "Osquery configuration as a JSON string.", ""],
         ["--file_collection_columns", "The file collection columns.", ""],
-        ["--timeout_millis", "Osquery timeout in milliseconds", 300000, {"format": "regex", "regex": "^\\d+$"}],
+        ["--timeout_millis", "Osquery timeout in milliseconds", "300000", {"format": "integer"}],
         ["--ignore_stderr_errors", "Ignore osquery stderr errors", false],
         ["--approvers", "Emails for GRR approval request.", null],
         ["--grr_server_url", "GRR endpoint", "http://localhost:8000", {"format": "url"}],

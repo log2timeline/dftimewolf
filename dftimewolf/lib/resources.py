@@ -5,6 +5,10 @@ import dataclasses
 from typing import Any, Dict, Sequence
 
 
+class NoTestParamsError(Exception):
+  """Raised when a recipe has not provided test parameters."""
+
+
 @dataclasses.dataclass
 class RecipeArgument:
   """Dataclass for a single recipe argument.
@@ -62,3 +66,16 @@ class Recipe(object):
     short_description = self.contents.get(
         'short_description', 'No description')
     return ' {0:<35s}{1:s}\n'.format(self.name, short_description)
+
+  def GetTestParams(self) -> list[str]:
+    """Get the test params from a recipe.
+    
+    Rasies:
+      NoTestParamsError: If the recipe does not provide a test_params field."""
+    try:
+      params = self.contents['test_params']
+      if not params:
+        return []
+      return str(params).split(' ')
+    except KeyError as e:
+      raise NoTestParamsError('No test parameters specified in recipe') from e

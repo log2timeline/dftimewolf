@@ -2,6 +2,7 @@
   "name": "gsheets_ts",
   "description": "Collects data from google sheets and outputs them to Timesketch.",
   "short_description": "Collects data from google sheets and outputs them to Timesketch.",
+  "test_params": "spreadsheet",
   "preflights": [],
   "modules": [{
       "wants": [],
@@ -29,7 +30,7 @@
       ["spreadsheet", "ID or URL of the Google Sheet spreadsheet to collect data from.", null],
       ["--sheet_names", "Comma-separated list sheet names to collect date from. If not set all sheets in the spreadsheet will be parsed.", []],
       ["--validate_columns", "Set to True to check for mandatory columns required by Timesketch while extracting data. Set to False to ignore validation. Default is True.", true],
-      ["--sketch_id", "Sketch to which the timeline should be added", null, {"format": "regex", "regex": "^\\d+$"}],
+      ["--sketch_id", "Sketch to which the timeline should be added", null, {"format": "integer"}],
       ["--timesketch_endpoint", "Timesketch endpoint", "http://localhost:5000/"],
       ["--timesketch_username", "Username for Timesketch server.", null],
       ["--timesketch_password", "Password for Timesketch server.", null],

@@ -2,6 +2,7 @@
   "name": "vt_pcap",
   "short_description": "Downloads the PCAP from VirusTotal for a specific hash.",
   "description": "Downloads the PCAP files generated from VirusTotal sandbox's run for a specific hash.",
+  "test_params": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 directory",
   "modules": [
     {
       "wants": [],

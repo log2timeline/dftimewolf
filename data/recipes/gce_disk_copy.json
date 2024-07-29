@@ -2,6 +2,7 @@
     "name": "gce_disk_copy",
     "short_description": "Copy disks from one project to another.",
     "description": "Copies disks from one project to another. The disks can be specified individually, or instances can be specified, to copy all their disks or boot disks.",
+    "test_params": "projectname",
     "preflights": [{
       "wants": [],
       "name": "GCPTokenCheck",

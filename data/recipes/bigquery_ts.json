@@ -2,6 +2,7 @@
     "name": "bigquery_ts",
     "short_description": "Collects results from BigQuery and uploads them to Timesketch.",
     "description": "Collects results from BigQuery in JSONL form, dumps them to the filesystem, and uploads them to Timesketch.",
+    "test_params": "prohectfolder.projectname query description",
     "preflights": [{
       "wants": [],
       "name": "GCPTokenCheck",
@@ -38,7 +39,7 @@
             ["query", "Query to execute.", null],
             ["description", "Human-readable description of the query.", null],
             ["--incident_id", "Incident ID (used for Timesketch description).", null],
-            ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "regex", "regex": "^\\d+$"}],
+            ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "integer"}],
             ["--timesketch_endpoint", "Timesketch endpoint", "http://localhost:5000/"],
             ["--timesketch_username", "Username for Timesketch server.", null],
             ["--timesketch_password", "Password for Timesketch server.", null],
