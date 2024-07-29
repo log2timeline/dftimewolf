@@ -39,6 +39,7 @@ NESTED_ARG_RECIPE_ARGS = [
 OPTIONAL_ARG_RECIPE = {
     'name': 'optional_arg_recipe',
     'short_description': 'Short description.',
+    # This recipe deliberately has no test_params field
     'preflights': [],
     'modules': [],
     'args': [
@@ -50,6 +51,15 @@ OPTIONAL_ARG_RECIPE = {
 
 OPTIONAL_ARG_RECIPE_ARGS = [
     resources.RecipeArgument(*arg) for arg in OPTIONAL_ARG_RECIPE['args']]
+
+NO_ARG_RECIPE = {
+    'name': 'no_arg_recipe',
+    'short_description': 'Short description.',
+    'test_params': '',
+    'preflights': [],
+    'modules': [],
+    'args': []
+}
 
 
 def _CreateToolObject():
@@ -159,6 +169,38 @@ class MainToolTest(parameterized.TestCase):
             f'Invalid validator {arg.validation_params["format"]}.')
 
     self.tool.ValidateArguments()
+
+  def testNoArgRecipeValidation(self):
+    """Tests recipe validation when there are no args."""
+    # pylint: disable=protected-access
+    no_arg_recipe = resources.Recipe(
+        NO_ARG_RECIPE.__doc__,
+        NO_ARG_RECIPE,
+        [])
+    self.tool._state = dftw_state.DFTimewolfState(config.Config)
+    self.tool._recipes_manager.RegisterRecipe(no_arg_recipe)
+    self.tool._state.LoadRecipe(NO_ARG_RECIPE, dftimewolf_recipes.MODULES)
+
+    test_params = no_arg_recipe.GetTestParams()
+    recipe_args = [no_arg_recipe.name] + test_params
+
+    self.tool.ParseArguments(recipe_args)
+    self.tool.ValidateArguments()
+
+  def testRecipeWithNoTestParams(self):
+    """Tests that a recipe with no test params specified generates an error."""
+    # pylint: disable=protected-access
+    optional_arg_recipe = resources.Recipe(
+        OPTIONAL_ARG_RECIPE.__doc__,
+        OPTIONAL_ARG_RECIPE,
+        OPTIONAL_ARG_RECIPE_ARGS)
+    self.tool._state = dftw_state.DFTimewolfState(config.Config)
+    self.tool._recipes_manager.RegisterRecipe(optional_arg_recipe)
+    self.tool._state.LoadRecipe(OPTIONAL_ARG_RECIPE, dftimewolf_recipes.MODULES)
+
+    with self.assertRaisesRegex(resources.NoTestParamsError,
+                                'No test parameters specified in recipe'):
+      optional_arg_recipe.GetTestParams()
 
   def testRecipeWithNestedArgs(self):
     """Tests that a recipe with args referenced in other args is populated."""
