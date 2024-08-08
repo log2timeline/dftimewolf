@@ -262,10 +262,16 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
         ))
 
   def _DownloadBlobs(
-    self,
-    client: Client,
-    payloads: List["jobs_pb2.PathSpec"],
-    flow_output_dir: str,
+      self,
+      client: Client,
+      payloads: List[
+          jobs_pb2.StatEntry
+          | jobs_pb2.PathSpec
+          | flows_pb2.FileFinderResult
+          | flows_pb2.CollectFilesByKnownPathResult
+          | flows_pb2.CollectBrowserHistoryResult
+      ],
+      flow_output_dir: str,
   ) -> None:
     """Download individual collected files from GRR to the local filesystem.
 
@@ -273,40 +279,65 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       client: GRR Client object to download blobs from.
       payloads: List of pathspecs to download blobs from.
       flow_output_dir: Directory to store the downloaded files.
+
+    Raises:
+      RuntimeError: if the file collection is not supported.
     """
+    stats: jobs_pb2.StatEntry = None
+    pathspec: jobs_pb2.PathSpec = None
+    size: int = 0
+    vfspath: str = None
+
     for payload in payloads:
-      if hasattr(payload, 'stat'):
-        stats = payload.stat
-      elif hasattr(payload, 'stat_entry'):
-        stats = payload.stat_entry
+      match type(payload):
+        case jobs_pb2.StatEntry:
+          if not hasattr(payload, 'pathspec'):
+            raise RuntimeError('Unsupported file collection attempted')
+          payload: jobs_pb2.StatEntry
+          pathspec = payload.pathspec
+          size = payload.st_size
+          if stat.S_ISDIR(payload.st_mode):
+            continue
+        case (
+            jobs_pb2.PathSpec
+            | flows_pb2.FileFinderResult
+            | flows_pb2.CollectFilesByKnownPathResult
+            | flows_pb2.CollectBrowserHistoryResult
+        ):
+          if hasattr(payload, 'stat'):
+            stats = payload.stat
+          elif hasattr(payload, 'stat_entry'):
+            stats = payload.stat_entry
+          size = stats.st_size
+          if stat.S_ISDIR(stats.st_mode):
+            continue
+        case _:
+          raise RuntimeError('Unsupported file collection attempted')
+
+      if stats:
+        pathspec = stats.pathspec
+      if pathspec.nested_path.pathtype == jobs_pb2.PathSpec.NTFS:
+        vfspath = f'fs/ntfs{pathspec.path}{pathspec.nested_path.path}'
       else:
-        raise RuntimeError('Unsupported file collection attempted')
-      if stat.S_ISDIR(stats.st_mode):
-        continue
-      if (stats.pathspec.nested_path.pathtype ==
-          jobs_pb2.PathSpec.NTFS):
-        vfspath = (
-            f"fs/ntfs{stats.pathspec.path}{stats.pathspec.nested_path.path}")
-      else:
-        vfspath = re.sub("^([a-zA-Z]:)?/(.*)$", "fs/os/\\1/\\2",
-                         stats.pathspec.path)
+        vfspath = re.sub('^([a-zA-Z]:)?/(.*)$', 'fs/os/\\1/\\2', pathspec.path)
+
       filename = os.path.basename(vfspath)
       base_dir = os.path.join(flow_output_dir, os.path.dirname(vfspath))
       os.makedirs(base_dir, exist_ok=True)
 
       f = client.File(vfspath)
-      self.logger.debug(f"Downloading blob {filename} from {vfspath}")
+      self.logger.debug(f'Downloading blob {filename} from {vfspath}')
       try:
         path = os.path.join(base_dir, filename)
-        if stats.st_size:
-          with open(path, "wb") as out:
+        if size:
+          with open(path, 'wb') as out:
             self.logger.debug(f'File: {filename}')
             f.GetBlob().WriteToStream(out)
         else:
           pathlib.Path(path).touch()
       except grr_errors.ResourceNotFoundError as e:
         self.logger.warning(
-          f"Failed to download blob {filename} from {vfspath}: {e}"
+            f'Failed to download blob {filename} from {vfspath}: {e}'
         )
 
   def _DownloadTimeline(
