@@ -286,7 +286,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     stats: jobs_pb2.StatEntry = None
     pathspec: jobs_pb2.PathSpec = None
     size: int = 0
-    vfspath: str = None
+    vfspath: str = ''
 
     for payload in payloads:
       match type(payload):
