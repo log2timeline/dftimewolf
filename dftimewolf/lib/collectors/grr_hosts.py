@@ -293,7 +293,6 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
         case jobs_pb2.StatEntry:
           if not hasattr(payload, 'pathspec'):
             raise RuntimeError('Unsupported file collection attempted')
-          payload: jobs_pb2.StatEntry
           pathspec = payload.pathspec
           size = payload.st_size
           if stat.S_ISDIR(payload.st_mode):
