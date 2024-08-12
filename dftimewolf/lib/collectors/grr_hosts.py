@@ -6,6 +6,7 @@ import os
 import pathlib
 import re
 import stat
+import time
 from concurrent.futures import ThreadPoolExecutor
 from typing import List, Optional, Tuple, Type
 
@@ -261,6 +262,66 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
               client_id, flow_id, self.reason
         ))
 
+  def _AwaitFlow(self, client: Client, flow_id: str) -> None:
+    """Waits for a specific GRR flow to complete.
+
+    Args:
+      client (object): GRR Client object in which to await the flow.
+      flow_id (str): GRR identifier of the flow to await.
+
+    Raises:
+      DFTimewolfError: If a Flow error was encountered.
+    """
+    self.logger.info(f"{flow_id:s}: Waiting to finish")
+    if self.skip_offline_clients:
+      self.logger.debug("Client will be skipped if offline.")
+
+    while True:
+      try:
+        status = client.Flow(flow_id).Get().data
+      except grr_errors.UnknownError:
+        msg = (
+          f"Unknown error retrieving flow {flow_id} for host "
+          f"{client.data.os_info.fqdn.lower()}"
+        )
+        self.ModuleError(msg, critical=True)
+
+      if status.state == flows_pb2.FlowContext.ERROR:
+        # TODO(jbn): If one artifact fails, what happens? Test.
+        message = status.context.backtrace
+        if "ArtifactNotRegisteredError" in status.context.backtrace:
+          message = status.context.backtrace.split("\n")[-2]
+        self.ModuleError(
+          f"{flow_id:s}: FAILED! Message from GRR:\n{message:s}",
+          critical=True,
+        )
+
+      if status.state == 4:  # Flow crashed, no enum in flows_pb2
+        self.ModuleError(f"{flow_id:s}: Crashed", critical=False)
+        break
+
+      if status.state == flows_pb2.FlowContext.TERMINATED:
+        self.logger.info(f"{flow_id:s}: Complete")
+        break
+
+      time.sleep(self._CHECK_FLOW_INTERVAL_SEC)
+      if not self.skip_offline_clients:
+        continue
+
+      client_last_seen = datetime.datetime.fromtimestamp(
+        client.data.last_seen_at / 1000000, datetime.timezone.utc
+      )
+      now = datetime.datetime.now(datetime.timezone.utc)
+      if (now - client_last_seen).total_seconds() > self._MAX_OFFLINE_TIME_SEC:
+        self.logger.warning(
+          "Client {0:s} has been offline for more than {1:.1f} minutes"
+          ", skipping...".format(
+            client.client_id, self._MAX_OFFLINE_TIME_SEC / 60
+          )
+        )
+        self._skipped_flows.append((client.client_id, flow_id))
+        break
+
   def _DownloadBlobs(
       self,
       client: Client,
@@ -330,7 +391,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
         path = os.path.join(base_dir, filename)
         if size:
           with open(path, 'wb') as out:
-            self.logger.debug(f'File: {filename}')
+            self.logger.debug(f"Downloading {filename} to: {path}")
             f.GetBlob().WriteToStream(out)
         else:
           pathlib.Path(path).touch()
@@ -561,7 +622,7 @@ Flow ID: {3:s}
         f'Launched flow {flow_id} on {client.client_id} ({grr_hostname})')
 
       grr_flow = client.Flow(flow_id)
-      grr_flow.WaitUntilDone()
+      self._AwaitFlow(client, flow_id)
 
       grr_flow = grr_flow.Get()
       results = list(grr_flow.ListResults())
@@ -813,7 +874,7 @@ class GRRArtifactCollector(GRRFlow):
         msg = f'Flow could not be launched on {client.client_id:s}.'
         msg += f'\nArtifactCollectorFlow args: {flow_args!s}'
         self.ModuleError(msg, critical=True)
-        client.Flow(flow_id).WaitUntilDone()
+      self._AwaitFlow(client, flow_id)
 
       collected_flow_data = self._DownloadFiles(client, flow_id)
 
@@ -945,7 +1006,7 @@ class GRRFileCollector(GRRFlow):
           pathtype=path_type,
           action=flow_action)
       flow_id = self._LaunchFlow(client, 'FileFinder', flow_args)
-      client.Flow(flow_id).WaitUntilDone()
+      self._AwaitFlow(client, flow_id)
       collected_flow_data = self._DownloadFiles(client, flow_id)
       if collected_flow_data:
         self.PublishMessage(f'{flow_id}: Downloaded: {collected_flow_data}')
@@ -1109,10 +1170,11 @@ class GRROsqueryCollector(GRRFlow):
 
     try:
       flow_id = self._LaunchFlow(client, 'OsqueryFlow', flow_args)
-      client.Flow(flow_id).WaitUntilDone()
+      self._AwaitFlow(client, flow_id)
     except DFTimewolfError as error:
       self.ModuleError(
-          f'Error raised while launching/awaiting flow: {error.message}')
+        f"Error raised while launching/awaiting flow: {error.message}"
+      )
       return
 
     name = osquery_container.name
@@ -1300,7 +1362,7 @@ class GRRFlowCollector(GRRFlow):
     # We don't need clients to be online to grab the flows.
     client = self._GetClientBySelector(
         container.hostname, discard_inactive=False)
-    client.Flow(container.flow_id).WaitUntilDone()
+    self._AwaitFlow(client, container.flow_id)
     self._CheckSkippedFlows()
     collected_flow_data = self._DownloadFiles(client, container.flow_id)
     if collected_flow_data:
@@ -1415,7 +1477,7 @@ class GRRTimelineCollector(GRRFlow):
 
       timeline_args = timeline_pb2.TimelineArgs(root=root_path,)
       flow_id = self._LaunchFlow(client, 'TimelineFlow', timeline_args)
-      client.Flow(flow_id).WaitUntilDone()
+      self._AwaitFlow(client, flow_id)
       collected_timeline = self._DownloadTimeline(
         client, client.Flow(flow_id), self.output_path
       )
