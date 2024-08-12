@@ -622,7 +622,7 @@ Flow ID: {3:s}
         f'Launched flow {flow_id} on {client.client_id} ({grr_hostname})')
 
       grr_flow = client.Flow(flow_id)
-      self._AwaitFlow(client, grr_flow.flow_id)
+      self._AwaitFlow(client, flow_id)
 
       grr_flow = grr_flow.Get()
       results = list(grr_flow.ListResults())
