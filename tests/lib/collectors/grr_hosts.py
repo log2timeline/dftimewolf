@@ -382,7 +382,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     self.assertEqual(result.path, '/tmp/tmpRandom/tomchop')
 
   @mock.patch('grr_api_client.api.InitHttp')
-  @mock.patch('grr_api_client.flow.FlowBase.WaitUntilDone')
+  @mock.patch("dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow")
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._LaunchFlow')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._FindClients')
@@ -391,7 +391,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     mock_FindClients,
     unused_LaunchFlow,
     unused_DownloadFiles,
-    unused_WaitUntilDone,
+    unused_AwaitFlow,
     mock_InitHttp,
   ):
     """Tests that processing works when only containers are passed."""
@@ -425,7 +425,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     mock_FindClients.assert_called_with(['container.host'])
 
   @mock.patch("grr_api_client.api.InitHttp")
-  @mock.patch("grr_api_client.flow.FlowBase.WaitUntilDone")
+  @mock.patch("dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow")
   @mock.patch("dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles")
   @mock.patch("dftimewolf.lib.collectors.grr_hosts.GRRFlow._LaunchFlow")
   @mock.patch("dftimewolf.lib.collectors.grr_hosts.GRRFlow._FindClients")
@@ -434,7 +434,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     mock_FindClients,
     mock_LaunchFlow,
     mock_DownloadFiles,
-    unused_WaitUntilDone,
+    unused_AwaitFlow,
     mock_InitHttp,
   ):
     """Tests that processing works when only containers are passed."""
@@ -532,7 +532,7 @@ class GRRFileCollectorTest(unittest.TestCase):
     self.assertEqual(
         self.grr_file_collector.files, ['/etc/passwd', '/etc/hosts'])
 
-  @mock.patch('grr_api_client.flow.FlowBase.WaitUntilDone')
+  @mock.patch("dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow")
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._LaunchFlow')
   def testProcess(self, mock_LaunchFlow, mock_DownloadFiles, _):
@@ -566,15 +566,13 @@ class GRRFileCollectorTest(unittest.TestCase):
     self.assertEqual(results[0].name, 'tomchop')
     self.assertEqual(results[0].path, '/tmp/something')
 
-  @mock.patch('grr_api_client.flow.FlowBase.WaitUntilDone')
+  @mock.patch("dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow")
   @mock.patch('grr_api_client.api.InitHttp')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._LaunchFlow')
-  def testWindowsProcess(self,
-                         mock_LaunchFlow,
-                         mock_DownloadFiles,
-                         mock_InitHttp,
-                         unused_waituntildone):
+  def testWindowsProcess(
+    self, mock_LaunchFlow, mock_DownloadFiles, mock_InitHttp, unused_AwaitFlow
+  ):
     """Tests that processing launches appropriate flows."""
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
@@ -626,7 +624,7 @@ class GRRFileCollectorTest(unittest.TestCase):
     self.assertEqual(results[0].name, 'tomchop')
     self.assertEqual(results[0].path, '/tmp/something')
 
-  @mock.patch('grr_api_client.flow.FlowBase.WaitUntilDone')
+  @mock.patch("dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow")
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._LaunchFlow')
   @mock.patch('grr_api_client.api.InitHttp')
@@ -636,7 +634,7 @@ class GRRFileCollectorTest(unittest.TestCase):
                                 mock_InitHttp,
                                 unused_LaunchFlow,
                                 unused_DownloadFiles,
-                                unused_waituntildonw
+                                unused_AwaitFlow
                                 ):
     """Tests that processing works when only containers are passed."""
     mock_InitHttp.return_value = self.mock_grr_api
@@ -699,7 +697,7 @@ class GRRFlowCollectorTest(unittest.TestCase):
     )
 
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
-  @mock.patch('grr_api_client.flow.FlowBase.WaitUntilDone')
+  @mock.patch("dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow")
   def testProcess(self, _, mock_DownloadFiles):
     """Tests that the collector can be initialized."""
     self.mock_grr_api.SearchClients.return_value = \
@@ -757,13 +755,10 @@ class GRRFlowCollectorTest(unittest.TestCase):
   @mock.patch('grr_api_client.client.Client.ListFlows')
   @mock.patch('grr_api_client.api.InitHttp')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
-  @mock.patch('grr_api_client.flow.FlowBase.WaitUntilDone')
-  def testProcessNoFlowData(self,
-      _,
-      mock_DLFiles,
-      mock_InitHttp,
-      mock_list_flows,
-      unused_mock_flow_get):
+  @mock.patch("dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow")
+  def testProcessNoFlowData(
+    self, _, mock_DLFiles, mock_InitHttp, mock_list_flows, unused_mock_flow_get
+  ):
     """Tests Process when the flow is found but has no data collected."""
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
@@ -844,14 +839,17 @@ class GRRTimelineCollectorTest(unittest.TestCase):
     self.grr_timeline_collector._GetClientBySelector.return_value = (
         mock_grr_hosts.MOCK_CLIENT)
 
-    with (mock.patch('grr_api_client.client.ClientBase.CreateFlow'
-                     ) as mock_createflow,
-          mock.patch('grr_api_client.flow.FlowBase.WaitUntilDone'
-                     ) as mock_waituntildone,
-          mock.patch('grr_api_client.flow.FlowBase.GetCollectedTimelineBody'
-                     ) as mock_getcollectedtimeline):
-      mock_createflow.return_value.flow_id = 'F:12345'
-      mock_waituntildone.return_value = None
+    with (
+      mock.patch(
+        "grr_api_client.client.ClientBase.CreateFlow"
+      ) as mock_createflow,
+      mock.patch(
+        "grr_api_client.flow.FlowBase.GetCollectedTimelineBody"
+      ) as mock_getcollectedtimeline,
+      mock.patch("grr_api_client.flow.FlowBase.Get") as mock_get,
+    ):
+      mock_get.return_value = mock_grr_hosts.MOCK_FLOW
+      mock_createflow.return_value.flow_id = "F:12345"
       mock_getcollectedtimeline.return_value.WriteToFile = _MOCK_WRITE_TO_FILE
 
       self.grr_timeline_collector.PreProcess()
@@ -862,8 +860,8 @@ class GRRTimelineCollectorTest(unittest.TestCase):
       self.grr_timeline_collector.PostProcess()
 
       mock_createflow.assert_called_once_with(
-          name='TimelineFlow', args=timeline_pb2.TimelineArgs(root=b'/'))
-      mock_waituntildone.assert_called_once()
+        name="TimelineFlow", args=timeline_pb2.TimelineArgs(root=b"/")
+      )
 
       expected_output_path = os.path.join(
         self.grr_timeline_collector.output_path,
@@ -872,16 +870,18 @@ class GRRTimelineCollectorTest(unittest.TestCase):
       self.assertTrue(os.path.exists(expected_output_path))
 
   @mock.patch('grr_api_client.api.InitHttp')
-  @mock.patch('grr_api_client.flow.FlowBase.WaitUntilDone')
+  @mock.patch("dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow")
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._LaunchFlow')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._FindClients')
-  def testProcessFromContainers(self,
-                                mock_FindClients,
-                                unused_LaunchFlow,
-                                unused_DownloadFiles,
-                                unused_WaitUntilDone,
-                                mock_InitHttp):
+  def testProcessFromContainers(
+    self,
+    mock_FindClients,
+    unused_LaunchFlow,
+    unused_DownloadFiles,
+    unused_AwaitFlow,
+    mock_InitHttp,
+  ):
     """Tests that processing works when only containers are passed."""
     mock_InitHttp.return_value = self.mock_grr_api
     self.grr_timeline_collector = grr_hosts.GRRTimelineCollector(
@@ -948,7 +948,7 @@ class GRROsqueryCollectorTest(unittest.TestCase):
     """Tests that the collector can be initialized."""
     self.assertIsNotNone(self.grr_osquery_collector)
 
-  @mock.patch('grr_api_client.flow.FlowBase.WaitUntilDone')
+  @mock.patch("dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow")
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRROsqueryCollector.'
               '_DownloadResults')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._LaunchFlow')
@@ -1047,7 +1047,7 @@ class GRRYaraScannerTest(unittest.TestCase):
         'subpattern at position 15',
         error.exception.message)
 
-  @mock.patch('grr_api_client.flow.FlowBase.WaitUntilDone')
+  @mock.patch("dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow")
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRROsqueryCollector.'
               '_DownloadResults')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._LaunchFlow')
@@ -1059,7 +1059,7 @@ class GRRYaraScannerTest(unittest.TestCase):
     mock_Get,
     unused_mock_LaunchFlow,
     unused_mock_DownloadResults,
-    unused_mock_WaitUntilDone):
+    unused_mock_AwaitFlow):
     """Tests that the module launches appropriate flows."""
     mock_InitHttp.return_value.SearchClients.return_value = \
         mock_grr_hosts.MOCK_CLIENT_LIST
