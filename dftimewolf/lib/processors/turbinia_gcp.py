@@ -153,7 +153,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       request_ids: str = '',
       disk_names: str = '',
       turbinia_auth: bool = False,
-      priority_filter = 100) -> None:
+      priority_filter: int = 100) -> None:
     """Sets up the object attributes.
 
     Args:
@@ -196,7 +196,8 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
 
     self.TurbiniaSetUp(
         project, turbinia_recipe, turbinia_zone, turbinia_api,
-        incident_id, int(sketch_id) if sketch_id else 0, turbinia_auth)
+        incident_id, int(sketch_id) if sketch_id else 0, priority_filter,
+        turbinia_auth)
 
   def PreProcess(self) -> None:
     """Ensures containers from previous modules are processed.
@@ -274,7 +275,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
               f'additional information. {exception}')
           self.logger.error(message)
     # Generate a Turbinia report and store it in the state.
-    report = self.TurbiniaFinishReport(request_id, priority_filter)
+    report = self.TurbiniaFinishReport(request_id, self.priority_filter)
 
     # Stop profiler
     self.profiler.disable()
