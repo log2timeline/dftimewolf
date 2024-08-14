@@ -573,7 +573,9 @@ class TurbiniaProcessorBase(module.BaseModule):
         self.logger.warning(f'Retrying after 3 seconds: {exception.body}')
         time.sleep(3)
 
-  def TurbiniaFinishReport(self, request_id: str) -> Optional[str]:
+  def TurbiniaFinishReport(self,
+                           request_id: str,
+                           priority_filter: int) -> Optional[str]:
     """This method generates a report for a Turbinia request."""
     # Refresh token if needed
     if self.RefreshClientCredentials():
@@ -587,6 +589,6 @@ class TurbiniaProcessorBase(module.BaseModule):
     if request_data:
       report: str = turbinia_formatter.RequestMarkdownReport(
           request_data=request_data
-      ).generate_markdown()
+      ).generate_markdown(priority_filter=priority_filter)
       return report
     return None
