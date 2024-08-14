@@ -166,7 +166,6 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       incident_id (str): The incident ID.
       sketch_id (int): The sketch ID.
       request_ids (str): Turbinia requests for jobs being processed.
-      disk_names (str): Names of the disks to process.
       priority_filter (int): Filter report findings, range from 0 to 100,
           0 is the highest.
     """
