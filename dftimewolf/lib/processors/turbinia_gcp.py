@@ -153,7 +153,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       request_ids: str = '',
       disk_names: str = '',
       turbinia_auth: bool = False,
-      report_priority_filter = 100) -> None:
+      priority_filter = 100) -> None:
     """Sets up the object attributes.
 
     Args:
@@ -167,7 +167,8 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       sketch_id (int): The sketch ID.
       request_ids (str): Turbinia requests for jobs being processed.
       disk_names (str): Names of the disks to process.
-      report_priority_filter (int): range of 0-100, where 0 is the highest.
+      priority_filter (int): Filter report findings, range from 0 to 100,
+          0 is the highest.
     """
 
     if (disk_names and request_ids):
@@ -273,7 +274,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
               f'additional information. {exception}')
           self.logger.error(message)
     # Generate a Turbinia report and store it in the state.
-    report = self.TurbiniaFinishReport(request_id, report_priority_filter)
+    report = self.TurbiniaFinishReport(request_id, priority_filter)
 
     # Stop profiler
     self.profiler.disable()
