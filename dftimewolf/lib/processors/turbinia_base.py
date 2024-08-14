@@ -53,6 +53,8 @@ class TurbiniaProcessorBase(module.BaseModule):
     turbinia_zone (str): GCP zone in which the Turbinia server is running.
     turbinia_api (str): Turbinia API endpoint.
     turbinia_auth (bool): Turbinia auth flag.
+    priority_filter (int): Filter report findings, range from 0 to 100,
+        0 is the highest.
     parallel_count (int): Number of threads to use.
   """
 
@@ -102,6 +104,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.sketch_id = int()
     self.state = state
     self.turbinia_auth: bool = False
+    self.priority_filter: int = int()
     self.turbinia_recipe = str()  # type: Any
     self.turbinia_region = None
     self.turbinia_zone = str()
@@ -375,7 +378,7 @@ class TurbiniaProcessorBase(module.BaseModule):
 
   def TurbiniaSetUp(
       self, project: str, turbinia_recipe: Union[str, None], turbinia_zone: str,
-      turbinia_api: str, incident_id: str, sketch_id: int,
+      turbinia_api: str, incident_id: str, sketch_id: int, priority_filter: int,
       turbinia_auth: bool = False) -> None:
     """Sets up the object attributes.
 
@@ -386,10 +389,13 @@ class TurbiniaProcessorBase(module.BaseModule):
       turbinia_zone (str): GCP zone in which the Turbinia server is running.
       turbinia_api (str): URL of the Turbinia API server.
       incident_id (str): The incident ID.
+      priority_filter (int): Filter report findings, range from 0 to 100,
+          0 is the highest.
       sketch_id (int): The sketch ID.
     """
     self.project = project
     self.turbinia_auth = turbinia_auth
+    self.priority_filter = priority_filter
     self.turbinia_api = turbinia_api
     self.turbinia_recipe = turbinia_recipe
     self.turbinia_zone = turbinia_zone
