@@ -104,7 +104,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.sketch_id = int()
     self.state = state
     self.turbinia_auth: bool = False
-    self.priority_filter: int = int()
+    self.priority_filter = int()
     self.turbinia_recipe = str()  # type: Any
     self.turbinia_region = None
     self.turbinia_zone = str()
@@ -595,6 +595,6 @@ class TurbiniaProcessorBase(module.BaseModule):
     if request_data:
       report: str = turbinia_formatter.RequestMarkdownReport(
           request_data=request_data
-      ).generate_markdown(priority_filter=priority_filter)
+      ).generate_markdown(priority_filter)
       return report
     return None
