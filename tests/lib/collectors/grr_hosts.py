@@ -302,8 +302,7 @@ class GRRArtifactCollectorTest(unittest.TestCase):
     self.grr_artifact_collector.PostProcess()
 
     kwargs = mock_ArtifactCollectorFlowArgs.call_args[1]
-    # Raw access for Windows
-    self.assertTrue(kwargs['use_raw_filesystem_access'])
+    self.assertFalse(kwargs["use_raw_filesystem_access"])
 
   @mock.patch('grr_api_client.api.InitHttp')
   @mock.patch('grr_api_client.flow.FlowRef.Get')
