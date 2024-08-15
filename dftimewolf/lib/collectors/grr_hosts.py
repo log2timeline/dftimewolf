@@ -858,10 +858,6 @@ class GRRArtifactCollector(GRRFlow):
       if not artifact_list:
         return
 
-      if client.data.os_info.system.lower() == 'windows':
-        self.logger.debug("Switching to raw filesystem access for Windows.")
-        self.use_raw_filesystem_access = True
-
       flow_args = flows_pb2.ArtifactCollectorFlowArgs(
         artifact_list=artifact_list,
         use_raw_filesystem_access=self.use_raw_filesystem_access,
