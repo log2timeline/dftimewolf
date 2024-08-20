@@ -1192,20 +1192,20 @@ class GRROsqueryCollector(GRRFlow):
       self.state.StoreContainer(results_container)
       return
 
-    for data_frame in results:
-      self.logger.info(
-          f'{str(flow_id)} ({hostname}): {len(data_frame)} rows collected')
+    merged_results = pd.concat(results)
+    self.logger.info(
+        f'{str(flow_id)} ({hostname}): {len(merged_results)} rows collected')
 
-      dataframe_container = containers.OsqueryResult(
-          name=name,
-          description=description,
-          query=query,
-          hostname=hostname,
-          data_frame=data_frame,
-          flow_identifier=flow_identifier,
-          client_identifier=client_identifier)
+    dataframe_container = containers.OsqueryResult(
+        name=name,
+        description=description,
+        query=query,
+        hostname=hostname,
+        data_frame=merged_results,
+        flow_identifier=flow_identifier,
+        client_identifier=client_identifier)
 
-      self.state.StoreContainer(dataframe_container)
+    self.state.StoreContainer(dataframe_container)
 
   def Process(self, container: containers.Host
               ) -> None:  # pytype: disable=signature-mismatch
