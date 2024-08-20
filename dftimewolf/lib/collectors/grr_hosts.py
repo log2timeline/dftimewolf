@@ -125,7 +125,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     for client in search_result:
       fqdn_match = selector in client.data.os_info.fqdn.lower()
       client_id_match = selector in client.data.client_id.lower()
-      usernames = [user.username for user in client.data.users]
+      usernames = [user.username for user in client.data.knowledge_base.users]
       username_match = selector in usernames and len(usernames) == 1
       if fqdn_match or client_id_match or username_match:
         result.append((client.data.last_seen_at, client))
