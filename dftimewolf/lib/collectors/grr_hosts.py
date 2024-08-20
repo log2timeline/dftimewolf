@@ -1130,6 +1130,11 @@ class GRROsqueryCollector(GRRFlow):
     results = []
     for result in list_results:
       payload = result.payload
+      if isinstance(payload, osquery_flows.OsqueryCollectedFile):
+        # We don't do anything with any collected files for now as we are just
+        # interested in the osquery results.
+        self.logger.info(f'File collected - {payload.stat_entry.path_spec}.')
+        continue
       if not isinstance(payload, osquery_flows.OsqueryResult):
         self.logger.error(f'Incorrect results format from flow ID {grr_flow}')
         continue
