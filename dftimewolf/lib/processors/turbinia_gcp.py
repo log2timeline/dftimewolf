@@ -142,6 +142,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     return telemetry_entry
 
   # pylint: disable=arguments-differ
+  # pylint: disable=too-many-arguments
   def SetUp(
       self,
       project: str,

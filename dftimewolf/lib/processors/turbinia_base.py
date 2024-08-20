@@ -284,7 +284,7 @@ class TurbiniaProcessorBase(module.BaseModule):
                      client_secrets_path: str) -> Optional[Credentials]:
     """Authenticates the user using Google OAuth services."""
     scopes = ['openid', 'https://www.googleapis.com/auth/userinfo.email']
-    credentials = None
+    credentials: Optional[Credentials] = None
 
     # Load credentials file if it exists
     if os.path.exists(credentials_path):

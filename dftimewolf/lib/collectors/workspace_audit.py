@@ -40,14 +40,15 @@ class WorkspaceAuditCollector(module.BaseModule):
     """Initializes a Workspace Audit Log collector."""
     super(WorkspaceAuditCollector, self).__init__(state, name=name,
         critical=critical)
-    self._credentials = None
+    self._credentials: Optional[Credentials] = None
     self._application_name = ''
     self._filter_expression = ''
     self._user_key = 'all'
     self._start_time = None  # type: Optional[datetime.datetime]
     self._end_time = None # type: Optional[datetime.datetime]
 
-  def _BuildAuditResource(self, credentials: Credentials) -> discovery.Resource:
+  def _BuildAuditResource(self, credentials: Optional[Credentials]
+                          ) -> discovery.Resource:
     """Builds a reports resource object to use to request logs.
 
     Args:
@@ -59,13 +60,13 @@ class WorkspaceAuditCollector(module.BaseModule):
     service = discovery.build('admin', 'reports_v1', credentials=credentials)
     return service
 
-  def _GetCredentials(self) -> Credentials:
+  def _GetCredentials(self) -> Optional[Credentials]:
     """Obtains API credentials for accessing the Workspace audit API.
 
     Returns:
       google.oauth2.credentials.Credentials: Google API credentials.
     """
-    credentials = None
+    credentials: Optional[Credentials] = None
 
     # The credentials file stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
@@ -103,8 +104,9 @@ class WorkspaceAuditCollector(module.BaseModule):
           credentials = flow.run_local_server()
 
         # Save the credentials for the next run
-        with open(credentials_path, 'w') as token_file:
-          token_file.write(credentials.to_json())
+        if credentials:
+          with open(credentials_path, 'w') as token_file:
+            token_file.write(credentials.to_json())
 
     return credentials
 
