@@ -163,6 +163,14 @@ class GRRFlowTests(unittest.TestCase):
       "/tmp/random/tomchop/F:12345", exist_ok=True
     )
 
+  def testDownloadOsqueryForFlow(self):
+    """Tests if Osquery results are downloaded in the correct directories."""
+    self.grr_flow_module.output_path = "/tmp/random"
+    mock_Get.return_value.data.name = 'OsqueryFlow'
+    mock_Get.return_value.ListResults = mock.MagicMock()
+    return_value = self.grr_flow_module._DownloadOsquery(
+        mock_grr_hosts.MOCK_CLIENT, 'F:12345')
+    self.assertEqual(return_value, '/tmp/random/tomchop/F:12345')
 
 class GRRArtifactCollectorTest(unittest.TestCase):
   """Tests for the GRR artifact collector."""
