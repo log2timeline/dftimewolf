@@ -163,14 +163,18 @@ class GRRFlowTests(unittest.TestCase):
       "/tmp/random/tomchop/F:12345", exist_ok=True
     )
 
-  def testDownloadOsqueryForFlow(self):
+  @mock.patch("builtins.open")
+  @mock.patch('grr_api_client.flow.FlowBase.ListResults')
+  def testDownloadOsqueryForFlow(self, mock_ListResults, unused_mock_open):
     """Tests if Osquery results are downloaded in the correct directories."""
-    self.grr_flow_module.output_path = "/tmp/random"
-    mock_Get.return_value.data.name = 'OsqueryFlow'
-    mock_Get.return_value.ListResults = mock.MagicMock()
+    mock_flowresult = mock.MagicMock()
+    mock_flowresult.payload = osquery_pb2.OsqueryResult()
+    mock_ListResults.return_value = [
+        mock_flowresult
+    ]
     return_value = self.grr_flow_module._DownloadOsquery(
-        mock_grr_hosts.MOCK_CLIENT, 'F:12345')
-    self.assertEqual(return_value, '/tmp/random/tomchop/F:12345')
+        mock_grr_hosts.MOCK_CLIENT, 'F:12345', '/tmp/random')
+    self.assertEqual(return_value, '/tmp/random/tomchop.F:12345.csv')
 
 class GRRArtifactCollectorTest(unittest.TestCase):
   """Tests for the GRR artifact collector."""
