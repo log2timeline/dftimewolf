@@ -910,6 +910,12 @@ class GRRHuntOsqueryDownloader(GRRHuntDownloaderBase):
       grr_client = list(self.grr_api.SearchClients(result.client.client_id))[0]
       client_hostname = grr_client.data.os_info.fqdn.lower()
 
+      if isinstance(payload, osquery_flows.OsqueryCollectedFile):
+        # We don't do anything with any collected files for now as we are just
+        # interested in the osquery results.
+        self.logger.info(f'File collected - {payload.stat_entry.path_spec}.')
+        continue
+
       if not isinstance(payload, osquery_flows.OsqueryResult):
         self.ModuleError(
             f'Incorrect results format from {result.client.client_id} '

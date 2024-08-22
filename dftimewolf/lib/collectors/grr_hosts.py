@@ -428,6 +428,59 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     timeline.WriteToFile(final_bodyfile_path)
     return final_bodyfile_path
 
+  def _DownloadOsquery(
+      self,
+      client: Client,
+      flow_id: str,
+      flow_output_dir: str
+  ) -> Optional[str]:
+    """Download osquery results as a CSV file.
+
+    Args:
+      client: the GRR Client.
+      flow_id: the Osquery flow ID to download results from.
+      flow_output_dir: the directory to store the downloaded timeline.
+
+    Returns:
+      str: the path to the CSV file or None if there are no results.
+    """
+    grr_flow = client.Flow(flow_id)
+    list_results = list(grr_flow.ListResults())
+
+    if not list_results:
+      self.logger.warning(f"No results returned for flow ID {flow_id}")
+      return None
+
+    results = []
+    for result in list_results:
+      payload = result.payload
+      if isinstance(payload, osquery_flows.OsqueryCollectedFile):
+        # We don't do anything with any collected files for now as we are just
+        # interested in the osquery results.
+        self.logger.info(
+            f'Skipping collected file - {payload.stat_entry.path_spec}.')
+        continue
+      if not isinstance(payload, osquery_flows.OsqueryResult):
+        self.logger.error(f'Incorrect results format from flow ID {flow_id}')
+        continue
+
+      headers = [column.name for column in payload.table.header.columns]
+      data = []
+      for row in payload.table.rows:
+        data.append(row.values)
+      data_frame = pd.DataFrame.from_records(data, columns=headers)
+      results.append(data_frame)
+
+    fqdn = client.data.os_info.fqdn.lower()
+    output_file_path = os.path.join(
+        flow_output_dir,
+        '.'.join(str(val) for val in (fqdn, flow_id, 'csv')))
+    with open(output_file_path, mode='w') as fd:
+      merged_data_frame = pd.concat(results)
+      merged_data_frame.to_csv(fd)
+
+    return output_file_path
+
   def _DownloadFiles(self, client: Client, flow_id: str) -> Optional[str]:
     """Download files/results from the specified flow.
 
@@ -445,9 +498,14 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     os.makedirs(flow_output_dir, exist_ok=True)
 
     flow_name = flow_handle.data.name
-    if flow_name == "TimelineFlow":
-      self.logger.debug("Downloading timeline from GRR")
+    if flow_name == 'TimelineFlow':
+      self.logger.debug('Downloading timeline from GRR')
       self._DownloadTimeline(client, flow_handle, flow_output_dir)
+      return flow_output_dir
+
+    if flow_name == 'OsqueryFlow':
+      self.logger.debug('Downloading osquery results from GRR')
+      self._DownloadOsquery(client, flow_id, flow_output_dir)
       return flow_output_dir
 
     payloads = []
@@ -1130,6 +1188,11 @@ class GRROsqueryCollector(GRRFlow):
     results = []
     for result in list_results:
       payload = result.payload
+      if isinstance(payload, osquery_flows.OsqueryCollectedFile):
+        # We don't do anything with any collected files for now as we are just
+        # interested in the osquery results.
+        self.logger.info(f'File collected - {payload.stat_entry.path_spec}.')
+        continue
       if not isinstance(payload, osquery_flows.OsqueryResult):
         self.logger.error(f'Incorrect results format from flow ID {grr_flow}')
         continue
@@ -1192,20 +1255,20 @@ class GRROsqueryCollector(GRRFlow):
       self.state.StoreContainer(results_container)
       return
 
-    for data_frame in results:
-      self.logger.info(
-          f'{str(flow_id)} ({hostname}): {len(data_frame)} rows collected')
+    merged_results = pd.concat(results)
+    self.logger.info(
+        f'{str(flow_id)} ({hostname}): {len(merged_results)} rows collected')
 
-      dataframe_container = containers.OsqueryResult(
-          name=name,
-          description=description,
-          query=query,
-          hostname=hostname,
-          data_frame=data_frame,
-          flow_identifier=flow_identifier,
-          client_identifier=client_identifier)
+    dataframe_container = containers.OsqueryResult(
+        name=name,
+        description=description,
+        query=query,
+        hostname=hostname,
+        data_frame=merged_results,
+        flow_identifier=flow_identifier,
+        client_identifier=client_identifier)
 
-      self.state.StoreContainer(dataframe_container)
+    self.state.StoreContainer(dataframe_container)
 
   def Process(self, container: containers.Host
               ) -> None:  # pytype: disable=signature-mismatch
