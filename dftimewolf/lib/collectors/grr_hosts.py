@@ -443,7 +443,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     
     Returns:
       str: the path to the CSV file or None if there are no results.
-    """"
+    """
     grr_flow = client.Flow(flow_id)
     list_results = list(grr_flow.ListResults())
 
