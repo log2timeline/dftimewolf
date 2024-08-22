@@ -502,7 +502,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       self.logger.debug('Downloading timeline from GRR')
       self._DownloadTimeline(client, flow_handle, flow_output_dir)
       return flow_output_dir
-    
+
     if flow_name == 'OsqueryFlow':
       self.logger.debug('Downloading osquery results from GRR')
       self._DownloadOsquery(client, flow_id, flow_output_dir)
