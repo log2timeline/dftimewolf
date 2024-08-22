@@ -779,24 +779,46 @@ class GRRArtifactCollector(GRRFlow):
   """
 
   _DEFAULT_ARTIFACTS_LINUX = [
-      'LinuxAuditLogs', 'LinuxAuthLogs', 'LinuxCronLogs', 'LinuxWtmp',
-      'ShellHistoryFile', 'ZeitgeistDatabase'
+      # keep-sorted start
+      'LinuxAuditLogs',
+      'LinuxAuthLogs',
+      'LinuxCronLogs',
+      'LinuxWtmp',
+      'ShellHistoryFile',
+      'ZeitgeistDatabase',
+      # keep-sorted end
   ]
 
   _DEFAULT_ARTIFACTS_DARWIN = [
-      'MacOSRecentItemsPlistFile', 'BashShellHistoryFile',
-      'MacOSLaunchAgentsPlistFile', 'MacOSAuditLogFile', 'MacOSSystemLogFile',
-      'MacOSAppleSystemLogFile', 'MacOSLogFile', 'MacOSAppleSetupDoneFile',
+      # keep-sorted start
+      'BashShellHistoryFile',
+      'MacOSAppleSetupDoneFile',
+      'MacOSAppleSystemLogFile',
+      'MacOSAuditLogFile',
+      'MacOSInstallationHistoryPlistFile',
+      'MacOSInstallationLogFile',
+      'MacOSLaunchAgentsPlistFile',
+      'MacOSLaunchDaemonsPlistFile',
+      'MacOSLogFile',
       'MacOSQuarantineEventsSQLiteDatabaseFile',
-      'MacOSLaunchDaemonsPlistFile', 'MacOSInstallationHistoryPlistFile',
-      'MacOSUserApplicationLogFile', 'MacOSInstallationLogFile'
+      'MacOSRecentItemsPlistFile',
+      'MacOSSystemLogFile',
+      'MacOSUserApplicationLogFile',
+      # keep-sorted end
   ]
 
   _DEFAULT_ARTIFACTS_WINDOWS = [
-      'WindowsAppCompatCache', 'WindowsEventLogs', 'WindowsPrefetchFiles',
-      'WindowsScheduledTasks', 'WindowsSearchDatabase',
-      'WindowsSuperFetchFiles', 'WindowsSystemRegistryFiles',
-      'WindowsUserRegistryFiles', 'WindowsXMLEventLogTerminalServices'
+      # keep-sorted start
+      'WindowsAppCompatCache',
+      'WindowsEventLogs',
+      'WindowsPrefetchFiles',
+      'WindowsScheduledTasks',
+      'WindowsSearchDatabase',
+      'WindowsSuperFetchFiles',
+      'WindowsSystemRegistryFiles',
+      'WindowsUserRegistryFiles',
+      'WindowsXMLEventLogTerminalServices'
+      # keep-sorted end
   ]
 
   artifact_registry = {
