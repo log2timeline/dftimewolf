@@ -849,3 +849,37 @@ class TimesketchSavedSearch(interface.AttributeContainer):
   def __eq__(self, other: TimesketchSavedSearch) -> bool:
     """Override __eq__() for this container."""
     return self.name == other.name
+
+
+class TimesketchQuery(TimesketchSavedSearch):
+  """Timesketch Query container. Contains results of a search.
+
+  Attributes:
+    name: Name of the saved search.
+    description: Description of the saved search.
+    query: The search query to save.
+    date: Optional date to restrain the saved search to.
+    minutes_before: Number of minutes to include before the date.
+    minutes_after: Number of minutes to include after the date.
+    results: The results of the query in a given sketch ID.
+    sketch_id: The sketch ID associated with the query.
+  """
+
+  CONTAINER_TYPE = "timesketch_query"
+
+  def __init__(
+    self,
+    name: str,
+    description: str,
+    query: str,
+    date: Optional[datetime.datetime] = None,
+    minutes_before: int = 5,
+    minutes_after: int = 5,
+    sketch_id: int | None = None,
+    results: pandas.DataFrame | None = None,
+  ):
+    super().__init__(
+      name, description, query, date, minutes_before, minutes_after
+    )
+    self.sketch_id = sketch_id
+    self.results = results
