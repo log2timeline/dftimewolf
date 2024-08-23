@@ -862,7 +862,7 @@ class TimesketchQuery(TimesketchSavedSearch):
     minutes_before: Number of minutes to include before the date.
     minutes_after: Number of minutes to include after the date.
     results: The results of the query in a given sketch ID.
-    sketch_id: The sketch ID associated with the query.
+    sketch_url: URL to the sketch associated with the query results
   """
 
   CONTAINER_TYPE = "timesketch_query"
@@ -875,11 +875,11 @@ class TimesketchQuery(TimesketchSavedSearch):
     date: Optional[datetime.datetime] = None,
     minutes_before: int = 5,
     minutes_after: int = 5,
-    sketch_id: int | None = None,
+    sketch_url: str | None = None,
     results: pandas.DataFrame | None = None,
   ):
     super().__init__(
       name, description, query, date, minutes_before, minutes_after
     )
-    self.sketch_id = sketch_id
+    self.sketch_url = sketch_url
     self.results = results
