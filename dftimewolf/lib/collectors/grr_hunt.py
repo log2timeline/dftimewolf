@@ -907,18 +907,19 @@ class GRRHuntOsqueryDownloader(GRRHuntDownloaderBase):
     for result in hunt.ListResults():
       payload = result.payload
 
-      grr_client = list(self.grr_api.SearchClients(result.client.client_id))[0]
+      client_id = result.client.client_id
+      grr_client = list(self.grr_api.SearchClients(client_id))[0]
       client_hostname = grr_client.data.os_info.fqdn.lower()
 
       if isinstance(payload, osquery_flows.OsqueryCollectedFile):
         # We don't do anything with any collected files for now as we are just
         # interested in the osquery results.
-        self.logger.info(f'File collected - {payload.stat_entry.path_spec}.')
+        self.logger.info(f'File collected - {payload.stat_entry.pathspec}.')
         continue
 
       if not isinstance(payload, osquery_flows.OsqueryResult):
         self.ModuleError(
-            f'Incorrect results format from {result.client.client_id} '
+            f'Incorrect results format from {client_id} '
             f'({client_hostname}).  Possibly not an osquery hunt.',
             critical=True)
         continue
@@ -926,9 +927,11 @@ class GRRHuntOsqueryDownloader(GRRHuntDownloaderBase):
       headers = [column.name for column in payload.table.header.columns]
       data = [row.values for row in payload.table.rows]
       data_frame = pd.DataFrame.from_records(data, columns=headers)
+      data_frame['client_hostname'] = client_hostname
+      data_frame['client_id'] = client_id
 
       output_filename = os.path.join(output_path, f'{client_hostname}.csv')
-      data_frame.to_csv(output_filename)
+      data_frame.to_csv(output_filename, index=False)
       self.results.append((client_hostname, output_filename))
 
     return self.results
