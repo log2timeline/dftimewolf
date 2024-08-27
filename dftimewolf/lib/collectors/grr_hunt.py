@@ -913,7 +913,7 @@ class GRRHuntOsqueryDownloader(GRRHuntDownloaderBase):
       if isinstance(payload, osquery_flows.OsqueryCollectedFile):
         # We don't do anything with any collected files for now as we are just
         # interested in the osquery results.
-        self.logger.info(f'File collected - {payload.stat_entry.path_spec}.')
+        self.logger.info(f'File collected - {payload.stat_entry.pathspec}.')
         continue
 
       if not isinstance(payload, osquery_flows.OsqueryResult):
