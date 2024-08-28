@@ -32,6 +32,7 @@
     }],
     "args": [
         ["paths", "Comma-separated list of paths to process.", null],
+        ["--analyzers", "Timesketch analyzers to run", null],
         ["--incident_id", "Incident ID (used for Timesketch description).", null],
         ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "integer"}],
         ["--timesketch_endpoint", "Timesketch endpoint", "http://localhost:5000/"],
