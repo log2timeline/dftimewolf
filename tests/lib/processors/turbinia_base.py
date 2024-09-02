@@ -59,6 +59,7 @@ class TurbiniaBaseTest(unittest.TestCase):
         turbinia_api="http://localhost:8001",
         incident_id="123456789",
         sketch_id=12345,
+        priority_filter=100,
     )
     self.assertEqual(self.turbinia_processor.project, "turbinia-project")
     self.assertEqual(self.turbinia_processor.turbinia_zone, "us-central1f")
@@ -66,6 +67,7 @@ class TurbiniaBaseTest(unittest.TestCase):
         self.turbinia_processor.turbinia_api, "http://localhost:8001")
     self.assertEqual(self.turbinia_processor.incident_id, "123456789")
     self.assertEqual(self.turbinia_processor.sketch_id, 12345)
+    self.assertEqual(self.turbinia_processor.priority_filter, 100)
     self.assertEqual(self.turbinia_processor.output_path, "/tmp")
     self.assertEqual(self.turbinia_processor.turbinia_recipe, None)
 

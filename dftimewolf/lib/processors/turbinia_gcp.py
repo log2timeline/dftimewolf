@@ -142,6 +142,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     return telemetry_entry
 
   # pylint: disable=arguments-differ
+  # pylint: disable=too-many-arguments
   def SetUp(
       self,
       project: str,
@@ -152,7 +153,8 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       sketch_id: int,
       request_ids: str = '',
       disk_names: str = '',
-      turbinia_auth: bool = False) -> None:
+      turbinia_auth: bool = False,
+      priority_filter: int = 100) -> None:
     """Sets up the object attributes.
 
     Args:
@@ -165,7 +167,8 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       incident_id (str): The incident ID.
       sketch_id (int): The sketch ID.
       request_ids (str): Turbinia requests for jobs being processed.
-      disk_names (str): Names of the disks to process.
+      priority_filter (int): Filter report findings, range from 0 to 100,
+          0 is the highest.
     """
 
     if (disk_names and request_ids):
@@ -193,7 +196,8 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
 
     self.TurbiniaSetUp(
         project, turbinia_recipe, turbinia_zone, turbinia_api,
-        incident_id, int(sketch_id) if sketch_id else 0, turbinia_auth)
+        incident_id, int(sketch_id) if sketch_id else 0, priority_filter,
+        turbinia_auth)
 
   def PreProcess(self) -> None:
     """Ensures containers from previous modules are processed.
@@ -271,7 +275,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
               f'additional information. {exception}')
           self.logger.error(message)
     # Generate a Turbinia report and store it in the state.
-    report = self.TurbiniaFinishReport(request_id)
+    report = self.TurbiniaFinishReport(request_id, self.priority_filter)
 
     # Stop profiler
     self.profiler.disable()

@@ -39,7 +39,7 @@ class GoogleSheetsCollector(module.BaseModule):
     super(GoogleSheetsCollector, self).__init__(
         state, name=name, critical=critical)
     self._sheets_resource = None
-    self._credentials = None
+    self._credentials: Optional[Credentials] = None
     self._spreadsheet_id = ''
     self._sheet_names: List[str] = []
     # These are mandatory columns required by Timesketch.
@@ -127,13 +127,13 @@ class GoogleSheetsCollector(module.BaseModule):
           '$ gcloud auth application-default login')
       self.ModuleError(str(exception), critical=True)
 
-  def _GetCredentials(self) -> Credentials:
+  def _GetCredentials(self) -> Optional[Credentials]:
     """Obtains API credentials for accessing the Google Sheets API.
 
     Returns:
       google.oauth2.credentials.Credentials: Google API credentials.
     """
-    credentials = None
+    credentials: Optional[Credentials] = None
 
     # The credentials file stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
@@ -169,8 +169,9 @@ class GoogleSheetsCollector(module.BaseModule):
           credentials = flow.run_console()
 
         # Save the credentials for the next run
-        with open(credentials_path, 'w') as token_file:
-          token_file.write(credentials.to_json())
+        if credentials:
+          with open(credentials_path, 'w') as token_file:
+            token_file.write(credentials.to_json())
 
     return credentials
 
