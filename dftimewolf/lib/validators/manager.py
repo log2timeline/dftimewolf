@@ -99,6 +99,7 @@ class ValidatorsManager:
     Args:
       argument_value: The argument value to validate.
       recipe_argument: The definition of the argument.
+      dry_run: True if the tool is only testing parameters, False otherwise.
 
     Returns:
       The validated argument value. If the recipe argument doesn't specify a

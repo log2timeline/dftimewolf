@@ -13,7 +13,11 @@ class AbstractValidator(abc.ABC):
   NAME: str = None  # type: ignore
 
   def __init__(self, dry_run: bool=False) -> None:
-    """Initialize."""
+    """Initialize.
+
+    Args:
+      dry_run: True if the tool is only testing parameters, False otherwise.
+    """
     self._dry_run = dry_run
 
   @abc.abstractmethod

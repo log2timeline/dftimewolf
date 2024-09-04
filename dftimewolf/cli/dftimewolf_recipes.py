@@ -313,6 +313,9 @@ class DFTimewolfTool(object):
   def ValidateArguments(self, dry_run: bool=False) -> None:
     """Validate the arguments.
 
+    Args:
+      dry_run: True if the tool is only testing parameters, False otherwise.
+
     Raises:
       errors.CriticalError: If one or more arguments could not be validated.
     """
