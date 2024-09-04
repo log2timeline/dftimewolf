@@ -310,8 +310,11 @@ class DFTimewolfTool(object):
 
     self._state.command_line_options = vars(self._command_line_options)
 
-  def ValidateArguments(self) -> None:
+  def ValidateArguments(self, dry_run: bool=False) -> None:
     """Validate the arguments.
+
+    Args:
+      dry_run: True if the tool is only testing parameters, False otherwise.
 
     Raises:
       errors.CriticalError: If one or more arguments could not be validated.
@@ -329,7 +332,7 @@ class DFTimewolfTool(object):
       if argument_mandatory or argument_value is not None:
         try:
           valid_value = validators_manager.ValidatorsManager.Validate(
-              argument_value, arg)
+              argument_value, arg, dry_run)
           self.state.command_line_options[switch] = valid_value
         except errors.RecipeArgsValidationFailure as exception:
           error_messages.append(
@@ -519,7 +522,7 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
     recipe_name)
 
   try:
-    tool.ValidateArguments()
+    tool.ValidateArguments(tool.dry_run)
   except errors.CriticalError as exception:
     if cdm:
       cdm.EnqueueMessage('dftimewolf', str(exception), True)

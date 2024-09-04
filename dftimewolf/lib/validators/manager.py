@@ -92,12 +92,14 @@ class ValidatorsManager:
   @classmethod
   def Validate(cls,
                argument_value: Any,
-               recipe_argument: resources.RecipeArgument) -> Any:
+               recipe_argument: resources.RecipeArgument,
+               dry_run: bool=False) -> Any:
     """Validate an argument value.
 
     Args:
       argument_value: The argument value to validate.
       recipe_argument: The definition of the argument.
+      dry_run: True if the tool is only testing parameters, False otherwise.
 
     Returns:
       The validated argument value. If the recipe argument doesn't specify a
@@ -116,6 +118,6 @@ class ValidatorsManager:
           f'{validator_name} is not a registered validator')
 
     validator_class = cls._validator_classes[validator_name]
-    validator = validator_class()
+    validator = validator_class(dry_run)
 
     return validator.Validate(argument_value, recipe_argument)
