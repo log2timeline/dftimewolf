@@ -27,7 +27,7 @@
             "turbinia_api": "@turbinia_api",
             "incident_id": "@incident_id",
             "output_directory": null,
-            "priority_filter", "@priority_filter",
+            "priority_filter": "@priority_filter",
             "sketch_id": null
         }
     }],
