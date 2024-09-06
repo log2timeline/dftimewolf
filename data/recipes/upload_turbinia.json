@@ -27,6 +27,7 @@
             "turbinia_api": "@turbinia_api",
             "incident_id": "@incident_id",
             "output_directory": null,
+            "priority_filter", "@priority_filter",
             "sketch_id": null
         }
     }],
@@ -40,6 +41,7 @@
         ["--turbinia_api", "Turbinia API server endpoint.", "http://127.0.0.1:8000"],
         ["--local_turbinia_results", "Directory where Turbinia results will be downloaded to.", null],
         ["--turbinia_zone", "The GCP zone the disk to process and Turbinia workers are in.", "us-central1-f", {"format": "gcp_zone"}],
-        ["--sketch_id", "Timesketch sketch ID.", null, {"format": "integer"}]
+        ["--sketch_id", "Timesketch sketch ID.", null, {"format": "integer"}],
+        ["--priority_filter", "Filter report findings, range from 0 to 100, 0 is the highest.", "100", {"format": "integer"}]
     ]
   }
