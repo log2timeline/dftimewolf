@@ -46,7 +46,7 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
   def SetUp(
       self, project: str, turbinia_recipe: Optional[str],
       turbinia_zone: str, turbinia_api: str, output_directory: str,
-      incident_id: str, sketch_id: str, priority_filter: int = 100, 
+      incident_id: str, sketch_id: str, priority_filter: int = 100,
       turbinia_auth: bool = False) -> None:
     """Sets up the object attributes.
 
