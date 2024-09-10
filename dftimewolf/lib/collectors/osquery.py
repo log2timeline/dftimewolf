@@ -54,7 +54,9 @@ class OsqueryCollector(module.BaseModule):
       True if the query appears to be valid, False otherwise
     """
     # TODO(sydp): add more checks.
-    return query.upper().startswith('SELECT ')
+    return (
+        query.strip().upper().startswith('SELECT ') 
+        and query.strip().endswith(';'))
 
   def _ParsePlatforms(self, platforms: str) -> List[str]:
     """Parse and normalise the platforms value from an osquery pack.

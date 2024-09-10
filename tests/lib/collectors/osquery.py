@@ -44,6 +44,11 @@ class OsqueryCollectorTest(unittest.TestCase):
 
     self.assertEqual(context.exception.message, 'No valid osquery collected.')
 
+    with self.assertRaises(DFTimewolfError) as context:
+      self.osquery_collector.SetUp(query='SELECT * FROM processes', paths='')
+
+    self.assertEqual(context.exception.message, 'No valid osquery collected.')
+
   def testSetupPathsError(self) -> None:
     """Tests the collector's Setup() method with invalid paths parameter."""
     test_empty_data = ""
@@ -69,7 +74,7 @@ class OsqueryCollectorTest(unittest.TestCase):
     """Tests the collector's SetUp() function with invalid configuration."""
     with self.assertRaises(DFTimewolfError) as context:
       self.osquery_collector.SetUp(
-          query='SELECT * FROM processes', paths='',
+          query='SELECT * FROM processes;', paths='',
           configuration_content='test', remote_configuration_path='test')
     self.assertEqual(
         context.exception.message,
@@ -77,7 +82,7 @@ class OsqueryCollectorTest(unittest.TestCase):
 
     with self.assertRaises(DFTimewolfError) as context:
       self.osquery_collector.SetUp(
-          query='SELECT * FROM processes', paths='',
+          query='SELECT * FROM processes;', paths='',
           local_configuration_path ='test', remote_configuration_path='test')
     self.assertEqual(
         context.exception.message,
@@ -85,7 +90,7 @@ class OsqueryCollectorTest(unittest.TestCase):
 
     with self.assertRaises(DFTimewolfError) as context:
       self.osquery_collector.SetUp(
-          query='SELECT * FROM processes', paths='',
+          query='SELECT * FROM processes;', paths='',
           local_configuration_path ='test', configuration_content='test')
     self.assertEqual(
         context.exception.message,
@@ -93,7 +98,7 @@ class OsqueryCollectorTest(unittest.TestCase):
 
     with self.assertRaises(DFTimewolfError) as context:
       self.osquery_collector.SetUp(
-          query='SELECT * from processes', paths='',
+          query='SELECT * from processes;', paths='',
           configuration_content='invalid content')
     self.assertEqual(
         context.exception.message,
@@ -102,7 +107,7 @@ class OsqueryCollectorTest(unittest.TestCase):
   def testSetUpRemoteConfigurationPath(self) -> None:
     """Tests the collector's SetUp() function with the remote config path."""
     self.osquery_collector.SetUp(
-        query='SELECT * from test',
+        query='SELECT * from test;',
         paths='ok',
         remote_configuration_path='/test/path')
     self.assertEqual(self.osquery_collector.configuration_path, '/test/path')
@@ -113,7 +118,7 @@ class OsqueryCollectorTest(unittest.TestCase):
         'builtins.open',
         new=mock.mock_open(read_data='{"test": "test"}')) as _:
       self.osquery_collector.SetUp(
-          query='SELECT * from test',
+          query='SELECT * from test;',
           paths='ok',
           local_configuration_path='test')
     self.assertEqual(
@@ -122,7 +127,7 @@ class OsqueryCollectorTest(unittest.TestCase):
   def testSetUpConfigurationContent(self) -> None:
     """Tests the collector's SetUp() function with configuration content."""
     self.osquery_collector.SetUp(
-        query='SELECT * from test',
+        query='SELECT * from test;',
         paths='ok',
         configuration_content='{"test": "test"}')
     self.assertEqual(
@@ -131,7 +136,7 @@ class OsqueryCollectorTest(unittest.TestCase):
   def testSetUpFileCollectionColumns(self) -> None:
     """Tests the collector's SetUp() function with file collection columns."""
     self.osquery_collector.SetUp(
-        query='SELECT * from test',
+        query='SELECT * from test;',
         paths='ok',
         file_collection_columns='a,b')
     self.assertEqual(
@@ -142,7 +147,7 @@ class OsqueryCollectorTest(unittest.TestCase):
     """Tests the collector's Process() function with a text file."""
     mock_exists.return_value = True
 
-    test_ok_data = "SELECT * FROM processes"
+    test_ok_data = "SELECT * FROM processes;"
 
     with mock.patch(
         'builtins.open',
@@ -153,7 +158,7 @@ class OsqueryCollectorTest(unittest.TestCase):
 
     containers = self.osquery_collector.GetContainers(OsqueryQuery)
     self.assertEqual(len(containers), 1)
-    self.assertEqual(containers[0].query, "SELECT * FROM processes")
+    self.assertEqual(containers[0].query, "SELECT * FROM processes;")
     self.assertEqual(containers[0].configuration_content, '')
     self.assertEqual(containers[0].configuration_path, '')
 

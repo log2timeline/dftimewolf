@@ -980,7 +980,7 @@ class GRROsqueryCollectorTest(unittest.TestCase):
         mock_grr_hosts.MOCK_CLIENT_RECENT,
         'OsqueryFlow',
         osquery_pb2.OsqueryFlowArgs(
-            query='SELECT * FROM processes',
+            query='SELECT * FROM processes;',
             timeout_millis=300000,
             ignore_stderr_errors=False,
             configuration_content='',
