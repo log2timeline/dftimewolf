@@ -81,7 +81,8 @@ class OsqueryCollector(module.BaseModule):
       elif platform in _ALL_PLATFORMS:
         unique_platforms.add(platform)
       else:
-        self.logger.warning(f'Unexpected value {platform} in platform value.')
+        self.ModuleError(
+            f'Unexpected value {platform} in platform value.', critical=True)
 
     return list(unique_platforms)
 
@@ -103,7 +104,7 @@ class OsqueryCollector(module.BaseModule):
     for num, (name, entry) in enumerate(query_pack.get('queries', {}).items()):
       query = entry['query']
       if not self._ValidateOsquery(query):
-        self.logger.warning(
+        self.ModuleError.warning(
             f'Entry {num} in query pack {path} does not appear to be valid.')
         continue
 
@@ -141,8 +142,9 @@ class OsqueryCollector(module.BaseModule):
                   configuration_path=self.configuration_path,
                   file_collection_columns=self.file_collection_columns))
         else:
-          self.logger.warning(f'Osquery on line {line_number} of {path} '
-                              'does not appear to be valid.')
+          self.ModuleError(
+              f'Osquery on line {line_number} of {path} '
+              'does not appear to be valid.', critical=True)
 
   # pylint: disable=arguments-differ
   def SetUp(
@@ -213,15 +215,17 @@ class OsqueryCollector(module.BaseModule):
       self.file_collection_columns = [
           col.strip() for col in file_collection_columns.split(',')]
 
-    if query and self._ValidateOsquery(query):
-      self.osqueries.append(containers.OsqueryQuery(
-          query=query,
-          configuration_content=self.configuration_content,
-          configuration_path=self.configuration_path,
-          file_collection_columns=self.file_collection_columns))
-    else:
-      self.logger.warning(
-          'Osquery parameter not set or does not appear to be valid.')
+    if query:
+      if self._ValidateOsquery(query):
+        self.osqueries.append(containers.OsqueryQuery(
+            query=query,
+            configuration_content=self.configuration_content,
+            configuration_path=self.configuration_path,
+            file_collection_columns=self.file_collection_columns))
+      else:
+        self.ModuleError(
+            'Osquery parameter not set or does not appear to be valid.',
+            critical=True)
 
     if paths:
       split_paths = [path.strip() for path in paths.split(',')]
@@ -237,7 +241,7 @@ class OsqueryCollector(module.BaseModule):
 
     if not self.osqueries:
       self.ModuleError(
-        message='No valid osquery collected.', critical=True)
+          message='No valid osquery collected.', critical=True)
 
   def Process(self) -> None:
     """Collects osquery from the command line and local file system."""

@@ -42,12 +42,16 @@ class OsqueryCollectorTest(unittest.TestCase):
     with self.assertRaises(DFTimewolfError) as context:
       self.osquery_collector.SetUp(query='not a query', paths='')
 
-    self.assertEqual(context.exception.message, 'No valid osquery collected.')
+    self.assertEqual(
+        context.exception.message,
+        'Osquery parameter not set or does not appear to be valid.')
 
     with self.assertRaises(DFTimewolfError) as context:
       self.osquery_collector.SetUp(query='SELECT * FROM processes', paths='')
 
-    self.assertEqual(context.exception.message, 'No valid osquery collected.')
+    self.assertEqual(
+        context.exception.message,
+        'Osquery parameter not set or does not appear to be valid.')
 
   def testSetupPathsError(self) -> None:
     """Tests the collector's Setup() method with invalid paths parameter."""
