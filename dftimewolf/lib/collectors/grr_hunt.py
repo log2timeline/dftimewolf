@@ -398,7 +398,7 @@ class GRRHuntOsqueryCollector(GRRHunt):
 
     for osquery_container in osquery_containers:
       query = osquery_container.query
-      if not query.strip().endswith(';')
+      if not query.strip().endswith(';'):
         query += ';'
 
       hunt_args = osquery_flows.OsqueryFlowArgs()

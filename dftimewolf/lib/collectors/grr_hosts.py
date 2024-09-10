@@ -1241,7 +1241,7 @@ class GRROsqueryCollector(GRRFlow):
       osquery_container: the OSQuery.
     """
     query = osquery_container.query
-    if not query.strip().endswith(';')
+    if not query.strip().endswith(';'):
       query += ';'
 
     flow_args = osquery_flows.OsqueryFlowArgs()
