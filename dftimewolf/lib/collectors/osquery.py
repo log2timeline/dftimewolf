@@ -104,7 +104,7 @@ class OsqueryCollector(module.BaseModule):
     for num, (name, entry) in enumerate(query_pack.get('queries', {}).items()):
       query = entry['query']
       if not self._ValidateOsquery(query):
-        self.ModuleError.warning(
+        self.ModuleError(
             f'Entry {num} in query pack {path} does not appear to be valid.')
         continue
 
