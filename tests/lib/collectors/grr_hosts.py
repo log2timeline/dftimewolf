@@ -980,7 +980,7 @@ class GRROsqueryCollectorTest(unittest.TestCase):
         mock_grr_hosts.MOCK_CLIENT_RECENT,
         'OsqueryFlow',
         osquery_pb2.OsqueryFlowArgs(
-            query='SELECT * FROM processes',
+            query='SELECT * FROM processes;',
             timeout_millis=300000,
             ignore_stderr_errors=False,
             configuration_content='',
@@ -991,7 +991,7 @@ class GRROsqueryCollectorTest(unittest.TestCase):
 
     results = self.grr_osquery_collector.GetContainers(containers.OsqueryResult)
     self.assertEqual(len(results), 1)
-    self.assertEqual(results[0].query, 'SELECT * FROM processes')
+    self.assertEqual(results[0].query, 'SELECT * FROM processes;')
     self.assertEqual(results[0].name, None)
     self.assertEqual(results[0].description, None)
     self.assertEqual(results[0].hostname, 'C.0000000000000001')

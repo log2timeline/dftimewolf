@@ -156,7 +156,7 @@ class GRRHuntOsqueryCollectorTest(unittest.TestCase):
     # extract call kwargs
     call_kwargs = self.mock_grr_api.CreateHunt.call_args[1]
     self.assertEqual(call_kwargs['flow_args'].query,
-                     'SELECT * FROM processes')
+                     'SELECT * FROM processes;')
     self.assertEqual(call_kwargs['flow_args'].timeout_millis,
                      300000)
     self.assertEqual(call_kwargs['flow_args'].ignore_stderr_errors, False)

@@ -1240,8 +1240,12 @@ class GRROsqueryCollector(GRRFlow):
       client: the GRR Client.
       osquery_container: the OSQuery.
     """
+    query = osquery_container.query
+    if not query.strip().endswith(';'):
+      query += ';'
+
     flow_args = osquery_flows.OsqueryFlowArgs()
-    flow_args.query = osquery_container.query
+    flow_args.query = query
     flow_args.timeout_millis = self.timeout_millis
     flow_args.ignore_stderr_errors = self.ignore_stderr_errors
     flow_args.configuration_content = osquery_container.configuration_content
@@ -1260,7 +1264,6 @@ class GRROsqueryCollector(GRRFlow):
 
     name = osquery_container.name
     description = osquery_container.description
-    query = osquery_container.query
     flow_identifier = flow_id
     client_identifier = client.client_id
 

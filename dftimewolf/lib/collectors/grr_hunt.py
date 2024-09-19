@@ -397,8 +397,12 @@ class GRRHuntOsqueryCollector(GRRHunt):
     osquery_containers = self.GetContainers(containers.OsqueryQuery)
 
     for osquery_container in osquery_containers:
+      query = osquery_container.query
+      if not query.strip().endswith(';'):
+        query += ';'
+
       hunt_args = osquery_flows.OsqueryFlowArgs()
-      hunt_args.query = osquery_container.query
+      hunt_args.query = query
       hunt_args.timeout_millis = self.timeout_millis
       hunt_args.ignore_stderr_errors = self.ignore_stderr_errors
       hunt_args.configuration_content = osquery_container.configuration_content
