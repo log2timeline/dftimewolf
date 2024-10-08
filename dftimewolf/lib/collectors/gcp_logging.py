@@ -72,18 +72,20 @@ class GCPLogsCollector(module.BaseModule):
     Args:
       logging_client: A GCP Cloud Logging client
 
-    Returns:
-      results.pages: Query result pages generator
+    Yields:
+      results: Query result entries generator
     """
     results = logging_client.list_entries(
           order_by=logging.DESCENDING,
           filter_=self._filter_expression,
           page_size=1000)
-    return results.pages
+
+    # list_entries() returns a Generator object
+    yield results
 
   def ProcessPages(self, pages: Any, backoff_multiplier: int,
     output_file: Any, output_path: str) -> str:
-    """Iterates through a generator or pages and saves logs to disk.
+    """Iterates through a generator and saves logs to disk.
     Can optionally perform exponential backoff if query API limits are exceeded.
 
     Args:
