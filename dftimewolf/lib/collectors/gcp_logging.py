@@ -79,7 +79,11 @@ class GCPLogsCollector(module.BaseModule):
           order_by=logging.DESCENDING,
           filter_=self._filter_expression,
           page_size=1000)
-    return results.pages
+
+    if hasattr(results, 'pages'):
+      return results.pages
+
+    yield results
 
   def ProcessPages(self, pages: Any, backoff_multiplier: int,
     output_file: Any, output_path: str) -> str:
