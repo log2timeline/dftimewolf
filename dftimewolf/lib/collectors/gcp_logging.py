@@ -183,11 +183,11 @@ class GCPLogsCollector(module.BaseModule):
 
     if self.start_time:
       filter_expression = filter_expression.replace(
-          '<START_TIME>', self.start_time.strftime('%Y%m%dT%H%M%S%z')
+          '<START_TIME>', self.start_time.strftime('%Y-%m-%dT%H:%M:%S%z')
       )
     if self.end_time:
       filter_expression = filter_expression.replace(
-          '<END_TIME>', self.end_time.strftime('%Y%m%dT%H%M%S%z')
+          '<END_TIME>', self.end_time.strftime('%Y-%m-%dT%H:%M:%S%z')
       )
 
     self._filter_expression = filter_expression
