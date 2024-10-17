@@ -2,6 +2,7 @@
 """Common utilities for DFTimewolf."""
 
 import argparse
+import datetime
 import os
 import random
 import re
@@ -117,7 +118,10 @@ def ImportArgsFromDict(value: Any,
       token = match.group(1)
       if token in args:
         actual_param = args[token]
-        if isinstance(actual_param, str):
+        if isinstance(actual_param, datetime.datetime):
+          value = value.replace("@"+token,
+                                actual_param.isoformat(timespec='seconds'))
+        elif isinstance(actual_param, str):
           value = value.replace("@"+token, actual_param)
         else:
           value = actual_param
