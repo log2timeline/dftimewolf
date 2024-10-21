@@ -94,6 +94,6 @@ if [[ "$*" =~ "include-turbinia" ]]; then
     /usr/bin/python3 -m pip install turbinia
 fi
 
-echo "Installing dftimewolf requirements via Poetry"
-# Install dftimewolf's pinned requirements
+echo "Installing dftimewolf via Poetry"
+# Install dftimewolf's pinned dependencies
 poetry install
