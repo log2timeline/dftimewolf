@@ -71,23 +71,21 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
     expected_addition_record = {
         'query':
             'test_query',
-        'project_name':
-            'test_project',
         'data_type':
             'gcp:log:json',
         'datetime':
             '2019-06-06T09:00:41.797000Z',
         'timestamp_desc':
             'Event Recorded',
-        'resource_label_firewall_rule_id':
+        'firewall_rule_id':
             '2527368186053355716',
-        'resource_label_project_id':
+        'project_id':
             'ketchup-research',
         'principalEmail':
             'heinz-57@ketchup-research.iam.gserviceaccount.com',
-        'requestMetadata_callerIp':
+        'callerIp':
             'gce-internal-ip',
-        'requestMetadata_callerSuppliedUserAgent':
+        'callerSuppliedUserAgent':
             'google-cloud-sdk gcloud/249.0.0',
         'serviceName':
             'compute.googleapis.com',
@@ -104,7 +102,7 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
 
     # pylint: disable=protected-access
     actual_timesketch_record = processor._ProcessLogLine(
-        firewall_addition_json, 'test_query', 'test_project')
+        firewall_addition_json, 'test_query')
     actual_timesketch_record = json.loads(actual_timesketch_record)
     self.assertDictEqual(expected_addition_record, actual_timesketch_record)
 
@@ -202,23 +200,21 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
     expected_creation_record = {
         'query':
             'test_query',
-        'project_name':
-            'test_project',
         'data_type':
             'gcp:log:json',
         'datetime':
             '2019-06-06T09:00:27.066000Z',
         'timestamp_desc':
             'Event Recorded',
-        'resource_label_firewall_rule_id':
+        'firewall_rule_id':
             '2527368186053355716',
-        'resource_label_project_id':
+        'project_id':
             'ketchup-research',
         'principalEmail':
             'heinz-57@ketchup-research.iam.gserviceaccount.com',
-        'requestMetadata_callerIp':
+        'callerIp':
             'gce-internal-ip',
-        'requestMetadata_callerSuppliedUserAgent':
+        'callerSuppliedUserAgent':
             'google-cloud-sdk gcloud/249.0.0',
         'serviceName':
             'compute.googleapis.com',
@@ -243,7 +239,7 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
     }
 
     actual_timesketch_record = processor._ProcessLogLine(
-        firewall_creation_json, 'test_query', 'test_project')
+        firewall_creation_json, 'test_query')
     actual_timesketch_record = json.loads(actual_timesketch_record)
     self.assertDictEqual(expected_creation_record, actual_timesketch_record)
 
@@ -297,25 +293,23 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
     expected_timesketch_record = {
         'query':
             'test_query',
-        'project_name':
-            'test_project',
         'data_type':
             'gcp:log:json',
         'datetime':
             '2019-06-06T09:29:04.499000Z',
         'timestamp_desc':
             'Event Recorded',
-        'resource_label_zone':
+        'zone':
             'europe-west1-c',
-        'resource_label_project_id':
+        'project_id':
             'ketchup-research',
-        'resource_label_instance_id':
+        'instance_id':
             '6662286141402997301',
         'principalEmail':
             'heinz-57@ketchup-research.iam.gserviceaccount.com',
-        'requestMetadata_callerIp':
+        'callerIp':
             'gce-internal-ip',
-        'requestMetadata_callerSuppliedUserAgent':
+        'callerSuppliedUserAgent':
             'google-cloud-sdk gcloud/249.0.0',
         'serviceName':
             'compute.googleapis.com',
@@ -334,7 +328,7 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
 
     # pylint: disable=protected-access
     actual_timesketch_record = processor._ProcessLogLine(
-        gce_creation, 'test_query', 'test_project')
+        gce_creation, 'test_query')
     actual_timesketch_record = json.loads(actual_timesketch_record)
     self.assertDictEqual(expected_timesketch_record, actual_timesketch_record)
 
@@ -429,26 +423,24 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
     expected_timesketch_record = {
         'query':
             'test_query',
-        'project_name':
-            'test_project',
         'data_type':
             'gcp:log:json',
         'datetime':
             '2020-06-16T05:09:57.427874505Z',
         'timestamp_desc':
             'Event Recorded',
-        'resource_label_location':
+        'location':
             'us-east1',
-        'resource_label_project_id':
+        'project_id':
             'ketchup-research',
         'principalEmail':
             'heinz-57@ketchup-research.iam.gserviceaccount.com',
-        'requestMetadata_callerIp':
+        'callerIp':
             '100.100.100.100',
-        'requestMetadata_callerSuppliedUserAgent':
+        'callerSuppliedUserAgent':
             'google-cloud-sdk gcloud/249.0.0',
-        'requestMetadata_destinationAttributes': {},
-        'requestMetadata_requestAttributes': {
+        'destinationAttributes': {},
+        'requestAttributes': {
             'auth': {},
             'time': '2020-06-16T05:09:57.437288734Z',
         },
@@ -458,7 +450,7 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
             'storage.buckets.create',
         'resourceName':
             'projects/_/buckets/test_bucket_1',
-        'resource_label_bucket_name':
+        'bucket_name':
             'test_bucket_1',
         'policyDelta':
             'ADD projectEditor:ketchup-research with role '
@@ -476,7 +468,7 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
 
     # pylint: disable=protected-access
     actual_timesketch_record = processor._ProcessLogLine(
-        gcs_creation, 'test_query', 'test_project')
+        gcs_creation, 'test_query')
     actual_timesketch_record = json.loads(actual_timesketch_record)
     self.assertDictEqual(expected_timesketch_record, actual_timesketch_record)
 
@@ -522,18 +514,17 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
         'filename': 'application_000004_0005.container_113_05_1833_01.'
                     'prelaunch.err',
         'message': 'line 470: /etc/selinux/config: Permission denied',
-        'project_name': 'test_project',
         'query': 'test_query',
         'data_type': 'gcp:log:json',
-        'resource_label_cluster_name': 'cluster-ca8b',
-        'resource_label_cluster_uuid': '44444-444444-444-4444-4444',
-        'resource_label_project_id': 'metastore-playground',
-        'resource_label_region': 'us-central1',
+        'cluster_name': 'cluster-ca8b',
+        'cluster_uuid': '44444-444444-444-4444-4444',
+        'project_id': 'metastore-playground',
+        'region': 'us-central1',
         'timestamp_desc': 'Event Recorded'}
 
     # pylint: disable=protected-access
     actual_timesketch_record = processor._ProcessLogLine(
-        yarn_log, 'test_query', 'test_project')
+        yarn_log, 'test_query')
     actual_timesketch_record = json.loads(actual_timesketch_record)
     self.assertDictEqual(expected_timesketch_record, actual_timesketch_record)
 

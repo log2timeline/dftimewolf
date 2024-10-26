@@ -3,7 +3,8 @@
 
 import json
 import tempfile
-from typing import Any, Dict, Optional, TYPE_CHECKING
+from datetime import datetime
+from typing import Any, Dict, Optional, Union, TYPE_CHECKING
 
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.module import BaseModule
@@ -29,16 +30,12 @@ class GCPLoggingTimesketch(BaseModule):
     """Sets up necessary module configuration options."""
     # No configuration required.
 
-  def _ProcessLogLine(self,
-                      log_line: str,
-                      query: str,
-                      project_name: str) -> str:
+  def _ProcessLogLine(self, log_line: str, query: str) -> str:
     """Processes a single JSON formatted Google Cloud Platform log line.
 
     Args:
       log_line (str): a JSON formatted GCP log entry.
       query (str): the GCP query used to retrieve the log.
-      project_name (str): name of the GCP project associated with the query.
 
     Returns:
       str: a Timesketch-friendly version of the log line.
@@ -46,7 +43,7 @@ class GCPLoggingTimesketch(BaseModule):
     log_record = json.loads(log_line)
 
     # Metadata about how the record was obtained.
-    timesketch_record = {'query': query, 'project_name': project_name,
+    timesketch_record = {'query': query,
                          'data_type': self.DATA_TYPE}
 
     # Timestamp related fields.
@@ -61,7 +58,7 @@ class GCPLoggingTimesketch(BaseModule):
       labels = resource.get('labels', None)
       if labels:
         for attribute, value in labels.items():
-          timesketch_attribute = 'resource_label_{0:s}'.format(attribute)
+          timesketch_attribute = attribute
           timesketch_record[timesketch_attribute] = value
 
     # Some Cloud logs pass through Severity from the underlying log source
@@ -74,10 +71,12 @@ class GCPLoggingTimesketch(BaseModule):
     json_payload = log_record.get('jsonPayload', None)
     if json_payload:
       self._ParseJSONPayload(json_payload, timesketch_record)
+      timesketch_record['jsonPayload'] = json_payload
 
     proto_payload = log_record.get('protoPayload', None)
     if proto_payload:
       self._parse_proto_payload(proto_payload, timesketch_record)
+      timesketch_record['protoPayload'] = proto_payload
 
     text_payload = log_record.get('textPayload', None)
     if text_payload:
@@ -109,7 +108,7 @@ class GCPLoggingTimesketch(BaseModule):
     request_metadata = proto_payload.get('requestMetadata', None)
     if request_metadata:
       for attribute, value in request_metadata.items():
-        timesketch_attribute = 'requestMetadata_{0:s}'.format(attribute)
+        timesketch_attribute = attribute
         timesketch_record[timesketch_attribute] = value
 
     proto_attributes = ['serviceName', 'methodName', 'resourceName']
@@ -246,7 +245,8 @@ class GCPLoggingTimesketch(BaseModule):
 
     timesketch_record['message'] = message
 
-  def _ProcessLogContainer(self, logs_container: containers.GCPLogs) -> None:
+  def _ProcessLogContainer(self,
+      logs_container: Union[containers.File, containers.Directory]) -> None:
     """Processes a GCP logs container.
 
     Args:
@@ -262,23 +262,35 @@ class GCPLoggingTimesketch(BaseModule):
     with open(logs_container.path, 'r') as input_file:
       for line in input_file:
         transformed_line = self._ProcessLogLine(
-            line, logs_container.filter_expression, logs_container.project_name)
+            line, logs_container.name)
         if transformed_line:
           output_file.write(transformed_line)
           output_file.write('\n')
     output_file.close()
 
-    timeline_name = 'GCP logs {0:s} "{1:s}"'.format(
-        logs_container.project_name, logs_container.filter_expression)
+    current_timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S')
+    timeline_name = f'gcp_log_{current_timestamp}'
 
     container = containers.File(name=timeline_name, path=output_path)
     self.StoreContainer(container)
 
   def Process(self) -> None:
     """Processes GCP logs containers for insertion into Timesketch."""
-    logs_containers = self.GetContainers(containers.GCPLogs)
-    for logs_container in logs_containers:
-      self._ProcessLogContainer(logs_container)
+    #logs_containers = self.GetContainers(containers.GCPLogs)
+    #for logs_container in logs_containers:
+    #  self._ProcessLogContainer(logs_container)
+
+    combined_list = []
+
+    for file_container in self.GetContainers(containers.File, pop=True):
+      combined_list.append(file_container)
+
+    for directory_container in self.GetContainers(
+        containers.Directory, pop=True):
+      combined_list.append(directory_container)
+
+    for log_container in combined_list:
+      self._ProcessLogContainer(log_container)
 
 
 modules_manager.ModulesManager.RegisterModule(GCPLoggingTimesketch)
