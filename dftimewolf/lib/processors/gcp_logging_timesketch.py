@@ -250,7 +250,8 @@ class GCPLoggingTimesketch(BaseModule):
     """Processes a GCP logs container.
 
     Args:
-      logs_container (GCPLogs): logs container.
+      logs_container Union[containers.File, containers.Directory]:
+          container containing GCPLogsCollector output file.
     """
     if not logs_container.path:
       return
@@ -269,17 +270,13 @@ class GCPLoggingTimesketch(BaseModule):
     output_file.close()
 
     current_timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S')
-    timeline_name = f'gcp_log_{current_timestamp}'
+    timeline_name = f'{current_timestamp}'
 
     container = containers.File(name=timeline_name, path=output_path)
     self.StoreContainer(container)
 
   def Process(self) -> None:
     """Processes GCP logs containers for insertion into Timesketch."""
-    #logs_containers = self.GetContainers(containers.GCPLogs)
-    #for logs_container in logs_containers:
-    #  self._ProcessLogContainer(logs_container)
-
     combined_list = []
 
     for file_container in self.GetContainers(containers.File, pop=True):
