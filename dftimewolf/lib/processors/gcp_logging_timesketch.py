@@ -247,8 +247,7 @@ class GCPLoggingTimesketch(BaseModule):
     """Processes a GCP logs container.
 
     Args:
-      logs_container (containers.File): container containing GCPLogsCollector
-          output file.
+      logs_container: container containing GCPLogsCollector output file.
     """
     if not logs_container.path:
       return
@@ -257,17 +256,27 @@ class GCPLoggingTimesketch(BaseModule):
         mode='w', encoding='utf-8', delete=False, suffix='.jsonl')
     output_path = output_file.name
 
+    # `project_id` to be used in timeline name.
+    project_id = ''
+
     with open(logs_container.path, 'r') as input_file:
       for line in input_file:
         transformed_line = self._ProcessLogLine(
             line, logs_container.name)
         if transformed_line:
+          if not project_id:
+            try:
+              json_transformed_line = json.loads(transformed_line)
+              project_id = json_transformed_line.get('project_id', '')
+            except json.decoder.JSONDecodeError:
+              pass
+
           output_file.write(transformed_line)
           output_file.write('\n')
     output_file.close()
 
     current_timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S')
-    timeline_name = f'{current_timestamp}'
+    timeline_name = f'{project_id}_{current_timestamp}'
 
     container = containers.File(name=timeline_name, path=output_path)
     self.StoreContainer(container)
