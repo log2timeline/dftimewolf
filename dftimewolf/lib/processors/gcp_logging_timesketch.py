@@ -71,12 +71,10 @@ class GCPLoggingTimesketch(BaseModule):
     json_payload = log_record.get('jsonPayload', None)
     if json_payload:
       self._ParseJSONPayload(json_payload, timesketch_record)
-      timesketch_record['jsonPayload'] = json_payload
 
     proto_payload = log_record.get('protoPayload', None)
     if proto_payload:
       self._parse_proto_payload(proto_payload, timesketch_record)
-      timesketch_record['protoPayload'] = proto_payload
 
     text_payload = log_record.get('textPayload', None)
     if text_payload:
