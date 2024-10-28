@@ -4,7 +4,7 @@
 import json
 import tempfile
 from datetime import datetime
-from typing import Any, Dict, Optional, Union, TYPE_CHECKING
+from typing import Any, Dict, Optional, TYPE_CHECKING
 
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.module import BaseModule
@@ -243,13 +243,12 @@ class GCPLoggingTimesketch(BaseModule):
 
     timesketch_record['message'] = message
 
-  def _ProcessLogContainer(self,
-      logs_container: Union[containers.File, containers.Directory]) -> None:
+  def _ProcessLogContainer(self, logs_container: containers.File) -> None:
     """Processes a GCP logs container.
 
     Args:
-      logs_container Union[containers.File, containers.Directory]:
-          container containing GCPLogsCollector output file.
+      logs_container (containers.File): container containing GCPLogsCollector
+          output file.
     """
     if not logs_container.path:
       return
@@ -275,17 +274,8 @@ class GCPLoggingTimesketch(BaseModule):
 
   def Process(self) -> None:
     """Processes GCP logs containers for insertion into Timesketch."""
-    combined_list = []
-
     for file_container in self.GetContainers(containers.File, pop=True):
-      combined_list.append(file_container)
-
-    for directory_container in self.GetContainers(
-        containers.Directory, pop=True):
-      combined_list.append(directory_container)
-
-    for log_container in combined_list:
-      self._ProcessLogContainer(log_container)
+      self._ProcessLogContainer(file_container)
 
 
 modules_manager.ModulesManager.RegisterModule(GCPLoggingTimesketch)
