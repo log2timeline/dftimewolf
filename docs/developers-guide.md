@@ -126,10 +126,17 @@ There are **two** locations to register new modules:
 
 It is recommended to run tests locally to discover issues early in the development lifecycle.
 
+```shell
+pip install pylint
+pylint --rcfile .pylintrc UPDATED_SOURCE_FILE
+```
+
 ```bash
 pip install poetry
 poetry install
 poetry run python -m unittest discover -s tests -p '*.py'
+poetry run mypy --install-types --cache-dir .mypy_cache --non-interactive -p dftimewolf
+poetry run pytype --config pytype.conf
 ```
 
 Docker equivalent:
@@ -137,4 +144,6 @@ Docker equivalent:
 ```bash
 cd docker/dev
 docker compose run --rm dftw tests
+docker compose run --rm -v `pwd`/../../:/app dftw poetry run mypy --install-types --cache-dir /tmp/.mypy_cache --non-interactive -p dftimewolf
+docker compose run --rm -v `pwd`/../../:/app dftw poetry run pytype --config /app/pytype.conf
 ```
