@@ -81,18 +81,20 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
             '2527368186053355716',
         'project_id':
             'ketchup-research',
-        'principalEmail':
+        'principal_email':
             'heinz-57@ketchup-research.iam.gserviceaccount.com',
-        'callerIp':
+        'caller_ip':
             'gce-internal-ip',
-        'callerSuppliedUserAgent':
+        'user_agent':
             'google-cloud-sdk gcloud/249.0.0',
-        'serviceName':
+        'service_name':
             'compute.googleapis.com',
-        'methodName':
+        'method_name':
             'v1.compute.firewalls.insert',
-        'resourceName':
+        'resource_name':
             'projects/ketchup-research/global/firewalls/deny-tomchop-access',
+        'status_code': '',
+        'status_message': '',
         'message':
             'User heinz-57@ketchup-research.iam.gserviceaccount.com '
             'performed v1.compute.firewalls.insert '
@@ -208,19 +210,21 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
             'Event Recorded',
         'firewall_rule_id':
             '2527368186053355716',
+        'permissions': [
+            'compute.firewalls.create', 'compute.networks.updatePolicy'],
         'project_id':
             'ketchup-research',
-        'principalEmail':
+        'principal_email':
             'heinz-57@ketchup-research.iam.gserviceaccount.com',
-        'callerIp':
+        'caller_ip':
             'gce-internal-ip',
-        'callerSuppliedUserAgent':
+        'user_agent':
             'google-cloud-sdk gcloud/249.0.0',
-        'serviceName':
+        'service_name':
             'compute.googleapis.com',
-        'methodName':
+        'method_name':
             'v1.compute.firewalls.insert',
-        'resourceName':
+        'resource_name':
             'projects/ketchup-research/global/firewalls/deny-tomchop-access',
         'request_name':
             'deny-tomchop-access',
@@ -231,6 +235,8 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
             '0.0.0.0/0',
         'denied_tcp_ports':
             'all',
+        'status_code': '',
+        'status_message': '',
         'message':
             'User heinz-57@ketchup-research.iam.gserviceaccount.com '
             'performed v1.compute.firewalls.insert on '
@@ -284,10 +290,52 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
                 'projects/ketchup-research/zones/europe-west1-c/instances/'
                 'example-instance-2',
             'request': {
-                '@type': 'type.googleapis.com/compute.instances.insert'
+              "@type": "type.googleapis.com/compute.instances.insert",
+              "description": "GCE instance created for training.",
+              "disks": [
+                {
+                  "autoDelete": 'true',
+                  "boot": 'true',
+                  "initializeParams": {
+                    "diskSizeGb": "100",
+                    "diskType": "zones/europe-west1-c/diskTypes/pd-ssd",
+                    "sourceImage": 'projects/ketchup-research/global/images/'
+                        'my-custom-os'
+                  }
+                }
+              ],
+              "labels": [],
+              "machineType": "zones/europe-west1-c/machineTypes/n1-highmem-8",
+              "name": "training-instance",
+              "networkInterfaces": [
+                {
+                  "accessConfigs": [
+                    {
+                      "name": "External NAT",
+                      "type": "ONE_TO_ONE_NAT"
+                    }
+                  ],
+                  "network": "global/networks/default"
+                }
+              ],
+              "scheduling": {
+                "automaticRestart": 'true'
+              },
+              "serviceAccounts": [
+                {
+                  "email": "my-sa2@ketchup-research.iam.gserviceaccount.com",
+                  "scopes": [
+                    "https://www.googleapis.com/auth/devstorage.full_control",
+                    "https://www.googleapis.com/auth/logging.read",
+                    "https://www.googleapis.com/auth/logging.write",
+                    "https://www.googleapis.com/auth/monitoring.write",
+                  ]
+                }
+              ]
             }
         }
     }
+
     gce_creation = json.dumps(gce_creation)
 
     expected_timesketch_record = {
@@ -299,23 +347,32 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
             '2019-06-06T09:29:04.499000Z',
         'timestamp_desc':
             'Event Recorded',
+        'dcsa_email': 'my-sa2@ketchup-research.iam.gserviceaccount.com',
+        'dcsa_scopes': [
+          'https://www.googleapis.com/auth/devstorage.full_control',
+          'https://www.googleapis.com/auth/logging.read',
+           'https://www.googleapis.com/auth/logging.write',
+            'https://www.googleapis.com/auth/monitoring.write',
+        ],
         'zone':
             'europe-west1-c',
         'project_id':
             'ketchup-research',
         'instance_id':
             '6662286141402997301',
-        'principalEmail':
+        'principal_email':
             'heinz-57@ketchup-research.iam.gserviceaccount.com',
-        'callerIp':
+        'caller_ip':
             'gce-internal-ip',
-        'callerSuppliedUserAgent':
+        'user_agent':
             'google-cloud-sdk gcloud/249.0.0',
-        'serviceName':
+        'service_name':
             'compute.googleapis.com',
-        'methodName':
+        'method_name':
             'v1.compute.instances.insert',
-        'resourceName':
+        'request_description': 'GCE instance created for training.',
+        'request_name': 'training-instance',
+        'resource_name':
             'projects/ketchup-research/zones/europe-west1-c/instances/'
             'example-instance-2',
         'message':
@@ -323,7 +380,11 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
             'performed v1.compute.instances.insert '
             'on projects/ketchup-research/zones/europe-west1-c/instances/'
             'example-instance-2',
-        'severity': 'NOTICE'
+        'severity': 'NOTICE',
+        'source_images': [
+          'projects/ketchup-research/global/images/my-custom-os'],
+        'status_code': '',
+        'status_message': ''
     }
 
     # pylint: disable=protected-access
@@ -431,28 +492,24 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
             'Event Recorded',
         'location':
             'us-east1',
+        'permissions': ['storage.buckets.create'],
         'project_id':
             'ketchup-research',
-        'principalEmail':
+        'principal_email':
             'heinz-57@ketchup-research.iam.gserviceaccount.com',
-        'callerIp':
+        'caller_ip':
             '100.100.100.100',
-        'callerSuppliedUserAgent':
+        'user_agent':
             'google-cloud-sdk gcloud/249.0.0',
-        'destinationAttributes': {},
-        'requestAttributes': {
-            'auth': {},
-            'time': '2020-06-16T05:09:57.437288734Z',
-        },
-        'serviceName':
+        'service_name':
             'storage.googleapis.com',
-        'methodName':
+        'method_name':
             'storage.buckets.create',
-        'resourceName':
+        'resource_name':
             'projects/_/buckets/test_bucket_1',
         'bucket_name':
             'test_bucket_1',
-        'policyDelta':
+        'policy_delta':
             'ADD projectEditor:ketchup-research with role '
             'roles/storage.legacyBucketOwner, ADD '
             'projectOwner:ketchup-research with role '
@@ -463,7 +520,9 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
             'User heinz-57@ketchup-research.iam.gserviceaccount.com '
             'performed storage.buckets.create on '
             'projects/_/buckets/test_bucket_1',
-        'severity': 'NOTICE'
+        'severity': 'NOTICE',
+        'status_code': '',
+        'status_message': ''
     }
 
     # pylint: disable=protected-access
@@ -525,6 +584,122 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
     # pylint: disable=protected-access
     actual_timesketch_record = processor._ProcessLogLine(
         yarn_log, 'test_query')
+    actual_timesketch_record = json.loads(actual_timesketch_record)
+    self.assertDictEqual(expected_timesketch_record, actual_timesketch_record)
+
+  def testComputeInstancesInsert(self):
+    """Tests `type.googleapis.com/compute.instances.insert` is parsed
+        correctly.
+    """
+    test_state = state.DFTimewolfState(config.Config)
+    processor = gcp_logging_timesketch.GCPLoggingTimesketch(test_state)
+
+    compute_instance_insert_log = {
+      'insertId':'-ft34ekedkmxm',
+      'labels': {
+        'compute.googleapis.com/root_trigger_id':
+            'bcbc8a09-25db-4183-ab94-43d53ab987ca'
+      },
+      'logName':'projects/ketchup/logs/cloudaudit.googleapis.com%2F'
+          'data_access',
+      'protoPayload': {
+        '@type':'type.googleapis.com/google.cloud.audit.AuditLog',
+        'authenticationInfo': {
+          'principalEmail': 'service-account123@ketchup.iam.'
+              'gserviceaccount.com',
+          'principalSubject': 'serviceAccount:service-account123'
+              '@ketchup.iam.gserviceaccount.com',
+          'serviceAccountDelegationInfo': [
+            {
+              'firstPartyPrincipal':{
+                'principalEmail': 'my-sa@ketchup.iam.gserviceaccount.com'
+              }
+            }
+          ]
+        },
+        'authorizationInfo': [
+          {
+            'granted': 'true',
+            'permission': 'compute.instances.get',
+            'permissionType': 'ADMIN_READ',
+            'resource': 'projects/ketchup/zones/us-central1-a/instances/'
+                'my-cluster',
+            'resourceAttributes': {
+              'name': 'projects/ketchup/zones/us-central1-a/instances/'
+                  'my-cluster',
+              'service': 'compute',
+              'type': 'compute.instances'
+            }
+          }
+        ],
+      'methodName': 'v1.compute.instances.get',
+      'request': {
+        '@type': 'type.googleapis.com/compute.instances.get'
+      },
+      'requestMetadata': {
+        'callerIp': '34.X.Y.Z',
+        'callerNetwork': '//compute.googleapis.com/projects/ketchup/global/'
+            'networks/__unknown__',
+        'callerSuppliedUserAgent': 'special-user-agent-string',
+        'destinationAttributes': {},
+        'requestAttributes': {
+          'auth': {},
+          'time': '2024-10-26T19:55:40.930578Z'
+        }
+      },
+      'resourceLocation': {
+        'currentLocations': ['us-central1-a']
+      },
+      'resourceName': 'projects/1234567890/zones/us-central1-a/instances/'
+          'my-cluster',
+      'serviceName': 'compute.googleapis.com'
+      },
+      'receiveTimestamp': '2024-10-26T19:55:41.937084378Z',
+      'resource': {
+        'labels': {
+          'instance_id': '9876543210',
+          'project_id': 'ketchup',
+          'zone': 'us-central1-a'
+        },
+        'type': 'gce_instance'
+      },
+      'severity': 'INFO',
+      'timestamp': '2024-10-26T19:55:40.876410Z'
+    }
+
+    expected_timesketch_record = {
+      'query': 'test_query',
+      'data_type': 'gcp:log:json',
+      'datetime': '2024-10-26T19:55:40.876410Z',
+      'timestamp_desc': 'Event Recorded',
+      'caller_ip': '34.X.Y.Z',
+      'delegation_chain': 'my-sa@ketchup.iam.gserviceaccount.com',
+      'instance_id': '9876543210',
+      'method_name': 'v1.compute.instances.get',
+      'message': 'User service-account123@ketchup.iam.gserviceaccount.com '
+          'performed v1.compute.instances.get on projects/1234567890/zones/'
+          'us-central1-a/instances/my-cluster',
+      'permissions': ['compute.instances.get'],
+      'principal_email': 'service-account123@ketchup.iam.gserviceaccount.com',
+      'principal_subject': 'serviceAccount:service-account123@ketchup.iam.'
+          'gserviceaccount.com',
+      'project_id': 'ketchup',
+      'resource_name': 'projects/1234567890/zones/us-central1-a/instances/'
+          'my-cluster',
+      'service_name': 'compute.googleapis.com',
+      'service_account_delegation': ['my-sa@ketchup.iam.gserviceaccount.com'],
+      'severity': 'INFO',
+      'status_code': '',
+      'status_message': '',
+      'user_agent': 'special-user-agent-string',
+      'zone': 'us-central1-a'
+    }
+
+    compute_instance_insert_log = json.dumps(compute_instance_insert_log)
+
+    # pylint: disable=protected-access
+    actual_timesketch_record = processor._ProcessLogLine(
+        compute_instance_insert_log, 'test_query')
     actual_timesketch_record = json.loads(actual_timesketch_record)
     self.assertDictEqual(expected_timesketch_record, actual_timesketch_record)
 
