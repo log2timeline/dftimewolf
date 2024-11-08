@@ -19,7 +19,9 @@ _VALID_OUTPUT_FORMATS = frozenset(['csv', 'json', 'pandas'])
 
 
 class TimesketchSearchEventCollector(module.BaseModule):
-  """Collector for searching Timesketch events.
+  """Collector for Timesketch events.
+
+  Collects Timesketch events using given search.
 
   Attributes:
     query_string: the query string.
@@ -93,10 +95,10 @@ class TimesketchSearchEventCollector(module.BaseModule):
       password: Timesketch password. Optional when token_password is provided.
     """
     if not sketch_id:
-      self.ModuleError('Sketch ID is not set', critical=True)
+      self.ModuleError('Sketch ID is not set.', critical=True)
 
     if not start_datetime and not end_datetime:
-      self.ModuleError('Start and End datetime must be set.', critical=True)
+      self.ModuleError('Both the start and end datetime must be set.', critical=True)
 
     self.sketch = self._GetSketch(sketch_id, token_password, endpoint, username, password)
     self.sketch_id = sketch_id
