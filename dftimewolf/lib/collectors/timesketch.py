@@ -207,7 +207,7 @@ class TimesketchSearchEventCollector(module.BaseModule):
       search_obj.add_chip(label_chip)
     return search_obj.to_pandas()
 
-  def _OutputSearchResults(self, data_frame: pd.DataFrame):
+  def _OutputSearchResults(self, data_frame: pd.DataFrame) -> None:
     """Outputs the search results.
 
     Args:
