@@ -1,0 +1,51 @@
+{
+    "name": "ts_collect",
+    "short_description": "Collects Timesketch events.",
+    "description": "Collects Timesketch events to a local file.",
+    "test_params": "",
+    "modules": [{
+        "wants": [],
+        "name": "TimesketchSearchEventCollector",
+        "args": {
+            "sketch_id": "@sketch_id",
+            "query_string": "@query_string",
+            "start_datetime": "@start_datetime",
+            "end_datetime": "@end_datetime",
+            "indices": "@indices",
+            "labels": "@labels",
+            "output_format": "@output_format",
+            "return_fields": "@return_fields",
+            "search_name": "@search_name",
+            "search_description": "",
+            "include_internal_columns": "@include_internal_columns",
+            "token_password": "@token_password",
+            "endpoint": "@timesketch_endpoint",
+            "username": "@timesketch_username",
+            "password": "@timesketch_password"
+        }
+    }, {
+        "wants": ["TimesketchSearchEventCollector"],
+        "name": "LocalFilesystemCopy",
+        "args": {
+            "target_directory": "@directory",
+            "compress": false
+        }
+    }],
+    "args": [
+        ["sketch_id", "the Timesketch sketch ID.", null],
+        ["directory", "Directory in which to export files.", null],
+        ["query_string", "The query string.  Defaults to '*' (all events).", "*"],
+        ["--start_datetime", "The start datetime.", null, {"format": "datetime", "before": "@end_datetime"}],
+        ["--end_datetime", "The end datetime.", null, {"format": "datetime_end", "after": "@start_datetime"}],
+        ["--indices", "The comma-separated Timesketch indices.", null, {"format":  "regex", "comma_separated": true, "regex": "[0-9]+"}],
+        ["--labels", "the comma-separated Timesketch event labels.", null],
+        ["--output_format", "The output format (csv/json/jsonl).  Defaults to csv", "csv", {"format":  "regex", "comma_separated": false, "regex": "(csv|json|jsonl)"}],
+        ["--include_internal_columns", "Include internal Timesketch fields in output.  Defaults to false.", false],
+        ["--return_fields", "The Timesketch fields to return from the search query. Defaults to *.", "*"],
+        ["--search_name", "The search name (used as a filename prefix).", null],
+        ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
+        ["--timesketch_endpoint", "The Timesketch endpoint URL", null],
+        ["--timesketch_username", "The Timesketch username.", null],
+        ["--timesketch_password", "The Timesketch password.", null]
+    ]
+}
