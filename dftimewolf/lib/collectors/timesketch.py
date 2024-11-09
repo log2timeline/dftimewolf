@@ -61,6 +61,7 @@ class TimesketchSearchEventCollector(module.BaseModule):
     self.sketch_id: int = 0
     self.sketch: sketch.Sketch | None = None
 
+  # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(
       self,
       sketch_id: str,
@@ -92,8 +93,8 @@ class TimesketchSearchEventCollector(module.BaseModule):
       return_fields: the return fields.  Defaults to '*'.
       search_name: an optional name for the search.
       search_description: an optional description for the search.
-      include_internal_columns: include Timesketch internal columns.  Defaults to
-          False.
+      include_internal_columns: include Timesketch internal columns.  Defaults
+          to False.
       token_password: optional password used to decrypt the
           Timesketch credential storage. Defaults to an empty string since
           the upstream library expects a string value. An empty string means
@@ -107,7 +108,8 @@ class TimesketchSearchEventCollector(module.BaseModule):
       self.ModuleError('Sketch ID is not set.', critical=True)
 
     if not start_datetime or not end_datetime:
-      self.ModuleError('Both the start and end datetime must be set.', critical=True)
+      self.ModuleError(
+          'Both the start and end datetime must be set.', critical=True)
 
     if output_format not in _VALID_OUTPUT_FORMATS:
       self.ModuleError('Output formats not valid.', critical=True)
