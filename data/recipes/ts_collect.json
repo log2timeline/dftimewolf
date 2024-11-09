@@ -2,7 +2,7 @@
     "name": "ts_collect",
     "short_description": "Collects Timesketch events.",
     "description": "Collects Timesketch events to a local file.",
-    "test_params": "",
+    "test_params": "sketch_id directory query_string",
     "modules": [{
         "wants": [],
         "name": "TimesketchSearchEventCollector",

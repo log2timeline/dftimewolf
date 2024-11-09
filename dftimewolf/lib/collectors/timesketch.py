@@ -2,6 +2,7 @@
 """Collects Timesketch events."""
 import datetime
 import tempfile
+from typing import List
 
 import pandas as pd
 from timesketch_api_client import client
@@ -50,8 +51,8 @@ class TimesketchSearchEventCollector(module.BaseModule):
     self.query_string: str = ''
     self.start_datetime: datetime.datetime | None = None
     self.end_datetime: datetime.datetime | None = None
-    self.indices: [int] = []
-    self.labels: [str] = []
+    self.indices: List[int] = []
+    self.labels: List[str] = []
     self.output_format: str = ''
     self.return_fields: str = ''
     self.search_name: str = ''
@@ -187,10 +188,12 @@ class TimesketchSearchEventCollector(module.BaseModule):
       search_obj.indices = self.indices
 
     range_chip = search.DateRangeChip()
-    range_chip.add_start_time(
-        self.start_datetime.strftime('%Y-%m-%dT%H:%M:%S.%f'))
-    range_chip.add_end_time(
-        self.end_datetime.strftime('%Y-%m-%dT%H:%M:%S.%f'))
+    if self.start_datetime:
+      range_chip.add_start_time(
+          self.start_datetime.strftime('%Y-%m-%dT%H:%M:%S.%f'))
+    if self.end_datetime:
+      range_chip.add_end_time(
+          self.end_datetime.strftime('%Y-%m-%dT%H:%M:%S.%f'))
     search_obj.add_chip(range_chip)
 
     for label in self.labels:
