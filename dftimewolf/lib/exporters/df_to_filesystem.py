@@ -59,7 +59,7 @@ class DataFrameToDiskExporter(module.BaseModule):
 
     Args:
       output_formats: Comma separated formats to export. Supported values are:
-          csv, jsonl, md|markdown. If not specified, 'jsonl' is used.
+          csv, jsonl, markdown. If not specified, 'jsonl' is used.
       output_directory: Where to write the output. The directory is created if
           it doesn't already exist.
     """
@@ -95,9 +95,8 @@ class DataFrameToDiskExporter(module.BaseModule):
     be created. Otherwise, the provided value is checked for existence, and if
     it doesn't exist, is created.
 
-    Raises:
-      F1CollectorError: If the output path exists already and is not a
-          directory.
+    Args:
+      directory: The directory path.
     """
     if not directory:
       return tempfile.mkdtemp()
