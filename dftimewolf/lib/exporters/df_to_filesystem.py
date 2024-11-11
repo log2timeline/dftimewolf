@@ -51,7 +51,7 @@ class DataFrameToDiskExporter(module.BaseModule):
         state, name=name, critical=critical)
 
     self._formats: list[str] = []
-    self._output_dir: str = None
+    self._output_dir: str = ''
 
   # pylint: disable=arguments-differ
   def SetUp(self, output_formats: str, output_directory: str) -> None:
@@ -64,9 +64,9 @@ class DataFrameToDiskExporter(module.BaseModule):
           it doesn't already exist.
     """
     if output_formats:
-      output_formats = [
+      self._formats = [
         s.strip().lower() for s in output_formats.split(',') if s]
-      self._formats = list(filter(None, output_formats))
+      self._formats = list(filter(None, self._formats))
 
       invalid_formats = []
       for f in self._formats:
@@ -88,7 +88,7 @@ class DataFrameToDiskExporter(module.BaseModule):
     for df in to_export:
       self._ExportSingleDataFrame(df)
 
-  def _VerifyOrCreateOutputDirectory(self, directory: str | None) -> None:
+  def _VerifyOrCreateOutputDirectory(self, directory: str | None) -> str:
     """Checks for or creates an output directory.
 
     If the output directory is not specified, then a temp directory will
@@ -108,7 +108,8 @@ class DataFrameToDiskExporter(module.BaseModule):
           f'Output path {directory} already exists and is not a directory.',
           critical=True)
       return directory
-    return os.mkdir(directory)
+    os.mkdir(directory)
+    return directory
 
   def _ExportSingleDataFrame(self, container: containers.DataFrame) -> None:
     """Export a single Dataframe container.
