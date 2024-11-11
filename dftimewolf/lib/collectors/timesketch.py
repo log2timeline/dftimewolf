@@ -174,6 +174,8 @@ class TimesketchSearchEventCollector(module.BaseModule):
       self.ModuleError('Could not connect to Timesketch server.', critical=True)
 
     sketch_obj = timesketch_api.get_sketch(self.sketch_id)
+    if not sketch_obj:
+      self.ModuleError(f'Could not get sketch {self.sketch_id}', critical=True)
     self.state.AddToCache('timesketch_sketch', sketch_obj)
     return sketch_obj
 
@@ -189,14 +191,13 @@ class TimesketchSearchEventCollector(module.BaseModule):
     if self.indices:
       search_obj.indices = self.indices
 
-    range_chip = search.DateRangeChip()
-    if self.start_datetime:
+    if self.start_datetime and self.end_datetime:
+      range_chip = search.DateRangeChip()
       range_chip.add_start_time(
           self.start_datetime.strftime('%Y-%m-%dT%H:%M:%S.%f'))
-    if self.end_datetime:
       range_chip.add_end_time(
           self.end_datetime.strftime('%Y-%m-%dT%H:%M:%S.%f'))
-    search_obj.add_chip(range_chip)
+      search_obj.add_chip(range_chip)
 
     for label in self.labels:
       label_chip = search.LabelChip()
@@ -218,8 +219,8 @@ class TimesketchSearchEventCollector(module.BaseModule):
     if not self.include_internal_columns:
       # Remove internal OpenSearch columns
       data_frame = data_frame.drop(
-        columns=["__ts_timeline_id", "_id", "_index", "_source", "_type"],
-        errors="ignore")
+          columns=["__ts_timeline_id", "_id", "_index", "_source", "_type"],
+          errors="ignore")
 
     if self.output_format == 'pandas':
       self.StoreContainer(
