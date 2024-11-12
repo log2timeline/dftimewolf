@@ -40,7 +40,8 @@ class TimesketchSearchEventCollectorTest(unittest.TestCase):
     mock_get_api_client.assert_called_with(
         test_state, token_password='test_token')
 
-  def testSetupWithTicketAttributeContainer(self):
+  @mock.patch('dftimewolf.lib.timesketch_utils.GetApiClient')
+  def testSetupWithTicketAttributeContainer(self, _mock_get_api_client):
     """Tests the SetUp with the sketch ID in a attribute container."""
     test_state = state.DFTimewolfState(config.Config)
     test_state.StoreContainer(containers.TicketAttribute(
