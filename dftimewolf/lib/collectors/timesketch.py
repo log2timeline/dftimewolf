@@ -83,8 +83,8 @@ class TimesketchSearchEventCollector(module.BaseModule):
     """Sets up the TimesketchSearchEventCollector.
 
     Args:
-      sketch_id: the Timesketch sketch ID.  If not set, defaults to the value
-          in the ticket attribute container.s
+      sketch_id: the Timesketch sketch ID.  Defaults to the value
+          in the ticket attribute container.
       query_string: the query string.  Defaults to '*' (all events).
       start_datetime: the start datetime.
       end_datetime: the end datetime.
