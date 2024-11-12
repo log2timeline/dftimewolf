@@ -5,6 +5,7 @@ from typing import Optional
 import tempfile
 import os
 import re
+import pandas as pd
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
@@ -15,7 +16,15 @@ from dftimewolf.lib.state import DFTimewolfState
 _JSONL = 'jsonl'
 _CSV = 'csv'
 _MARKDOWN = 'markdown'
-_VALID_OUTPUTS = (_JSONL, _CSV, _MARKDOWN)
+_MD = 'md'
+_VALID_FORMATS = (_JSONL, _CSV, _MARKDOWN, _MD)
+
+_EXTENSION_MAP = {
+    _JSONL: '.jsonl',
+    _CSV: '.csv',
+    _MARKDOWN: '.md',
+    _MD: '.md'
+}
 
 
 def _ConvertToValidFilename(filename: str, no_spaces: bool = True) -> str:
@@ -70,7 +79,7 @@ class DataFrameToDiskExporter(module.BaseModule):
 
       invalid_formats = []
       for f in self._formats:
-        if f not in _VALID_OUTPUTS:
+        if f not in _VALID_FORMATS:
           invalid_formats.append(f)
       if invalid_formats:
         self.ModuleError(
@@ -86,7 +95,7 @@ class DataFrameToDiskExporter(module.BaseModule):
     to_export = self.state.GetContainers(containers.DataFrame)
 
     for df in to_export:
-      self._ExportSingleDataFrame(df)
+      self._ExportSingleContainer(df)
 
   def _VerifyOrCreateOutputDirectory(self, directory: str | None) -> str:
     """Checks for or creates an output directory.
@@ -110,67 +119,50 @@ class DataFrameToDiskExporter(module.BaseModule):
     os.mkdir(directory)
     return directory
 
-  def _ExportSingleDataFrame(self, container: containers.DataFrame) -> None:
+  def _ExportSingleContainer(self, container: containers.DataFrame) -> None:
     """Export a single Dataframe container.
 
     Args:
-      df_cont: The dataframe container to export.
+      container: The dataframe container to export.
     """
-    if _JSONL in self._formats:
-      self._ExportDataFrameJSONL(container)
-    if _CSV in self._formats:
-      self._ExportDataFrameCSV(container)
-    if _MARKDOWN in self._formats:
-      self._ExportDataFrameMarkdown(container)
+    for f in _VALID_FORMATS:
+      if f in self._formats:
+        output_path = os.path.join(
+            self._output_dir,
+            f'{_ConvertToValidFilename(container.name)}{_EXTENSION_MAP[f]}')
 
-  def _ExportDataFrameJSONL(self, container: containers.DataFrame) -> None:
-    """Exports a single dataframe container to a jsonl file."""
-    output_path = os.path.join(
-      self._output_dir, f'{_ConvertToValidFilename(container.name)}.{_JSONL}')
-    self.logger.debug(f'Exporting {container.name} to {output_path}')
+        self.logger.debug(f'Exporting {container.name} to {output_path}')
 
+        self._ExportSingleDataframe(df=container.data_frame,
+                                    output_format=f,
+                                    output_path=output_path)
+
+        self.state.StoreContainer(container=containers.File(
+            name=os.path.basename(output_path),
+            path=output_path,
+            description=container.description))
+
+        self.logger.debug(
+            f'Export of {container.name} to {output_path} complete')
+
+  def _ExportSingleDataframe(self,
+                            df: pd.DataFrame,
+                            output_format: str,
+                            output_path: str) -> None:
+    """Exports a single dataframe.
+
+    Args:
+      df: The dataframe to write to disk.
+      output_format: The format to use.
+      output_path: Where to write the output file.
+    """
     with open(output_path, 'w') as f:
-      container.data_frame.to_json(
-        f, orient='records', lines=True, default_handler=str)
-
-    self.state.StoreContainer(container=containers.File(
-        name=os.path.basename(output_path),
-        path=output_path,
-        description=container.description))
-
-    self.logger.debug(f'Export of {container.name} to {output_path} complete')
-
-  def _ExportDataFrameCSV(self, container: containers.DataFrame) -> None:
-    """Exports a single dataframe container to a csv file."""
-    output_path = os.path.join(
-      self._output_dir, f'{_ConvertToValidFilename(container.name)}.{_CSV}')
-    self.logger.debug(f'Exporting {container.name} to {output_path}')
-
-    with open(output_path, 'w') as f:
-      container.data_frame.to_csv(f, index=False)
-
-    self.state.StoreContainer(container=containers.File(
-        name=os.path.basename(output_path),
-        path=output_path,
-        description=container.description))
-
-    self.logger.debug(f'Export of {container.name} to {output_path} complete')
-
-  def _ExportDataFrameMarkdown(self, container: containers.DataFrame) -> None:
-    """Exports a single dataframe container to a markdown file."""
-    output_path = os.path.join(
-      self._output_dir, f'{_ConvertToValidFilename(container.name)}.md')
-    self.logger.debug(f'Exporting {container.name} to {output_path}')
-
-    with open(output_path, 'w') as f:
-      container.data_frame.to_markdown(f, index=False)
-
-    self.state.StoreContainer(container=containers.File(
-        name=os.path.basename(output_path),
-        path=output_path,
-        description=container.description))
-
-    self.logger.debug(f'Export of {container.name} to {output_path} complete')
+      if output_format == _JSONL:
+        df.to_json(f, orient='records', lines=True, default_handler=str)
+      elif output_format == _CSV:
+        df.to_csv(f, index=False)
+      elif output_format in (_MD, _MARKDOWN):
+        df.to_markdown(f, index=False)
 
 
 modules_manager.ModulesManager.RegisterModule(DataFrameToDiskExporter)
