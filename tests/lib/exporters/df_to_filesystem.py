@@ -127,10 +127,7 @@ class DataFrameToDiskExporterTest(parameterized.TestCase):
       with open(c.path, 'r') as f:
         actual_results.append(f.read())
 
-    for r in actual_results:
-      self.assertIn(r, expected_results)
-    for e in expected_results:
-      self.assertIn(e, actual_results)
+    self.assertCountEqual(actual_results, expected_results)
 
   def test_InvalidFormat(self):
     """Tests an error is thrown when an invalid format is selected."""
