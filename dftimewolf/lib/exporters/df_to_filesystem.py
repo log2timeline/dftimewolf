@@ -146,9 +146,9 @@ class DataFrameToDiskExporter(module.BaseModule):
             f'Export of {container.name} to {output_path} complete')
 
   def _ExportSingleDataframe(self,
-                            df: pd.DataFrame,
-                            output_format: str,
-                            output_path: str) -> None:
+                             df: pd.DataFrame,
+                             output_format: str,
+                             output_path: str) -> None:
     """Exports a single dataframe.
 
     Args:
