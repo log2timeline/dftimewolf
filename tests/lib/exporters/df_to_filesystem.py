@@ -81,6 +81,7 @@ class DataFrameToDiskExporterTest(parameterized.TestCase):
     out_containers = self._test_state.GetContainers(containers.File)
     self.assertLen(out_containers, 1)
 
+    self.assertEndsWith(out_containers[0].path, '.jsonl')
     with open(out_containers[0].path, 'r') as f:
       self.assertEqual(f.read(), _EXPECTED_JSONL)
 
@@ -93,6 +94,7 @@ class DataFrameToDiskExporterTest(parameterized.TestCase):
     out_containers = self._test_state.GetContainers(containers.File)
     self.assertLen(out_containers, 1)
 
+    self.assertEndsWith(out_containers[0].path, '.csv')
     with open(out_containers[0].path, 'r') as f:
       self.assertEqual(f.read(), _EXPECTED_CSV)
 
@@ -105,6 +107,7 @@ class DataFrameToDiskExporterTest(parameterized.TestCase):
     out_containers = self._test_state.GetContainers(containers.File)
     self.assertLen(out_containers, 1)
 
+    self.assertEndsWith(out_containers[0].path, '.md')
     with open(out_containers[0].path, 'r') as f:
       self.assertEqual(f.read(), _EXPECTED_MD)
 
