@@ -107,11 +107,13 @@ class TimesketchSearchEventCollector(module.BaseModule):
     """
     if not sketch_id:
       attributes = self.GetContainers(containers.TicketAttribute)
-      sketch_id = timesketch_utils.GetSketchIDFromAttributes(attributes)
-      if not sketch_id:
+      self.sketch_id = timesketch_utils.GetSketchIDFromAttributes(attributes)
+      if not self.sketch_id:
         self.ModuleError(
             'Sketch ID is not set and not found in ticket attributes.',
             critical=True)
+    else:
+      self.sketch_id = int(sketch_id)
 
     if not start_datetime or not end_datetime:
       self.ModuleError(
@@ -122,7 +124,6 @@ class TimesketchSearchEventCollector(module.BaseModule):
           f'Output format not one of {",".join(_VALID_OUTPUT_FORMATS)}',
           critical=True)
 
-    self.sketch_id = int(sketch_id)
     self.sketch = self._GetSketch(token_password, endpoint, username, password)
     self.start_datetime = start_datetime
     self.end_datetime = end_datetime

@@ -42,17 +42,17 @@ class TimesketchSearchEventCollectorTest(unittest.TestCase):
 
   @mock.patch('dftimewolf.lib.timesketch_utils.GetApiClient')
   def testSetupWithTicketAttributeContainer(self, mock_get_api_client):
-      """Tests the SetUp with the sketch ID in a attribute container."""
-      test_state = state.DFTimewolfState(config.Config)
-      test_state.StoreContainer(containers.TicketAttribute(
-          name='Timesketch URL', value='sketch/123/', type_='text'))
-      timesketch_collector = timesketch.TimesketchSearchEventCollector(
-          test_state)
-      timesketch_collector.SetUp(
-          start_datetime=datetime.datetime(2024, 11, 11),
-          end_datetime=datetime.datetime(2024, 11, 12),
-          token_password='test_token')
-      self.assertEqual(timesketch_collector.sketch_id, 123)
+    """Tests the SetUp with the sketch ID in a attribute container."""
+    test_state = state.DFTimewolfState(config.Config)
+    test_state.StoreContainer(containers.TicketAttribute(
+        name='Timesketch URL', value='sketch/123/', type_='text'))
+    timesketch_collector = timesketch.TimesketchSearchEventCollector(
+        test_state)
+    timesketch_collector.SetUp(
+        start_datetime=datetime.datetime(2024, 11, 11),
+        end_datetime=datetime.datetime(2024, 11, 12),
+        token_password='test_token')
+    self.assertEqual(timesketch_collector.sketch_id, 123)
 
   @mock.patch('dftimewolf.lib.timesketch_utils.GetApiClient')
   @mock.patch('timesketch_api_client.client.TimesketchApi')
