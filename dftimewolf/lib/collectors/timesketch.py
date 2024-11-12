@@ -64,7 +64,7 @@ class TimesketchSearchEventCollector(module.BaseModule):
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(
       self,
-      sketch_id: str,
+      sketch_id: str | None = None,
       query_string: str = '*',
       start_datetime: datetime.datetime | None = None,
       end_datetime: datetime.datetime | None = None,
@@ -83,7 +83,8 @@ class TimesketchSearchEventCollector(module.BaseModule):
     """Sets up the TimesketchSearchEventCollector.
 
     Args:
-      sketch_id: the Timesketch sketch ID.
+      sketch_id: the Timesketch sketch ID.  If not set, defaults to the value
+          in the ticket attribute container.s
       query_string: the query string.  Defaults to '*' (all events).
       start_datetime: the start datetime.
       end_datetime: the end datetime.
@@ -105,14 +106,21 @@ class TimesketchSearchEventCollector(module.BaseModule):
       password: Timesketch password. Optional when token_password is provided.
     """
     if not sketch_id:
-      self.ModuleError('Sketch ID is not set.', critical=True)
+      attributes = self.GetContainers(containers.TicketAttribute)
+      sketch_id = timesketch_utils.GetSketchIDFromAttributes(attributes)
+      if not sketch_id:
+        self.ModuleError(
+            'Sketch ID is not set and not found in ticket attributes.',
+            critical=True)
 
     if not start_datetime or not end_datetime:
       self.ModuleError(
           'Both the start and end datetime must be set.', critical=True)
 
     if output_format not in _VALID_OUTPUT_FORMATS:
-      self.ModuleError('Output formats not valid.', critical=True)
+      self.ModuleError(
+          f'Output format not one of {",".join(_VALID_OUTPUT_FORMATS)}',
+          critical=True)
 
     self.sketch_id = int(sketch_id)
     self.sketch = self._GetSketch(token_password, endpoint, username, password)

@@ -30,7 +30,7 @@ def GetSketchIDFromAttributes(
       ticket.
 
   Returns:
-    int: the sketch idenifier, or 0 if one was not available.
+    int: the sketch identifier, or 0 if one was not available.
   """
   for attribute in attribute_containers:
     if attribute.name == _SKETCH_ATTRIBUTE_NAME:

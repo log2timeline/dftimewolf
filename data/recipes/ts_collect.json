@@ -32,9 +32,9 @@
         }
     }],
     "args": [
-        ["sketch_id", "the Timesketch sketch ID.", null],
         ["directory", "Directory in which to export files.", null],
         ["query_string", "The query string.  Defaults to '*' (all events).", "*"],
+        ["--sketch_id", "the Timesketch sketch ID.", null],
         ["--start_datetime", "The start datetime.", null, {"format": "datetime", "before": "@end_datetime"}],
         ["--end_datetime", "The end datetime.", null, {"format": "datetime_end", "after": "@start_datetime"}],
         ["--indices", "The comma-separated Timesketch indices.", null, {"format":  "regex", "comma_separated": true, "regex": "[0-9]+"}],
