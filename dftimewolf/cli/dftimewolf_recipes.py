@@ -46,6 +46,7 @@ MODULES = {
   'AzureCollector': 'dftimewolf.lib.collectors.azure',
   'AzureLogsCollector': 'dftimewolf.lib.collectors.azure_logging',
   'BigQueryCollector': 'dftimewolf.lib.collectors.bigquery',
+  'DataFrameToDiskExporter': 'dftimewolf.lib.exporters.df_to_filesystem',
   'FilesystemCollector': 'dftimewolf.lib.collectors.filesystem',
   'GCEDiskCopy': 'dftimewolf.lib.collectors.gce_disk_copy',
   'GCEDiskFromImage': 'dftimewolf.lib.exporters.gce_disk_from_image',
