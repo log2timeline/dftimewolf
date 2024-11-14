@@ -77,10 +77,7 @@ class DataFrameToDiskExporter(module.BaseModule):
         s.strip().lower() for s in output_formats.split(',') if s]
       self._formats = list(filter(None, self._formats))
 
-      invalid_formats = []
-      for f in self._formats:
-        if f not in _VALID_FORMATS:
-          invalid_formats.append(f)
+      invalid_formats = [f for f in self._formats if f not in _VALID_FORMATS]
       if invalid_formats:
         self.ModuleError(
           f'Invalid format(s) specified: {", ".join(invalid_formats)}',
@@ -125,25 +122,24 @@ class DataFrameToDiskExporter(module.BaseModule):
     Args:
       container: The dataframe container to export.
     """
-    for f in _VALID_FORMATS:
-      if f in self._formats:
-        output_path = os.path.join(
-            self._output_dir,
-            f'{_ConvertToValidFilename(container.name)}{_EXTENSION_MAP[f]}')
+    for f in self._formats:
+      output_path = os.path.join(
+          self._output_dir,
+          f'{_ConvertToValidFilename(container.name)}{_EXTENSION_MAP[f]}')
 
-        self.logger.debug(f'Exporting {container.name} to {output_path}')
+      self.logger.debug(f'Exporting {container.name} to {output_path}')
 
-        self._ExportSingleDataframe(df=container.data_frame,
-                                    output_format=f,
-                                    output_path=output_path)
+      self._ExportSingleDataframe(df=container.data_frame,
+                                  output_format=f,
+                                  output_path=output_path)
 
-        self.state.StoreContainer(container=containers.File(
-            name=os.path.basename(output_path),
-            path=output_path,
-            description=container.description))
+      self.state.StoreContainer(container=containers.File(
+          name=os.path.basename(output_path),
+          path=output_path,
+          description=container.description))
 
-        self.logger.debug(
-            f'Export of {container.name} to {output_path} complete')
+      self.logger.debug(
+          f'Export of {container.name} to {output_path} complete')
 
   def _ExportSingleDataframe(self,
                              df: pd.DataFrame,
