@@ -214,6 +214,37 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
         clients.append(client)
     return clients
 
+  def VerifyClientAccess(self, client: Client) -> None:
+    """Verifies and requests access to a GRR client.
+
+    This call will block until the approval is granted.
+
+    Args:
+      client: GRR client object to verify access to.
+    """
+    client_fqdn = client.data.knowledge_base.fqdn
+
+    try:
+      client.VerifyAccess()
+      self.logger.info(f"Access to {client_fqdn} granted")
+      return
+    except grr_errors.AccessForbiddenError:
+      self.logger.warning(f"No access to {client_fqdn}, requesting...")
+
+    approval = client.CreateApproval(
+      reason=self.reason,
+      notified_users=self.approvers,
+      expiration_duration_days=30,
+    )
+
+    approval_url = (
+      f"{self.grr_url}/v2/clients/{approval.client_id}/users/"
+      f"{approval.username}/approvals/{approval.approval_id}"
+    )
+    self.PublishMessage(f"Approval URL: {approval_url}")
+    approval.WaitUntilValid()
+    self.logger.info(f"Access to {client_fqdn} granted")
+
   # TODO: change object to more specific GRR type information.
   def _LaunchFlow(self, client: Client, name: str, args: str) -> str:
     """Creates the specified flow.
