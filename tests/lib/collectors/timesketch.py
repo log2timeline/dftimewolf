@@ -12,6 +12,7 @@ from dftimewolf.lib import state
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.collectors import timesketch
 
+
 class TimesketchSearchEventCollectorTest(unittest.TestCase):
   """Tests for the TimesketchSearchEventCollector module."""
 
