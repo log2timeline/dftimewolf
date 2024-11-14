@@ -1477,6 +1477,8 @@ class GRRFlowCollector(GRRFlow):
     # We don't need clients to be online to grab the flows.
     client = self._GetClientBySelector(
         container.hostname, discard_inactive=False)
+    self.logger.info(f"Verifying client access for {client.client_id}...")
+    self.VerifyClientAccess(client)
     self._AwaitFlow(client, container.flow_id)
     self._CheckSkippedFlows()
     collected_flow_data = self._DownloadFiles(client, container.flow_id)
