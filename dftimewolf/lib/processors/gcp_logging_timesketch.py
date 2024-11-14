@@ -187,7 +187,7 @@ class GCPLoggingTimesketch(BaseModule):
           timesketch_record['gcloud_command_partial'] = command_string
 
       if 'invocation-id/' in user_agent:
-        invocation_regex = re.search(r'invocation-id/()', user_agent)
+        invocation_regex = re.search(r'invocation-id/([^\s]+)', user_agent)
         if invocation_regex:
           invocation_id = str(invocation_regex.group(1))
           timesketch_record['gcloud_command_id'] = invocation_id
