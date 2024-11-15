@@ -1455,7 +1455,11 @@ class GRRFlowCollector(GRRFlow):
       if host:
         client = self._GetClientBySelector(host)
         for flow_id in flows:
+          self.logger.info(
+                f'Verifying client access for {client.client_id}...'
+            )
           try:
+            self.VerifyClientAccess(client)
             client.Flow(flow_id).Get()
             self.StoreContainer(containers.GrrFlow(host, flow_id))
           except Exception as exception:  # pylint: disable=broad-except
@@ -1477,8 +1481,6 @@ class GRRFlowCollector(GRRFlow):
     # We don't need clients to be online to grab the flows.
     client = self._GetClientBySelector(
         container.hostname, discard_inactive=False)
-    self.logger.info(f"Verifying client access for {client.client_id}...")
-    self.VerifyClientAccess(client)
     self._AwaitFlow(client, container.flow_id)
     self._CheckSkippedFlows()
     collected_flow_data = self._DownloadFiles(client, container.flow_id)
