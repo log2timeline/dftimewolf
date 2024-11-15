@@ -530,18 +530,19 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
 
     flow_name = flow_handle.data.name
     if flow_name == 'TimelineFlow':
-      self.logger.debug('Downloading timeline from GRR')
+      self.logger.info('Downloading timeline from GRR')
       self._DownloadTimeline(client, flow_handle, flow_output_dir)
       return flow_output_dir
 
     if flow_name == 'OsqueryFlow':
-      self.logger.debug('Downloading osquery results from GRR')
+      self.logger.info('Downloading osquery results from GRR')
       self._DownloadOsquery(client, flow_id, flow_output_dir)
       return flow_output_dir
 
     payloads = []
     for r in flow_handle.ListResults():
       payloads.append(r.payload)
+    self.logger.info('Downloading data blobs from GRR')
     self._DownloadBlobs(client, payloads, flow_output_dir)
 
     return flow_output_dir
