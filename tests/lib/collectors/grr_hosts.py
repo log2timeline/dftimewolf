@@ -685,10 +685,17 @@ class GRRFlowCollectorTest(unittest.TestCase):
   mock_grr_api: mock.Mock
   test_state: state.DFTimewolfState
 
+  @mock.patch("grr_api_client.client.Client.VerifyAccess")
   @mock.patch('grr_api_client.flow.FlowBase.Get')
   @mock.patch('grr_api_client.client.Client.ListFlows')
   @mock.patch('grr_api_client.api.InitHttp')
-  def setUp(self, mock_InitHttp, mock_list_flows, unused_mock_flow_get):
+  def setUp(
+    self,
+    mock_InitHttp,
+    mock_list_flows,
+    unused_mock_flow_get,
+    mock_verify_access,
+  ):
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
     self.mock_grr_api.SearchClients.return_value = \
@@ -730,17 +737,24 @@ class GRRFlowCollectorTest(unittest.TestCase):
     self.assertEqual(result.name, 'tomchop')
     self.assertEqual(result.path, '/tmp/something')
 
+  @mock.patch("grr_api_client.client.Client.VerifyAccess")
   @mock.patch('grr_api_client.flow.FlowBase.Get')
   @mock.patch('grr_api_client.client.Client.ListFlows')
   @mock.patch('grr_api_client.api.InitHttp')
   def testPreProcessNoFlows(
-    self, mock_InitHttp, mock_list_flows, unused_mock_flow_get):
+    self,
+    mock_InitHttp,
+    mock_list_flows,
+    unused_mock_flow_get,
+    unused_mock_verify_access,
+  ):
     """Tests that if no flows are found, an error is thrown."""
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
     self.mock_grr_api.SearchClients.return_value = \
         mock_grr_hosts.MOCK_CLIENT_LIST
     mock_list_flows.return_value = [mock_grr_hosts.flow_pb_terminated]
+
 
     grr_flow_collector = grr_hosts.GRRFlowCollector(self.test_state)
     grr_flow_collector.SetUp(
