@@ -694,7 +694,7 @@ class GRRFlowCollectorTest(unittest.TestCase):
     mock_InitHttp,
     mock_list_flows,
     unused_mock_flow_get,
-    mock_verify_access,
+    unused_mock_verify_access,
   ):
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
