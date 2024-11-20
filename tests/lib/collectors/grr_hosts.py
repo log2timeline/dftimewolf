@@ -685,10 +685,17 @@ class GRRFlowCollectorTest(unittest.TestCase):
   mock_grr_api: mock.Mock
   test_state: state.DFTimewolfState
 
+  @mock.patch("grr_api_client.client.Client.VerifyAccess")
   @mock.patch('grr_api_client.flow.FlowBase.Get')
   @mock.patch('grr_api_client.client.Client.ListFlows')
   @mock.patch('grr_api_client.api.InitHttp')
-  def setUp(self, mock_InitHttp, mock_list_flows, unused_mock_flow_get):
+  def setUp(
+    self,
+    mock_InitHttp,
+    mock_list_flows,
+    unused_mock_flow_get,
+    unused_mock_verify_access,
+  ):
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
     self.mock_grr_api.SearchClients.return_value = \
@@ -707,9 +714,10 @@ class GRRFlowCollectorTest(unittest.TestCase):
         skip_offline_clients=False,
     )
 
+  @mock.patch("grr_api_client.client.Client.VerifyAccess")
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
   @mock.patch("dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow")
-  def testProcess(self, _, mock_DownloadFiles):
+  def testProcess(self, _, mock_DownloadFiles, unused_mock_verify_access):
     """Tests that the collector can be initialized."""
     self.mock_grr_api.SearchClients.return_value = \
         mock_grr_hosts.MOCK_CLIENT_LIST
@@ -730,17 +738,24 @@ class GRRFlowCollectorTest(unittest.TestCase):
     self.assertEqual(result.name, 'tomchop')
     self.assertEqual(result.path, '/tmp/something')
 
+  @mock.patch("grr_api_client.client.Client.VerifyAccess")
   @mock.patch('grr_api_client.flow.FlowBase.Get')
   @mock.patch('grr_api_client.client.Client.ListFlows')
   @mock.patch('grr_api_client.api.InitHttp')
   def testPreProcessNoFlows(
-    self, mock_InitHttp, mock_list_flows, unused_mock_flow_get):
+    self,
+    mock_InitHttp,
+    mock_list_flows,
+    unused_mock_flow_get,
+    unused_mock_verify_access,
+  ):
     """Tests that if no flows are found, an error is thrown."""
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
     self.mock_grr_api.SearchClients.return_value = \
         mock_grr_hosts.MOCK_CLIENT_LIST
     mock_list_flows.return_value = [mock_grr_hosts.flow_pb_terminated]
+
 
     grr_flow_collector = grr_hosts.GRRFlowCollector(self.test_state)
     grr_flow_collector.SetUp(
@@ -762,13 +777,20 @@ class GRRFlowCollectorTest(unittest.TestCase):
     self.assertEqual('No flows found for collection.', error.exception.message)
     self.assertEqual(len(self.test_state.errors), 1)
 
+  @mock.patch("grr_api_client.client.Client.VerifyAccess")
   @mock.patch('grr_api_client.flow.FlowBase.Get')
   @mock.patch('grr_api_client.client.Client.ListFlows')
   @mock.patch('grr_api_client.api.InitHttp')
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
   @mock.patch("dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow")
   def testProcessNoFlowData(
-    self, _, mock_DLFiles, mock_InitHttp, mock_list_flows, unused_mock_flow_get
+    self,
+    _,
+    mock_DLFiles,
+    mock_InitHttp,
+    mock_list_flows,
+    unused_mock_flow_get,
+    unused_mock_verify_access,
   ):
     """Tests Process when the flow is found but has no data collected."""
     self.mock_grr_api = mock.Mock()

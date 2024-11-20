@@ -471,10 +471,14 @@ class GCPCloudResourceTree(module.BaseModule):
 
       # Parse logs for supported resource types
       if log_message_type.startswith(
-          ('compute.instances', 'compute.disks', 'compute.machineImages',
-           'compute.image', 'compute.instanceTemplates', 'compute.snapshots')):
+          ('compute.instances', 'compute.regionInstances', 'compute.disks',
+           'compute.regionDisks', 'compute.machineImages', 'compute.image',
+           'compute.instanceTemplates', 'compute.regionInstanceTemplates',
+           'compute.snapshots')):
         # Only parse 'operation' responses, skipping errors
-        if response.get('@type').split('/')[-1] != 'operation':
+        if (
+            response.get('@type') is None or
+            response.get('@type').split('/')[-1] != 'operation'):
           continue
 
         # Check if a resource with the same ID already exist in the
