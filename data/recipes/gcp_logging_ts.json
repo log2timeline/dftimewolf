@@ -33,7 +33,7 @@
       }
   },{
       "wants": [
-        "GCPLogsCollector"
+        "LocalPlasoProcessor"
       ],
       "name": "TimesketchExporter",
       "args": {
