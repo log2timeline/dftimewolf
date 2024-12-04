@@ -821,7 +821,7 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
       'status_code': '7',
       'status_message': ('Permission \'iam.serviceAccounts.create\' denied on'
           ' resource (or it may not exist).'),
-      'status_reasons': ['IAM_PERMISSION_DENIED'],
+      'status_reason': 'IAM_PERMISSION_DENIED',
       'unique_id': '',
       'user_agent': '(gzip),gzip(gfe)'
     }

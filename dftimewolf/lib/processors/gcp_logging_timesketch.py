@@ -5,7 +5,7 @@ import json
 import re
 import tempfile
 from datetime import datetime
-from typing import Any, Dict, Optional, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.module import BaseModule
@@ -21,9 +21,9 @@ class GCPLoggingTimesketch(BaseModule):
   Attributes:
     data_type (str): Timesketch data type i.e. gcp:log:json.
     datetime (str): event date time.
-    dcsa_emails (list[str]): default compute service account, a service account
+    dcsa_emails (List[str]): default compute service account, a service account
         attached when a Compute Engine instance is created.
-    dcsa_scopes (list[str]): OAuth scopes granted to the default service account
+    dcsa_scopes (List[str]): OAuth scopes granted to the default service account
         attached to a Compute Engine instance.
     delegation_chain (str): service account impersonation/delegation chain.
     event_subtype (str): event subtype.
@@ -32,8 +32,8 @@ class GCPLoggingTimesketch(BaseModule):
         operation.
     message (str): summary message of the operation.
     method_name (str): operation performed.
-    permissions (list[str]): IAM permissions used for the operation.
-    policy_delta (list[str]): IAM policy delta.
+    permissions (List[str]): IAM permissions used for the operation.
+    policy_delta (List[str]): IAM policy delta.
     principal_email (str): email address of the requester.
     principal_subject (str): subject of the requester.
     query (str): Google Cloud log filtering query.
@@ -46,12 +46,12 @@ class GCPLoggingTimesketch(BaseModule):
         authentication.
     service_name (str): name of the service.
     severity (str): log entry severity.
-    source_images (list[str]): source images of disks attached to a Compute
+    source_images (List[str]): source images of disks attached to a Compute
         Engine instance.
-    source_ranges (list[str]): firewall source ranges.
+    source_ranges (List[str]): firewall source ranges.
     status_code (str): operation success or failure code.
     status_message (str): operation success or failure message.
-    status_reasons (list[str]): operation failure reasons.
+    status_reason (str): operation failure reasons.
     textPayload (str): text payload for logs not using a JSON or proto payload.
     timestamp_desc (str): description of timestamp.
     user (str): user or requestor.
@@ -277,7 +277,7 @@ class GCPLoggingTimesketch(BaseModule):
         status_reasons.append(reason)
 
     if status_reasons:
-      timesketch_record['status_reasons'] = status_reasons
+      timesketch_record['status_reason'] = ', '.join(status_reasons)
 
   def _ParseServiceData(
       self,
