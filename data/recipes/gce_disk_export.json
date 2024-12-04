@@ -39,6 +39,6 @@
         ["--source_disk_names", "Comma-separated list of disk names to export. If not provided, disks attached to `remote_instance_name` will be used.", null, {"format": "regex", "comma_separated": true, "regex": "^[a-z][-a-z0-9]{0,61}[a-z0-9]?$"}],
         ["--remote_instance_name", "Instance in source project to export its disks. If not provided, `disk_names` will be used.", null, {"format": "regex", "regex": "^[a-z][-a-z0-9]{0,61}[a-z0-9]?$"}],
         ["--all_disks", "If True, copy all disks attached to the `remote_instance_name` instance. If False and `remote_instance_name` is provided, it will select the instance's boot disk.", false],
-        ["--exported_image_name", "Name of the output file, must comply with `^[A-Za-z0-9-]*$` and `'.tar.gz'` will be appended to the name. If not provided or if more than one disk is selected, the exported image will be named `exported-image-{TIMESTAMP('%Y%m%d%H%M%S')}`.", null, {"format": "regex", "regex": "^[A-Za-z0-9-]*$"}]
+        ["--exported_image_name", "Name of the output file, must comply with `^[A-Za-z0-9-]*$` and `'.tar.gz'` will be appended to the name. If not provided or if more than one disk is selected, the exported image will be named `exported-image-{TIMESTAMP('YYYYmmddHHMMSS')}`.", null, {"format": "regex", "regex": "^[A-Za-z0-9-]*$"}]
     ]
   }
