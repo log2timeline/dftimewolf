@@ -347,7 +347,7 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
             '2019-06-06T09:29:04.499000Z',
         'timestamp_desc':
             'Event Recorded',
-        'dcsa_email': 'my-sa2@ketchup-research.iam.gserviceaccount.com',
+        'dcsa_emails': ['my-sa2@ketchup-research.iam.gserviceaccount.com'],
         'dcsa_scopes': [
           'https://www.googleapis.com/auth/devstorage.full_control',
           'https://www.googleapis.com/auth/logging.read',
@@ -703,6 +703,137 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
     actual_timesketch_record = json.loads(actual_timesketch_record)
     self.assertDictEqual(expected_timesketch_record, actual_timesketch_record)
 
+  def testServiceAccountCreateFailed(self):
+    """Test the failed service account create logs with reasons."""
+    test_state = state.DFTimewolfState(config.Config)
+    processor = gcp_logging_timesketch.GCPLoggingTimesketch(test_state)
+
+    service_create_log = {
+      'protoPayload': {
+        '@type': 'type.googleapis.com/google.cloud.audit.AuditLog',
+        'status': {
+          'code': 7,
+          'message': ('Permission \'iam.serviceAccounts.create\' denied on '
+              'resource (or it may not exist).'),
+          'details': [
+            {
+              '@type': 'type.googleapis.com/google.rpc.ErrorInfo',
+              'reason': 'IAM_PERMISSION_DENIED',
+              'domain': 'iam.googleapis.com',
+              'metadata': {
+                'permission': 'iam.serviceAccounts.create'
+              }
+            }
+          ]
+        },
+        'authenticationInfo': {
+          'principalEmail': ('dvwa-service-account@ketchup'
+              '.iam.gserviceaccount.com'),
+          'serviceAccountDelegationInfo': [
+            {
+              'firstPartyPrincipal': {
+                'principalEmail': ('service-1234567890@compute-system.iam.'
+                    'gserviceaccount.com')
+              }
+            }
+          ],
+          'principalSubject': ('serviceAccount:dvwa-service-account@'
+              'ketchup.iam.gserviceaccount.com')
+        },
+        'requestMetadata': {
+          'callerIp': '34.72.217.225',
+          'callerSuppliedUserAgent': '(gzip),gzip(gfe)',
+          'requestAttributes': {
+            'time': '2024-12-03T17:58:45.019694350Z',
+            'auth': {}
+          },
+          'destinationAttributes': {}
+        },
+        'serviceName': 'iam.googleapis.com',
+        'methodName': 'google.iam.admin.v1.CreateServiceAccount',
+        'authorizationInfo': [
+          {
+            'resource': 'projects/ketchup',
+            'permission': 'iam.serviceAccounts.create',
+            'resourceAttributes': {
+              'type': 'iam.googleapis.com/ServiceAccount'
+            },
+            'permissionType': 'ADMIN_WRITE'
+          }
+        ],
+        'resourceName': 'projects/ketchup',
+        'request': {
+          'service_account': {
+            'display_name': 'This is the attacker account'
+          },
+          'account_id': 'theattacker',
+          'name': 'projects/ketchup',
+          '@type': ('type.googleapis.com/google.iam.admin.v1.'
+              'CreateServiceAccountRequest')
+        },
+        'response': {
+          '@type': 'type.googleapis.com/google.iam.admin.v1.ServiceAccount'
+        }
+      },
+      'insertId': '1awjxggeaxqgz',
+      'resource': {
+        'type': 'service_account',
+        'labels': {
+          'unique_id': '',
+          'project_id': 'ketchup',
+          'email_id': ''
+        }
+      },
+      'timestamp': '2024-12-03T17:58:44.882119699Z',
+      'severity': 'ERROR',
+      'logName': ('projects/ketchup/logs/cloudaudit.'
+          'googleapis.com%2Factivity'),
+      'receiveTimestamp': '2024-12-03T17:58:45.716564605Z'
+    }
+
+    expected_timesketch_record = {
+      'query': 'test_query',
+      'data_type': 'gcp:log:json',
+      'datetime': '2024-12-03T17:58:44.882119699Z',
+      'timestamp_desc': 'Event Recorded',
+      'caller_ip': '34.72.217.225',
+      'delegation_chain': ('service-1234567890@compute-system.iam.'
+          'gserviceaccount.com'),
+      'email_id': '',
+      'message': ('User dvwa-service-account@ketchup.iam.'
+          'gserviceaccount.com performed google.iam.admin.v1.'
+          'CreateServiceAccount on projects/ketchup'),
+      'method_name': 'google.iam.admin.v1.CreateServiceAccount',
+     'permissions': ['iam.serviceAccounts.create'],
+      'principal_email': ('dvwa-service-account@ketchup.'
+          'iam.gserviceaccount.com'),
+      'principal_subject': ('serviceAccount:dvwa-service-account@'
+          'ketchup.iam.gserviceaccount.com'),
+      'project_id': 'ketchup',
+      'request_account_id': 'theattacker',
+      'request_name': 'projects/ketchup',
+      'resource_name': 'projects/ketchup',
+      'service_account_delegation': [
+          'service-1234567890@compute-system.iam.gserviceaccount.com'],
+      'service_account_display_name': 'This is the attacker account',
+      'service_name': 'iam.googleapis.com',
+      'severity': 'ERROR',
+      'status_code': '7',
+      'status_message': ('Permission \'iam.serviceAccounts.create\' denied on'
+          ' resource (or it may not exist).'),
+      'status_reasons': ['IAM_PERMISSION_DENIED'],
+      'unique_id': '',
+      'user_agent': '(gzip),gzip(gfe)'
+    }
+
+    failed_service_account_create_log = json.dumps(service_create_log)
+
+    # pylint: disable=protected-access
+    actual_timesketch_record = processor._ProcessLogLine(
+        failed_service_account_create_log, 'test_query')
+
+    actual_timesketch_record = json.loads(actual_timesketch_record)
+    self.assertDictEqual(expected_timesketch_record, actual_timesketch_record)
 
 if __name__ == '__main__':
   unittest.main()
