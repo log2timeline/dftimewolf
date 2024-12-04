@@ -5,7 +5,7 @@ import json
 import re
 import tempfile
 from datetime import datetime
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import Any, Dict, Optional, TYPE_CHECKING
 
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.module import BaseModule
