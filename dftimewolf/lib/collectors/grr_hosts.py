@@ -24,6 +24,11 @@ from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 
+
+class GRRError(Exception):
+  """Errors raised and handled within the GRR DFTW classes."""
+
+
 GRR_THREAD_POOL_SIZE = 10 # Arbitrary
 
 # TODO: GRRFlow should be extended by classes that actually implement
@@ -38,6 +43,8 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
   _CHECK_FLOW_INTERVAL_SEC = 10
   _MAX_OFFLINE_TIME_SEC = 3600  # One hour
   _LARGE_FILE_SIZE_THRESHOLD = 1 * 1024 * 1024 * 1024  # 1 GB
+  _MISSING_FILE_MESSAGE = ('%s was found on the client but not collected, '
+                           'probably due to file size: (%d)')
 
   _CLIENT_ID_REGEX = re.compile(r'^c\.[0-9a-f]{16}$', re.IGNORECASE)
 
@@ -539,6 +546,15 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       self._DownloadOsquery(client, flow_id, flow_output_dir)
       return flow_output_dir
 
+    try:
+      missing = self._CheckForMissingFiles(flow_handle)
+      if missing:
+        message = '\n'.join([self._MISSING_FILE_MESSAGE % (path, size)
+                             for path, size in missing])
+        self.PublishMessage(f'\n{message}\n', is_error=True)
+    except GRRError:
+      pass
+
     payloads = []
     for r in flow_handle.ListResults():
       payloads.append(r.payload)
@@ -546,6 +562,37 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     self._DownloadBlobs(client, payloads, flow_output_dir)
 
     return flow_output_dir
+
+  def _CheckForMissingFiles(
+      self, flow_handle: flow.Flow) -> list[tuple[str, int]]:
+    """Check a ClientFileFinder result list for files that weren't collected.
+
+    Args:
+      flow_handle: A flow to check for missing files.
+
+    Returns:
+      A list of tuples of:
+        A file where collection was skipped or failed
+        The file size in bytes
+    """
+    results = list(flow_handle.ListResults())
+    if not results:
+      raise DFTimewolfError(
+          f'No FileFinder results for {flow_handle.flow_id}')
+    if flow_handle.data.name != 'ClientFileFinder':
+      raise GRRError()
+    missing: list[tuple[str, int]] = []
+    for result in results:
+      payload = flows_pb2.FileFinderResult()
+      result.data.payload.Unpack(payload)
+      if not payload.HasField('transferred_file'):
+        pathspec = payload.stat_entry.pathspec
+        if pathspec.mount_point and pathspec.nested_path.path:
+          pathname = pathspec.mount_point + pathspec.nested_path.path
+        else:
+          pathname = pathspec.path
+        missing.append((pathname, payload.stat_entry.st_size))
+    return missing
 
   def GetThreadPoolSize(self) -> int:
     """Thread pool size."""
