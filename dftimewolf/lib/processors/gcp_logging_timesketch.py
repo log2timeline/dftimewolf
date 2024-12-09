@@ -1,5 +1,42 @@
 # -*- coding: utf-8 -*-
-"""Processes Google Cloud Platform (GCP) logs for loading into Timesketch."""
+"""Processes Google Cloud Platform (GCP) logs for loading into Timesketch.
+
+The following attributes are extracted by the processor:
+  data_type: Timesketch data type i.e. gcp:log:json.
+  datetime: event date time.
+  dcsa_emails: default compute service account, a service account attached when
+      a Compute Engine instance is created.
+  dcsa_scopes: OAuth scopes granted to the default service account attached to a
+      Compute Engine instance.
+  delegation_chain: service account impersonation/delegation chain.
+  event_subtype: event subtype.
+  gcloud_command_id: unique gcloud command execution ID.
+  gcloud_command_partial: partial gcloud command related to the operation.
+  message: summary message of the operation.
+  method_name: operation performed.
+  permissions: IAM permissions used for the operation.
+  policy_delta: IAM policy delta.
+  principal_email: email address of the requester.
+  principal_subject: subject of the requester.
+  query: Google Cloud log filtering query.
+  resource_label_instance_id: Compute Engine instance ID.
+  resource_name: resource name.
+  service_account_delegation: service accounts delegation in
+      authentication.
+  service_account_display_name: display name of the service account.
+  service_account_key_name: service account key name used in
+      authentication.
+  service_name: name of the service.
+  severity: log entry severity.
+  source_images: source images of disks attached to a Compute Engine instance.
+  source_ranges: firewall source ranges.
+  status_code: operation success or failure code.
+  status_message: operation success or failure message.
+  status_reason: operation failure reasons.
+  textPayload: text payload for logs not using a JSON or proto payload.
+  timestamp_desc: description of timestamp.
+  user: user or requestor.
+"""
 
 import json
 import re
@@ -225,6 +262,20 @@ class GCPLoggingTimesketch(BaseModule):
     timesketch_record['status_code'] = status_code
     timesketch_record['status_message'] = status_message
 
+    # `protoPayload.status` struction may contain `details` attribute when
+    # opertion fails. The reason attribute contains the reason the operation
+    # failed.
+    status_reasons = []
+
+    status_details = status.get('details', [])
+    for status_detail in status_details:
+      reason = status_detail.get('reason')
+      if reason:
+        status_reasons.append(reason)
+
+    if status_reasons:
+      timesketch_record['status_reason'] = ', '.join(status_reasons)
+
   def _ParseServiceData(
       self,
       proto_payload: Dict[str, Any],
@@ -332,7 +383,7 @@ class GCPLoggingTimesketch(BaseModule):
         dcsa_scopes.extend(scopes)
 
     if dcsa_emails:
-      timesketch_record['dcsa_email'] = ','.join(dcsa_emails)
+      timesketch_record['dcsa_emails'] = dcsa_emails
 
     if dcsa_scopes:
       timesketch_record['dcsa_scopes'] = dcsa_scopes
