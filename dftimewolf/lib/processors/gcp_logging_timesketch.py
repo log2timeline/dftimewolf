@@ -1,5 +1,42 @@
 # -*- coding: utf-8 -*-
-"""Processes Google Cloud Platform (GCP) logs for loading into Timesketch."""
+"""Processes Google Cloud Platform (GCP) logs for loading into Timesketch.
+
+The following attributes are extracted by the processor:
+  data_type: Timesketch data type i.e. gcp:log:json.
+  datetime: event date time.
+  dcsa_emails: default compute service account, a service account attached when
+      a Compute Engine instance is created.
+  dcsa_scopes: OAuth scopes granted to the default service account attached to a
+      Compute Engine instance.
+  delegation_chain: service account impersonation/delegation chain.
+  event_subtype: event subtype.
+  gcloud_command_id: unique gcloud command execution ID.
+  gcloud_command_partial: partial gcloud command related to the operation.
+  message: summary message of the operation.
+  method_name: operation performed.
+  permissions: IAM permissions used for the operation.
+  policy_delta: IAM policy delta.
+  principal_email: email address of the requester.
+  principal_subject: subject of the requester.
+  query: Google Cloud log filtering query.
+  resource_label_instance_id: Compute Engine instance ID.
+  resource_name: resource name.
+  service_account_delegation: service accounts delegation in
+      authentication.
+  service_account_display_name: display name of the service account.
+  service_account_key_name: service account key name used in
+      authentication.
+  service_name: name of the service.
+  severity: log entry severity.
+  source_images: source images of disks attached to a Compute Engine instance.
+  source_ranges: firewall source ranges.
+  status_code: operation success or failure code.
+  status_message: operation success or failure message.
+  status_reason: operation failure reasons.
+  textPayload: text payload for logs not using a JSON or proto payload.
+  timestamp_desc: description of timestamp.
+  user: user or requestor.
+"""
 
 import json
 import re
@@ -16,47 +53,7 @@ if TYPE_CHECKING:
 
 
 class GCPLoggingTimesketch(BaseModule):
-  """Transforms Google Cloud Platform logs for Timesketch.
-
-  Attributes:
-    data_type (str): Timesketch data type i.e. gcp:log:json.
-    datetime (str): event date time.
-    dcsa_emails (List[str]): default compute service account, a service account
-        attached when a Compute Engine instance is created.
-    dcsa_scopes (List[str]): OAuth scopes granted to the default service account
-        attached to a Compute Engine instance.
-    delegation_chain (str): service account impersonation/delegation chain.
-    event_subtype (str): event subtype.
-    gcloud_command_id (str): unique gcloud command execution ID.
-    gcloud_command_partial (str): partial gcloud command related to the
-        operation.
-    message (str): summary message of the operation.
-    method_name (str): operation performed.
-    permissions (List[str]): IAM permissions used for the operation.
-    policy_delta (List[str]): IAM policy delta.
-    principal_email (str): email address of the requester.
-    principal_subject (str): subject of the requester.
-    query (str): Google Cloud log filtering query.
-    resource_label_instance_id (str): Compute Engine instance ID.
-    resource_name (str): resource name.
-    service_account_delegation (list[str]): service accounts delegation in
-        authentication.
-    service_account_display_name (str): display name of the service account.
-    service_account_key_name (str): service account key name used in
-        authentication.
-    service_name (str): name of the service.
-    severity (str): log entry severity.
-    source_images (List[str]): source images of disks attached to a Compute
-        Engine instance.
-    source_ranges (List[str]): firewall source ranges.
-    status_code (str): operation success or failure code.
-    status_message (str): operation success or failure message.
-    status_reason (str): operation failure reasons.
-    textPayload (str): text payload for logs not using a JSON or proto payload.
-    timestamp_desc (str): description of timestamp.
-    user (str): user or requestor.
-    user_agent (str): user agent used in the request.
-  """
+  """Transforms Google Cloud Platform logs for Timesketch."""
 
   DATA_TYPE = 'gcp:log:json'
 
