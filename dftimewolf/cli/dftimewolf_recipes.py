@@ -569,18 +569,18 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
       cdm.EnqueueMessage('dftimewolf', str(exception), True)
     logger.critical(str(exception))
     return 1
+  finally:
+    time_run = time.time()*1000
+    tool.telemetry.LogTelemetry(
+      'run_delta', str(time_run - time_setup), 'core', recipe_name)
 
-  time_run = time.time()*1000
-  tool.telemetry.LogTelemetry(
-    'run_delta', str(time_run - time_setup), 'core', recipe_name)
+    tool.CleanUpPreflights()
 
-  tool.CleanUpPreflights()
-
-  total_time = time.time()*1000 - time_start
-  tool.telemetry.LogTelemetry(
-    'total_time', str(total_time), 'core', recipe_name)
-  for telemetry_row in tool.FormatTelemetry().split('\n'):
-    logger.debug(telemetry_row)
+    total_time = time.time()*1000 - time_start
+    tool.telemetry.LogTelemetry(
+      'total_time', str(total_time), 'core', recipe_name)
+    for telemetry_row in tool.FormatTelemetry().split('\n'):
+      logger.debug(telemetry_row)
 
   return 0
 
