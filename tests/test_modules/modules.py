@@ -26,6 +26,10 @@ class DummyModule1(module.BaseModule):
     print(self.name + ' Process!')
     self.LogTelemetry({'random_key1': 'random_value1'})
 
+  def CleanUp(self) -> None:
+    """Dummy CleanUp function."""
+    print(self.name + ' CleanUp!')
+
 
 class DummyModule2(module.BaseModule):
   """This is a dummy module."""
@@ -43,6 +47,11 @@ class DummyModule2(module.BaseModule):
     """Dummy Process function."""
     print(self.name + ' Process!')
     self.LogTelemetry({'random_key2': 'random_value2'})
+
+  def CleanUp(self) -> None:
+    """Dummy CleanUp function."""
+    print(self.name + ' CleanUp!')
+
 
 class DummyPreflightModule(module.PreflightModule):
   """Dummy preflight module."""
