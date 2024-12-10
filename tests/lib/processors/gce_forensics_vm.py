@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 """Tests the GCEForensicsVM generator."""
 
-import unittest
+from absl.testing import absltest
+from absl.testing import parameterized
 
 import mock
 from libcloudforensics.providers.gcp.internal import project as gcp_project
@@ -23,7 +24,7 @@ FAKE_ANALYSIS_VM = compute.GoogleComputeInstance(
     'fake-analysis-vm')
 
 
-class GCEForensicsVMTest(unittest.TestCase):
+class GCEForensicsVMTest(parameterized.TestCase):
   """Tests for the Forensics VM creator."""
 
   def testInitialization(self):
@@ -47,7 +48,8 @@ class GCEForensicsVMTest(unittest.TestCase):
         64,
         'test-image-project',
         'test-image-family',
-        True
+        True,
+        'gcp-forensics-vm'
     )
     self.assertEqual(test_state.errors, [])
     self.assertEqual(processor.project.project_id,
@@ -110,7 +112,8 @@ class GCEForensicsVMTest(unittest.TestCase):
         64,
         'test-image-project',
         'test-image-family',
-        True
+        True,
+        'gcp-forensics-vm'
     )
     processor.Process()
 
@@ -162,7 +165,8 @@ class GCEForensicsVMTest(unittest.TestCase):
         64,
         'test-image-project',
         'test-image-family',
-        True
+        True,
+        'gcp-forensics-vm'
     )
     with self.assertRaises(errors.DFTimewolfError) as error:
       processor.Process()
@@ -189,7 +193,8 @@ class GCEForensicsVMTest(unittest.TestCase):
         64,
         'test-image-project',
         'test-image-family',
-        False
+        False,
+        'gcp-forensics-vm'
     )
     processor.Process()
 
@@ -202,6 +207,57 @@ class GCEForensicsVMTest(unittest.TestCase):
     actual_disks = [d.name for d in processor.GetContainers(containers.GCEDisk)]
     self.assertEqual(expected_disks, actual_disks)
 
+  # pylint: disable=line-too-long
+  @parameterized.named_parameters(
+      ('id_and_empty', '12345', '', 'gcp-forensics-vm-12345'),
+      ('id_and_name', '12345', 'vm_name', 'vm_name-12345'),
+      ('empty_and_name', '', 'vm_name', 'vm_name-abcd'),
+      ('id_in_name', '12345', 'vm_12345_name', 'vm_12345_name'),
+  )
+  @mock.patch('libcloudforensics.providers.gcp.forensics.StartAnalysisVm')
+  @mock.patch('libcloudforensics.providers.gcp.internal.common.GenerateUniqueInstanceName')
+  @mock.patch('time.sleep')
+  # pylint: enable=line-too-long
+  def testVMNames(self,
+                  incident_id,
+                  vm_name,
+                  expected_vm_name_result,
+                  mock_sleep,
+                  mock_GenerateUniqueInstanceName,
+                  mock_StartAnalysisVm):
+    """Tests naming the created VM."""
+    mock_sleep.return_value = None
+    mock_StartAnalysisVm.return_value = (FAKE_ANALYSIS_VM, None)
+    mock_GenerateUniqueInstanceName.return_value = f'{vm_name}-abcd'
+
+    test_state = state.DFTimewolfState(config.Config)
+    processor = GCEForensicsVM(test_state)
+
+    processor.SetUp(
+        'test-analysis-project-name',
+        incident_id,
+        'test-zone',
+        120,
+        'pd-standard',
+        64,
+        'test-image-project',
+        'test-image-family',
+        True,
+        vm_name
+    )
+    processor.Process()
+
+    mock_StartAnalysisVm.assert_called_with(
+        mock.ANY,
+        expected_vm_name_result,
+        mock.ANY,
+        mock.ANY,
+        mock.ANY,
+        mock.ANY,
+        image_project=mock.ANY,
+        image_family=mock.ANY
+    )
+
 
 if __name__ == '__main__':
-  unittest.main()
+  absltest.main()
