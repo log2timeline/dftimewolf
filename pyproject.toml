@@ -31,6 +31,7 @@ grr-api-client = "^3.4.7"
 libcloudforensics = {git = "https://github.com/google/cloud-forensics-utils.git"}
 docker = "^7.0.0"
 setuptools = "^70.0.0"  # needed by docker
+openrelik-api-client = "2024.10.3"
 
 [tool.poetry.extras]
 turbinia_legacy = ["turbinia"]
