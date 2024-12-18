@@ -706,13 +706,13 @@ colorama = {version = "*", markers = "platform_system == \"Windows\""}
 
 [[package]]
 name = "cmd2"
-version = "2.5.7"
+version = "2.5.8"
 description = "cmd2 - quickly build feature-rich and user-friendly interactive command line applications in Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "cmd2-2.5.7-py3-none-any.whl", hash = "sha256:7e5856fd1a75716288d4638e68946f9697404f377dfdeeddc19045c7012de9b7"},
-    {file = "cmd2-2.5.7.tar.gz", hash = "sha256:0219e2bb75075fa16deffb88edf86efdd2a87439d1fa7b94fdea4b929a3dc914"},
+    {file = "cmd2-2.5.8-py3-none-any.whl", hash = "sha256:aeb6eb6cd6d783bb7d92d37aa920bcfa7379690ba9ab1188576562f73a13471c"},
+    {file = "cmd2-2.5.8.tar.gz", hash = "sha256:ddf29beaa7c9d4e9806eefad528a59c372ca97b4c0d83e019fef0e37c44f4497"},
 ]
 
 [package.dependencies]
@@ -2494,6 +2494,20 @@ signals = ["blinker (>=1.4.0)"]
 signedtoken = ["cryptography (>=3.0.0)", "pyjwt (>=2.0.0,<3)"]
 
 [[package]]
+name = "openrelik-api-client"
+version = "2024.10.3"
+description = "API client that automatically handles token refresh"
+optional = false
+python-versions = "<4.0,>=3.10"
+files = [
+    {file = "openrelik_api_client-2024.10.3-py3-none-any.whl", hash = "sha256:0011123debb10ae71050ef9d659e9ed5190aee4cbcb12f55faaaea231a83212d"},
+    {file = "openrelik_api_client-2024.10.3.tar.gz", hash = "sha256:7f3fbd26ba17c73f7e6bf07e688cbfcf32cd6acaad9911e1f4d72b136772de91"},
+]
+
+[package.dependencies]
+requests = ">=2.32.3,<3.0.0"
+
+[[package]]
 name = "opentelemetry-api"
 version = "1.29.0"
 description = "OpenTelemetry Python API"
@@ -4103,4 +4117,4 @@ turbinia-legacy = []
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<=3.13"
-content-hash = "acf41008a0716a10000409e3242f24c596a15b2a3b91b14eaadab56480344df4"
+content-hash = "67c13c89cfcd3989933dcfeba937c58b418327c340d54e8cd6f4ba5bd5436a8f"
