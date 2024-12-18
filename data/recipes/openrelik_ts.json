@@ -1,0 +1,53 @@
+{
+    "name": "openrelik_ts",
+    "short_description": "Processes files from the local file system using OpenRelik. Sends the results to Timesketch.",
+    "description": "Processes files from the local file system using OpenRelik. Sends the results to Timesketch.",
+    "test_params": "paths",
+    "modules": [{
+        "wants": [],
+        "name": "FilesystemCollector",
+        "args": {
+            "paths": "@paths"
+        }
+    }, {
+        "wants": ["FilesystemCollector"],
+        "name": "OpenRelikProcessor",
+        "args": {
+            "incident_id": "@incident_id",
+            "sketch_id": "@sketch_id",
+            "folder_id": "@folder_id",
+            "workflow_id": "@workflow_id",
+            "openrelik_api": "@openrelik_api",
+            "openrelik_ui": "@openrelik_ui"
+        }
+    }, {
+        "wants": ["OpenRelikProcessor"],
+        "name": "TimesketchExporter",
+        "args": {
+            "incident_id": "@reason",
+            "token_password": null,
+            "endpoint": "@timesketch_endpoint",
+            "username": "@timesketch_username",
+            "password": "@timesketch_password",
+            "sketch_id": "@sketch_id",
+            "analyzers": "@analyzers",
+            "wait_for_timelines": "@wait_for_timelines"
+        }
+    }],
+    "args": [
+        ["paths", "Comma-separated list of paths to process.", null],
+        ["--incident_id", "Incident ID (used for Timesketch description).", null],
+        ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "integer"}],
+        ["--folder_id", "OpenRelik Folder ID.", null],
+        ["--workflow_id", "OpenRelik workflow template ID.", null],
+        ["--openrelik_api", "OpenRelik API server URI.", "http://localhost:8710"],
+        ["--openrelik_ui", "OpenRelik UI URI.", "http://localhost:8711"],
+        ["--openrelik_api_key", "OpenRelik API key", ""],
+        ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true],
+        ["--analyzers", "Timesketch analyzers to run", null],
+        ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
+        ["--timesketch_endpoint", "Timesketch endpoint", "http://localhost:5000/"],
+        ["--timesketch_username", "Username for Timesketch server.", null],
+        ["--timesketch_password", "Password for Timesketch server.", null]
+    ]
+}
