@@ -30,7 +30,7 @@ class OllamaLLMProvider(interface.LLMProvider):
   def _make_post_request(
       self,
       request_body: dict[str, Any],
-      resource: str = '/api/generate/'
+      resource: str = '/api/generate'
   ) -> requests.Response:
     """Makes a POST request to the Ollama REST API service.
 
@@ -91,7 +91,7 @@ class OllamaLLMProvider(interface.LLMProvider):
       kwargs: Optional arguments to configure the provider.
 
     Returns:
-      The model output.
+      The model output from the generate API.
     """
     request_body = {
         'prompt': prompt,
@@ -109,7 +109,7 @@ class OllamaLLMProvider(interface.LLMProvider):
     return model_response
 
   def GenerateWithHistory(self, prompt: str, model: str, **kwargs) -> str:
-    """Generates text from the provider with history.
+    """Generates text from the provider with chat history.
 
     Args:
       prompt: The prompt to use for the generation.
@@ -117,20 +117,22 @@ class OllamaLLMProvider(interface.LLMProvider):
       kwargs: Optional keyword arguments to configure the provider.
 
     Returns:
-      The model output.
+      The model output from the chat API
     """
     self.chat_history.append({'role': 'user', 'content': prompt})
     request_body = {
-        'messages': self.chat_history,
+        'messages': self.chat_history.copy(),
         'model': model,
         'stream': self.models[model].get('stream', False),
         'options': self._get_request_options(model, kwargs)
     }
-    model_response = self._make_post_request(
+    response = self._make_post_request(
         request_body,
         resource='/api/chat'
     )
-    self.chat_history.append({'role': 'assistant', 'content': model_response})
+    model_response = response.json().get('message', '')
+    self.chat_history.append(model_response)
+    return model_response.get('content')
 
 
 manager.LLMProviderManager.RegisterProvider(OllamaLLMProvider)

@@ -27,8 +27,8 @@ class LLMProvider(abc.ABC):
   Other model tasks could be translate, embedding, etc.
 
   Attributes:
-    models: a dictionary of models being served from the Ollama service.
-    options: a dictionary of parameters to connect to an Ollama service.
+    models: a dictionary of models being served from the LLM service.
+    options: a dictionary of parameters to connect to the LLM service.
   """
 
   NAME: str = ""
