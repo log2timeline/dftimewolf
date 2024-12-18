@@ -2,6 +2,7 @@
 """A LLM provider for Google VertexAI."""
 
 import logging
+import os
 import requests
 
 import backoff
@@ -22,8 +23,6 @@ ONE_MINUTE = 60
 # Maximum time for backoff.
 TEN_MINUTE = 10 * ONE_MINUTE
 
-log = logging.getLogger("llmprovider.vertexai")
-
 
 class VertexAILLMProvider(interface.LLMProvider):
   """A provider interface to VertexAI.
@@ -41,29 +40,27 @@ class VertexAILLMProvider(interface.LLMProvider):
 
   def _configure(self):
     """Configures the genai client."""
-    if self.options['api_key']:
+    if 'api_key' in self.options:
       genai.configure(api_key=self.options['api_key'])
-    elif self.options['project_id'] and self.options['zone']:
+    elif 'project_id' in self.options or 'zone' in self.options:
       genai.configure(
           project_id=self.options['project_id'],
           zone=self.options['zone']
       )
     elif os.environ.get('GOOGLE_API_KEY'):
-      genai.configure()
+      genai.configure(api_key=os.environ.get('GOOGLE_API_KEY'))
     else:
       raise RuntimeError('API key or project_id/zone must be set.')
 
   def _get_model(self, model: str) -> genai.GenerativeModel:
     """Returns the generative model."""
     model_name = f"models/{model}"
-    generation_config = self.models[model].get('generative_config')
-    safety_settings = self.models[model].get('safety_settings')
-    stream = self.models[model].get('stream')
+    generation_config = self.models[model]['options'].get('generative_config')
+    safety_settings = self.models[model]['options'].get('safety_settings')
     return genai.GenerativeModel(
         model_name=model_name,
         generation_config=generation_config,
-        safety_settings=safety_settings,
-        stream=stream,
+        safety_settings=safety_settings
     )
 
   @backoff.on_exception(
