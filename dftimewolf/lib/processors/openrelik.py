@@ -4,7 +4,7 @@ import tempfile
 import time
 import os
 
-from typing import Type
+from typing import Type, Iterator
 
 from openrelik_api_client import api_client, folders, workflows
 
@@ -54,7 +54,7 @@ class OpenRelikProcessor(module.ThreadAwareModule):
     openrelik_api: str | None,
     openrelik_ui: str | None,
     openrelik_api_key: str | None,
-  ):
+  ) -> None:
     self.openrelik_api = openrelik_api
     self.openrelik_ui = openrelik_ui
     self.openrelik_api_key = openrelik_api_key
@@ -71,7 +71,7 @@ class OpenRelikProcessor(module.ThreadAwareModule):
     self.incident_id = incident_id
     self.sketch_id = sketch_id
 
-  def PollWorkflowStatus(self, workflow_id: int):
+  def PollWorkflowStatus(self, workflow_id: int) -> Iterator[str]:
     """Polls the status of a workflow until it completes."""
     filename = str(workflow_id)
     workflow = self.openrelik_workflow_client.get_workflow(
