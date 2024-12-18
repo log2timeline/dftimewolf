@@ -7,7 +7,6 @@ from unittest import mock
 import requests
 
 from dftimewolf import config
-from dftimewolf.lib.processors import llm_base
 from dftimewolf.lib.processors.llmproviders import ollama
 
 
@@ -26,6 +25,7 @@ def get_mocked_response(*args, **kwargs):
       }
     }
   return response
+
 
 class OllamaLLMProviderTest(unittest.TestCase):
   """Tests for the OllamaLLMProvider."""
