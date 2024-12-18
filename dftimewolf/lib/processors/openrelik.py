@@ -36,13 +36,13 @@ class OpenRelikProcessor(module.ThreadAwareModule):
     self.openrelik_api_client: api_client.APIClient = None
     self.openrelik_folder_client: folders.FoldersAPI = None
     self.openrelik_workflow_client: workflows.WorkflowsAPI = None
-    self.openrelik_api = ""
-    self.openrelik_ui = ""
-    self.openrelik_api_key = ""
-    self.workflow_id = 0
-    self.folder_id = 0
-    self.sketch_id = 0
-    self.incident_id = 0
+    self.openrelik_api = None
+    self.openrelik_ui = None
+    self.openrelik_api_key = None
+    self.workflow_id = None
+    self.folder_id = None
+    self.sketch_id = None
+    self.incident_id = None
 
   # pylint: disable=arguments-differ
   def SetUp(
