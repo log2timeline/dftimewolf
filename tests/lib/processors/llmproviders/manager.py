@@ -17,7 +17,8 @@ class FakeLLMProvider(interface.LLMProvider):
     return 'test'
 
 
-class LLMProviderManager(unittest.TestCase):
+class LLMProviderManagerTests(unittest.TestCase):
+  """Unit tests for the LLMProviderManager"""
 
   def testManager(self):
     """Tests the LLMProviderManager"""
@@ -28,7 +29,8 @@ class LLMProviderManager(unittest.TestCase):
     with self.subTest('register'):
       manager.LLMProviderManager.RegisterProvider(FakeLLMProvider)
       self.assertEqual(
-          len(manager.LLMProviderManager._provider_class_registry), 1
+          len(manager.LLMProviderManager._provider_class_registry),  # pylint: disable=protected-access
+        1
       )
 
     with self.subTest('already registered'):
@@ -47,7 +49,8 @@ class LLMProviderManager(unittest.TestCase):
     with self.subTest('clear'):
       manager.LLMProviderManager.ClearRegistration()
       self.assertEqual(
-        len(manager.LLMProviderManager._provider_class_registry), 0
+        len(manager.LLMProviderManager._provider_class_registry),  # pylint: disable=protected-access
+        0
       )
 
 

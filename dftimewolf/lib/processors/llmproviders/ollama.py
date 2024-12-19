@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """A LLM provider for the Ollama framework."""
 
-import requests
 from typing import Any
+
+import requests
 
 from dftimewolf.lib.processors.llmproviders import interface
 from dftimewolf.lib.processors.llmproviders import manager
@@ -23,7 +24,8 @@ class OllamaLLMProvider(interface.LLMProvider):
 
   NAME = "ollama"
 
-  def __init__(self):
+  def __init__(self) -> None:
+    """Initializes the provider."""
     super().__init__()
     self.chat_history: list[dict[str, str]] = []
 
@@ -55,7 +57,7 @@ class OllamaLLMProvider(interface.LLMProvider):
   def _get_request_options(
       self,
       model: str,
-      user_args: dict[str, Any] | None = None
+      user_args: dict[str, Any]
   ) -> dict[str, Any]:
     """Gets the API request options from the user/configuration/default values.
 
@@ -66,7 +68,7 @@ class OllamaLLMProvider(interface.LLMProvider):
       A dictionary of request options.
     """
     if 'temperature' in user_args:
-      temperatue = user_args['temperature']
+      temperature = user_args['temperature']
     else:
       temperature = self.models[model].get(
           'temperature', DEFAULT_TEMPERATURE
@@ -82,7 +84,7 @@ class OllamaLLMProvider(interface.LLMProvider):
         'num_predict': max_output_tokens,
     }
 
-  def Generate(self, prompt: str, model: str, **kwargs) -> str:
+  def Generate(self, prompt: str, model: str, **kwargs: str) -> str:
     """Generates text from the LLM provider.
 
     Args:
@@ -105,10 +107,10 @@ class OllamaLLMProvider(interface.LLMProvider):
           f'Error {response.status_code} when generating text: '
           f'{response.text}'
       )
-    model_response = response.json().get('response', '').strip()
+    model_response: str = response.json().get('response', '').strip()
     return model_response
 
-  def GenerateWithHistory(self, prompt: str, model: str, **kwargs) -> str:
+  def GenerateWithHistory(self, prompt: str, model: str, **kwargs: str) -> str:
     """Generates text from the provider with chat history.
 
     Args:
@@ -132,7 +134,8 @@ class OllamaLLMProvider(interface.LLMProvider):
     )
     model_response = response.json().get('message', '')
     self.chat_history.append(model_response)
-    return model_response.get('content')
+    content: str = model_response.get('content')
+    return content
 
 
 manager.LLMProviderManager.RegisterProvider(OllamaLLMProvider)

@@ -1,6 +1,5 @@
 """Base class for LLM provider interactions."""
-from typing import FrozenSet, List, Optional, TYPE_CHECKING
-from typing import overload
+from typing import TYPE_CHECKING
 
 import pandas as pd
 
@@ -27,39 +26,37 @@ class LLMProcessorBase(module.BaseModule):
       self,
       state: state_lib.DFTimewolfState,
       logger: logging_utils.WolfLogger,
-      name: Optional[str] = None,
+      name: str | None = None,
       critical: bool = False,
   ) -> None:
     """Initializes a LLM base processor.
 
     Args:
-      state (DFTimewolfState): recipe state.
-      logger (WolfLogger): the dftimewolf logger.
-      name (Optional[str]): The module's runtime name.
-      critical (Optional[bool]): True if the module is critical, which causes
+      state: recipe state.
+      logger: the dftimewolf logger.
+      name: The module's runtime name.
+      critical: True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
     super().__init__(state=state, name=name, critical=critical)
     self.logger: logging_utils.WolfLogger = logger
-    self.model_name: Optional[str] = None
-    self.provider: Optional[llm_interface.LLMProvider] = None
-    self.task: Optional[str] = None
+    self.model_name: str | None = None
+    self.provider: llm_interface.LLMProvider | None = None
+    self.task: str | None = None
 
-  @overload
-  def SetUp(self, provider_name: str, model_name: str, task: str):
-    ...
-
-  def SetUp(self, provider_name: str, model_name: str, task: str):
+  def SetUp(self, provider_name: str, model_name: str, task: str) -> None:  # pylint: disable=arguments-differ
     """Sets up the parameters for processing containers with a LLM provider.
 
     Args:
-      provier_name: the LLM provider name
+      provider_name: the LLM provider name
       model_name: the name of the LLM model to use.
       task: the LLM task/pipeline to perform the processing.
     """
-    self.provider = llm_manager.LLMProviderManager.GetProvider(
+    provider_class = llm_manager.LLMProviderManager.GetProvider(
         provider_name=provider_name
-    )()
+    )
+    self.provider = provider_class()
+    assert self.provider  # to appease mypy
 
     if model_name not in self.provider.models:
       self.ModuleError(
@@ -75,20 +72,24 @@ class LLMProcessorBase(module.BaseModule):
       )
     self.task = task
 
+  def Process(self) -> None:
+    """To be implemented by subclasses."""
+    raise NotImplementedError
+
 
 class DataFrameLLMProcessor(LLMProcessorBase):
   """A class for processing dataframes using a LLM provider.
 
   Attributes:
-    logger (WolfLogger): the dftimewolf logger.
-    model_name (str): the name of the model to use.
-    task (str): the (L)LM task or pipeline to process.
+    logger: the dftimewolf logger.
+    model_name: the name of the model to use.
+    task: the (L)LM task or pipeline to process.
   """
   def __init__(
       self,
       state: state_lib.DFTimewolfState,
       logger: logging_utils.WolfLogger,
-      name: Optional[str] = None,
+      name: str | None = None,
       critical: bool = False,
   ) -> None:
     """Initializes a LLM base processor.
@@ -103,12 +104,19 @@ class DataFrameLLMProcessor(LLMProcessorBase):
     super().__init__(state, logger, name, critical)
     self.columns_to_process: list[str] = []
 
-  def SetUp(self, provider_name: str, task: str, model_name: str, columns_to_process: str) -> None:
+  def SetUp(  # pylint: disable=arguments-differ
+      self,
+      provider_name: str,
+      model_name: str,
+      task: str,
+      columns_to_process: str = ''
+  ) -> None:
     """Sets up the parameters for processing dataframes with a LLM provider.
 
     Args:
-      task: the LLM task/pipeline to perform the processing.
+      provider_name: the LLM provider name
       model_name: the name of the LLM model to use.
+      task: the LLM task/pipeline to perform the processing.
       columns_to_process: a comma-separated list of column names that should be
           processed.
     """

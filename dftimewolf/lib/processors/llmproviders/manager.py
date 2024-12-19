@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """A manager for Large Language Model (LLM) providers."""
 
-from typing import Dict, Iterable, Tuple, Type, List, Optional
-from typing import overload
+from typing import Iterable, Type
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -12,10 +11,10 @@ if TYPE_CHECKING:
 class LLMProviderManager:
   """The manager for LLM providers."""
 
-  _provider_class_registry = {}
+  _provider_class_registry: dict[str, Type['interface.LLMProvider']] = {}
 
   @classmethod
-  def GetProviders(cls) -> Iterable[Tuple[str, Type['interface.LLMProvider']]]:
+  def GetProviders(cls) -> Iterable[tuple[str, Type['interface.LLMProvider']]]:
     """Get all registered providers.
 
     Yields:
@@ -25,7 +24,7 @@ class LLMProviderManager:
       yield provider_name, provider_class
 
   @classmethod
-  def GetProvider(cls, provider_name: str) -> type:
+  def GetProvider(cls, provider_name: str) -> Type['interface.LLMProvider']:
     """Get a provider by name.
 
     Args:
@@ -43,7 +42,10 @@ class LLMProviderManager:
     return provider_class
 
   @classmethod
-  def RegisterProvider(cls, provider_class: type) -> None:
+  def RegisterProvider(
+      cls,
+      provider_class: Type['interface.LLMProvider']
+  ) -> None:
     """Register a provider.
 
     Args:
@@ -58,6 +60,6 @@ class LLMProviderManager:
     cls._provider_class_registry[provider_name] = provider_class
 
   @classmethod
-  def ClearRegistration(cls):
+  def ClearRegistration(cls) -> None:
     """Clear all registered providers."""
     cls._provider_class_registry = {}

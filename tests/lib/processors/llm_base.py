@@ -47,7 +47,7 @@ class DataFrameLLMProcessorTest(unittest.TestCase):
                 }
             }
         }
-    ))
+    ).encode('utf-8'))
 
     self.logger = WolfLogger('test')
     self.test_state = state_lib.DFTimewolfState(config.Config)
@@ -116,10 +116,13 @@ class DataFrameLLMProcessorTest(unittest.TestCase):
     llm_base_processor.SetUp(
         provider_name='test',
         model_name='test_model', task='test_task', columns_to_process='a')
-    with mock.patch.object(llm_base_processor, 'ModuleError') as mock_error:
+    with mock.patch.object(
+        llm_base_processor, 'ModuleError'
+    ) as mock_error:
       llm_base_processor.Process()
       mock_error.assert_called_once_with(
-          'Error processing dataframe Test: Dataframe does not contain all the ' +
+          'Error processing dataframe Test: ' +
+          'Dataframe does not contain all the ' +
           'specified columns'
       )
 

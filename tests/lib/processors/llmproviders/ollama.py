@@ -10,7 +10,8 @@ from dftimewolf import config
 from dftimewolf.lib.processors.llmproviders import ollama
 
 
-def get_mocked_response(*args, **kwargs):
+def GetMockedResponse(*args, **kwargs):
+  """Gets a mocked requests Response."""
   response = mock.MagicMock(spec=requests.Response)
   response.status_code = 200
   if args[0].endswith('generate'):
@@ -33,22 +34,21 @@ class OllamaLLMProviderTest(unittest.TestCase):
   def setUp(self):
     config.Config.LoadExtraData(json.dumps(
         {
-            "llm_providers": {
-              "ollama": {
-                "options": {
-                  "server_url": "http://fake.ollama:11434"
-                },
-                "models": {
-                  "gemma": {
-                    "options": {
+            'llm_providers': {
+                'ollama': {
+                    'options': {
+                        'server_url': 'http://fake.ollama:11434'
                     },
-                    "tasks": ["test_task"]
-                  }
+                    'models': {
+                        'gemma': {
+                            'options': {},
+                            'tasks': ['test_task']
+                        }
+                    }
                 }
-              }
-          }
-      }
-    ))
+            }
+        }
+    ).encode('utf-8'))
     self.provider = ollama.OllamaLLMProvider()
 
   def tearDown(self):
@@ -59,8 +59,9 @@ class OllamaLLMProviderTest(unittest.TestCase):
     self.assertIsNotNone(self.provider)
     self.assertEqual(self.provider.chat_history, [])
 
-  @mock.patch('requests.post', side_effect=get_mocked_response)
+  @mock.patch('requests.post', side_effect=GetMockedResponse)
   def testGenerate(self, mock_post):
+    """Tests the Generate method."""
     response = self.provider.Generate('blah', model='gemma')
     self.assertEqual(response, 'generate response to blah')
     mock_post.assert_called_with(
@@ -81,9 +82,12 @@ class OllamaLLMProviderTest(unittest.TestCase):
         allow_redirects=True
     )
 
-  @mock.patch('requests.post', side_effect=get_mocked_response)
+  @mock.patch('requests.post', side_effect=GetMockedResponse)
   def testGenerateWithHistory(self, mock_post):
-    response_first = self.provider.GenerateWithHistory('who are you?', model='gemma')
+    """Tests the GenerateWithHistory method."""
+    response_first = self.provider.GenerateWithHistory(
+        'who are you?', model='gemma'
+    )
     self.assertEqual(response_first, 'chat response to who are you?')
     response_second = self.provider.GenerateWithHistory('why?', model='gemma')
     self.assertEqual(response_second, 'chat response to why?')
