@@ -56,7 +56,7 @@ class VertexAILLMProviderTest(unittest.TestCase):
     provider = vertex_ai.VertexAILLMProvider()
 
     self.assertEqual(provider.options['api_key'], 'test_api_key')
-    mock_gen_config.assert_called_with(api_key='test_api_key')
+    mock_gen_config.assert_called_with(api_key='test_api_key', project=None, location=None)
 
   @mock.patch('vertexai.init')
   def test_configure_project_id_region(self, mock_gen_config):
@@ -80,31 +80,38 @@ class VertexAILLMProviderTest(unittest.TestCase):
     self.assertEqual(provider.options['project_id'], 'myproject')
     self.assertEqual(provider.options['region'], 'australia-southeast2')
     mock_gen_config.assert_called_with(
-        project='myproject', location='australia-southeast2'
+        api_key=None, project='myproject', location='australia-southeast2'
     )
 
   @mock.patch.dict(
       vertex_ai.os.environ,
-      values={'GOOGLE_API_KEY': 'fake_env_key'},
+      values={'HOME': 'fake_home'},
       clear=True)
   @mock.patch('vertexai.init')
-  def test_configure_env(self, mock_gen_config):
+  @mock.patch('os.path.exists')
+  def test_configure_home(self, mock_exists, mock_gen_config):
     """Tests the configuration with a environment variable."""
+    mock_exists.return_value = True
     config.Config.LoadExtraData(json.dumps(
         {'llm_providers': {'vertexai': {'options': {},'models': {}}}}
     ).encode('utf-8'))
     provider = vertex_ai.VertexAILLMProvider()
     self.assertIsNotNone(provider)
-    mock_gen_config.assert_called_with(api_key='fake_env_key')
+    mock_gen_config.assert_called_with(api_key=None, project=None, location=None)
 
-  def test_configure_empty(self):
+  @mock.patch.dict(
+      vertex_ai.os.environ,
+      values={'GOOGLE_APPLICATION_CREDENTIALS': 'fake_env_key'},
+      clear=True)
+  @mock.patch('vertexai.init')
+  def test_configure_ac(self, mock_gen_config):
     """Tests the configuration error."""
     config.Config.LoadExtraData(json.dumps(
         {'llm_providers': {'vertexai': {'options': {},'models': {}}}}
     ).encode('utf-8'))
-    with self.assertRaisesRegex(
-        RuntimeError, 'API key or project_id/region must be set'):
-      _ = vertex_ai.VertexAILLMProvider()
+    provider = vertex_ai.VertexAILLMProvider()
+    self.assertIsNotNone(provider)
+    mock_gen_config.assert_called_with(api_key=None, project=None, location=None)
 
 
   @mock.patch('vertexai.init')
@@ -121,7 +128,7 @@ class VertexAILLMProviderTest(unittest.TestCase):
 
     self.assertEqual(resp, 'test generate')
     mock_gen_config.assert_called_once_with(
-        project='myproject', location='australia-southeast2'
+        api_key=None, project='myproject', location='australia-southeast2'
     )
     mock_gen_model.assert_called_once_with(
         model_name='models/fake-gemini',
@@ -145,7 +152,7 @@ class VertexAILLMProviderTest(unittest.TestCase):
     resp = provider.GenerateWithHistory(prompt='123', model='fake-gemini')
     self.assertEqual(resp, 'test generate')
     mock_gen_config.assert_called_once_with(
-        project='myproject', location='australia-southeast2'
+        api_key=None, project='myproject', location='australia-southeast2'
     )
     mock_gen_model.assert_called_once_with(
         model_name='models/fake-gemini',

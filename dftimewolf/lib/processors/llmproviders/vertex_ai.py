@@ -24,6 +24,7 @@ ONE_MINUTE = 60
 # Maximum time for backoff.
 TEN_MINUTE = 10 * ONE_MINUTE
 
+ADC_PATH = '.config/gcloud/application_default_credentials.json'
 
 class VertexAILLMProvider(interface.LLMProvider):
   """A provider interface to VertexAI.
@@ -41,18 +42,23 @@ class VertexAILLMProvider(interface.LLMProvider):
     self._configure()
 
   def _configure(self) -> None:
-    """Configures the genai client."""
-    if 'api_key' in self.options:
-      vertexai.init(api_key=self.options['api_key'])
-    elif 'project_id' in self.options or 'region' in self.options:
-      vertexai.init(
-          project=self.options['project_id'],
-          location=self.options['region']
-      )
-    elif os.environ.get('GOOGLE_API_KEY'):
-      vertexai.init(api_key=os.environ.get('GOOGLE_API_KEY'))
+    """Configures the vertexai client library.
+
+    Uses either the default service account or application default credentials.
+    """
+    api_key = self.options.get('api_key') or os.environ.get('GOOGLE_API_KEY')
+    project_id = self.options.get('project_id')
+    location = self.options.get('region')
+    if (os.environ.get('GOOGLE_APPLICATION_CREDENTIALS') or
+        (
+            os.environ.get('HOME') and
+            os.path.exists(os.path.join(os.environ.get('HOME'), ADC_PATH))
+        )
+    ):
+      vertexai.init(api_key=api_key, project=project_id, location=location)
     else:
-      raise RuntimeError('API key or project_id/region must be set.')
+      raise RuntimeError('Could not authenticate. '
+                         'Please configure a credential to access VertexAI.')
 
   def _get_model(
       self,
