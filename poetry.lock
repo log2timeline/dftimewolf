@@ -2497,13 +2497,13 @@ signedtoken = ["cryptography (>=3.0.0)", "pyjwt (>=2.0.0,<3)"]
 
 [[package]]
 name = "openrelik-api-client"
-version = "0.2.0"
+version = "0.2.1"
 description = "API client that automatically handles token refresh"
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "openrelik_api_client-0.2.0-py3-none-any.whl", hash = "sha256:d6d87b2ce121614917b71ad04b3de60b0f6d5004f1de104d8da1e363ae3e9608"},
-    {file = "openrelik_api_client-0.2.0.tar.gz", hash = "sha256:5a246e6863d3673bb6450f47036a8657c6161faab0d2b7ebd278692a7fb7a51d"},
+    {file = "openrelik_api_client-0.2.1-py3-none-any.whl", hash = "sha256:a92e9ae1df156a77e19dcda73cb3bdc758965b3e7137ff21c1c3a5bcd026d995"},
+    {file = "openrelik_api_client-0.2.1.tar.gz", hash = "sha256:98345b448e8931a86d79432aab0be65e4847cc213bcecb070c40ceaa1744adfc"},
 ]
 
 [package.dependencies]
@@ -4134,4 +4134,4 @@ turbinia-legacy = []
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<=3.13"
-content-hash = "ee7ef4055805b2e2f4c07c2bd6729dbb64db2744287977c643f8d5b277515ef0"
+content-hash = "7caecc5e3fa764f1dee97fb323beea51ca3024ffafc83762c594597e8fdfacca"

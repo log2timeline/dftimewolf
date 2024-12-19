@@ -149,7 +149,7 @@ class OpenRelikProcessor(module.ThreadAwareModule):
       file_ids.append(file_id)
 
     workflow_id = self.openrelik_workflow_client.create_workflow(
-      folder_id, file_ids, 3
+      folder_id, file_ids, self.workflow_id
     )
     workflow_url = f"{self.openrelik_ui}/folder/{folder_id}"
     self.PublishMessage(
