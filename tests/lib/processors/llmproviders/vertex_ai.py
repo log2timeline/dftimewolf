@@ -56,7 +56,11 @@ class VertexAILLMProviderTest(unittest.TestCase):
     provider = vertex_ai.VertexAILLMProvider()
 
     self.assertEqual(provider.options['api_key'], 'test_api_key')
-    mock_gen_config.assert_called_with(api_key='test_api_key', project=None, location=None)
+    mock_gen_config.assert_called_with(
+        api_key='test_api_key',
+        project=None,
+        location=None
+    )
 
   @mock.patch('vertexai.init')
   def test_configure_project_id_region(self, mock_gen_config):
@@ -97,7 +101,9 @@ class VertexAILLMProviderTest(unittest.TestCase):
     ).encode('utf-8'))
     provider = vertex_ai.VertexAILLMProvider()
     self.assertIsNotNone(provider)
-    mock_gen_config.assert_called_with(api_key=None, project=None, location=None)
+    mock_gen_config.assert_called_with(
+        api_key=None, project=None, location=None
+    )
 
   @mock.patch.dict(
       vertex_ai.os.environ,
@@ -111,7 +117,9 @@ class VertexAILLMProviderTest(unittest.TestCase):
     ).encode('utf-8'))
     provider = vertex_ai.VertexAILLMProvider()
     self.assertIsNotNone(provider)
-    mock_gen_config.assert_called_with(api_key=None, project=None, location=None)
+    mock_gen_config.assert_called_with(
+        api_key=None, project=None, location=None
+    )
 
 
   @mock.patch('vertexai.init')

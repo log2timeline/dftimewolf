@@ -52,7 +52,7 @@ class VertexAILLMProvider(interface.LLMProvider):
     if (os.environ.get('GOOGLE_APPLICATION_CREDENTIALS') or
         (
             os.environ.get('HOME') and
-            os.path.exists(os.path.join(os.environ.get('HOME'), ADC_PATH))
+            os.path.exists(os.path.join(os.environ['HOME'], ADC_PATH))
         )
     ):
       vertexai.init(api_key=api_key, project=project_id, location=location)
