@@ -77,28 +77,33 @@ class OpenRelikProcessor(module.ThreadAwareModule):
     workflow = self.openrelik_workflow_client.get_workflow(
       self.folder_id, workflow_id
     )
-    status = workflow.get("tasks")[0].get("status_short")
-    output_file_ids = []
-    while status != "SUCCESS" and status != "FAILED":
-      self.logger.info(f"Workflow {workflow_id} status: {status}")
-      time.sleep(5)
+    status = None
+    tasks = workflow.get("tasks")
+    if tasks and len(tasks) > 0:
+      status = workflow.get("tasks")[0].get("status_short")
+    if not status:
+      self.ModuleError("Error polling workflow status", critical=True)
+    output_file_ids = {}
+    while status not in ("SUCCESS", "FAILED"):
+      self.logger.debug(f"Workflow {workflow_id} status: {status}")
+      time.sleep(15)
       workflow = self.openrelik_workflow_client.get_workflow(
         self.folder_id, workflow_id
       )
       status = workflow.get("tasks")[0].get("status_short")
-    self.logger.info(f"Workflow {workflow_id} status: {status}")
+    self.logger.debug(f"Workflow {workflow_id} status: {status}")
     if status == "FAILED":
       self.ModuleError(f"Workflow {workflow_id} failed", critical=True)
 
-    for task in workflow.get("tasks"):
+    for task in tasks:
       output_files = task.get("output_files", [])
       for output_file in output_files:
         output_file_id = output_file.get("id")
         filename = output_file.get("display_name", workflow_id)
-        output_file_ids.append(output_file_id)
+        output_file_ids[output_file_id] = filename
 
-    for output_file_d in output_file_ids:
-      local_path = self.DownloadWorkflowOutput(output_file_d, filename)
+    for output_file_id, filename in output_file_ids.items():
+      local_path = self.DownloadWorkflowOutput(output_file_id, filename)
       yield local_path
 
   def DownloadWorkflowOutput(self, file_id: int, filename: str) -> str:
@@ -112,6 +117,7 @@ class OpenRelikProcessor(module.ThreadAwareModule):
         str: The path to the downloaded file.
     """
     endpoint = f"{self.openrelik_api_client.base_url}/files/{file_id}/download"
+    self.logger.info(f"Downloading {filename}, ID:{file_id}")
     response = self.openrelik_api_client.session.get(endpoint)
     filename_prefix, extension = os.path.splitext(filename)
     file = tempfile.NamedTemporaryFile(

@@ -18,20 +18,8 @@
             "folder_id": "@folder_id",
             "workflow_id": "@workflow_id",
             "openrelik_api": "@openrelik_api",
-            "openrelik_ui": "@openrelik_ui"
-        }
-    }, {
-        "wants": ["OpenRelikProcessor"],
-        "name": "TimesketchExporter",
-        "args": {
-            "incident_id": "@reason",
-            "token_password": null,
-            "endpoint": "@timesketch_endpoint",
-            "username": "@timesketch_username",
-            "password": "@timesketch_password",
-            "sketch_id": "@sketch_id",
-            "analyzers": "@analyzers",
-            "wait_for_timelines": "@wait_for_timelines"
+            "openrelik_ui": "@openrelik_ui",
+            "openrelik_api_key": "@openrelik_api_key"
         }
     }],
     "args": [
@@ -40,13 +28,13 @@
         ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "integer"}],
         ["--folder_id", "OpenRelik Folder ID.", null],
         ["--workflow_id", "OpenRelik workflow template ID.", null],
-        ["--openrelik_api", "OpenRelik API server URI.", "http://localhost:8710"],
-        ["--openrelik_ui", "OpenRelik UI URI.", "http://localhost:8711"],
-        ["--openrelik_api_key", "OpenRelik API key", ""],
+        ["--openrelik_api", "OpenRelik API server URI.", "http://172.19.0.5:8710"],
+        ["--openrelik_ui", "OpenRelik UI URI.", "http://172.19.0.5:8711"],
+        ["--openrelik_api_key", "OpenRelik API key", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmZThmMjkyYWViZDM0MjA3YjkyODYxOGQ5MmRmZThkMSIsImlhdCI6MTczNDYxMzY1MywibmJmIjoxNzM0NjEzNjUzLCJleHAiOjE3MzUyMTg0NTMsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODcxMCIsImF1ZCI6ImFwaS1jbGllbnQiLCJqdGkiOiJiNTE1ZTYyMzA2MDQ0MGJlYTE0NGExN2M3NDAzOGQzYyIsInRva2VuX3R5cGUiOiJyZWZyZXNoIn0.ZCBwpd6r2EQq465ZuxA2rVxxsM2aInnKJ6ctr8f73Q8"],
         ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true],
         ["--analyzers", "Timesketch analyzers to run", null],
         ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
-        ["--timesketch_endpoint", "Timesketch endpoint", "http://localhost:5000/"],
+        ["--timesketch_endpoint", "Timesketch endpoint", "http://172.19.0.5:5000/"],
         ["--timesketch_username", "Username for Timesketch server.", null],
         ["--timesketch_password", "Password for Timesketch server.", null]
     ]
