@@ -68,7 +68,8 @@ class BigQueryCollector(module.ThreadAwareModule):
           critical=True)
     # pytype: enable=module-attr
 
-    except (google_auth_exceptions.DefaultCredentialsError) as exception:
+    except (google_auth_exceptions.DefaultCredentialsError,
+            google_auth_exceptions.RefreshError) as exception:
       self.ModuleError(
         'Something is wrong with your gcloud access token or '
         'Application Default Credentials. Try running:\n '
