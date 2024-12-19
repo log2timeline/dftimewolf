@@ -19,7 +19,11 @@ class OllamaLLMProvider(interface.LLMProvider):
   Attributes:
     chat_history: A list of Ollama interactions (user/assistant).
     models: a dictionary of models being served from the Ollama service.
+        Each model is represented by dictionary of options (provider dependent)
+        and supported tasks, keyed by the model name.
     options: a dictionary of parameters to connect to an Ollama service.
+        The expected parameter is `server_url` which is the base URI to the
+        service.
   """
 
   NAME = "ollama"
@@ -62,7 +66,8 @@ class OllamaLLMProvider(interface.LLMProvider):
     """Gets the API request options from the user/configuration/default values.
 
     Args:
-      user_args: user provided args.
+      model: The model name.
+      user_args: User provided args.
 
     Returns:
       A dictionary of request options.
@@ -119,7 +124,7 @@ class OllamaLLMProvider(interface.LLMProvider):
       kwargs: Optional keyword arguments to configure the provider.
 
     Returns:
-      The model output from the chat API
+      The model output from the chat API.
     """
     self.chat_history.append({'role': 'user', 'content': prompt})
     request_body = {

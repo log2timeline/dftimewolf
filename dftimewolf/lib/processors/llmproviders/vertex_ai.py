@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 """A LLM provider for Google VertexAI."""
 
+import json
 import logging
 import os
 
 import backoff
 from google.api_core import exceptions
+from google.oauth2 import service_account
 import ratelimit
 import vertexai
 from vertexai import generative_models
@@ -13,7 +15,7 @@ from vertexai import generative_models
 from dftimewolf.lib.processors.llmproviders import interface
 from dftimewolf.lib.processors.llmproviders import manager
 
-log = logging.getLogger('dftimewolf')
+log = logging.getLogger('dftimewolf.lib.processors.llmproviders.vertex_ai')
 
 # Number of calls to allow within a period.
 CALL_LIMIT = 20
@@ -24,11 +26,14 @@ ONE_MINUTE = 60
 # Maximum time for backoff.
 TEN_MINUTE = 10 * ONE_MINUTE
 
-ADC_PATH = '.config/gcloud/application_default_credentials.json'
+DEFAULT_ADC_PATH = '.config/gcloud/application_default_credentials.json'
+
 
 class VertexAILLMProvider(interface.LLMProvider):
   """A provider interface to VertexAI.
 
+  Uses the python vertexai library.
+  
   Attributes:
     chat_session: An ongoing conversation with the model.
   """
@@ -44,15 +49,31 @@ class VertexAILLMProvider(interface.LLMProvider):
   def _configure(self) -> None:
     """Configures the vertexai client library.
 
-    Uses either the default service account or application default credentials.
+    Uses the following to authenticate:
+    * user specified service account key
+    * default service account / application default credentials.
     """
     api_key = self.options.get('api_key') or os.environ.get('GOOGLE_API_KEY')
     project_id = self.options.get('project_id')
     location = self.options.get('region')
-    if (os.environ.get('GOOGLE_APPLICATION_CREDENTIALS') or
+    service_account_path = self.options.get('sa_path')
+
+    if service_account_path:
+      with open(service_account_path) as sa_file:
+        info = json.loads(sa_file.read())
+      sa_credential = (
+          service_account.Credentials.from_service_account_info(info))
+      vertexai.init(
+          credentials=sa_credential,
+          api_key=api_key,
+          project=project_id,
+          location=location
+      )
+    elif (os.environ.get('GOOGLE_APPLICATION_CREDENTIALS') or
         (
             os.environ.get('HOME') and
-            os.path.exists(os.path.join(os.environ['HOME'], ADC_PATH))
+            os.path.exists(os.path.join(os.environ['HOME'],
+                                        DEFAULT_ADC_PATH))
         )
     ):
       vertexai.init(api_key=api_key, project=project_id, location=location)
@@ -60,11 +81,12 @@ class VertexAILLMProvider(interface.LLMProvider):
       raise RuntimeError('Could not authenticate. '
                          'Please configure a credential to access VertexAI.')
 
-  def _get_model(
-      self,
-      model: str
-  ) -> generative_models.GenerativeModel:
-    """Returns the generative model."""
+  def _get_model(self, model: str) -> generative_models.GenerativeModel:
+    """Returns the generative model.
+
+    Args:
+      model: The generative model name.
+    """
     model_name = f"models/{model}"
     generation_config = self.models[model]['options'].get('generative_config')
     safety_settings = [
@@ -115,8 +137,7 @@ class VertexAILLMProvider(interface.LLMProvider):
       The model output.
 
     Raises:
-      StopCandidateException or Exception when an error occurs when
-          generating content.
+      Exception on an error occuring when generating content.
     """
     genai_model = self._get_model(model)
     try:
@@ -147,7 +168,19 @@ class VertexAILLMProvider(interface.LLMProvider):
   )
   @ratelimit.limits(calls=CALL_LIMIT, period=ONE_MINUTE)  # type: ignore
   def GenerateWithHistory(self, prompt: str, model: str, **kwargs: str) -> str:
-    """Generates text from the provider with history."""
+    """Generates text from the provider with history.
+
+    Args:
+      prompt: The prompt to use for the generation.
+      model: The provider model to use.
+      kwargs: Optional arguments to configure the provider.
+
+    Returns:
+      The model output.
+
+    Raises:
+      Exception on an error occuring when generating content.
+    """
     if not self.chat_session:
       self.chat_session = self._get_model(model).start_chat()
     try:

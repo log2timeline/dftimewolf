@@ -22,7 +22,8 @@
       "options": {
         "api_key": "",
         "project_id": "",
-        "region": ""
+        "region": "",
+        "sa_path": ""
       },
       "models": {
         "gemini-1.5-pro": {

@@ -30,7 +30,7 @@ class LLMProviderManagerTests(unittest.TestCase):
       manager.LLMProviderManager.RegisterProvider(FakeLLMProvider)
       self.assertEqual(
           len(manager.LLMProviderManager._provider_class_registry),  # pylint: disable=protected-access
-        1
+          1
       )
 
     with self.subTest('already registered'):
@@ -49,8 +49,8 @@ class LLMProviderManagerTests(unittest.TestCase):
     with self.subTest('clear'):
       manager.LLMProviderManager.ClearRegistration()
       self.assertEqual(
-        len(manager.LLMProviderManager._provider_class_registry),  # pylint: disable=protected-access
-        0
+          len(manager.LLMProviderManager._provider_class_registry),  # pylint: disable=protected-access
+          0
       )
 
 
