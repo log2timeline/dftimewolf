@@ -6,9 +6,9 @@ import os
 
 import backoff
 from google.api_core import exceptions
-import google.generativeai as genai
-from google.cloud import aiplatform
 import ratelimit
+import vertexai
+from vertexai import generative_models
 
 from dftimewolf.lib.processors.llmproviders import interface
 from dftimewolf.lib.processors.llmproviders import manager
@@ -37,29 +37,43 @@ class VertexAILLMProvider(interface.LLMProvider):
   def __init__(self) -> None:
     """Initializes the VertexAILLMProvider."""
     super().__init__()
-    self.chat_session: genai.ChatSession | None = None
+    self.chat_session: generative_models.ChatSession | None = None
     self._configure()
 
   def _configure(self) -> None:
     """Configures the genai client."""
     if 'api_key' in self.options:
-      aiplatform.init(api_key=self.options['api_key'])
+      vertexai.init(api_key=self.options['api_key'])
     elif 'project_id' in self.options or 'region' in self.options:
-      aiplatform.init(
+      vertexai.init(
           project=self.options['project_id'],
           location=self.options['region']
       )
     elif os.environ.get('GOOGLE_API_KEY'):
-      aiplatform.init(api_key=os.environ.get('GOOGLE_API_KEY'))
+      vertexai.init(api_key=os.environ.get('GOOGLE_API_KEY'))
     else:
       raise RuntimeError('API key or project_id/region must be set.')
 
-  def _get_model(self, model: str) -> genai.GenerativeModel:
+  def _get_model(
+      self,
+      model: str
+  ) -> generative_models.GenerativeModel:
     """Returns the generative model."""
     model_name = f"models/{model}"
     generation_config = self.models[model]['options'].get('generative_config')
-    safety_settings = self.models[model]['options'].get('safety_settings')
-    return genai.GenerativeModel(
+    safety_settings = [
+        generative_models.SafetySetting(
+            category=generative_models.HarmCategory[
+                safety_setting['category']
+            ],
+            threshold=generative_models.HarmBlockThreshold[
+                safety_setting['threshold']
+            ]
+        ) for safety_setting in (
+            self.models[model]['options'].get('safety_settings')
+        )
+    ]
+    return generative_models.GenerativeModel(
         model_name=model_name,
         generation_config=generation_config,
         safety_settings=safety_settings
@@ -101,8 +115,6 @@ class VertexAILLMProvider(interface.LLMProvider):
     genai_model = self._get_model(model)
     try:
       response = genai_model.generate_content(contents=prompt, **kwargs)
-    except genai.types.generation_types.StopCandidateException as e:
-      return f"VertexAI LLM response was stopped because of: {e}"
     except Exception as e:
       log.warning("Exception while calling VertexAI: %s", e)
       raise
@@ -134,8 +146,6 @@ class VertexAILLMProvider(interface.LLMProvider):
       self.chat_session = self._get_model(model).start_chat()
     try:
       response = self.chat_session.send_message(prompt, **kwargs)
-    except genai.types.generation_types.StopCandidateException as e:
-      return f"VertexAI LLM response was stopped because of: {e}"
     except Exception as e:
       log.warning("Exception while calling VertexAI: %s", e)
       raise
