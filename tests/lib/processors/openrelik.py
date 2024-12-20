@@ -31,7 +31,7 @@ class OpenRelikProcessorTest(unittest.TestCase):
   def testPollWorkflowStatus(self, mock_download_workflow, mock_get_workflow):
     """Tests that the workflow status is polled until completion."""
 
-    # Create some fake data for a workflow
+    # Create some fake data for a failed workflow
     fake_workflow = {
       "tasks": [
         {"status_short": "FAILED"},
@@ -47,7 +47,7 @@ class OpenRelikProcessorTest(unittest.TestCase):
     status_generator = self.openrelik_module.PollWorkflowStatus(456)
     self.assertRaises(errors.DFTimewolfError, next, status_generator)
 
-    # Create some fake data for a workflow
+    # Create some fake data for a successful workflow
     fake_workflow = {
       "tasks": [
         {"status_short": "SUCCESS"},
