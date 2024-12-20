@@ -110,6 +110,45 @@ class OpenRelikProcessorTest(unittest.TestCase):
 
     mock_run_workflow.assert_called_once()
 
+  @mock.patch("dftimewolf.lib.processors.openrelik.tempfile.NamedTemporaryFile")
+  @mock.patch(
+    "dftimewolf.lib.processors.openrelik.OpenRelikProcessor.PublishMessage"
+  )
+  def testDownloadWorkflowOutput(self, mock_publish, mock_tempfile):
+    """Tests the DownloadWorkflowOutput method."""
+    # Set up mocks
+    mock_response = mock.Mock()
+    mock_response.text = "fake content"
+    self.openrelik_module.openrelik_api_client = mock.MagicMock()
+    self.openrelik_module.openrelik_api_client.base_url = "http://fake_api:8711"
+    self.openrelik_module.openrelik_api_client.session.get.return_value = (
+      mock_response
+    )
+
+    mock_tempfile_object = mock.MagicMock()
+    mock_tempfile_object.name = "fake_filepath"
+    mock_tempfile.return_value = mock_tempfile_object
+
+    # Call the method
+    local_path = self.openrelik_module.DownloadWorkflowOutput(
+      123, "test_filename.plaso"
+    )
+
+    # Assertions
+    self.openrelik_module.openrelik_api_client.session.get.assert_called_with(
+      f"{self.openrelik_module.openrelik_api_client.base_url}/files/123/download"
+    )
+    mock_tempfile.assert_called_with(
+      mode="wb", prefix="test_filename", suffix=".plaso", delete=False
+    )
+
+    mock_tempfile_object.write.assert_called_with(b"fake content")
+    mock_publish.assert_called_with(
+      "Saving output for file ID 123 to fake_filepath"
+    )
+
+    self.assertEqual(local_path, "fake_filepath")
+
 
 if __name__ == "__main__":
   unittest.main()
