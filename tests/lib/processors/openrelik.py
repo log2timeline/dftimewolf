@@ -77,7 +77,7 @@ class OpenRelikProcessorTest(unittest.TestCase):
     # Set up the mocks
     mock_upload_file.return_value = 1000
     mock_folder_exists.return_value = True
-    mock_create_workflow.return_value = {"id": 456}
+    mock_create_workflow.return_value = 456
     mock_poll.return_value = "/local/path/test.plaso"
     mock_run_workflow.return_value = mock.Mock(status_code=200)
     self.openrelik_module.openrelik_api = "http://fake_api:8710"
