@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """A LLM provider for Google Gemini."""
 
-import json
 import logging
 import os
 
