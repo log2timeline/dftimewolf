@@ -33,7 +33,7 @@ class VertexAILLMProvider(interface.LLMProvider):
   """A provider interface to VertexAI.
 
   Uses the python vertexai library.
-  
+
   Attributes:
     chat_session: An ongoing conversation with the model.
   """
@@ -82,7 +82,7 @@ class VertexAILLMProvider(interface.LLMProvider):
                          'Please configure a credential to access VertexAI.')
 
   def _get_model(self, model: str) -> generative_models.GenerativeModel:
-    """Returns the generative model.
+    """Returns the VertexAI generative model.
 
     Args:
       model: The generative model name.
