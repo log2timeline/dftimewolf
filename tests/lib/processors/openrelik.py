@@ -17,7 +17,7 @@ class OpenRelikProcessorTest(unittest.TestCase):
 
   def setUp(self):
     """Tests that the processor can be initialized."""
-    self.test_state = state_lib.DFTimewolfState(config.Config())
+    self.test_state = state_lib.DFTimewolfState(config.Config)
     self.openrelik_module = openrelik_processor.OpenRelikProcessor(
       self.test_state
     )
@@ -134,7 +134,7 @@ class OpenRelikProcessorTest(unittest.TestCase):
       123, "test_filename.plaso"
     )
 
-    # Assertions
+    # pylint: disable=line-too-long
     self.openrelik_module.openrelik_api_client.session.get.assert_called_with(
       f"{self.openrelik_module.openrelik_api_client.base_url}/files/123/download"
     )
