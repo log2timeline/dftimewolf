@@ -24,6 +24,7 @@ class OpenRelikProcessorTest(unittest.TestCase):
     self.assertIsNotNone(self.openrelik_module)
 
   @mock.patch("openrelik_api_client.workflows.WorkflowsAPI.get_workflow")
+  # pylint: disable=line-too-long
   @mock.patch(
     "dftimewolf.lib.processors.openrelik.OpenRelikProcessor.DownloadWorkflowOutput"
   )
