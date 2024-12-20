@@ -5,7 +5,7 @@ from unittest import mock
 
 from openrelik_api_client import api_client, folders, workflows
 
-
+from dftimewolf import config
 from dftimewolf.lib import state as state_lib
 from dftimewolf.lib import errors
 from dftimewolf.lib.containers import containers
@@ -17,7 +17,7 @@ class OpenRelikProcessorTest(unittest.TestCase):
 
   def setUp(self):
     """Tests that the processor can be initialized."""
-    self.test_state = state_lib.DFTimewolfState(None)
+    self.test_state = state_lib.DFTimewolfState(config.Config())
     self.openrelik_module = openrelik_processor.OpenRelikProcessor(
       self.test_state
     )
