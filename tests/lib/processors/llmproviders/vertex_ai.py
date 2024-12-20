@@ -1,4 +1,5 @@
-'''Tests for VertexAI LLMProvider.'''
+# -*- coding: utf-8 -*-
+"""Tests for VertexAI LLMProvider."""
 
 import json
 import unittest

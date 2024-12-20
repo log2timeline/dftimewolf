@@ -155,7 +155,7 @@ class GeminiLLMProvider(interface.LLMProvider):
 
   def AskGemini(self, prompt: str, model: str) -> str:
     """Ask Gemini."""
-    return self.Generate(prompt, model)
+    return str(self.Generate(prompt, model))
 
 
 manager.LLMProviderManager.RegisterProvider(GeminiLLMProvider)
