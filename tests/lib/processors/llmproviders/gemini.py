@@ -123,9 +123,7 @@ class GeminiLLMProviderTest(unittest.TestCase):
       values={'GOOGLE_API_KEY': 'fake_env_key'},
       clear=True
   )
-  @mock.patch('google.generativeai.configure')
-  @mock.patch('google.generativeai.GenerativeModel', autospec=True)
-  def test_generate_from_template(self, mock_gen_model, mock_config):
+  def test_generate_from_template(self):
     """Tests the GenerateFromTemplate method."""
     provider = gemini.GeminiLLMProvider()
     mock_generate = mock.Mock()
