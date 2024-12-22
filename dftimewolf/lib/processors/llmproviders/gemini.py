@@ -53,7 +53,7 @@ class GeminiLLMProvider(interface.LLMProvider):
     if api_key:
       genai.configure(api_key=api_key)
     elif self.options.get('sa_path'):
-      with open(self.options.get('sa_path'), 'r') as sa_file:
+      with open(str(self.options.get('sa_path')), 'r') as sa_file:
         sa_content = json.loads(sa_file.read())
       sa_credential = (
           service_account.Credentials.from_service_account_info(
