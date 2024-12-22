@@ -59,6 +59,39 @@ class GeminiLLMProviderTest(unittest.TestCase):
     self.assertEqual(provider.options['api_key'], 'test_api_key')
     mock_gen_config.assert_called_with(api_key='test_api_key')
 
+  @mock.patch('google.generativeai.configure')
+  @mock.patch(
+      'google.oauth2.service_account.Credentials.from_service_account_info')
+  def test_configure_service_account_key(self, mock_info, mock_gen_config):
+    """Tests the configuration with a service account key."""
+    mock_service_account = mock.MagicMock()
+    mock_info.return_value = mock_service_account
+    config.Config.LoadExtraData(json.dumps(
+        {
+            'llm_providers': {
+                'gemini': {
+                    'options': {
+                        'sa_path': 'test_sa_path',
+                    },
+                    'models': {
+                    }
+                }
+            }
+        }
+    ).encode('utf-8'))
+
+    with mock.patch(
+        'builtins.open',
+        new=mock.mock_open(read_data='{"service key": [1]}')) as _:
+      provider = gemini.GeminiLLMProvider()
+
+    self.assertEqual(provider.options['sa_path'], 'test_sa_path')
+    mock_info.assert_called_with({"service key": [1]})
+    self.assertEqual(provider.options['sa_path'], 'test_sa_path')
+    mock_gen_config.assert_called_with(
+        credentials=mock_service_account
+    )
+
   @mock.patch.dict(
       gemini.os.environ,
       values={'GOOGLE_API_KEY': 'fake_env_key'},
