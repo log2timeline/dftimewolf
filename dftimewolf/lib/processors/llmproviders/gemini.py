@@ -182,9 +182,9 @@ class GeminiLLMProvider(interface.LLMProvider):
 
     history_patched = []
     for content in self.chat_session.history:
-        if not content.parts:
-            content.parts = [genai.types.content_types.to_part(patch_content)]
-        history_patched.append(content)
+      if not content.parts:
+        content.parts = [genai.types.content_types.to_part(patch_content)]
+      history_patched.append(content)
     self.chat_session.history = history_patched
 
   def AskGemini(self, prompt: str, model: str) -> str:
