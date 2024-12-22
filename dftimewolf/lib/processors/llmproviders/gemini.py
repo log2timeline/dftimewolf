@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 """A LLM provider for Google Gemini."""
 
+import json
 import logging
 import os
 
 import backoff
 from google.api_core import exceptions
 import google.generativeai as genai
+from google.oauth2 import service_account
 import ratelimit
 
 from dftimewolf.lib.processors.llmproviders import interface
@@ -24,7 +26,6 @@ ONE_MINUTE = 60
 TEN_MINUTE = 10 * ONE_MINUTE
 
 
-
 class GeminiLLMProvider(interface.LLMProvider):
   """A provider interface to Gemini.
 
@@ -37,20 +38,34 @@ class GeminiLLMProvider(interface.LLMProvider):
   NAME = "gemini"
 
   def __init__(self) -> None:
-    """Initializes the VertexAILLMProvider."""
+    """Initializes the GeminiLLMProvider."""
     super().__init__()
     self.chat_session: genai.ChatSession | None = None
     self._configure()
 
   def _configure(self) -> None:
     """Configures the generativeai client library."""
-    api_key = self.options.get('api_key') or os.environ.get('GOOGLE_API_KEY')
-
+    api_key = (
+        self.options.get('api_key')
+        or os.environ.get('GOOGLE_API_KEY')
+        or os.environ.get('API_KEY')
+    )
     if api_key:
       genai.configure(api_key=api_key)
+    elif self.options.get('sa_path'):
+      with open(self.options.get('sa_path'), 'r') as sa_file:
+        sa_content = json.loads(sa_file.read())
+      sa_credential = (
+          service_account.Credentials.from_service_account_info(
+              sa_content
+          )
+      )
+      genai.configure(credentials=sa_credential)
     else:
-      raise RuntimeError('Could not authenticate. '
-                         'Please configure an API key to access Gemini.')
+      raise RuntimeError(
+          'Could not authenticate. '
+          'Please configure an API key or service account to access Gemini.'
+      )
 
   def _get_model(self, model: str) -> genai.GenerativeModel:
     """Returns the Gemini generative model.
@@ -61,28 +76,30 @@ class GeminiLLMProvider(interface.LLMProvider):
     model_name = f"{model}"
     generation_config = self.models[model]['options'].get('generative_config')
     safety_settings = self.models[model]['options'].get('safety_settings')
+    system_instruction=self.models[model]['options'].get('system_instruction')
     return genai.GenerativeModel(
         model_name=model_name,
+        system_instruction=system_instruction,
         generation_config=generation_config,
         safety_settings=safety_settings
     )
 
   @backoff.on_exception(
-    backoff.expo,
-    (
-        exceptions.ResourceExhausted,
-        exceptions.ServiceUnavailable,
-        exceptions.GoogleAPIError,
-        exceptions.InternalServerError,
-        exceptions.Cancelled,
-        ratelimit.RateLimitException,
-    ),
-    max_time=TEN_MINUTE,
-    on_backoff=(
-        lambda x: log.info(
-          f'Backoff attempt #{x["tries"]} after {x["wait"]}s'
-        )
-    )
+      backoff.expo,
+      (
+          exceptions.ResourceExhausted,
+          exceptions.ServiceUnavailable,
+          exceptions.GoogleAPIError,
+          exceptions.InternalServerError,
+          exceptions.Cancelled,
+          ratelimit.RateLimitException,
+      ),
+      max_time=TEN_MINUTE,
+      on_backoff=(
+          lambda x: log.info(
+              f'Backoff attempt #{x["tries"]} after {x["wait"]}s'
+          )
+      )
   )
   @ratelimit.limits(calls=CALL_LIMIT, period=ONE_MINUTE)  # type: ignore
   def Generate(self, prompt: str, model: str, **kwargs: str) -> str:
@@ -102,32 +119,32 @@ class GeminiLLMProvider(interface.LLMProvider):
     genai_model = self._get_model(model)
     try:
       response = genai_model.generate_content(contents=prompt, **kwargs)
-    except Exception as e:
-      log.warning("Exception while calling VertexAI: %s", e)
-      raise
+    except Exception as err:
+      log.warning("Exception while calling Genai: %s", err)
+      raise err
     model_output: str = response.text
     return model_output
 
   @backoff.on_exception(
-    backoff.expo,
-    (
-        exceptions.ResourceExhausted,
-        exceptions.ServiceUnavailable,
-        exceptions.GoogleAPIError,
-        exceptions.InternalServerError,
-        exceptions.Cancelled,
-        ratelimit.RateLimitException,
-    ),
-    max_time=TEN_MINUTE,
-    on_backoff=(
-        lambda x: log.info(
-          f'Backoff attempt #{x["tries"]} after {x["wait"]}s'
-        )
-    )
+      backoff.expo,
+      (
+          exceptions.ResourceExhausted,
+          exceptions.ServiceUnavailable,
+          exceptions.GoogleAPIError,
+          exceptions.InternalServerError,
+          exceptions.Cancelled,
+          ratelimit.RateLimitException,
+      ),
+      max_time=TEN_MINUTE,
+      on_backoff=(
+          lambda x: log.info(
+              f'Backoff attempt #{x["tries"]} after {x["wait"]}s'
+          )
+      )
   )
   @ratelimit.limits(calls=CALL_LIMIT, period=ONE_MINUTE)  # type: ignore
   def GenerateWithHistory(self, prompt: str, model: str, **kwargs: str) -> str:
-    """Generates text from the provider with history.
+    """Generates text from the provider with history i.e. chat
 
     Args:
       prompt: The prompt to use for the generation.
@@ -142,10 +159,11 @@ class GeminiLLMProvider(interface.LLMProvider):
     """
     if not self.chat_session:
       self.chat_session = self._get_model(model).start_chat()
+    self._PatchEmptyChatHistory()
     try:
       response = self.chat_session.send_message(prompt, **kwargs)
     except Exception as e:
-      log.warning("Exception while calling VertexAI: %s", e)
+      log.warning("Exception while calling Genai: %s", e)
       raise
 
     # text is a quick accessor equivalent to
@@ -153,9 +171,26 @@ class GeminiLLMProvider(interface.LLMProvider):
     text_response: str = response.text
     return text_response
 
+  def _PatchEmptyChatHistory(self, patch_content: str = 'ack') -> None:
+    """Patches empty chat history messages.
+
+    Args:
+      patch_content: the value to replace empty messages with.
+    """
+    if not self.chat_session:
+      return
+
+    history_patched = []
+    for content in self.chat_session.history:
+        if not content.parts:
+            content.parts = [genai.types.content_types.to_part(patch_content)]
+        history_patched.append(content)
+    self.chat_session.history = history_patched
+
   def AskGemini(self, prompt: str, model: str) -> str:
     """Ask Gemini."""
     return str(self.Generate(prompt, model))
+
 
 
 manager.LLMProviderManager.RegisterProvider(GeminiLLMProvider)

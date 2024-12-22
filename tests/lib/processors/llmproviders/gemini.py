@@ -22,7 +22,8 @@ GEMINI_CONFIG = {
                             'temperature': 0.2,
                             'max_output_tokens': 8192,
                         },
-                        'safety_settings': []
+                        'safety_settings': [],
+                        'system_instruction': 'You are a wolf, a timewolf.'
                     },
                     'tasks': [
                         'generate'
@@ -83,13 +84,14 @@ class GeminiLLMProviderTest(unittest.TestCase):
             'temperature': 0.2,
             'max_output_tokens': 8192,
         },
-        safety_settings=[]
+        safety_settings=[],
+        system_instruction='You are a wolf, a timewolf.'
     )
 
   @mock.patch.dict(
-    gemini.os.environ,
-    values={'GOOGLE_API_KEY': 'fake_env_key'},
-    clear=True
+      gemini.os.environ,
+      values={'GOOGLE_API_KEY': 'fake_env_key'},
+      clear=True
   )
   @mock.patch('google.generativeai.configure')
   @mock.patch('google.generativeai.GenerativeModel', autospec=True)
@@ -112,8 +114,46 @@ class GeminiLLMProviderTest(unittest.TestCase):
             'temperature': 0.2,
             'max_output_tokens': 8192,
         },
-        safety_settings=[]
+        safety_settings=[],
+        system_instruction='You are a wolf, a timewolf.'
     )
+
+  @mock.patch.dict(
+      gemini.os.environ,
+      values={'GOOGLE_API_KEY': 'fake_env_key'},
+      clear=True
+  )
+  @mock.patch('google.generativeai.configure')
+  @mock.patch('google.generativeai.GenerativeModel', autospec=True)
+  def test_generate_from_template(self, mock_gen_model, mock_config):
+    """Tests the GenerateFromTemplate method."""
+    provider = gemini.GeminiLLMProvider()
+    mock_generate = mock.Mock()
+    provider.Generate = mock_generate
+    with self.subTest('valid template'):
+      template = 'This is a test message from {name} {surname}.'
+      kwargs = {'name': 'Bob', 'surname': 'Smith'}
+      _ = provider.GenerateFromTemplate(
+          template=template,
+          model='fake-gemini',
+          **kwargs
+      )
+      mock_generate.assert_called_with(
+          prompt='This is a test message from Bob Smith.',
+          model='fake-gemini',
+          name='Bob',
+          surname='Smith'
+      )
+
+    with self.subTest('missing keyword'):
+      template = 'This is a test message from {name} {surname}.'
+      kwargs = {'name': 'Bob'}
+      with self.assertRaises(KeyError):
+        _ = provider.GenerateFromTemplate(
+            template=template,
+            model='fake-gemini',
+            **kwargs
+        )
 
 
 if __name__ == '__main__':
