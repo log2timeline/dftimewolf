@@ -101,10 +101,13 @@ class VertexAILLMProvider(interface.LLMProvider):
             self.models[model]['options'].get('safety_settings')
         )
     ]
+    system_instruction=self.models[model]['options'].get('system_instruction')
+
     return generative_models.GenerativeModel(
         model_name=model_name,
         generation_config=generation_config,
-        safety_settings=safety_settings
+        safety_settings=safety_settings,
+        system_instruction=system_instruction
     )
 
   @backoff.on_exception(

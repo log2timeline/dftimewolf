@@ -23,7 +23,8 @@ VERTEX_AI_CONFIG = {
                             'temperature': 0.2,
                             'max_output_tokens': 8192,
                         },
-                        'safety_settings': []
+                        'safety_settings': [],
+                        'system_instruction': 'You are the top dog.'
                     },
                     'tasks': [
                         'generate'
@@ -135,7 +136,8 @@ class VertexAILLMProviderTest(unittest.TestCase):
             'temperature': 0.2,
             'max_output_tokens': 8192,
         },
-        safety_settings=[]
+        safety_settings=[],
+        system_instruction='You are the top dog.'
     )
 
   @mock.patch.dict(
@@ -163,7 +165,8 @@ class VertexAILLMProviderTest(unittest.TestCase):
             'temperature': 0.2,
             'max_output_tokens': 8192,
         },
-        safety_settings=[]
+        safety_settings=[],
+        system_instruction='You are the top dog.'
     )
 
 
