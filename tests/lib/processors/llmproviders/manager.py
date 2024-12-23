@@ -18,10 +18,10 @@ class FakeLLMProvider(interface.LLMProvider):
 
 
 class LLMProviderManagerTests(unittest.TestCase):
-  """Unit tests for the LLMProviderManager"""
+  """Unit tests for the LLMProviderManager."""
 
   def testManager(self):
-    """Tests the LLMProviderManager"""
+    """Tests the LLMProviderManager."""
     with self.subTest('not registered'):
       with self.assertRaisesRegex(KeyError, 'No such provider'):
         manager.LLMProviderManager.GetProvider('test')

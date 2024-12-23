@@ -47,7 +47,7 @@ class LLMProvider(abc.ABC):
     See /data/config.json for an example.
 
     Raises:
-      RuntimeError - if there are no configurations for the LLM provider.
+      RuntimeError: if there are no configurations for the LLM provider.
     """
     llm_provider_config = config.Config.GetExtra(BASE_CONFIG_KEY)
     if not llm_provider_config:
@@ -72,7 +72,7 @@ class LLMProvider(abc.ABC):
     Args:
       prompt: The prompt to use for the generation.
       model: The provider model to use.
-      kwargs: Optional keyword arguments to configure the provider.
+      **kwargs: Optional keyword arguments to configure the provider.
 
     Returns:
       The model output.
@@ -89,7 +89,7 @@ class LLMProvider(abc.ABC):
     Args:
       template: The prompt template.
       model: The provider model to use.
-      kwargs: Additional keyword arguments to format the template and
+      **kwargs: Additional keyword arguments to format the template and
           optional keyword arguments to configure the provider.
 
     Returns:
@@ -111,7 +111,7 @@ class LLMProvider(abc.ABC):
     Args:
       prompt: The prompt to use for model generation.
       model: The provider model to use.
-      kwargs: Optional keyword arguments to configure the provider.
+      **kwargs: Optional keyword arguments to configure the provider.
 
     Returns:
       The model output.
@@ -128,7 +128,7 @@ class LLMProvider(abc.ABC):
     Args:
       template: The prompt template to use for model generation.
       model: The provider model to use.
-      kwargs: Additional keyword arguments to format the template and
+      **kwargs: Additional keyword arguments to format the template and
           optional keyword arguments to configure the provider.
 
     Returns:

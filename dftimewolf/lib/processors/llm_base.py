@@ -56,7 +56,7 @@ class LLMProcessorBase(module.BaseModule):
     provider_class = llm_manager.LLMProviderManager.GetProvider(
         provider_name=provider_name
     )
-    self.provider = provider_class()
+    self.provider = provider_class()  # pytype: disable=not-instantiable
     assert self.provider  # to appease mypy
 
     if model_name not in self.provider.models:

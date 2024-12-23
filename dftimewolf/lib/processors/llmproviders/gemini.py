@@ -114,7 +114,7 @@ class GeminiLLMProvider(interface.LLMProvider):
       The model output.
 
     Raises:
-      Exception on an error occuring when generating content.
+      Exception on an error occurring when generating content.
     """
     genai_model = self._get_model(model)
     try:
@@ -155,7 +155,7 @@ class GeminiLLMProvider(interface.LLMProvider):
       The model output.
 
     Raises:
-      Exception on an error occuring when generating content.
+      Exception on an error occurring when generating content.
     """
     if not self.chat_session:
       self.chat_session = self._get_model(model).start_chat()

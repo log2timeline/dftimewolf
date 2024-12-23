@@ -5,7 +5,7 @@ from typing import Iterable, Type
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-  from dftimewolf.lib.providers import interface
+  from dftimewolf.lib.processors.llmproviders import interface
 
 
 class LLMProviderManager:
