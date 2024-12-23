@@ -187,8 +187,16 @@ class GeminiLLMProvider(interface.LLMProvider):
       history_patched.append(content)
     self.chat_session.history = history_patched
 
-  def AskGemini(self, prompt: str, model: str) -> str:
-    """Ask Gemini."""
+  def AskGemini(self, prompt: str, model: str = 'gemini-1.5-pro') -> str:
+    """Ask Gemini (an alias to call Generate).
+
+    Args:
+      prompt: The prompt to use for the generation.
+      model: The provider model to use.  Defaults to gemini-1.5-pro.
+
+    Returns:
+      The model output.
+    """
     return str(self.Generate(prompt, model))
 
 

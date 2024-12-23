@@ -1,4 +1,5 @@
 """Base class for LLM provider interactions."""
+
 from typing import TYPE_CHECKING
 
 import pandas as pd
@@ -139,7 +140,8 @@ class DataFrameLLMProcessor(LLMProcessorBase):
     """
     if not set(dataframe.columns).issuperset(self.columns_to_process):
       raise ValueError(
-          'Dataframe does not contain all the specified columns'
+          'Dataframe does not contain all the specified columns - '
+          f'{",".join(self.columns_to_process)}'
       )
 
   def Process(self) -> None:

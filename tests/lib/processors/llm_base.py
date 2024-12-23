@@ -123,7 +123,7 @@ class DataFrameLLMProcessorTest(unittest.TestCase):
       mock_error.assert_called_once_with(
           'Error processing dataframe Test: ' +
           'Dataframe does not contain all the ' +
-          'specified columns'
+          'specified columns - a'
       )
 
 
