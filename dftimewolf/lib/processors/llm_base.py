@@ -1,5 +1,6 @@
 """Base class for LLM provider interactions."""
-from typing import FrozenSet, List, Optional
+
+from typing import TYPE_CHECKING
 
 import pandas as pd
 
@@ -7,66 +8,120 @@ from dftimewolf.lib import logging_utils
 from dftimewolf.lib import module
 from dftimewolf.lib import state as state_lib
 from dftimewolf.lib.containers import containers
+from dftimewolf.lib.processors.llmproviders import manager as llm_manager
+
+if TYPE_CHECKING:
+  from dftimewolf.lib.processors.llmproviders import interface as llm_interface
 
 
 class LLMProcessorBase(module.BaseModule):
   """A Base Processor for using (L)LMs to process dataframes.
 
   Attributes:
-    columns_to_process (str): the column names of dataframes to process with the
-        (L)LM.
-    logger (WolfLogger): the dftimewolf logger.
-    model_name (str): the name of the model to use.
-    task (str): the (L)LM task or pipeline to process.
+    logger: the dftimewolf logger.
+    model_name: the name of the model to use.
+    provider: the LLM provider instance.
+    task: the (L)LM task or pipeline to process.
   """
-  SUPPORTED_MODELS: FrozenSet[str] = frozenset([])
-
-  SUPPORTED_TASKS: FrozenSet[str] = frozenset([])
-
   def __init__(
       self,
       state: state_lib.DFTimewolfState,
       logger: logging_utils.WolfLogger,
-      name: Optional[str] = None,
+      name: str | None = None,
       critical: bool = False,
   ) -> None:
     """Initializes a LLM base processor.
 
     Args:
-      state (DFTimewolfState): recipe state.
-      logger (WolfLogger): the dftimewolf logger.
-      name (Optional[str]): The module's runtime name.
-      critical (Optional[bool]): True if the module is critical, which causes
+      state: recipe state.
+      logger: the dftimewolf logger.
+      name: The module's runtime name.
+      critical: True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
     super().__init__(state=state, name=name, critical=critical)
     self.logger: logging_utils.WolfLogger = logger
-    self.model_name: Optional[str] = None
-    self.task: Optional[str] = None
-    self.columns_to_process: List[str] = []
+    self.model_name: str | None = None
+    self.provider: llm_interface.LLMProvider | None = None
+    self.task: str | None = None
 
-  # pylint: disable=arguments-differ
-  def SetUp(self, task: str, model_name: str, columns_to_process: str) -> None:
+  def SetUp(self, provider_name: str, model_name: str, task: str) -> None:  # pylint: disable=arguments-differ
+    """Sets up the parameters for processing containers with a LLM provider.
+
+    Args:
+      provider_name: the LLM provider name
+      model_name: the name of the LLM model to use.
+      task: the LLM task/pipeline to perform the processing.
+    """
+    provider_class = llm_manager.LLMProviderManager.GetProvider(
+        provider_name=provider_name
+    )
+    self.provider = provider_class()
+    assert self.provider  # to appease mypy
+
+    if model_name not in self.provider.models:
+      self.ModuleError(
+          f'Model {model_name} is not supported by the LLM provider',
+          critical=True
+      )
+    self.model_name = model_name
+
+    if task not in self.provider.models[model_name]['tasks']:
+      self.ModuleError(
+          f'Task {task} is not supported by the LLM provider.',
+          critical=True
+      )
+    self.task = task
+
+  def Process(self) -> None:
+    """To be implemented by subclasses."""
+    raise NotImplementedError
+
+
+class DataFrameLLMProcessor(LLMProcessorBase):
+  """A class for processing dataframes using a LLM provider.
+
+  Attributes:
+    logger: the dftimewolf logger.
+    model_name: the name of the model to use.
+    task: the (L)LM task or pipeline to process.
+  """
+  def __init__(
+      self,
+      state: state_lib.DFTimewolfState,
+      logger: logging_utils.WolfLogger,
+      name: str | None = None,
+      critical: bool = False,
+  ) -> None:
+    """Initializes a LLM base processor.
+
+    Args:
+      state: recipe state.
+      logger: the dftimewolf logger.
+      name: The module's runtime name.
+      critical: True if the module is critical, which causes
+          the entire recipe to fail if the module encounters an error.
+    """
+    super().__init__(state, logger, name, critical)
+    self.columns_to_process: list[str] = []
+
+  def SetUp(  # pylint: disable=arguments-differ
+      self,
+      provider_name: str,
+      model_name: str,
+      task: str,
+      columns_to_process: str = ''
+  ) -> None:
     """Sets up the parameters for processing dataframes with a LLM provider.
 
     Args:
-      task: the LLM task/pipeline to perform the processing.
+      provider_name: the LLM provider name
       model_name: the name of the LLM model to use.
+      task: the LLM task/pipeline to perform the processing.
       columns_to_process: a comma-separated list of column names that should be
           processed.
     """
-    if task not in self.SUPPORTED_TASKS:
-      self.ModuleError(
-          f'Task {task} is not supported by the LLM processor.', critical=True)
-
-    self.task = task
-
-    if model_name not in self.SUPPORTED_MODELS:
-      self.ModuleError(
-          f'Model {model_name} is not supported by the LLM processor',
-          critical=True)
-    self.model_name = model_name
-
+    super().SetUp(provider_name=provider_name, model_name=model_name, task=task)
     self.columns_to_process = [x for x in columns_to_process.split(',') if x]
     if len(self.columns_to_process) == 0:
       self.ModuleError('No columns to process', critical=True)
@@ -85,7 +140,9 @@ class LLMProcessorBase(module.BaseModule):
     """
     if not set(dataframe.columns).issuperset(self.columns_to_process):
       raise ValueError(
-          'Dataframe does not contain all the specified columns')
+          'Dataframe does not contain all the specified columns - '
+          f'{",".join(self.columns_to_process)}'
+      )
 
   def Process(self) -> None:
     """Processes DataFrame containers using a LLM provider."""
@@ -95,4 +152,5 @@ class LLMProcessorBase(module.BaseModule):
         self._ProcessDataFrame(dataframe_container.data_frame)
       except ValueError as error:
         self.ModuleError(
-            f'Error processing dataframe {dataframe_container.name}: {error}')
+            f'Error processing dataframe {dataframe_container.name}: {error}'
+        )

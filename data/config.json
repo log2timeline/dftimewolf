@@ -1,5 +1,97 @@
 {
   "ts_username": "timesketch",
   "ts_password": "timesketch",
-  "ts_endpoint": "http://127.0.0.1:5000"
+  "ts_endpoint": "http://127.0.0.1:5000",
+  "llm_providers": {
+    "ollama": {
+      "options": {
+        "server_url": "http://127.0.0.1:11434"
+      },
+      "models": {
+        "gemma:7b": {
+          "options": {
+            "stream": false
+          },
+          "tasks": [
+            "generate"
+          ]
+        }
+      }
+    },
+    "gemini": {
+      "options": {
+        "api_key": ""
+      },
+      "models": {
+        "gemini-1.5-pro": {
+          "options": {
+            "generative_config": {
+              "temperature": 0.2,
+              "max_output_tokens": 8192
+            },
+            "safety_settings": [
+              {
+                "category": "HARM_CATEGORY_HARASSMENT",
+                "threshold": "BLOCK_NONE"
+              },
+              {
+                "category": "HARM_CATEGORY_HATE_SPEECH",
+                "threshold": "BLOCK_NONE"
+              },
+              {
+                "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                "threshold": "BLOCK_NONE"
+              },
+              {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_NONE"
+              }
+            ]
+          },
+          "tasks": [
+            "generate"
+          ]
+        }
+      }
+    },
+    "vertexai": {
+      "options": {
+        "api_key": "",
+        "project_id": "",
+        "region": "",
+        "sa_path": ""
+      },
+      "models": {
+        "gemini-1.5-pro": {
+          "options": {
+            "generative_config": {
+              "temperature": 0.2,
+              "max_output_tokens": 8192
+            },
+            "safety_settings": [
+              {
+                "category": "HARM_CATEGORY_HARASSMENT",
+                "threshold": "BLOCK_NONE"
+              },
+              {
+                "category": "HARM_CATEGORY_HATE_SPEECH",
+                "threshold": "BLOCK_NONE"
+              },
+              {
+                "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                "threshold": "BLOCK_NONE"
+              },
+              {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_NONE"
+              }
+            ]
+          },
+          "tasks": [
+            "generate"
+          ]
+        }
+      }
+    }
+  }
 }

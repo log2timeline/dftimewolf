@@ -31,6 +31,10 @@ grr-api-client = "^3.4.7"
 libcloudforensics = {git = "https://github.com/google/cloud-forensics-utils.git"}
 docker = "^7.0.0"
 setuptools = "^70.0.0"  # needed by docker
+ratelimit = "^2.2.1"
+backoff = "^2.2.1"
+vertexai = "^1.71.1"
+google-generativeai = "^0.8.3"
 
 [tool.poetry.extras]
 turbinia_legacy = ["turbinia"]

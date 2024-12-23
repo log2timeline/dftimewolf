@@ -404,7 +404,7 @@ class Metawolf(cmd2.Cmd):
                            help='Show past and current recipe runs.')
   show_parser.add_argument('-o', ARG_OUTPUT, nargs='?', type=int,
                            help='Show the output of a recipe run.')
-  @cmd2.with_argparser(show_parser)  # type: ignore
+  @cmd2.with_argparser(show_parser)
   def do_show(self, args: argparse.Namespace) -> None:
     """Show sessions, recipes, runs and outputs. `help show` for details.
 
@@ -568,7 +568,7 @@ class Metawolf(cmd2.Cmd):
   send_parser.add_argument('-i', ARG_INPUT, type=str,
                            help='The input to send to the process\' STDIN.'
                                 'Input must be between quotes.')
-  @cmd2.with_argparser(send_parser)  # type: ignore
+  @cmd2.with_argparser(send_parser)
   def do_send(self, args: argparse.Namespace) -> None:
     """Communicate with running recipes.
 
