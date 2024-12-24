@@ -41,7 +41,9 @@ class OllamaLLMProviderTest(unittest.TestCase):
                     },
                     'models': {
                         'gemma': {
-                            'options': {},
+                            'options': {
+                                'temperature': 0.1
+                            },
                             'tasks': ['test_task']
                         }
                     }

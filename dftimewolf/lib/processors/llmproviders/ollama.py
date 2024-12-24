@@ -72,22 +72,26 @@ class OllamaLLMProvider(interface.LLMProvider):
     Returns:
       A dictionary of request options.
     """
-    if 'temperature' in user_args:
-      temperature = user_args['temperature']
-    else:
-      temperature = self.models[model].get(
-          'temperature', DEFAULT_TEMPERATURE
-      )
-    if 'max_output_tokens' in user_args:
-      max_output_tokens = user_args['max_output_tokens']
-    else:
-      max_output_tokens = self.models[model].get(
-          'max_output_tokens', DEFAULT_MAX_OUTPUT_TOKENS
-      )
-    return {
-        'temperature': temperature,
-        'num_predict': max_output_tokens,
-    }
+    option_names_and_defaults = (
+        ('temperature', DEFAULT_TEMPERATURE),
+        ('num_predict', DEFAULT_MAX_OUTPUT_TOKENS),
+        ('num_keep', None),
+        ('seed', None),
+        ('top_k', None),
+        ('top_p', None),
+        ('min_p', None),
+        ('typical_p',None)
+    )
+
+    request_options = {}
+    for option_name, option_default in option_names_and_defaults:
+      if option_name in user_args:
+        request_options[option_name] = user_args[option_name]
+      elif option_name in self.models[model]:
+        request_options[option_name] = self.models[model][option_name]
+      elif option_default is not None:
+        request_options[option_name] = option_default
+    return request_options
 
   def Generate(self, prompt: str, model: str, **kwargs: str) -> str:
     """Generates text from the LLM provider.
