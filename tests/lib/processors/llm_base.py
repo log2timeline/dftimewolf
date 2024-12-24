@@ -1,18 +1,18 @@
 """Tests the base LLM processor module."""
 import json
 import unittest
-import mock
 
+import mock
 import pandas as pd
 
 from dftimewolf import config
-from dftimewolf.lib.containers import containers
-from dftimewolf.lib import state as state_lib
 from dftimewolf.lib import errors
+from dftimewolf.lib import state as state_lib
+from dftimewolf.lib.containers import containers
+from dftimewolf.lib.logging_utils import WolfLogger
 from dftimewolf.lib.processors import llm_base
 from dftimewolf.lib.processors.llmproviders import interface
 from dftimewolf.lib.processors.llmproviders import manager as llm_manager
-from dftimewolf.lib.logging_utils import WolfLogger
 
 
 class FakeLLMProvider(interface.LLMProvider):
@@ -26,7 +26,6 @@ class FakeLLMProvider(interface.LLMProvider):
     return 'test'
 
 
-
 class DataFrameLLMProcessorTest(unittest.TestCase):
   """Tests for the DataFrameLLMProcessor."""
 
@@ -35,13 +34,13 @@ class DataFrameLLMProcessorTest(unittest.TestCase):
     llm_manager.LLMProviderManager.RegisterProvider(FakeLLMProvider)
     config.Config.LoadExtraData(json.dumps(
         {
-            "llm_providers": {
-                "test": {
-                    "options": {},
-                    "models": {
-                        "test_model": {
-                            "options": {},
-                            "tasks": ["test_task"]
+            'llm_providers': {
+                'test': {
+                    'options': {},
+                    'models': {
+                        'test_model': {
+                            'options': {},
+                            'tasks': ['test_task']
                         }
                     }
                 }
