@@ -4,6 +4,9 @@
 from typing import Any
 
 import requests
+from requests import sessions
+from requests import adapters
+from urllib3.util import retry
 
 from dftimewolf.lib.processors.llmproviders import interface
 from dftimewolf.lib.processors.llmproviders import manager
@@ -11,6 +14,9 @@ from dftimewolf.lib.processors.llmproviders import manager
 
 DEFAULT_TEMPERATURE = 0.2
 DEFAULT_MAX_OUTPUT_TOKENS = 8192
+
+# Number of calls to allow within a period.
+CALL_LIMIT = 3
 
 
 class OllamaLLMProvider(interface.LLMProvider):
@@ -48,7 +54,24 @@ class OllamaLLMProvider(interface.LLMProvider):
       The response from the server..
     """
     url = self.options['server_url'] + resource
-    return requests.post(
+    session = sessions.Session()
+
+    post_retries = retry.Retry(
+        total=CALL_LIMIT,
+        backoff_factor=1,
+        status_forcelist=[
+            requests.codes.too_many_requests,
+            requests.codes.internal_server_error,
+            requests.codes.bad_gateway,
+            requests.codes.service_unavailable,
+            requests.codes.gateway_timeout
+        ]
+    )
+
+    session.mount('https://' if url.startswith('https') else 'http://',
+        adapters.HTTPAdapter(max_retries=post_retries)
+    )
+    return session.post(
         url,
         headers={
             'Content-Type': 'application/json',
@@ -80,7 +103,7 @@ class OllamaLLMProvider(interface.LLMProvider):
         ('top_k', None),
         ('top_p', None),
         ('min_p', None),
-        ('typical_p',None)
+        ('typical_p', None)
     )
 
     request_options = {}

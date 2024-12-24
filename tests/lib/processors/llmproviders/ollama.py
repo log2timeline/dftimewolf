@@ -61,7 +61,9 @@ class OllamaLLMProviderTest(unittest.TestCase):
     self.assertIsNotNone(self.provider)
     self.assertEqual(self.provider.chat_history, [])
 
-  @mock.patch('requests.post', side_effect=GetMockedResponse)
+  @mock.patch.object(
+      requests.sessions.Session, 'post', side_effect=GetMockedResponse
+  )
   def testGenerate(self, mock_post):
     """Tests the Generate method."""
     response = self.provider.Generate('blah', model='gemma')
@@ -84,7 +86,9 @@ class OllamaLLMProviderTest(unittest.TestCase):
         allow_redirects=True
     )
 
-  @mock.patch('requests.post', side_effect=GetMockedResponse)
+  @mock.patch.object(
+      requests.sessions.Session, 'post', side_effect=GetMockedResponse
+  )
   def testGenerateWithHistory(self, mock_post):
     """Tests the GenerateWithHistory method."""
     response_first = self.provider.GenerateWithHistory(
