@@ -49,7 +49,8 @@
           "cpu_cores": "@cpu_cores",
           "image_project": "ubuntu-os-cloud",
           "image_family": "ubuntu-2204-lts",
-          "create_analysis_vm": "@create_analysis_vm"
+          "create_analysis_vm": "@create_analysis_vm",
+          "analysis_vm_name": "@analysis_vm_name"
         }
       }, {
         "wants": ["GCEDiskCopy", "LocalYaraCollector"],
@@ -106,6 +107,7 @@
         ["--boot_disk_type", "Disk type to use [pd-standard, pd-ssd]", "pd-standard", {"format": "regex", "regex": "^pd-((ssd)|(standard))$"}],
         ["--image_project", "Name of the project where the analysis VM image is hosted.", "ubuntu-os-cloud"],
         ["--image_family", "Name of the image to use to create the analysis VM.", "ubuntu-2204-lts"],
-        ["--priority_filter", "Filter report findings, range from 0 to 100, 0 is the highest.", "100", {"format": "integer"}]
+        ["--priority_filter", "Filter report findings, range from 0 to 100, 0 is the highest.", "100", {"format": "integer"}],
+        ["--analysis_vm_name", "Name (prefix) to give the analysis vm.", "gcp-forensics-vm"]
     ]
 }

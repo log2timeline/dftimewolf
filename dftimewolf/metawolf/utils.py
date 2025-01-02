@@ -223,7 +223,7 @@ def RunInBackground(processes: List['output.MetawolfProcess']) -> bool:
     while q not in [False, True]:
       value = input('[Yn]? ') or 'y'
       q = Str2Bool(str(value))
-    return q
+    return q  # pytype: disable=bad-return-type
   return True
 
 
