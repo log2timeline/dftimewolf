@@ -84,7 +84,7 @@ class OpenRelikProcessorTest(unittest.TestCase):
     self.openrelik_module.openrelik_ui = "http://fake_api:8711"
     self.openrelik_module.openrelik_api_key = "fake_key"
     self.openrelik_module.folder_id = 123
-    self.openrelik_module.workflow_id = 1
+    self.openrelik_module.template_workflow_id = 1
     self.openrelik_module.openrelik_workflow_client = workflows.WorkflowsAPI(
       api_client.APIClient(
         self.openrelik_module.openrelik_api,
@@ -149,6 +149,7 @@ class OpenRelikProcessorTest(unittest.TestCase):
 
     self.assertEqual(local_path, "fake_filepath")
 
+  
 
 if __name__ == "__main__":
   unittest.main()

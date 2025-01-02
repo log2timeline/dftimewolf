@@ -39,7 +39,7 @@ class OpenRelikProcessor(module.ThreadAwareModule):
     self.openrelik_api: str | None = None
     self.openrelik_ui: str | None = None
     self.openrelik_api_key: str | None = None
-    self.workflow_id: int | None = None
+    self.template_workflow_id: int | None = None
     self.folder_id: int | None = None
     self.sketch_id: int | None = None
     self.incident_id: str | None = None
@@ -50,7 +50,7 @@ class OpenRelikProcessor(module.ThreadAwareModule):
     incident_id: str | None,
     sketch_id: int | None,
     folder_id: int | None,
-    workflow_id: int | None,
+    template_workflow_id: int | None,
     openrelik_api: str | None,
     openrelik_ui: str | None,
     openrelik_api_key: str | None,
@@ -67,12 +67,13 @@ class OpenRelikProcessor(module.ThreadAwareModule):
     )
 
     self.folder_id = folder_id
-    self.workflow_id = workflow_id
+    self.template_workflow_id = template_workflow_id
     self.incident_id = incident_id
     self.sketch_id = sketch_id
 
   def PollWorkflowStatus(self, workflow_id: int) -> Iterator[str]:
     """Polls the status of a workflow until it completes."""
+    
     filename = str(workflow_id)
     workflow = self.openrelik_workflow_client.get_workflow(
       self.folder_id, workflow_id
@@ -149,7 +150,7 @@ class OpenRelikProcessor(module.ThreadAwareModule):
       file_ids.append(file_id)
 
     workflow_id = self.openrelik_workflow_client.create_workflow(
-      folder_id, file_ids, self.workflow_id
+      folder_id, file_ids, self.template_workflow_id
     )
     workflow_url = f"{self.openrelik_ui}/folder/{folder_id}"
     self.PublishMessage(
