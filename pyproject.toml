@@ -35,6 +35,7 @@ ratelimit = "^2.2.1"
 backoff = "^2.2.1"
 vertexai = "^1.71.1"
 google-generativeai = "^0.8.3"
+openrelik-api-client = "0.2.1"
 
 [tool.poetry.extras]
 turbinia_legacy = ["turbinia"]

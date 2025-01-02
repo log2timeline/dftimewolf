@@ -70,7 +70,7 @@ class OpenRelikProcessor(module.ThreadAwareModule):
 
   def PollWorkflowStatus(self, workflow_id: int) -> Iterator[str]:
     """Polls the status of a workflow until it completes."""
-    
+
     filename = str(workflow_id)
     workflow = self.openrelik_workflow_client.get_workflow(
       self.folder_id, workflow_id

@@ -149,7 +149,7 @@ class OpenRelikProcessorTest(unittest.TestCase):
 
     self.assertEqual(local_path, "fake_filepath")
 
-  
+
 
 if __name__ == "__main__":
   unittest.main()
