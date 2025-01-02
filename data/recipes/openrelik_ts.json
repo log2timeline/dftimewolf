@@ -14,7 +14,6 @@
         "name": "OpenRelikProcessor",
         "args": {
             "incident_id": "@incident_id",
-            "sketch_id": "@sketch_id",
             "folder_id": "@folder_id",
             "template_workflow_id": "@template_workflow_id",
             "openrelik_api": "@openrelik_api",

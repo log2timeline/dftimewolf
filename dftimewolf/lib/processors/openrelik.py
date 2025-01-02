@@ -41,14 +41,12 @@ class OpenRelikProcessor(module.ThreadAwareModule):
     self.openrelik_api_key: str | None = None
     self.template_workflow_id: int | None = None
     self.folder_id: int | None = None
-    self.sketch_id: int | None = None
     self.incident_id: str | None = None
 
   # pylint: disable=arguments-differ
   def SetUp(
     self,
     incident_id: str | None,
-    sketch_id: int | None,
     folder_id: int | None,
     template_workflow_id: int | None,
     openrelik_api: str | None,
@@ -69,7 +67,6 @@ class OpenRelikProcessor(module.ThreadAwareModule):
     self.folder_id = folder_id
     self.template_workflow_id = template_workflow_id
     self.incident_id = incident_id
-    self.sketch_id = sketch_id
 
   def PollWorkflowStatus(self, workflow_id: int) -> Iterator[str]:
     """Polls the status of a workflow until it completes."""
