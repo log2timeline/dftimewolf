@@ -128,7 +128,7 @@ class OpenRelikProcessor(module.ThreadAwareModule):
     file.close()
     return local_path
 
-  def Process(self, container: containers.File) -> None:  # pytype: disable=signature-mismatch
+  def Process(self, container: containers.File) -> None:  # pytype: disable=signature-mismatch,line-too-long
     file_ids = []
     folder_id = self.folder_id
     if not folder_id or not self.openrelik_folder_client.folder_exists(

@@ -9,7 +9,6 @@ from typing import cast, Sequence, Type
 from dftimewolf.lib.containers import interface
 
 
-
 @dataclasses.dataclass
 class _MODULE():
   name: str
@@ -32,22 +31,23 @@ class ContainerManager():
     _modules: Container storage and dependency information.
   """
 
-  def __init__(self):
+  def __init__(self) -> None:
     """Initialise a ContainerManager."""
     self._mutex = threading.Lock()
-    self._modules: dict[str, _MODULE] = None
+    self._modules: dict[str, _MODULE] = {}
 
   def ParseRecipe(self, recipe: dict[str, typing.Any]) -> None:
     """Parses a recipe to build the dependency graph."""
-    self._modules = {}
+    with self._mutex:
+      self._modules = {}
 
-    for module in recipe.get('preflights', []) + recipe.get('modules', []):
-      name = module.get('runtime_name', module.get('name', None))
-      if not name:
-        raise RuntimeError("Name not set for module in recipe")
+      for module in recipe.get('preflights', []) + recipe.get('modules', []):
+        name = module.get('runtime_name', module.get('name', None))
+        if not name:
+          raise RuntimeError("Name not set for module in recipe")
 
-      self._modules[name] = _MODULE(
-          name=name, dependencies=module.get('wants', []) + [name])
+        self._modules[name] = _MODULE(
+            name=name, dependencies=module.get('wants', []) + [name])
 
   def StoreContainer(self,
                      source_module: str,
@@ -58,7 +58,7 @@ class ContainerManager():
       source_module: The module that generated the container.
       container: The container to store.
     """
-    if not self._modules:
+    if len(self._modules) == 0:
       raise RuntimeError("Container manager has not parsed a recipe yet")
 
     with self._mutex:
@@ -85,7 +85,7 @@ class ContainerManager():
     Returns:
       A sequence of containers that match the various filters.
     """
-    if not self._modules:
+    if len(self._modules) == 0:
       raise RuntimeError("Container manager has not parsed a recipe yet")
     if bool(metadata_filter_key) ^ bool(metadata_filter_value):
       raise RuntimeError('Must specify both key and value for attribute filter')
@@ -94,14 +94,11 @@ class ContainerManager():
       ret_val = []
 
       for dependency in self._modules[requesting_module].dependencies:
-        containers = self._modules[dependency].storage
-
-        for c in containers:
+        for c in self._modules[dependency].storage:
           if (c.CONTAINER_TYPE != container_class.CONTAINER_TYPE or
               (metadata_filter_key and
               c.metadata.get(metadata_filter_key) != metadata_filter_value)):
             continue
-
           ret_val.append(c)
 
     return cast(Sequence[interface.AttributeContainer], ret_val)
@@ -117,6 +114,9 @@ class ContainerManager():
     Args:
       module_name: The module that has completed running.
     """
+    if len(self._modules) == 0:
+      raise RuntimeError("Container manager has not parsed a recipe yet")
+
     with self._mutex:
       self._modules[module_name].completed = True
 
