@@ -79,16 +79,9 @@ class _TestContainer1(interface.AttributeContainer):
     return self.param == other.param
 
 
-class _TestContainer2(interface.AttributeContainer):
+class _TestContainer2(_TestContainer1):
   """A Test container."""
   CONTAINER_TYPE = 'test2'
-
-  def __init__(self, param: str):
-    super().__init__()
-    self.param = param
-
-  def __eq__(self, other: "_TestContainer2"):
-    return self.param == other.param
 
 
 class ContainerManagerTest(unittest.TestCase):

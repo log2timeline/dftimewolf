@@ -20,7 +20,7 @@ class _MODULE():
 
 
 class ContainerManager():
-  """A ConatinerManager.
+  """A ContainerManager.
   
   This ContainerManager handles container storage and delivery to modules.
   Modules can only receive containers from other modules that they directly
@@ -29,8 +29,7 @@ class ContainerManager():
 
   Attributes:
     _mutex: Practice safe container access.
-    _dependencies: The module dependency mappings.
-    _storage: Container storage.
+    _modules: Container storage and dependency information.
   """
 
   def __init__(self):
