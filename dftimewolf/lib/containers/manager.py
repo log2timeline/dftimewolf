@@ -120,18 +120,18 @@ class ContainerManager():
     with self._mutex:
       self._modules[module_name].completed = True
 
-      # If all modules `module_name` is a dependency for are marked completed,
-      # then containers it generated are no longer needed.
-      for key in self._modules:
-        if self._CheckDependenciesCompletion(key):
-          for c in self._modules[key].storage:
+      # With that `module_name` marked completed, any modules with all
+      # dependants completed can have storage cleared.
+      for name, module in self._modules.items():
+        if self._CheckDependenciesCompletion(name):
+          for c in module.storage:
             del c
-          self._modules[key].storage = []
+          module.storage = []
 
   def _CheckDependenciesCompletion(self, module_name: str) -> bool:
     """For a module, checks if other modules that depend on are complete."""
-    for key in self._modules:
-      if module_name in self._modules[key].dependencies:
-        if not self._modules[key].completed:
+    for _, module in self._modules.items():
+      if module_name in module.dependencies:
+        if not module.completed:
           return False
     return True
