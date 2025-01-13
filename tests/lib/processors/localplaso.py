@@ -7,22 +7,18 @@ import re
 import mock
 import docker
 
-from dftimewolf.lib import state
 from dftimewolf.lib import errors
 from dftimewolf.lib.processors import localplaso
 from dftimewolf.lib.containers import containers
+from tests.lib import modules_test_base
 
-from dftimewolf import config
 
-
-class LocalPlasoTest(unittest.TestCase):
+class LocalPlasoTest(modules_test_base.ModuleTestBase):
   """Tests for the local Plaso processor."""
 
-  def testInitialization(self):
-    """Tests that the processor can be initialized."""
-    test_state = state.DFTimewolfState(config.Config)
-    local_plaso_processor = localplaso.LocalPlasoProcessor(test_state)
-    self.assertIsNotNone(local_plaso_processor)
+  def setUp(self):
+    self._InitModule(localplaso.LocalPlasoProcessor)
+    super().setUp()
 
   # pylint: disable=invalid-name
   @mock.patch('os.path.isfile')
@@ -30,7 +26,6 @@ class LocalPlasoTest(unittest.TestCase):
   @mock.patch('docker.from_env')
   def testProcessing(self, mock_docker, mock_Popen, mock_exists):
     """Tests that the correct number of containers is added."""
-    test_state = state.DFTimewolfState(config.Config)
     mock_popen_object = mock.Mock()
     mock_popen_object.communicate.return_value = (None, None)
     mock_popen_object.wait.return_value = False
@@ -39,62 +34,55 @@ class LocalPlasoTest(unittest.TestCase):
     mock_docker().images.get.side_effect = docker.errors.ImageNotFound(
         message="")
 
-    local_plaso_processor = localplaso.LocalPlasoProcessor(test_state)
-    local_plaso_processor.StoreContainer(
+    self._module.StoreContainer(
         containers.File(name='test', path='/notexist/test'))
-    local_plaso_processor.SetUp(timezone=None, use_docker=False)
-    local_plaso_processor.Process()
+    self._module.SetUp(timezone=None, use_docker=False)
+    self._module.Process()
     mock_Popen.assert_called_once()
     args = mock_Popen.call_args[0][0]  # Get positional arguments of first call
     self.assertEqual(args[10], '/notexist/test')
     plaso_path = args[9]  # Dynamically generated path to the plaso file
     self.assertEqual(
-        local_plaso_processor.GetContainers(containers.File)[0].path,
+        self._module.GetContainers(containers.File)[0].path,
         plaso_path)
 
   @mock.patch('docker.from_env')
   def testProcessingDockerized(self, mock_docker):
     """Tests that plaso processing is called using Docker."""
-    test_state = state.DFTimewolfState(config.Config)
     mock_docker.return_value = mock.Mock()
-    local_plaso_processor = localplaso.LocalPlasoProcessor(test_state)
-    local_plaso_processor.StoreContainer(
+    self._module.StoreContainer(
         containers.File(name='test', path='/notexist/test'))
-    local_plaso_processor.SetUp(timezone=None, use_docker=True)
-    local_plaso_processor.Process()
+    self._module.SetUp(timezone=None, use_docker=True)
+    self._module.Process()
     mock_docker().containers.run.assert_called_once()
     args = mock_docker().containers.run.call_args[1]
     # Get the plaso output file name, which was dynamically generated
     match = re.match(r".*/([a-z0-9]+\.plaso).*", args['command'])
     self.assertIsNotNone(match)
     self.assertRegex(
-        local_plaso_processor.GetContainers(containers.File)[0].path,
+        self._module.GetContainers(containers.File)[0].path,
         f".*/{match.group(1)}")  # pytype: disable=attribute-error
 
   @mock.patch.dict('os.environ', {'PATH': '/fake/path:/fake/path/2'})
   @mock.patch('os.path.isfile')
   def testPlasoCheck(self, mock_exists):
     """Tests that a plaso executable is correctly located."""
-    test_state = state.DFTimewolfState(config.Config)
     mock_exists.return_value = True
-    local_plaso_processor = localplaso.LocalPlasoProcessor(test_state)
     # We're testing module internals here.
     # pylint: disable=protected-access
-    local_plaso_processor._DeterminePlasoPath()
+    self._module._DeterminePlasoPath()
     self.assertEqual(
-        local_plaso_processor._plaso_path, '/fake/path/log2timeline.py')
+        self._module._plaso_path, '/fake/path/log2timeline.py')
 
   @mock.patch('os.path.isfile')
   @mock.patch('docker.from_env')
   def testPlasoCheckFail(self, mock_docker, mock_exists):
     """Tests that SetUp fails when no plaso executable is found."""
-    test_state = state.DFTimewolfState(config.Config)
     mock_exists.return_value = False
     mock_docker().images.get.side_effect = docker.errors.ImageNotFound(
         message="")
-    local_plaso_processor = localplaso.LocalPlasoProcessor(test_state)
     with self.assertRaises(errors.DFTimewolfError) as error:
-      local_plaso_processor.SetUp(timezone=None, use_docker=False)
+      self._module.SetUp(timezone=None, use_docker=False)
     self.assertEqual((
         'Could not run log2timeline.py from PATH or a local Docker image. '
         'To fix: \n'

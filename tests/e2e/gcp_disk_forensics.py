@@ -152,7 +152,9 @@ class GCEForensicsEndToEndTest(unittest.TestCase):
 
   def tearDown(self):
     log.info("Cleaning up after test...")
-    for vm in self.test_state.GetContainers(containers.ForensicsVM):
+    for vm in self.test_state.GetContainers(
+        container_class=containers.ForensicsVM,
+        requesting_module='GCEForensicsVM'):
       CleanUp(self.project_id, self.zone, vm.name)
 
     self._recipes_manager.DeregisterRecipe(self._recipe)
@@ -178,9 +180,11 @@ class GCEForensicsEndToEndTest(unittest.TestCase):
     self.test_state.RunModules()
 
     # Get the forensics VM name, confirm it exists
-    self.assertEqual(1,
-        len(self.test_state.GetContainers(containers.ForensicsVM)))
-    for_vm = self.test_state.GetContainers(containers.ForensicsVM)[0]
+    vm_containers = self.test_state.GetContainers(
+        container_class=containers.ForensicsVM,
+        requesting_module='GCEForensicsVM')
+    self.assertEqual(1, len(vm_containers))
+    for_vm = vm_containers[0]
 
     gce_instances_client = self.gcp_client.GceApi().instances()
     request = gce_instances_client.get(
@@ -194,7 +198,9 @@ class GCEForensicsEndToEndTest(unittest.TestCase):
     actual_disks = compute.GoogleComputeInstance(
       self.project_id, self.zone, for_vm.name).ListDisks().keys()
     # The source disk will be the first in the container list, so exclude it.
-    expected_disks = self.test_state.GetContainers(containers.GCEDisk)[1:]
+    expected_disks = self.test_state.GetContainers(
+        container_class=containers.GCEDisk,
+        requesting_module='GCEDiskCopy')[1:]
 
     # Length should differ by 1 for the boot disk
     self.assertEqual(len(actual_disks), len(expected_disks) + 1)
@@ -225,9 +231,11 @@ class GCEForensicsEndToEndTest(unittest.TestCase):
     self.test_state.RunModules()
 
     # Get the forensics VM name, confirm it exists
-    self.assertEqual(1,
-        len(self.test_state.GetContainers(containers.ForensicsVM)))
-    for_vm = self.test_state.GetContainers(containers.ForensicsVM)[0]
+    vm_containers = self.test_state.GetContainers(
+        container_class=containers.ForensicsVM,
+        requesting_module='GCEForensicsVM')
+    self.assertEqual(1, len(vm_containers))
+    for_vm = vm_containers[0]
 
     gce_instances_client = self.gcp_client.GceApi().instances()
     request = gce_instances_client.get(
@@ -241,7 +249,9 @@ class GCEForensicsEndToEndTest(unittest.TestCase):
     actual_disks = compute.GoogleComputeInstance(
       self.project_id, self.zone, for_vm.name).ListDisks().keys()
     # The source disk will be the first in the container list, so exclude it.
-    expected_disks = self.test_state.GetContainers(containers.GCEDisk)[1:]
+    expected_disks = self.test_state.GetContainers(
+        container_class=containers.GCEDisk,
+        requesting_module='GCEDiskCopy')[1:]
 
     # Length should differ by 1 for the boot disk
     self.assertEqual(len(actual_disks), len(expected_disks) + 1)

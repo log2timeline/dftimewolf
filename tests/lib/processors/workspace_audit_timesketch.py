@@ -1,35 +1,33 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Tests the Workspace logging timesketch processor."""
+
+# pytype: disable=attribute-error
+
+
 import datetime
 import json
 import os
-import unittest
 
 from dftimewolf.lib.containers import containers
-from dftimewolf.lib import state
 from dftimewolf.lib.processors import workspace_audit_timesketch
+from tests.lib import modules_test_base
 
-from dftimewolf import config
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
 
-class WorkspaceAuditTimesketchTest(unittest.TestCase):
+class WorkspaceAuditTimesketchTest(modules_test_base.ModuleTestBase):
   """Tests for the Workspace Audit logging Timesketch processor."""
 
   maxDiff = None
 
-  def testInitialization(self):
-    """Tests that the processor can be initialized."""
-    test_state = state.DFTimewolfState(config.Config)
-    processor = workspace_audit_timesketch.WorkspaceAuditTimesketch(test_state)
-    self.assertIsNotNone(processor)
+  def setUp(self):
+    self._InitModule(workspace_audit_timesketch.WorkspaceAuditTimesketch)
+    super().setUp()
 
   def testTimelineName(self):
     """Tests that the timeline name is set correctly."""
-    test_state = state.DFTimewolfState(config.Config)
-    processor = workspace_audit_timesketch.WorkspaceAuditTimesketch(test_state)
     file_path = os.path.join(current_dir, 'test_data', 'empty_file.jsonl')
     workspace_container = containers.WorkspaceLogs(
         application_name='chrome',
@@ -41,9 +39,9 @@ class WorkspaceAuditTimesketchTest(unittest.TestCase):
         end_time=datetime.datetime(
             2021, 9, 10, 14, 21, tzinfo=datetime.timezone.utc))
 
-    processor.StoreContainer(workspace_container)
-    processor.Process()
-    stored_containers = processor.GetContainers(containers.File)
+    self._module.StoreContainer(workspace_container)
+    self._module.Process()
+    stored_containers = self._module.GetContainers(containers.File)
 
     self.assertEqual(1, len(stored_containers))
 
@@ -56,9 +54,6 @@ class WorkspaceAuditTimesketchTest(unittest.TestCase):
 
   def testNonExistingEventType(self):
     """Tests that a log with an unknown type is transformed correctly."""
-    test_state = state.DFTimewolfState(config.Config)
-    processor = workspace_audit_timesketch.WorkspaceAuditTimesketch(test_state)
-
     event = {
         "kind": "admin#reports#activity",
         "id": {
@@ -120,7 +115,7 @@ class WorkspaceAuditTimesketchTest(unittest.TestCase):
         'uniqueQualifier': '8345464995891889991'}
 
     # pylint: disable=protected-access
-    actual_timesketch_records = processor._ProcessLogLine(event_json)
+    actual_timesketch_records = self._module._ProcessLogLine(event_json)
 
     self.assertEqual(len(actual_timesketch_records), 1)
     actual_timesketch_record = actual_timesketch_records[0]
@@ -129,9 +124,6 @@ class WorkspaceAuditTimesketchTest(unittest.TestCase):
 
   def testCalendarEvent(self):
     """Tests that a calendar log is transformed correctly."""
-    test_state = state.DFTimewolfState(config.Config)
-    processor = workspace_audit_timesketch.WorkspaceAuditTimesketch(test_state)
-
     calendar_event = {
         "kind": "admin#reports#activity",
         "id": {
@@ -214,7 +206,7 @@ class WorkspaceAuditTimesketchTest(unittest.TestCase):
         'uniqueQualifier': '8345464995891889990'}
 
     # pylint: disable=protected-access
-    actual_timesketch_records = processor._ProcessLogLine(
+    actual_timesketch_records = self._module._ProcessLogLine(
         calendar_event_json)
     self.assertEqual(len(actual_timesketch_records), 1)
     actual_timesketch_record = actual_timesketch_records[0]

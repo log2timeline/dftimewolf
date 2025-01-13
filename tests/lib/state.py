@@ -111,8 +111,10 @@ class StateTest(unittest.TestCase):
   def testStoreContainer(self):
     """Tests that containers are stored correctly."""
     test_state = state.DFTimewolfState(config.Config)
+    test_state._container_manager.ParseRecipe(  # pylint: disable=protected-access
+        {'modules': [{'name': 'module'}]})
     test_report = containers.Report(module_name='foo', text='bar')
-    test_state.StoreContainer(test_report)
+    test_state.StoreContainer(container=test_report, source_module='module')
     self.assertEqual(len(test_state.store), 1)
     self.assertIn('report', test_state.store)
     self.assertEqual(len(test_state.store['report']), 1)
@@ -121,16 +123,20 @@ class StateTest(unittest.TestCase):
   def testGetContainer(self):
     """Tests that containers can be retrieved."""
     test_state = state.DFTimewolfState(config.Config)
+    test_state._container_manager.ParseRecipe(  # pylint: disable=protected-access
+        {'modules': [{'name': 'module'}]})
     test_report = containers.Report(module_name='foo', text='bar')
-    test_state.StoreContainer(test_report)
-    reports = test_state.GetContainers(containers.Report)
+    test_state.StoreContainer(container=test_report, source_module='module')
+    reports = test_state.GetContainers('module', containers.Report)
     self.assertEqual(len(reports), 1)
     self.assertIsInstance(reports[0], containers.Report)
     # The container shouldn't have been popped, and still be in the store
     self.assertEqual(len(test_state.store[test_report.CONTAINER_TYPE]), 1)
 
     # Try again, but pop
-    reports = test_state.GetContainers(containers.Report, True)
+    reports = test_state.GetContainers(container_class=containers.Report,
+                                      requesting_module='module',
+                                      pop=True)
     self.assertEqual(len(reports), 1)
     self.assertIsInstance(reports[0], containers.Report)
     # the container was popped this time
@@ -139,6 +145,8 @@ class StateTest(unittest.TestCase):
   def testGetContainerWithMetadataFilter(self):
     """Tests that containers can be retrieved using metadata filters."""
     test_state = state.DFTimewolfState(config.Config)
+    test_state._container_manager.ParseRecipe(  # pylint: disable=protected-access
+        {'modules': [{'name': 'module'}]})
     test_cont_1 = thread_aware_modules.TestContainer('foo')
     test_cont_2 = thread_aware_modules.TestContainer('bar')
     test_cont_3 = thread_aware_modules.TestContainer('baz')
@@ -147,44 +155,60 @@ class StateTest(unittest.TestCase):
     test_cont_2.SetMetadata('metadata_key', '2')
     test_cont_3.SetMetadata('metadata_key', '3')
 
-    test_state.StoreContainer(test_cont_1)
-    test_state.StoreContainer(test_cont_2)
-    test_state.StoreContainer(test_cont_3)
+    test_state.StoreContainer(container=test_cont_1, source_module='module')
+    test_state.StoreContainer(container=test_cont_2, source_module='module')
+    test_state.StoreContainer(container=test_cont_3, source_module='module')
 
     # Test incorrect filters retrieve nothing
-    filtered = test_state.GetContainers(thread_aware_modules.TestContainer,
-                                        False,
-                                        'metadata_key',
-                                        'incorrect_value')
-    full_list = test_state.GetContainers(thread_aware_modules.TestContainer)
+    filtered = test_state.GetContainers(
+        requesting_module='module',
+        container_class=thread_aware_modules.TestContainer,
+        pop=False,
+        metadata_filter_key='metadata_key',
+        metadata_filter_value='incorrect_value')
+    full_list = test_state.GetContainers(
+        requesting_module='module',
+        container_class=thread_aware_modules.TestContainer)
     self.assertEqual(len(filtered), 0)  # None retrieved
     self.assertEqual(len(full_list), 3)  # None removed since none were popped
 
-    filtered = test_state.GetContainers(thread_aware_modules.TestContainer,
-                                        False,
-                                        'incorrect_key',
-                                        'metadata_value')
-    full_list = test_state.GetContainers(thread_aware_modules.TestContainer)
+    filtered = test_state.GetContainers(
+        requesting_module='module',
+        container_class=thread_aware_modules.TestContainer,
+        pop=False,
+        metadata_filter_key='incorrect_key',
+        metadata_filter_value='metadata_value')
+    full_list = test_state.GetContainers(
+        requesting_module='module',
+        container_class=thread_aware_modules.TestContainer)
     self.assertEqual(len(filtered), 0)  # None retrieved
     self.assertEqual(len(full_list), 3)  # None removed since none were popped
 
     # Test retrieval, without popping
-    filtered = test_state.GetContainers(thread_aware_modules.TestContainer,
-                                        False,
-                                        'metadata_key',
-                                        '1')
-    full_list = test_state.GetContainers(thread_aware_modules.TestContainer)
+    filtered = test_state.GetContainers(
+        requesting_module='module',
+        container_class=thread_aware_modules.TestContainer,
+        pop=False,
+        metadata_filter_key='metadata_key',
+        metadata_filter_value='1')
+    full_list = test_state.GetContainers(
+        requesting_module='module',
+        container_class=thread_aware_modules.TestContainer)
     self.assertEqual(len(filtered), 1)  # One retrieved
     self.assertEqual(len(full_list), 3)  # None removed since none were popped
     self.assertEqual(filtered[0].value, 'foo')
     self.assertEqual(filtered[0].metadata['metadata_key'], '1')
 
     # Test retrieval, with popping
-    filtered = test_state.GetContainers(thread_aware_modules.TestContainer,
-                                        True,
-                                        'metadata_key',
-                                        '1')
-    remaining = test_state.GetContainers(thread_aware_modules.TestContainer)
+    filtered = test_state.GetContainers(
+        requesting_module='module',
+        container_class=thread_aware_modules.TestContainer,
+        pop=True,
+        metadata_filter_key='metadata_key',
+        metadata_filter_value='1')
+    remaining = test_state.GetContainers(
+        requesting_module='module',
+        container_class=thread_aware_modules.TestContainer)
     self.assertEqual(len(filtered), 1)  # One retrieved
     self.assertEqual(len(remaining), 2)  # One popped
     self.assertEqual(filtered[0].value, 'foo')
@@ -194,12 +218,22 @@ class StateTest(unittest.TestCase):
   def testGetContainerWithMetadataFilterFailures(self):
     """Tests Runtime Errors retriving containers with a metadata filter."""
     test_state = state.DFTimewolfState(config.Config)
+    test_state._container_manager.ParseRecipe(  # pylint: disable=protected-access
+        {'modules': [{'name': 'module'}]})
 
     with self.assertRaises(RuntimeError):
-      test_state.GetContainers(containers.Report, False, 'key', '')
+      test_state.GetContainers(requesting_module='module',
+                               container_class=containers.Report,
+                               pop=False,
+                               metadata_filter_key='key',
+                               metadata_filter_value='')
 
     with self.assertRaises(RuntimeError):
-      test_state.GetContainers(containers.Report, False, '', 'value')
+      test_state.GetContainers(requesting_module='module',
+                               container_class=containers.Report,
+                               pop=False,
+                               metadata_filter_key='',
+                               metadata_filter_value='value')
 
   @mock.patch('tests.test_modules.modules.DummyPreflightModule.Process')
   @mock.patch('tests.test_modules.modules.DummyPreflightModule.SetUp')
@@ -323,7 +357,9 @@ class StateTest(unittest.TestCase):
     self.assertEqual(mock_post_process.call_count, 1)
     self.assertEqual(mock_pre_process.call_count, 1)
     self.assertEqual(3,
-        len(test_state.GetContainers(thread_aware_modules.TestContainer)))
+        len(test_state.GetContainers(
+            requesting_module='ThreadAwareConsumerModule',
+            container_class=thread_aware_modules.TestContainer)))
 
   def testThreadAwareModuleContainerHandling(self):
     """Tests that a ThreadAwareModule handles containers correctly."""
@@ -340,18 +376,20 @@ class StateTest(unittest.TestCase):
     # and modifies TestContainer, modifies TestContainerTwo, and generates
     # a TestContainerThree each.
     values = [container.value for container in test_state.GetContainers(
-        thread_aware_modules.TestContainer)]
+        container_class=thread_aware_modules.TestContainer,
+        requesting_module='ThreadAwareConsumerModule')]
     expected_values = ['one appended', 'two appended', 'three appended']
 
     self.assertEqual(sorted(values), sorted(expected_values))
     self.assertEqual(
         test_state.GetContainers(
-            thread_aware_modules.TestContainerTwo)[0].value,
-        'one,two,three appended appended appended'
-        )
+            container_class=thread_aware_modules.TestContainerTwo,
+            requesting_module='ThreadAwareConsumerModule')[0].value,
+        'one,two,three appended appended appended')
 
     values = [container.value for container in test_state.GetContainers(
-        thread_aware_modules.TestContainerThree)]
+        container_class=thread_aware_modules.TestContainerThree,
+        requesting_module='ThreadAwareConsumerModule')]
     expected_values = ['output one', 'output two', 'output three']
 
     self.assertEqual(sorted(values), sorted(expected_values))
@@ -458,15 +496,16 @@ class StateTest(unittest.TestCase):
     """
     test_state = state.DFTimewolfState(config.Config)
     test_state.command_line_options = {}
-    test_state.StoreContainer(thread_aware_modules.TestContainer('one'))
-    test_state.StoreContainer(thread_aware_modules.TestContainer('two'))
-    test_state.StoreContainer(thread_aware_modules.TestContainer('three'))
     test_state.LoadRecipe(test_recipe.issue_503_recipe, TEST_MODULES)
+    test_state.StoreContainer(container=thread_aware_modules.TestContainer('one'), source_module='Issue503Module')
+    test_state.StoreContainer(container=thread_aware_modules.TestContainer('two'), source_module='Issue503Module')
+    test_state.StoreContainer(container=thread_aware_modules.TestContainer('three'), source_module='Issue503Module')
     test_state.SetupModules()
     test_state.RunModules()
 
     values = [container.value for container in test_state.GetContainers(
-        thread_aware_modules.TestContainer)]
+        container_class=thread_aware_modules.TestContainer,
+        requesting_module='Issue503Module')]
     expected_values = ['one Processed',
                        'two Processed',
                        'three Processed']
@@ -475,12 +514,17 @@ class StateTest(unittest.TestCase):
   def testContainerDedupe(self):
     """Tests the DFTimewolfState.DedupeContainers method."""
     test_state = state.DFTimewolfState(config.Config)
+    test_state._container_manager.ParseRecipe(  # pylint: disable=protected-access
+        {'modules': [{'name': 'module'}]})
     test_state.command_line_options = {}
-    test_state.StoreContainer(thread_aware_modules.TestContainer('one'))
-    test_state.StoreContainer(thread_aware_modules.TestContainer('one'))
-    test_state.StoreContainer(thread_aware_modules.TestContainer('two'))
+    test_state.StoreContainer(thread_aware_modules.TestContainer('one'),
+                              'module')
+    test_state.StoreContainer(thread_aware_modules.TestContainer('one'),
+                              'module')
+    test_state.StoreContainer(thread_aware_modules.TestContainer('two'),
+                              'module')
     test_state.DedupeContainers(thread_aware_modules.TestContainer)
-    conts = test_state.GetContainers(thread_aware_modules.TestContainer)
+    conts = test_state.GetContainers('module', thread_aware_modules.TestContainer)
 
     self.assertEqual(len(conts), 2)
     for value in [c.value for c in conts]:
@@ -721,7 +765,9 @@ class StateWithCDMTest(unittest.TestCase):
     self.assertEqual(mock_post_process.call_count, 1)
     self.assertEqual(mock_pre_process.call_count, 1)
     self.assertEqual(3,
-        len(test_state.GetContainers(thread_aware_modules.TestContainer)))
+        len(test_state.GetContainers(
+            container_class=thread_aware_modules.TestContainer,
+            requesting_module='ThreadAwareConsumerModule')))
 
   @mock.patch('tests.test_modules.modules.DummyModule2.Process')
   @mock.patch('tests.test_modules.modules.DummyModule1.Process')

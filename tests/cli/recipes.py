@@ -53,18 +53,19 @@ class RecipeTests(unittest.TestCase):
     """Tests that a recipe's modules depend only on modules present in the
     recipe."""
     for recipe in self._recipes_manager.GetRecipes():
-      declared_modules = set()
-      wanted_modules = set()
-      for module in recipe.contents['modules']:
-        module_name = module['name']
-        runtime_name = module.get('runtime_name', module_name)
-        declared_modules.add(runtime_name)
-        for wanted in module['wants']:
-          wanted_modules.add(wanted)
+      with self.subTest(recipe.contents['name']):
+        declared_modules = set()
+        wanted_modules = set()
+        for module in (recipe.contents['modules'] +
+                       recipe.contents.get('preflights', [])):
+          module_name = module['name']
+          runtime_name = module.get('runtime_name', module_name)
+          declared_modules.add(runtime_name)
+          for wanted in module['wants']:
+            wanted_modules.add(wanted)
 
-      for wanted_module in wanted_modules:
-        self.assertIn(wanted_module, declared_modules,
-                      msg='recipe: {0:s}'.format(recipe.contents['name']))
+        self.assertTrue(wanted_modules.issubset(declared_modules),
+                        msg='recipe: {0:s}'.format(recipe.contents['name']))
 
   def testNoDeadlockInRecipe(self):
     """Tests that a recipe will not deadlock."""

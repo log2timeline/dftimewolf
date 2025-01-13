@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 """Tests the GoogleCloudCollector."""
 
+# pytype: disable=attribute-error
+
+
 import unittest
 from typing import Any
 
@@ -9,10 +12,9 @@ import mock
 import botocore
 
 from libcloudforensics.providers.aws.internal import account as aws_account
-from dftimewolf import config
-from dftimewolf.lib import state
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.collectors import aws_volume_snapshot
+from tests.lib import modules_test_base
 
 
 FAKE_REGION = 'fake-region-1'
@@ -70,27 +72,22 @@ def MockMakeAPICall(self, operation_name : str, kwarg : Any) -> Any:
   return orig(self, operation_name, kwarg)
 
 
-class AWSVolumeSnapshotCollectorTest(unittest.TestCase):
+class AWSVolumeSnapshotCollectorTest(modules_test_base.ModuleTestBase):
   """Tests for the AWSVolumeSnapshotCollector."""
 
-  def testInitialization(self):
-    """Tests that the collector can be initialized."""
-    test_state = state.DFTimewolfState(config.Config)
-    collector = aws_volume_snapshot.AWSVolumeSnapshotCollector(test_state)
-    self.assertIsNotNone(collector)
+  def setUp(self):
+    self._InitModule(aws_volume_snapshot.AWSVolumeSnapshotCollector)
+    super().setUp()
 
   def testSetUp(self):
     """Tests SetUp of the collector."""
-    test_state = state.DFTimewolfState(config.Config)
-
-    collector = aws_volume_snapshot.AWSVolumeSnapshotCollector(test_state)
-    collector.SetUp(FAKE_VOLUME_LIST_STR, FAKE_REGION)
+    self._module.SetUp(FAKE_VOLUME_LIST_STR, FAKE_REGION)
 
     volumes_in_state = [container.id for container in \
-        collector.GetContainers(containers.AWSVolume)]
+        self._module.GetContainers(containers.AWSVolume)]
 
     self.assertEqual(['vol-01234567', 'vol-12345678'], volumes_in_state)
-    self.assertEqual(FAKE_REGION, collector.region)
+    self.assertEqual(FAKE_REGION, self._module.region)
 
   @mock.patch('time.sleep')
   @mock.patch('boto3.session.Session._setup_loader')
@@ -99,18 +96,15 @@ class AWSVolumeSnapshotCollectorTest(unittest.TestCase):
     mock_loader.return_value = None
     mock_sleep.return_value = None
 
-    test_state = state.DFTimewolfState(config.Config)
-
-    collector = aws_volume_snapshot.AWSVolumeSnapshotCollector(test_state)
-    collector.SetUp(FAKE_VOLUME_LIST_STR, FAKE_REGION)
+    self._module.SetUp(FAKE_VOLUME_LIST_STR, FAKE_REGION)
 
     with mock.patch('botocore.client.BaseClient._make_api_call',
         new=MockMakeAPICall):
-      collector.Process()
+      self._module.Process()
 
-    self.assertEqual(2, len(collector.GetContainers(
+    self.assertEqual(2, len(self._module.GetContainers(
         containers.AWSSnapshot)))
-    state_snaps = [c.id for c in collector.GetContainers(
+    state_snaps = [c.id for c in self._module.GetContainers(
         containers.AWSSnapshot)]
     self.assertEqual(state_snaps, ['snap-01234567', 'snap-01234567'])
 
@@ -121,21 +115,19 @@ class AWSVolumeSnapshotCollectorTest(unittest.TestCase):
     mock_loader.return_value = None
     mock_sleep.return_value = None
 
-    test_state = state.DFTimewolfState(config.Config)
-    collector = aws_volume_snapshot.AWSVolumeSnapshotCollector(test_state)
 
     for volume in FAKE_VOLUME_LIST['Volumes']:
-      collector.StoreContainer(containers.AWSVolume(volume['VolumeId']))
+      self._module.StoreContainer(containers.AWSVolume(volume['VolumeId']))
 
-    collector.SetUp(None, FAKE_REGION)
+    self._module.SetUp(None, FAKE_REGION)
 
     with mock.patch('botocore.client.BaseClient._make_api_call',
         new=MockMakeAPICall):
-      collector.Process()
+      self._module.Process()
 
-    self.assertEqual(2, len(collector.GetContainers(
+    self.assertEqual(2, len(self._module.GetContainers(
         containers.AWSSnapshot)))
-    state_snaps = [c.id for c in collector.GetContainers(
+    state_snaps = [c.id for c in self._module.GetContainers(
         containers.AWSSnapshot)]
     self.assertEqual(state_snaps, ['snap-01234567', 'snap-01234567'])
 

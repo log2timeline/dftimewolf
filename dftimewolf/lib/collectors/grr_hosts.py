@@ -1356,7 +1356,7 @@ class GRROsqueryCollector(GRRFlow):
           data_frame=pd.DataFrame(),
           flow_identifier=flow_identifier,
           client_identifier=client_identifier)
-      self.state.StoreContainer(results_container)
+      self.StoreContainer(results_container)
       return
 
     merged_results = pd.concat(results)
@@ -1372,7 +1372,7 @@ class GRROsqueryCollector(GRRFlow):
         flow_identifier=flow_identifier,
         client_identifier=client_identifier)
 
-    self.state.StoreContainer(dataframe_container)
+    self.StoreContainer(dataframe_container)
 
   def Process(self, container: containers.Host
               ) -> None:  # pytype: disable=signature-mismatch
@@ -1383,7 +1383,7 @@ class GRROsqueryCollector(GRRFlow):
     """
     client = self._GetClientBySelector(container.hostname)
 
-    osquery_containers = self.state.GetContainers(containers.OsqueryQuery)
+    osquery_containers = self.GetContainers(containers.OsqueryQuery)
 
     host_osquery_futures = []
     with ThreadPoolExecutor(self.GetQueryThreadPoolSize()) as executor:

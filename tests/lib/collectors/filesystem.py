@@ -6,31 +6,26 @@ import unittest
 
 import mock
 
-from dftimewolf.lib import state
 from dftimewolf.lib.collectors import filesystem
 from dftimewolf.lib.containers import containers
+from tests.lib import modules_test_base
 
-from dftimewolf import config
 
-class LocalFileSystemTest(unittest.TestCase):
+class LocalFileSystemTest(modules_test_base.ModuleTestBase):
   """Tests for the local filesystem collector."""
 
-  def testInitialization(self):
-    """Tests that the collector can be initialized."""
-    test_state = state.DFTimewolfState(config.Config)
-    filesystem_collector = filesystem.FilesystemCollector(test_state)
-    self.assertIsNotNone(filesystem_collector)
+  def setUp(self):
+    self._InitModule(filesystem.FilesystemCollector)
+    super().setUp()
 
   @mock.patch('os.path.exists')
   def testOutput(self, mock_exists):
     """Tests that the module output is consistent with the input."""
-    test_state = state.DFTimewolfState(config.Config)
-    filesystem_collector = filesystem.FilesystemCollector(test_state)
     fake_paths = '/fake/path/1,/fake/path/2'
-    filesystem_collector.SetUp(paths=fake_paths)
+    self._module.SetUp(paths=fake_paths)
     mock_exists.return_value = True
-    filesystem_collector.Process()
-    files = filesystem_collector.GetContainers(containers.File)
+    self._module.Process()
+    files = self._module.GetContainers(containers.File)
     self.assertEqual(files[0].path, '/fake/path/1')
     self.assertEqual(files[0].name, '1')
     self.assertEqual(files[1].path, '/fake/path/2')

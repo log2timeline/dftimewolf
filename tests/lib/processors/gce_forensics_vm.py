@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 """Tests the GCEForensicsVM generator."""
 
+# pytype: disable=attribute-error
+
+
 from absl.testing import absltest
 from absl.testing import parameterized
 
@@ -10,10 +13,10 @@ from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal import compute
 from libcloudforensics import errors as lcf_errors
 
-from dftimewolf import config
-from dftimewolf.lib import errors, state
+from dftimewolf.lib import errors
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.processors.gce_forensics_vm import GCEForensicsVM
+from tests.lib import modules_test_base
 
 FAKE_PROJECT = gcp_project.GoogleCloudProject(
     'test-target-project-name',
@@ -24,22 +27,17 @@ FAKE_ANALYSIS_VM = compute.GoogleComputeInstance(
     'fake-analysis-vm')
 
 
-class GCEForensicsVMTest(parameterized.TestCase):
+class GCEForensicsVMTest(modules_test_base.ModuleTestBase):
   """Tests for the Forensics VM creator."""
 
-  def testInitialization(self):
-    """Tests that the processor can be initialized."""
-    test_state = state.DFTimewolfState(config.Config)
-    processor = GCEForensicsVM(test_state)
-    self.assertIsNotNone(processor)
+  def setUp(self):
+    self._InitModule(GCEForensicsVM)
+    super().setUp()
 
   # pylint: disable=invalid-name,line-too-long
   def testSetUp(self):
     """Tests SetUp of the processor."""
-    test_state = state.DFTimewolfState(config.Config)
-
-    processor = GCEForensicsVM(test_state)
-    processor.SetUp(
+    self._module.SetUp(
         'test-analysis-project-name',
         'test-incident-id',
         'test-zone',
@@ -51,15 +49,14 @@ class GCEForensicsVMTest(parameterized.TestCase):
         True,
         'gcp-forensics-vm'
     )
-    self.assertEqual(test_state.errors, [])
-    self.assertEqual(processor.project.project_id,
+    self.assertEqual(self._module.project.project_id,
                      'test-analysis-project-name')
-    self.assertEqual(processor.incident_id, 'test-incident-id')
-    self.assertEqual(processor.project.default_zone, 'test-zone')
-    self.assertEqual(processor.boot_disk_size, 120)
-    self.assertEqual(processor.cpu_cores, 64)
-    self.assertEqual(processor.image_project, 'test-image-project')
-    self.assertEqual(processor.image_family, 'test-image-family')
+    self.assertEqual(self._module.incident_id, 'test-incident-id')
+    self.assertEqual(self._module.project.default_zone, 'test-zone')
+    self.assertEqual(self._module.boot_disk_size, 120)
+    self.assertEqual(self._module.cpu_cores, 64)
+    self.assertEqual(self._module.image_project, 'test-image-project')
+    self.assertEqual(self._module.image_family, 'test-image-family')
 
   # pylint: disable=line-too-long
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeDisk')
@@ -93,17 +90,14 @@ class GCEForensicsVMTest(parameterized.TestCase):
         'test-analysis-project-name', 'test-zone', 'test-disk-3')
     mock_DiskInit.side_effect = [disk1, disk2, disk3]
 
-    test_state = state.DFTimewolfState(config.Config)
-    processor = GCEForensicsVM(test_state)
-
-    processor.StoreContainer(containers.GCEDisk(
+    self._module.StoreContainer(containers.GCEDisk(
         'test-disk-1', 'test-analysis-project-name'))
-    processor.StoreContainer(containers.GCEDisk(
+    self._module.StoreContainer(containers.GCEDisk(
         'test-disk-2', 'test-analysis-project-name'))
-    processor.StoreContainer(containers.GCEDisk(
+    self._module.StoreContainer(containers.GCEDisk(
         'test-disk-3', 'test-analysis-project-name'))
 
-    processor.SetUp(
+    self._module.SetUp(
         'test-analysis-project-name',
         'test-incident-id',
         'test-zone',
@@ -115,7 +109,7 @@ class GCEForensicsVMTest(parameterized.TestCase):
         True,
         'gcp-forensics-vm'
     )
-    processor.Process()
+    self._module.Process()
 
     mock_StartAnalysisVm.assert_called_with(
         'test-analysis-project-name',
@@ -130,8 +124,8 @@ class GCEForensicsVMTest(parameterized.TestCase):
     mock_AddLabels.assert_has_calls([
         mock.call({'incident_id': 'test-incident-id'})])
 
-    self.assertEqual(1, len(processor.GetContainers(containers.ForensicsVM)))
-    forensics_vm = processor.GetContainers(containers.ForensicsVM)[0]
+    self.assertEqual(1, len(self._module.GetContainers(containers.ForensicsVM)))
+    forensics_vm = self._module.GetContainers(containers.ForensicsVM)[0]
     self.assertEqual(forensics_vm.name, 'fake-analysis-vm')
 
     self.assertEqual(mock_AttachDisk.call_count, 3)
@@ -141,7 +135,7 @@ class GCEForensicsVMTest(parameterized.TestCase):
       mock.call(disk3),
     ])
 
-    actual_disks = processor.GetContainers(containers.GCEDisk)
+    actual_disks = self._module.GetContainers(containers.GCEDisk)
     actual_disk_names = [d.name for d in actual_disks]
 
     self.assertEqual(3, len(actual_disks))
@@ -154,9 +148,7 @@ class GCEForensicsVMTest(parameterized.TestCase):
     mock_StartAnalysisVM.side_effect = lcf_errors.ResourceCreationError(
       'Permission denied', 'name')
 
-    test_state = state.DFTimewolfState(config.Config)
-    processor = GCEForensicsVM(test_state)
-    processor.SetUp(
+    self._module.SetUp(
         'test-analysis-project-name',
         'test-incident-id',
         'test-zone',
@@ -169,22 +161,18 @@ class GCEForensicsVMTest(parameterized.TestCase):
         'gcp-forensics-vm'
     )
     with self.assertRaises(errors.DFTimewolfError) as error:
-      processor.Process()
+      self._module.Process()
     self.assertEqual(error.exception.message, 'Permission denied')
 
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.AttachDisk')
   @mock.patch('libcloudforensics.providers.gcp.forensics.StartAnalysisVm')
   def testNoCreateVMFlag(self, mock_StartAnalysisVM, mock_AttachDisk):
     """Tests that nothing happens when create_analysis_vm is false."""
-
-    test_state = state.DFTimewolfState(config.Config)
-    processor = GCEForensicsVM(test_state)
-
     for d in ['test-disk-1', 'test-disk-2', 'test-disk-3']:
-      processor.StoreContainer(
+      self._module.StoreContainer(
           containers.GCEDisk(d, 'test-analysis-project-name'))
 
-    processor.SetUp(
+    self._module.SetUp(
         'test-analysis-project-name',
         'test-incident-id',
         'test-zone',
@@ -196,15 +184,16 @@ class GCEForensicsVMTest(parameterized.TestCase):
         False,
         'gcp-forensics-vm'
     )
-    processor.Process()
+    self._module.Process()
 
-    self.assertIsNone(processor.project)
+    self.assertIsNone(self._module.project)
     mock_StartAnalysisVM.assert_not_called()
     mock_AttachDisk.assert_not_called()
 
-    self.assertEqual(3, len(processor.GetContainers(containers.GCEDisk)))
+    self.assertEqual(3, len(self._module.GetContainers(containers.GCEDisk)))
     expected_disks = ['test-disk-1', 'test-disk-2', 'test-disk-3']
-    actual_disks = [d.name for d in processor.GetContainers(containers.GCEDisk)]
+    actual_disks = [
+        d.name for d in self._module.GetContainers(containers.GCEDisk)]
     self.assertEqual(expected_disks, actual_disks)
 
   # pylint: disable=line-too-long
@@ -230,10 +219,7 @@ class GCEForensicsVMTest(parameterized.TestCase):
     mock_StartAnalysisVm.return_value = (FAKE_ANALYSIS_VM, None)
     mock_GenerateUniqueInstanceName.return_value = f'{vm_name}-abcd'
 
-    test_state = state.DFTimewolfState(config.Config)
-    processor = GCEForensicsVM(test_state)
-
-    processor.SetUp(
+    self._module.SetUp(
         'test-analysis-project-name',
         incident_id,
         'test-zone',
@@ -245,7 +231,7 @@ class GCEForensicsVMTest(parameterized.TestCase):
         True,
         vm_name
     )
-    processor.Process()
+    self._module.Process()
 
     mock_StartAnalysisVm.assert_called_with(
         mock.ANY,

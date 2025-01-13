@@ -7,10 +7,10 @@ import unittest
 import mock
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 
-from dftimewolf import config
-from dftimewolf.lib import state
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.exporters import s3_to_gcs
+from tests.lib import modules_test_base
+
 
 FAKE_AWS_REGION = 'fake-region-1'
 FAKE_AWS_AZ = FAKE_AWS_REGION + 'a'
@@ -34,14 +34,12 @@ FAKE_EXPECTED_OUTPUT = [
   'gs://fake-gcs-bucket/two'
 ]
 
-class S3ToGCSCopyTest(unittest.TestCase):
+class S3ToGCSCopyTest(modules_test_base.ModuleTestBase):
   """Tests for the Google Cloud disk exporter."""
 
-  def testInitialization(self):
-    """Tests that the exporter can be initialized."""
-    test_state = state.DFTimewolfState(config.Config)
-    exporter = s3_to_gcs.S3ToGCSCopy(test_state)
-    self.assertIsNotNone(exporter)
+  def setUp(self):
+    self._InitModule(s3_to_gcs.S3ToGCSCopy)
+    super().setUp()
 
   # pylint: disable=line-too-long
   @mock.patch('libcloudforensics.providers.gcp.internal.storage.GoogleCloudStorage.ListBuckets')
@@ -50,21 +48,18 @@ class S3ToGCSCopyTest(unittest.TestCase):
     """Tests SetUp of the exporter."""
     mock_gcp_list_buckets.return_value = FAKE_GCP_LIST_BUCKETS_RESPONSE
 
-    test_state = state.DFTimewolfState(config.Config)
-
-    exporter = s3_to_gcs.S3ToGCSCopy(test_state)
-    exporter.SetUp(FAKE_AWS_REGION,
+    self._module.SetUp(FAKE_AWS_REGION,
         FAKE_GCP_PROJECT_NAME,
         FAKE_GCS_BUCKET,
         FAKE_S3_OBJECTS)
 
     expected_objects = FAKE_S3_OBJECTS.split(',')
     actual_objects = [c.path for \
-        c in exporter.GetContainers(containers.AWSS3Object)]
+        c in self._module.GetContainers(containers.AWSS3Object)]
 
-    self.assertEqual(FAKE_AWS_REGION, exporter.aws_region)
-    self.assertEqual(FAKE_GCP_PROJECT_NAME, exporter.dest_project_name)
-    self.assertEqual(FAKE_GCS_BUCKET, exporter.dest_bucket)
+    self.assertEqual(FAKE_AWS_REGION, self._module.aws_region)
+    self.assertEqual(FAKE_GCP_PROJECT_NAME, self._module.dest_project_name)
+    self.assertEqual(FAKE_GCS_BUCKET, self._module.dest_bucket)
     self.assertEqual(sorted(expected_objects), sorted(actual_objects))
 
   # pylint: disable=line-too-long
@@ -91,20 +86,17 @@ class S3ToGCSCopyTest(unittest.TestCase):
     mock_s3_to_gcs.return_value = None
     mock_sleep.return_value = None
 
-    test_state = state.DFTimewolfState(config.Config)
-
-    exporter = s3_to_gcs.S3ToGCSCopy(test_state)
-    exporter.SetUp(FAKE_AWS_REGION,
+    self._module.SetUp(FAKE_AWS_REGION,
         FAKE_GCP_PROJECT_NAME,
         FAKE_GCS_BUCKET,
         FAKE_S3_OBJECTS)
 
     for c in FAKE_STATE_S3_OBJECT_LIST:
-      exporter.Process(c)
+      self._module.Process(c)
 
     expected_output = ['gs://fake-gcs-bucket/one', 'gs://fake-gcs-bucket/two']
     actual_output = [c.path for \
-        c in exporter.GetContainers(containers.GCSObject)]
+        c in self._module.GetContainers(containers.GCSObject)]
 
     self.assertEqual(sorted(expected_output), sorted(actual_output))
 
@@ -132,21 +124,19 @@ class S3ToGCSCopyTest(unittest.TestCase):
     mock_s3_to_gcs.return_value = None
     mock_sleep.return_value = None
 
-    test_state = state.DFTimewolfState(config.Config)
-    exporter = s3_to_gcs.S3ToGCSCopy(test_state)
     for c in FAKE_STATE_S3_OBJECT_LIST:
-      exporter.StoreContainer(c)
+      self._module.StoreContainer(c)
 
-    exporter.SetUp(FAKE_AWS_REGION,
+    self._module.SetUp(FAKE_AWS_REGION,
         FAKE_GCP_PROJECT_NAME,
         FAKE_GCS_BUCKET)
 
-    for c in exporter.GetContainers(containers.AWSS3Object):
-      exporter.Process(c)
+    for c in self._module.GetContainers(containers.AWSS3Object):
+      self._module.Process(c)
 
     expected_output = ['gs://fake-gcs-bucket/one', 'gs://fake-gcs-bucket/two']
     actual_output = [c.path for \
-        c in exporter.GetContainers(containers.GCSObject)]
+        c in self._module.GetContainers(containers.GCSObject)]
 
     self.assertEqual(sorted(expected_output), sorted(actual_output))
 
