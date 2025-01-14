@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import datetime
+import pandas as pd
 
 from typing import Optional, Union, List, TYPE_CHECKING, Dict, Any
 
@@ -395,7 +396,7 @@ class DataFrame(interface.AttributeContainer):
 
   def __init__(
     self,
-    data_frame: "pandas.DataFrame",
+    data_frame: pd.DataFrame,
     description: str,
     name: str,
     source: Optional[str] = None,
@@ -883,3 +884,29 @@ class TimesketchQuery(TimesketchSavedSearch):
     )
     self.sketch_url = sketch_url
     self.results = results
+
+
+class TimesketchEvents(DataFrame):
+  """Attribute container for Timesketch events."""
+
+  CONTAINER_TYPE = "timesketch_events"
+
+  def __init__(
+      self,
+      data_frame: pd.DataFrame,
+      query: str,
+      sketch_id: int,
+      description: str,
+      name: str,
+      source: Optional[str] = "Timesketch",
+  ):
+    """Initializes the TimesketchEvents container."""
+    super().__init__(data_frame, description, name, source)
+    self.query = query
+    self.sketch_id = sketch_id
+
+  def __str__(self) -> str:
+    return (
+        f"<TimesketchEvents(query:{self.query}, "
+        f"sketch_id:{self.sketch_id}, rows:{len(self.data_frame)})>"
+    )
