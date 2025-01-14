@@ -245,12 +245,7 @@ class GRRArtifactCollectorTest(modules_test_base.ModuleTestBase):
         skip_offline_clients=False
     )
 
-    self._module.PreProcess()
-    in_containers = self._module.GetContainers(
-        self._module.GetThreadOnContainerType())
-    for c in in_containers:
-      self._module.Process(c)
-    self._module.PostProcess()
+    self._ProcessModule()
 
     kwargs = mock_ArtifactCollectorFlowArgs.call_args[1]
     self.assertTrue(kwargs['ignore_interpolation_errors'])  # default argument
@@ -291,12 +286,7 @@ class GRRArtifactCollectorTest(modules_test_base.ModuleTestBase):
         skip_offline_clients=False
     )
 
-    self._module.PreProcess()
-    in_containers = self._module.GetContainers(
-        self._module.GetThreadOnContainerType())
-    for c in in_containers:
-      self._module.Process(c)
-    self._module.PostProcess()
+    self._ProcessModule()
 
     kwargs = mock_ArtifactCollectorFlowArgs.call_args[1]
     self.assertFalse(kwargs["use_raw_filesystem_access"])
@@ -333,12 +323,7 @@ class GRRArtifactCollectorTest(modules_test_base.ModuleTestBase):
         skip_offline_clients=False
     )
 
-    self._module.PreProcess()
-    in_containers = self._module.GetContainers(
-        self._module.GetThreadOnContainerType())
-    for c in in_containers:
-      self._module.Process(c)
-    self._module.PostProcess()
+    self._ProcessModule()
 
     kwargs = mock_ArtifactCollectorFlowArgs.call_args[1]
     # No raw access for Linux
@@ -355,12 +340,7 @@ class GRRArtifactCollectorTest(modules_test_base.ModuleTestBase):
     mock_DownloadFiles.return_value = '/tmp/tmpRandom/tomchop'
     mock_Get.return_value = mock_grr_hosts.MOCK_FLOW
 
-    self._module.PreProcess()
-    in_containers = self._module.GetContainers(
-        self._module.GetThreadOnContainerType())
-    for c in in_containers:
-      self._module.Process(c)
-    self._module.PostProcess()
+    self._ProcessModule()
 
     # Flow ID is F:12345, Client ID is C.0000000000000001
     self.mock_grr_api.SearchClients.assert_any_call('C.0000000000000001')
@@ -407,12 +387,7 @@ class GRRArtifactCollectorTest(modules_test_base.ModuleTestBase):
     self._module.StoreContainer(
         containers.Host(hostname='container.host'))
 
-    self._module.PreProcess()
-    in_containers = self._module.GetContainers(
-        self._module.GetThreadOnContainerType())
-    for c in in_containers:
-      self._module.Process(c)
-    self._module.PostProcess()
+    self._ProcessModule()
 
     mock_FindClients.assert_called_with(['container.host'])
 
@@ -455,13 +430,7 @@ class GRRArtifactCollectorTest(modules_test_base.ModuleTestBase):
       containers.GRRArtifact(name="ForensicArtifact2")
     )
 
-    self._module.PreProcess()
-    in_containers = self._module.GetContainers(
-        self._module.GetThreadOnContainerType()
-    )
-    for c in in_containers:
-      self._module.Process(c)
-    self._module.PostProcess()
+    self._ProcessModule()
 
     actual_flow_proto = mock_LaunchFlow.call_args_list[0][0][2]
     self.assertListEqual(
@@ -560,12 +529,7 @@ class GRRFileCollectorTest(modules_test_base.ModuleTestBase):
         skip_offline_clients=False,
         action='stat',
     )
-    self._module.PreProcess()
-    in_containers = self._module.GetContainers(
-        self._module.GetThreadOnContainerType())
-    for c in in_containers:
-      self._module.Process(c)
-    self._module.PostProcess()
+    self._ProcessModule()
 
     mock_LaunchFlow.assert_called_with(
         mock_grr_hosts.MOCK_CLIENT_RECENT,
@@ -615,12 +579,7 @@ class GRRFileCollectorTest(modules_test_base.ModuleTestBase):
         action='stat',
     )
 
-    self._module.PreProcess()
-    in_containers = self._module.GetContainers(
-        self._module.GetThreadOnContainerType())
-    for c in in_containers:
-      self._module.Process(c)
-    self._module.PostProcess()
+    self._ProcessModule()
 
     mock_LaunchFlow.assert_called_with(
         mock_grr_hosts.MOCK_WINDOWS_CLIENT,
@@ -670,12 +629,7 @@ class GRRFileCollectorTest(modules_test_base.ModuleTestBase):
     self._module.StoreContainer(
         containers.Host(hostname='container.host'))
 
-    self._module.PreProcess()
-    in_containers = self._module.GetContainers(
-        self._module.GetThreadOnContainerType())
-    for c in in_containers:
-      self._module.Process(c)
-    self._module.PostProcess()
+    self._ProcessModule()
 
     mock_FindClients.assert_called_with(['container.host'])
 
@@ -723,12 +677,7 @@ class GRRFlowCollectorTest(modules_test_base.ModuleTestBase):
         mock_grr_hosts.MOCK_CLIENT_LIST
     mock_DownloadFiles.return_value = '/tmp/something'
 
-    self._module.PreProcess()
-    in_containers = self._module.GetContainers(
-        self._module.GetThreadOnContainerType())
-    for c in in_containers:
-      self._module.Process(c)
-    self._module.PostProcess()
+    self._ProcessModule()
 
     mock_DownloadFiles.assert_called_once_with(
         mock_grr_hosts.MOCK_CLIENT_RECENT, 'F:12345')
@@ -808,12 +757,7 @@ class GRRFlowCollectorTest(modules_test_base.ModuleTestBase):
           approvers='approver1,approver2',
           skip_offline_clients=False,
       )
-      self._module.PreProcess()
-      in_containers = self._module.GetContainers(
-          self._module.GetThreadOnContainerType())
-      for c in in_containers:
-        self._module.Process(c)
-      self._module.PostProcess()
+      self._ProcessModule()
 
       log_messages = [record.getMessage() for record in lc.records]
       # pylint: disable=line-too-long
@@ -874,12 +818,7 @@ class GRRTimelineCollectorTest(modules_test_base.ModuleTestBase):
       mock_createflow.return_value.flow_id = "F:12345"
       mock_getcollectedtimeline.return_value.WriteToFile = _MOCK_WRITE_TO_FILE
 
-      self._module.PreProcess()
-      in_containers = self._module.GetContainers(
-          self._module.GetThreadOnContainerType())
-      for c in in_containers:
-        self._module.Process(c)  # pytype: disable=wrong-arg-count
-      self._module.PostProcess()
+      self._ProcessModule()
 
       mock_createflow.assert_called_once_with(
         name="TimelineFlow", args=timeline_pb2.TimelineArgs(root=b"/")
@@ -920,12 +859,7 @@ class GRRTimelineCollectorTest(modules_test_base.ModuleTestBase):
         skip_offline_clients=False,
     )
 
-    self._module.PreProcess()
-    in_containers = self._module.GetContainers(
-        self._module.GetThreadOnContainerType())
-    for c in in_containers:
-      self._module.Process(c)
-    self._module.PostProcess()
+    self._ProcessModule()
 
     mock_FindClients.assert_called_with(['container.host'])
 

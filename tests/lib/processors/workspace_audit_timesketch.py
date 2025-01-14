@@ -40,7 +40,7 @@ class WorkspaceAuditTimesketchTest(modules_test_base.ModuleTestBase):
             2021, 9, 10, 14, 21, tzinfo=datetime.timezone.utc))
 
     self._module.StoreContainer(workspace_container)
-    self._module.Process()
+    self._ProcessModule()
     stored_containers = self._module.GetContainers(containers.File)
 
     self.assertEqual(1, len(stored_containers))

@@ -59,7 +59,7 @@ class AWSLoggingTest(modules_test_base.ModuleTestBase):
         query_filter='Username,fakename',
         start_time=datetime.datetime(2021, 1, 1, 0, 0, 0),
         end_time=datetime.datetime(2021, 1, 2, 0, 0, 0))
-    self._module.Process()
+    self._ProcessModule()
 
     mock_session.client.assert_called_with(
         'cloudtrail', region_name='fake-region')
@@ -80,13 +80,13 @@ class AWSLoggingTest(modules_test_base.ModuleTestBase):
     mock_client.get_caller_identity.side_effect = (
         boto_exceptions.NoCredentialsError)
     with self.assertRaises(errors.DFTimewolfError):
-      self._module.Process()
+      self._ProcessModule()
     mock_client.get_caller_identity.side_effect = None
 
     mock_client.lookup_events.side_effect = (
         boto_exceptions.ClientError({}, 'abc'))
     with self.assertRaises(errors.DFTimewolfError):
-      self._module.Process()
+      self._ProcessModule()
     mock_client.lookup_events.side_effect = None
 
 

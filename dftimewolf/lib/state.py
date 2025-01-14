@@ -564,7 +564,10 @@ class DFTimewolfState(object):
     logger.info('Module {0:s} finished execution'.format(runtime_name))
     self._threading_event_per_module[runtime_name].set()
 
-    self._container_manager.CompleteModule(runtime_name)
+    try:
+      self._container_manager.CompleteModule(runtime_name)
+    except Exception:  # pylint: disable=broad-exception-caught
+      logger.warning('Unknown exception encountered', exc_info=True)
 
     self.CleanUp()
 

@@ -222,10 +222,7 @@ class AWSSnapshotS3CopyCollectorTest(modules_test_base.ModuleTestBase):
         new=MockMakeAPICall):
       self._module.SetUp(snaps_str, FAKE_BUCKET, FAKE_REGION)
 
-      self._module.PreProcess()
-      for c in self._module.GetContainers(containers.AWSSnapshot):
-        self._module.Process(c)
-      self._module.PostProcess()
+      self._ProcessModule()
 
     actual_output = [c.path for c in \
         self._module.GetContainers(containers.AWSS3Object)]
@@ -268,10 +265,7 @@ class AWSSnapshotS3CopyCollectorTest(modules_test_base.ModuleTestBase):
         new=MockMakeAPICall):
       self._module.SetUp(None, FAKE_BUCKET, FAKE_REGION)
 
-      self._module.PreProcess()
-      for c in self._module.GetContainers(containers.AWSSnapshot):
-        self._module.Process(c)
-      self._module.PostProcess()
+      self._ProcessModule()
 
     actual_output = [c.path for c in \
         self._module.GetContainers(containers.AWSS3Object)]

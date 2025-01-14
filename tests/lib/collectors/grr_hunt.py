@@ -47,7 +47,7 @@ class GRRHuntArtifactCollectorTest(modules_test_base.ModuleTestBase):
 
   def testProcess(self):
     """Tests that the process function issues correct GRR API calls."""
-    self._module.Process()
+    self._ProcessModule()
     # extract call kwargs
     call_kwargs = self.mock_grr_api.CreateHunt.call_args[1]
     self.assertEqual(call_kwargs['flow_args'].artifact_list,
@@ -102,7 +102,7 @@ class GRRHuntFileCollectorTest(modules_test_base.ModuleTestBase):
   def testProcess(self):
     """Tests that the process method invokes the correct GRR API calls."""
     self._module.PreProcess()
-    self._module.Process()
+    self._ProcessModule()
     # extract call kwargs
     call_kwargs = self.mock_grr_api.CreateHunt.call_args[1]
     self.assertEqual(call_kwargs['flow_args'].paths,
@@ -146,7 +146,7 @@ class GRRHuntOsqueryCollectorTest(modules_test_base.ModuleTestBase):
 
   def testProcess(self):
     """Tests that the process method invokes the correct GRR API calls."""
-    self._module.Process()
+    self._ProcessModule()
     # extract call kwargs
     call_kwargs = self.mock_grr_api.CreateHunt.call_args[1]
     self.assertEqual(call_kwargs['flow_args'].query,
@@ -196,7 +196,7 @@ class GRRHuntDownloader(modules_test_base.ModuleTestBase):
     """Tests that hunt results are downloaded to the correct file."""
     self.mock_grr_api.Hunt.return_value.Get.return_value = \
         mock_grr_hosts.MOCK_HUNT
-    self._module.Process()
+    self._ProcessModule()
     mock_get_write_archive.assert_called_with(mock_grr_hosts.MOCK_HUNT,
                                               '/tmp/test/H:12345.zip')
     mock_ExtractHuntResults.assert_called_with('/tmp/test/H:12345.zip')
@@ -286,7 +286,7 @@ class GRRHuntOsqueryDownloader(modules_test_base.ModuleTestBase):
     """Tests that hunt results are downloaded to the correct path."""
     self.mock_grr_api.Hunt.return_value.Get.return_value = \
         mock_grr_hosts.MOCK_HUNT
-    self._module.Process()
+    self._ProcessModule()
     mock_get_write_results.assert_called_with(mock_grr_hosts.MOCK_HUNT,
                                               '/tmp/test')
 
@@ -427,7 +427,7 @@ class GRRHuntYara(modules_test_base.ModuleTestBase):
     expected_runner_args.avg_cpu_seconds_per_client_limit = 2000
     expected_runner_args.network_bytes_limit = 10_737_418_240
 
-    self._module.Process()
+    self._ProcessModule()
     mock_CreateHunt.assert_called_with(
       flow_name='YaraProcessScan',
       flow_args=flows_pb2.YaraProcessScanRequest(

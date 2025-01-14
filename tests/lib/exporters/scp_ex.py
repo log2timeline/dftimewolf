@@ -39,7 +39,7 @@ class SCPExporterTest(modules_test_base.ModuleTestBase):
     mock_subprocess_call.return_value = 0
     self._module.SetUp('/path1,/path2', '/destination', 'fakeuser',
                        'fakehost', 'fakeid', [], 'upload', False, True)
-    self._module.Process()
+    self._ProcessModule()
 
     mock_subprocess_call.assert_called_with(
         ['scp', '-i', 'fakeid', '/path1', '/path2',
@@ -51,7 +51,7 @@ class SCPExporterTest(modules_test_base.ModuleTestBase):
     mock_subprocess_call.return_value = 0
     self._module.SetUp('/path1,/path2', '/destination', 'fakeuser',
                        'fakehost', 'fakeid', [], 'download', False, True)
-    self._module.Process()
+    self._ProcessModule()
 
     mock_subprocess_call.assert_called_with(
         ['scp', '-i', 'fakeid',
@@ -64,7 +64,7 @@ class SCPExporterTest(modules_test_base.ModuleTestBase):
     self._module.SetUp('/path1,/path2', '/destination', 'fakeuser',
                        'fakehost', 'fakeid', ['-o', 'foo=bar'],
                        'download', False, True)
-    self._module.Process()
+    self._ProcessModule()
 
     mock_subprocess_call.assert_called_with(
         ['scp', '-o', 'foo=bar', '-i', 'fakeid',
@@ -80,7 +80,7 @@ class SCPExporterTest(modules_test_base.ModuleTestBase):
     self._module.SetUp('/path1,/path2', None, 'fakeuser',
                        'fakehost', 'fakeid', ['-o', 'foo=bar'],
                        'download', False, True)
-    self._module.Process()
+    self._ProcessModule()
     mock_subprocess_call.assert_called_with(
         ['scp', '-o', 'foo=bar', '-i', 'fakeid',
         'fakeuser@fakehost:/path1', 'fakeuser@fakehost:/path2', '/tmp/tmpdir'])
@@ -102,7 +102,7 @@ class SCPExporterTest(modules_test_base.ModuleTestBase):
     mock_subprocess_call.return_value = 0
     self._module.SetUp('/path1,/path2', '/destination', 'fakeuser',
                        'fakehost', 'fakeid', [], 'download', True, True)
-    self._module.Process()
+    self._ProcessModule()
 
     mock_subprocess_call.assert_called_with(
         ['scp',
@@ -118,7 +118,7 @@ class SCPExporterTest(modules_test_base.ModuleTestBase):
     self._test_state.AddToCache('ssh_control', 'cached_ssh_control')
     self._module.SetUp('/path1,/path2', '/destination', 'fakeuser',
                        'fakehost', 'fakeid', [], 'download', True, True)
-    self._module.Process()
+    self._ProcessModule()
 
     mock_subprocess_call.assert_called_with(
         ['scp',
@@ -150,7 +150,7 @@ class SCPExporterTest(modules_test_base.ModuleTestBase):
     with self.assertRaisesRegex(
         errors.DFTimewolfError,
         r"Failed copying \['/path1', '/path2'\]") as error:
-      self._module.Process()
+      self._ProcessModule()
       self.assertTrue(error.exception.critical)
 
   @mock.patch('subprocess.call')

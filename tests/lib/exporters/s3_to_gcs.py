@@ -91,8 +91,7 @@ class S3ToGCSCopyTest(modules_test_base.ModuleTestBase):
         FAKE_GCS_BUCKET,
         FAKE_S3_OBJECTS)
 
-    for c in FAKE_STATE_S3_OBJECT_LIST:
-      self._module.Process(c)
+    self._ProcessModule()
 
     expected_output = ['gs://fake-gcs-bucket/one', 'gs://fake-gcs-bucket/two']
     actual_output = [c.path for \
@@ -131,8 +130,7 @@ class S3ToGCSCopyTest(modules_test_base.ModuleTestBase):
         FAKE_GCP_PROJECT_NAME,
         FAKE_GCS_BUCKET)
 
-    for c in self._module.GetContainers(containers.AWSS3Object):
-      self._module.Process(c)
+    self._ProcessModule()
 
     expected_output = ['gs://fake-gcs-bucket/one', 'gs://fake-gcs-bucket/two']
     actual_output = [c.path for \

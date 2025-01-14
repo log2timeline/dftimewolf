@@ -62,7 +62,7 @@ class DataFrameToDiskExporterTest(modules_test_base.ModuleTestBase):
     """Tests operation with no params specified."""
     self._module.SetUp(output_formats='',
                        output_directory='')
-    self._module.Process()
+    self._ProcessModule()
 
     out_containers = self._module.GetContainers(containers.File)
     self.assertLen(out_containers, 1)
@@ -74,7 +74,7 @@ class DataFrameToDiskExporterTest(modules_test_base.ModuleTestBase):
     """Tests outputting JSONL."""
     self._module.SetUp(output_formats='jsonl',
                        output_directory=self._out_dir)
-    self._module.Process()
+    self._ProcessModule()
 
     out_containers = self._module.GetContainers(containers.File)
     self.assertLen(out_containers, 1)
@@ -87,7 +87,7 @@ class DataFrameToDiskExporterTest(modules_test_base.ModuleTestBase):
     """Tests outputting CSV."""
     self._module.SetUp(output_formats='csv',
                        output_directory=self._out_dir)
-    self._module.Process()
+    self._ProcessModule()
 
     out_containers = self._module.GetContainers(containers.File)
     self.assertLen(out_containers, 1)
@@ -100,7 +100,7 @@ class DataFrameToDiskExporterTest(modules_test_base.ModuleTestBase):
     """Tests outputting markdown."""
     self._module.SetUp(output_formats='markdown',
                        output_directory=self._out_dir)
-    self._module.Process()
+    self._ProcessModule()
 
     out_containers = self._module.GetContainers(containers.File)
     self.assertLen(out_containers, 1)
@@ -113,7 +113,7 @@ class DataFrameToDiskExporterTest(modules_test_base.ModuleTestBase):
     """Tests that multiple outputs are generated when specified."""
     self._module.SetUp(output_formats='jsonl,csv,markdown',
                        output_directory=self._out_dir)
-    self._module.Process()
+    self._ProcessModule()
 
     out_containers = self._module.GetContainers(containers.File)
     self.assertLen(out_containers, 3)
