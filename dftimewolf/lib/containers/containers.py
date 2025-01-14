@@ -4,9 +4,9 @@
 from __future__ import annotations
 
 import datetime
-import pandas as pd
 
 from typing import Optional, Union, List, TYPE_CHECKING, Dict, Any
+import pandas as pd
 
 from dftimewolf.lib.containers import interface
 
