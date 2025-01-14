@@ -14,7 +14,6 @@ if TYPE_CHECKING:
   from libcloudforensics.providers.aws.internal.ebs import AWSVolume as AWSVol
   from libcloudforensics.providers.azure.internal.compute import AZComputeDisk
   from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk
-  import pandas
 
 
 class FSPath(interface.AttributeContainer):
