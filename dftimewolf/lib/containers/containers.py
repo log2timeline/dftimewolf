@@ -6,6 +6,7 @@ from __future__ import annotations
 import datetime
 
 from typing import Optional, Union, List, TYPE_CHECKING, Dict, Any
+import pandas as pd
 
 from dftimewolf.lib.containers import interface
 
@@ -13,7 +14,6 @@ if TYPE_CHECKING:
   from libcloudforensics.providers.aws.internal.ebs import AWSVolume as AWSVol
   from libcloudforensics.providers.azure.internal.compute import AZComputeDisk
   from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk
-  import pandas
 
 
 class FSPath(interface.AttributeContainer):
@@ -395,7 +395,7 @@ class DataFrame(interface.AttributeContainer):
 
   def __init__(
     self,
-    data_frame: "pandas.DataFrame",
+    data_frame: pd.DataFrame,
     description: str,
     name: str,
     source: Optional[str] = None,
@@ -654,7 +654,7 @@ class OsqueryResult(interface.AttributeContainer):
 
   def __init__(
     self,
-    data_frame: pandas.DataFrame,
+    data_frame: pd.DataFrame,
     hostname: str,
     query: str,
     client_identifier: Optional[str] = None,
@@ -876,10 +876,36 @@ class TimesketchQuery(TimesketchSavedSearch):
     minutes_before: int = 5,
     minutes_after: int = 5,
     sketch_url: str | None = None,
-    results: pandas.DataFrame | None = None,
+    results: pd.DataFrame | None = None,
   ):
     super().__init__(
       name, description, query, date, minutes_before, minutes_after
     )
     self.sketch_url = sketch_url
     self.results = results
+
+
+class TimesketchEvents(DataFrame):
+  """Attribute container for Timesketch events."""
+
+  CONTAINER_TYPE = "timesketch_events"
+
+  def __init__(
+      self,
+      data_frame: pd.DataFrame,
+      query: str,
+      sketch_id: int,
+      description: str,
+      name: str,
+      source: Optional[str] = "Timesketch",
+  ):
+    """Initializes the TimesketchEvents container."""
+    super().__init__(data_frame, description, name, source)
+    self.query = query
+    self.sketch_id = sketch_id
+
+  def __str__(self) -> str:
+    return (
+        f"<TimesketchEvents(query:{self.query}, "
+        f"sketch_id:{self.sketch_id}, rows:{len(self.data_frame)})>"
+    )
