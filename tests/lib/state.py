@@ -135,8 +135,8 @@ class StateTest(unittest.TestCase):
 
     # Try again, but pop
     reports = test_state.GetContainers(container_class=containers.Report,
-                                      requesting_module='module',
-                                      pop=True)
+                                       requesting_module='module',
+                                       pop=True)
     self.assertEqual(len(reports), 1)
     self.assertIsInstance(reports[0], containers.Report)
     # the container was popped this time

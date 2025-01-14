@@ -301,6 +301,7 @@ class DFTimewolfState(object):
           requesting_module,
           self.recipe.get('name', ''),
           {'GetContainer_discrepency': json.dumps(telem)}))
+      logger.debug('GetContainer_discrepency: %s', json.dumps(telem))
 
     return containers_orig
 

@@ -203,9 +203,9 @@ class GRRArtifactCollectorTest(modules_test_base.ModuleTestBase):
 
   def testSetup(self):
     """Tests that the module is setup properly."""
-    actual_hosts = [h.hostname for h in \
-        self._module.GetContainers(
-            self._module.GetThreadOnContainerType())]
+    actual_hosts = [
+        h.hostname for h in
+        self._module.GetContainers(self._module.GetThreadOnContainerType())]
 
     self.assertEqual(self._module.artifacts, [])
     self.assertEqual(
@@ -435,18 +435,18 @@ class GRRArtifactCollectorTest(modules_test_base.ModuleTestBase):
     mock_DownloadFiles.return_value = "/tmp/tmpRandom/tomchop"
 
     self._module.SetUp(
-      hostnames="C.0000000000000000",
-      artifacts=None,
-      extra_artifacts="AnotherArtifact",
-      use_raw_filesystem_access=False,
-      reason="Random reason",
-      grr_server_url="http://fake/endpoint",
-      grr_username="user",
-      grr_password="password",
-      approvers="approver1,approver2",
-      verify=False,
-      skip_offline_clients=False,
-      max_file_size="1234",
+        hostnames="C.0000000000000000",
+        artifacts=None,
+        extra_artifacts="AnotherArtifact",
+        use_raw_filesystem_access=False,
+        reason="Random reason",
+        grr_server_url="http://fake/endpoint",
+        grr_username="user",
+        grr_password="password",
+        approvers="approver1,approver2",
+        verify=False,
+        skip_offline_clients=False,
+        max_file_size="1234",
     )
     self._module.StoreContainer(
       containers.GRRArtifact(name="ForensicArtifact1")
@@ -457,7 +457,7 @@ class GRRArtifactCollectorTest(modules_test_base.ModuleTestBase):
 
     self._module.PreProcess()
     in_containers = self._module.GetContainers(
-      self._module.GetThreadOnContainerType()
+        self._module.GetThreadOnContainerType()
     )
     for c in in_containers:
       self._module.Process(c)
@@ -1155,9 +1155,9 @@ class GRRYaraScannerTest(modules_test_base.ModuleTestBase):
     )
     self._module.PreProcess()
     self.assertEqual(
-      self._module.rule_text,
-      'import "hash"\n\nrule test_rule { condition: true and'
-      ' hash.sha256("") != "" }')
+        self._module.rule_text,
+        'import "hash"\n\nrule test_rule { condition: true and'
+        ' hash.sha256("") != "" }')
 
 
 if __name__ == '__main__':

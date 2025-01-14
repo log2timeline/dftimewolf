@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Tests the GoogleCloudself._module."""
+"""Tests the AWSSnapshotS3CopyCollector."""
 
 # pytype: disable=attribute-error
 
@@ -164,8 +164,8 @@ class AWSSnapshotS3CopyCollectorTest(modules_test_base.ModuleTestBase):
           FAKE_BUCKET,
           FAKE_REGION)
 
-    state_snaps = [snap.id for snap in \
-        self._module.GetContainers(containers.AWSSnapshot)]
+    state_snaps = [snap.id for snap in
+                   self._module.GetContainers(containers.AWSSnapshot)]
 
     self.assertEqual(['snap-01234567', 'snap-12345678'], state_snaps)
     self.assertEqual(FAKE_REGION, self._module.region)
@@ -220,9 +220,7 @@ class AWSSnapshotS3CopyCollectorTest(modules_test_base.ModuleTestBase):
 
     with mock.patch('botocore.client.BaseClient._make_api_call',
         new=MockMakeAPICall):
-      self._module.SetUp(snaps_str,
-          FAKE_BUCKET,
-          FAKE_REGION)
+      self._module.SetUp(snaps_str, FAKE_BUCKET, FAKE_REGION)
 
       self._module.PreProcess()
       for c in self._module.GetContainers(containers.AWSSnapshot):

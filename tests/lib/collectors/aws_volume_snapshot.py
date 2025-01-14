@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Tests the GoogleCloudCollector."""
+"""Tests the AWSVolumeSnapshotCollector."""
 
 # pytype: disable=attribute-error
 
@@ -83,8 +83,8 @@ class AWSVolumeSnapshotCollectorTest(modules_test_base.ModuleTestBase):
     """Tests SetUp of the collector."""
     self._module.SetUp(FAKE_VOLUME_LIST_STR, FAKE_REGION)
 
-    volumes_in_state = [container.id for container in \
-        self._module.GetContainers(containers.AWSVolume)]
+    volumes_in_state = [container.id for container in
+                        self._module.GetContainers(containers.AWSVolume)]
 
     self.assertEqual(['vol-01234567', 'vol-12345678'], volumes_in_state)
     self.assertEqual(FAKE_REGION, self._module.region)

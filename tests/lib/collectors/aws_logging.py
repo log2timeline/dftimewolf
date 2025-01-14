@@ -42,8 +42,8 @@ class AWSLoggingTest(modules_test_base.ModuleTestBase):
         self._module._start_time,
         dt.fromisoformat('2021-01-01 00:00:00'))
     self.assertEqual(
-      self._module._end_time,
-      dt.fromisoformat('2021-01-02 00:00:00'))
+        self._module._end_time,
+        dt.fromisoformat('2021-01-02 00:00:00'))
 
   @mock.patch('boto3.session.Session')
   def testProcess(self, mock_boto3):
