@@ -97,7 +97,7 @@ class OpenRelikProcessorTest(modules_test_base.ModuleTestBase):
       self._module.openrelik_api_key,
     )
     test_path = "/test/path/*.plaso"
-    
+
     self._module.StoreContainer(
         containers.File(name="fake_path", path=test_path))
     self._ProcessModule()

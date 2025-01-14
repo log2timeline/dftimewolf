@@ -23,7 +23,8 @@ class SSHMultiplexer(modules_test_base.ModuleTestBase):
     """Tests the SSH CLI has the expected parameters."""
     mock_call.return_value = 0
 
-    self._module.SetUp('fakehost', 'fakeuser', None, ['-o', "ProxyCommand='test'"])
+    self._module.SetUp(
+        'fakehost', 'fakeuser', None, ['-o', "ProxyCommand='test'"])
     self._ProcessModule()
 
     mock_call.assert_called_with([
