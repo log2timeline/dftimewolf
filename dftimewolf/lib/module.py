@@ -208,7 +208,8 @@ class BaseModule(object):
     Raises:
       RuntimeError: If only one metadata filter parameter is specified.
     """
-    containers = self.state.GetContainers(container_class,
+    containers = self.state.GetContainers(self.name,
+                                          container_class,
                                           pop,
                                           metadata_filter_key,
                                           metadata_filter_value)

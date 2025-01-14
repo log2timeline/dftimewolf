@@ -3,14 +3,13 @@
 import tempfile
 
 from absl.testing import absltest
-from absl.testing import parameterized
 
 import pandas as pd
 
-from dftimewolf import config
 from dftimewolf.lib.containers import containers
-from dftimewolf.lib import state, errors
+from dftimewolf.lib import errors
 from dftimewolf.lib.exporters import df_to_filesystem
+from tests.lib import modules_test_base
 
 
 # pylint: disable=line-too-long
@@ -46,15 +45,14 @@ _EXPECTED_MD = """| datetime            | key_1                                 
 # pylint: enable=line-too-long
 
 
-class DataFrameToDiskExporterTest(parameterized.TestCase):
+class DataFrameToDiskExporterTest(modules_test_base.ModuleTestBase):
   """Tests DataFrameToDiskExporter."""
 
   def setUp(self):
     """Setup."""
-    self._test_state = state.DFTimewolfState(config.Config)
-    self._module = df_to_filesystem.DataFrameToDiskExporter(self._test_state)
-    self._out_dir = tempfile.mkdtemp()
+    self._InitModule(df_to_filesystem.DataFrameToDiskExporter)
 
+    self._out_dir = tempfile.mkdtemp()
     self._module.StoreContainer(container=containers.DataFrame(
       data_frame=_INPUT_DF,
       description='A test dataframe',
@@ -66,7 +64,7 @@ class DataFrameToDiskExporterTest(parameterized.TestCase):
                        output_directory='')
     self._module.Process()
 
-    out_containers = self._test_state.GetContainers(containers.File)
+    out_containers = self._module.GetContainers(containers.File)
     self.assertLen(out_containers, 1)
 
     with open(out_containers[0].path, 'r') as f:
@@ -78,7 +76,7 @@ class DataFrameToDiskExporterTest(parameterized.TestCase):
                        output_directory=self._out_dir)
     self._module.Process()
 
-    out_containers = self._test_state.GetContainers(containers.File)
+    out_containers = self._module.GetContainers(containers.File)
     self.assertLen(out_containers, 1)
 
     self.assertEndsWith(out_containers[0].path, '.jsonl')
@@ -91,7 +89,7 @@ class DataFrameToDiskExporterTest(parameterized.TestCase):
                        output_directory=self._out_dir)
     self._module.Process()
 
-    out_containers = self._test_state.GetContainers(containers.File)
+    out_containers = self._module.GetContainers(containers.File)
     self.assertLen(out_containers, 1)
 
     self.assertEndsWith(out_containers[0].path, '.csv')
@@ -104,7 +102,7 @@ class DataFrameToDiskExporterTest(parameterized.TestCase):
                        output_directory=self._out_dir)
     self._module.Process()
 
-    out_containers = self._test_state.GetContainers(containers.File)
+    out_containers = self._module.GetContainers(containers.File)
     self.assertLen(out_containers, 1)
 
     self.assertEndsWith(out_containers[0].path, '.md')
@@ -117,7 +115,7 @@ class DataFrameToDiskExporterTest(parameterized.TestCase):
                        output_directory=self._out_dir)
     self._module.Process()
 
-    out_containers = self._test_state.GetContainers(containers.File)
+    out_containers = self._module.GetContainers(containers.File)
     self.assertLen(out_containers, 3)
 
     actual_results = []

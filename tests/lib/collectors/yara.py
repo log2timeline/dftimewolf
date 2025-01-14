@@ -4,11 +4,10 @@
 from unittest import mock
 import unittest
 
-from dftimewolf.lib import state
 from dftimewolf.lib.collectors import yara
 from dftimewolf.lib.containers import containers
+from tests.lib import modules_test_base
 
-from dftimewolf import config
 
 MOCK_RESPONSE = [{
     'created': '2022-11-18T10:54:12.039366Z',
@@ -30,16 +29,12 @@ MOCK_RESPONSE = [{
     'valid_from': '2022-11-17T23:00:00Z'
 }]
 
-class YetiYaraCollectorTest(unittest.TestCase):
+class YetiYaraCollectorTest(modules_test_base.ModuleTestBase):
   """Tests for the Yeti Yara collector."""
 
   def setUp(self):
-    test_state = state.DFTimewolfState(config.Config)
-    self.yara_collector = yara.YetiYaraCollector(test_state, name='test')
-
-  def testInitialization(self):
-    """Tests that the collector can be initialized."""
-    self.assertIsNotNone(self.yara_collector)
+    self._InitModule(yara.YetiYaraCollector)
+    super().setUp()
 
   @mock.patch('requests.post')
   def testProcess(self, mock_post):
@@ -47,19 +42,19 @@ class YetiYaraCollectorTest(unittest.TestCase):
     mock_post.return_value.status_code = 200
     mock_post.return_value.json.return_value = MOCK_RESPONSE
 
-    self.yara_collector.SetUp(
+    self._module.SetUp(
         rule_name_filter='rulefilter',
         api_key='d34db33f',
         api_root='http://localhost:8080/api/'
     )
-    self.yara_collector.Process()
+    self._module.Process()
 
     mock_post.assert_called_with(
         'http://localhost:8080/api/indicators/filter/',
         json={'name': 'rulefilter', 'type': 'x-yara'},
         headers={'X-Yeti-API': 'd34db33f'},
     )
-    yara_containers = self.yara_collector.GetContainers(
+    yara_containers = self._module.GetContainers(
       containers.YaraRule)
     self.assertEqual(len(yara_containers), 1)
     self.assertEqual(yara_containers[0].name, 'Some random rule')
@@ -81,13 +76,13 @@ class YetiYaraCollectorTest(unittest.TestCase):
     mock_post.return_value.status_code = 519
     mock_post.return_value.json.return_value = 'BAD_RESPONSE'
 
-    self.yara_collector.SetUp(
+    self._module.SetUp(
         rule_name_filter='rulefilter',
         api_key='d34db33f',
         api_root='http://localhost:8080/api/'
     )
-    with self.assertLogs(self.yara_collector.logger, level='ERROR') as lc:
-      self.yara_collector.Process()
+    with self.assertLogs(self._module.logger, level='ERROR') as lc:
+      self._module.Process()
 
       # Confirm that the error message was logged
       log_messages = [record.getMessage() for record in lc.records]
@@ -96,7 +91,7 @@ class YetiYaraCollectorTest(unittest.TestCase):
         log_messages[0])
 
       # No containers should have been stored
-      yara_containers = self.yara_collector.GetContainers(
+      yara_containers = self._module.GetContainers(
         containers.YaraRule)
       self.assertEqual(len(yara_containers), 0)
 

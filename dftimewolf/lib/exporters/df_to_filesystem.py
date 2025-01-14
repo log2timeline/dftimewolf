@@ -89,7 +89,7 @@ class DataFrameToDiskExporter(module.BaseModule):
 
   def Process(self) -> None:
     """Perform the exports."""
-    to_export = self.state.GetContainers(containers.DataFrame)
+    to_export = self.GetContainers(containers.DataFrame)
 
     for df in to_export:
       self._ExportSingleContainer(df)
@@ -133,7 +133,7 @@ class DataFrameToDiskExporter(module.BaseModule):
                                   output_format=f,
                                   output_path=output_path)
 
-      self.state.StoreContainer(container=containers.File(
+      self.StoreContainer(container=containers.File(
           name=os.path.basename(output_path),
           path=output_path,
           description=container.description))

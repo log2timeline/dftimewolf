@@ -5,6 +5,7 @@ Use it to track errors, abort on global failures, clean up after modules, etc.
 """
 
 from concurrent.futures import ThreadPoolExecutor, Future
+import json
 import importlib
 import logging
 import time
@@ -17,6 +18,7 @@ from dftimewolf.config import Config
 from dftimewolf.lib import errors, utils
 from dftimewolf.lib import telemetry
 from dftimewolf.lib.containers import interface
+from dftimewolf.lib.containers import manager as container_manager
 from dftimewolf.lib.containers.interface import AttributeContainer
 from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.modules import manager as modules_manager
@@ -65,6 +67,7 @@ class DFTimewolfState(object):
     self.global_errors = []  # type: List[DFTimewolfError]
     self.recipe = {}  # type: Dict[str, Any]
     self.store = {}  # type: Dict[str, List[interface.AttributeContainer]]
+    self._container_manager = container_manager.ContainerManager() # Simultaneous while ensuring this change does not break anything  # pylint: disable=line-too-long
     self.streaming_callbacks = {}  # type: Dict[Type[interface.AttributeContainer], List[Callable[[Any], Any]]]  # pylint: disable=line-too-long
     self._abort_execution = False
     self.stdout_log = True
@@ -137,6 +140,7 @@ class DFTimewolfState(object):
     module_definitions = recipe.get('modules', [])
     preflight_definitions = recipe.get('preflights', [])
     self.ImportRecipeModules(module_locations)
+    self._container_manager.ParseRecipe(recipe)
 
     for module_definition in module_definitions + preflight_definitions:
       # Combine CLI args with args from the recipe description
@@ -222,7 +226,7 @@ class DFTimewolfState(object):
   def StoreContainer(
       self,
       container: "interface.AttributeContainer",
-      source_module: str = "") -> None:
+      source_module: str) -> None:
     """Thread-safe method to store data in the state's store.
 
     Args:
@@ -232,6 +236,9 @@ class DFTimewolfState(object):
     with self._state_lock:
       container.SetMetadata(interface.METADATA_KEY_SOURCE_MODULE, source_module)
       self.store.setdefault(container.CONTAINER_TYPE, []).append(container)
+
+      self._container_manager.StoreContainer(source_module=source_module,
+                                             container=container)
 
   def LogTelemetry(
       self, telemetry_entry: telemetry.TelemetryCollection) -> None:
@@ -246,6 +253,59 @@ class DFTimewolfState(object):
             key, value, telemetry_entry.module_name, telemetry_entry.recipe)
 
   def GetContainers(
+      self,
+      requesting_module: str,
+      container_class: Type[T],
+      pop: bool = False,
+      metadata_filter_key: Optional[str] = None,
+      metadata_filter_value: Optional[Any] = None) -> Sequence[T]:
+    """Retrieve previously stored containers.
+
+    Args:
+      requesting_module: The name of the module making the retrieval.
+      container_class (type): AttributeContainer class used to filter data.
+      pop (Optional[bool]): Whether to remove the containers from the state when
+          they are retrieved.
+      metadata_filter_key (Optional[str]): Metadata key to filter on.
+      metadata_filter_value (Optional[Any]): Metadata value to filter on.
+
+    Returns:
+      Collection[AttributeContainer]: attribute container objects provided in
+          the store that correspond to the container type.
+
+    Raises:
+      RuntimeError: If only one metadata filter parameter is specified.
+    """
+    # We're plumbing both methods in for a while, and reporting discrepencies
+    containers_orig = self._DeprecatedGetContainers(
+        container_class=container_class,
+        pop=pop,
+        metadata_filter_key=metadata_filter_key,
+        metadata_filter_value=metadata_filter_value)
+    containers_cm = self._container_manager.GetContainers(requesting_module,
+                                                          container_class,
+                                                          metadata_filter_key,
+                                                          metadata_filter_value)
+
+    if (sorted([str(c) for c in containers_orig]) !=
+        sorted([str(c) for c in containers_cm])):
+      # Log some telemetry on the difference.
+      telem = {
+          'deprecated_implementation_results':
+              [str(c) for c in containers_orig],
+          'container_manager_results':
+              [str(c) for c in containers_orig]}
+
+      self.LogTelemetry(telemetry_entry=telemetry.TelemetryCollection(
+          requesting_module,
+          requesting_module,
+          self.recipe.get('name', ''),
+          {'GetContainer_discrepency': json.dumps(telem)}))
+      logger.debug('GetContainer_discrepency: %s', json.dumps(telem))
+
+    return containers_orig
+
+  def _DeprecatedGetContainers(
       self,
       container_class: Type[T],
       pop: bool = False,
@@ -379,17 +439,19 @@ class DFTimewolfState(object):
     Returns:
       List of futures for the threads that were started.
     """
-    cont_count = len(self.GetContainers(module.GetThreadOnContainerType()))
+    containers = self.GetContainers(
+        requesting_module=module.name,
+        container_class=module.GetThreadOnContainerType(),
+        pop=not module.KeepThreadedContainersInState())
     logger.info(
-        f'Running {cont_count} threads, max {module.GetThreadPoolSize()} '
+        f'Running {len(containers)} threads, max {module.GetThreadPoolSize()} '
         f'simultaneous for module {module.name}')
 
     futures = []
 
     with ThreadPoolExecutor(max_workers=module.GetThreadPoolSize()) \
         as executor:
-      pop = not module.KeepThreadedContainersInState()
-      for c in self.GetContainers(module.GetThreadOnContainerType(), pop):
+      for c in containers:
         logger.debug(
             f'Launching {module.name}.Process thread with {str(c)} from '
             f'{c.metadata.get(interface.METADATA_KEY_SOURCE_MODULE, "Unknown")}'
@@ -501,6 +563,9 @@ class DFTimewolfState(object):
 
     logger.info('Module {0:s} finished execution'.format(runtime_name))
     self._threading_event_per_module[runtime_name].set()
+
+    self._container_manager.CompleteModule(runtime_name)
+
     self.CleanUp()
 
   def RunPreflights(self) -> None:
@@ -735,20 +800,22 @@ class DFTimewolfStateWithCDM(DFTimewolfState):
     Returns:
       List of futures for the threads that were started.
     """
-    cont_count = len(self.GetContainers(module.GetThreadOnContainerType()))
+    containers = self.GetContainers(
+        requesting_module=module.name,
+        container_class=module.GetThreadOnContainerType(),
+        pop=not module.KeepThreadedContainersInState())
     logger.info(
-        f'Running {cont_count} threads, max {module.GetThreadPoolSize()} '
+        f'Running {len(containers)} threads, max {module.GetThreadPoolSize()} '
         f'simultaneous for module {module.name}')
 
-    self.cursesdm.SetThreadedModuleContainerCount(module.name, cont_count)
+    self.cursesdm.SetThreadedModuleContainerCount(module.name, len(containers))
     self.cursesdm.UpdateModuleStatus(module.name, cdm.Status.PROCESSING)
 
     futures = []
 
     with ThreadPoolExecutor(max_workers=module.GetThreadPoolSize()) \
         as executor:
-      pop = not module.KeepThreadedContainersInState()
-      for c in self.GetContainers(module.GetThreadOnContainerType(), pop):
+      for c in containers:
         futures.append(
             executor.submit(self._WrapThreads, module.Process, c, module.name))
 

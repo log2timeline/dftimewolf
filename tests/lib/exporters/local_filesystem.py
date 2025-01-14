@@ -6,11 +6,11 @@ import unittest
 
 import mock
 
-from dftimewolf import config
-from dftimewolf.lib import state
 from dftimewolf.lib import errors
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.exporters import local_filesystem
+from tests.lib import modules_test_base
+
 
 FAKE_PATHS = {
     '/fake/evidence_directory': ['file1', 'file2'],
@@ -28,14 +28,12 @@ def FakeListDir(string):
   return FAKE_PATHS[string]
 
 
-class LocalFileSystemTest(unittest.TestCase):
+class LocalFileSystemTest(modules_test_base.ModuleTestBase):
   """Tests for the local filesystem exporter."""
 
-  def testInitialization(self):
-    """Tests that the exporter can be initialized."""
-    test_state = state.DFTimewolfState(config.Config)
-    local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
-    self.assertIsNotNone(local_filesystem_copy)
+  def setUp(self):
+    self._InitModule(local_filesystem.LocalFilesystemCopy)
+    super().setUp()
 
   @mock.patch('shutil.copytree', autospec=True)
   @mock.patch('shutil.copy2')
@@ -52,17 +50,15 @@ class LocalFileSystemTest(unittest.TestCase):
     """Tests that the module processes input and copies correctly."""
     mock_copytree.return_value = '/fake/destination'
     mock_copy2.return_value = '/fake/destination'
-    test_state = state.DFTimewolfState(config.Config)
-    local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
 
-    local_filesystem_copy.StoreContainer(containers.File(
+    self._module.StoreContainer(containers.File(
         name='description', path='/fake/evidence_directory'))
-    local_filesystem_copy.StoreContainer(containers.File(
+    self._module.StoreContainer(containers.File(
         name='description2', path='/fake/evidence_file'))
     mock_mkdtemp.return_value = '/fake/destination'
 
-    local_filesystem_copy.SetUp()
-    local_filesystem_copy.Process()
+    self._module.SetUp()
+    self._module.Process()
 
     mock_copytree.assert_has_calls([
         mock.call('/fake/evidence_directory',
@@ -75,16 +71,14 @@ class LocalFileSystemTest(unittest.TestCase):
   @mock.patch('tempfile.mkdtemp')
   def testProcessCompress(self, mock_mkdtemp, mock_compress):
     """Tests that the module processes input and compresses correctly."""
-    test_state = state.DFTimewolfState(config.Config)
-    local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
-    local_filesystem_copy.StoreContainer(containers.File(
+    self._module.StoreContainer(containers.File(
         name='description', path='/fake/evidence_directory'))
-    local_filesystem_copy.StoreContainer(containers.File(
+    self._module.StoreContainer(containers.File(
         name='description2', path='/fake/evidence_file'))
     mock_mkdtemp.return_value = '/fake/random'
     mock_compress.return_value = '/fake/tarball.tgz'
-    local_filesystem_copy.SetUp(compress=True)
-    local_filesystem_copy.Process()
+    self._module.SetUp(compress=True)
+    self._module.Process()
     mock_compress.assert_has_calls([
         mock.call('/fake/evidence_directory', '/fake/random'),
         mock.call('/fake/evidence_file', '/fake/random'),
@@ -94,11 +88,9 @@ class LocalFileSystemTest(unittest.TestCase):
   def testSetup(self, mock_mkdtemp):
     """Tests that the specified directory is used if created."""
     mock_mkdtemp.return_value = '/fake/random'
-    test_state = state.DFTimewolfState(config.Config)
-    local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
-    local_filesystem_copy.SetUp()
+    self._module.SetUp()
     # pylint: disable=protected-access
-    self.assertEqual(local_filesystem_copy._target_directory, '/fake/random')
+    self.assertEqual(self._module._target_directory, '/fake/random')
 
   @mock.patch('os.path.isdir')
   @mock.patch('shutil.copytree')
@@ -106,25 +98,19 @@ class LocalFileSystemTest(unittest.TestCase):
     """Tests that an error is generated if target_directory is unavailable."""
     mock_copytree.side_effect = OSError('FAKEERROR')
     mock_isdir.return_value = False
-    test_state = state.DFTimewolfState(config.Config)
-    local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
-    local_filesystem_copy.StoreContainer(
+    self._module.StoreContainer(
         containers.File(name='blah', path='/sourcefile'))
-    local_filesystem_copy.SetUp(target_directory="/nonexistent")
-    with self.assertRaises(errors.DFTimewolfError) as error:
-      local_filesystem_copy.Process()
-    self.assertEqual(len(test_state.errors), 1)
-    self.assertEqual(test_state.errors[0], error.exception)
+    self._module.SetUp(target_directory="/nonexistent")
+    with self.assertRaises(errors.DFTimewolfError):
+      self._module.Process()
 
   @mock.patch('os.makedirs')
   def testSetupManualDir(self, mock_makedirs):
     """Tests that the specified directory is used if created."""
     mock_makedirs.return_value = True
-    test_state = state.DFTimewolfState(config.Config)
-    local_filesystem_copy = local_filesystem.LocalFilesystemCopy(test_state)
-    local_filesystem_copy.SetUp(target_directory='/nonexistent')
+    self._module.SetUp(target_directory='/nonexistent')
     # pylint: disable=protected-access
-    self.assertEqual(local_filesystem_copy._target_directory, '/nonexistent')
+    self.assertEqual(self._module._target_directory, '/nonexistent')
 
 
 if __name__ == '__main__':

@@ -2,15 +2,16 @@
 # -*- coding: utf-8 -*-
 """Tests the GCEImageFromDisk module."""
 
+# pytype: disable=attribute-error
+
 import unittest
 
 from libcloudforensics.providers.gcp.internal import compute
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 import mock
-from dftimewolf import config
-from dftimewolf.lib import state
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.exporters import gce_image_from_disk
+from tests.lib import modules_test_base
 
 
 FAKE_DISKS = 'fake-disk-one,fake-disk-two'
@@ -35,40 +36,35 @@ FAKE_STATE_OBJECT_LIST = [
 ]
 
 
-class GCEImageFromDiskTest(unittest.TestCase):
+class GCEImageFromDiskTest(modules_test_base.ModuleTestBase):
   """Tests for the Google Cloud image from disk creator."""
 
-  def testInitialization(self):
-    """Tests that the exporter can be initialized."""
-    test_state = state.DFTimewolfState(config.Config)
-    exporter = gce_image_from_disk.GCEImageFromDisk(test_state)
-    self.assertIsNotNone(exporter)
+  def setUp(self):
+    self._InitModule(gce_image_from_disk.GCEImageFromDisk)
+    super().setUp()
 
   def testSetUp(self):
     """Tests SetUp of the exporter."""
-    test_state = state.DFTimewolfState(config.Config)
-
-    exporter = gce_image_from_disk.GCEImageFromDisk(test_state)
-    exporter.SetUp('disk-1,disk-2,disk-3',
+    self._module.SetUp('disk-1,disk-2,disk-3',
                    'source-project',
                    'source-zone',
                    'destination-project',
                    'destination-zone',
                    'fake-prefix')
 
-    self.assertEqual('source-project', exporter.source_project)
-    self.assertEqual('source-zone', exporter.source_zone)
-    self.assertEqual('destination-project', exporter.dest_project)
-    self.assertEqual('destination-zone', exporter.dest_zone)
-    self.assertEqual('fake-prefix', exporter.name_prefix)
+    self.assertEqual('source-project', self._module.source_project)
+    self.assertEqual('source-zone', self._module.source_zone)
+    self.assertEqual('destination-project', self._module.dest_project)
+    self.assertEqual('destination-zone', self._module.dest_zone)
+    self.assertEqual('fake-prefix', self._module.name_prefix)
 
     actual_names = [
-        c.name for c in exporter.GetContainers(containers.GCEDisk)]
+        c.name for c in self._module.GetContainers(containers.GCEDisk)]
     expected_names = ['disk-1', 'disk-2', 'disk-3']
     self.assertEqual(sorted(actual_names), sorted(expected_names))
 
     for project in [
-        c.project for c in exporter.GetContainers(containers.GCEDisk)
+        c.project for c in self._module.GetContainers(containers.GCEDisk)
     ]:
       self.assertEqual(project, 'source-project')
 
@@ -81,31 +77,29 @@ class GCEImageFromDiskTest(unittest.TestCase):
     """Tests the exporter's Process() when the list comes from parameters."""
     mock_lcf_create_image_from_disk.side_effect = FAKE_DISK_CREATION_RESPONSES
 
-    test_state = state.DFTimewolfState(config.Config)
-
-    exporter = gce_image_from_disk.GCEImageFromDisk(test_state)
-    exporter.SetUp(FAKE_DISKS,
+    self._module.SetUp(FAKE_DISKS,
                    FAKE_GCP_SOURCE_PROJECT_NAME,
                    FAKE_SOURCE_ZONE,
                    FAKE_GCP_DEST_PROJECT_NAME,
                    FAKE_DEST_ZONE,
                    FAKE_NAME_PREFIX)
 
-    exporter.PreProcess()
-    for c in exporter.GetContainers(exporter.GetThreadOnContainerType()):
-      exporter.Process(c)  # pytype: disable=wrong-arg-types
+    self._module.PreProcess()
+    for c in self._module.GetContainers(
+        self._module.GetThreadOnContainerType()):
+      self._module.Process(c)  # pytype: disable=wrong-arg-types
       # GetContainers returns the abstract base class type, but process is
       # called with the instantiated child class.
-    exporter.PostProcess()
+    self._module.PostProcess()
 
     actual_output = [
-        c.name for c in exporter.GetContainers(containers.GCEImage)]
+        c.name for c in self._module.GetContainers(containers.GCEImage)]
 
     self.assertEqual(
         sorted(actual_output), sorted(['fake-image-one', 'fake-image-two']))
 
     for project in [
-        c.project for c in exporter.GetContainers(containers.GCEImage)
+        c.project for c in self._module.GetContainers(containers.GCEImage)
     ]:
       self.assertEqual(project, FAKE_GCP_DEST_PROJECT_NAME)
 
@@ -126,35 +120,33 @@ class GCEImageFromDiskTest(unittest.TestCase):
     passed in parameters."""
     mock_lcf_create_image_from_disk.side_effect = FAKE_DISK_CREATION_RESPONSES
 
-    test_state = state.DFTimewolfState(config.Config)
-    exporter = gce_image_from_disk.GCEImageFromDisk(test_state)
-
     for c in FAKE_STATE_OBJECT_LIST:
-      exporter.StoreContainer(c)
+      self._module.StoreContainer(c)
 
-    exporter.SetUp(None,
+    self._module.SetUp(None,
                    FAKE_GCP_SOURCE_PROJECT_NAME,
                    FAKE_SOURCE_ZONE,
                    FAKE_GCP_DEST_PROJECT_NAME,
                    FAKE_DEST_ZONE,
                    FAKE_NAME_PREFIX)
 
-    exporter.PreProcess()
-    for c in exporter.GetContainers(exporter.GetThreadOnContainerType()):
-      exporter.Process(c)  # pytype: disable=wrong-arg-types
+    self._module.PreProcess()
+    for c in self._module.GetContainers(
+        self._module.GetThreadOnContainerType()):
+      self._module.Process(c)  # pytype: disable=wrong-arg-types
       # GetContainers returns the abstract base class type, but process is
       # called with the instantiated child class.
-    exporter.PostProcess()
+    self._module.PostProcess()
 
     actual_output = [c.name for \
-        c in exporter.GetContainers(containers.GCEImage)]
+        c in self._module.GetContainers(containers.GCEImage)]
 
     self.assertEqual(sorted(actual_output), sorted([
       'fake-image-one',
       'fake-image-two']))
 
     for project in [c.project for \
-        c in exporter.GetContainers(containers.GCEImage)]:
+        c in self._module.GetContainers(containers.GCEImage)]:
       self.assertEqual(project, FAKE_GCP_DEST_PROJECT_NAME)
 
 
