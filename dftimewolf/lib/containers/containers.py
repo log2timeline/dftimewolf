@@ -654,7 +654,7 @@ class OsqueryResult(interface.AttributeContainer):
 
   def __init__(
     self,
-    data_frame: pandas.DataFrame,
+    data_frame: pd.DataFrame,
     hostname: str,
     query: str,
     client_identifier: Optional[str] = None,
@@ -876,7 +876,7 @@ class TimesketchQuery(TimesketchSavedSearch):
     minutes_before: int = 5,
     minutes_after: int = 5,
     sketch_url: str | None = None,
-    results: pandas.DataFrame | None = None,
+    results: pd.DataFrame | None = None,
   ):
     super().__init__(
       name, description, query, date, minutes_before, minutes_after
