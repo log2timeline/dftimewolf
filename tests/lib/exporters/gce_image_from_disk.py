@@ -84,13 +84,7 @@ class GCEImageFromDiskTest(modules_test_base.ModuleTestBase):
                    FAKE_DEST_ZONE,
                    FAKE_NAME_PREFIX)
 
-    self._module.PreProcess()
-    for c in self._module.GetContainers(
-        self._module.GetThreadOnContainerType()):
-      self._module.Process(c)  # pytype: disable=wrong-arg-types
-      # GetContainers returns the abstract base class type, but process is
-      # called with the instantiated child class.
-    self._module.PostProcess()
+    self._ProcessModule()
 
     actual_output = [
         c.name for c in self._module.GetContainers(containers.GCEImage)]
@@ -130,13 +124,7 @@ class GCEImageFromDiskTest(modules_test_base.ModuleTestBase):
                    FAKE_DEST_ZONE,
                    FAKE_NAME_PREFIX)
 
-    self._module.PreProcess()
-    for c in self._module.GetContainers(
-        self._module.GetThreadOnContainerType()):
-      self._module.Process(c)  # pytype: disable=wrong-arg-types
-      # GetContainers returns the abstract base class type, but process is
-      # called with the instantiated child class.
-    self._module.PostProcess()
+    self._ProcessModule()
 
     actual_output = [c.name for \
         c in self._module.GetContainers(containers.GCEImage)]

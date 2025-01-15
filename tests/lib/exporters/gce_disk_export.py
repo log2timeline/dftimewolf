@@ -91,7 +91,7 @@ class GoogleCloudDiskExportTest(modules_test_base.ModuleTestBase):
     mock_create_image_from_disk.return_value = FAKE_IMAGE
     FAKE_IMAGE.ExportImage = mock_export_image
     FAKE_IMAGE.Delete = mock_delete_image
-    self._module.Process()
+    self._ProcessModule()
     mock_create_image_from_disk.assert_called_with(
         FAKE_DISK)
     mock_export_image.assert_called_with(

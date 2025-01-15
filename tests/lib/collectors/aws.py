@@ -165,7 +165,7 @@ class AWSCollectorTest(modules_test_base.ModuleTestBase):
         analysis_profile_name='test-analysis-profile-name',
         analysis_zone='test-analysis-zone'
     )
-    self._module.Process()
+    self._ProcessModule()
 
     mock_CreateVolumeCopy.assert_called_with(
         'test-remote-zone',

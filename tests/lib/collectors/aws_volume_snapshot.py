@@ -100,7 +100,7 @@ class AWSVolumeSnapshotCollectorTest(modules_test_base.ModuleTestBase):
 
     with mock.patch('botocore.client.BaseClient._make_api_call',
         new=MockMakeAPICall):
-      self._module.Process()
+      self._ProcessModule()
 
     self.assertEqual(2, len(self._module.GetContainers(
         containers.AWSSnapshot)))
@@ -123,7 +123,7 @@ class AWSVolumeSnapshotCollectorTest(modules_test_base.ModuleTestBase):
 
     with mock.patch('botocore.client.BaseClient._make_api_call',
         new=MockMakeAPICall):
-      self._module.Process()
+      self._ProcessModule()
 
     self.assertEqual(2, len(self._module.GetContainers(
         containers.AWSSnapshot)))

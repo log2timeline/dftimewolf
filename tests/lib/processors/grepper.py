@@ -28,7 +28,7 @@ class GrepperTest(modules_test_base.ModuleTestBase):
         name='Test description',
         path='tests/lib/collectors/test_data/grepper_test_dir'
     ))
-    self._module.Process()
+    self._ProcessModule()
     # pylint: disable=protected-access
     self.assertEqual(
         self._module._keywords, 'foo|lorem|meow|triage|bar|homebrew')

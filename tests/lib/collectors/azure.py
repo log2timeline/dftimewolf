@@ -189,7 +189,7 @@ class AzureCollectorTest(modules_test_base.ModuleTestBase):
       analysis_region='test-analysis-region',
       all_disks=True
     )
-    self._module.Process()
+    self._ProcessModule()
 
     mock_CreateDiskCopy.assert_called_with(
         'test-analysis-resource-group-name',

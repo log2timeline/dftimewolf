@@ -23,11 +23,8 @@ class BigQueryCollectorTest(modules_test_base.ModuleTestBase):
     """Tests that the collector calls the BQ client."""
     mock_bq().query().to_dataframe().to_json.return_value = "{'foo':1}"
     self._module.SetUp('test_project', 'test_query', 'test_description', False)
-    self._module.PreProcess()
-    for c in self._module.GetContainers(
-        self._module.GetThreadOnContainerType()):
-      self._module.Process(c)  # pytype: disable=wrong-arg-types
-    self._module.PostProcess()
+    self._ProcessModule()
+
     mock_bq().query.assert_called_with('test_query')
     mock_bq().query().to_dataframe().to_json.assert_called_once()
 
@@ -45,11 +42,8 @@ class BigQueryCollectorTest(modules_test_base.ModuleTestBase):
     cont_in.SetMetadata('input_metadata_key', 'input_metadata_value')
     self._module.StoreContainer(cont_in)
     self._module.SetUp('test_project', '', '', False)
-    self._module.PreProcess()
-    for c in self._module.GetContainers(
-        self._module.GetThreadOnContainerType()):
-      self._module.Process(c)  # pytype: disable=wrong-arg-types
-    self._module.PostProcess()
+    self._ProcessModule()
+
     mock_bq().query.assert_called_with('test_query')
 
     conts = self._module.GetContainers(containers.DataFrame)
@@ -62,11 +56,8 @@ class BigQueryCollectorTest(modules_test_base.ModuleTestBase):
     """Tests placing query results in a dataframe."""
     mock_bq().query().to_dataframe.return_value = pd.DataFrame([1], ['foo'])
     self._module.SetUp('test_project', 'test_query', 'test_description', True)
-    self._module.PreProcess()
-    for c in self._module.GetContainers(
-        self._module.GetThreadOnContainerType()):
-      self._module.Process(c)  # pytype: disable=wrong-arg-types
-    self._module.PostProcess()
+    self._ProcessModule()
+
     mock_bq().query.assert_called_with('test_query')
 
     conts = self._module.GetContainers(containers.DataFrame)
