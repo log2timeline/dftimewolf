@@ -29,7 +29,7 @@ class OpenRelikProcessorTest(modules_test_base.ModuleTestBase):
     # Create some fake data for a failed workflow
     fake_workflow = {
       "tasks": [
-        {"status_short": "FAILED"},
+        {"status_short": "FAILURE"},
       ]
     }
 
