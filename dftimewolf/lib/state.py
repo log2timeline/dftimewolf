@@ -564,7 +564,10 @@ class DFTimewolfState(object):
     logger.info('Module {0:s} finished execution'.format(runtime_name))
     self._threading_event_per_module[runtime_name].set()
 
-    self._container_manager.CompleteModule(runtime_name)
+    try:
+      self._container_manager.CompleteModule(runtime_name)
+    except Exception:  # pylint: disable=broad-exception-caught
+      logger.warning('Unknown exception encountered', exc_info=True)
 
     self.CleanUp()
 
@@ -582,6 +585,8 @@ class DFTimewolfState(object):
       try:
         self._RunModuleSetUp(preflight, **new_args)
         self._RunModuleProcess(preflight)
+        self._threading_event_per_module[runtime_name] = threading.Event()
+        self._threading_event_per_module[runtime_name].set()
       finally:
         self.CheckErrors(is_global=True)
 

@@ -58,7 +58,7 @@ class LocalFileSystemTest(modules_test_base.ModuleTestBase):
     mock_mkdtemp.return_value = '/fake/destination'
 
     self._module.SetUp()
-    self._module.Process()
+    self._ProcessModule()
 
     mock_copytree.assert_has_calls([
         mock.call('/fake/evidence_directory',
@@ -78,7 +78,7 @@ class LocalFileSystemTest(modules_test_base.ModuleTestBase):
     mock_mkdtemp.return_value = '/fake/random'
     mock_compress.return_value = '/fake/tarball.tgz'
     self._module.SetUp(compress=True)
-    self._module.Process()
+    self._ProcessModule()
     mock_compress.assert_has_calls([
         mock.call('/fake/evidence_directory', '/fake/random'),
         mock.call('/fake/evidence_file', '/fake/random'),
@@ -102,7 +102,7 @@ class LocalFileSystemTest(modules_test_base.ModuleTestBase):
         containers.File(name='blah', path='/sourcefile'))
     self._module.SetUp(target_directory="/nonexistent")
     with self.assertRaises(errors.DFTimewolfError):
-      self._module.Process()
+      self._ProcessModule()
 
   @mock.patch('os.makedirs')
   def testSetupManualDir(self, mock_makedirs):

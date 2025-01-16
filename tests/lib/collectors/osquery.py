@@ -159,7 +159,7 @@ class OsqueryCollectorTest(modules_test_base.ModuleTestBase):
         new=mock.mock_open(read_data=test_ok_data)) as _:
       self._module.SetUp(query='', paths='ok')
 
-    self._module.Process()
+    self._ProcessModule()
 
     containers = self._module.GetContainers(OsqueryQuery)
     self.assertEqual(len(containers), 1)
@@ -199,7 +199,7 @@ class OsqueryCollectorTest(modules_test_base.ModuleTestBase):
         new=mock.mock_open(read_data=test_ok_data)) as _:
       self._module.SetUp(query='', paths='ok.json')
 
-    self._module.Process()
+    self._ProcessModule()
 
     containers = self._module.GetContainers(OsqueryQuery)
     self.assertEqual(len(containers), 2)

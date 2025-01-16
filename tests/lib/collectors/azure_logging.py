@@ -59,7 +59,7 @@ class AzureLogging(modules_test_base.ModuleTestBase):
     self._module.SetUp(
         subscription_id='55c5ff71-b3e2-450d-89da-cb12c1a38d87',
         filter_expression='eventTimestamp ge \'2022-02-01\'')
-    self._module.Process()
+    self._ProcessModule()
 
     mock_monitor.assert_called_with(
         'Credentials', '55c5ff71-b3e2-450d-89da-cb12c1a38d87')
@@ -73,11 +73,11 @@ class AzureLogging(modules_test_base.ModuleTestBase):
     # Ensure DFTimewolfError is raised when creds aren't found.
     mock_credentials.side_effect = FileNotFoundError
     with self.assertRaises(errors.DFTimewolfError):
-      self._module.Process()
+      self._ProcessModule()
     mock_credentials.side_effect = None
 
     # Ensure DFTimewolfError is raised when Azure libs raise an exception.
     mock_activity_logs_client.list.side_effect = (
         az_exceptions.HttpResponseError)
     with self.assertRaises(errors.DFTimewolfError):
-      self._module.Process()
+      self._ProcessModule()

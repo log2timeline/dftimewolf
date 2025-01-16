@@ -109,7 +109,7 @@ class GCEForensicsVMTest(modules_test_base.ModuleTestBase):
         True,
         'gcp-forensics-vm'
     )
-    self._module.Process()
+    self._ProcessModule()
 
     mock_StartAnalysisVm.assert_called_with(
         'test-analysis-project-name',
@@ -161,7 +161,7 @@ class GCEForensicsVMTest(modules_test_base.ModuleTestBase):
         'gcp-forensics-vm'
     )
     with self.assertRaises(errors.DFTimewolfError) as error:
-      self._module.Process()
+      self._ProcessModule()
     self.assertEqual(error.exception.message, 'Permission denied')
 
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.AttachDisk')
@@ -184,7 +184,7 @@ class GCEForensicsVMTest(modules_test_base.ModuleTestBase):
         False,
         'gcp-forensics-vm'
     )
-    self._module.Process()
+    self._ProcessModule()
 
     self.assertIsNone(self._module.project)
     mock_StartAnalysisVM.assert_not_called()
@@ -231,7 +231,7 @@ class GCEForensicsVMTest(modules_test_base.ModuleTestBase):
         True,
         vm_name
     )
-    self._module.Process()
+    self._ProcessModule()
 
     mock_StartAnalysisVm.assert_called_with(
         mock.ANY,

@@ -5,31 +5,27 @@
 import unittest
 import mock
 
-from dftimewolf.lib import state
 from dftimewolf.lib.preflights import ssh_multiplexer
+from tests.lib import modules_test_base
 
-from dftimewolf import config
 
-
-class SSHMultiplexer(unittest.TestCase):
+class SSHMultiplexer(modules_test_base.ModuleTestBase):
   """Tests for the SSH multiplexer preflight."""
 
-  def testInitialization(self):
-    """Tests that the exporter can be initialized."""
-    test_state = state.DFTimewolfState(config.Config)
-    local_ssh_multiplexer = ssh_multiplexer.SSHMultiplexer(test_state)
-    self.assertIsNotNone(local_ssh_multiplexer)
+  def setUp(self):
+    with mock.patch.object(ssh_multiplexer, 'uuid') as mock_uuid:
+      mock_uuid.uuid4.return_value = '8f473cb2-db6d-4ce5-8d81-ed15d4f38fc5'
+      self._InitModule(ssh_multiplexer.SSHMultiplexer)
+    super().setUp()
 
-  @mock.patch.object(ssh_multiplexer, 'uuid')
   @mock.patch('subprocess.call')
-  def testProcess(self, mock_call, mock_uuid):
+  def testProcess(self, mock_call):
     """Tests the SSH CLI has the expected parameters."""
     mock_call.return_value = 0
-    mock_uuid.uuid4.return_value = '8f473cb2-db6d-4ce5-8d81-ed15d4f38fc5'
-    test_state = state.DFTimewolfState(config.Config)
-    ssh_multi = ssh_multiplexer.SSHMultiplexer(test_state)
-    ssh_multi.SetUp('fakehost', 'fakeuser', None, ['-o', "ProxyCommand='test'"])
-    ssh_multi.Process()
+
+    self._module.SetUp(
+        'fakehost', 'fakeuser', None, ['-o', "ProxyCommand='test'"])
+    self._ProcessModule()
 
     mock_call.assert_called_with([
       'ssh', '-q', '-l', 'fakeuser',
@@ -40,23 +36,19 @@ class SSHMultiplexer(unittest.TestCase):
       'fakehost', 'true',
     ])
 
-  @mock.patch.object(ssh_multiplexer, 'uuid')
   @mock.patch('subprocess.call')
-  def testCleanup(self, mock_call, mock_uuid):
+  def testCleanup(self, mock_call):
     """Tests that the SSH CLI is called with the expected arguments."""
     mock_call.return_value = 0
-    mock_uuid.uuid4.return_value = '8f473cb2-db6d-4ce5-8d81-ed15d4f38fc5'
-    test_state = state.DFTimewolfState(config.Config)
-    ssh_multi = ssh_multiplexer.SSHMultiplexer(test_state)
-    ssh_multi.SetUp('fakehost', 'fakeuser', None, [])
-    ssh_multi.CleanUp()
+
+    self._module.SetUp('fakehost', 'fakeuser', None, [])
+    self._module.CleanUp()
 
     mock_call.assert_called_with([
       'ssh', '-O', 'exit', '-o',
       'ControlPath=~/.ssh/ctrl-dftw-8f473cb2-db6d-4ce5-8d81-ed15d4f38fc5',
       'fakehost'
     ])
-
 
 
 if __name__ == '__main__':

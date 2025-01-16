@@ -118,7 +118,7 @@ class TimesketchSearchEventCollectorTest(modules_test_base.ModuleTestBase):
         start_datetime=datetime.datetime(2024, 11, 11),
         end_datetime=datetime.datetime(2024, 11, 12),
         token_password='test_token')
-    self._module.Process()
+    self._ProcessModule()
 
     state_containers = self._module.GetContainers(containers.DataFrame)
     self.assertEqual(len(state_containers), 1)

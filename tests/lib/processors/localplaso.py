@@ -37,7 +37,7 @@ class LocalPlasoTest(modules_test_base.ModuleTestBase):
     self._module.StoreContainer(
         containers.File(name='test', path='/notexist/test'))
     self._module.SetUp(timezone=None, use_docker=False)
-    self._module.Process()
+    self._ProcessModule()
     mock_Popen.assert_called_once()
     args = mock_Popen.call_args[0][0]  # Get positional arguments of first call
     self.assertEqual(args[10], '/notexist/test')
@@ -53,7 +53,7 @@ class LocalPlasoTest(modules_test_base.ModuleTestBase):
     self._module.StoreContainer(
         containers.File(name='test', path='/notexist/test'))
     self._module.SetUp(timezone=None, use_docker=True)
-    self._module.Process()
+    self._ProcessModule()
     mock_docker().containers.run.assert_called_once()
     args = mock_docker().containers.run.call_args[1]
     # Get the plaso output file name, which was dynamically generated

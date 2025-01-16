@@ -47,7 +47,7 @@ class YetiYaraCollectorTest(modules_test_base.ModuleTestBase):
         api_key='d34db33f',
         api_root='http://localhost:8080/api/'
     )
-    self._module.Process()
+    self._ProcessModule()
 
     mock_post.assert_called_with(
         'http://localhost:8080/api/indicators/filter/',
@@ -82,7 +82,7 @@ class YetiYaraCollectorTest(modules_test_base.ModuleTestBase):
         api_root='http://localhost:8080/api/'
     )
     with self.assertLogs(self._module.logger, level='ERROR') as lc:
-      self._module.Process()
+      self._ProcessModule()
 
       # Confirm that the error message was logged
       log_messages = [record.getMessage() for record in lc.records]

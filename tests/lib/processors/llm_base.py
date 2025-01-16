@@ -123,7 +123,7 @@ class DataFrameLLMProcessorTest(modules_test_base.ModuleTestBase):
     with mock.patch.object(
         self._module, 'ModuleError'
     ) as mock_error:
-      self._module.Process()
+      self._ProcessModule()
       mock_error.assert_called_once_with(
           'Error processing dataframe Test: ' +
           'Dataframe does not contain all the ' +

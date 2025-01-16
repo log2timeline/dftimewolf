@@ -65,13 +65,7 @@ class GCEDiskFromImageTest(modules_test_base.ModuleTestBase):
 
     self._module.SetUp(FAKE_GCP_PROJECT_NAME, FAKE_ZONE, FAKE_IMAGES)
 
-    self._module.PreProcess()
-    for c in self._module.GetContainers(
-        self._module.GetThreadOnContainerType()):
-      self._module.Process(c)  # pytype: disable=wrong-arg-types
-      # GetContainers returns the abstract base class type, but process is
-      # called with the instantiated child class.
-    self._module.PostProcess()
+    self._ProcessModule()
 
     actual_output = [c.name for \
         c in self._module.GetContainers(containers.GCEDisk)]
@@ -96,13 +90,7 @@ class GCEDiskFromImageTest(modules_test_base.ModuleTestBase):
 
     self._module.SetUp(FAKE_GCP_PROJECT_NAME, FAKE_ZONE)
 
-    self._module.PreProcess()
-    for c in self._module.GetContainers(
-        self._module.GetThreadOnContainerType()):
-      self._module.Process(c)  # pytype: disable=wrong-arg-types
-      # GetContainers returns the abstract base class type, but process is
-      # called with the instantiated child class.
-    self._module.PostProcess()
+    self._ProcessModule()
 
     actual_output = [c.name for \
         c in self._module.GetContainers(containers.GCEDisk)]
