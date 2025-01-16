@@ -233,10 +233,13 @@ class TimesketchSearchEventCollector(module.BaseModule):
 
     if self.output_format == 'pandas':
       self.StoreContainer(
-          containers.DataFrame(
+          containers.TimesketchEvents(
               name=self.search_name,
               description=self.search_description,
-              data_frame=data_frame))
+              data_frame=data_frame,
+              query=self.query_string,
+              sketch_id=self.sketch_id
+          ))
     else:
       with tempfile.NamedTemporaryFile(
           mode='w',
