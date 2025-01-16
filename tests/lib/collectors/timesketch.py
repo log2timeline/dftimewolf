@@ -120,7 +120,7 @@ class TimesketchSearchEventCollectorTest(modules_test_base.ModuleTestBase):
         token_password='test_token')
     self._ProcessModule()
 
-    state_containers = self._module.GetContainers(containers.DataFrame)
+    state_containers = self._module.GetContainers(containers.TimesketchEvents)
     self.assertEqual(len(state_containers), 1)
     pd.testing.assert_frame_equal(
         state_containers[0].data_frame, pd.DataFrame([1, 2]))
