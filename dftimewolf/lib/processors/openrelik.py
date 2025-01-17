@@ -83,15 +83,17 @@ class OpenRelikProcessor(module.ThreadAwareModule):
       self.ModuleError("Error polling workflow status", critical=True)
     self.logger.info(f"Waiting for workflow {workflow_id} to finish.")
     output_file_ids = {}
-    while status not in ("SUCCESS", "FAILED"):
+    while status not in ("SUCCESS", "FAILURE"):
       self.logger.debug(f"Workflow {workflow_id} status: {status}")
       time.sleep(15)
       workflow = self.openrelik_workflow_client.get_workflow(
         self.folder_id, workflow_id
       )
-      status = workflow.get("tasks")[0].get("status_short")
+      tasks = workflow.get("tasks")
+      if tasks:
+        status = tasks[0].get("status_short")
     self.logger.debug(f"Workflow {workflow_id} status: {status}")
-    if status == "FAILED":
+    if status == "FAILURE":
       self.ModuleError(f"Workflow {workflow_id} failed", critical=True)
 
     for task in tasks:
