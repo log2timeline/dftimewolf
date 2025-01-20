@@ -214,5 +214,6 @@ class WorkspaceAuditTimesketchTest(modules_test_base.ModuleTestBase):
     actual_timesketch_record = json.loads(actual_timesketch_record)
     self.assertDictEqual(expected_calendar_record, actual_timesketch_record)
 
+
 if __name__ == '__main__':
   unittest.main()

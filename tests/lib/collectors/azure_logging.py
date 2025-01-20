@@ -83,5 +83,6 @@ class AzureLogging(modules_test_base.ModuleTestBase):
     with self.assertRaises(errors.DFTimewolfError):
       self._ProcessModule()
 
+
 if __name__ == '__main__':
   unittest.main()
