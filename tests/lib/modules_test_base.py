@@ -10,14 +10,13 @@ from dftimewolf.lib import module
 class ModuleTestBase(parameterized.TestCase):
   """A base class for DFTW module testing."""
 
-  _test_state = None
   _module = None
 
   def _InitModule(self, test_module: type[module.BaseModule]):  # pylint: disable=arguments-differ
     """Initialises the module, the DFTW state and recipe for module testing."""
-    self._test_state = state.DFTimewolfState(config.Config)
-    self._module = test_module(self._test_state)
-    self._test_state._container_manager.ParseRecipe(  # pylint: disable=protected-access
+    test_state = state.DFTimewolfState(config.Config)
+    self._module = test_module(test_state)
+    test_state._container_manager.ParseRecipe(  # pylint: disable=protected-access
         {'modules': [{'name': self._module.name}]})
 
   def _ProcessModule(self):
@@ -31,3 +30,7 @@ class ModuleTestBase(parameterized.TestCase):
       self._module.PostProcess()
     else:
       self._module.Process()
+
+  def _AssertNoErrors(self):
+    """Asserts that no errors have been generated."""
+    self.assertEqual([], self._module.state.errors)

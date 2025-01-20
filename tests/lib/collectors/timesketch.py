@@ -39,7 +39,7 @@ class TimesketchSearchEventCollectorTest(modules_test_base.ModuleTestBase):
     self.assertEqual(self._module.search_name, '')
     self.assertEqual(self._module.search_description, '')
     mock_get_api_client.assert_called_with(
-        self._test_state, token_password='test_token')
+        self._module.state, token_password='test_token')
 
   @mock.patch('dftimewolf.lib.timesketch_utils.GetApiClient')
   def testSetupWithTicketAttributeContainer(self, _mock_get_api_client):

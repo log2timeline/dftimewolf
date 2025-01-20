@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 """Tests the activity_triage recipe and grepper processor."""
 
-# pytype: disable=attribute-error
-
 
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.processors import grepper
@@ -14,6 +12,7 @@ class GrepperTest(modules_test_base.ModuleTestBase):
   """Test case for the grep function. """
 
   def setUp(self):
+    self._module: grepper.GrepperSearch
     self._InitModule(grepper.GrepperSearch)
     super().setUp()
 

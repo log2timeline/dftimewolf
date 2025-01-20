@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 """Tests the AWSVolumeSnapshotCollector."""
 
-# pytype: disable=attribute-error
-
 
 import unittest
 from typing import Any
@@ -76,6 +74,7 @@ class AWSVolumeSnapshotCollectorTest(modules_test_base.ModuleTestBase):
   """Tests for the AWSVolumeSnapshotCollector."""
 
   def setUp(self):
+    self._module: aws_volume_snapshot.AWSVolumeSnapshotCollector
     self._InitModule(aws_volume_snapshot.AWSVolumeSnapshotCollector)
     super().setUp()
 

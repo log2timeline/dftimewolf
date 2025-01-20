@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 """Tests for the GCEDiskCopy collector."""
 
-# pytype: disable=attribute-error
-
 
 import unittest
 
@@ -61,6 +59,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
   """Tests for the GCEDiskCopy collector."""
 
   def setUp(self):
+    self._module: gce_disk_copy.GCEDiskCopy
     self._InitModule(gce_disk_copy.GCEDiskCopy)
     super().setUp()
 
@@ -337,7 +336,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
           'test-target-project-name',
           'test-analysis-project-name',
           FAKE_INSTANCE.zone,
-          disk_name=d.name)  # pytype: disable=attribute-error
+          disk_name=d.name)
     self._module.PostProcess()
 
     FAKE_INSTANCE.Stop.assert_called_once()
@@ -374,7 +373,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
           'test-target-project-name',
           'test-analysis-project-name',
           FAKE_INSTANCE.zone,
-          disk_name=d.name)  # pytype: disable=attribute-error
+          disk_name=d.name)
     self._module.PostProcess()
 
     FAKE_INSTANCE.Stop.assert_not_called()

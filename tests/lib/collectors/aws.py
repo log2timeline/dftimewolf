@@ -79,7 +79,7 @@ class AWSCollectorTest(modules_test_base.ModuleTestBase):
         'fake_incident_id',
         remote_instance_id='my-owned-instance-id'
     )
-    self.assertEqual([], self._test_state.errors)
+    self._AssertNoErrors()
     self.assertEqual(
         'test-remote-profile-name', self._module.remote_profile_name)
     self.assertEqual('test-remote-zone', self._module.remote_zone)
@@ -117,7 +117,7 @@ class AWSCollectorTest(modules_test_base.ModuleTestBase):
         analysis_profile_name='test-analysis-profile-name',
         analysis_zone='test-analysis-zone'
     )
-    self.assertEqual([], self._test_state.errors)
+    self._AssertNoErrors()
     self.assertEqual(
         'test-remote-profile-name', self._module.remote_profile_name)
     self.assertEqual('test-remote-zone', self._module.remote_zone)
@@ -178,7 +178,7 @@ class AWSCollectorTest(modules_test_base.ModuleTestBase):
     self.assertEqual('fake-analysis-vm', forensics_vm.name)
     self.assertEqual(
         'fake-volume-id-copy',
-        forensics_vm.evidence_disk.volume_id)  # pytype: disable=attribute-error
+        forensics_vm.evidence_disk.volume_id)
 
   # pylint: disable=line-too-long
   @mock.patch('boto3.session.Session._setup_loader')

@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 """Tests the AWSSnapshotS3CopyCollector."""
 
-# pytype: disable=attribute-error
-
 
 import unittest
 from typing import Any
@@ -133,6 +131,7 @@ class AWSSnapshotS3CopyCollectorTest(modules_test_base.ModuleTestBase):
   """Tests for the AWSSnapshotS3CopyCollector."""
 
   def setUp(self):
+    self._module: aws_snapshot_s3_copy.AWSSnapshotS3CopyCollector
     self._InitModule(aws_snapshot_s3_copy.AWSSnapshotS3CopyCollector)
     super().setUp()
 

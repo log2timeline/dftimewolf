@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """Tests the Workspace logging timesketch processor."""
 
-# pytype: disable=attribute-error
 
+import unittest
 
 import datetime
 import json
@@ -23,6 +23,7 @@ class WorkspaceAuditTimesketchTest(modules_test_base.ModuleTestBase):
   maxDiff = None
 
   def setUp(self):
+    self._module: workspace_audit_timesketch.WorkspaceAuditTimesketch
     self._InitModule(workspace_audit_timesketch.WorkspaceAuditTimesketch)
     super().setUp()
 
@@ -212,3 +213,7 @@ class WorkspaceAuditTimesketchTest(modules_test_base.ModuleTestBase):
     actual_timesketch_record = actual_timesketch_records[0]
     actual_timesketch_record = json.loads(actual_timesketch_record)
     self.assertDictEqual(expected_calendar_record, actual_timesketch_record)
+
+
+if __name__ == '__main__':
+  unittest.main()

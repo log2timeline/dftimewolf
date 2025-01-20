@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 """Tests the GRR hunt collectors."""
 
-# pytype: disable=attribute-error
-
 
 import unittest
 import zipfile
@@ -27,6 +25,7 @@ class GRRHuntArtifactCollectorTest(modules_test_base.ModuleTestBase):
 
   @mock.patch('grr_api_client.api.InitHttp')
   def setUp(self, mock_InitHttp):
+    self._module: grr_hunt.GRRHuntArtifactCollector
     self._InitModule(grr_hunt.GRRHuntArtifactCollector)
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
@@ -63,6 +62,7 @@ class GRRHuntFileCollectorTest(modules_test_base.ModuleTestBase):
 
   # For pytype
   mock_grr_api: mock.Mock
+  _module: grr_hunt.GRRHuntFileCollector
 
   @mock.patch('grr_api_client.api.InitHttp')
   def setUp(self, mock_InitHttp):
@@ -259,6 +259,9 @@ class GRRHuntDownloader(modules_test_base.ModuleTestBase):
 class GRRHuntOsqueryDownloader(modules_test_base.ModuleTestBase):
   """Tests for the GRR Osquery hunt downloader."""
 
+  # For pytype
+  _module: grr_hunt.GRRHuntOsqueryDownloader
+
   @mock.patch('grr_api_client.api.InitHttp')
   def setUp(self, mock_InitHttp):
     self._InitModule(grr_hunt.GRRHuntOsqueryDownloader)
@@ -277,9 +280,7 @@ class GRRHuntOsqueryDownloader(modules_test_base.ModuleTestBase):
 
   def testInitialization(self):
     """Tests that the collector is correctly initialized."""
-    # pytype: disable=attribute-error
     self.assertEqual(self._module.hunt_id, 'H:12345')
-    # pytype: enable=attribute-error
 
   @mock.patch('dftimewolf.lib.collectors.grr_hunt.GRRHuntOsqueryDownloader._GetAndWriteResults')  # pylint: disable=line-too-long
   def testProcess(self, mock_get_write_results):
