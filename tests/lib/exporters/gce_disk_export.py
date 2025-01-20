@@ -29,6 +29,9 @@ FAKE_IMAGE = compute.GoogleComputeImage(
 class GoogleCloudDiskExportTest(modules_test_base.ModuleTestBase):
   """Tests for the Google Cloud disk exporter."""
 
+  # For pytype
+  _module: gce_disk_export.GoogleCloudDiskExport
+
   def setUp(self):
     self._InitModule(gce_disk_export.GoogleCloudDiskExport)
     super().setUp()

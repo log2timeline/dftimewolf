@@ -13,6 +13,9 @@ from tests.lib import modules_test_base
 class SCPExporterTest(modules_test_base.ModuleTestBase):
   """Tests for the SCP exporter module."""
 
+  # For Pytype
+  _module: scp_ex.SCPExporter
+
   def setUp(self):
     self._InitModule(scp_ex.SCPExporter)
     super().setUp()

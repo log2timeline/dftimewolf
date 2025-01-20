@@ -31,6 +31,9 @@ def FakeListDir(string):
 class LocalFileSystemTest(modules_test_base.ModuleTestBase):
   """Tests for the local filesystem exporter."""
 
+  # For Pytype
+  _module: local_filesystem.LocalFilesystemCopy
+
   def setUp(self):
     self._InitModule(local_filesystem.LocalFilesystemCopy)
     super().setUp()

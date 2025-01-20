@@ -37,6 +37,9 @@ FAKE_EXPECTED_OUTPUT = [
 class S3ToGCSCopyTest(modules_test_base.ModuleTestBase):
   """Tests for the Google Cloud disk exporter."""
 
+  # For Pytype
+  _module: s3_to_gcs.S3ToGCSCopy
+
   def setUp(self):
     self._InitModule(s3_to_gcs.S3ToGCSCopy)
     super().setUp()

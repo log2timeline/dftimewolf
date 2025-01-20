@@ -56,6 +56,9 @@ FAKE_VOLUME_COPY = ebs.AWSVolume(
 class AWSCollectorTest(modules_test_base.ModuleTestBase):
   """Tests for the AWS collector."""
 
+  # For Pytype
+  _module: aws.AWSCollector
+
   def setUp(self):
     self._InitModule(aws.AWSCollector)
 
@@ -178,7 +181,7 @@ class AWSCollectorTest(modules_test_base.ModuleTestBase):
     self.assertEqual('fake-analysis-vm', forensics_vm.name)
     self.assertEqual(
         'fake-volume-id-copy',
-        forensics_vm.evidence_disk.volume_id)
+        forensics_vm.evidence_disk.volume_id)  # pytype: disable=attribute-error
 
   # pylint: disable=line-too-long
   @mock.patch('boto3.session.Session._setup_loader')

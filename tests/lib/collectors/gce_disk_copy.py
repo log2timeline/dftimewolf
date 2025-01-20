@@ -58,6 +58,9 @@ FAKE_DISK_COPY = [
 class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
   """Tests for the GCEDiskCopy collector."""
 
+  # For pytype
+  _module: gce_disk_copy.GCEDiskCopy
+
   def setUp(self):
     self._module: gce_disk_copy.GCEDiskCopy
     self._InitModule(gce_disk_copy.GCEDiskCopy)
