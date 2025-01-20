@@ -62,7 +62,6 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
   _module: gce_disk_copy.GCEDiskCopy
 
   def setUp(self):
-    self._module: gce_disk_copy.GCEDiskCopy
     self._InitModule(gce_disk_copy.GCEDiskCopy)
     super().setUp()
 
@@ -304,13 +303,14 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
   @mock.patch('libcloudforensics.providers.gcp.forensics.CreateDiskCopy')
   @mock.patch('dftimewolf.lib.collectors.gce_disk_copy.GCEDiskCopy._GetDisksFromInstance')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.ListDisks')
-  def testProcess(self,
-                  mock_list_disks,
-                  mock_getDisksFromInstance,
-                  mock_CreateDiskCopy,
-                  mock_GetInstance):
-    """Tests the collector's Process() function."""
-    mock_getDisksFromInstance.return_value = FAKE_DISK_MULTIPLE
+  def testProcessWithStop(self,
+                          mock_list_disks,
+                          mock_getDisksFromInstance,
+                          mock_CreateDiskCopy,
+                          mock_GetInstance):
+    """Tests the collector's Process() function, stopping the instance."""
+    mock_getDisksFromInstance.return_value = [
+        d.name for d in FAKE_DISK_MULTIPLE]
     mock_CreateDiskCopy.side_effect = FAKE_DISK_COPY
     mock_GetInstance.return_value = FAKE_INSTANCE
     mock_list_disks.return_value = {
@@ -329,32 +329,49 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     )
     FAKE_INSTANCE.Stop = mock.MagicMock()
 
-    self._module.PreProcess()
-    conts = self._module.GetContainers(self._module.GetThreadOnContainerType(), True)
-    for d in conts:
-      self._module.Process(d)  # pytype: disable=wrong-arg-types
-      # GetContainers returns the abstract base class type, but process is
-      # called with the instantiated child class.
-      mock_CreateDiskCopy.assert_called_with(
-          'test-target-project-name',
-          'test-analysis-project-name',
-          FAKE_INSTANCE.zone,
-          disk_name=d.name)
-    self._module.PostProcess()
+    self._ProcessModule()
+
+    mock_CreateDiskCopy.assert_has_calls([
+        mock.call('test-target-project-name',
+                  'test-analysis-project-name',
+                  'fake_zone',
+                  disk_name='disk1'),
+        mock.call('test-target-project-name',
+                  'test-analysis-project-name',
+                  'fake_zone',
+                  disk_name='disk2')])
 
     FAKE_INSTANCE.Stop.assert_called_once()
 
-    out_disks = self._module.GetContainers(containers.GCEDisk)
+    out_disks = [d for d in self._module.GetContainers(containers.GCEDisk)
+                 if d.name not in ('disk1', 'disk2')]
     out_disk_names = [d.name for d in out_disks]
+    self.assertLen(out_disk_names, 2)
     expected_disk_names = ['disk1-copy', 'disk2-copy']
-    self.assertEqual(out_disk_names, expected_disk_names)
+    self.assertListEqual(out_disk_names, expected_disk_names)
     for d in out_disks:
       self.assertEqual(d.project, 'test-analysis-project-name')
 
-    # Do it again, but we don't want to stop the instance this time.
-    # First, clear the containers
-    self._module.GetContainers(containers.GCEDisk, True)
+  # pylint: disable=line-too-long
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
+  @mock.patch('libcloudforensics.providers.gcp.forensics.CreateDiskCopy')
+  @mock.patch('dftimewolf.lib.collectors.gce_disk_copy.GCEDiskCopy._GetDisksFromInstance')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.ListDisks')
+  def testProcessWithoutStop(self,
+                             mock_list_disks,
+                             mock_getDisksFromInstance,
+                             mock_CreateDiskCopy,
+                             mock_GetInstance):
+    """Tests the collector's Process() function."""
+    mock_getDisksFromInstance.return_value = [
+        d.name for d in FAKE_DISK_MULTIPLE]
     mock_CreateDiskCopy.side_effect = FAKE_DISK_COPY
+    mock_GetInstance.return_value = FAKE_INSTANCE
+    mock_list_disks.return_value = {
+        'bootdisk': FAKE_BOOT_DISK,
+        'disk1': FAKE_DISK
+    }
+
     self._module.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
@@ -366,24 +383,26 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     )
     FAKE_INSTANCE.Stop = mock.MagicMock()
 
-    self._module.PreProcess()
-    conts = self._module.GetContainers(self._module.GetThreadOnContainerType(), True)
-    for d in conts:
-      self._module.Process(d)  # pytype: disable=wrong-arg-types
-      # GetContainers returns the abstract base class type, but process is
-      # called with the instantiated child class.
-      mock_CreateDiskCopy.assert_called_with(
-          'test-target-project-name',
-          'test-analysis-project-name',
-          FAKE_INSTANCE.zone,
-          disk_name=d.name)
-    self._module.PostProcess()
+    self._ProcessModule()
+
+    mock_CreateDiskCopy.assert_has_calls([
+        mock.call('test-target-project-name',
+                  'test-analysis-project-name',
+                  'fake_zone',
+                  disk_name='disk1'),
+        mock.call('test-target-project-name',
+                  'test-analysis-project-name',
+                  'fake_zone',
+                  disk_name='disk2')])
 
     FAKE_INSTANCE.Stop.assert_not_called()
-    out_disks = self._module.GetContainers(containers.GCEDisk)
-    out_disk_names = sorted([d.name for d in out_disks])
+
+    out_disks = [d for d in self._module.GetContainers(containers.GCEDisk)
+                 if d.name not in ('disk1', 'disk2')]
+    out_disk_names = [d.name for d in out_disks]
+    self.assertLen(out_disk_names, 2)
     expected_disk_names = ['disk1-copy', 'disk2-copy']
-    self.assertEqual(out_disk_names, expected_disk_names)
+    self.assertListEqual(out_disk_names, expected_disk_names)
     for d in out_disks:
       self.assertEqual(d.project, 'test-analysis-project-name')
 
