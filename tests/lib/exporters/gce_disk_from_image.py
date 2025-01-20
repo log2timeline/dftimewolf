@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 """Tests the GCEDiskFromImage module."""
 
-# pytype: disable=attribute-error
-
 
 import unittest
 
@@ -36,6 +34,7 @@ class GCEDiskFromImageTest(modules_test_base.ModuleTestBase):
   """Tests for the Google Cloud disk creator."""
 
   def setUp(self):
+    self._module: gce_disk_from_image.GCEDiskFromImage
     self._InitModule(gce_disk_from_image.GCEDiskFromImage)
     super().setUp()
 

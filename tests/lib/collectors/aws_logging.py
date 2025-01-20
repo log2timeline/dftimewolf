@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 """Tests the AWS logging collector."""
 
-# pytype: disable=attribute-error
-
 
 import datetime
 import unittest
@@ -22,6 +20,7 @@ class AWSLoggingTest(modules_test_base.ModuleTestBase):
   """Tests for the AWS logging collector."""
 
   def setUp(self):
+    self._module: aws_logging.AWSLogsCollector
     self._InitModule(aws_logging.AWSLogsCollector)
     super().setUp()
 

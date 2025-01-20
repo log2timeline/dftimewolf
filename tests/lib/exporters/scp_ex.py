@@ -115,7 +115,7 @@ class SCPExporterTest(modules_test_base.ModuleTestBase):
   def testProcessDownloadMultiplexCache(self, mock_subprocess_call):
     """Tests that SSH is called with the correct multiplex parameter."""
     mock_subprocess_call.return_value = 0
-    self._test_state.AddToCache('ssh_control', 'cached_ssh_control')
+    self._module.state.AddToCache('ssh_control', 'cached_ssh_control')
     self._module.SetUp('/path1,/path2', '/destination', 'fakeuser',
                        'fakehost', 'fakeid', [], 'download', True, True)
     self._ProcessModule()

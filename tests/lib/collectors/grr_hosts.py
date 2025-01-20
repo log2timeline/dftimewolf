@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 """Tests the GRR host collectors."""
 
-# pytype: disable=attribute-error
-
 
 import unittest
 
@@ -49,6 +47,7 @@ class GRRFlowTests(modules_test_base.ModuleTestBase):
 
   # For pytype
   mock_grr_api: mock.Mock
+  _module: grr_hosts.GRRFlow
 
   @mock.patch('grr_api_client.api.InitHttp')
   def setUp(self, mock_InitHttp):
@@ -180,6 +179,7 @@ class GRRArtifactCollectorTest(modules_test_base.ModuleTestBase):
 
   # For pytype
   mock_grr_api: mock.Mock
+  _module: grr_hosts.GRRArtifactCollector
 
   @mock.patch('grr_api_client.api.InitHttp')
   def setUp(self, mock_InitHttp):
@@ -204,7 +204,7 @@ class GRRArtifactCollectorTest(modules_test_base.ModuleTestBase):
   def testSetup(self):
     """Tests that the module is setup properly."""
     actual_hosts = [
-        h.hostname for h in
+        h.hostname for h in  # pytype: disable=attribute-error
         self._module.GetContainers(self._module.GetThreadOnContainerType())]
 
     self.assertEqual(self._module.artifacts, [])
@@ -451,6 +451,7 @@ class GRRFileCollectorTest(modules_test_base.ModuleTestBase):
 
   @mock.patch('grr_api_client.api.InitHttp')
   def setUp(self, mock_InitHttp):
+    self._module: grr_hosts.GRRFileCollector
     self._InitModule(grr_hosts.GRRFileCollector)
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
@@ -770,6 +771,7 @@ class GRRTimelineCollectorTest(modules_test_base.ModuleTestBase):
 
   # For pytype
   mock_grr_api: mock.Mock
+  _module: grr_hosts.GRRTimelineCollector
 
   @mock.patch('grr_api_client.api.InitHttp')
   def setUp(self, mock_InitHttp):
@@ -790,7 +792,7 @@ class GRRTimelineCollectorTest(modules_test_base.ModuleTestBase):
 
   def testInitialization(self):
     """Tests that the collector can be initialized."""
-    actual_hosts = [h.hostname for h in \
+    actual_hosts = [h.hostname for h in  # pytype: disable=attribute-error
         self._module.GetContainers(
             self._module.GetThreadOnContainerType())]
 

@@ -1,7 +1,5 @@
 """Tests the base LLM processor module."""
 
-# pytype: disable=attribute-error
-
 
 import json
 import unittest

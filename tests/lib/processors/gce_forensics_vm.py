@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 """Tests the GCEForensicsVM generator."""
 
-# pytype: disable=attribute-error
-
 
 from absl.testing import absltest
 from absl.testing import parameterized
@@ -31,6 +29,7 @@ class GCEForensicsVMTest(modules_test_base.ModuleTestBase):
   """Tests for the Forensics VM creator."""
 
   def setUp(self):
+    self._module: GCEForensicsVM
     self._InitModule(GCEForensicsVM)
     super().setUp()
 

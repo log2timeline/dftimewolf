@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 """Tests the Osquery collector."""
 
-# pytype: disable=attribute-error
-
 
 import json
 import unittest
@@ -21,6 +19,7 @@ class OsqueryCollectorTest(modules_test_base.ModuleTestBase):
 
   def setUp(self) -> None:
     super().setUp()
+    self._module: osquery.OsqueryCollector
     self._InitModule(osquery.OsqueryCollector)
 
   def testInitialization(self) -> None:

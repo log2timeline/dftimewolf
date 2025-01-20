@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 """Tests the Azure logging collector."""
 
-# pytype: disable=attribute-error
 
+import unittest
 from unittest import mock
 
 from azure.core import exceptions as az_exceptions
@@ -18,6 +18,7 @@ class AzureLogging(modules_test_base.ModuleTestBase):
   """Tests for the Azure logging collector."""
 
   def setUp(self):
+    self._module: azure_logging.AzureLogsCollector
     self._InitModule(azure_logging.AzureLogsCollector)
     super().setUp()
 
@@ -81,3 +82,6 @@ class AzureLogging(modules_test_base.ModuleTestBase):
         az_exceptions.HttpResponseError)
     with self.assertRaises(errors.DFTimewolfError):
       self._ProcessModule()
+
+if __name__ == '__main__':
+  unittest.main()
