@@ -178,6 +178,7 @@ class AWSCollectorTest(modules_test_base.ModuleTestBase):
         dst_profile='test-analysis-profile-name')
     forensics_vms = self._module.GetContainers(containers.ForensicsVM)
     forensics_vm = forensics_vms[0]
+    self.assertIsNotNone(forensics_vm)
     self.assertEqual('fake-analysis-vm', forensics_vm.name)
     self.assertEqual(
         'fake-volume-id-copy',
