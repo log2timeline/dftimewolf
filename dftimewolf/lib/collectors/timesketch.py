@@ -115,10 +115,6 @@ class TimesketchSearchEventCollector(module.BaseModule):
     else:
       self.sketch_id = int(sketch_id)
 
-    if not start_datetime or not end_datetime:
-      self.ModuleError(
-          'Both the start and end datetime must be set.', critical=True)
-
     if output_format not in _VALID_OUTPUT_FORMATS:
       self.ModuleError(
           f'Output format not one of {",".join(_VALID_OUTPUT_FORMATS)}',
@@ -217,6 +213,11 @@ class TimesketchSearchEventCollector(module.BaseModule):
       else:
         label_chip.label = label
       search_obj.add_chip(label_chip)
+
+    # Timesketch API returns a max of 10000 results by default
+    if search_obj.expected_size > 10000:
+      search_obj.max_entries = search_obj.expected_size + 1
+
     return search_obj.to_pandas()
 
   def _OutputSearchResults(self, data_frame: pd.DataFrame) -> None:
