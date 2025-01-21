@@ -213,7 +213,7 @@ class TimesketchSearchEventCollector(module.BaseModule):
       else:
         label_chip.label = label
       search_obj.add_chip(label_chip)
-      
+
     # Timesketch API returns a max of 10000 results by default
     if search_obj.expected_size > 10000:
       search_obj.max_entries = search_obj.expected_size + 1
