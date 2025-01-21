@@ -22,9 +22,9 @@ class ModuleTestBase(parameterized.TestCase):
   def _ProcessModule(self):
     """Runs the process stage for the module."""
     if isinstance(self._module, module.ThreadAwareModule):
+      self._module.PreProcess()
       containers = self._module.GetContainers(
           self._module.GetThreadOnContainerType())
-      self._module.PreProcess()
       for c in containers:
         self._module.Process(c)
       self._module.PostProcess()

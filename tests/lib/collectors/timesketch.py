@@ -15,6 +15,9 @@ from tests.lib import modules_test_base
 class TimesketchSearchEventCollectorTest(modules_test_base.ModuleTestBase):
   """Tests for the TimesketchSearchEventCollector module."""
 
+  # For pytype
+  _module: timesketch.TimesketchSearchEventCollector
+
   def setUp(self):
     self._InitModule(timesketch.TimesketchSearchEventCollector)
     super().setUp()

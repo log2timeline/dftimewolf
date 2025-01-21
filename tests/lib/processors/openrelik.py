@@ -14,6 +14,9 @@ from tests.lib import modules_test_base
 class OpenRelikProcessorTest(modules_test_base.ModuleTestBase):
   """Tests for the OpenRelik processor."""
 
+  # For pytype
+  _module: openrelik_processor.OpenRelikProcessor
+
   def setUp(self):
     self._InitModule(openrelik_processor.OpenRelikProcessor)
     super().setUp()

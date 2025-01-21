@@ -16,6 +16,9 @@ from tests.lib import modules_test_base
 class LocalPlasoTest(modules_test_base.ModuleTestBase):
   """Tests for the local Plaso processor."""
 
+  # For Pytype
+  _module: localplaso.LocalPlasoProcessor
+
   def setUp(self):
     self._InitModule(localplaso.LocalPlasoProcessor)
     super().setUp()

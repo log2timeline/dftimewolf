@@ -332,6 +332,7 @@ class GRRHuntYara(modules_test_base.ModuleTestBase):
   """Tests for the GRR Osquery hunt downloader."""
 
   mock_grr_api = None
+  _module: grr_hunt.GRRHuntYaraScanner
 
   @mock.patch('grr_api_client.connectors.HttpConnector')
   def setUp(self, mock_InitHttp):
