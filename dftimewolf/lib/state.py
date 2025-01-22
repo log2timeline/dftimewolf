@@ -291,6 +291,7 @@ class DFTimewolfState(object):
         sorted([str(c) for c in containers_cm])):
       # Log some telemetry on the difference.
       telem = {
+          'requesting_module': requesting_module,
           'deprecated_implementation_results':
               [str(c) for c in containers_orig],
           'container_manager_results':
