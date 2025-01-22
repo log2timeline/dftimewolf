@@ -291,17 +291,18 @@ class DFTimewolfState(object):
         sorted([str(c) for c in containers_cm])):
       # Log some telemetry on the difference.
       telem = {
+          'requesting_module': requesting_module,
           'deprecated_implementation_results':
               [str(c) for c in containers_orig],
           'container_manager_results':
-              [str(c) for c in containers_orig]}
+              [str(c) for c in containers_cm]}
 
       self.LogTelemetry(telemetry_entry=telemetry.TelemetryCollection(
           requesting_module,
           requesting_module,
           self.recipe.get('name', ''),
-          {'GetContainer_discrepency': json.dumps(telem)}))
-      logger.debug('GetContainer_discrepency: %s', json.dumps(telem))
+          {'GetContainer_discrepancy': json.dumps(telem)}))
+      logger.debug('GetContainer_discrepancy: %s', json.dumps(telem))
 
     return containers_orig
 
