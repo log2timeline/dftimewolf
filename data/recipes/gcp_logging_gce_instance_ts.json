@@ -44,7 +44,7 @@
     }],
     "args": [
         ["project_name", "Name of the GCP project to collect logs from.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9]{4,28}[a-z0-9]$"}],
-        ["instance_id", "Identifier for GCE instance (Instance ID).", null, {"format": "regex", "regex": "^[a-z][-a-z0-9]{0,61}[a-z0-9]?$|^\d{1,62}$"}],
+        ["instance_id", "Identifier for GCE instance (Instance ID).", null, {"format": "regex", "regex": "^[a-z][-a-z0-9]{0,61}[a-z0-9]?$|^\\d{1,62}$"}],
         ["--incident_id", "Incident ID (used for Timesketch description).", null],
         ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "integer"}],
         ["--timesketch_endpoint", "Timesketch endpoint", "http://localhost:5000/"],
