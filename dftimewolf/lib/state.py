@@ -282,10 +282,12 @@ class DFTimewolfState(object):
         pop=pop,
         metadata_filter_key=metadata_filter_key,
         metadata_filter_value=metadata_filter_value)
-    containers_cm = self._container_manager.GetContainers(requesting_module,
-                                                          container_class,
-                                                          metadata_filter_key,
-                                                          metadata_filter_value)
+    containers_cm = self._container_manager.GetContainers(
+        requesting_module=requesting_module,
+        container_class=container_class,
+        pop=pop,
+        metadata_filter_key=metadata_filter_key,
+        metadata_filter_value=metadata_filter_value)
 
     if (sorted([str(c) for c in containers_orig]) !=
         sorted([str(c) for c in containers_cm])):

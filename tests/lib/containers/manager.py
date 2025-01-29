@@ -563,6 +563,51 @@ class ContainerManagerTest(unittest.TestCase):
           requesting_module='ModuleE', container_class=_TestContainer1)
       self.assertEqual(0, len(actual))
 
+  def test_PopContainers(self):
+    """Tests GetContainers with pop=True."""
+    self._container_manager.ParseRecipe(_TEST_RECIPE)
+
+    # Store some containers as prep
+    self._container_manager.StoreContainer(
+        source_module='Preflight1',
+        container=_TestContainer1('Stored by Preflight1'))
+    self._container_manager.StoreContainer(
+        source_module='ModuleA',
+        container=_TestContainer2('Stored by ModuleA'))
+
+    with self.subTest('wrong_source'):
+      for _ in range(0, 5):
+        # "pop" should be ignored when the requesting module is not the one that
+        # stored the container.
+        actual = self._container_manager.GetContainers(
+          requesting_module='ModuleA',
+          container_class=_TestContainer1,
+          pop=True)
+        self.assertEqual(len(actual), 1)
+        self.assertIn(_TestContainer1('Stored by Preflight1'), actual)
+
+    with self.subTest('same_source'):
+      actual = self._container_manager.GetContainers(
+        requesting_module='ModuleA',
+        container_class=_TestContainer2,
+        pop=True)
+      self.assertEqual(len(actual), 1)
+      self.assertIn(_TestContainer2('Stored by ModuleA'), actual)
+
+      # subsequent call returns nothing
+      actual = self._container_manager.GetContainers(
+        requesting_module='ModuleA',
+        container_class=_TestContainer2,
+        pop=True)
+      self.assertEqual(len(actual), 0)
+
+      # Other containers unaffected
+      actual = self._container_manager.GetContainers(
+        requesting_module='ModuleA',
+        container_class=_TestContainer1)
+      self.assertEqual(len(actual), 1)
+      self.assertIn(_TestContainer1('Stored by Preflight1'), actual)
+
 
 if __name__ == '__main__':
   unittest.main()

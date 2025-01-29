@@ -84,6 +84,7 @@ class ContainerManager():
   def GetContainers(self,
                     requesting_module: str,
                     container_class: Type[interface.AttributeContainer],
+                    pop: bool = False,
                     metadata_filter_key: str | None = None,
                     metadata_filter_value: Any = None
       ) -> Sequence[interface.AttributeContainer]:
@@ -95,6 +96,9 @@ class ContainerManager():
     Args:
       requesting_module: The module requesting the containers.
       container_class: The type of container to retrieve.
+      pop: True if the returned containers should be removed from the state.
+          False otherwise. Ignored if the source and requesting module do not
+          match. That is, a module can only pop containers it has stored.
       metadata_filter_key: An optional metadata key to use to filter.
       metadata_filter_value: An optional metadata value to use to filter.
 
@@ -120,6 +124,12 @@ class ContainerManager():
               c.metadata.get(metadata_filter_key) != metadata_filter_value)):
             continue
           ret_val.append(c)
+
+      if pop:
+        # A module can only pop containers it has stored.
+        for c in ret_val:
+          if c in self._modules[requesting_module].storage:
+            self._modules[requesting_module].storage.remove(c)
 
     return cast(Sequence[interface.AttributeContainer], ret_val)
 
