@@ -68,7 +68,7 @@ class OpenRelikProcessor(module.ThreadAwareModule):
     self.template_workflow_id = template_workflow_id
     self.incident_id = incident_id
 
-  def PollWorkflowStatus(self, workflow_id: int) -> Iterator[str]:
+  def PollWorkflowStatus(self, workflow_id: int) -> Iterator[str | None]:
     """Polls the status of a workflow until it completes."""
 
     filename = str(workflow_id)
@@ -118,12 +118,12 @@ class OpenRelikProcessor(module.ThreadAwareModule):
         str: The path to the downloaded file.
     """
     self.logger.info(f"Downloading {filename}, ID:{file_id}")
-    local_path = self.openrelik_api_client.download_file(file_id, filename)
+    local_path: str = self.openrelik_api_client.download_file(
+        file_id, filename)
     if not local_path:
       self.logger.error(f"Failed to download {filename}, ID:{file_id}")
       return None
-    self.PublishMessage(f"Saved output for file ID {
-                            file_id} to {local_path}")
+    self.PublishMessage(f"Saved output for file ID {file_id} to {local_path}")
     return local_path
 
   def Process(
@@ -159,8 +159,9 @@ class OpenRelikProcessor(module.ThreadAwareModule):
     self.openrelik_workflow_client.run_workflow(self.folder_id, workflow_id)
 
     for local_path in self.PollWorkflowStatus(workflow_id):
-      fs_container = containers.File(path=local_path, name=local_path)
-      self.StreamContainer(fs_container)
+      if local_path:
+        fs_container = containers.File(path=local_path, name=local_path)
+        self.StreamContainer(fs_container)
 
   @staticmethod
   def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
