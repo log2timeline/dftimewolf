@@ -1,8 +1,6 @@
 """Processes artifacts using OpenRelik."""
 
-import tempfile
 import time
-import os
 
 from typing import Type, Iterator
 
@@ -118,8 +116,7 @@ class OpenRelikProcessor(module.ThreadAwareModule):
         str: The path to the downloaded file.
     """
     self.logger.info(f"Downloading {filename}, ID:{file_id}")
-    local_path: str = self.openrelik_api_client.download_file(
-        file_id, filename)
+    local_path: str = self.openrelik_api_client.download_file(file_id, filename)
     if not local_path:
       self.logger.error(f"Failed to download {filename}, ID:{file_id}")
       return None
