@@ -46,6 +46,7 @@ MODULES = {
   'AzureCollector': 'dftimewolf.lib.collectors.azure',
   'AzureLogsCollector': 'dftimewolf.lib.collectors.azure_logging',
   'BigQueryCollector': 'dftimewolf.lib.collectors.bigquery',
+  'DataFrameToDiskExporter': 'dftimewolf.lib.exporters.df_to_filesystem',
   'FilesystemCollector': 'dftimewolf.lib.collectors.filesystem',
   'GCEDiskCopy': 'dftimewolf.lib.collectors.gce_disk_copy',
   'GCEDiskFromImage': 'dftimewolf.lib.exporters.gce_disk_from_image',
@@ -81,11 +82,13 @@ MODULES = {
   'SSHMultiplexer': 'dftimewolf.lib.preflights.ssh_multiplexer',
   'TimesketchEnhancer': 'dftimewolf.lib.enhancers.timesketch',
   'TimesketchExporter': 'dftimewolf.lib.exporters.timesketch',
+  'TimesketchSearchEventCollector': 'dftimewolf.lib.collectors.timesketch',
   'TurbiniaArtifactProcessorLegacy': 'dftimewolf.lib.processors.turbinia_artifact_legacy',
   'TurbiniaGCPProcessorLegacy': 'dftimewolf.lib.processors.turbinia_gcp_legacy',
   'TurbiniaArtifactProcessor': 'dftimewolf.lib.processors.turbinia_artifact',
   'TurbiniaGCPProcessor': 'dftimewolf.lib.processors.turbinia_gcp',
   'VTCollector' : 'dftimewolf.lib.collectors.virustotal',
+  'OpenRelikProcessor': 'dftimewolf.lib.processors.openrelik',
   'WorkspaceAuditCollector': 'dftimewolf.lib.collectors.workspace_audit',
   'WorkspaceAuditTimesketch': 'dftimewolf.lib.processors.workspace_audit_timesketch',
   'YetiYaraCollector': 'dftimewolf.lib.collectors.yara'
@@ -310,8 +313,11 @@ class DFTimewolfTool(object):
 
     self._state.command_line_options = vars(self._command_line_options)
 
-  def ValidateArguments(self) -> None:
+  def ValidateArguments(self, dry_run: bool=False) -> None:
     """Validate the arguments.
+
+    Args:
+      dry_run: True if the tool is only testing parameters, False otherwise.
 
     Raises:
       errors.CriticalError: If one or more arguments could not be validated.
@@ -329,7 +335,7 @@ class DFTimewolfTool(object):
       if argument_mandatory or argument_value is not None:
         try:
           valid_value = validators_manager.ValidatorsManager.Validate(
-              argument_value, arg)
+              argument_value, arg, dry_run)
           self.state.command_line_options[switch] = valid_value
         except errors.RecipeArgsValidationFailure as exception:
           error_messages.append(
@@ -519,7 +525,7 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
     recipe_name)
 
   try:
-    tool.ValidateArguments()
+    tool.ValidateArguments(tool.dry_run)
   except errors.CriticalError as exception:
     if cdm:
       cdm.EnqueueMessage('dftimewolf', str(exception), True)
@@ -564,18 +570,18 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
       cdm.EnqueueMessage('dftimewolf', str(exception), True)
     logger.critical(str(exception))
     return 1
+  finally:
+    time_run = time.time()*1000
+    tool.telemetry.LogTelemetry(
+      'run_delta', str(time_run - time_setup), 'core', recipe_name)
 
-  time_run = time.time()*1000
-  tool.telemetry.LogTelemetry(
-    'run_delta', str(time_run - time_setup), 'core', recipe_name)
+    tool.CleanUpPreflights()
 
-  tool.CleanUpPreflights()
-
-  total_time = time.time()*1000 - time_start
-  tool.telemetry.LogTelemetry(
-    'total_time', str(total_time), 'core', recipe_name)
-  for telemetry_row in tool.FormatTelemetry().split('\n'):
-    logger.debug(telemetry_row)
+    total_time = time.time()*1000 - time_start
+    tool.telemetry.LogTelemetry(
+      'total_time', str(total_time), 'core', recipe_name)
+    for telemetry_row in tool.FormatTelemetry().split('\n'):
+      logger.debug(telemetry_row)
 
   return 0
 

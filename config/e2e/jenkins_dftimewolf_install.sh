@@ -9,7 +9,7 @@ set -e
 sudo add-apt-repository ppa:gift/dev -y
 sudo apt-get update -qq
 sudo apt-get install -y python3-pip
-sudo apt-get install --reinstall python3-apt
+sudo apt-get install --reinstall -y python3-apt
 python3 --version
 /usr/bin/python3 -m pip install poetry --break-system-packages
 
@@ -94,6 +94,6 @@ if [[ "$*" =~ "include-turbinia" ]]; then
     /usr/bin/python3 -m pip install turbinia
 fi
 
-echo "Installing dftimewolf requirements via Poetry"
-# Install dftimewolf's pinned requirements
+echo "Installing dftimewolf via Poetry"
+# Install dftimewolf's pinned dependencies
 poetry install

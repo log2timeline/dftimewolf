@@ -2,15 +2,15 @@
 # -*- coding: utf-8 -*-
 """Tests the GCEDiskFromImage module."""
 
+
 import unittest
 
 from libcloudforensics.providers.gcp.internal import compute
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 import mock
-from dftimewolf import config
-from dftimewolf.lib import state
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.exporters import gce_disk_from_image
+from tests.lib import modules_test_base
 
 
 FAKE_IMAGES = 'fake-image-one,fake-image-two'
@@ -30,27 +30,23 @@ FAKE_STATE_GCS_OBJECT_LIST = [
 ]
 
 
-class GCEDiskFromImageTest(unittest.TestCase):
+class GCEDiskFromImageTest(modules_test_base.ModuleTestBase):
   """Tests for the Google Cloud disk creator."""
 
-  def testInitialization(self):
-    """Tests that the exporter can be initialized."""
-    test_state = state.DFTimewolfState(config.Config)
-    exporter = gce_disk_from_image.GCEDiskFromImage(test_state)
-    self.assertIsNotNone(exporter)
+  def setUp(self):
+    self._module: gce_disk_from_image.GCEDiskFromImage
+    self._InitModule(gce_disk_from_image.GCEDiskFromImage)
+    super().setUp()
 
   def testSetUp(self):
     """Tests SetUp of the exporter."""
-    test_state = state.DFTimewolfState(config.Config)
-
-    exporter = gce_disk_from_image.GCEDiskFromImage(test_state)
-    exporter.SetUp(FAKE_GCP_PROJECT_NAME, FAKE_ZONE, FAKE_IMAGES)
+    self._module.SetUp(FAKE_GCP_PROJECT_NAME, FAKE_ZONE, FAKE_IMAGES)
 
     actual_objects = [c.name for \
-        c in exporter.GetContainers(containers.GCEImage)]
+        c in self._module.GetContainers(containers.GCEImage)]
 
-    self.assertEqual(FAKE_GCP_PROJECT_NAME, exporter.dest_project_name)
-    self.assertEqual(FAKE_ZONE, exporter.dest_zone)
+    self.assertEqual(FAKE_GCP_PROJECT_NAME, self._module.dest_project_name)
+    self.assertEqual(FAKE_ZONE, self._module.dest_zone)
     self.assertEqual(sorted(actual_objects), sorted([
         'fake-image-one',
         'fake-image-two']))
@@ -66,20 +62,12 @@ class GCEDiskFromImageTest(unittest.TestCase):
     passed in parameters."""
     mock_lcf_create_disk_from_image.side_effect = FAKE_DISK_CREATION_RESPONSES
 
-    test_state = state.DFTimewolfState(config.Config)
+    self._module.SetUp(FAKE_GCP_PROJECT_NAME, FAKE_ZONE, FAKE_IMAGES)
 
-    exporter = gce_disk_from_image.GCEDiskFromImage(test_state)
-    exporter.SetUp(FAKE_GCP_PROJECT_NAME, FAKE_ZONE, FAKE_IMAGES)
-
-    exporter.PreProcess()
-    for c in exporter.GetContainers(exporter.GetThreadOnContainerType()):
-      exporter.Process(c)  # pytype: disable=wrong-arg-types
-      # GetContainers returns the abstract base class type, but process is
-      # called with the instantiated child class.
-    exporter.PostProcess()
+    self._ProcessModule()
 
     actual_output = [c.name for \
-        c in exporter.GetContainers(containers.GCEDisk)]
+        c in self._module.GetContainers(containers.GCEDisk)]
 
     self.assertEqual(sorted(actual_output), sorted([
       'fake-disk-one',
@@ -96,23 +84,15 @@ class GCEDiskFromImageTest(unittest.TestCase):
     a passed in state container."""
     mock_lcf_create_disk_from_image.side_effect = FAKE_DISK_CREATION_RESPONSES
 
-    test_state = state.DFTimewolfState(config.Config)
-
-    exporter = gce_disk_from_image.GCEDiskFromImage(test_state)
     for c in FAKE_STATE_GCS_OBJECT_LIST:
-      exporter.StoreContainer(c)
+      self._module.StoreContainer(c)
 
-    exporter.SetUp(FAKE_GCP_PROJECT_NAME, FAKE_ZONE)
+    self._module.SetUp(FAKE_GCP_PROJECT_NAME, FAKE_ZONE)
 
-    exporter.PreProcess()
-    for c in exporter.GetContainers(exporter.GetThreadOnContainerType()):
-      exporter.Process(c)  # pytype: disable=wrong-arg-types
-      # GetContainers returns the abstract base class type, but process is
-      # called with the instantiated child class.
-    exporter.PostProcess()
+    self._ProcessModule()
 
     actual_output = [c.name for \
-        c in exporter.GetContainers(containers.GCEDisk)]
+        c in self._module.GetContainers(containers.GCEDisk)]
 
     self.assertEqual(sorted(actual_output), sorted([
       'fake-disk-one',

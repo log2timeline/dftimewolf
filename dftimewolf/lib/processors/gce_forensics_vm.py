@@ -55,6 +55,7 @@ class GCEForensicsVM(module.BaseModule):
         state, name=name, critical=critical)
     self.project = None  # type: gcp_project.GoogleCloudProject
     self.analysis_vm = None  # type: compute.GoogleComputeInstance
+    self.analysis_vm_name = ''
     self.incident_id = str()
     self.boot_disk_size = 0.0
     self.boot_disk_type = str()
@@ -74,7 +75,8 @@ class GCEForensicsVM(module.BaseModule):
             cpu_cores: int,
             image_project: str,
             image_family: str,
-            create_analysis_vm: bool) -> None:
+            create_analysis_vm: bool,
+            analysis_vm_name: str) -> None:
     """Sets up a GCE Forensics VM processor.
 
     Args:
@@ -86,6 +88,9 @@ class GCEForensicsVM(module.BaseModule):
       image_project: Name of the project where the analysis VM image is hosted.
       image_family: Name of the image to use to create the analysis VM.
       create_analysis_vm: Legacy option. False to skip this module entirely.
+      analysis_vm_name: A name to use for the created analysis vm. Actual name
+          will also be suffixed with the incident ID (if the ID is not already
+          in the name.)
     """
     self.create_analysis_vm = create_analysis_vm
     if not self.create_analysis_vm:
@@ -105,35 +110,38 @@ class GCEForensicsVM(module.BaseModule):
     self.image_project = image_project
     self.image_family = image_family
 
+    self.analysis_vm_name = analysis_vm_name or 'gcp-forensics-vm'
+    if self.incident_id:
+      if self.incident_id not in self.analysis_vm_name:
+        self.analysis_vm_name = f'{self.analysis_vm_name}-{self.incident_id}'
+    else:
+      self.analysis_vm_name = common.GenerateUniqueInstanceName(
+          self.analysis_vm_name,
+          common.COMPUTE_NAME_LIMIT)
+
   def Process(self) -> None:
     """Launches the analysis VM."""
     if not self.create_analysis_vm:
       self.logger.warning('Skipping Process for Forensics VM creation.')
       return
 
-    if self.incident_id:
-      analysis_vm_name = f'gcp-forensics-vm-{self.incident_id}'
-    else:
-      analysis_vm_name = common.GenerateUniqueInstanceName(
-          'gcp-forensics-vm',
-          common.COMPUTE_NAME_LIMIT)
-    self.PublishMessage(f'Your analysis VM will be: {analysis_vm_name}')
+    self.PublishMessage(f'Your analysis VM will be: {self.analysis_vm_name}')
     self.logger.info("Complimentary gcloud command:")
     self.logger.info(
       f"gcloud compute ssh --project {self.project.project_id} "
-      f"{analysis_vm_name} --zone {self.project.default_zone}"
+      f"{self.analysis_vm_name} --zone {self.project.default_zone}"
     )
     self.StoreContainer(
         containers.TicketAttribute(
             name=self._ANALYSIS_VM_CONTAINER_ATTRIBUTE_NAME,
             type_=self._ANALYSIS_VM_CONTAINER_ATTRIBUTE_TYPE,
-            value=analysis_vm_name))
+            value=self.analysis_vm_name))
     try:
       # pylint: disable=too-many-function-args
       # pylint: disable=redundant-keyword-arg
       self.analysis_vm, created = gcp_forensics.StartAnalysisVm(
           self.project.project_id,
-          analysis_vm_name,
+          self.analysis_vm_name,
           self.project.default_zone,
           self.boot_disk_size,
           self.boot_disk_type,
@@ -144,7 +152,7 @@ class GCEForensicsVM(module.BaseModule):
       self.logger.error(f'Could not create VM: {exception}')
       self.ModuleError(str(exception), critical=True)
     if not created:
-      self.logger.debug(f"Instance {analysis_vm_name} exists: reusing.")
+      self.logger.debug(f"Instance {self.analysis_vm_name} exists: reusing.")
     if self._gcp_label:
       self.analysis_vm.AddLabels(self._gcp_label)
       self.analysis_vm.GetBootDisk().AddLabels(self._gcp_label)
@@ -171,7 +179,7 @@ class GCEForensicsVM(module.BaseModule):
       if d.project != self.project.project_id:
         continue
       try:
-        self.logger.info(f'Attaching {d.name} to {analysis_vm_name}')
+        self.logger.info(f'Attaching {d.name} to {self.analysis_vm_name}')
         self.analysis_vm.AttachDisk(compute.GoogleComputeDisk(
             self.project.project_id,
             self.project.default_zone,
@@ -179,7 +187,7 @@ class GCEForensicsVM(module.BaseModule):
       except RuntimeError as error:
         if 'RESOURCE_IN_USE_BY_ANOTHER_RESOURCE' in str(error):
           self.logger.warning(
-              f'Attaching {d.name} to {analysis_vm_name} failed, as it is '
+              f'Attaching {d.name} to {self.analysis_vm_name} failed, as it is '
               'already attached to another instance.')
         else:
           raise error

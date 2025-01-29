@@ -44,6 +44,7 @@ class DummyModule2(module.BaseModule):
     print(self.name + ' Process!')
     self.LogTelemetry({'random_key2': 'random_value2'})
 
+
 class DummyPreflightModule(module.PreflightModule):
   """Dummy preflight module."""
 

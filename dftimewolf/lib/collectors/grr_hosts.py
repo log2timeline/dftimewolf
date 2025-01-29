@@ -24,6 +24,11 @@ from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 
+
+class GRRError(Exception):
+  """Errors raised and handled within the GRR DFTW classes."""
+
+
 GRR_THREAD_POOL_SIZE = 10 # Arbitrary
 
 # TODO: GRRFlow should be extended by classes that actually implement
@@ -38,6 +43,8 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
   _CHECK_FLOW_INTERVAL_SEC = 10
   _MAX_OFFLINE_TIME_SEC = 3600  # One hour
   _LARGE_FILE_SIZE_THRESHOLD = 1 * 1024 * 1024 * 1024  # 1 GB
+  _MISSING_FILE_MESSAGE = ('%s was found on the client but not collected, '
+                           'probably due to file size: (%d)')
 
   _CLIENT_ID_REGEX = re.compile(r'^c\.[0-9a-f]{16}$', re.IGNORECASE)
 
@@ -125,7 +132,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     for client in search_result:
       fqdn_match = selector in client.data.os_info.fqdn.lower()
       client_id_match = selector in client.data.client_id.lower()
-      usernames = [user.username for user in client.data.users]
+      usernames = [user.username for user in client.data.knowledge_base.users]
       username_match = selector in usernames and len(usernames) == 1
       if fqdn_match or client_id_match or username_match:
         result.append((client.data.last_seen_at, client))
@@ -213,6 +220,37 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       if client is not None:
         clients.append(client)
     return clients
+
+  def VerifyClientAccess(self, client: Client) -> None:
+    """Verifies and requests access to a GRR client.
+
+    This call will block until the approval is granted.
+
+    Args:
+      client: GRR client object to verify access to.
+    """
+    client_fqdn = client.data.knowledge_base.fqdn
+
+    try:
+      client.VerifyAccess()
+      self.logger.info(f"Access to {client_fqdn} granted")
+      return
+    except grr_errors.AccessForbiddenError:
+      self.logger.warning(f"No access to {client_fqdn}, requesting...")
+
+    approval = client.CreateApproval(
+      reason=self.reason,
+      notified_users=self.approvers,
+      expiration_duration_days=30,
+    )
+
+    approval_url = (
+      f"{self.grr_url}/v2/clients/{approval.client_id}/users/"
+      f"{approval.username}/approvals/{approval.approval_id}"
+    )
+    self.PublishMessage(f"Approval URL: {approval_url}")
+    approval.WaitUntilValid()
+    self.logger.info(f"Access to {client_fqdn} granted")
 
   # TODO: change object to more specific GRR type information.
   def _LaunchFlow(self, client: Client, name: str, args: str) -> str:
@@ -428,6 +466,59 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     timeline.WriteToFile(final_bodyfile_path)
     return final_bodyfile_path
 
+  def _DownloadOsquery(
+      self,
+      client: Client,
+      flow_id: str,
+      flow_output_dir: str
+  ) -> Optional[str]:
+    """Download osquery results as a CSV file.
+
+    Args:
+      client: the GRR Client.
+      flow_id: the Osquery flow ID to download results from.
+      flow_output_dir: the directory to store the downloaded timeline.
+
+    Returns:
+      str: the path to the CSV file or None if there are no results.
+    """
+    grr_flow = client.Flow(flow_id)
+    list_results = list(grr_flow.ListResults())
+
+    if not list_results:
+      self.logger.warning(f"No results returned for flow ID {flow_id}")
+      return None
+
+    results = []
+    for result in list_results:
+      payload = result.payload
+      if isinstance(payload, osquery_flows.OsqueryCollectedFile):
+        # We don't do anything with any collected files for now as we are just
+        # interested in the osquery results.
+        self.logger.info(
+            f'Skipping collected file - {payload.stat_entry.pathspec}.')
+        continue
+      if not isinstance(payload, osquery_flows.OsqueryResult):
+        self.logger.error(f'Incorrect results format from flow ID {flow_id}')
+        continue
+
+      headers = [column.name for column in payload.table.header.columns]
+      data = []
+      for row in payload.table.rows:
+        data.append(row.values)
+      data_frame = pd.DataFrame.from_records(data, columns=headers)
+      results.append(data_frame)
+
+    fqdn = client.data.os_info.fqdn.lower()
+    output_file_path = os.path.join(
+        flow_output_dir,
+        '.'.join(str(val) for val in (fqdn, flow_id, 'csv')))
+    with open(output_file_path, mode='w') as fd:
+      merged_data_frame = pd.concat(results)
+      merged_data_frame.to_csv(fd)
+
+    return output_file_path
+
   def _DownloadFiles(self, client: Client, flow_id: str) -> Optional[str]:
     """Download files/results from the specified flow.
 
@@ -445,17 +536,63 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     os.makedirs(flow_output_dir, exist_ok=True)
 
     flow_name = flow_handle.data.name
-    if flow_name == "TimelineFlow":
-      self.logger.debug("Downloading timeline from GRR")
+    if flow_name == 'TimelineFlow':
+      self.logger.info('Downloading timeline from GRR')
       self._DownloadTimeline(client, flow_handle, flow_output_dir)
       return flow_output_dir
+
+    if flow_name == 'OsqueryFlow':
+      self.logger.info('Downloading osquery results from GRR')
+      self._DownloadOsquery(client, flow_id, flow_output_dir)
+      return flow_output_dir
+
+    try:
+      missing = self._CheckForMissingFiles(flow_handle)
+      if missing:
+        message = '\n'.join([self._MISSING_FILE_MESSAGE % (path, size)
+                             for path, size in missing])
+        self.PublishMessage(f'\n{message}\n', is_error=True)
+    except GRRError:
+      pass
 
     payloads = []
     for r in flow_handle.ListResults():
       payloads.append(r.payload)
+    self.logger.info('Downloading data blobs from GRR')
     self._DownloadBlobs(client, payloads, flow_output_dir)
 
     return flow_output_dir
+
+  def _CheckForMissingFiles(
+      self, flow_handle: flow.Flow) -> list[tuple[str, int]]:
+    """Check a ClientFileFinder result list for files that weren't collected.
+
+    Args:
+      flow_handle: A flow to check for missing files.
+
+    Returns:
+      A list of tuples of:
+        A file where collection was skipped or failed
+        The file size in bytes
+    """
+    results = list(flow_handle.ListResults())
+    if not results:
+      raise DFTimewolfError(
+          f'No FileFinder results for {flow_handle.flow_id}')
+    if flow_handle.data.name != 'ClientFileFinder':
+      raise GRRError()
+    missing: list[tuple[str, int]] = []
+    for result in results:
+      payload = flows_pb2.FileFinderResult()
+      result.data.payload.Unpack(payload)
+      if not payload.HasField('transferred_file'):
+        pathspec = payload.stat_entry.pathspec
+        if pathspec.mount_point and pathspec.nested_path.path:
+          pathname = pathspec.mount_point + pathspec.nested_path.path
+        else:
+          pathname = pathspec.path
+        missing.append((pathname, payload.stat_entry.st_size))
+    return missing
 
   def GetThreadPoolSize(self) -> int:
     """Thread pool size."""
@@ -721,24 +858,46 @@ class GRRArtifactCollector(GRRFlow):
   """
 
   _DEFAULT_ARTIFACTS_LINUX = [
-      'LinuxAuditLogs', 'LinuxAuthLogs', 'LinuxCronLogs', 'LinuxWtmp',
-      'ShellHistoryFile', 'ZeitgeistDatabase'
+      # keep-sorted start
+      'LinuxAuditLogs',
+      'LinuxAuthLogs',
+      'LinuxCronLogs',
+      'LinuxWtmp',
+      'ShellHistoryFile',
+      'ZeitgeistDatabase',
+      # keep-sorted end
   ]
 
   _DEFAULT_ARTIFACTS_DARWIN = [
-      'MacOSRecentItemsPlistFile', 'BashShellHistoryFile',
-      'MacOSLaunchAgentsPlistFile', 'MacOSAuditLogFile', 'MacOSSystemLogFile',
-      'MacOSAppleSystemLogFile', 'MacOSLogFile', 'MacOSAppleSetupDoneFile',
+      # keep-sorted start
+      'BashShellHistoryFile',
+      'MacOSAppleSetupDoneFile',
+      'MacOSAppleSystemLogFile',
+      'MacOSAuditLogFile',
+      'MacOSInstallationHistoryPlistFile',
+      'MacOSInstallationLogFile',
+      'MacOSLaunchAgentsPlistFile',
+      'MacOSLaunchDaemonsPlistFile',
+      'MacOSLogFile',
       'MacOSQuarantineEventsSQLiteDatabaseFile',
-      'MacOSLaunchDaemonsPlistFile', 'MacOSInstallationHistoryPlistFile',
-      'MacOSUserApplicationLogFile', 'MacOSInstallationLogFile'
+      'MacOSRecentItemsPlistFile',
+      'MacOSSystemLogFile',
+      'MacOSUserApplicationLogFile',
+      # keep-sorted end
   ]
 
   _DEFAULT_ARTIFACTS_WINDOWS = [
-      'WindowsAppCompatCache', 'WindowsEventLogs', 'WindowsPrefetchFiles',
-      'WindowsScheduledTasks', 'WindowsSearchDatabase',
-      'WindowsSuperFetchFiles', 'WindowsSystemRegistryFiles',
-      'WindowsUserRegistryFiles', 'WindowsXMLEventLogTerminalServices'
+      # keep-sorted start
+      'WindowsAppCompatCache',
+      'WindowsEventLogs',
+      'WindowsPrefetchFiles',
+      'WindowsScheduledTasks',
+      'WindowsSearchDatabase',
+      'WindowsSuperFetchFiles',
+      'WindowsSystemRegistryFiles',
+      'WindowsUserRegistryFiles',
+      'WindowsXMLEventLogTerminalServices'
+      # keep-sorted end
   ]
 
   artifact_registry = {
@@ -857,10 +1016,6 @@ class GRRArtifactCollector(GRRFlow):
 
       if not artifact_list:
         return
-
-      if client.data.os_info.system.lower() == 'windows':
-        self.logger.debug("Switching to raw filesystem access for Windows.")
-        self.use_raw_filesystem_access = True
 
       flow_args = flows_pb2.ArtifactCollectorFlowArgs(
         artifact_list=artifact_list,
@@ -1134,6 +1289,11 @@ class GRROsqueryCollector(GRRFlow):
     results = []
     for result in list_results:
       payload = result.payload
+      if isinstance(payload, osquery_flows.OsqueryCollectedFile):
+        # We don't do anything with any collected files for now as we are just
+        # interested in the osquery results.
+        self.logger.info(f'File collected - {payload.stat_entry.pathspec}.')
+        continue
       if not isinstance(payload, osquery_flows.OsqueryResult):
         self.logger.error(f'Incorrect results format from flow ID {grr_flow}')
         continue
@@ -1159,8 +1319,12 @@ class GRROsqueryCollector(GRRFlow):
       client: the GRR Client.
       osquery_container: the OSQuery.
     """
+    query = osquery_container.query
+    if not query.strip().endswith(';'):
+      query += ';'
+
     flow_args = osquery_flows.OsqueryFlowArgs()
-    flow_args.query = osquery_container.query
+    flow_args.query = query
     flow_args.timeout_millis = self.timeout_millis
     flow_args.ignore_stderr_errors = self.ignore_stderr_errors
     flow_args.configuration_content = osquery_container.configuration_content
@@ -1179,7 +1343,6 @@ class GRROsqueryCollector(GRRFlow):
 
     name = osquery_container.name
     description = osquery_container.description
-    query = osquery_container.query
     flow_identifier = flow_id
     client_identifier = client.client_id
 
@@ -1193,23 +1356,23 @@ class GRROsqueryCollector(GRRFlow):
           data_frame=pd.DataFrame(),
           flow_identifier=flow_identifier,
           client_identifier=client_identifier)
-      self.state.StoreContainer(results_container)
+      self.StoreContainer(results_container)
       return
 
-    for data_frame in results:
-      self.logger.info(
-          f'{str(flow_id)} ({hostname}): {len(data_frame)} rows collected')
+    merged_results = pd.concat(results)
+    self.logger.info(
+        f'{str(flow_id)} ({hostname}): {len(merged_results)} rows collected')
 
-      dataframe_container = containers.OsqueryResult(
-          name=name,
-          description=description,
-          query=query,
-          hostname=hostname,
-          data_frame=data_frame,
-          flow_identifier=flow_identifier,
-          client_identifier=client_identifier)
+    dataframe_container = containers.OsqueryResult(
+        name=name,
+        description=description,
+        query=query,
+        hostname=hostname,
+        data_frame=merged_results,
+        flow_identifier=flow_identifier,
+        client_identifier=client_identifier)
 
-      self.state.StoreContainer(dataframe_container)
+    self.StoreContainer(dataframe_container)
 
   def Process(self, container: containers.Host
               ) -> None:  # pytype: disable=signature-mismatch
@@ -1220,7 +1383,7 @@ class GRROsqueryCollector(GRRFlow):
     """
     client = self._GetClientBySelector(container.hostname)
 
-    osquery_containers = self.state.GetContainers(containers.OsqueryQuery)
+    osquery_containers = self.GetContainers(containers.OsqueryQuery)
 
     host_osquery_futures = []
     with ThreadPoolExecutor(self.GetQueryThreadPoolSize()) as executor:
@@ -1340,7 +1503,11 @@ class GRRFlowCollector(GRRFlow):
       if host:
         client = self._GetClientBySelector(host)
         for flow_id in flows:
+          self.logger.info(
+                f'Verifying client access for {client.client_id}...'
+            )
           try:
+            self.VerifyClientAccess(client)
             client.Flow(flow_id).Get()
             self.StoreContainer(containers.GrrFlow(host, flow_id))
           except Exception as exception:  # pylint: disable=broad-except

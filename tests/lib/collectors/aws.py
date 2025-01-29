@@ -10,10 +10,9 @@ import mock
 from libcloudforensics.providers.aws.internal import account as aws_account
 from libcloudforensics.providers.aws.internal import ebs, ec2
 
-from dftimewolf import config
-from dftimewolf.lib import state
 from dftimewolf.lib.collectors import aws
 from dftimewolf.lib.containers import containers
+from tests.lib import modules_test_base
 
 with mock.patch('boto3.session.Session._setup_loader') as mock_session:
   mock_session.return_value = None
@@ -54,14 +53,18 @@ FAKE_VOLUME_COPY = ebs.AWSVolume(
     False)
 
 
-class AWSCollectorTest(unittest.TestCase):
+class AWSCollectorTest(modules_test_base.ModuleTestBase):
   """Tests for the AWS collector."""
+
+  # For Pytype
+  _module: aws.AWSCollector
+
+  def setUp(self):
+    self._InitModule(aws.AWSCollector)
 
   def testInitialization(self):
     """Tests that the collector can be initialized."""
-    test_state = state.DFTimewolfState(config.Config)
-    gcloud_collector = aws.AWSCollector(test_state)
-    self.assertIsNotNone(gcloud_collector)
+    self.assertIsNotNone(self._module)
 
   # pylint: disable=invalid-name
   @mock.patch('boto3.session.Session._setup_loader')
@@ -69,29 +72,26 @@ class AWSCollectorTest(unittest.TestCase):
   @mock.patch('libcloudforensics.providers.aws.forensics.StartAnalysisVm')
   def testSetUp1(self, mock_StartAnalysisVm, mock_AWSInstance, mock_loader):
     """Tests that the collector can be initialized."""
-    test_state = state.DFTimewolfState(config.Config)
     mock_StartAnalysisVm.return_value = (mock_AWSInstance, None)
     mock_loader.return_value = None
 
-    aws_collector = aws.AWSCollector(test_state)
-
     # Setup the collector with minimum information
-    aws_collector.SetUp(
+    self._module.SetUp(
         'test-remote-profile-name',
         'test-remote-zone',
         'fake_incident_id',
         remote_instance_id='my-owned-instance-id'
     )
-    self.assertEqual([], test_state.errors)
+    self._AssertNoErrors()
     self.assertEqual(
-        'test-remote-profile-name', aws_collector.remote_profile_name)
-    self.assertEqual('test-remote-zone', aws_collector.remote_zone)
-    self.assertEqual('fake_incident_id', aws_collector.incident_id)
-    self.assertEqual([], aws_collector.volume_ids)
-    self.assertEqual(aws_collector.all_volumes, False)
+        'test-remote-profile-name', self._module.remote_profile_name)
+    self.assertEqual('test-remote-zone', self._module.remote_zone)
+    self.assertEqual('fake_incident_id', self._module.incident_id)
+    self.assertEqual([], self._module.volume_ids)
+    self.assertEqual(self._module.all_volumes, False)
     self.assertEqual(
-        'test-remote-profile-name', aws_collector.analysis_profile_name)
-    self.assertEqual('test-remote-zone', aws_collector.analysis_zone)
+        'test-remote-profile-name', self._module.analysis_profile_name)
+    self.assertEqual('test-remote-zone', self._module.analysis_zone)
 
     mock_StartAnalysisVm.assert_called_with(
         'aws-forensics-vm-fake_incident_id',
@@ -107,14 +107,11 @@ class AWSCollectorTest(unittest.TestCase):
   @mock.patch('libcloudforensics.providers.aws.forensics.StartAnalysisVm')
   def testSetUp2(self, mock_StartAnalysisVm, mock_loader):
     """Tests that the collector can be initialized."""
-    test_state = state.DFTimewolfState(config.Config)
     mock_StartAnalysisVm.return_value = (FAKE_INSTANCE, None)
     mock_loader.return_value = None
 
-    aws_collector = aws.AWSCollector(test_state)
-
     # Setup the collector with an instance ID, destination zone and profile.
-    aws_collector.SetUp(
+    self._module.SetUp(
         'test-remote-profile-name',
         'test-remote-zone',
         'fake_incident_id',
@@ -123,17 +120,17 @@ class AWSCollectorTest(unittest.TestCase):
         analysis_profile_name='test-analysis-profile-name',
         analysis_zone='test-analysis-zone'
     )
-    self.assertEqual([], test_state.errors)
+    self._AssertNoErrors()
     self.assertEqual(
-        'test-remote-profile-name', aws_collector.remote_profile_name)
-    self.assertEqual('test-remote-zone', aws_collector.remote_zone)
-    self.assertEqual('fake_incident_id', aws_collector.incident_id)
-    self.assertEqual([], aws_collector.volume_ids)
-    self.assertEqual(aws_collector.all_volumes, True)
-    self.assertEqual('my-owned-instance-id', aws_collector.remote_instance_id)
+        'test-remote-profile-name', self._module.remote_profile_name)
+    self.assertEqual('test-remote-zone', self._module.remote_zone)
+    self.assertEqual('fake_incident_id', self._module.incident_id)
+    self.assertEqual([], self._module.volume_ids)
+    self.assertEqual(self._module.all_volumes, True)
+    self.assertEqual('my-owned-instance-id', self._module.remote_instance_id)
     self.assertEqual(
-        'test-analysis-profile-name', aws_collector.analysis_profile_name)
-    self.assertEqual('test-analysis-zone', aws_collector.analysis_zone)
+        'test-analysis-profile-name', self._module.analysis_profile_name)
+    self.assertEqual('test-analysis-zone', self._module.analysis_zone)
 
     mock_StartAnalysisVm.assert_called_with(
         'aws-forensics-vm-fake_incident_id',
@@ -162,9 +159,7 @@ class AWSCollectorTest(unittest.TestCase):
     mock_CreateVolumeCopy.return_value = FAKE_VOLUME_COPY
     mock_loader.return_value = None
 
-    test_state = state.DFTimewolfState(config.Config)
-    aws_collector = aws.AWSCollector(test_state)
-    aws_collector.SetUp(
+    self._module.SetUp(
         'test-remote-profile-name',
         'test-remote-zone',
         'fake_incident_id',
@@ -173,7 +168,7 @@ class AWSCollectorTest(unittest.TestCase):
         analysis_profile_name='test-analysis-profile-name',
         analysis_zone='test-analysis-zone'
     )
-    aws_collector.Process()
+    self._ProcessModule()
 
     mock_CreateVolumeCopy.assert_called_with(
         'test-remote-zone',
@@ -181,8 +176,9 @@ class AWSCollectorTest(unittest.TestCase):
         volume_id=FAKE_VOLUME.volume_id,
         src_profile='test-remote-profile-name',
         dst_profile='test-analysis-profile-name')
-    forensics_vms = aws_collector.GetContainers(containers.ForensicsVM)
+    forensics_vms = self._module.GetContainers(containers.ForensicsVM)
     forensics_vm = forensics_vms[0]
+    self.assertIsNotNone(forensics_vm)
     self.assertEqual('fake-analysis-vm', forensics_vm.name)
     self.assertEqual(
         'fake-volume-id-copy',
@@ -205,8 +201,6 @@ class AWSCollectorTest(unittest.TestCase):
                             mock_GetBootVolume,
                             mock_loader):
     """Tests the FindVolumesToCopy function with different SetUp() calls."""
-    test_state = state.DFTimewolfState(config.Config)
-    aws_collector = aws.AWSCollector(test_state)
     mock_StartAnalysisVm.return_value = (FAKE_INSTANCE, None)
     mock_loader.return_value = None
     mock_ListVolumes.return_value = {
@@ -219,13 +213,13 @@ class AWSCollectorTest(unittest.TestCase):
 
     # Nothing is specified, AWSCollector should collect the instance's
     # boot volume
-    aws_collector.SetUp(
+    self._module.SetUp(
         'test-remote-profile-name',
         'test-remote-zone',
         'fake_incident_id',
         remote_instance_id='my-owned-instance-id'
     )
-    volumes = aws_collector._FindVolumesToCopy()
+    volumes = self._module._FindVolumesToCopy()
     self.assertEqual(1, len(volumes))
     self.assertEqual('fake-boot-volume-id', volumes[0].volume_id)
     mock_GetInstanceById.assert_called_once()
@@ -234,28 +228,28 @@ class AWSCollectorTest(unittest.TestCase):
 
     # Specifying all_volumes should return all volumes for the instance
     # (see mock_ListVolumes return value)
-    aws_collector.SetUp(
+    self._module.SetUp(
         'test-remote-profile-name',
         'test-remote-zone',
         'fake_incident_id',
         remote_instance_id='my-owned-instance-id',
         all_volumes=True
     )
-    volumes = aws_collector._FindVolumesToCopy()
+    volumes = self._module._FindVolumesToCopy()
     self.assertEqual(2, len(volumes))
     self.assertEqual('fake-boot-volume-id', volumes[0].volume_id)
     self.assertEqual('fake-volume-id', volumes[1].volume_id)
     mock_ListVolumes.assert_called_once()
 
     # If a list of 1 volume ID is passed, that volume only should be returned
-    aws_collector.SetUp(
+    self._module.SetUp(
         'test-remote-profile-name',
         'test-remote-zone',
         'fake_incident_id',
         remote_instance_id='',
         volume_ids=FAKE_VOLUME.volume_id
     )
-    volumes = aws_collector._FindVolumesToCopy()
+    volumes = self._module._FindVolumesToCopy()
     self.assertEqual(1, len(volumes))
     self.assertEqual('fake-volume-id', volumes[0].volume_id)
     mock_GetVolumeById.assert_called_once()

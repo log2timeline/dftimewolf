@@ -197,15 +197,19 @@ class AWSToGCPForensicsEndToEndTest(unittest.TestCase):
     self.test_state.RunModules()
 
     # AWS Volume in count should equal GCE Disk out count, and be at least 1
-    self.assertGreaterEqual(
-        len(self.test_state.GetContainers(containers.AWSVolume)), 1)
-    self.assertEqual(len(self.test_state.GetContainers(containers.AWSVolume)),
-        len(self.test_state.GetContainers(containers.GCEDisk)))
+    aws_volumes = self.test_state.GetContainers(
+        container_class=containers.AWSVolume,
+        requesting_module='AWSVolumeSnapshotCollector')
+    gce_disks = self.test_state.GetContainers(
+        container_class=containers.GCEDisk,
+        requesting_module='GCEDiskFromImage')
+    self.assertGreaterEqual(len(aws_volumes), 1)
+    self.assertEqual(len(aws_volumes), len(gce_disks))
 
     disks = compute.GoogleCloudCompute(self.gcp_project_id).Disks()
     real_gce_disk_names = [disks[k].name for k in disks.keys()]
 
-    for d in self.test_state.GetContainers(containers.GCEDisk):
+    for d in gce_disks:
       self.assertIn(d.name, real_gce_disk_names)
       real_disk = compute.GoogleComputeDisk(
           self.gcp_project_id, self.gcp_zone, d.name)
@@ -217,15 +221,25 @@ class AWSToGCPForensicsEndToEndTest(unittest.TestCase):
     log.warning("Cleaning up after test...")
     # All of the following artefacts are created: AWSSnapshot, AWSS3Object,
     # GCSObject, GCEImage, GCEDisk
-    for c in self.test_state.GetContainers(containers.AWSSnapshot):
+    for c in self.test_state.GetContainers(
+        container_class=containers.AWSSnapshot,
+        requesting_module='AWSVolumeSnapshotCollector'):
       self._removeAWSSnapshot(c.id)
-    for c in self.test_state.GetContainers(containers.AWSS3Object):
+    for c in self.test_state.GetContainers(
+        container_class=containers.AWSS3Object,
+        requesting_module='AWSSnapshotS3CopyCollector'):
       self._removeAWSS3Object(c.path)
-    for c in self.test_state.GetContainers(containers.GCSObject):
+    for c in self.test_state.GetContainers(
+        container_class=containers.GCSObject,
+        requesting_module='S3ToGCSCopy'):
       self._removeGCSObject(c.path)
-    for c in self.test_state.GetContainers(containers.GCEImage):
+    for c in self.test_state.GetContainers(
+        container_class=containers.GCEImage,
+        requesting_module='GCSToGCEImage'):
       self._removeGCEImage(c.name)
-    for c in self.test_state.GetContainers(containers.GCEDisk):
+    for c in self.test_state.GetContainers(
+        container_class=containers.GCEDisk,
+        requesting_module='GCEDiskFromImage'):
       self._removeGCEDisk(c.name)
 
   def _removeAWSSnapshot(self, snap_id: str):

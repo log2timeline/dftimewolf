@@ -44,7 +44,8 @@
         "cpu_cores": "@cpu_cores",
         "image_project": "ubuntu-os-cloud",
         "image_family": "ubuntu-2204-lts",
-        "create_analysis_vm": "@create_analysis_vm"
+        "create_analysis_vm": "@create_analysis_vm",
+        "analysis_vm_name": "@analysis_vm_name"
       }
     }
   ],
@@ -60,6 +61,7 @@
       ["--cpu_cores", "Number of CPU cores of the analysis VM.", "4", {"format": "integer"}],
       ["--boot_disk_size", "The size of the analysis VM boot disk (in GB).", "50", {"format": "integer"}],
       ["--boot_disk_type", "Disk type to use [pd-standard, pd-ssd].", "pd-standard", {"format": "regex", "regex": "^pd-((ssd)|(standard))$"}],
-      ["--zone", "The GCP zone where the Analysis VM and copied disks will be created.", "us-central1-f", {"format": "gcp_zone"}]
+      ["--zone", "The GCP zone where the Analysis VM and copied disks will be created.", "us-central1-f", {"format": "gcp_zone"}],
+      ["--analysis_vm_name", "Name (prefix) to give the analysis vm.", "gcp-forensics-vm"]
   ]
 }

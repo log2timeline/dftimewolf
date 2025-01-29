@@ -22,7 +22,8 @@
             "turbinia_zone": "@turbinia_zone",
             "turbinia_api": "@turbinia_api",
             "incident_id": "@incident_id",
-            "sketch_id": "@sketch_id"
+            "sketch_id": "@sketch_id",
+            "priority_filter": "@priority_filter"
         }
     }, {
         "wants": ["TurbiniaGCPProcessor"],
@@ -52,6 +53,7 @@
         ["--turbinia_recipe", "The Turbinia recipe name to use for evidence processing.", null],
         ["--turbinia_auth", "Flag to indicate whether Turbinia API server requires authentication.", false],
         ["--turbinia_api", "Turbinia API server endpoint.", "http://127.0.0.1:8000"],
-        ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true]
+        ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true],
+        ["--priority_filter", "Filter report findings, range from 0 to 100, 0 is the highest.", "100", {"format": "integer"}]
     ]
 }

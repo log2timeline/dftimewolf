@@ -8,10 +8,9 @@ import mock
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal import compute
 
-from dftimewolf import config
-from dftimewolf.lib import state
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.exporters import gcs_to_gce_image
+from tests.lib import modules_test_base
 
 
 FAKE_GCS_OBJECTS = 'gs://fake-gcs-bucket/one,gs://fake-gcs-bucket/two'
@@ -46,29 +45,27 @@ FAKE_STATE_GCS_OBJECT_LIST = [
 ]
 
 
-class GCSToGCEImageTest(unittest.TestCase):
+class GCSToGCEImageTest(modules_test_base.ModuleTestBase):
   """Tests for the Google Cloud disk exporter."""
 
-  def testInitialization(self):
-    """Tests that the exporter can be initialized."""
-    test_state = state.DFTimewolfState(config.Config)
-    exporter = gcs_to_gce_image.GCSToGCEImage(test_state)
-    self.assertIsNotNone(exporter)
+  # For pytype
+  _module: gcs_to_gce_image.GCSToGCEImage
+
+  def setUp(self):
+    self._InitModule(gcs_to_gce_image.GCSToGCEImage)
+    super().setUp()
 
   # pylint: disable=line-too-long,unused-argument
   @mock.patch('libcloudforensics.providers.gcp.internal.common.default', return_value = ('', None))
   # pylint: enable=line-too-long
   def testSetUp(self, mock_auth_default):
     """Tests SetUp of the exporter."""
-    test_state = state.DFTimewolfState(config.Config)
-
-    exporter = gcs_to_gce_image.GCSToGCEImage(test_state)
-    exporter.SetUp(FAKE_GCP_PROJECT_NAME, FAKE_GCS_OBJECTS)
+    self._module.SetUp(FAKE_GCP_PROJECT_NAME, FAKE_GCS_OBJECTS)
 
     actual_objects = [c.path for \
-        c in exporter.GetContainers(containers.GCSObject)]
+        c in self._module.GetContainers(containers.GCSObject)]
 
-    self.assertEqual(FAKE_GCP_PROJECT_NAME, exporter.dest_project_name)
+    self.assertEqual(FAKE_GCP_PROJECT_NAME, self._module.dest_project_name)
     self.assertEqual(sorted(actual_objects), sorted([
         'gs://fake-gcs-bucket/one',
         'gs://fake-gcs-bucket/two']))
@@ -93,20 +90,12 @@ class GCSToGCEImageTest(unittest.TestCase):
     mock_gcp_service().roles().list_next.return_value = None
     mock_gcp_service().projects().get().execute.return_value = FAKE_PROJECT_GET
 
-    test_state = state.DFTimewolfState(config.Config)
+    self._module.SetUp(FAKE_GCP_PROJECT_NAME, FAKE_GCS_OBJECTS)
 
-    exporter = gcs_to_gce_image.GCSToGCEImage(test_state)
-    exporter.SetUp(FAKE_GCP_PROJECT_NAME, FAKE_GCS_OBJECTS)
-
-    exporter.PreProcess()
-    for c in exporter.GetContainers(exporter.GetThreadOnContainerType()):
-      exporter.Process(c)  # pytype: disable=wrong-arg-types
-      # GetContainers returns the abstract base class type, but process is
-      # called with the instantiated child class.
-    exporter.PostProcess()
+    self._ProcessModule()
 
     actual_output = [c.name for \
-        c in exporter.GetContainers(containers.GCEImage)]
+        c in self._module.GetContainers(containers.GCEImage)]
 
     self.assertEqual(sorted(actual_output), sorted([
         'fake-gcs-bucket-one',
@@ -132,22 +121,15 @@ class GCSToGCEImageTest(unittest.TestCase):
     mock_gcp_service().projects().get().execute.return_value = FAKE_PROJECT_GET
     mock_lcf_import_image_from_storage.side_effect = FAKE_IMPORT_IMAGE_RESPONSES
 
-    test_state = state.DFTimewolfState(config.Config)
-    exporter = gcs_to_gce_image.GCSToGCEImage(test_state)
     for c in FAKE_STATE_GCS_OBJECT_LIST:
-      exporter.StoreContainer(c)
+      self._module.StoreContainer(c)
 
-    exporter.SetUp(FAKE_GCP_PROJECT_NAME)
+    self._module.SetUp(FAKE_GCP_PROJECT_NAME)
 
-    exporter.PreProcess()
-    for c in exporter.GetContainers(exporter.GetThreadOnContainerType()):
-      exporter.Process(c)  # pytype: disable=wrong-arg-types
-      # GetContainers returns the abstract base class type, but process is
-      # called with the instantiated child class.
-    exporter.PostProcess()
+    self._ProcessModule()
 
     actual_output = [c.name for \
-        c in exporter.GetContainers(containers.GCEImage)]
+        c in self._module.GetContainers(containers.GCEImage)]
 
     self.assertEqual(sorted(actual_output), sorted([
         'fake-gcs-bucket-one',

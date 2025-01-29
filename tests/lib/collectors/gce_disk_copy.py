@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """Tests for the GCEDiskCopy collector."""
 
+
 import unittest
 
 from googleapiclient.errors import HttpError
@@ -12,10 +13,11 @@ from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal import compute
 from libcloudforensics import errors as lcf_errors
 
-from dftimewolf import config
-from dftimewolf.lib import errors, state
+from dftimewolf.lib import errors
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.collectors import gce_disk_copy
+from tests.lib import modules_test_base
+
 
 FAKE_PROJECT = gcp_project.GoogleCloudProject(
     'test-target-project-name',
@@ -53,22 +55,20 @@ FAKE_DISK_COPY = [
         'disk2-copy')
 ]
 
-class GCEDiskCopyTest(unittest.TestCase):
+class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
   """Tests for the GCEDiskCopy collector."""
 
-  def testInitialization(self):
-    """Tests that the collector can be initialized."""
-    test_state = state.DFTimewolfState(config.Config)
-    collector = gce_disk_copy.GCEDiskCopy(test_state)
-    self.assertIsNotNone(collector)
+  # For pytype
+  _module: gce_disk_copy.GCEDiskCopy
+
+  def setUp(self):
+    self._InitModule(gce_disk_copy.GCEDiskCopy)
+    super().setUp()
 
   def testSetUp(self):
     """Tests the SetUp method of the collector."""
-    test_state = state.DFTimewolfState(config.Config)
-
     # Test setup with single disk and instance
-    collector = gce_disk_copy.GCEDiskCopy(test_state)
-    collector.SetUp(
+    self._module.SetUp(
         'test-destination-project-name',
         'test-source-project-name',
         'fake_zone',
@@ -77,19 +77,17 @@ class GCEDiskCopyTest(unittest.TestCase):
         all_disks=True,
         stop_instances=True
     )
-    self.assertEqual(test_state.errors, [])
-    self.assertEqual(collector.destination_project.project_id,
+    self.assertEqual(self._module.destination_project.project_id,
                      'test-destination-project-name')
-    self.assertEqual(collector.source_project.project_id,
+    self.assertEqual(self._module.source_project.project_id,
                      'test-source-project-name')
-    self.assertEqual(collector.remote_instance_names, ['my-owned-instance'])
-    self.assertEqual(collector.disk_names, ['fake-disk'])
-    self.assertEqual(collector.all_disks, True)
-    self.assertEqual(collector.stop_instances, True)
+    self.assertEqual(self._module.remote_instance_names, ['my-owned-instance'])
+    self.assertEqual(self._module.disk_names, ['fake-disk'])
+    self.assertEqual(self._module.all_disks, True)
+    self.assertEqual(self._module.stop_instances, True)
 
     # Test setup with multiple disks and instances
-    collector = gce_disk_copy.GCEDiskCopy(test_state)
-    collector.SetUp(
+    self._module.SetUp(
         'test-destination-project-name',
         'test-source-project-name',
         'fake_zone',
@@ -98,21 +96,19 @@ class GCEDiskCopyTest(unittest.TestCase):
         False,
         False
     )
-    self.assertEqual(test_state.errors, [])
-    self.assertEqual(collector.destination_project.project_id,
+    self.assertEqual(self._module.destination_project.project_id,
                      'test-destination-project-name')
-    self.assertEqual(collector.source_project.project_id,
+    self.assertEqual(self._module.source_project.project_id,
                      'test-source-project-name')
-    self.assertEqual(sorted(collector.remote_instance_names), sorted([
+    self.assertEqual(sorted(self._module.remote_instance_names), sorted([
                      'my-owned-instance1', 'my-owned-instance2']))
-    self.assertEqual(sorted(collector.disk_names), sorted([
+    self.assertEqual(sorted(self._module.disk_names), sorted([
                      'fake-disk-1', 'fake-disk-2']))
-    self.assertEqual(collector.all_disks, False)
-    self.assertEqual(collector.stop_instances, False)
+    self.assertEqual(self._module.all_disks, False)
+    self.assertEqual(self._module.stop_instances, False)
 
     # Test setup with no destination project
-    collector = gce_disk_copy.GCEDiskCopy(test_state)
-    collector.SetUp(
+    self._module.SetUp(
         None,
         'test-source-project-name',
         'fake_zone',
@@ -121,22 +117,19 @@ class GCEDiskCopyTest(unittest.TestCase):
         all_disks=True,
         stop_instances=True
     )
-    self.assertEqual(test_state.errors, [])
-    self.assertEqual(collector.destination_project.project_id,
+    self.assertEqual(self._module.destination_project.project_id,
                      'test-source-project-name')
-    self.assertEqual(collector.source_project.project_id,
+    self.assertEqual(self._module.source_project.project_id,
                      'test-source-project-name')
-    self.assertEqual(collector.remote_instance_names, ['my-owned-instance'])
-    self.assertEqual(collector.disk_names, ['fake-disk'])
-    self.assertEqual(collector.all_disks, True)
-    self.assertEqual(collector.stop_instances, True)
+    self.assertEqual(self._module.remote_instance_names, ['my-owned-instance'])
+    self.assertEqual(self._module.disk_names, ['fake-disk'])
+    self.assertEqual(self._module.all_disks, True)
+    self.assertEqual(self._module.stop_instances, True)
 
   def testSetUpNothingProvided(self):
     """Tests that SetUp fails if no disks or instances are provided."""
-    test_state = state.DFTimewolfState(config.Config)
-    collector = gce_disk_copy.GCEDiskCopy(test_state)
     with self.assertRaises(errors.DFTimewolfError) as error:
-      collector.SetUp(
+      self._module.SetUp(
           'test-destination-project-name',
           'test-source-project-name',
           'fake_zone',
@@ -152,10 +145,8 @@ class GCEDiskCopyTest(unittest.TestCase):
     """Tests that SetUp fails if stop instance is requested, but no instance
     provided.
     """
-    test_state = state.DFTimewolfState(config.Config)
-    collector = gce_disk_copy.GCEDiskCopy(test_state)
     with self.assertRaises(errors.DFTimewolfError) as error:
-      collector.SetUp(
+      self._module.SetUp(
           'test-destination-project-name',
           'test-source-project-name',
           'fake_zone',
@@ -180,7 +171,6 @@ class GCEDiskCopyTest(unittest.TestCase):
                      mock_get_disk,
                      mock_GetBootDisk):
     """Tests the _FindDisksToCopy function with different SetUp() calls."""
-    test_state = state.DFTimewolfState(config.Config)
     mock_list_disks.return_value = {
         'bootdisk': FAKE_BOOT_DISK,
         'disk1': FAKE_DISK
@@ -191,8 +181,7 @@ class GCEDiskCopyTest(unittest.TestCase):
 
     # Nothing is specified, GoogleCloudCollector should collect the instance's
     # boot disk
-    collector = gce_disk_copy.GCEDiskCopy(test_state)
-    collector.SetUp(
+    self._module.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
         'fake_zone',
@@ -201,16 +190,16 @@ class GCEDiskCopyTest(unittest.TestCase):
         False,
         False
     )
-    collector.PreProcess()
-    disks = collector.GetContainers(containers.GCEDisk)
+    self._module.PreProcess()
+    disks = self._module.GetContainers(containers.GCEDisk)
     self.assertEqual(len(disks), 1)
     self.assertEqual(disks[0].name, 'bootdisk')
     mock_GetBootDisk.assert_called_once()
 
     # Specifying all_disks should return all disks for the instance
     # (see mock_list_disks return value)
-    collector.GetContainers(containers.GCEDisk, True)  # Clear containers first
-    collector.SetUp(
+    self._module.GetContainers(containers.GCEDisk, True)  # Clear containers first
+    self._module.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
         'fake_zone',
@@ -219,16 +208,15 @@ class GCEDiskCopyTest(unittest.TestCase):
         True,
         False
     )
-    collector.PreProcess()
-    disks = collector.GetContainers(containers.GCEDisk)
+    self._module.PreProcess()
+    disks = self._module.GetContainers(containers.GCEDisk)
     self.assertEqual(len(disks), 2)
     self.assertEqual(disks[0].name, 'bootdisk')
     self.assertEqual(disks[1].name, 'disk1')
 
     # Specifying a csv list of disks should have those included also
-    collector = gce_disk_copy.GCEDiskCopy(test_state)
-    collector.GetContainers(containers.GCEDisk, True)  # Clear containers first
-    collector.SetUp(
+    self._module.GetContainers(containers.GCEDisk, True)  # Clear containers first
+    self._module.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
         'fake_zone',
@@ -237,8 +225,8 @@ class GCEDiskCopyTest(unittest.TestCase):
         True,
         False
     )
-    collector.PreProcess()
-    disks = collector.GetContainers(containers.GCEDisk)
+    self._module.PreProcess()
+    disks = self._module.GetContainers(containers.GCEDisk)
     self.assertEqual(len(disks), 4)
     self.assertEqual(disks[0].name, 'another_disk_1')
     self.assertEqual(disks[1].name, 'another_disk_2')
@@ -251,9 +239,7 @@ class GCEDiskCopyTest(unittest.TestCase):
     mock_GetInstance.side_effect = lcf_errors.ResourceNotFoundError('message',
                                                                     'name')
 
-    test_state = state.DFTimewolfState(config.Config)
-    collector = gce_disk_copy.GCEDiskCopy(test_state)
-    collector.SetUp(
+    self._module.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
         'fake_zone',
@@ -263,7 +249,7 @@ class GCEDiskCopyTest(unittest.TestCase):
         False
     )
     with self.assertRaises(errors.DFTimewolfError) as error:
-      collector.PreProcess()
+      self._module.PreProcess()
 
     self.assertEqual(error.exception.message,
         'Instance "nonexistent" in test-target-project-name not found or '
@@ -272,16 +258,13 @@ class GCEDiskCopyTest(unittest.TestCase):
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
   def testHTTPErrors(self, mock_GetInstance):
     """Tests the 403 checked for in PreProcess."""
-    test_state = state.DFTimewolfState(config.Config)
-
     # 403
     mock_GetInstance.side_effect = HttpError(httplib2.Response({
         'status': 403,
         'reason': 'The caller does not have permission'
     }), b'')
 
-    collector = gce_disk_copy.GCEDiskCopy(test_state)
-    collector.SetUp(
+    self._module.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
         'fake_zone',
@@ -291,7 +274,7 @@ class GCEDiskCopyTest(unittest.TestCase):
         False
     )
     with self.assertRaises(errors.DFTimewolfError) as error:
-      collector.PreProcess()
+      self._module.PreProcess()
     self.assertEqual(error.exception.message,
         '403 response. Do you have appropriate permissions on the project?')
 
@@ -301,8 +284,7 @@ class GCEDiskCopyTest(unittest.TestCase):
         'reason': 'Internal Server Error'
     }), b'')
 
-    collector = gce_disk_copy.GCEDiskCopy(test_state)
-    collector.SetUp(
+    self._module.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
         'fake_zone',
@@ -312,7 +294,7 @@ class GCEDiskCopyTest(unittest.TestCase):
         False
     )
     with self.assertRaises(errors.DFTimewolfError) as error:
-      collector.PreProcess()
+      self._module.PreProcess()
     self.assertEqual(error.exception.message,
         '<HttpError 500 "Ok">')
 
@@ -321,13 +303,14 @@ class GCEDiskCopyTest(unittest.TestCase):
   @mock.patch('libcloudforensics.providers.gcp.forensics.CreateDiskCopy')
   @mock.patch('dftimewolf.lib.collectors.gce_disk_copy.GCEDiskCopy._GetDisksFromInstance')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.ListDisks')
-  def testProcess(self,
-                  mock_list_disks,
-                  mock_getDisksFromInstance,
-                  mock_CreateDiskCopy,
-                  mock_GetInstance):
-    """Tests the collector's Process() function."""
-    mock_getDisksFromInstance.return_value = FAKE_DISK_MULTIPLE
+  def testProcessWithStop(self,
+                          mock_list_disks,
+                          mock_getDisksFromInstance,
+                          mock_CreateDiskCopy,
+                          mock_GetInstance):
+    """Tests the collector's Process() function, stopping the instance."""
+    mock_getDisksFromInstance.return_value = [
+        d.name for d in FAKE_DISK_MULTIPLE]
     mock_CreateDiskCopy.side_effect = FAKE_DISK_COPY
     mock_GetInstance.return_value = FAKE_INSTANCE
     mock_list_disks.return_value = {
@@ -335,9 +318,7 @@ class GCEDiskCopyTest(unittest.TestCase):
         'disk1': FAKE_DISK
     }
 
-    test_state = state.DFTimewolfState(config.Config)
-    collector = gce_disk_copy.GCEDiskCopy(test_state)
-    collector.SetUp(
+    self._module.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
         'fake_zone',
@@ -348,34 +329,50 @@ class GCEDiskCopyTest(unittest.TestCase):
     )
     FAKE_INSTANCE.Stop = mock.MagicMock()
 
-    collector.PreProcess()
-    conts = collector.GetContainers(collector.GetThreadOnContainerType(), True)
-    for d in conts:
-      collector.Process(d)  # pytype: disable=wrong-arg-types
-      # GetContainers returns the abstract base class type, but process is
-      # called with the instantiated child class.
-      mock_CreateDiskCopy.assert_called_with(
-          'test-target-project-name',
-          'test-analysis-project-name',
-          FAKE_INSTANCE.zone,
-          disk_name=d.name)  # pytype: disable=attribute-error
-    collector.PostProcess()
+    self._ProcessModule()
+
+    mock_CreateDiskCopy.assert_has_calls([
+        mock.call('test-target-project-name',
+                  'test-analysis-project-name',
+                  'fake_zone',
+                  disk_name='disk1'),
+        mock.call('test-target-project-name',
+                  'test-analysis-project-name',
+                  'fake_zone',
+                  disk_name='disk2')])
 
     FAKE_INSTANCE.Stop.assert_called_once()
 
-    out_disks = collector.GetContainers(containers.GCEDisk)
+    out_disks = [d for d in self._module.GetContainers(containers.GCEDisk)
+                 if d.name not in ('disk1', 'disk2')]
     out_disk_names = [d.name for d in out_disks]
+    self.assertLen(out_disk_names, 2)
     expected_disk_names = ['disk1-copy', 'disk2-copy']
-    self.assertEqual(out_disk_names, expected_disk_names)
+    self.assertListEqual(out_disk_names, expected_disk_names)
     for d in out_disks:
       self.assertEqual(d.project, 'test-analysis-project-name')
 
-    # Do it again, but we don't want to stop the instance this time.
-    # First, clear the containers
-    collector.GetContainers(containers.GCEDisk, True)
+  # pylint: disable=line-too-long
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
+  @mock.patch('libcloudforensics.providers.gcp.forensics.CreateDiskCopy')
+  @mock.patch('dftimewolf.lib.collectors.gce_disk_copy.GCEDiskCopy._GetDisksFromInstance')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.ListDisks')
+  def testProcessWithoutStop(self,
+                             mock_list_disks,
+                             mock_getDisksFromInstance,
+                             mock_CreateDiskCopy,
+                             mock_GetInstance):
+    """Tests the collector's Process() function."""
+    mock_getDisksFromInstance.return_value = [
+        d.name for d in FAKE_DISK_MULTIPLE]
     mock_CreateDiskCopy.side_effect = FAKE_DISK_COPY
-    collector = gce_disk_copy.GCEDiskCopy(test_state)
-    collector.SetUp(
+    mock_GetInstance.return_value = FAKE_INSTANCE
+    mock_list_disks.return_value = {
+        'bootdisk': FAKE_BOOT_DISK,
+        'disk1': FAKE_DISK
+    }
+
+    self._module.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
         'fake_zone',
@@ -386,40 +383,39 @@ class GCEDiskCopyTest(unittest.TestCase):
     )
     FAKE_INSTANCE.Stop = mock.MagicMock()
 
-    collector.PreProcess()
-    conts = collector.GetContainers(collector.GetThreadOnContainerType(), True)
-    for d in conts:
-      collector.Process(d)  # pytype: disable=wrong-arg-types
-      # GetContainers returns the abstract base class type, but process is
-      # called with the instantiated child class.
-      mock_CreateDiskCopy.assert_called_with(
-          'test-target-project-name',
-          'test-analysis-project-name',
-          FAKE_INSTANCE.zone,
-          disk_name=d.name)  # pytype: disable=attribute-error
-    collector.PostProcess()
+    self._ProcessModule()
+
+    mock_CreateDiskCopy.assert_has_calls([
+        mock.call('test-target-project-name',
+                  'test-analysis-project-name',
+                  'fake_zone',
+                  disk_name='disk1'),
+        mock.call('test-target-project-name',
+                  'test-analysis-project-name',
+                  'fake_zone',
+                  disk_name='disk2')])
 
     FAKE_INSTANCE.Stop.assert_not_called()
-    out_disks = collector.GetContainers(containers.GCEDisk)
-    out_disk_names = sorted([d.name for d in out_disks])
+
+    out_disks = [d for d in self._module.GetContainers(containers.GCEDisk)
+                 if d.name not in ('disk1', 'disk2')]
+    out_disk_names = [d.name for d in out_disks]
+    self.assertLen(out_disk_names, 2)
     expected_disk_names = ['disk1-copy', 'disk2-copy']
-    self.assertEqual(out_disk_names, expected_disk_names)
+    self.assertListEqual(out_disk_names, expected_disk_names)
     for d in out_disks:
       self.assertEqual(d.project, 'test-analysis-project-name')
 
   @mock.patch('libcloudforensics.providers.gcp.forensics.CreateDiskCopy')
   def testProcessDiskCopyErrors(self, mock_CreateDiskCopy):
     """Tests that Process errors correctly in some scenarios."""
-    test_state = state.DFTimewolfState(config.Config)
-
     # Fail if the disk cannot be found.
     mock_CreateDiskCopy.side_effect = lcf_errors.ResourceNotFoundError(
         'Could not find disk "nonexistent": Disk nonexistent was not found in '
         'project test-source-project-name',
         'name')
 
-    collector = gce_disk_copy.GCEDiskCopy(test_state)
-    collector.SetUp(
+    self._module.SetUp(
         'test-destination-project-name',
         'test-source-project-name',
         'fake_zone',
@@ -428,14 +424,14 @@ class GCEDiskCopyTest(unittest.TestCase):
         False,
         False
     )
-    collector.PreProcess()
-    conts = collector.GetContainers(collector.GetThreadOnContainerType())
+    self._module.PreProcess()
+    conts = self._module.GetContainers(self._module.GetThreadOnContainerType())
     for d in conts:
-      collector.Process(d)  # pytype: disable=wrong-arg-types
+      self._module.Process(d)  # pytype: disable=wrong-arg-types
       # GetContainers returns the abstract base class type, but process is
       # called with the instantiated child class.
     with self.assertRaises(errors.DFTimewolfError) as error:
-      collector.PostProcess()
+      self._module.PostProcess()
     self.assertEqual(error.exception.message,
         'No successful disk copy operations completed.')
 
@@ -444,8 +440,7 @@ class GCEDiskCopyTest(unittest.TestCase):
         'Could not create disk. Permission denied.',
         'name')
 
-    collector = gce_disk_copy.GCEDiskCopy(test_state)
-    collector.SetUp(
+    self._module.SetUp(
         'test-destination-project-name',
         'test-source-project-name',
         'fake_zone',
@@ -454,11 +449,11 @@ class GCEDiskCopyTest(unittest.TestCase):
         False,
         False
     )
-    collector.PreProcess()
-    conts = collector.GetContainers(collector.GetThreadOnContainerType())
+    self._module.PreProcess()
+    conts = self._module.GetContainers(self._module.GetThreadOnContainerType())
     with self.assertRaises(errors.DFTimewolfError) as error:
       for d in conts:
-        collector.Process(d)  # pytype: disable=wrong-arg-types
+        self._module.Process(d)  # pytype: disable=wrong-arg-types
         # GetContainers returns the abstract base class type, but process is
         # called with the instantiated child class.
     self.assertEqual(error.exception.message,

@@ -23,7 +23,7 @@ from dftimewolf.lib.state import DFTimewolfState
 
 def _CustomToAPIRepr(self: entries.ProtobufEntry) -> Dict[str, Any]:
   """API repr (JSON format) for entry."""
-  info = super(entries.ProtobufEntry, self).to_api_repr()  # type: ignore
+  info = super(entries.ProtobufEntry, self).to_api_repr()
   info['protoPayload'] = self.payload  # type: ignore
   return info  # type: ignore
 
@@ -62,9 +62,9 @@ class GCPLogsCollector(module.BaseModule):
       logging.Client: A GCP logging client
     """
     if self._project_name:
-      return logging.Client(_use_grpc=False,  # type: ignore
+      return logging.Client(_use_grpc=False,
                                         project=self._project_name)
-    return logging.Client(_use_grpc=False)  # type: ignore
+    return logging.Client(_use_grpc=False)
 
   def ListPages(self, logging_client: Any) -> Any:
     """Returns pages based on a Cloud Logging filter
@@ -72,18 +72,20 @@ class GCPLogsCollector(module.BaseModule):
     Args:
       logging_client: A GCP Cloud Logging client
 
-    Returns:
-      results.pages: Query result pages generator
+    Yields:
+      results: Query result entries generator
     """
     results = logging_client.list_entries(
           order_by=logging.DESCENDING,
           filter_=self._filter_expression,
           page_size=1000)
-    return results.pages
+
+    # list_entries() returns a Generator object
+    yield results
 
   def ProcessPages(self, pages: Any, backoff_multiplier: int,
     output_file: Any, output_path: str) -> str:
-    """Iterates through a generator or pages and saves logs to disk.
+    """Iterates through a generator and saves logs to disk.
     Can optionally perform exponential backoff if query API limits are exceeded.
 
     Args:
@@ -181,11 +183,11 @@ class GCPLogsCollector(module.BaseModule):
 
     if self.start_time:
       filter_expression = filter_expression.replace(
-          '<START_TIME>', self.start_time.strftime('%Y%m%dT%H%M%S%z')
+          '<START_TIME>', self.start_time.strftime('%Y-%m-%dT%H:%M:%S%z')
       )
     if self.end_time:
       filter_expression = filter_expression.replace(
-          '<END_TIME>', self.end_time.strftime('%Y%m%dT%H%M%S%z')
+          '<END_TIME>', self.end_time.strftime('%Y-%m-%dT%H:%M:%S%z')
       )
 
     self._filter_expression = filter_expression

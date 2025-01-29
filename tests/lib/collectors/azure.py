@@ -10,10 +10,9 @@ import mock
 from libcloudforensics.providers.azure.internal import account as az_account
 from libcloudforensics.providers.azure.internal import compute
 
-from dftimewolf import config
-from dftimewolf.lib import state
 from dftimewolf.lib.collectors import azure
 from dftimewolf.lib.containers import containers
+from tests.lib import modules_test_base
 
 
 # pylint: disable=line-too-long
@@ -58,14 +57,12 @@ FAKE_DISK_COPY = compute.AZComputeDisk(
     'fake-region')
 
 
-class AzureCollectorTest(unittest.TestCase):
+class AzureCollectorTest(modules_test_base.ModuleTestBase):
   """Tests for the Azure collector."""
 
-  def testInitialization(self):
-    """Tests that the collector can be initialized."""
-    test_state = state.DFTimewolfState(config.Config)
-    azure_collector = azure.AzureCollector(test_state)
-    self.assertIsNotNone(azure_collector)
+  def setUp(self):
+    self._InitModule(azure.AzureCollector)
+    super().setUp()
 
   # pylint: disable=invalid-name, line-too-long
   @mock.patch('libcloudforensics.providers.azure.internal.resource.AZResource.GetOrCreateResourceGroup')
@@ -78,31 +75,28 @@ class AzureCollectorTest(unittest.TestCase):
                  mock_GetCredentials,
                  mock_GetOrCreateResourceGroup):
     """Tests that the collector can be initialized."""
-    test_state = state.DFTimewolfState(config.Config)
     mock_GetCredentials.return_value = ('fake-subscription-id', mock.Mock())
     mock_StartAnalysisVm.return_value = (mock_AZVirtualMachine, None)
     mock_GetOrCreateResourceGroup.return_value = 'fake-resource-group'
 
-    azure_collector = azure.AzureCollector(test_state)
 
     # Setup the collector with minimum information
-    azure_collector.SetUp(
+    self._module.SetUp(
         'test-remote-profile-name',
         'test-analysis-resource-group-name',
         'fake_incident_id',
         'fake-ssh-public-key',
         remote_instance_name='fake-owned-vm'
     )
-    self.assertEqual([], test_state.errors)
     self.assertEqual(
-        'test-remote-profile-name', azure_collector.remote_profile_name)
+        'test-remote-profile-name', self._module.remote_profile_name)
     self.assertEqual('test-analysis-resource-group-name',
-                     azure_collector.analysis_resource_group_name)
-    self.assertEqual('fake_incident_id', azure_collector.incident_id)
-    self.assertEqual([], azure_collector.disk_names)
-    self.assertEqual(azure_collector.all_disks, False)
+                     self._module.analysis_resource_group_name)
+    self.assertEqual('fake_incident_id', self._module.incident_id)
+    self.assertEqual([], self._module.disk_names)
+    self.assertEqual(self._module.all_disks, False)
     self.assertEqual(
-        'test-remote-profile-name', azure_collector.analysis_profile_name)
+        'test-remote-profile-name', self._module.analysis_profile_name)
 
     mock_StartAnalysisVm.assert_called_with(
         'test-analysis-resource-group-name',
@@ -126,15 +120,12 @@ class AzureCollectorTest(unittest.TestCase):
                  mock_GetCredentials,
                  mock_GetOrCreateResourceGroup):
     """Tests that the collector can be initialized."""
-    test_state = state.DFTimewolfState(config.Config)
     mock_GetCredentials.return_value = ('fake-subscription-id', mock.Mock())
     mock_StartAnalysisVm.return_value = (mock_AZVirtualMachine, None)
     mock_GetOrCreateResourceGroup.return_value = 'fake-resource-group'
 
-    azure_collector = azure.AzureCollector(test_state)
-
     # Setup the collector with destination zone/profile and all_disks=True
-    azure_collector.SetUp(
+    self._module.SetUp(
       'test-remote-profile-name',
       'test-analysis-resource-group-name',
       'fake_incident_id',
@@ -144,17 +135,16 @@ class AzureCollectorTest(unittest.TestCase):
       analysis_region='test-analysis-region',
       all_disks=True
     )
-    self.assertEqual([], test_state.errors)
     self.assertEqual(
-      'test-remote-profile-name', azure_collector.remote_profile_name)
+      'test-remote-profile-name', self._module.remote_profile_name)
     self.assertEqual('test-analysis-resource-group-name',
-                     azure_collector.analysis_resource_group_name)
-    self.assertEqual('fake_incident_id', azure_collector.incident_id)
-    self.assertEqual([], azure_collector.disk_names)
-    self.assertEqual(azure_collector.all_disks, True)
+                     self._module.analysis_resource_group_name)
+    self.assertEqual('fake_incident_id', self._module.incident_id)
+    self.assertEqual([], self._module.disk_names)
+    self.assertEqual(self._module.all_disks, True)
     self.assertEqual(
-      'test-analysis-profile-name', azure_collector.analysis_profile_name)
-    self.assertEqual('test-analysis-region', azure_collector.analysis_region)
+      'test-analysis-profile-name', self._module.analysis_profile_name)
+    self.assertEqual('test-analysis-region', self._module.analysis_region)
 
     mock_StartAnalysisVm.assert_called_with(
         'test-analysis-resource-group-name',
@@ -188,10 +178,8 @@ class AzureCollectorTest(unittest.TestCase):
     mock_GetCredentials.return_value = ('fake-subscription-id', mock.Mock())
     mock_GetOrCreateResourceGroup.return_value = 'fake-resource-group'
 
-    test_state = state.DFTimewolfState(config.Config)
-    azure_collector = azure.AzureCollector(test_state)
     # Setup the collector with destination zone and all_disks=True
-    azure_collector.SetUp(
+    self._module.SetUp(
       'test-remote-profile-name',
       'test-analysis-resource-group-name',
       'fake_incident_id',
@@ -201,7 +189,7 @@ class AzureCollectorTest(unittest.TestCase):
       analysis_region='test-analysis-region',
       all_disks=True
     )
-    azure_collector.Process()
+    self._ProcessModule()
 
     mock_CreateDiskCopy.assert_called_with(
         'test-analysis-resource-group-name',
@@ -209,7 +197,7 @@ class AzureCollectorTest(unittest.TestCase):
         region='test-analysis-region',
         src_profile='test-remote-profile-name',
         dst_profile='test-analysis-profile-name')
-    forensics_vms = azure_collector.GetContainers(containers.ForensicsVM)
+    forensics_vms = self._module.GetContainers(containers.ForensicsVM)
     forensics_vm = forensics_vms[0]
     self.assertEqual('fake-analysis-vm', forensics_vm.name)
     self.assertEqual(
@@ -240,9 +228,7 @@ class AzureCollectorTest(unittest.TestCase):
     mock_GetOrCreateResourceGroup,
   ):
     """Tests the FindDisksToCopy function with different SetUp() calls."""
-    test_state = state.DFTimewolfState(config.Config)
     mock_StartAnalysisVm.return_value = (FAKE_ANALYSIS_VM, None)
-    azure_collector = azure.AzureCollector(test_state)
     mock_ListDisks.return_value = {
         FAKE_BOOT_DISK.name: FAKE_BOOT_DISK,
         FAKE_DISK.name: FAKE_DISK
@@ -262,14 +248,14 @@ class AzureCollectorTest(unittest.TestCase):
 
     # Nothing is specified, AzureCollector should collect the instance's
     # boot disk
-    azure_collector.SetUp(
+    self._module.SetUp(
         'test-remote-profile-name',
         'test-analysis-resource-group-name',
         'fake_incident_id',
         'fake-ssh-public-key',
         remote_instance_name='fake-owned-vm'
     )
-    disks = azure_collector._FindDisksToCopy()
+    disks = self._module._FindDisksToCopy()
     self.assertEqual(1, len(disks))
     self.assertEqual('fake-boot-disk', disks[0].name)
     mock_GetInstance.assert_called_with('fake-owned-vm')
@@ -278,7 +264,7 @@ class AzureCollectorTest(unittest.TestCase):
 
     # Specifying all_disks should return all disks for the instance
     # (see mock_ListDisks return value)
-    azure_collector.SetUp(
+    self._module.SetUp(
         'test-remote-profile-name',
         'test-analysis-resource-group-name',
         'fake_incident_id',
@@ -286,14 +272,14 @@ class AzureCollectorTest(unittest.TestCase):
         remote_instance_name='fake-owned-vm',
         all_disks=True
     )
-    disks = azure_collector._FindDisksToCopy()
+    disks = self._module._FindDisksToCopy()
     self.assertEqual(2, len(disks))
     self.assertEqual('fake-boot-disk', disks[0].name)
     self.assertEqual('fake-disk', disks[1].name)
     mock_ListDisks.assert_called_once()
 
     # If a list of 1 disk ID is passed, that disk only should be returned
-    azure_collector.SetUp(
+    self._module.SetUp(
         'test-remote-profile-name',
         'test-analysis-resource-group-name',
         'fake_incident_id',
@@ -301,7 +287,7 @@ class AzureCollectorTest(unittest.TestCase):
         remote_instance_name='',
         disk_names='fake-disk'
     )
-    disks = azure_collector._FindDisksToCopy()
+    disks = self._module._FindDisksToCopy()
     self.assertEqual(1, len(disks))
     self.assertEqual('fake-disk', disks[0].name)
     mock_GetDisk.assert_called_once()

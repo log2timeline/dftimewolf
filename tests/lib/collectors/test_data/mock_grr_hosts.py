@@ -32,8 +32,10 @@ client_proto1 = """
   last_clock: 1511174989272124
   age: 1510710503319681
   client_id: "C.0000000000000000"
-  users {{
-      username: "tomchop_username1"
+  knowledge_base {{
+      users {{
+          username: "tomchop_username1"
+      }}
   }}
 """.format(int(
     (datetime.datetime.utcnow() - datetime.timedelta(20)).timestamp(
@@ -58,8 +60,10 @@ client_proto2 = """
   last_clock: 1511174989272124
   age: 1510710503319681
   client_id: "C.0000000000000001"
-  users {{
-      username: "tomchop_username2"
+  knowledge_base {{
+      users {{
+          username: "tomchop_username2"
+      }}
   }}
 """.format(int(
     (datetime.datetime.utcnow() - datetime.timedelta(25)).timestamp(
@@ -83,8 +87,10 @@ client_windows_1 = """
   last_clock: 1511174989272124
   age: 1510710503319681
   client_id: "C.0000000000000002"
-  users {{
-      username: "tomchop_username1"
+  knowledge_base {{
+      users {{
+          username: "tomchop_username1"
+      }}
   }}
 """.format(int(
     (datetime.datetime.utcnow() - datetime.timedelta(20)).timestamp(

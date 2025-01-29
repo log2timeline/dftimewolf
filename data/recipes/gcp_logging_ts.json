@@ -26,8 +26,13 @@
       }
     },
     {
+      "wants": ["GCPLogsCollector"],
+      "name": "GCPLoggingTimesketch",
+      "args": {}
+    },
+    {
       "wants": [
-        "GCPLogsCollector"
+        "GCPLoggingTimesketch"
       ],
       "name": "TimesketchExporter",
       "args": {
