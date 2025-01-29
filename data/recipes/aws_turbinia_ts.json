@@ -97,7 +97,7 @@
     ["aws_bucket", "AWS bucket for image storage.", null, {"format": "regex", "comma_separated": false, "regex": "^(s3:\/\/)?[0-9a-z][-\\.0-9a-z]{1,61}[0-9a-z]$"}],
     ["gcp_bucket", "GCP bucket for image storage.", null, {"format": "regex", "comma_separated": false, "regex": "^(gs:\/\/)?[0-9a-z][-\\.0-9a-z_]{1,61}[0-9a-z]$"}],
     ["--subnet", "AWS subnet to copy instances from, required if there is no default subnet in the volume region.", null, {"format": "regex", "comma_separated": false, "regex": "^subnet-[0-9a-f]{8,17}$"}],
-    ["--gcp_project", "Destination GCP project.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9]{4,28}[a-z0-9]$"}],
+    ["--gcp_project", "Destination GCP project.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9.:]{4,28}[a-z0-9]$"}],
     ["--aws_profile", "Source AWS profile.", null],
     ["--incident_id", "Incident ID (used for Timesketch description).", null],
     ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "integer"}],
