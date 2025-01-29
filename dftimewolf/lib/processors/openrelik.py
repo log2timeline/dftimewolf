@@ -107,7 +107,7 @@ class OpenRelikProcessor(module.ThreadAwareModule):
       local_path = self.DownloadWorkflowOutput(output_file_id, filename)
       yield local_path
 
-  def DownloadWorkflowOutput(self, file_id: int, filename: str) -> str:
+  def DownloadWorkflowOutput(self, file_id: int, filename: str) -> str | None:
     """Downloads a file from OpenRelik.
 
     Args:
@@ -117,45 +117,47 @@ class OpenRelikProcessor(module.ThreadAwareModule):
     Returns:
         str: The path to the downloaded file.
     """
-    endpoint = f"{self.openrelik_api_client.base_url}/files/{file_id}/download"
     self.logger.info(f"Downloading {filename}, ID:{file_id}")
-    response = self.openrelik_api_client.session.get(endpoint)
-    filename_prefix, extension = os.path.splitext(filename)
-    file = tempfile.NamedTemporaryFile(
-      mode="wb", prefix=f"{filename_prefix}", suffix=extension, delete=False
-    )
-    local_path = file.name
-    self.PublishMessage(f"Saving output for file ID {file_id} to {local_path}")
-    file.write(response.text.encode("utf-8"))
-    file.close()
+    local_path = self.openrelik_api_client.download_file(file_id, filename)
+    if not local_path:
+      self.logger.error(f"Failed to download {filename}, ID:{file_id}")
+      return None
+    self.PublishMessage(f"Saved output for file ID {
+                            file_id} to {local_path}")
     return local_path
 
-  def Process(self, container: containers.File
-              ) -> None:  # pytype: disable=signature-mismatch
+  def Process(
+    self, container: containers.File
+  ) -> None:  # pytype: disable=signature-mismatch
     file_ids = []
-    folder_id = self.folder_id
-    if not folder_id or not self.openrelik_folder_client.folder_exists(
-      folder_id
+    if not self.folder_id or not self.openrelik_folder_client.folder_exists(
+      self.folder_id
     ):
-      folder_id = self.openrelik_folder_client.create_root_folder(
+      self.folder_id = self.openrelik_folder_client.create_root_folder(
         f"{self.incident_id}"
       )
-      self.logger.info(f"Created folder {folder_id}")
-
+      self.logger.info(f"Created folder {self.folder_id}")
+    self.logger.info(f"Updating folder {self.folder_id}")
+    _ = self.openrelik_folder_client.update_folder(
+      self.folder_id, {"display_name": self.incident_id}
+    )
     self.logger.info(f"Uploading file {container.path}")
-    file_id = self.openrelik_api_client.upload_file(container.path, folder_id)
+    file_id = self.openrelik_api_client.upload_file(
+      container.path, self.folder_id
+    )
     if file_id:
       self.logger.info(f"Uploaded file {container.path}")
       file_ids.append(file_id)
 
     workflow_id = self.openrelik_workflow_client.create_workflow(
-      folder_id, file_ids, self.template_workflow_id
+      self.folder_id, file_ids, self.template_workflow_id
     )
-    workflow_url = f"{self.openrelik_ui}/folder/{folder_id}"
+    workflow_url = f"{self.openrelik_ui}/folder/{self.folder_id}"
     self.PublishMessage(
       f"New workflow ID {workflow_id} can be viewed at: {workflow_url}"
     )
-    self.openrelik_workflow_client.run_workflow(folder_id, workflow_id)
+    self.openrelik_workflow_client.run_workflow(self.folder_id, workflow_id)
+
     for local_path in self.PollWorkflowStatus(workflow_id):
       fs_container = containers.File(path=local_path, name=local_path)
       self.StreamContainer(fs_container)
