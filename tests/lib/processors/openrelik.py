@@ -73,7 +73,7 @@ class OpenRelikProcessorTest(modules_test_base.ModuleTestBase):
     mock_upload_file,
     mock_create_workflow,
     mock_download_file,
-    mock_update_folder
+    mock_update_folder,
   ):
     """Tests the Process method."""
     # Set up the mocks
@@ -108,7 +108,8 @@ class OpenRelikProcessorTest(modules_test_base.ModuleTestBase):
     test_path = "/test/path/*.plaso"
 
     self._module.StoreContainer(
-        containers.File(name="fake_path", path=test_path))
+      containers.File(name="fake_path", path=test_path)
+    )
     self._ProcessModule()
 
     # (folder_id, [file_id], template_id)
@@ -125,21 +126,20 @@ class OpenRelikProcessorTest(modules_test_base.ModuleTestBase):
     # Set up mocks
     self._module.openrelik_api_client = mock.MagicMock()
     self._module.openrelik_api_client.base_url = "http://fake_api:8711"
-    self._module.openrelik_api_client.download_file.return_value = "fake_filepath"
-    mock_download_file.return_value = "fake_filepath"
+    self._module.openrelik_api_client.download_file.return_value = (
+      "fake_filepath"
+    )
 
     # Call the method
-    local_path = self._module.DownloadWorkflowOutput(
-      123, "test_filename.plaso"
-    )
+    local_path = self._module.DownloadWorkflowOutput(123, "test_filename.plaso")
     # pylint: disable=line-too-long
     self._module.openrelik_api_client.download_file.assert_called_with(
-        123, "test_filename.plaso")
+      123, "test_filename.plaso"
+    )
     mock_publish.assert_called_with(
-        "Saved output for file ID 123 to fake_filepath"
+      "Saved output for file ID 123 to fake_filepath"
     )
     self.assertEqual(local_path, "fake_filepath")
-
 
 
 if __name__ == "__main__":
