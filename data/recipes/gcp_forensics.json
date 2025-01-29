@@ -49,8 +49,8 @@
     }
   ],
   "args": [
-      ["source_project_name", "Name of the project containing the instance / disks to copy.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9]{4,28}[a-z0-9]$"}],
-      ["analysis_project_name", "Name of the project where the analysis VM will be created and disks copied to.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9]{4,28}[a-z0-9]$"}],
+      ["source_project_name", "Name of the project containing the instance / disks to copy.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9.:]{4,28}[a-z0-9]$"}],
+      ["analysis_project_name", "Name of the project where the analysis VM will be created and disks copied to.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9.:]{4,28}[a-z0-9]$"}],
       ["--incident_id", "Incident ID to label the VM with.", null],
       ["--instances", "Name of the instance to analyze.", null],
       ["--disks", "Comma-separated list of disks to copy from the source GCP project (if `instance` not provided).", null],

@@ -33,8 +33,8 @@
         }
     }],
     "args": [
-        ["source_project_name", "Source project containing the disks to export.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9]{4,28}[a-z0-9]$"}],
-        ["--destination_project_name", "Project to where the disk images are exported. If not provided, source_project_name is used.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9]{4,28}[a-z0-9]$"}],
+        ["source_project_name", "Source project containing the disks to export.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9.:]{4,28}[a-z0-9]$"}],
+        ["--destination_project_name", "Project to where the disk images are exported. If not provided, source_project_name is used.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9.:]{4,28}[a-z0-9]$"}],
         ["--source_disk_names", "Comma-separated list of disk names to export. If not provided, disks attached to `remote_instance_name` will be used.", null, {"format": "regex", "comma_separated": true, "regex": "^[a-z][-a-z0-9]{0,61}[a-z0-9]?$"}],
         ["--remote_instance_names", "Comma-separated list of instances in source project from which to copy disks. If not provided, `disk_names` will be used.", null, {"format": "regex", "comma_separated": true, "regex": "^[a-z][-a-z0-9]{0,61}[a-z0-9]?$"}],
         ["--all_disks", "If True, copy all disks attached to the `remote_instance_names` instances. If False and `remote_instance_name` is provided, it will select the instance's boot disk.", false],
