@@ -129,9 +129,10 @@ class ContainerManager():
         # A module can only pop containers it has stored.
         # Remove by unique object id: Not __eq__() in case there are dupes, or
         #   attempting to compare different types of containers.
+        ids = [id(c) for c in ret_val]
         self._modules[requesting_module].storage = [
             c for c in self._modules[requesting_module].storage
-            if id(c) not in [id(c) for c in ret_val]]
+            if id(c) not in ids]
 
     return cast(Sequence[interface.AttributeContainer], ret_val)
 
