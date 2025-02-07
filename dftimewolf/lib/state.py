@@ -296,9 +296,13 @@ class DFTimewolfState(object):
           'requesting_module': requesting_module,
           'container_class': container_class.__name__,
           'deprecated_implementation_results':
-              [str(c) for c in containers_orig],
+              [{'str': str(c),
+                'origin': c.metadata[interface.METADATA_KEY_SOURCE_MODULE]}
+               for c in containers_orig],
           'container_manager_results':
-              [str(c) for c in containers_cm]}
+              [{'str': str(c),
+                'origin': c.metadata[interface.METADATA_KEY_SOURCE_MODULE]}
+               for c in containers_cm]}
 
       self.LogTelemetry(telemetry_entry=telemetry.TelemetryCollection(
           requesting_module,
