@@ -84,6 +84,18 @@ class _TestContainer2(_TestContainer1):
   CONTAINER_TYPE = 'test2'
 
 
+class _TestContainer3(interface.AttributeContainer):
+  """A Test container."""
+  CONTAINER_TYPE = 'test3'
+
+  def __init__(self, field: str):
+    super().__init__()
+    self.field = field
+
+  def __eq__(self, other: "_TestContainer3"):
+    return self.field == other.field
+
+
 class ContainerManagerTest(unittest.TestCase):
   """Tests for the ContainerManager."""
 
@@ -574,39 +586,48 @@ class ContainerManagerTest(unittest.TestCase):
     self._container_manager.StoreContainer(
         source_module='ModuleA',
         container=_TestContainer2('Stored by ModuleA'))
+    self._container_manager.StoreContainer(
+        source_module='ModuleA',
+        container=_TestContainer3('Stored by ModuleA'))
 
     with self.subTest('wrong_source'):
       for _ in range(0, 5):
         # "pop" should be ignored when the requesting module is not the one that
         # stored the container.
         actual = self._container_manager.GetContainers(
-          requesting_module='ModuleA',
-          container_class=_TestContainer1,
-          pop=True)
+            requesting_module='ModuleA',
+            container_class=_TestContainer1,
+            pop=True)
         self.assertEqual(len(actual), 1)
         self.assertIn(_TestContainer1('Stored by Preflight1'), actual)
 
     with self.subTest('same_source'):
       actual = self._container_manager.GetContainers(
-        requesting_module='ModuleA',
-        container_class=_TestContainer2,
-        pop=True)
+          requesting_module='ModuleA',
+          container_class=_TestContainer2,
+          pop=True)
       self.assertEqual(len(actual), 1)
       self.assertIn(_TestContainer2('Stored by ModuleA'), actual)
 
       # subsequent call returns nothing
       actual = self._container_manager.GetContainers(
-        requesting_module='ModuleA',
-        container_class=_TestContainer2,
-        pop=True)
+          requesting_module='ModuleA',
+          container_class=_TestContainer2,
+          pop=True)
       self.assertEqual(len(actual), 0)
 
       # Other containers unaffected
       actual = self._container_manager.GetContainers(
-        requesting_module='ModuleA',
-        container_class=_TestContainer1)
+          requesting_module='ModuleA',
+          container_class=_TestContainer1)
       self.assertEqual(len(actual), 1)
       self.assertIn(_TestContainer1('Stored by Preflight1'), actual)
+
+      actual = self._container_manager.GetContainers(
+          requesting_module='ModuleA',
+          container_class=_TestContainer3)
+      self.assertEqual(len(actual), 1)
+      self.assertIn(_TestContainer3('Stored by ModuleA'), actual)
 
 
 if __name__ == '__main__':
