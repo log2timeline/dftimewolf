@@ -81,6 +81,7 @@ RECIPE = {
                 'image_project': 'ubuntu-os-cloud',
                 'image_family': 'ubuntu-2204-lts',
                 'create_analysis_vm': True,
+                'analysis_vm_name': 'e2e-test-forensics-vm'
             }
         }
     ],
