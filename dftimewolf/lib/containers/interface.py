@@ -22,11 +22,16 @@ class AttributeContainer():
   Attributes:
     metadata: A dict of container metadata that can be used for passing
       metadata between collection/processing module and output modules.
+    _world_poppable: True if any module can remove this container from storage.
+        False otherwise.
   """
   CONTAINER_TYPE = None  # type: str
   metadata = {}  # type: Dict[str, Any]
+  _world_poppable = False
 
-  def __init__(self, metadata: Optional[Dict[str, Any]] = None):
+  def __init__(self,
+               metadata: Optional[Dict[str, Any]] = None,
+               world_poppable=False):
     """Initializes an AttributeContainer.
 
     Args:
@@ -37,6 +42,7 @@ class AttributeContainer():
       self.metadata = {}
     else:
       self.metadata = metadata
+    self._world_poppable = world_poppable
 
   # TODO: note that this method is only used by tests.
   def GetAttributeNames(self) -> List[str]:
@@ -62,3 +68,8 @@ class AttributeContainer():
       value: Metadata value
     """
     self.metadata[key] = value
+
+  @property
+  def world_poppable(self):
+    """Returns True if any module can remove this container from storage."""
+    return self._world_poppable

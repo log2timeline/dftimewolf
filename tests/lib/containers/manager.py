@@ -71,8 +71,8 @@ class _TestContainer1(interface.AttributeContainer):
   """A Test container."""
   CONTAINER_TYPE = 'test1'
 
-  def __init__(self, param: str):
-    super().__init__()
+  def __init__(self, param: str, world_poppable: bool=False):
+    super().__init__(world_poppable=world_poppable)
     self.param = param
 
   def __eq__(self, other: "_TestContainer1"):
@@ -88,8 +88,8 @@ class _TestContainer3(interface.AttributeContainer):
   """A Test container."""
   CONTAINER_TYPE = 'test3'
 
-  def __init__(self, field: str):
-    super().__init__()
+  def __init__(self, field: str, world_poppable: bool=False):
+    super().__init__(world_poppable=world_poppable)
     self.field = field
 
   def __eq__(self, other: "_TestContainer3"):
@@ -628,6 +628,74 @@ class ContainerManagerTest(unittest.TestCase):
           container_class=_TestContainer3)
       self.assertEqual(len(actual), 1)
       self.assertIn(_TestContainer3('Stored by ModuleA'), actual)
+
+  def test_PopContainersAcrossModules(self):
+    """Tests the 'world_poppable' implementation of containers."""
+    self._container_manager.ParseRecipe(_TEST_RECIPE)
+
+    # Preflight1 stores one each of a world-poppable container and not, for two
+    # container types.
+    self._container_manager.StoreContainer(
+        source_module='Preflight1',
+        container=_TestContainer1('World-poppable', world_poppable=True))
+    self._container_manager.StoreContainer(
+        source_module='Preflight1',
+        container=_TestContainer1('Not world-poppable'))
+    self._container_manager.StoreContainer(
+        source_module='Preflight1',
+        container=_TestContainer3('World-poppable', world_poppable=True))
+    self._container_manager.StoreContainer(
+        source_module='Preflight1',
+        container=_TestContainer3('Not world-poppable'))
+
+    # Also some others to check they're untouched.
+    self._container_manager.StoreContainer(
+        source_module='ModuleA',
+        container=_TestContainer2('Stored by ModuleA'))
+    self._container_manager.StoreContainer(
+        source_module='ModuleA',
+        container=_TestContainer3('Stored by ModuleA'))
+
+    # Get TestContainer1 without popping
+    actual = self._container_manager.GetContainers(
+          requesting_module='ModuleA',
+          container_class=_TestContainer1,
+          pop=False)
+    self.assertEqual(len(actual), 2)
+    self.assertIn(_TestContainer1('World-poppable'), actual)
+    self.assertIn(_TestContainer1('Not world-poppable'), actual)
+
+    # Get TestContainer1 with pop - Since they weren't popped in the previous
+    # call, results must be the same
+    actual = self._container_manager.GetContainers(
+          requesting_module='ModuleA',
+          container_class=_TestContainer1,
+          pop=True)
+    self.assertEqual(len(actual), 2)
+    self.assertIn(_TestContainer1('World-poppable'), actual)
+    self.assertIn(_TestContainer1('Not world-poppable'), actual)
+
+    # Last call pop'd. Another call must not have the world_poppable container
+    actual = self._container_manager.GetContainers(
+          requesting_module='ModuleA',
+          container_class=_TestContainer1)
+    self.assertEqual(len(actual), 1)
+    self.assertIn(_TestContainer1('Not world-poppable'), actual)
+
+    # Other containers are untouched.
+    actual = self._container_manager.GetContainers(
+          requesting_module='ModuleA',
+          container_class=_TestContainer2)
+    self.assertEqual(len(actual), 1)
+    self.assertIn(_TestContainer2('Stored by ModuleA'), actual)
+
+    actual = self._container_manager.GetContainers(
+          requesting_module='ModuleA',
+          container_class=_TestContainer3)
+    self.assertEqual(len(actual), 3)
+    self.assertIn(_TestContainer3('World-poppable'), actual)
+    self.assertIn(_TestContainer3('Not world-poppable'), actual)
+    self.assertIn(_TestContainer3('Stored by ModuleA'), actual)
 
 
 if __name__ == '__main__':

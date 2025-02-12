@@ -110,7 +110,7 @@ class ContainerManager():
           if only one of metadata_filter_(key|value) is specified.
     """
     if not self._modules:
-      raise RuntimeError("Container manager has not parsed a recipe yet")
+      raise RuntimeError('Container manager has not parsed a recipe yet')
     if bool(metadata_filter_key) ^ bool(metadata_filter_value):
       raise RuntimeError('Must specify both key and value for attribute filter')
 
@@ -126,13 +126,22 @@ class ContainerManager():
           ret_val.append(c)
 
       if pop:
-        # A module can only pop containers it has stored.
         # Remove by unique object id: Not __eq__() in case there are dupes, or
         #   attempting to compare different types of containers.
         ids = [id(c) for c in ret_val]
+
+        # First pass - Modules can always remove containers they stored.
         self._modules[requesting_module].storage = [
             c for c in self._modules[requesting_module].storage
             if id(c) not in ids]
+
+        # Second pass - A container can be removed if it has world_poppable set.
+        for name, module in self._modules.items():
+          if name == requesting_module:  # Checked already, short-circuit
+            continue
+          for c in module.storage:
+            if c.world_poppable and id(c) in ids:
+              module.storage.remove(c)
 
     return cast(Sequence[interface.AttributeContainer], ret_val)
 
