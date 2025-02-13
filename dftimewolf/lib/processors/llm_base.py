@@ -73,6 +73,35 @@ class LLMProcessorBase(module.BaseModule):
       )
     self.task = task
 
+  def _PromptLLM(
+      self,
+      prompt: str,
+      content: bytes | None = None,
+      mime_type: str | None = None,
+  ) -> str:
+    """Prompts the LLM with the given prompt and optional content.
+
+    Args:
+      prompt: The prompt to send to the LLM.
+      content: The optional file content to send to the LLM.  If content is
+        provided, the mime_type must also be provided.
+      mime_type: The optional mime type of the content.
+
+    Returns:
+      The LLM response.
+    """
+    # pytype: disable=attribute-error
+    # (since provider and model attributes are already checked in setup)
+    if content and mime_type:
+      return self.provider.Generate(
+          prompt=prompt,
+          model=self.model_name,
+          mime_type=mime_type,
+          content=content,
+      )  # pytype: disable=wrong-arg-types
+    return self.provider.Generate(prompt=prompt, model=self.model_name)
+    # pytype: enable=attribute-error
+
   def Process(self) -> None:
     """To be implemented by subclasses."""
     raise NotImplementedError
