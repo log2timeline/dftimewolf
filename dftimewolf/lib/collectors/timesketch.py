@@ -188,14 +188,14 @@ class TimesketchSearchEventCollector(module.BaseModule):
     return sketch_obj
 
   def _GetSearchResults(
-    self,
-    selected_sketch: sketch.Sketch,
-    query_string: str,
-    return_fields: str,
-    start_datetime: datetime.datetime | None = None,
-    end_datetime: datetime.datetime | None = None,
-    labels: list[str] | None = None,
-    indices: list[int] | None = None,
+      self,
+      selected_sketch: sketch.Sketch,
+      query_string: str,
+      return_fields: str,
+      start_datetime: datetime.datetime | None = None,
+      end_datetime: datetime.datetime | None = None,
+      labels: list[str] | None = None,
+      indices: list[int] | None = None,
   ) -> pd.DataFrame:
     """Get the Timesketch search results.
 
