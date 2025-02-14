@@ -120,7 +120,9 @@ class TimesketchSearchEventCollector(module.BaseModule):
           f'Output format not one of {",".join(_VALID_OUTPUT_FORMATS)}',
           critical=True)
 
-    self.sketch = self._GetSketch(token_password, endpoint, username, password)
+    self.sketch = self._GetSketch(
+        self.sketch_id, token_password, endpoint, username, password
+    )
     self.start_datetime = start_datetime
     self.end_datetime = end_datetime
     self.query_string = query_string
@@ -142,10 +144,11 @@ class TimesketchSearchEventCollector(module.BaseModule):
 
   def _GetSketch(
       self,
+      sketch_id: int,
       token_password: str | None = None,
       endpoint: str | None = None,
       username: str | None = None,
-      password: str | None = None
+      password: str | None = None,
   ) -> sketch.Sketch:
     """Gets the Timesketch sketch.
 
@@ -178,33 +181,52 @@ class TimesketchSearchEventCollector(module.BaseModule):
     if not timesketch_api.session:
       self.ModuleError('Could not connect to Timesketch server.', critical=True)
 
-    sketch_obj = timesketch_api.get_sketch(self.sketch_id)
+    sketch_obj = timesketch_api.get_sketch(sketch_id)
     if not sketch_obj:
-      self.ModuleError(f'Could not get sketch {self.sketch_id}', critical=True)
+      self.ModuleError(f'Could not get sketch {sketch_id}', critical=True)
     self.state.AddToCache('timesketch_sketch', sketch_obj)
     return sketch_obj
 
-  def _GetSearchResults(self) -> pd.DataFrame:
+  def _GetSearchResults(
+      self,
+      sketch: sketch.Sketch,
+      query_string: str,
+      return_fields: str,
+      start_datetime: datetime.datetime | None = None,
+      end_datetime: datetime.datetime | None = None,
+      labels: list[str] | None = None,
+      indices: list[int] | None = None,
+  ) -> pd.DataFrame:
     """Get the Timesketch search results.
+
+    Args:
+      sketch: the Timesketch sketch.
+      query_string: the query string.
+      return_fields: fields of the sketch to return in the results.
+      start_datetime: Optional start datetime filter.
+      end_datetime: Optional end datetime filter.
+      labels: Filter labels. Can also filter on special labels 'star' and
+        'comment'.
+      indices: Optional indices to filter on.
 
     Returns:
       the results in a Pandas dataframe.
     """
-    search_obj = search.Search(self.sketch)
-    search_obj.query_string = self.query_string
-    search_obj.return_fields = self.return_fields
-    if self.indices:
-      search_obj.indices = self.indices
+    search_obj = search.Search(sketch)
+    search_obj.return_fields = return_fields
+    if indices:
+      search_obj.indices = indices
 
-    if self.start_datetime and self.end_datetime:
-      range_chip = search.DateRangeChip()
-      range_chip.add_start_time(
-          self.start_datetime.strftime('%Y-%m-%dT%H:%M:%S.%f'))
-      range_chip.add_end_time(
-          self.end_datetime.strftime('%Y-%m-%dT%H:%M:%S.%f'))
-      search_obj.add_chip(range_chip)
+    from_query = '*'
+    to_query = '*'
+    if start_datetime:
+      from_query = start_datetime.strftime('%Y-%m-%dT%H:%M:%S.%f')
+    if end_datetime:
+      to_query = end_datetime.strftime('%Y-%m-%dT%H:%M:%S.%f')
+    date_query = f'datetime:[{from_query} TO {to_query}]'
+    search_obj.query_string = f'({query_string}) AND ({date_query})'
 
-    for label in self.labels:
+    for label in labels or []:
       label_chip = search.LabelChip()
       if label == "star":
         label_chip.use_star_label()
@@ -263,7 +285,15 @@ class TimesketchSearchEventCollector(module.BaseModule):
 
   def Process(self) -> None:
     """Processes the Timesketch search query."""
-    data_frame = self._GetSearchResults()
+    data_frame = self._GetSearchResults(
+        self.sketch,
+        self.query_string,
+        self.return_fields,
+        self.start_datetime,
+        self.end_datetime,
+        self.labels,
+        self.indices,
+    )
     self.logger.info(f'Search returned {len(data_frame)} event(s).')
     if data_frame.empty:
       return
