@@ -188,14 +188,14 @@ class TimesketchSearchEventCollector(module.BaseModule):
     return sketch_obj
 
   def _GetSearchResults(
-      self,
-      sketch: sketch.Sketch,
-      query_string: str,
-      return_fields: str,
-      start_datetime: datetime.datetime | None = None,
-      end_datetime: datetime.datetime | None = None,
-      labels: list[str] | None = None,
-      indices: list[int] | None = None,
+    self,
+    selected_sketch: sketch.Sketch,
+    query_string: str,
+    return_fields: str,
+    start_datetime: datetime.datetime | None = None,
+    end_datetime: datetime.datetime | None = None,
+    labels: list[str] | None = None,
+    indices: list[int] | None = None,
   ) -> pd.DataFrame:
     """Get the Timesketch search results.
 
@@ -212,7 +212,7 @@ class TimesketchSearchEventCollector(module.BaseModule):
     Returns:
       the results in a Pandas dataframe.
     """
-    search_obj = search.Search(sketch)
+    search_obj = search.Search(selected_sketch)
     search_obj.return_fields = return_fields
     if indices:
       search_obj.indices = indices
