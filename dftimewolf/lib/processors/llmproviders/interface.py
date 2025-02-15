@@ -66,7 +66,7 @@ class LLMProvider(abc.ABC):
     self.models = provider_config['models']
 
   @abc.abstractmethod
-  def Generate(self, prompt: str, model: str, **kwargs) -> str:
+  def Generate(self, prompt: str, model: str, **kwargs: str | bytes) -> str:
     """Generates text from the LLM provider.
 
     Args:
