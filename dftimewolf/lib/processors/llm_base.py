@@ -41,8 +41,8 @@ class LLMProcessorBase(module.BaseModule):
     """
     super().__init__(state=state, name=name, critical=critical)
     self.logger: logging_utils.WolfLogger = logger
-    self.model_name: str | None = None
-    self.provider: llm_interface.LLMProvider | None = None
+    self.model_name: str
+    self.provider: llm_interface.LLMProvider
     self.task: str | None = None
 
   def SetUp(self, provider_name: str, model_name: str, task: str) -> None:  # pylint: disable=arguments-differ
