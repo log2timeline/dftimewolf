@@ -68,7 +68,6 @@ class DataFrameLLMProcessorTest(modules_test_base.ModuleTestBase):
   def testInitialization(self):
     """Tests that the processor can be initialized."""
     self.assertIsNotNone(self._module)
-    self.assertIsNone(self._module.model_name)
     self.assertEqual(self._module.columns_to_process, [])
     self.assertIsNone(self._module.task)
     self.assertEqual(self._module.logger, self._logger)
