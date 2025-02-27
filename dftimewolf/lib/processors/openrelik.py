@@ -71,6 +71,10 @@ class OpenRelikProcessor(module.ThreadAwareModule):
         f"{self.incident_id}"
       )
       self.logger.info(f"Created folder {self.folder_id}")
+    self.logger.info(f"Updating folder {self.folder_id}")
+    self.openrelik_folder_client.update_folder(
+      self.folder_id, {"display_name": self.incident_id}
+    )
 
   def PollWorkflowStatus(self, workflow_id: int) -> Iterator[str | None]:
     """Polls the status of a workflow until it completes."""
@@ -133,10 +137,6 @@ class OpenRelikProcessor(module.ThreadAwareModule):
     self, container: containers.File
   ) -> None:  # pytype: disable=signature-mismatch
     file_ids = []
-    self.logger.info(f"Updating folder {self.folder_id}")
-    self.openrelik_folder_client.update_folder(
-      self.folder_id, {"display_name": self.incident_id}
-    )
     self.logger.info(f"Uploading file {container.path}")
     file_id = self.openrelik_api_client.upload_file(
       container.path, self.folder_id
