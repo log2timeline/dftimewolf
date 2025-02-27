@@ -61,10 +61,16 @@ class OpenRelikProcessor(module.ThreadAwareModule):
     self.openrelik_workflow_client = workflows.WorkflowsAPI(
       self.openrelik_api_client
     )
-
     self.folder_id = folder_id
     self.template_workflow_id = template_workflow_id
     self.incident_id = incident_id
+    if not self.folder_id or not self.openrelik_folder_client.folder_exists(
+      self.folder_id
+    ):
+      self.folder_id = self.openrelik_folder_client.create_root_folder(
+        f"{self.incident_id}"
+      )
+      self.logger.info(f"Created folder {self.folder_id}")
 
   def PollWorkflowStatus(self, workflow_id: int) -> Iterator[str | None]:
     """Polls the status of a workflow until it completes."""
@@ -127,15 +133,8 @@ class OpenRelikProcessor(module.ThreadAwareModule):
     self, container: containers.File
   ) -> None:  # pytype: disable=signature-mismatch
     file_ids = []
-    if not self.folder_id or not self.openrelik_folder_client.folder_exists(
-      self.folder_id
-    ):
-      self.folder_id = self.openrelik_folder_client.create_root_folder(
-        f"{self.incident_id}"
-      )
-      self.logger.info(f"Created folder {self.folder_id}")
     self.logger.info(f"Updating folder {self.folder_id}")
-    _ = self.openrelik_folder_client.update_folder(
+    self.openrelik_folder_client.update_folder(
       self.folder_id, {"display_name": self.incident_id}
     )
     self.logger.info(f"Uploading file {container.path}")
