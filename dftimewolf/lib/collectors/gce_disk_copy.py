@@ -147,8 +147,6 @@ class GCEDiskCopy(module.ThreadAwareModule):
             message=f'Instance "{i}" in {self.source_project.project_id} not '
                 'found or insufficient permissions',
             critical=True)
-
-      self.state.DedupeContainers(containers.GCEDisk)
     except HttpError as exception:
       if exception.resp.status == 403:
         self.ModuleError(

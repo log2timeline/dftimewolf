@@ -667,7 +667,6 @@ Flow ID: {3:s}
       hostname = hostname.strip()
       if hostname:
         self.StoreContainer(containers.Host(hostname=hostname))
-    self.state.DedupeContainers(containers.Host)
 
     if process_ignorelist and cmdline_ignorelist:
       raise DFTimewolfError(
@@ -968,7 +967,6 @@ class GRRArtifactCollector(GRRFlow):
       hostname = item.strip()
       if hostname:
         self.StoreContainer(containers.Host(hostname=hostname))
-    self.state.DedupeContainers(containers.Host)
 
     self.use_raw_filesystem_access = use_raw_filesystem_access
     if max_file_size and isinstance(max_file_size, str):
@@ -1125,7 +1123,6 @@ class GRRFileCollector(GRRFlow):
       hostname = item.strip()
       if hostname:
         self.StoreContainer(containers.Host(hostname=hostname))
-    self.state.DedupeContainers(containers.Host)
 
     self.use_raw_filesystem_access = use_raw_filesystem_access
 
@@ -1262,7 +1259,6 @@ class GRROsqueryCollector(GRRFlow):
 
     for hostname in hosts:
       self.StoreContainer(containers.Host(hostname=hostname))
-    self.state.DedupeContainers(containers.Host)
 
     self.timeout_millis = timeout_millis
     self.ignore_stderr_errors = ignore_stderr_errors
@@ -1517,8 +1513,6 @@ class GRRFlowCollector(GRRFlow):
             else:
               raise exception
 
-    self.state.DedupeContainers(containers.GrrFlow)
-
   def Process(self, container: containers.GrrFlow
               ) -> None:  # pytype: disable=signature-mismatch
     """Downloads the results of a GRR collection flow.
@@ -1620,7 +1614,6 @@ class GRRTimelineCollector(GRRFlow):
       hostname = item.strip()
       if hostname:
         self.StoreContainer(containers.Host(hostname=hostname))
-    self.state.DedupeContainers(containers.Host)
 
     self._timeline_format = int(timeline_format)
     if self._timeline_format not in [1, 2]:

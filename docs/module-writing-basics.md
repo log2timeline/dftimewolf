@@ -143,8 +143,6 @@ Now we arrive at the heavy lifting of our module, we have 3 methods remaining to
 
 ```python
   def PreProcess(self):
-    self.state.DedupeContainers(self.GetThreadOnContainerType())
-
     if not os.access(self.destination_dir, os.W_OK):
       self.ModuleError(
           message=f'Cannot write to destination {self.destination_dir}, bailing out',
@@ -152,8 +150,6 @@ Now we arrive at the heavy lifting of our module, we have 3 methods remaining to
 ```
 
 In our contrived example, we're going to test we have write permissions on the destination directory, and if not, we are raising a module error that will be handled by the orchestration.
-
-Our module can receive file containers from two sources: parameters passed in via the recipe, which have been added to the state in `SetUp()` or from other modules in the recipe that adds `File` containers to the state. Since we may end up with duplicates, we call `DedupeContainers` on our container type.
 
 Next up is `Process(container)`. This method will receive one `File` container (as per `GetThreadOnContainerType()`) and perform the check.
 

@@ -207,14 +207,6 @@ class TicketAttribute(interface.AttributeContainer):
     self.name = name
     self.value = value
 
-  def __eq__(self, other: "TicketAttribute") -> bool:
-    """Override '==' operator. Used only in unit tests."""
-    return (
-      self.type == other.type
-      and self.name == other.name
-      and self.value == other.value
-    )
-
   def __str__(self) -> str:
     """Override __str()__."""
     return self.name
@@ -251,10 +243,6 @@ class File(interface.AttributeContainer):
     if self.path.endswith(self.name):
       return self.path
     return f"{self.path}/{self.name}"
-
-  def __eq__(self, other: File) -> bool:
-    """Override __eq__() for this container."""
-    return self.name == other.name and self.path == other.path
 
 
 class Directory(interface.AttributeContainer):
@@ -351,10 +339,6 @@ class GCEDisk(interface.AttributeContainer):
     self.name = name
     self.project = project
 
-  def __eq__(self, other: GCEDisk) -> bool:
-    """Override __eq__() for this container."""
-    return self.name == other.name and self.project == other.project
-
   def __str__(self) -> str:
     """Override __str()__."""
     return f"{self.project}:{self.name}"
@@ -431,10 +415,6 @@ class Host(interface.AttributeContainer):
     """Override __str()__."""
     return self.hostname
 
-  def __eq__(self, other: Host) -> bool:
-    """Override __eq__() for this container."""
-    return self.hostname == other.hostname and self.platform == other.platform
-
 
 class GrrFlow(interface.AttributeContainer):
   """Attribute container definition for a host.
@@ -454,10 +434,6 @@ class GrrFlow(interface.AttributeContainer):
   def __str__(self) -> str:
     """Override __str()__."""
     return f"{self.hostname}:{self.flow_id}"
-
-  def __eq__(self, other: GrrFlow) -> bool:
-    """Override __eq__() for this container."""
-    return self.hostname == other.hostname and self.flow_id == other.flow_id
 
 
 class WorkspaceLogs(interface.AttributeContainer):
@@ -671,10 +647,6 @@ class OsqueryResult(interface.AttributeContainer):
     self.flow_identifier = flow_identifier
     self.name = name
 
-  def __eq__(self, other: OsqueryResult) -> bool:
-    """Override __eq__() for this container."""
-    return self.hostname == other.hostname and self.query == other.query
-
   def __str__(self) -> str:
     """Override __str()__."""
     return f"{self.hostname}:{self.name}"
@@ -697,10 +669,6 @@ class BigQueryQuery(interface.AttributeContainer):
     self.query = query
     self.description = description
     self.pandas_output = pandas_output
-
-  def __eq__(self, other: BigQueryQuery) -> bool:
-    """Override __eq__() for this container."""
-    return self.query == other.query
 
   def __str__(self) -> str:
     """Override __str()__."""
@@ -725,10 +693,6 @@ class SQLQuery(interface.AttributeContainer):
   def __str__(self) -> str:
     """Override __str()__."""
     return self.description
-
-  def __eq__(self, other: SQLQuery) -> bool:
-    """Override __eq__() for this container."""
-    return self.query == other.query
 
 
 class Telemetry(interface.AttributeContainer):
@@ -784,10 +748,6 @@ class TurbiniaRequest(interface.AttributeContainer):
     """Overrides __str()__."""
     return self.request_id if self.request_id else self.evidence_name
 
-  def __eq__(self, other: TurbiniaRequest) -> bool:
-    """Override __eq__() for this container."""
-    return self.request_id == other.request_id
-
 
 class GRRArtifact(interface.AttributeContainer):
   """GRR Artifact container.
@@ -805,10 +765,6 @@ class GRRArtifact(interface.AttributeContainer):
   def __str__(self) -> str:
     """Override __str()__."""
     return self.name
-
-  def __eq__(self, other: GRRArtifact) -> bool:
-    """Override __eq__() for this container."""
-    return self.name == other.name
 
 
 class TimesketchSavedSearch(interface.AttributeContainer):
@@ -845,10 +801,6 @@ class TimesketchSavedSearch(interface.AttributeContainer):
   def __str__(self) -> str:
     """Override __str()__."""
     return self.name
-
-  def __eq__(self, other: TimesketchSavedSearch) -> bool:
-    """Override __eq__() for this container."""
-    return self.name == other.name
 
 
 class TimesketchQuery(TimesketchSavedSearch):

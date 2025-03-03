@@ -78,6 +78,10 @@ class ContainerManager():
     if not self._modules:
       raise RuntimeError("Container manager has not parsed a recipe yet")
 
+    # If the container to add exists already in the state, don't add it again
+    if container in self._modules[source_module].storage:
+      return
+
     with self._mutex:
       self._modules[source_module].storage.append(container)
 

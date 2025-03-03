@@ -37,8 +37,12 @@ FAKE_VOLUME_LIST = {
 FAKE_VOLUME_LIST_STR = '{0:s},{1:s}'.format(
     FAKE_VOLUME_1['VolumeId'],
     FAKE_VOLUME_2['VolumeId'])
-FAKE_CREATE_SNAPSHOT_RESPONSE = {
+FAKE_CREATE_SNAPSHOT_RESPONSE_1 = {
   'SnapshotId': 'snap-01234567',
+  'State': 'pending'
+}
+FAKE_CREATE_SNAPSHOT_RESPONSE_2 = {
+  'SnapshotId': 'snap-12345678',
   'State': 'pending'
 }
 FAKE_DESCRIBE_SNAPSHOTS_RESPONSE = {
@@ -64,7 +68,10 @@ def MockMakeAPICall(self, operation_name : str, kwarg : Any) -> Any:
   if operation_name == 'DescribeVolumes':
     return FAKE_VOLUME_LIST
   if operation_name == 'CreateSnapshot':
-    return FAKE_CREATE_SNAPSHOT_RESPONSE
+    return {
+        'vol-01234567': FAKE_CREATE_SNAPSHOT_RESPONSE_1,
+        'vol-12345678': FAKE_CREATE_SNAPSHOT_RESPONSE_2,
+    }[kwarg['VolumeId']]
   if operation_name == 'DescribeSnapshots':
     return FAKE_DESCRIBE_SNAPSHOTS_RESPONSE
   return orig(self, operation_name, kwarg)
@@ -105,7 +112,7 @@ class AWSVolumeSnapshotCollectorTest(modules_test_base.ModuleTestBase):
         containers.AWSSnapshot)))
     state_snaps = [c.id for c in self._module.GetContainers(
         containers.AWSSnapshot)]
-    self.assertEqual(state_snaps, ['snap-01234567', 'snap-01234567'])
+    self.assertEqual(state_snaps, ['snap-01234567', 'snap-12345678'])
 
   @mock.patch('time.sleep')
   @mock.patch('boto3.session.Session._setup_loader')
@@ -128,7 +135,7 @@ class AWSVolumeSnapshotCollectorTest(modules_test_base.ModuleTestBase):
         containers.AWSSnapshot)))
     state_snaps = [c.id for c in self._module.GetContainers(
         containers.AWSSnapshot)]
-    self.assertEqual(state_snaps, ['snap-01234567', 'snap-01234567'])
+    self.assertEqual(state_snaps, ['snap-01234567', 'snap-12345678'])
 
 
 if __name__ == '__main__':
