@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 """The attribute container interface."""
+
+import pandas as pd
+
 from typing import Any, Dict, List, Optional
 
 
@@ -72,6 +75,14 @@ class AttributeContainer():
         continue
       if k not in other.__dict__:
         return False
-      if other.__dict__[k] != v:
-        return False
+
+      # Edge case for child classes that have Dataframe members, which cannot
+      # be compared with `==`. We do this here, so every child class that has
+      # a dataframe doesn't have to reimplement this method.
+      if isinstance(v, pd.DataFrame):
+        if not v.equals(other.__dict__[k]):
+          return False
+      else:
+        if other.__dict__[k] != v:
+          return False
     return True

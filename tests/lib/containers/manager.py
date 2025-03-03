@@ -1,5 +1,6 @@
 """Tests for the ContainerManager."""
 
+import pandas as pd
 import unittest
 
 from dftimewolf.lib.containers import containers
@@ -664,6 +665,24 @@ class ContainerManagerTest(unittest.TestCase):
         requesting_module='ModuleA', container_class=_TestContainer3)
     self.assertEqual(len(actual), 1)
     self.assertIn(_TestContainer3('param1'), actual)
+
+  def test_DataframeContainerStorage(self):
+    """Tests a container storage edge case where the contianer has a dataframe."""
+    df1 = pd.DataFrame(columns=['a', 'b'], data=[[1, 2], [3, 4]])
+    df2 = pd.DataFrame(columns=['c', 'd'], data=[[5, 6], [7, 8]])
+
+    self._container_manager.ParseRecipe(_TEST_RECIPE)
+
+    self._container_manager.StoreContainer(
+        source_module='Preflight1',
+        container=containers.DataFrame(data_frame=df1,
+                                       description='Description',
+                                       name='name'))
+    self._container_manager.StoreContainer(
+        source_module='Preflight1',
+        container=containers.DataFrame(data_frame=df2,
+                                       description='Description',
+                                       name='name'))
 
 
 if __name__ == '__main__':
