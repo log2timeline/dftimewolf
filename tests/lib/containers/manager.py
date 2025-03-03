@@ -1,7 +1,8 @@
 """Tests for the ContainerManager."""
 
-import pandas as pd
 import unittest
+
+import pandas as pd
 
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.containers import interface
@@ -667,7 +668,7 @@ class ContainerManagerTest(unittest.TestCase):
     self.assertIn(_TestContainer3('param1'), actual)
 
   def test_DataframeContainerStorage(self):
-    """Tests a container storage edge case where the contianer has a dataframe."""
+    """Tests a container storage case where the contianer has a dataframe."""
     df1 = pd.DataFrame(columns=['a', 'b'], data=[[1, 2], [3, 4]])
     df2 = pd.DataFrame(columns=['c', 'd'], data=[[5, 6], [7, 8]])
 
