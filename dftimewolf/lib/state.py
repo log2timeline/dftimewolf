@@ -5,13 +5,12 @@ Use it to track errors, abort on global failures, clean up after modules, etc.
 """
 
 from concurrent.futures import ThreadPoolExecutor, Future
-import json
 import importlib
 import logging
 import time
 import threading
 import traceback
-from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Sequence, Type, Any, TypeVar, cast, Union  # pylint: disable=line-too-long
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Sequence, Type, Any, TypeVar, Union  # pylint: disable=line-too-long
 from dftimewolf.cli import curses_display_manager as cdm
 
 from dftimewolf.config import Config
