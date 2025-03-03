@@ -214,8 +214,6 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
             containers.GCEDisk(
                 name=container.evidence_disk.name, project=self.project))
 
-    self.state.DedupeContainers(containers.GCEDisk)
-
     disk_containers = self.GetContainers(containers.GCEDisk)
     turb_containers = self.GetContainers(containers.TurbiniaRequest)
     if not disk_containers and not turb_containers:

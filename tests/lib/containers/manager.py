@@ -75,9 +75,6 @@ class _TestContainer1(interface.AttributeContainer):
     super().__init__()
     self.param = param
 
-  def __eq__(self, other: "_TestContainer1"):
-    return self.param == other.param
-
 
 class _TestContainer2(_TestContainer1):
   """A Test container."""
@@ -91,9 +88,6 @@ class _TestContainer3(interface.AttributeContainer):
   def __init__(self, field: str):
     super().__init__()
     self.field = field
-
-  def __eq__(self, other: "_TestContainer3"):
-    return self.field == other.field
 
 
 class ContainerManagerTest(unittest.TestCase):
@@ -628,6 +622,48 @@ class ContainerManagerTest(unittest.TestCase):
           container_class=_TestContainer3)
       self.assertEqual(len(actual), 1)
       self.assertIn(_TestContainer3('Stored by ModuleA'), actual)
+
+  def test_StoreDuplicateContainers(self):
+    """Tests that attempts to store duplicate containers are disregarded."""
+    self._container_manager.ParseRecipe(_TEST_RECIPE)
+
+    self._container_manager.StoreContainer(
+        source_module='Preflight1', container=_TestContainer1('param1'))
+    self._container_manager.StoreContainer(
+        source_module='Preflight1', container=_TestContainer1('param1'))
+    self._container_manager.StoreContainer(
+        source_module='Preflight1', container=_TestContainer2('param1'))
+    self._container_manager.StoreContainer(
+        source_module='Preflight1', container=_TestContainer2('param1'))
+    self._container_manager.StoreContainer(
+        source_module='Preflight1', container=_TestContainer2('param2'))
+
+    # Metadata is not considered in duplicate comparison
+    c5 = _TestContainer3('param1')
+    c6 = _TestContainer3('param1')
+    c5.SetMetadata('key', 'foo')
+    c6.SetMetadata('key', 'bar')
+
+    self._container_manager.StoreContainer(
+        source_module='Preflight1', container=c5)
+    self._container_manager.StoreContainer(
+        source_module='Preflight1', container=c6)
+
+    actual = self._container_manager.GetContainers(
+        requesting_module='ModuleA', container_class=_TestContainer1)
+    self.assertEqual(len(actual), 1)
+    self.assertIn(_TestContainer1('param1'), actual)
+
+    actual = self._container_manager.GetContainers(
+        requesting_module='ModuleA', container_class=_TestContainer2)
+    self.assertEqual(len(actual), 2)
+    self.assertIn(_TestContainer2('param1'), actual)
+    self.assertIn(_TestContainer2('param2'), actual)
+
+    actual = self._container_manager.GetContainers(
+        requesting_module='ModuleA', container_class=_TestContainer3)
+    self.assertEqual(len(actual), 1)
+    self.assertIn(_TestContainer3('param1'), actual)
 
 
 if __name__ == '__main__':

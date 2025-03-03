@@ -5,13 +5,12 @@ Use it to track errors, abort on global failures, clean up after modules, etc.
 """
 
 from concurrent.futures import ThreadPoolExecutor, Future
-import json
 import importlib
 import logging
 import time
 import threading
 import traceback
-from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Sequence, Type, Any, TypeVar, cast, Union  # pylint: disable=line-too-long
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Sequence, Type, Any, TypeVar, Union  # pylint: disable=line-too-long
 from dftimewolf.cli import curses_display_manager as cdm
 
 from dftimewolf.config import Config
@@ -66,7 +65,6 @@ class DFTimewolfState(object):
     self.errors = []  # type: List[DFTimewolfError]
     self.global_errors = []  # type: List[DFTimewolfError]
     self.recipe = {}  # type: Dict[str, Any]
-    self.store = {}  # type: Dict[str, List[interface.AttributeContainer]]
     self._container_manager = container_manager.ContainerManager() # Simultaneous while ensuring this change does not break anything  # pylint: disable=line-too-long
     self.streaming_callbacks = {}  # type: Dict[Type[interface.AttributeContainer], List[Callable[[Any], Any]]]  # pylint: disable=line-too-long
     self._abort_execution = False
@@ -233,12 +231,8 @@ class DFTimewolfState(object):
       container: data to store.
       source_module: the originating module.
     """
-    with self._state_lock:
-      container.SetMetadata(interface.METADATA_KEY_SOURCE_MODULE, source_module)
-      self.store.setdefault(container.CONTAINER_TYPE, []).append(container)
-
-      self._container_manager.StoreContainer(source_module=source_module,
-                                             container=container)
+    self._container_manager.StoreContainer(source_module=source_module,
+                                           container=container)
 
   def LogTelemetry(
       self, telemetry_entry: telemetry.TelemetryCollection) -> None:
@@ -276,105 +270,12 @@ class DFTimewolfState(object):
     Raises:
       RuntimeError: If only one metadata filter parameter is specified.
     """
-    # We're plumbing both methods in for a while, and reporting discrepencies
-    containers_orig = self._DeprecatedGetContainers(
-        container_class=container_class,
-        pop=pop,
-        metadata_filter_key=metadata_filter_key,
-        metadata_filter_value=metadata_filter_value)
-    containers_cm = self._container_manager.GetContainers(
+    return self._container_manager.GetContainers(
         requesting_module=requesting_module,
         container_class=container_class,
         pop=pop,
         metadata_filter_key=metadata_filter_key,
         metadata_filter_value=metadata_filter_value)
-
-    if (sorted([str(c) for c in containers_orig]) !=
-        sorted([str(c) for c in containers_cm])):
-      # Log some telemetry on the difference.
-      telem = {
-          'requesting_module': requesting_module,
-          'container_class': container_class.__name__,
-          'deprecated_implementation_results':
-              [{'str': str(c),
-                'origin': c.metadata.get(interface.METADATA_KEY_SOURCE_MODULE,
-                                         'no origin')}
-               for c in containers_orig],
-          'container_manager_results':
-              [{'str': str(c),
-                'origin': c.metadata.get(interface.METADATA_KEY_SOURCE_MODULE,
-                                         'no origin')}
-               for c in containers_cm]}
-
-      self.LogTelemetry(telemetry_entry=telemetry.TelemetryCollection(
-          requesting_module,
-          requesting_module,
-          self.recipe.get('name', ''),
-          {'GetContainer_discrepancy': json.dumps(telem)}))
-      logger.debug('GetContainer_discrepancy: %s', json.dumps(telem))
-
-    return containers_orig
-
-  def _DeprecatedGetContainers(
-      self,
-      container_class: Type[T],
-      pop: bool = False,
-      metadata_filter_key: Optional[str] = None,
-      metadata_filter_value: Optional[Any] = None) -> Sequence[T]:
-    """Thread-safe method to retrieve data from the state's store.
-
-    Args:
-      container_class (type): AttributeContainer class used to filter data.
-      pop (Optional[bool]): Whether to remove the containers from the state when
-          they are retrieved.
-      metadata_filter_key (Optional[str]): Metadata key to filter on.
-      metadata_filter_value (Optional[Any]): Metadata value to filter on.
-
-    Returns:
-      Collection[AttributeContainer]: attribute container objects provided in
-          the store that correspond to the container type.
-
-    Raises:
-      RuntimeError: If only one metadata filter parameter is specified.
-    """
-    if bool(metadata_filter_key) ^ bool(metadata_filter_value):  # logical XOR
-      raise RuntimeError('Must specify both key and value for attribute filter')
-
-    with self._state_lock:
-      ret_val = []
-      containers = self.store.get(container_class.CONTAINER_TYPE, [])
-      self.store[container_class.CONTAINER_TYPE] = []
-
-      for c in containers:
-        if metadata_filter_key:
-          if c.metadata.get(metadata_filter_key) == metadata_filter_value:
-            ret_val.append(c)
-          else:
-            self.store[container_class.CONTAINER_TYPE].append(c)
-        else:
-          ret_val.append(c)
-
-      if not pop:
-        for c in ret_val:
-          self.store[container_class.CONTAINER_TYPE].append(c)
-
-      return cast(Sequence[T], ret_val)
-
-  def DedupeContainers(self, container_class: Type[T]) -> None:
-    """Thread safe deduping of containers of the given type.
-
-    This requires the container being deduped to override `__eq__()`.
-
-    Args:
-      container_class (type): AttributeContainer class to dedupe.
-    """
-    with self._state_lock:
-      deduped = []
-      for c in self.store.get(container_class.CONTAINER_TYPE, []):
-        if c not in deduped:
-          deduped.append(c)
-
-      self.store[container_class.CONTAINER_TYPE] = deduped
 
   def _SetupModuleThread(self, module_definition: Dict[str, str]) -> None:
     """Calls the module's SetUp() function and sets a threading event for it.

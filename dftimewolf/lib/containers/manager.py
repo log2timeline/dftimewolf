@@ -3,9 +3,12 @@
 
 import dataclasses
 import threading
-from typing import Any, cast, Sequence, Type
+from typing import Any, cast, Sequence, Type, TypeVar
 
 from dftimewolf.lib.containers import interface
+
+
+T = TypeVar("T", bound="interface.AttributeContainer")  # pylint: disable=invalid-name,line-too-long
 
 
 @dataclasses.dataclass
@@ -78,16 +81,20 @@ class ContainerManager():
     if not self._modules:
       raise RuntimeError("Container manager has not parsed a recipe yet")
 
+    # If the container to add exists already in the state, don't add it again
+    if container in self._modules[source_module].storage:
+      return
+
     with self._mutex:
       self._modules[source_module].storage.append(container)
 
   def GetContainers(self,
                     requesting_module: str,
-                    container_class: Type[interface.AttributeContainer],
+                    container_class: Type[T],
                     pop: bool = False,
                     metadata_filter_key: str | None = None,
                     metadata_filter_value: Any = None
-      ) -> Sequence[interface.AttributeContainer]:
+      ) -> Sequence[T]:
     """Retrieves stored containers.
     
     A requesting module cannot retrieve containers that do not originate from a
@@ -134,7 +141,7 @@ class ContainerManager():
             c for c in self._modules[requesting_module].storage
             if id(c) not in ids]
 
-    return cast(Sequence[interface.AttributeContainer], ret_val)
+    return cast(Sequence[T], ret_val)
 
   def CompleteModule(self, module_name: str) -> None:
     """Mark a module as completed in storage.
