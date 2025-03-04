@@ -126,12 +126,12 @@ class OpenRelikProcessor(module.ThreadAwareModule):
         str: The path to the downloaded file.
     """
     self.logger.info(f"Downloading {filename}, ID:{file_id}")
-    local_path: str = self.openrelik_api_client.download_file(file_id, filename)
+    local_path = self.openrelik_api_client.download_file(file_id, filename)
     if not local_path:
       self.logger.error(f"Failed to download {filename}, ID:{file_id}")
       return None
     self.PublishMessage(f"Saved output for file ID {file_id} to {local_path}")
-    return local_path
+    return str(local_path)
 
   def Process(
     self, container: containers.File
