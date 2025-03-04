@@ -645,11 +645,27 @@ class ContainerManagerTest(unittest.TestCase):
     c6 = _TestContainer3('param1')
     c5.SetMetadata('key', 'foo')
     c6.SetMetadata('key', 'bar')
-
     self._container_manager.StoreContainer(
         source_module='Preflight1', container=c5)
     self._container_manager.StoreContainer(
         source_module='Preflight1', container=c6)
+
+    # Dataframe members of containers have special handling; check that too
+    df1 = pd.DataFrame(columns=['a', 'b'], data=[[1, 2], [3, 4]])
+    df2 = pd.DataFrame(columns=['a', 'b'], data=[[1, 2], [3, 4]])
+    df3 = pd.DataFrame(columns=['c', 'd'], data=[[5, 6], [7, 8]])
+    self._container_manager.StoreContainer(
+        source_module='Preflight1',
+        container=containers.DataFrame(
+            data_frame=df1, description='Description', name='name'))
+    self._container_manager.StoreContainer(
+        source_module='Preflight1',
+        container=containers.DataFrame(
+            data_frame=df2, description='Description', name='name'))
+    self._container_manager.StoreContainer(
+        source_module='Preflight1',
+        container=containers.DataFrame(
+            data_frame=df3, description='Description', name='name'))
 
     actual = self._container_manager.GetContainers(
         requesting_module='ModuleA', container_class=_TestContainer1)
@@ -667,23 +683,13 @@ class ContainerManagerTest(unittest.TestCase):
     self.assertEqual(len(actual), 1)
     self.assertIn(_TestContainer3('param1'), actual)
 
-  def test_DataframeContainerStorage(self):
-    """Tests a container storage case where the contianer has a dataframe."""
-    df1 = pd.DataFrame(columns=['a', 'b'], data=[[1, 2], [3, 4]])
-    df2 = pd.DataFrame(columns=['c', 'd'], data=[[5, 6], [7, 8]])
-
-    self._container_manager.ParseRecipe(_TEST_RECIPE)
-
-    self._container_manager.StoreContainer(
-        source_module='Preflight1',
-        container=containers.DataFrame(data_frame=df1,
-                                       description='Description',
-                                       name='name'))
-    self._container_manager.StoreContainer(
-        source_module='Preflight1',
-        container=containers.DataFrame(data_frame=df2,
-                                       description='Description',
-                                       name='name'))
+    actual = self._container_manager.GetContainers(
+        requesting_module='ModuleA', container_class=containers.DataFrame)
+    self.assertEqual(len(actual), 2)
+    self.assertIn(containers.DataFrame(
+        data_frame=df1, description='Description', name='name'), actual)
+    self.assertIn(containers.DataFrame(
+        data_frame=df3, description='Description', name='name'), actual)
 
 
 if __name__ == '__main__':
