@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """The attribute container interface."""
 
-import pandas as pd
-
 from typing import Any, Dict, List, Optional
+
+import pandas as pd
 
 
 METADATA_KEY_SOURCE_MODULE = "SOURCE_MODULE"
