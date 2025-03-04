@@ -79,7 +79,10 @@ class AttributeContainer():
       # Edge case for child classes that have Dataframe members, which cannot
       # be compared with `==`. We do this here, so every child class that has
       # a dataframe doesn't have to reimplement this method.
-      if isinstance(v, pd.DataFrame):
+      if (isinstance(v, pd.DataFrame) or
+          isinstance(other.__dict__[k], pd.DataFrame)):
+        if v is None or other.__dict__[k] is None:
+          return False
         if not v.equals(other.__dict__[k]):
           return False
       else:
