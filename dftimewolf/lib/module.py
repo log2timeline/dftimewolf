@@ -171,9 +171,6 @@ class BaseModule(object):
     Args:
       container (AttributeContainer): data to store.
     """
-    self.logger.debug(f'{self.name} is storing a {container.CONTAINER_TYPE} '
-        f'container: {str(container)}')
-
     self.state.StoreContainer(container, self.name)
 
   def StreamContainer(self, container: "interface.AttributeContainer") -> None:
@@ -208,20 +205,11 @@ class BaseModule(object):
     Raises:
       RuntimeError: If only one metadata filter parameter is specified.
     """
-    containers = self.state.GetContainers(self.name,
-                                          container_class,
-                                          pop,
-                                          metadata_filter_key,
-                                          metadata_filter_value)
-
-    self.logger.debug(f'{self.name} is retrieving {len(containers)} '
-        f'{container_class.CONTAINER_TYPE} containers - pop == {pop}')
-    for c in containers:
-      self.logger.debug(
-          f'  * {str(c)} - origin: '
-          f'{c.metadata.get(interface.METADATA_KEY_SOURCE_MODULE, "Unknown")}')
-
-    return containers
+    return self.state.GetContainers(self.name,
+                                    container_class,
+                                    pop,
+                                    metadata_filter_key,
+                                    metadata_filter_value)
 
   @abc.abstractmethod
   def Process(self) -> None:

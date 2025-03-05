@@ -6,9 +6,6 @@ from typing import Any, Dict, List, Optional
 import pandas as pd
 
 
-METADATA_KEY_SOURCE_MODULE = "SOURCE_MODULE"
-
-
 class AttributeContainer():
   """The attribute container interface.
 

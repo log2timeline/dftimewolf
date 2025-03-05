@@ -2,6 +2,7 @@
 
 
 import dataclasses
+import logging
 import threading
 from typing import Any, cast, Sequence, Type, TypeVar
 
@@ -41,8 +42,9 @@ class ContainerManager():
     _modules: Container storage and dependency information.
   """
 
-  def __init__(self) -> None:
+  def __init__(self, logger: logging.Logger) -> None:
     """Initialise a ContainerManager."""
+    self._logger = logger
     self._mutex = threading.Lock()
     self._modules: dict[str, _MODULE] = {}
 
@@ -86,6 +88,9 @@ class ContainerManager():
       return
 
     with self._mutex:
+      self._logger.debug(
+        f'{source_module} is storing a {container.CONTAINER_TYPE} '
+        f'container: {str(container)}')
       self._modules[source_module].storage.append(container)
 
   def GetContainers(self,
@@ -122,7 +127,7 @@ class ContainerManager():
       raise RuntimeError('Must specify both key and value for attribute filter')
 
     with self._mutex:
-      ret_val = []
+      ret_val: list[tuple[interface.AttributeContainer, str]] = []
 
       for dependency in self._modules[requesting_module].dependencies:
         for c in self._modules[dependency].storage:
@@ -130,18 +135,25 @@ class ContainerManager():
               (metadata_filter_key and
               c.metadata.get(metadata_filter_key) != metadata_filter_value)):
             continue
-          ret_val.append(c)
+          ret_val.append((c, dependency))
 
       if pop:
         # A module can only pop containers it has stored.
         # Remove by unique object id: Not __eq__() in case there are dupes, or
         #   attempting to compare different types of containers.
-        ids = [id(c) for c in ret_val]
+        ids = [id(c) for c, _ in ret_val]
         self._modules[requesting_module].storage = [
             c for c in self._modules[requesting_module].storage
             if id(c) not in ids]
 
-    return cast(Sequence[T], ret_val)
+    self._logger.debug(
+        f'{requesting_module} is retrieving {len(ret_val)} '
+        f'{container_class.CONTAINER_TYPE} containers')
+    for module, origin in ret_val:
+      self._logger.debug(
+          f'  * {str(module)} - origin: {origin}')
+
+    return cast(Sequence[T], [m for m, _ in ret_val])
 
   def CompleteModule(self, module_name: str) -> None:
     """Mark a module as completed in storage.

@@ -1,5 +1,6 @@
 """Tests for the ContainerManager."""
 
+import logging
 import unittest
 
 import pandas as pd
@@ -99,7 +100,10 @@ class ContainerManagerTest(unittest.TestCase):
     """Set up."""
     super().setUp()
 
-    self._container_manager = manager.ContainerManager()
+    null_logger = logging.Logger('null')
+    null_logger.addHandler(logging.NullHandler())
+
+    self._container_manager = manager.ContainerManager(null_logger)
 
   def test_GetWithoutRecipeParsed(self):
     """Tests an error is thrown getting containers before a recipe is parsed."""
