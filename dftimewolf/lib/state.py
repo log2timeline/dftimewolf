@@ -65,7 +65,7 @@ class DFTimewolfState(object):
     self.errors = []  # type: List[DFTimewolfError]
     self.global_errors = []  # type: List[DFTimewolfError]
     self.recipe = {}  # type: Dict[str, Any]
-    self._container_manager = container_manager.ContainerManager() # Simultaneous while ensuring this change does not break anything  # pylint: disable=line-too-long
+    self._container_manager = container_manager.ContainerManager(logger)
     self.streaming_callbacks = {}  # type: Dict[Type[interface.AttributeContainer], List[Callable[[Any], Any]]]  # pylint: disable=line-too-long
     self._abort_execution = False
     self.stdout_log = True
@@ -363,10 +363,7 @@ class DFTimewolfState(object):
     with ThreadPoolExecutor(max_workers=module.GetThreadPoolSize()) \
         as executor:
       for c in containers:
-        logger.debug(
-            f'Launching {module.name}.Process thread with {str(c)} from '
-            f'{c.metadata.get(interface.METADATA_KEY_SOURCE_MODULE, "Unknown")}'
-        )
+        logger.debug(f'Launching {module.name}.Process thread with {str(c)}')
         time_start = time.time()
         futures.append(executor.submit(module.Process, c))
         total_time = utils.CalculateRunTime(time_start)
