@@ -153,7 +153,7 @@ class ContainerManager():
       self._logger.debug(
           f'  * {str(module)} - origin: {origin}')
 
-    return cast(Sequence[T], [m for m, _ in ret_val])
+    return cast(Sequence[T], [c for c, _ in ret_val])
 
   def CompleteModule(self, module_name: str) -> None:
     """Mark a module as completed in storage.
