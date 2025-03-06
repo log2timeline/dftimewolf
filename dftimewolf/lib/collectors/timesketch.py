@@ -19,6 +19,28 @@ from dftimewolf.lib.modules import manager as modules_manager
 _VALID_OUTPUT_FORMATS = frozenset(['csv', 'json', 'jsonl', 'pandas'])
 
 
+def GenerateTimerangeQuery(
+  start_datetime: datetime.datetime | None,
+  end_datetime: datetime.datetime | None,
+) -> str:
+  """Returns a Timesketch query string for the given time range.
+
+  Args:
+    start_datetime: The start datetime.
+    end_datetime: The end datetime.
+
+  Returns:
+    A Timesketch query string for the given time range.
+  """
+  from_query = "*"
+  to_query = "*"
+  if start_datetime:
+    from_query = start_datetime.strftime("%Y-%m-%dT%H:%M:%S")
+  if end_datetime:
+    to_query = end_datetime.strftime("%Y-%m-%dT%H:%M:%S")
+  return f"datetime:[{from_query} TO {to_query}]"
+
+
 class TimesketchSearchEventCollector(module.BaseModule):
   """Collector for Timesketch events.
 
@@ -217,13 +239,7 @@ class TimesketchSearchEventCollector(module.BaseModule):
     if indices:
       search_obj.indices = indices
 
-    from_query = '*'
-    to_query = '*'
-    if start_datetime:
-      from_query = start_datetime.strftime('%Y-%m-%dT%H:%M:%S.%f')
-    if end_datetime:
-      to_query = end_datetime.strftime('%Y-%m-%dT%H:%M:%S.%f')
-    date_query = f'datetime:[{from_query} TO {to_query}]'
+    date_query = GenerateTimerangeQuery(start_datetime, end_datetime)
     search_obj.query_string = f'({query_string}) AND ({date_query})'
 
     for label in labels or []:
