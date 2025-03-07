@@ -1,8 +1,0 @@
-$2cf413> set -recipe aws_forensics
-To see arguments for this recipe, type set. To set them interactively, type set -a[ll]
-$2cf413$aws_forensics> set -all
-remote_profile_name: None --> value_1
-remote_zone: None --> value_2
-incident_id: None --> value_3
-$2cf413$aws_forensics> run
-Running: dftimewolf aws_forensics value_1 value_2 value_3 --boot_volume_size=50
