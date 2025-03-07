@@ -18,6 +18,7 @@ import logging
 import os
 import time
 import unittest
+from unittest import mock
 import warnings
 
 from googleapiclient.errors import HttpError
@@ -177,6 +178,10 @@ class GCEForensicsEndToEndTest(unittest.TestCase):
       'zone': self.zone,
       'stop_instances': False
     }
+
+    # We check containers after the run for success - So mock out the cleanup.
+    self.test_state._container_manager.CompleteModule = mock.MagicMock()  # pylint: disable=protected-access
+
     self.test_state.SetupModules()
     self.test_state.RunModules()
 
@@ -228,6 +233,10 @@ class GCEForensicsEndToEndTest(unittest.TestCase):
       'zone': self.zone,
       'stop_instances': False
     }
+
+    # We check containers after the run for success - So mock out the cleanup.
+    self.test_state._container_manager.CompleteModule = mock.MagicMock()  # pylint: disable=protected-access
+
     self.test_state.SetupModules()
     self.test_state.RunModules()
 

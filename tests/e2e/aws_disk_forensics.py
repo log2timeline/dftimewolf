@@ -17,6 +17,7 @@ import json
 import logging
 import os
 import unittest
+from unittest import mock
 import warnings
 
 from libcloudforensics.providers.gcp.internal import compute, common, storage
@@ -193,6 +194,10 @@ class AWSToGCPForensicsEndToEndTest(unittest.TestCase):
       'subnet': self.aws_subnet,
       'gcp_project': self.gcp_project_id
     }
+
+    # We check containers after the run for success - So mock out the cleanup.
+    self.test_state._container_manager.CompleteModule = mock.MagicMock()  # pylint: disable=protected-access
+
     self.test_state.SetupModules()
     self.test_state.RunModules()
 
