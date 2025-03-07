@@ -7,7 +7,6 @@ nav:
     - Developers' guide: developers-guide.md
     - Module writing basics: module-writing-basics.md
     - Architecture: architecture.md
-    - Metawolf: metawolf.md
     - Recipe list: recipe-list.md
     - Recipe caveats: recipe-caveat.md
 
