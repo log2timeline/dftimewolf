@@ -11,14 +11,11 @@ from grr_api_client.client import Client
 from grr_api_client.flow import Flow
 from grr_api_client.hunt import Hunt
 
-from dftimewolf.lib import module
 from dftimewolf.lib.containers import interface
 from dftimewolf.lib.errors import DFTimewolfError
 
-T = TypeVar("T", bound="interface.AttributeContainer")  # pylint: disable=invalid-name,line-too-long
 
-
-class GRRBaseModule(module.BaseModule):
+class GRRBaseModule:
   """Base module for GRR hunt and flow modules.
 
   Attributes:
@@ -30,8 +27,6 @@ class GRRBaseModule(module.BaseModule):
     message_callback: Callback method used to notify the operator of approval
         URLs.
   """
-
-  name = "GRRBaseModule"
 
   _CHECK_APPROVAL_INTERVAL_SEC = 10
 
@@ -91,6 +86,7 @@ class GRRBaseModule(module.BaseModule):
       grr_object: Union[Hunt, Client],
       grr_function: Callable,  # type: ignore[type-arg]
       logger: Logger,
+      telemetry: Callable[[dict[str, str]], None],
       *args: Any,
       **kwargs: Any
   ) -> Union[Flow, Hunt]:
@@ -101,6 +97,9 @@ class GRRBaseModule(module.BaseModule):
     Args:
       grr_object (object): GRR object to create the eventual approval on.
       grr_function (function): GRR function requiring approval.
+      logger (Logger): logging object coming from the module.
+      telemetry (Callback[dict[str, str]]): telemetry callback. Necessary since
+          this is not a Module but a regular object.
       args (list[object]): Positional arguments that are to be passed
           to `grr_function`.
       kwargs (dict[str, object]): keyword arguments that are to be passed
@@ -115,12 +114,12 @@ class GRRBaseModule(module.BaseModule):
     approval_url = None
     approval_url_shown = False
     start = time.time()
-    self.LogTelemetry({"mpa_start": str(start)})
+    telemetry({"mpa_start": str(start)})
     while True:
       try:
         result = grr_function(*args, **kwargs)
-        self.LogTelemetry({"mpa_success": str(time.time())})
-        self.LogTelemetry({"mpa_duration": str(time.time() - start)})
+        telemetry({"mpa_success": str(time.time())})
+        telemetry({"mpa_duration": str(time.time() - start)})
         return result
       except grr_errors.AccessForbiddenError as exception:
         logger.warning(f"No valid approval found: {exception!s}")
