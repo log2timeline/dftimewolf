@@ -86,6 +86,7 @@ class GRRBaseModuleTest(unittest.TestCase):
     # pylint: disable=protected-access,invalid-name
     grr_base_module._CHECK_APPROVAL_INTERVAL_SEC = 0
     mock_grr_object = MockGRRObject()
+    mock_telemetry = mock.MagicMock()
     mock_forbidden_function = mock.Mock(
         wraps=mock_grr_object.ForbiddenFunction)
     result = grr_base_module._WrapGRRRequestWithApproval(
@@ -93,6 +94,7 @@ class GRRBaseModuleTest(unittest.TestCase):
         mock_forbidden_function,
         logging.getLogger('GRRBaseModuleTest'),
         self.LogTelemetry,
+        testApprovalWrapper
         'random1',
         'random2',
         random3=4,
@@ -137,17 +139,20 @@ class GRRBaseModuleTest(unittest.TestCase):
     # pylint: disable=protected-access
     grr_base_module._CHECK_APPROVAL_INTERVAL_SEC = 0
     mock_grr_object = MockGRRObject()
+    mock_telemetry = mock.MagicMock()
     mock_forbidden_function = mock.Mock(
         wraps=mock_grr_object.ForbiddenFunction)
     with self.assertRaises(errors.DFTimewolfError) as error:
       grr_base_module._WrapGRRRequestWithApproval(
-          mock_grr_object,
-          mock_forbidden_function,
-          logging.getLogger('GRRBaseModuleTest'),
-          'random1',
-          'random2',
-          random3=4,
-          random4=4)
+        mock_grr_object,
+        mock_forbidden_function,
+        logging.getLogger("GRRBaseModuleTest"),
+        mock_telemetry,
+        "random1",
+        "random2",
+        random3=4,
+        random4=4,
+      )
     self.assertEqual('GRR needs approval but no approvers specified '
                      '(hint: use --approvers)', error.exception.message)
     self.assertTrue(error.exception.critical)
