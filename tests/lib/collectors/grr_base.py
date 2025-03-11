@@ -94,7 +94,7 @@ class GRRBaseModuleTest(unittest.TestCase):
         mock_forbidden_function,
         logging.getLogger('GRRBaseModuleTest'),
         self.LogTelemetry,
-        testApprovalWrapper
+        mock_telemetry
         'random1',
         'random2',
         random3=4,
