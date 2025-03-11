@@ -3,7 +3,7 @@
 import tempfile
 import time
 from logging import Logger
-from typing import Any, Callable, Optional, Type, TypeVar, Union
+from typing import Any, Callable, Optional, Union
 
 from grr_api_client import api as grr_api
 from grr_api_client import errors as grr_errors
@@ -11,7 +11,6 @@ from grr_api_client.client import Client
 from grr_api_client.flow import Flow
 from grr_api_client.hunt import Hunt
 
-from dftimewolf.lib.containers import interface
 from dftimewolf.lib.errors import DFTimewolfError
 
 
@@ -42,7 +41,7 @@ class GRRBaseModule:
     self.reason = str()
     self.grr_api: grr_api.GrrApi = None
     self.grr_url = str()
-    self.approvers = []  # type: List[str]
+    self.approvers = []  # type: list[str]
     self.output_path = str()
     self.message_callback: Callable[[str, bool], None] = None  # type: ignore
 
