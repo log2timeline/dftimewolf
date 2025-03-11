@@ -1,9 +1,9 @@
 """Base GRR module class. GRR modules should extend it."""
 
-from logging import Logger
 import tempfile
 import time
-from typing import Optional, Union, Callable, List, Any
+from logging import Logger
+from typing import Any, Callable, Optional, Type, TypeVar, Union
 
 from grr_api_client import api as grr_api
 from grr_api_client import errors as grr_errors
@@ -11,10 +11,14 @@ from grr_api_client.client import Client
 from grr_api_client.flow import Flow
 from grr_api_client.hunt import Hunt
 
+from dftimewolf.lib import module
+from dftimewolf.lib.containers import interface
 from dftimewolf.lib.errors import DFTimewolfError
 
+T = TypeVar("T", bound="interface.AttributeContainer")  # pylint: disable=invalid-name,line-too-long
 
-class GRRBaseModule(object):
+
+class GRRBaseModule(module.BaseModule):
   """Base module for GRR hunt and flow modules.
 
   Attributes:
@@ -160,3 +164,31 @@ class GRRBaseModule(object):
           f"{grr_object}: approval request sent to: "
           f"{self.approvers} (reason: {self.reason})"
         )
+
+  def PreProcess(self) -> None:
+    """Pre-processes the module.
+
+    This method should be overridden by subclasses.
+    """
+    raise NotImplementedError
+
+  def Process(self) -> None:
+    """Processes the module.
+
+    This method should be overridden by subclasses.
+    """
+    raise NotImplementedError
+
+  def PostProcess(self) -> None:
+    """Carries out optional Process actions that only need to be performed
+    once, regardless of the number of class instantiations. Called after
+    Process."""
+    raise NotImplementedError
+
+  def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
+    """Returns the container type that this module should be threaded on."""
+    raise NotImplementedError
+
+  def GetThreadPoolSize(self) -> int:
+    """Returns the maximum number of threads for this module."""
+    raise NotImplementedError
