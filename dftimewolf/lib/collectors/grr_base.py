@@ -31,6 +31,8 @@ class GRRBaseModule(module.BaseModule):
         URLs.
   """
 
+  name = "GRRBaseModule"
+
   _CHECK_APPROVAL_INTERVAL_SEC = 10
 
   def __init__(self) -> None:
