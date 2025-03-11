@@ -90,15 +90,16 @@ class GRRBaseModuleTest(unittest.TestCase):
     mock_forbidden_function = mock.Mock(
         wraps=mock_grr_object.ForbiddenFunction)
     result = grr_base_module._WrapGRRRequestWithApproval(
-        mock_grr_object,
-        mock_forbidden_function,
-        logging.getLogger('GRRBaseModuleTest'),
-        self.LogTelemetry,
-        mock_telemetry
-        'random1',
-        'random2',
-        random3=4,
-        random4=4)
+      mock_grr_object,
+      mock_forbidden_function,
+      logging.getLogger("GRRBaseModuleTest"),
+      self.LogTelemetry,
+      mock_telemetry,
+      "random1",
+      "random2",
+      random3=4,
+      random4=4,
+    )
 
     # Final result.
     self.assertEqual(result, 4)
