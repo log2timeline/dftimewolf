@@ -165,31 +165,3 @@ class GRRBaseModule:
           f"{grr_object}: approval request sent to: "
           f"{self.approvers} (reason: {self.reason})"
         )
-
-  def PreProcess(self) -> None:
-    """Pre-processes the module.
-
-    This method should be overridden by subclasses.
-    """
-    raise NotImplementedError
-
-  def Process(self) -> None:
-    """Processes the module.
-
-    This method should be overridden by subclasses.
-    """
-    raise NotImplementedError
-
-  def PostProcess(self) -> None:
-    """Carries out optional Process actions that only need to be performed
-    once, regardless of the number of class instantiations. Called after
-    Process."""
-    raise NotImplementedError
-
-  def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
-    """Returns the container type that this module should be threaded on."""
-    raise NotImplementedError
-
-  def GetThreadPoolSize(self) -> int:
-    """Returns the maximum number of threads for this module."""
-    raise NotImplementedError
