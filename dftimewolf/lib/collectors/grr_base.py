@@ -109,12 +109,12 @@ class GRRBaseModule(object):
     approval_url = None
     approval_url_shown = False
     start = time.time()
-    self.LogTelemetry({"mpa_start": start})
+    self.LogTelemetry({"mpa_start": str(start)})
     while True:
       try:
         result = grr_function(*args, **kwargs)
-        self.LogTelemetry({"mpa_success": time.time()})
-        self.LogTelemetry({"mpa_duration": time.time() - start})
+        self.LogTelemetry({"mpa_success": str(time.time())})
+        self.LogTelemetry({"mpa_duration": str(time.time() - start)})
         return result
       except grr_errors.AccessForbiddenError as exception:
         logger.warning(f"No valid approval found: {exception!s}")
