@@ -736,9 +736,9 @@ class GRRHuntDownloader(GRRHuntDownloaderBase):
         hunt,
         self._GetAndWriteArchive,
         self.logger,
+        self.LogTelemetry,
         hunt,
         output_file_path,
-        self.LogTelemetry,
       )
     except DFTimewolfError as exception:
       self.ModuleError(exception.message, critical=exception.critical)
