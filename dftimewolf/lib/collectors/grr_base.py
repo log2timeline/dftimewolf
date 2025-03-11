@@ -108,42 +108,55 @@ class GRRBaseModule(object):
     approval_sent = False
     approval_url = None
     approval_url_shown = False
-
+    start = time.time()
+    self.LogTelemetry({"mpa_start": start})
     while True:
       try:
-        return grr_function(*args, **kwargs)
-
+        result = grr_function(*args, **kwargs)
+        self.LogTelemetry({"mpa_success": time.time()})
+        self.LogTelemetry({"mpa_duration": time.time() - start})
+        return result
       except grr_errors.AccessForbiddenError as exception:
-        logger.warning(f'No valid approval found: {exception!s}')
+        logger.warning(f"No valid approval found: {exception!s}")
         # If approval was already sent, just wait a bit more.
         if approval_sent:
-          logger.info('Approval not yet granted, waiting {0:d}s'.format(
-              self._CHECK_APPROVAL_INTERVAL_SEC))
+          logger.info(
+            "Approval not yet granted, waiting {0:d}s".format(
+              self._CHECK_APPROVAL_INTERVAL_SEC
+            )
+          )
           if not approval_url_shown:
-            self.message_callback(f'Approval needed at: {approval_url}', False)
+            self.message_callback(f"Approval needed at: {approval_url}", False)
             approval_url_shown = True
           else:
-            logger.info(f'Approval needed at: {approval_url}')
+            logger.info(f"Approval needed at: {approval_url}")
           time.sleep(self._CHECK_APPROVAL_INTERVAL_SEC)
           continue
 
         # If no approvers were specified, abort.
         if not self.approvers:
-          message = ('GRR needs approval but no approvers specified '
-                     '(hint: use --approvers)')
+          message = (
+            "GRR needs approval but no approvers specified "
+            "(hint: use --approvers)"
+          )
           raise DFTimewolfError(message, critical=True) from exception
 
         # Otherwise, send a request for approval
         approval = grr_object.CreateApproval(
-            reason=self.reason, notified_users=self.approvers)
+          reason=self.reason, notified_users=self.approvers
+        )
         approval_sent = True
-        if hasattr(approval, 'client_id'):
+        if hasattr(approval, "client_id"):
           approval_url = (
-            f'{self.grr_url}/v2/clients/{approval.client_id}/users/'
-            f'{approval.username}/approvals/{approval.approval_id}')
-        elif hasattr(approval, 'hunt_id'):
+            f"{self.grr_url}/v2/clients/{approval.client_id}/users/"
+            f"{approval.username}/approvals/{approval.approval_id}"
+          )
+        elif hasattr(approval, "hunt_id"):
           approval_url = (
-            f'{self.grr_url}/v2/hunts/{approval.hunt_id}/users/'
-            f'{approval.username}/approvals/{approval.approval_id}')
-        logger.info(f'{grr_object}: approval request sent to: '
-            f'{self.approvers} (reason: {self.reason})')
+            f"{self.grr_url}/v2/hunts/{approval.hunt_id}/users/"
+            f"{approval.username}/approvals/{approval.approval_id}"
+          )
+        logger.info(
+          f"{grr_object}: approval request sent to: "
+          f"{self.approvers} (reason: {self.reason})"
+        )
