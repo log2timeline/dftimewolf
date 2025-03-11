@@ -131,7 +131,9 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
 
     self.PublishMessage(f'{hunt.hunt_id}: Hunt created')
     try:
-      self._WrapGRRRequestWithApproval(hunt, hunt.Start, self.logger)
+      self._WrapGRRRequestWithApproval(
+        hunt, hunt.Start, self.logger, self.LogTelemetry
+      )
     except DFTimewolfError as exception:
       self.ModuleError(exception.message, critical=exception.critical)
     return hunt
@@ -731,7 +733,13 @@ class GRRHuntDownloader(GRRHuntDownloaderBase):
 
     try:
       self._WrapGRRRequestWithApproval(
-          hunt, self._GetAndWriteArchive, self.logger, hunt, output_file_path)
+        hunt,
+        self._GetAndWriteArchive,
+        self.logger,
+        hunt,
+        output_file_path,
+        self.LogTelemetry,
+      )
     except DFTimewolfError as exception:
       self.ModuleError(exception.message, critical=exception.critical)
 
@@ -885,7 +893,13 @@ class GRRHuntOsqueryDownloader(GRRHuntDownloaderBase):
     """
     try:
       self._WrapGRRRequestWithApproval(
-          hunt, self._GetAndWriteResults, self.logger, hunt, self.output_path)
+        hunt,
+        self._GetAndWriteResults,
+        self.logger,
+        self.LogTelemetry,
+        hunt,
+        self.output_path,
+      )
     except DFTimewolfError as exception:
       self.ModuleError(exception.message, critical=exception.critical)
 

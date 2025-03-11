@@ -272,7 +272,13 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     # Start the flow and get the flow ID
     try:
       grr_flow = self._WrapGRRRequestWithApproval(
-          client, client.CreateFlow, self.logger, name=name, args=args)
+        client,
+        client.CreateFlow,
+        self.logger,
+        self.LogTelemetry,
+        name=name,
+        args=args,
+      )
     except DFTimewolfError as exception:
       self.ModuleError(exception.message, critical=exception.critical)
     if not grr_flow:
