@@ -81,13 +81,13 @@ class GRRBaseModule:
 
   # TODO: change object to more specific GRR type information.
   def _WrapGRRRequestWithApproval(
-      self,
-      grr_object: Union[Hunt, Client],
-      grr_function: Callable,  # type: ignore[type-arg]
-      logger: Logger,
-      telemetry: Callable[[dict[str, str]], None],
-      *args: Any,
-      **kwargs: Any
+    self,
+    grr_object: Union[Hunt, Client],
+    grr_function: Callable,  # type: ignore[type-arg]
+    logger: Logger,
+    telemetry_callback: Callable[[dict[str, str]], None],
+    *args: Any,
+    **kwargs: Any,
   ) -> Union[Flow, Hunt]:
     """Wraps a GRR request with approval.
 
@@ -97,7 +97,7 @@ class GRRBaseModule:
       grr_object (object): GRR object to create the eventual approval on.
       grr_function (function): GRR function requiring approval.
       logger (Logger): logging object coming from the module.
-      telemetry (Callback[dict[str, str]]): telemetry callback. Necessary since
+      telemetry_callback (Callback[dict[str, str]]): telemetry callback. Necessary since
           this is not a Module but a regular object.
       args (list[object]): Positional arguments that are to be passed
           to `grr_function`.
@@ -113,12 +113,12 @@ class GRRBaseModule:
     approval_url = None
     approval_url_shown = False
     start = time.time()
-    telemetry({"mpa_start": str(start)})
+    telemetry_callback({"mpa_start": str(start)})
     while True:
       try:
         result = grr_function(*args, **kwargs)
-        telemetry({"mpa_success": str(time.time())})
-        telemetry({"mpa_duration": str(time.time() - start)})
+        telemetry_callback({"mpa_success": str(time.time())})
+        telemetry_callback({"mpa_duration": str(time.time() - start)})
         return result
       except grr_errors.AccessForbiddenError as exception:
         logger.warning(f"No valid approval found: {exception!s}")

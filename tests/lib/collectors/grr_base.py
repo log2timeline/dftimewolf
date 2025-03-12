@@ -99,6 +99,13 @@ class GRRBaseModuleTest(unittest.TestCase):
       random3=4,
       random4=4,
     )
+    mock_telemetry.assert_has_calls(
+      [
+        mock.call({"mpa_start": mock.ANY}),
+        mock.call({"mpa_success": mock.ANY}),
+        mock.call({"mpa_duration": mock.ANY}),
+      ]
+    )
 
     # Final result.
     self.assertEqual(result, 4)
@@ -156,6 +163,14 @@ class GRRBaseModuleTest(unittest.TestCase):
     self.assertEqual('GRR needs approval but no approvers specified '
                      '(hint: use --approvers)', error.exception.message)
     self.assertTrue(error.exception.critical)
+    mock_telemetry.assert_has_calls(
+      [
+        mock.call({"mpa_start": mock.ANY}),
+        mock.call({"mpa_success": mock.ANY}),
+        mock.call({"mpa_duration": mock.ANY}),
+      ]
+    )
+
 
 if __name__ == '__main__':
   unittest.main()
