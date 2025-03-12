@@ -97,8 +97,8 @@ class GRRBaseModule:
       grr_object (object): GRR object to create the eventual approval on.
       grr_function (function): GRR function requiring approval.
       logger (Logger): logging object coming from the module.
-      telemetry_callback (Callback[dict[str, str]]): telemetry callback. Necessary since
-          this is not a Module but a regular object.
+      telemetry_callback (Callback[dict[str, str]]): telemetry callback.
+          Necessary since this is not a Module but a regular object.
       args (list[object]): Positional arguments that are to be passed
           to `grr_function`.
       kwargs (dict[str, object]): keyword arguments that are to be passed
