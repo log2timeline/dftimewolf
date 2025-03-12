@@ -434,6 +434,11 @@ def SignalHandler(*unused_argvs: Any) -> None:
 def SetupLogging(stdout_log: bool = False) -> None:
   """Sets up a logging handler with dftimewolf's custom formatter.
 
+  Levels should be as follows:
+  * The logger is DEBUG
+  * The file handler is DEBUG
+  * The stdout stream handler is INFO, unless the env var DFTIMEWOLF_DEBUG=1
+
   Args:
     stdout_log (bool): Whether to log to stdout as well as a file.
   """
@@ -450,11 +455,7 @@ def SetupLogging(stdout_log: bool = False) -> None:
   root_handler.addFilter(lambda x: False)
   root_log.addHandler(root_handler)
 
-  debug = bool(os.environ.get("DFTIMEWOLF_DEBUG"))
-  if debug:
-    logger.setLevel(logging.DEBUG)
-  else:
-    logger.setLevel(logging.INFO)
+  logger.setLevel(logging.DEBUG)
   logger.propagate = False
 
   # File handler needs go be added first because it doesn't format messages
@@ -468,10 +469,13 @@ def SetupLogging(stdout_log: bool = False) -> None:
     console_handler = logging.StreamHandler(stream=sys.stdout)
     colorize = not bool(os.environ.get('DFTIMEWOLF_NO_RAINBOW'))
     console_handler.setFormatter(logging_utils.WolfFormatter(colorize=colorize))
+    console_handler.setLevel(logging.DEBUG
+                             if os.environ.get("DFTIMEWOLF_DEBUG") else
+                             logging.INFO)
     logger.addHandler(console_handler)
-    logger.debug(f'Logging to stdout and {logging_utils.DEFAULT_LOG_FILE}')
+    logger.info(f'Logging to stdout and {logging_utils.DEFAULT_LOG_FILE}')
   else:
-    logger.debug(f'Logging to {logging_utils.DEFAULT_LOG_FILE}')
+    logger.info(f'Logging to {logging_utils.DEFAULT_LOG_FILE}')
 
 
 def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
