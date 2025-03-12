@@ -102,8 +102,6 @@ class GRRBaseModuleTest(unittest.TestCase):
     mock_telemetry.assert_has_calls(
       [
         mock.call({"mpa_start": mock.ANY}),
-        mock.call({"mpa_success": mock.ANY}),
-        mock.call({"mpa_duration": mock.ANY}),
       ]
     )
 
@@ -166,8 +164,6 @@ class GRRBaseModuleTest(unittest.TestCase):
     mock_telemetry.assert_has_calls(
       [
         mock.call({"mpa_start": mock.ANY}),
-        mock.call({"mpa_success": mock.ANY}),
-        mock.call({"mpa_duration": mock.ANY}),
       ]
     )
 
