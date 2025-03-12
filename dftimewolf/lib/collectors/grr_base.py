@@ -1,9 +1,9 @@
 """Base GRR module class. GRR modules should extend it."""
 
-from logging import Logger
 import tempfile
 import time
-from typing import Optional, Union, Callable, List, Any
+from logging import Logger
+from typing import Any, Callable, Optional, Union
 
 from grr_api_client import api as grr_api
 from grr_api_client import errors as grr_errors
@@ -14,7 +14,7 @@ from grr_api_client.hunt import Hunt
 from dftimewolf.lib.errors import DFTimewolfError
 
 
-class GRRBaseModule(object):
+class GRRBaseModule:
   """Base module for GRR hunt and flow modules.
 
   Attributes:
@@ -41,7 +41,7 @@ class GRRBaseModule(object):
     self.reason = str()
     self.grr_api: grr_api.GrrApi = None
     self.grr_url = str()
-    self.approvers = []  # type: List[str]
+    self.approvers = []  # type: list[str]
     self.output_path = str()
     self.message_callback: Callable[[str, bool], None] = None  # type: ignore
 
@@ -81,12 +81,13 @@ class GRRBaseModule(object):
 
   # TODO: change object to more specific GRR type information.
   def _WrapGRRRequestWithApproval(
-      self,
-      grr_object: Union[Hunt, Client],
-      grr_function: Callable,  # type: ignore[type-arg]
-      logger: Logger,
-      *args: Any,
-      **kwargs: Any
+    self,
+    grr_object: Union[Hunt, Client],
+    grr_function: Callable,  # type: ignore[type-arg]
+    logger: Logger,
+    telemetry_callback: Callable[[dict[str, str]], None],
+    *args: Any,
+    **kwargs: Any,
   ) -> Union[Flow, Hunt]:
     """Wraps a GRR request with approval.
 
@@ -95,6 +96,9 @@ class GRRBaseModule(object):
     Args:
       grr_object (object): GRR object to create the eventual approval on.
       grr_function (function): GRR function requiring approval.
+      logger (Logger): logging object coming from the module.
+      telemetry_callback (Callback[dict[str, str]]): telemetry callback.
+          Necessary since this is not a Module but a regular object.
       args (list[object]): Positional arguments that are to be passed
           to `grr_function`.
       kwargs (dict[str, object]): keyword arguments that are to be passed
@@ -108,42 +112,55 @@ class GRRBaseModule(object):
     approval_sent = False
     approval_url = None
     approval_url_shown = False
-
+    start = time.time()
+    telemetry_callback({"mpa_start": str(start)})
     while True:
       try:
-        return grr_function(*args, **kwargs)
-
+        result = grr_function(*args, **kwargs)
+        telemetry_callback({"mpa_success": str(time.time())})
+        telemetry_callback({"mpa_duration": str(time.time() - start)})
+        return result
       except grr_errors.AccessForbiddenError as exception:
-        logger.warning(f'No valid approval found: {exception!s}')
+        logger.warning(f"No valid approval found: {exception!s}")
         # If approval was already sent, just wait a bit more.
         if approval_sent:
-          logger.info('Approval not yet granted, waiting {0:d}s'.format(
-              self._CHECK_APPROVAL_INTERVAL_SEC))
+          logger.info(
+            "Approval not yet granted, waiting {0:d}s".format(
+              self._CHECK_APPROVAL_INTERVAL_SEC
+            )
+          )
           if not approval_url_shown:
-            self.message_callback(f'Approval needed at: {approval_url}', False)
+            self.message_callback(f"Approval needed at: {approval_url}", False)
             approval_url_shown = True
           else:
-            logger.info(f'Approval needed at: {approval_url}')
+            logger.info(f"Approval needed at: {approval_url}")
           time.sleep(self._CHECK_APPROVAL_INTERVAL_SEC)
           continue
 
         # If no approvers were specified, abort.
         if not self.approvers:
-          message = ('GRR needs approval but no approvers specified '
-                     '(hint: use --approvers)')
+          message = (
+            "GRR needs approval but no approvers specified "
+            "(hint: use --approvers)"
+          )
           raise DFTimewolfError(message, critical=True) from exception
 
         # Otherwise, send a request for approval
         approval = grr_object.CreateApproval(
-            reason=self.reason, notified_users=self.approvers)
+          reason=self.reason, notified_users=self.approvers
+        )
         approval_sent = True
-        if hasattr(approval, 'client_id'):
+        if hasattr(approval, "client_id"):
           approval_url = (
-            f'{self.grr_url}/v2/clients/{approval.client_id}/users/'
-            f'{approval.username}/approvals/{approval.approval_id}')
-        elif hasattr(approval, 'hunt_id'):
+            f"{self.grr_url}/v2/clients/{approval.client_id}/users/"
+            f"{approval.username}/approvals/{approval.approval_id}"
+          )
+        elif hasattr(approval, "hunt_id"):
           approval_url = (
-            f'{self.grr_url}/v2/hunts/{approval.hunt_id}/users/'
-            f'{approval.username}/approvals/{approval.approval_id}')
-        logger.info(f'{grr_object}: approval request sent to: '
-            f'{self.approvers} (reason: {self.reason})')
+            f"{self.grr_url}/v2/hunts/{approval.hunt_id}/users/"
+            f"{approval.username}/approvals/{approval.approval_id}"
+          )
+        logger.info(
+          f"{grr_object}: approval request sent to: "
+          f"{self.approvers} (reason: {self.reason})"
+        )
