@@ -355,7 +355,7 @@ class TimesketchEnhancer(module.BaseModule):
       for result in sketch.get_analyzer_status():
         status_set.add(result.get('status', 'N/A'))
 
-      if status_set.issubset(self._ANALYZERS_COMPLETE_SET):
+      if status_set and status_set.issubset(self._ANALYZERS_COMPLETE_SET):
         break
 
       check_number += 1
