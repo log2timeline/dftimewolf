@@ -1,59 +1,135 @@
 {
-    "name": "gcp_logging_gce_ts",
-    "short_description": "Loads all GCE Cloud Audit Logs in a GCP project into Timesketch.",
-    "description": "Loads all GCE Cloud Audit Logs for all instances in a GCP project into Timesketch. Some light processing is made to translate the logs into something Timesketch can process.",
-    "test_params": "project-name 2024-01-01 2024-01-31",
-    "preflights": [{
+  "name": "gcp_logging_gce_ts",
+  "short_description": "Loads all GCE Cloud Audit Logs in a GCP project into Timesketch.",
+  "description": "Loads all GCE Cloud Audit Logs for all instances in a GCP project into Timesketch. Some light processing is made to translate the logs into something Timesketch can process.",
+  "test_params": "project-name 2024-01-01 2024-01-31",
+  "preflights": [
+    {
       "wants": [],
       "name": "GCPTokenCheck",
       "args": {
-          "project_name": "@project_name"
+        "project_name": "@project_name"
       }
-    }],
-    "modules": [{
-        "wants": [],
-        "name": "GCPLogsCollector",
-        "args": {
-            "project_name": "@project_name",
-            "filter_expression": "logName=projects/@project_name/logs/cloudaudit.googleapis.com%2Factivity resource.type:\"gce\" timestamp>=\"<START_TIME>\" timestamp<=\"<END_TIME>\"",
-            "backoff": "@backoff",
-            "delay": "@delay",
-            "start_time": "@start_date",
-            "end_time": "@end_date"
-        }
-    }, {
-        "wants": ["GCPLogsCollector"],
-        "name": "LocalPlasoProcessor",
-        "args": {
-          "timezone": null,
-          "use_docker": true
-        }
-    }, {
-        "wants": ["LocalPlasoProcessor"],
-        "name": "TimesketchExporter",
-        "args": {
-            "incident_id": "@incident_id",
-            "analyzers": null,
-            "token_password": "@token_password",
-            "endpoint": "@timesketch_endpoint",
-            "username": "@timesketch_username",
-            "password": "@timesketch_password",
-            "sketch_id": "@sketch_id",
-            "wait_for_timelines": "@wait_for_timelines"
-        }
-    }],
-    "args": [
-        ["project_name", "Name of the GCP project to collect logs from.", null, {"format": "regex", "regex": "^[a-z][-a-z0-9.:]{4,28}[a-z0-9]$"}],
-        ["start_date", "Start date.", null, {"format": "datetime", "before": "@end_date"}],
-        ["end_date", "End date.", null, {"format": "datetime_end", "after": "@start_date"}],
-        ["--incident_id", "Incident ID (used for Timesketch description).", null],
-        ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "integer"}],
-        ["--timesketch_endpoint", "Timesketch endpoint", "http://localhost:5000/"],
-        ["--timesketch_username", "Username for Timesketch server.", null],
-        ["--timesketch_password", "Password for Timesketch server.", null],
-        ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
-        ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true],
-        ["--backoff", "If GCP Cloud Logging API query limits are exceeded, retry with an increased delay between each query to try complete the query at a slower rate.", false],
-        ["--delay", "Number of seconds to wait between each GCP Cloud Logging query to avoid hitting API query limits", "0", {"format": "integer"}]
+    }
+  ],
+  "modules": [
+    {
+      "wants": [],
+      "name": "GCPLogsCollector",
+      "args": {
+        "project_name": "@project_name",
+        "filter_expression": "logName=projects/@project_name/logs/cloudaudit.googleapis.com%2Factivity resource.type:\"gce\" timestamp>=\"<START_TIME>\" timestamp<=\"<END_TIME>\"",
+        "backoff": "@backoff",
+        "delay": "@delay",
+        "start_time": "@start_date",
+        "end_time": "@end_date"
+      }
+    },
+    {
+      "wants": [
+        "GCPLogsCollector"
+      ],
+      "name": "LocalPlasoProcessor",
+      "args": {
+        "timezone": null,
+        "use_docker": true
+      }
+    },
+    {
+      "wants": [
+        "LocalPlasoProcessor"
+      ],
+      "name": "TimesketchExporter",
+      "args": {
+        "incident_id": "@incident_id",
+        "analyzers": null,
+        "token_password": "@token_password",
+        "endpoint": "@timesketch_endpoint",
+        "username": "@timesketch_username",
+        "password": "@timesketch_password",
+        "sketch_id": "@sketch_id",
+        "wait_for_timelines": "@wait_for_timelines"
+      }
+    }
+  ],
+  "args": [
+    [
+      "project_name",
+      "Name of the GCP project to collect logs from.",
+      null,
+      {
+        "format": "regex",
+        "regex": "^[a-z][-a-z0-9.:]{4,28}[a-z0-9]$"
+      }
+    ],
+    [
+      "start_date",
+      "Start date.",
+      null,
+      {
+        "format": "datetime",
+        "before": "@end_date"
+      }
+    ],
+    [
+      "end_date",
+      "End date.",
+      null,
+      {
+        "format": "datetime_end",
+        "after": "@start_date"
+      }
+    ],
+    [
+      "--incident_id",
+      "Incident ID (used for Timesketch description).",
+      null
+    ],
+    [
+      "--sketch_id",
+      "Timesketch sketch to which the timeline should be added.",
+      null,
+      {
+        "format": "integer"
+      }
+    ],
+    [
+      "--timesketch_endpoint",
+      "Timesketch endpoint",
+      "http://localhost:5000/"
+    ],
+    [
+      "--timesketch_username",
+      "Username for Timesketch server.",
+      null
+    ],
+    [
+      "--timesketch_password",
+      "Password for Timesketch server.",
+      null
+    ],
+    [
+      "--token_password",
+      "Optional custom password to decrypt Timesketch credential file with.",
+      ""
+    ],
+    [
+      "--wait_for_timelines",
+      "Whether to wait for Timesketch to finish processing all timelines.",
+      true
+    ],
+    [
+      "--backoff",
+      "If GCP Cloud Logging API query limits are exceeded, retry with an increased delay between each query to try complete the query at a slower rate.",
+      false
+    ],
+    [
+      "--delay",
+      "Number of seconds to wait between each GCP Cloud Logging query to avoid hitting API query limits",
+      "0",
+      {
+        "format": "integer"
+      }
     ]
+  ]
 }

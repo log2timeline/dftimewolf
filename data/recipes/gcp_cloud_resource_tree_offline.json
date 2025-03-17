@@ -3,30 +3,67 @@
   "description": "Generates a parent/children tree for given GCP resource using the supplied exported GCP logs",
   "short_description": "Generates a parent/children tree for given GCP resource using the supplied exported GCP logs",
   "test_params": "projectid australia-southeast2-a resource_type paths",
-  "modules": [{
+  "modules": [
+    {
       "wants": [],
       "name": "FilesystemCollector",
       "args": {
-          "paths": "@paths"
+        "paths": "@paths"
       }
-  }, {
-      "wants": ["FilesystemCollector"],
+    },
+    {
+      "wants": [
+        "FilesystemCollector"
+      ],
       "name": "GCPCloudResourceTree",
       "args": {
-          "project_id": "@project_id",
-          "location": "@location",
-          "resource_id": "@resource_id",
-          "resource_name": "@resource_name",
-          "resource_type": "@resource_type",
-          "mode": "offline"
+        "project_id": "@project_id",
+        "location": "@location",
+        "resource_id": "@resource_id",
+        "resource_name": "@resource_name",
+        "resource_type": "@resource_type",
+        "mode": "offline"
       }
-  }],
+    }
+  ],
   "args": [
-      ["project_id", "ID of the project where the resource is located", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9.:]{4,28}[a-z0-9]$"}],
-      ["location", "Resource location (zone/region) or 'global'", null, {"format": "gcp_zone"}],
-      ["resource_type","Resource type (currently supported types: gce_instance, gce_disk, gce_image, gce_machine_image, gce_instance_template, gce_snapshot)", null],
-      ["paths", "Comma-separated paths to GCP log files. Log files should contain log entiries in json format.", null],
-      ["--resource_id","Resource id", null],
-      ["--resource_name","Resource name", null]
+    [
+      "project_id",
+      "ID of the project where the resource is located",
+      null,
+      {
+        "format": "regex",
+        "comma_separated": false,
+        "regex": "^[a-z][-a-z0-9.:]{4,28}[a-z0-9]$"
+      }
+    ],
+    [
+      "location",
+      "Resource location (zone/region) or 'global'",
+      null,
+      {
+        "format": "gcp_zone"
+      }
+    ],
+    [
+      "resource_type",
+      "Resource type (currently supported types: gce_instance, gce_disk, gce_image, gce_machine_image, gce_instance_template, gce_snapshot)",
+      null
+    ],
+    [
+      "paths",
+      "Comma-separated paths to GCP log files. Log files should contain log entiries in json format.",
+      null
+    ],
+    [
+      "--resource_id",
+      "Resource id",
+      null
+    ],
+    [
+      "--resource_name",
+      "Resource name",
+      null
+    ]
   ]
 }

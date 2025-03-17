@@ -10,7 +10,8 @@
       "args": {
         "profile_name": "@aws_profile"
       }
-    },{
+    },
+    {
       "wants": [],
       "name": "GCPTokenCheck",
       "args": {
@@ -26,8 +27,11 @@
         "volumes": "@volumes",
         "region": "@aws_region"
       }
-    },{
-      "wants": ["AWSVolumeSnapshotCollector"],
+    },
+    {
+      "wants": [
+        "AWSVolumeSnapshotCollector"
+      ],
       "name": "AWSSnapshotS3CopyCollector",
       "args": {
         "snapshots": "",
@@ -35,8 +39,11 @@
         "region": "@aws_region",
         "subnet": "@subnet"
       }
-    },{
-      "wants": ["AWSSnapshotS3CopyCollector"],
+    },
+    {
+      "wants": [
+        "AWSSnapshotS3CopyCollector"
+      ],
       "name": "S3ToGCSCopy",
       "args": {
         "s3_objects": "",
@@ -45,15 +52,21 @@
         "dest_bucket": "@gcp_bucket",
         "object_filter": ".+/image.bin$"
       }
-    }, {
-      "wants": ["S3ToGCSCopy"],
+    },
+    {
+      "wants": [
+        "S3ToGCSCopy"
+      ],
       "name": "GCSToGCEImage",
       "args": {
         "source_objects": "",
         "dest_project": "@gcp_project"
       }
-    }, {
-      "wants": ["GCSToGCEImage"],
+    },
+    {
+      "wants": [
+        "GCSToGCEImage"
+      ],
       "name": "GCEDiskFromImage",
       "args": {
         "source_images": "",
@@ -63,13 +76,76 @@
     }
   ],
   "args": [
-    ["aws_region", "AWS region containing the EBS volumes.", null, {"format": "aws_region"}],
-    ["gcp_zone", "Destination GCP zone in which to create the disks.", null, {"format": "gcp_zone"}],
-    ["volumes", "Comma separated list of EBS volume IDs (e.g. vol-xxxxxxxx).", null, {"format": "regex", "comma_separated": true, "regex": "^vol-[0-9a-f]{8,17}$"}],
-    ["aws_bucket", "AWS bucket for image storage.", null, {"format": "regex", "comma_separated": false, "regex": "^(s3:\/\/)?[0-9a-z][-\\.0-9a-z]{1,61}[0-9a-z]$"}],
-    ["gcp_bucket", "GCP bucket for image storage.", null, {"format": "regex", "comma_separated": false, "regex": "^(gs:\/\/)?[0-9a-z][-\\.0-9a-z_]{1,61}[0-9a-z]$"}],
-    ["--subnet", "AWS subnet to copy instances from, required if there is no default subnet in the volume region.", null, {"format": "regex", "comma_separated": false, "regex": "^subnet-[0-9a-f]{8,17}$"}],
-    ["--gcp_project", "Destination GCP project.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9.:]{4,28}[a-z0-9]$"}],
-    ["--aws_profile", "Source AWS profile.", null]
+    [
+      "aws_region",
+      "AWS region containing the EBS volumes.",
+      null,
+      {
+        "format": "aws_region"
+      }
+    ],
+    [
+      "gcp_zone",
+      "Destination GCP zone in which to create the disks.",
+      null,
+      {
+        "format": "gcp_zone"
+      }
+    ],
+    [
+      "volumes",
+      "Comma separated list of EBS volume IDs (e.g. vol-xxxxxxxx).",
+      null,
+      {
+        "format": "regex",
+        "comma_separated": true,
+        "regex": "^vol-[0-9a-f]{8,17}$"
+      }
+    ],
+    [
+      "aws_bucket",
+      "AWS bucket for image storage.",
+      null,
+      {
+        "format": "regex",
+        "comma_separated": false,
+        "regex": "^(s3://)?[0-9a-z][-\\.0-9a-z]{1,61}[0-9a-z]$"
+      }
+    ],
+    [
+      "gcp_bucket",
+      "GCP bucket for image storage.",
+      null,
+      {
+        "format": "regex",
+        "comma_separated": false,
+        "regex": "^(gs://)?[0-9a-z][-\\.0-9a-z_]{1,61}[0-9a-z]$"
+      }
+    ],
+    [
+      "--subnet",
+      "AWS subnet to copy instances from, required if there is no default subnet in the volume region.",
+      null,
+      {
+        "format": "regex",
+        "comma_separated": false,
+        "regex": "^subnet-[0-9a-f]{8,17}$"
+      }
+    ],
+    [
+      "--gcp_project",
+      "Destination GCP project.",
+      null,
+      {
+        "format": "regex",
+        "comma_separated": false,
+        "regex": "^[a-z][-a-z0-9.:]{4,28}[a-z0-9]$"
+      }
+    ],
+    [
+      "--aws_profile",
+      "Source AWS profile.",
+      null
+    ]
   ]
 }

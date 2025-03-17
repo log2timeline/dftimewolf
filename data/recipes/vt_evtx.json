@@ -15,7 +15,9 @@
       }
     },
     {
-      "wants": ["VTCollector"],
+      "wants": [
+        "VTCollector"
+      ],
       "name": "LocalPlasoProcessor",
       "args": {
         "timezone": null,
@@ -24,8 +26,25 @@
     }
   ],
   "args": [
-    ["hashes", "Comma-separated list of hashes to process.", null, {"format": "regex", "comma_separated": true, "regex": "^[0-9a-f]{64}$"}],
-    ["directory", "Directory in which to export files.", null],
-    ["--vt_api_key", "Virustotal API key", "admin"]
+    [
+      "hashes",
+      "Comma-separated list of hashes to process.",
+      null,
+      {
+        "format": "regex",
+        "comma_separated": true,
+        "regex": "^[0-9a-f]{64}$"
+      }
+    ],
+    [
+      "directory",
+      "Directory in which to export files.",
+      null
+    ],
+    [
+      "--vt_api_key",
+      "Virustotal API key",
+      "admin"
+    ]
   ]
 }

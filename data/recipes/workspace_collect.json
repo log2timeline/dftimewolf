@@ -1,25 +1,59 @@
 {
-    "name": "workspace_logging_collect",
-    "short_description": "Collects Workspace Audit logs and dumps them on the filesystem.",
-    "description": "Collects logs from Workspace Audit log and dumps them on the filesystem.\n\nSee https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#ApplicationName for a list of application names.\n\nFor filters, see https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list.",
-    "test_params": "applicationname",
-    "preflights": [],
-    "modules": [{
-        "wants": [],
-        "name": "WorkspaceAuditCollector",
-        "args": {
-            "application_name": "@application_name",
-            "user_key": "@user",
-            "filter_expression": "@filter_expression",
-            "start_time": "@start_time",
-            "end_time": "@end_time"
-        }
-    }],
-    "args": [
-        ["application_name", "Name of application to to collect logs for. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#ApplicationName for a list of possible values.", null, {"format": "regex", "regex": "^[_a-z]{1,32}$"}],
-        ["--user", "email address of the user to query logs for", "all"],
-        ["--start_time", "Start time.", null, {"format": "datetime", "before": "@end_time"}],
-        ["--end_time", "End time.", null, {"format": "datetime_end", "after": "@start_time"}],
-        ["--filter_expression", "Filter expression to use to query Workspace logs. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list.", ""]
+  "name": "workspace_logging_collect",
+  "short_description": "Collects Workspace Audit logs and dumps them on the filesystem.",
+  "description": "Collects logs from Workspace Audit log and dumps them on the filesystem.\n\nSee https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#ApplicationName for a list of application names.\n\nFor filters, see https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list.",
+  "test_params": "applicationname",
+  "preflights": [],
+  "modules": [
+    {
+      "wants": [],
+      "name": "WorkspaceAuditCollector",
+      "args": {
+        "application_name": "@application_name",
+        "user_key": "@user",
+        "filter_expression": "@filter_expression",
+        "start_time": "@start_time",
+        "end_time": "@end_time"
+      }
+    }
+  ],
+  "args": [
+    [
+      "application_name",
+      "Name of application to to collect logs for. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#ApplicationName for a list of possible values.",
+      null,
+      {
+        "format": "regex",
+        "regex": "^[_a-z]{1,32}$"
+      }
+    ],
+    [
+      "--user",
+      "email address of the user to query logs for",
+      "all"
+    ],
+    [
+      "--start_time",
+      "Start time.",
+      null,
+      {
+        "format": "datetime",
+        "before": "@end_time"
+      }
+    ],
+    [
+      "--end_time",
+      "End time.",
+      null,
+      {
+        "format": "datetime_end",
+        "after": "@start_time"
+      }
+    ],
+    [
+      "--filter_expression",
+      "Filter expression to use to query Workspace logs. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list.",
+      ""
     ]
+  ]
 }

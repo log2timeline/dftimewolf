@@ -14,36 +14,95 @@
       }
     },
     {
-        "wants": ["YetiYaraCollector"],
-        "name": "GRRYaraScanner",
-        "args": {
-          "hostnames": "@hostnames",
-          "reason": "@reason",
-          "process_ignorelist": "fleetspeak\\.exe|gagent\\.exe",
-          "cmdline_ignorelist": null,
-          "dump_process_on_match": "@dump_process_on_match",
-          "grr_server_url": "@grr_server_url",
-          "grr_username": "@grr_username",
-          "grr_password": "@grr_password",
-          "approvers": "@approvers",
-          "verify": "@verify",
-          "skip_offline_clients": "@skip_offline_clients"
-        }
+      "wants": [
+        "YetiYaraCollector"
+      ],
+      "name": "GRRYaraScanner",
+      "args": {
+        "hostnames": "@hostnames",
+        "reason": "@reason",
+        "process_ignorelist": "fleetspeak\\.exe|gagent\\.exe",
+        "cmdline_ignorelist": null,
+        "dump_process_on_match": "@dump_process_on_match",
+        "grr_server_url": "@grr_server_url",
+        "grr_username": "@grr_username",
+        "grr_password": "@grr_password",
+        "approvers": "@approvers",
+        "verify": "@verify",
+        "skip_offline_clients": "@skip_offline_clients"
       }
-
+    }
   ],
   "args": [
-    ["reason", "Reason for collection.", null],
-    ["hostnames", "Hostname(s) to collect the flow from.", null, {"format": "grr_host", "comma_separated": true}],
-    ["--yara_name_filter", "Filter to filter Yara sigs by.", null],
-    ["--dump_process_on_match", "Whether to dump the process on match.", false],
-    ["--api_key", "API Key to the Yeti instance", null],
-    ["--api_root", "API root of the Yeti instance (e.g. http://localhost/api/)", "http://localhost/api/", {"format": "url"}],
-    ["--approvers", "Emails for GRR approval request.", null],
-    ["--grr_server_url", "GRR endpoint", "http://localhost:8000", {"format": "url"}],
-    ["--verify", "Whether to verify the GRR TLS certificate.", true],
-    ["--skip_offline_clients", "Whether to skip clients that are offline.", false],
-    ["--grr_username", "GRR username", "admin"],
-    ["--grr_password", "GRR password", "demo"]
+    [
+      "reason",
+      "Reason for collection.",
+      null
+    ],
+    [
+      "hostnames",
+      "Hostname(s) to collect the flow from.",
+      null,
+      {
+        "format": "grr_host",
+        "comma_separated": true
+      }
+    ],
+    [
+      "--yara_name_filter",
+      "Filter to filter Yara sigs by.",
+      null
+    ],
+    [
+      "--dump_process_on_match",
+      "Whether to dump the process on match.",
+      false
+    ],
+    [
+      "--api_key",
+      "API Key to the Yeti instance",
+      null
+    ],
+    [
+      "--api_root",
+      "API root of the Yeti instance (e.g. http://localhost/api/)",
+      "http://localhost/api/",
+      {
+        "format": "url"
+      }
+    ],
+    [
+      "--approvers",
+      "Emails for GRR approval request.",
+      null
+    ],
+    [
+      "--grr_server_url",
+      "GRR endpoint",
+      "http://localhost:8000",
+      {
+        "format": "url"
+      }
+    ],
+    [
+      "--verify",
+      "Whether to verify the GRR TLS certificate.",
+      true
+    ],
+    [
+      "--skip_offline_clients",
+      "Whether to skip clients that are offline.",
+      false
+    ],
+    [
+      "--grr_username",
+      "GRR username",
+      "admin"
+    ],
+    [
+      "--grr_password",
+      "GRR password",
+      "demo"
+    ]
   ]
 }

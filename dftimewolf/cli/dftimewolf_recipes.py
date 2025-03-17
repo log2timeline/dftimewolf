@@ -80,7 +80,6 @@ MODULES = {
   'S3ToGCSCopy': 'dftimewolf.lib.exporters.s3_to_gcs',
   'SCPExporter': 'dftimewolf.lib.exporters.scp_ex',
   'SSHMultiplexer': 'dftimewolf.lib.preflights.ssh_multiplexer',
-  'TimesketchEnhancer': 'dftimewolf.lib.enhancers.timesketch',
   'TimesketchExporter': 'dftimewolf.lib.exporters.timesketch',
   'TimesketchSearchEventCollector': 'dftimewolf.lib.collectors.timesketch',
   'TurbiniaArtifactProcessorLegacy': 'dftimewolf.lib.processors.turbinia_artifact_legacy',
