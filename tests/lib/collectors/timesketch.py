@@ -170,7 +170,7 @@ class TimesketchSearchEventCollectorTest(modules_test_base.ModuleTestBase):
       token_password="test_token",
     )
 
-    # Simulating antoher module adding a TicketAttribute container
+    # Simulating another module adding a TicketAttribute container
     # netween SetUp() and Process()
 
     self._module.StoreContainer(
