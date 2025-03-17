@@ -155,7 +155,7 @@ class TimesketchSearchEventCollectorTest(modules_test_base.ModuleTestBase):
   )
   def testProcessNoSketchId(
     self,
-    mock_get_search_results: Any,
+    _mock_get_search_results: Any,
     mock_get_api_client: Any
   ) -> None:
     """Test the Process function with no sketch ID."""
