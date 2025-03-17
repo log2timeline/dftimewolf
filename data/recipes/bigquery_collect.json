@@ -1,28 +1,49 @@
 {
-    "name": "bigquery_collect",
-    "short_description": "Collects results from BigQuery and dumps them on the filesystem.",
-    "description": "Collects results from BigQuery in a GCP project and dumps them in JSONL on the local filesystem.",
-    "test_params": "projectfolder.projectname query description",
-    "preflights": [{
+  "name": "bigquery_collect",
+  "short_description": "Collects results from BigQuery and dumps them on the filesystem.",
+  "description": "Collects results from BigQuery in a GCP project and dumps them in JSONL on the local filesystem.",
+  "test_params": "projectfolder.projectname query description",
+  "preflights": [
+    {
       "wants": [],
       "name": "GCPTokenCheck",
       "args": {
-          "project_name": "@project_name"
+        "project_name": "@project_name"
       }
-    }],
-    "modules": [{
-        "wants": [],
-        "name": "BigQueryCollector",
-        "args": {
-            "project_name": "@project_name",
-            "query": "@query",
-            "description": "@description",
-            "pandas_output": false
-        }
-    }],
-    "args": [
-        ["project_name", "Name of GCP project to collect logs from.", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-\\.:a-z0-9]{4,28}[a-z0-9]$"}],
-        ["query", "Query to execute.", null],
-        ["description", "Human-readable description of the query.", null]
+    }
+  ],
+  "modules": [
+    {
+      "wants": [],
+      "name": "BigQueryCollector",
+      "args": {
+        "project_name": "@project_name",
+        "query": "@query",
+        "description": "@description",
+        "pandas_output": false
+      }
+    }
+  ],
+  "args": [
+    [
+      "project_name",
+      "Name of GCP project to collect logs from.",
+      null,
+      {
+        "format": "regex",
+        "comma_separated": false,
+        "regex": "^[a-z][-\\.:a-z0-9]{4,28}[a-z0-9]$"
+      }
+    ],
+    [
+      "query",
+      "Query to execute.",
+      null
+    ],
+    [
+      "description",
+      "Human-readable description of the query.",
+      null
     ]
+  ]
 }

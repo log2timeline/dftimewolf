@@ -3,30 +3,62 @@
   "description": "Generates a parent/children tree for given GCP resource by enumerating all the currently available resources. It also will attempt to fill any gaps identified in the tree through querying the GCP logs",
   "short_description": "Generates a parent/children tree for given GCP resource.",
   "test_params": "projectid australia-southeast2-a resource_type",
-  "preflights": [{
-    "wants": [],
-    "name": "GCPTokenCheck",
-    "args": {
+  "preflights": [
+    {
+      "wants": [],
+      "name": "GCPTokenCheck",
+      "args": {
         "project_name": "@project_id"
+      }
     }
-  }],
-  "modules": [ {
+  ],
+  "modules": [
+    {
       "wants": [],
       "name": "GCPCloudResourceTree",
       "args": {
-          "project_id": "@project_id",
-          "location": "@location",
-          "resource_id": "@resource_id",
-          "resource_name": "@resource_name",
-          "resource_type": "@resource_type",
-          "mode": "online"
+        "project_id": "@project_id",
+        "location": "@location",
+        "resource_id": "@resource_id",
+        "resource_name": "@resource_name",
+        "resource_type": "@resource_type",
+        "mode": "online"
       }
-  }],
+    }
+  ],
   "args": [
-      ["project_id", "ID of the project where the resource is located", null, {"format": "regex", "comma_separated": false, "regex": "^[a-z][-a-z0-9.:]{4,28}[a-z0-9]$"}],
-      ["location", "Resource location (zone/region) or 'global'", null, {"format": "gcp_zone"}],
-      ["resource_type","Resource type (currently supported types: gce_instance, gce_disk, gce_image, gce_machine_image, gce_instance_template, gce_snapshot)", null],
-      ["--resource_id","Resource id", null],
-      ["--resource_name","Resource name", null]
+    [
+      "project_id",
+      "ID of the project where the resource is located",
+      null,
+      {
+        "format": "regex",
+        "comma_separated": false,
+        "regex": "^[a-z][-a-z0-9.:]{4,28}[a-z0-9]$"
+      }
+    ],
+    [
+      "location",
+      "Resource location (zone/region) or 'global'",
+      null,
+      {
+        "format": "gcp_zone"
+      }
+    ],
+    [
+      "resource_type",
+      "Resource type (currently supported types: gce_instance, gce_disk, gce_image, gce_machine_image, gce_instance_template, gce_snapshot)",
+      null
+    ],
+    [
+      "--resource_id",
+      "Resource id",
+      null
+    ],
+    [
+      "--resource_name",
+      "Resource name",
+      null
+    ]
   ]
 }

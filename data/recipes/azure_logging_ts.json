@@ -1,48 +1,99 @@
 {
-    "name": "azure_logging_ts",
-    "short_description": "Collects logs from an Azure subscription, processes the logs with Plaso and uploads the result to Timesketch.",
-    "description": "Collects logs from an Azure subscription using a specified query filter and date ranges, processes the logs with plaso and uploads the result to Timesketch.",
-    "test_params": "subscription_id filter_expression",
-    "preflights": [],
-    "modules": [{
-        "wants": [],
-        "name": "AzureLogsCollector",
-        "args": {
-          "subscription_id": "@subscription_id",
-          "filter_expression": "@filter_expression",
-          "profile_name": "@profile_name"
-        }
-      }, {
-        "wants": ["AzureLogsCollector"],
-        "name": "LocalPlasoProcessor",
-        "args": {
-          "timezone": null,
-          "use_docker": true
-        }
-      }, {
-        "wants": ["LocalPlasoProcessor"],
-        "name": "TimesketchExporter",
-        "args": {
-            "incident_id": "@incident_id",
-            "token_password": "@token_password",
-            "endpoint": "@timesketch_endpoint",
-            "username": "@timesketch_username",
-            "password": "@timesketch_password",
-            "sketch_id": "@sketch_id",
-            "analyzers": null,
-            "wait_for_timelines": "@wait_for_timelines"
-        }
-    }],
-    "args": [
-        ["subscription_id", "Subscription ID for the subscription to collect logs from.", null],
-        ["filter_expression", "A filter expression to use for the log query, must specify at least a start date like \"eventTimestamp ge '2022-02-01'\"", null],
-        ["--profile_name", "A profile name to use when looking for Azure credentials.", null],
-        ["--incident_id", "Incident ID (used for Timesketch description).", null],
-        ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "integer"}],
-        ["--timesketch_endpoint", "Timesketch endpoint", "http://localhost:5000/"],
-        ["--timesketch_username", "Username for Timesketch server.", null],
-        ["--timesketch_password", "Password for Timesketch server.", null],
-        ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
-        ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true]
+  "name": "azure_logging_ts",
+  "short_description": "Collects logs from an Azure subscription, processes the logs with Plaso and uploads the result to Timesketch.",
+  "description": "Collects logs from an Azure subscription using a specified query filter and date ranges, processes the logs with plaso and uploads the result to Timesketch.",
+  "test_params": "subscription_id filter_expression",
+  "preflights": [],
+  "modules": [
+    {
+      "wants": [],
+      "name": "AzureLogsCollector",
+      "args": {
+        "subscription_id": "@subscription_id",
+        "filter_expression": "@filter_expression",
+        "profile_name": "@profile_name"
+      }
+    },
+    {
+      "wants": [
+        "AzureLogsCollector"
+      ],
+      "name": "LocalPlasoProcessor",
+      "args": {
+        "timezone": null,
+        "use_docker": true
+      }
+    },
+    {
+      "wants": [
+        "LocalPlasoProcessor"
+      ],
+      "name": "TimesketchExporter",
+      "args": {
+        "incident_id": "@incident_id",
+        "token_password": "@token_password",
+        "endpoint": "@timesketch_endpoint",
+        "username": "@timesketch_username",
+        "password": "@timesketch_password",
+        "sketch_id": "@sketch_id",
+        "analyzers": null,
+        "wait_for_timelines": "@wait_for_timelines"
+      }
+    }
+  ],
+  "args": [
+    [
+      "subscription_id",
+      "Subscription ID for the subscription to collect logs from.",
+      null
+    ],
+    [
+      "filter_expression",
+      "A filter expression to use for the log query, must specify at least a start date like \"eventTimestamp ge '2022-02-01'\"",
+      null
+    ],
+    [
+      "--profile_name",
+      "A profile name to use when looking for Azure credentials.",
+      null
+    ],
+    [
+      "--incident_id",
+      "Incident ID (used for Timesketch description).",
+      null
+    ],
+    [
+      "--sketch_id",
+      "Timesketch sketch to which the timeline should be added.",
+      null,
+      {
+        "format": "integer"
+      }
+    ],
+    [
+      "--timesketch_endpoint",
+      "Timesketch endpoint",
+      "http://localhost:5000/"
+    ],
+    [
+      "--timesketch_username",
+      "Username for Timesketch server.",
+      null
+    ],
+    [
+      "--timesketch_password",
+      "Password for Timesketch server.",
+      null
+    ],
+    [
+      "--token_password",
+      "Optional custom password to decrypt Timesketch credential file with.",
+      ""
+    ],
+    [
+      "--wait_for_timelines",
+      "Whether to wait for Timesketch to finish processing all timelines.",
+      true
     ]
+  ]
 }

@@ -1,44 +1,91 @@
 {
-    "name": "plaso_ts",
-    "short_description": "Processes a list of file paths using a Plaso and export results to Timesketch.",
-    "description": "Processes a list of file paths using Plaso and sends results to Timesketch.\n\n- Collectors collect from a path in the FS\n- Processes them with a local install of plaso\n- Exports them to a new Timesketch sketch",
-    "test_params": "paths",
-    "modules": [{
-        "wants": [],
-        "name": "FilesystemCollector",
-        "args": {
-            "paths": "@paths"
-        }
-    }, {
-        "wants": ["FilesystemCollector"],
-        "name": "LocalPlasoProcessor",
-        "args": {
-            "timezone": null,
-            "use_docker": true
-        }
-    }, {
-        "wants": ["LocalPlasoProcessor"],
-        "name": "TimesketchExporter",
-        "args": {
-            "incident_id": "@incident_id",
-            "token_password": null,
-            "endpoint": "@timesketch_endpoint",
-            "username": "@timesketch_username",
-            "password": "@timesketch_password",
-            "sketch_id": "@sketch_id",
-            "analyzers": "@analyzers",
-            "wait_for_timelines": "@wait_for_timelines"
-        }
-    }],
-    "args": [
-        ["paths", "Comma-separated list of paths to process.", null],
-        ["--analyzers", "Timesketch analyzers to run", null],
-        ["--incident_id", "Incident ID (used for Timesketch description).", null],
-        ["--sketch_id", "Timesketch sketch to which the timeline should be added.", null, {"format": "integer"}],
-        ["--timesketch_endpoint", "Timesketch endpoint", "http://localhost:5000/"],
-        ["--timesketch_username", "Username for Timesketch server.", null],
-        ["--timesketch_password", "Password for Timesketch server.", null],
-        ["--token_password", "Optional custom password to decrypt Timesketch credential file with.", ""],
-        ["--wait_for_timelines", "Whether to wait for Timesketch to finish processing all timelines.", true]
+  "name": "plaso_ts",
+  "short_description": "Processes a list of file paths using a Plaso and export results to Timesketch.",
+  "description": "Processes a list of file paths using Plaso and sends results to Timesketch.\n\n- Collectors collect from a path in the FS\n- Processes them with a local install of plaso\n- Exports them to a new Timesketch sketch",
+  "test_params": "paths",
+  "modules": [
+    {
+      "wants": [],
+      "name": "FilesystemCollector",
+      "args": {
+        "paths": "@paths"
+      }
+    },
+    {
+      "wants": [
+        "FilesystemCollector"
+      ],
+      "name": "LocalPlasoProcessor",
+      "args": {
+        "timezone": null,
+        "use_docker": true
+      }
+    },
+    {
+      "wants": [
+        "LocalPlasoProcessor"
+      ],
+      "name": "TimesketchExporter",
+      "args": {
+        "incident_id": "@incident_id",
+        "token_password": null,
+        "endpoint": "@timesketch_endpoint",
+        "username": "@timesketch_username",
+        "password": "@timesketch_password",
+        "sketch_id": "@sketch_id",
+        "analyzers": "@analyzers",
+        "wait_for_timelines": "@wait_for_timelines"
+      }
+    }
+  ],
+  "args": [
+    [
+      "paths",
+      "Comma-separated list of paths to process.",
+      null
+    ],
+    [
+      "--analyzers",
+      "Timesketch analyzers to run",
+      null
+    ],
+    [
+      "--incident_id",
+      "Incident ID (used for Timesketch description).",
+      null
+    ],
+    [
+      "--sketch_id",
+      "Timesketch sketch to which the timeline should be added.",
+      null,
+      {
+        "format": "integer"
+      }
+    ],
+    [
+      "--timesketch_endpoint",
+      "Timesketch endpoint",
+      "http://localhost:5000/"
+    ],
+    [
+      "--timesketch_username",
+      "Username for Timesketch server.",
+      null
+    ],
+    [
+      "--timesketch_password",
+      "Password for Timesketch server.",
+      null
+    ],
+    [
+      "--token_password",
+      "Optional custom password to decrypt Timesketch credential file with.",
+      ""
+    ],
+    [
+      "--wait_for_timelines",
+      "Whether to wait for Timesketch to finish processing all timelines.",
+      true
     ]
+  ]
 }

@@ -1,40 +1,97 @@
 {
-    "name": "grr_flow_collect",
-    "short_description": "Download the result of a GRR flow to the local filesystem.",
-    "description": "Download the result of a GRR flow to the local filesystem. Flow IDs are unique *per client*, so both need to be provided in sequence.",
-    "test_params": "C.0123456789012345 0123456789012345 reason directory",
-    "modules": [{
-        "wants": [],
-        "name": "GRRFlowCollector",
-        "args": {
-            "hostnames": "@hostnames",
-            "flow_ids": "@flow_ids",
-            "reason": "@reason",
-            "grr_server_url": "@grr_server_url",
-            "grr_username": "@grr_username",
-            "grr_password": "@grr_password",
-            "approvers": "@approvers",
-            "verify": "@verify",
-            "skip_offline_clients": "@skip_offline_clients"
-        }
-    }, {
-        "wants": ["GRRFlowCollector"],
-        "name": "LocalFilesystemCopy",
-        "args": {
-            "target_directory": "@directory",
-            "compress": false
-        }
-    }],
-    "args": [
-        ["hostnames", "Hostname(s) to collect the flow from.", null, {"format": "grr_host", "comma_separated": true}],
-        ["flow_ids", "Flow ID(s) to download.", null, {"format": "regex", "comma_separated": true, "regex": "^[0-9A-F]{16}$"}],
-        ["reason", "Reason for collection.", null],
-        ["directory", "Directory in which to export files.", null],
-        ["--approvers", "Emails for GRR approval request.", null],
-        ["--grr_server_url", "GRR endpoint", "http://localhost:8000", {"format": "url"}],
-        ["--verify", "Whether to verify the GRR TLS certificate.", true],
-        ["--skip_offline_clients", "Whether to skip clients that are offline.", false],
-        ["--grr_username", "GRR username", "admin"],
-        ["--grr_password", "GRR password", "admin"]
+  "name": "grr_flow_collect",
+  "short_description": "Download the result of a GRR flow to the local filesystem.",
+  "description": "Download the result of a GRR flow to the local filesystem. Flow IDs are unique *per client*, so both need to be provided in sequence.",
+  "test_params": "C.0123456789012345 0123456789012345 reason directory",
+  "modules": [
+    {
+      "wants": [],
+      "name": "GRRFlowCollector",
+      "args": {
+        "hostnames": "@hostnames",
+        "flow_ids": "@flow_ids",
+        "reason": "@reason",
+        "grr_server_url": "@grr_server_url",
+        "grr_username": "@grr_username",
+        "grr_password": "@grr_password",
+        "approvers": "@approvers",
+        "verify": "@verify",
+        "skip_offline_clients": "@skip_offline_clients"
+      }
+    },
+    {
+      "wants": [
+        "GRRFlowCollector"
+      ],
+      "name": "LocalFilesystemCopy",
+      "args": {
+        "target_directory": "@directory",
+        "compress": false
+      }
+    }
+  ],
+  "args": [
+    [
+      "hostnames",
+      "Hostname(s) to collect the flow from.",
+      null,
+      {
+        "format": "grr_host",
+        "comma_separated": true
+      }
+    ],
+    [
+      "flow_ids",
+      "Flow ID(s) to download.",
+      null,
+      {
+        "format": "regex",
+        "comma_separated": true,
+        "regex": "^[0-9A-F]{16}$"
+      }
+    ],
+    [
+      "reason",
+      "Reason for collection.",
+      null
+    ],
+    [
+      "directory",
+      "Directory in which to export files.",
+      null
+    ],
+    [
+      "--approvers",
+      "Emails for GRR approval request.",
+      null
+    ],
+    [
+      "--grr_server_url",
+      "GRR endpoint",
+      "http://localhost:8000",
+      {
+        "format": "url"
+      }
+    ],
+    [
+      "--verify",
+      "Whether to verify the GRR TLS certificate.",
+      true
+    ],
+    [
+      "--skip_offline_clients",
+      "Whether to skip clients that are offline.",
+      false
+    ],
+    [
+      "--grr_username",
+      "GRR username",
+      "admin"
+    ],
+    [
+      "--grr_password",
+      "GRR password",
+      "admin"
     ]
+  ]
 }

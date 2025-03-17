@@ -1,47 +1,111 @@
 {
-    "name": "upload_turbinia",
-    "short_description": "Uploads arbitrary files to Turbinia and downloads results.",
-    "description": "Uploads arbitrary files to Turbinia for processing. The recipe will wait for Turbinia to return with results and will download them back to the filesystem. The Turbinia system needs to be accessible via SSH.",
-    "test_params": "files",
-    "modules": [{
+  "name": "upload_turbinia",
+  "short_description": "Uploads arbitrary files to Turbinia and downloads results.",
+  "description": "Uploads arbitrary files to Turbinia for processing. The recipe will wait for Turbinia to return with results and will download them back to the filesystem. The Turbinia system needs to be accessible via SSH.",
+  "test_params": "files",
+  "modules": [
+    {
       "wants": [],
       "name": "FilesystemCollector",
       "args": {
-          "paths": "@files"
+        "paths": "@files"
       }
-    }, {
-      "wants": ["FilesystemCollector"],
+    },
+    {
+      "wants": [
+        "FilesystemCollector"
+      ],
       "name": "LocalFilesystemCopy",
       "args": {
-          "target_directory": "@directory",
-          "compress": true
+        "target_directory": "@directory",
+        "compress": true
       }
-    },  {
-        "wants": ["LocalFilesystemCopy"],
-        "name": "TurbiniaArtifactProcessor",
-        "args": {
-            "project": null,
-            "turbinia_auth": "@turbinia_auth",
-            "turbinia_recipe": "@turbinia_recipe",
-            "turbinia_zone": "@turbinia_zone",
-            "turbinia_api": "@turbinia_api",
-            "incident_id": "@incident_id",
-            "output_directory": null,
-            "priority_filter": "@priority_filter",
-            "sketch_id": null
-        }
-    }],
-    "args": [
-        ["files", "Paths to process.", null],
-        ["--turbinia_recipe", "The Turbinia recipe name to use for evidence processing.", null],
-        ["--destination_turbinia_dir", "Destination path in Turbinia host to write the files to.", null],
-        ["--hostname", "Remote host.", null, {"format": "hostname"}],
-        ["--directory", "Directory in which to copy and compress files.", null],
-        ["--turbinia_auth", "Flag to indicate whether Turbinia API server requires authentication.", false],
-        ["--turbinia_api", "Turbinia API server endpoint.", "http://127.0.0.1:8000"],
-        ["--local_turbinia_results", "Directory where Turbinia results will be downloaded to.", null],
-        ["--turbinia_zone", "The GCP zone the disk to process and Turbinia workers are in.", "us-central1-f", {"format": "gcp_zone"}],
-        ["--sketch_id", "Timesketch sketch ID.", null, {"format": "integer"}],
-        ["--priority_filter", "Filter report findings, range from 0 to 100, 0 is the highest.", "100", {"format": "integer"}]
+    },
+    {
+      "wants": [
+        "LocalFilesystemCopy"
+      ],
+      "name": "TurbiniaArtifactProcessor",
+      "args": {
+        "project": null,
+        "turbinia_auth": "@turbinia_auth",
+        "turbinia_recipe": "@turbinia_recipe",
+        "turbinia_zone": "@turbinia_zone",
+        "turbinia_api": "@turbinia_api",
+        "incident_id": "@incident_id",
+        "output_directory": null,
+        "priority_filter": "@priority_filter",
+        "sketch_id": null
+      }
+    }
+  ],
+  "args": [
+    [
+      "files",
+      "Paths to process.",
+      null
+    ],
+    [
+      "--turbinia_recipe",
+      "The Turbinia recipe name to use for evidence processing.",
+      null
+    ],
+    [
+      "--destination_turbinia_dir",
+      "Destination path in Turbinia host to write the files to.",
+      null
+    ],
+    [
+      "--hostname",
+      "Remote host.",
+      null,
+      {
+        "format": "hostname"
+      }
+    ],
+    [
+      "--directory",
+      "Directory in which to copy and compress files.",
+      null
+    ],
+    [
+      "--turbinia_auth",
+      "Flag to indicate whether Turbinia API server requires authentication.",
+      false
+    ],
+    [
+      "--turbinia_api",
+      "Turbinia API server endpoint.",
+      "http://127.0.0.1:8000"
+    ],
+    [
+      "--local_turbinia_results",
+      "Directory where Turbinia results will be downloaded to.",
+      null
+    ],
+    [
+      "--turbinia_zone",
+      "The GCP zone the disk to process and Turbinia workers are in.",
+      "us-central1-f",
+      {
+        "format": "gcp_zone"
+      }
+    ],
+    [
+      "--sketch_id",
+      "Timesketch sketch ID.",
+      null,
+      {
+        "format": "integer"
+      }
+    ],
+    [
+      "--priority_filter",
+      "Filter report findings, range from 0 to 100, 0 is the highest.",
+      "100",
+      {
+        "format": "integer"
+      }
     ]
-  }
+  ]
+}

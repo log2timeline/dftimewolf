@@ -4,18 +4,22 @@
   "short_description": "Collects data from google sheets and outputs them to Timesketch.",
   "test_params": "spreadsheet",
   "preflights": [],
-  "modules": [{
+  "modules": [
+    {
       "wants": [],
       "name": "GoogleSheetsCollector",
       "args": {
-          "spreadsheet": "@spreadsheet",
-          "sheet_names": "@sheet_names",
-          "validate_columns" :"@validate_columns"
+        "spreadsheet": "@spreadsheet",
+        "sheet_names": "@sheet_names",
+        "validate_columns": "@validate_columns"
       }
-  }, {
-    "wants": ["GoogleSheetsCollector"],
-    "name": "TimesketchExporter",
-    "args": {
+    },
+    {
+      "wants": [
+        "GoogleSheetsCollector"
+      ],
+      "name": "TimesketchExporter",
+      "args": {
         "incident_id": "@incident_id",
         "token_password": "@token_password",
         "endpoint": "@timesketch_endpoint",
@@ -24,18 +28,62 @@
         "sketch_id": "@sketch_id",
         "analyzers": null,
         "wait_for_timelines": "@wait_for_timelines"
+      }
     }
-  }],
+  ],
   "args": [
-      ["spreadsheet", "ID or URL of the Google Sheet spreadsheet to collect data from.", null],
-      ["--sheet_names", "Comma-separated list sheet names to collect date from. If not set all sheets in the spreadsheet will be parsed.", []],
-      ["--validate_columns", "Set to True to check for mandatory columns required by Timesketch while extracting data. Set to False to ignore validation. Default is True.", true],
-      ["--sketch_id", "Sketch to which the timeline should be added", null, {"format": "integer"}],
-      ["--timesketch_endpoint", "Timesketch endpoint", "http://localhost:5000/"],
-      ["--timesketch_username", "Username for Timesketch server.", null],
-      ["--timesketch_password", "Password for Timesketch server.", null],
-      ["--token_password", "Optional custom password to decrypt Timesketch credential file with", ""],
-      ["--incident_id", "Incident ID (used for Timesketch description)", null],
-      ["--wait_for_timelines", "Whether to wait for timelines to finish processing.", true]
+    [
+      "spreadsheet",
+      "ID or URL of the Google Sheet spreadsheet to collect data from.",
+      null
+    ],
+    [
+      "--sheet_names",
+      "Comma-separated list sheet names to collect date from. If not set all sheets in the spreadsheet will be parsed.",
+      []
+    ],
+    [
+      "--validate_columns",
+      "Set to True to check for mandatory columns required by Timesketch while extracting data. Set to False to ignore validation. Default is True.",
+      true
+    ],
+    [
+      "--sketch_id",
+      "Sketch to which the timeline should be added",
+      null,
+      {
+        "format": "integer"
+      }
+    ],
+    [
+      "--timesketch_endpoint",
+      "Timesketch endpoint",
+      "http://localhost:5000/"
+    ],
+    [
+      "--timesketch_username",
+      "Username for Timesketch server.",
+      null
+    ],
+    [
+      "--timesketch_password",
+      "Password for Timesketch server.",
+      null
+    ],
+    [
+      "--token_password",
+      "Optional custom password to decrypt Timesketch credential file with",
+      ""
+    ],
+    [
+      "--incident_id",
+      "Incident ID (used for Timesketch description)",
+      null
+    ],
+    [
+      "--wait_for_timelines",
+      "Whether to wait for timelines to finish processing.",
+      true
+    ]
   ]
 }
