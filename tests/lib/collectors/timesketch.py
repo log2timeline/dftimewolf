@@ -3,7 +3,6 @@
 """Tests the Timesketch collector."""
 
 import datetime
-import unittest
 from typing import Any
 
 import mock
