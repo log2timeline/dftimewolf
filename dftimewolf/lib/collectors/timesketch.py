@@ -298,7 +298,7 @@ class TimesketchSearchEventCollector(module.BaseModule):
         )
 
   def FindSketch(self) -> None:
-    """Attempts to find a sketch by looking at Sketch ID, cache, or attribute container."""
+    """Attempts to find a sketch by Sketch ID, cache, or attribute container."""
 
     if self.sketch:
       return
