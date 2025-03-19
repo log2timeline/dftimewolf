@@ -1,22 +1,19 @@
 # -*- coding: utf-8 -*-
 """Collects Timesketch events."""
+
 import datetime
 import tempfile
 from typing import List
 
 import pandas as pd
-from timesketch_api_client import client
-from timesketch_api_client import search
-from timesketch_api_client import sketch
+from timesketch_api_client import client, search, sketch
 
-from dftimewolf.lib import module
+from dftimewolf.lib import module, timesketch_utils
 from dftimewolf.lib import state as state_lib
-from dftimewolf.lib import timesketch_utils
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 
-
-_VALID_OUTPUT_FORMATS = frozenset(['csv', 'json', 'jsonl', 'pandas'])
+_VALID_OUTPUT_FORMATS = frozenset(["csv", "json", "jsonl", "pandas"])
 
 
 def GenerateTimerangeQuery(
@@ -62,45 +59,47 @@ class TimesketchSearchEventCollector(module.BaseModule):
   """
 
   def __init__(
-      self,
-      state: state_lib.DFTimewolfState,
-      name: str | None = None,
-      critical: bool = False
+    self,
+    state: state_lib.DFTimewolfState,
+    name: str | None = None,
+    critical: bool = False,
   ) -> None:
     """"""
     super(TimesketchSearchEventCollector, self).__init__(
-        state, name=name, critical=critical)
-    self.query_string: str = ''
+      state, name=name, critical=critical
+    )
+    self.query_string: str = ""
     self.start_datetime: datetime.datetime | None = None
     self.end_datetime: datetime.datetime | None = None
     self.indices: List[int] = []
     self.labels: List[str] = []
-    self.output_format: str = ''
-    self.return_fields: str = ''
-    self.search_name: str = ''
-    self.search_description: str = ''
+    self.output_format: str = ""
+    self.return_fields: str = ""
+    self.search_name: str = ""
+    self.search_description: str = ""
     self.include_internal_columns: bool = False
     self.sketch_id: int = 0
     self.sketch: sketch.Sketch | None = None
+    self.timesketch_api_client: client.TimesketchApi | None = None
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(
-      self,
-      sketch_id: str | None = None,
-      query_string: str = '*',
-      start_datetime: datetime.datetime | None = None,
-      end_datetime: datetime.datetime | None = None,
-      indices: str | None = None,
-      labels: str | None = None,
-      output_format: str = 'pandas',
-      return_fields: str = '*',
-      search_name: str | None = None,
-      search_description: str | None = None,
-      include_internal_columns: bool = False,
-      token_password: str = '',
-      endpoint: str | None = None,
-      username: str | None = None,
-      password: str | None = None
+    self,
+    sketch_id: str | None = None,
+    query_string: str = "*",
+    start_datetime: datetime.datetime | None = None,
+    end_datetime: datetime.datetime | None = None,
+    indices: str | None = None,
+    labels: str | None = None,
+    output_format: str = "pandas",
+    return_fields: str = "*",
+    search_name: str | None = None,
+    search_description: str | None = None,
+    include_internal_columns: bool = False,
+    token_password: str = "",
+    endpoint: str | None = None,
+    username: str | None = None,
+    password: str | None = None,
   ) -> None:
     """Sets up the TimesketchSearchEventCollector.
 
@@ -127,24 +126,18 @@ class TimesketchSearchEventCollector(module.BaseModule):
       username: Timesketch username. Optional when token_password is provided.
       password: Timesketch password. Optional when token_password is provided.
     """
-    if not sketch_id:
-      attributes = self.GetContainers(containers.TicketAttribute)
-      self.sketch_id = timesketch_utils.GetSketchIDFromAttributes(attributes)
-      if not self.sketch_id:
-        self.ModuleError(
-            'Sketch ID is not set and not found in ticket attributes.',
-            critical=True)
-    else:
-      self.sketch_id = int(sketch_id)
+    self.timesketch_api_client = self._GetAPIClient(
+      token_password, endpoint, username, password
+    )
+
+    self.sketch_id = int(sketch_id) if sketch_id else 0
+    self.FindSketch()
 
     if output_format not in _VALID_OUTPUT_FORMATS:
       self.ModuleError(
-          f'Output format not one of {",".join(_VALID_OUTPUT_FORMATS)}',
-          critical=True)
-
-    self.sketch = self._GetSketch(
-        self.sketch_id, token_password, endpoint, username, password
-    )
+        f"Output format not one of {','.join(_VALID_OUTPUT_FORMATS)}",
+        critical=True,
+      )
     self.start_datetime = start_datetime
     self.end_datetime = end_datetime
     self.query_string = query_string
@@ -153,10 +146,10 @@ class TimesketchSearchEventCollector(module.BaseModule):
     self.include_internal_columns = include_internal_columns
 
     if labels:
-      self.labels = [label.strip() for label in labels.split(',')]
+      self.labels = [label.strip() for label in labels.split(",")]
 
     if indices:
-      self.indices = [int(index) for index in indices.split(',')]
+      self.indices = [int(index) for index in indices.split(",")]
 
     if search_name:
       self.search_name = search_name
@@ -164,60 +157,59 @@ class TimesketchSearchEventCollector(module.BaseModule):
     if search_description:
       self.search_description = search_description
 
-  def _GetSketch(
-      self,
-      sketch_id: int,
-      token_password: str | None = None,
-      endpoint: str | None = None,
-      username: str | None = None,
-      password: str | None = None,
-  ) -> sketch.Sketch:
-    """Gets the Timesketch sketch.
-
-    Args:
-      token_password: optional password used to decrypt the
-          Timesketch credential storage. Defaults to an empty string since
-          the upstream library expects a string value. An empty string means
-          a password will be generated by the upstream library.
-      endpoint: Timesketch server URL (e.g. http://localhost:5000/).
-          Optional when token_password is provided.
-      username: Timesketch username. Optional when token_password is provided.
-      password: Timesketch password. Optional when token_password is provided.
-
-    Returns:
-      The Timesketch sketch.
-    """
+  def _GetAPIClient(
+    self,
+    token_password: str | None = None,
+    endpoint: str | None = None,
+    username: str | None = None,
+    password: str | None = None,
+  ) -> client.TimesketchApi:
+    """Gets the Timesketch API client."""
     if endpoint and username and password:
       timesketch_api = client.TimesketchApi(endpoint, username, password)
     elif token_password:
       timesketch_api = timesketch_utils.GetApiClient(
-          self.state, token_password=token_password)
+        self.state, token_password=token_password
+      )
     else:
       timesketch_api = timesketch_utils.GetApiClient(self.state)
 
     if not timesketch_api:
       self.ModuleError(
-          'Unable to get a Timesketch API client, try deleting the files '
-          '~/.timesketchrc and ~/.timesketch.token',
-          critical=True)
+        "Unable to get a Timesketch API client, try deleting the files "
+        "~/.timesketchrc and ~/.timesketch.token",
+        critical=True,
+      )
     if not timesketch_api.session:
-      self.ModuleError('Could not connect to Timesketch server.', critical=True)
+      self.ModuleError("Could not connect to Timesketch server.", critical=True)
+    return timesketch_api
 
-    sketch_obj = timesketch_api.get_sketch(sketch_id)
+  def _GetSketch(self, sketch_id: int) -> sketch.Sketch:
+    """Gets the Timesketch sketch.
+
+    Args:
+      sketch_id: The Timesketch sketch ID.
+
+    Returns:
+      The Timesketch sketch.
+    """
+    assert self.timesketch_api_client
+    sketch_obj = self.timesketch_api_client.get_sketch(sketch_id)
     if not sketch_obj:
-      self.ModuleError(f'Could not get sketch {sketch_id}', critical=True)
-    self.state.AddToCache('timesketch_sketch', sketch_obj)
+      self.ModuleError(f"Could not get sketch {sketch_id}", critical=True)
+    self.state.AddToCache("timesketch_sketch", sketch_obj)
+    self.logger.warning(f"Adding sketch {sketch_obj} to cache")
     return sketch_obj
 
   def _GetSearchResults(
-      self,
-      selected_sketch: sketch.Sketch,
-      query_string: str,
-      return_fields: str,
-      start_datetime: datetime.datetime | None = None,
-      end_datetime: datetime.datetime | None = None,
-      labels: list[str] | None = None,
-      indices: list[int] | None = None,
+    self,
+    selected_sketch: sketch.Sketch,
+    query_string: str,
+    return_fields: str,
+    start_datetime: datetime.datetime | None = None,
+    end_datetime: datetime.datetime | None = None,
+    labels: list[str] | None = None,
+    indices: list[int] | None = None,
   ) -> pd.DataFrame:
     """Get the Timesketch search results.
 
@@ -240,7 +232,7 @@ class TimesketchSearchEventCollector(module.BaseModule):
       search_obj.indices = indices
 
     date_query = GenerateTimerangeQuery(start_datetime, end_datetime)
-    search_obj.query_string = f'({query_string}) AND ({date_query})'
+    search_obj.query_string = f"({query_string}) AND ({date_query})"
 
     for label in labels or []:
       label_chip = search.LabelChip()
@@ -267,25 +259,28 @@ class TimesketchSearchEventCollector(module.BaseModule):
     if not self.include_internal_columns:
       # Remove internal OpenSearch columns
       data_frame = data_frame.drop(
-          columns=["__ts_timeline_id", "_id", "_index", "_source", "_type"],
-          errors="ignore")
+        columns=["__ts_timeline_id", "_id", "_index", "_source", "_type"],
+        errors="ignore",
+      )
 
-    if self.output_format == 'pandas':
+    if self.output_format == "pandas":
       self.StoreContainer(
-          containers.TimesketchEvents(
-              name=self.search_name,
-              description=self.search_description,
-              data_frame=data_frame,
-              query=self.query_string,
-              sketch_id=self.sketch_id
-          ))
+        containers.TimesketchEvents(
+          name=self.search_name,
+          description=self.search_description,
+          data_frame=data_frame,
+          query=self.query_string,
+          sketch_id=self.sketch_id,
+        )
+      )
     else:
       with tempfile.NamedTemporaryFile(
-          mode='w',
-          delete=False,
-          encoding='utf-8',
-          prefix=f'{self.search_name}_' if self.search_name else '',
-          suffix=f'.{self.output_format}') as output_file:
+        mode="w",
+        delete=False,
+        encoding="utf-8",
+        prefix=f"{self.search_name}_" if self.search_name else "",
+        suffix=f".{self.output_format}",
+      ) as output_file:
         if self.output_format == "csv":
           data_frame.to_csv(output_file, index=False)
         elif self.output_format == "json":
@@ -293,24 +288,55 @@ class TimesketchSearchEventCollector(module.BaseModule):
         elif self.output_format == "jsonl":
           data_frame.to_json(output_file, orient="records", lines=True)
         else:
-          self.ModuleError('Unexpected output format', critical=True)
-        self.StoreContainer(containers.File(
+          self.ModuleError("Unexpected output format", critical=True)
+        self.StoreContainer(
+          containers.File(
             name=self.search_name,
             description=self.search_description,
-            path=output_file.name))
+            path=output_file.name,
+          )
+        )
+
+  def FindSketch(self) -> None:
+    """Attempts to find a sketch by Sketch ID, cache, or attribute container."""
+
+    if self.sketch:
+      return
+
+    if self.sketch_id:
+      self.sketch = self._GetSketch(self.sketch_id)
+      return
+
+    cached_sketch = self.state.GetFromCache("timesketch_sketch")
+    if cached_sketch:
+      self.sketch_id = cached_sketch.id
+      self.sketch = cached_sketch
+      return
+
+    attributes = self.GetContainers(containers.TicketAttribute)
+    self.sketch_id = timesketch_utils.GetSketchIDFromAttributes(attributes)
+    if not self.sketch_id:
+      return
+    self.sketch = self._GetSketch(self.sketch_id)
 
   def Process(self) -> None:
     """Processes the Timesketch search query."""
+    self.FindSketch()
+    if not self.sketch:
+      self.ModuleError(
+        "Unable to obtain valid sketch ID or sketch, aborting.", critical=True
+      )
+      return
     data_frame = self._GetSearchResults(
-        self.sketch,
-        self.query_string,
-        self.return_fields,
-        self.start_datetime,
-        self.end_datetime,
-        self.labels,
-        self.indices,
+      self.sketch,
+      self.query_string,
+      self.return_fields,
+      self.start_datetime,
+      self.end_datetime,
+      self.labels,
+      self.indices,
     )
-    self.logger.info(f'Search returned {len(data_frame)} event(s).')
+    self.logger.info(f"Search returned {len(data_frame)} event(s).")
     if data_frame.empty:
       return
     self._OutputSearchResults(data_frame)
