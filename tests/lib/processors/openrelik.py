@@ -5,7 +5,7 @@ from unittest import mock
 
 from openrelik_api_client import api_client, folders, workflows
 
-from dftimewolf.lib import errors
+# from dftimewolf.lib import errors
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.processors import openrelik as openrelik_processor
 from tests.lib import modules_test_base
