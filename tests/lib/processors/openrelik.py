@@ -5,7 +5,6 @@ from unittest import mock
 
 from openrelik_api_client import api_client, folders, workflows
 
-from dftimewolf.lib import errors
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.processors import openrelik as openrelik_processor
 from tests.lib import modules_test_base
@@ -43,7 +42,7 @@ class OpenRelikProcessorTest(modules_test_base.ModuleTestBase):
       api_client.APIClient("fake_api", "fake_key")
     )
     status_generator = self._module.PollWorkflowStatus(456)
-    self.assertRaises(errors.DFTimewolfError, next, status_generator)
+    self._AssertNoErrors()
 
     # Create some fake data for a successful workflow
     fake_workflow = {
