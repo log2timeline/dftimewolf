@@ -2,7 +2,6 @@
 """Export Dataframes in the state to disk."""
 
 from typing import Optional
-import tempfile
 import os
 import re
 import pandas as pd
@@ -97,15 +96,15 @@ class DataFrameToDiskExporter(module.BaseModule):
   def _VerifyOrCreateOutputDirectory(self, directory: str | None) -> str:
     """Checks for or creates an output directory.
 
-    If the output directory is not specified, then a temp directory will
-    be created. Otherwise, the provided value is checked for existence, and if
-    it doesn't exist, is created.
+    If the output directory is not specified, then `./` will be used. Otherwise,
+    the provided value is checked for existence, and if it doesn't exist, it is
+    created.
 
     Args:
       directory: The directory path.
     """
     if not directory:
-      return tempfile.mkdtemp()
+      return './'
 
     if os.path.exists(directory):
       if not os.path.isdir(directory):

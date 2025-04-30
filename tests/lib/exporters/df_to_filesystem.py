@@ -66,6 +66,7 @@ class DataFrameToDiskExporterTest(modules_test_base.ModuleTestBase):
 
     out_containers = self._module.GetContainers(containers.File)
     self.assertLen(out_containers, 1)
+    self.assertEqual(out_containers[0].path, './test_dataframe.jsonl')
 
     with open(out_containers[0].path, 'r') as f:
       self.assertEqual(f.read(), _EXPECTED_JSONL)
