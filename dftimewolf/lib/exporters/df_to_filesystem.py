@@ -2,7 +2,6 @@
 """Export Dataframes in the state to disk."""
 
 from typing import Optional
-import tempfile
 import os
 import re
 import pandas as pd
