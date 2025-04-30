@@ -38,7 +38,7 @@ client_proto1 = """
       }}
   }}
 """.format(int(
-    (datetime.datetime.utcnow() - datetime.timedelta(20)).timestamp(
+    (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(20)).timestamp(
     )*1000000)
 )
 
@@ -66,7 +66,7 @@ client_proto2 = """
       }}
   }}
 """.format(int(
-    (datetime.datetime.utcnow() - datetime.timedelta(25)).timestamp(
+    (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(25)).timestamp(
     )*1000000)
 )
 
@@ -93,7 +93,7 @@ client_windows_1 = """
       }}
   }}
 """.format(int(
-    (datetime.datetime.utcnow() - datetime.timedelta(20)).timestamp(
+    (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(20)).timestamp(
     )*1000000)
 )
 

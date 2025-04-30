@@ -35,13 +35,13 @@ The following attributes are extracted by the processor:
   status_reason: operation failure reasons.
   textPayload: text payload for logs not using a JSON or proto payload.
   timestamp_desc: description of timestamp.
-  user: user or requestor.
+  user: user or requester.
 """
 
 import json
 import re
 import tempfile
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional, TYPE_CHECKING
 
 from dftimewolf.lib.containers import containers
@@ -263,7 +263,7 @@ class GCPLoggingTimesketch(BaseModule):
     timesketch_record['status_message'] = status_message
 
     # `protoPayload.status` struction may contain `details` attribute when
-    # opertion fails. The reason attribute contains the reason the operation
+    # operation fails. The reason attribute contains the reason the operation
     # failed.
     status_reasons = []
 
@@ -536,7 +536,7 @@ class GCPLoggingTimesketch(BaseModule):
           output_file.write('\n')
     output_file.close()
 
-    current_timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S')
+    current_timestamp = datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')
     timeline_name = f'{project_id}_{current_timestamp}'
 
     container = containers.File(name=timeline_name, path=output_path)
