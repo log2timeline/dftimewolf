@@ -137,7 +137,7 @@ class DataFrameToDiskExporter(module.BaseModule):
           path=output_path,
           description=container.description))
 
-      self.logger.debug(
+      self.PublishMessage(
           f'Export of {container.name} to {output_path} complete')
 
   def _ExportSingleDataframe(self,
