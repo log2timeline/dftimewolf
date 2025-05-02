@@ -38,8 +38,10 @@ client_proto1 = """
       }}
   }}
 """.format(int(
-    (datetime.datetime.utcnow() - datetime.timedelta(20)).timestamp(
-    )*1000000)
+    (
+        datetime.datetime.now(datetime.timezone.utc)
+        - datetime.timedelta(20)
+    ).timestamp()*1000000)
 )
 
 # This has a more recent install_date and last_seen date than client_proto1
@@ -66,8 +68,10 @@ client_proto2 = """
       }}
   }}
 """.format(int(
-    (datetime.datetime.utcnow() - datetime.timedelta(25)).timestamp(
-    )*1000000)
+    (
+        datetime.datetime.now(datetime.timezone.utc)
+        - datetime.timedelta(25)
+    ).timestamp()*1000000)
 )
 
 client_windows_1 = """
@@ -93,8 +97,10 @@ client_windows_1 = """
       }}
   }}
 """.format(int(
-    (datetime.datetime.utcnow() - datetime.timedelta(20)).timestamp(
-    )*1000000)
+    (
+        datetime.datetime.now(datetime.timezone.utc)
+        - datetime.timedelta(20)
+    ).timestamp()*1000000)
 )
 
 MOCK_CLIENT = client.Client(
