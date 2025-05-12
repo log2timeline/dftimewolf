@@ -65,7 +65,7 @@ class DataFrameToDiskExporterTest(modules_test_base.ModuleTestBase):
 
     try:
       os.unlink('./test_dataframe.jsonl')
-    except Exception:
+    except Exception:  # pylint: disable=broad-exception-caught
       pass
 
   def test_Defaults(self):
