@@ -1,5 +1,6 @@
 """Tests for filesystem export of Dataframe containers module."""
 
+import os
 import tempfile
 
 from absl.testing import absltest
@@ -57,6 +58,15 @@ class DataFrameToDiskExporterTest(modules_test_base.ModuleTestBase):
       data_frame=_INPUT_DF,
       description='A test dataframe',
       name='test_dataframe'))
+
+  def tearDown(self):
+    """Clean up after tests."""
+    super().tearDown()
+
+    try:
+      os.unlink('./test_dataframe.jsonl')
+    except Exception:
+      pass
 
   def test_Defaults(self):
     """Tests operation with no params specified."""

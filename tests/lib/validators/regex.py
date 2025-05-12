@@ -35,7 +35,7 @@ class RegexValidatorTest(unittest.TestCase):
 
     with self.assertRaisesRegex(
         errors.RecipeArgsValidationFailure,
-        "does not match regex /.\?bcdef.\?"): # pylint: disable=anomalous-backslash-in-string
+        r"does not match regex /.\?bcdef.\?"):
       self.validator.Validate('tuvwxy', self.recipe_argument)
 
   def testRequiredParam(self):
