@@ -105,8 +105,9 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     last_seen_datetime = datetime.datetime.fromtimestamp(
         timestamp / 1000000, datetime.timezone.utc)
     # 30 days before now()
-    month_ago = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(30)
-    return  last_seen_datetime > month_ago
+    month_ago = (datetime.datetime.now(datetime.timezone.utc) -
+                 datetime.timedelta(days=30))
+    return last_seen_datetime > month_ago
 
   def _FilterActiveClients(
       self, result: List[Tuple[int, Client]]) -> List[Tuple[int, Client]]:
@@ -190,8 +191,8 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
         last_seen / 1000000, datetime.timezone.utc)
     # Timedelta between now and when the client was last seen, in minutes.
     # First, count total seconds. This will return a float.
-    last_seen_seconds = (
-        datetime.datetime.now(datetime.timezone.utc) - last_seen_datetime).total_seconds()
+    last_seen_seconds = (datetime.datetime.now(datetime.timezone.utc) -
+                         last_seen_datetime).total_seconds()
     last_seen_minutes = int(round(last_seen_seconds / 60))
 
     self.logger.info(f'Found client: {client.client_id:s}')
