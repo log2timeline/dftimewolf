@@ -493,11 +493,11 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
 
     mock_publishmessage.assert_has_calls(
         [mock.call('Instance "not-found" in test-target-project-name not found '
-                   'or insufficient permissions', is_error=True),
+        'or insufficient permissions', is_error=True),
          mock.call('Disk disk1 successfully copied to disk1-copy'),
          mock.call('Disk disk2 successfully copied to disk2-copy')],
         any_order=True)
-
+  
     mock_CreateDiskCopy.assert_has_calls([
         mock.call('test-target-project-name',
                   'test-analysis-project-name',
