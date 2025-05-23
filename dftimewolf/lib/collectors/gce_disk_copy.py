@@ -129,6 +129,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
     Process uses GCEDisk containers, so we create those containers and store
     them in the state.
     """
+    at_least_one_disk = False
     try:
       # Disks from the csv list passed in
       for d in self.disk_names:
@@ -141,12 +142,15 @@ class GCEDiskCopy(module.ThreadAwareModule):
           for d in self._GetDisksFromInstance(i, self.all_disks):
             self.StoreContainer(
                 containers.GCEDisk(d, self.source_project.project_id))
+            at_least_one_disk = True
 
         except lcf_errors.ResourceNotFoundError:
-          self.ModuleError(
-            message=f'Instance "{i}" in {self.source_project.project_id} not '
-                'found or insufficient permissions',
-            critical=True)
+          message=(f'Instance "{i}" in {self.source_project.project_id} not '
+                'found or insufficient permissions')
+          self.PublishMessage(message, is_error=True)
+      if not at_least_one_disk:
+        self.ModuleError('No instances found with disks to copy.',
+                         critical=True)
     except HttpError as exception:
       if exception.resp.status == 403:
         self.ModuleError(

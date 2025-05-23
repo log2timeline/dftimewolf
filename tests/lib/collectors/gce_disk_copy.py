@@ -251,9 +251,8 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     with self.assertRaises(errors.DFTimewolfError) as error:
       self._module.PreProcess()
 
-    self.assertEqual(error.exception.message,
-        'Instance "nonexistent" in test-target-project-name not found or '
-        'insufficient permissions')
+    self.assertEqual(
+        error.exception.message, 'No instances found with disks to copy.')
 
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
   def testHTTPErrors(self, mock_GetInstance):
@@ -458,6 +457,66 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
         # called with the instantiated child class.
     self.assertEqual(error.exception.message,
         'Could not create disk. Permission denied.')
+
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
+  @mock.patch('libcloudforensics.providers.gcp.forensics.CreateDiskCopy')
+  @mock.patch('dftimewolf.lib.collectors.gce_disk_copy.GCEDiskCopy._GetDisksFromInstance')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.ListDisks')
+  def testProcessMultipleSingleFailure(self,
+                                       mock_list_disks,
+                                       mock_getDisksFromInstance,
+                                       mock_CreateDiskCopy,
+                                       mock_GetInstance):
+    """Tests processing when multiple instances are requested, but one is not found."""
+    mock_getDisksFromInstance.side_effect = [
+        lcf_errors.ResourceNotFoundError('Not found', 'Not found'),
+        [d.name for d in FAKE_DISK_MULTIPLE]]
+    mock_CreateDiskCopy.side_effect = FAKE_DISK_COPY
+    mock_GetInstance.return_value = FAKE_INSTANCE
+    mock_list_disks.return_value = {
+        'bootdisk': FAKE_BOOT_DISK,
+        'disk1': FAKE_DISK
+    }
+
+    self._module.SetUp(
+        destination_project_name='test-analysis-project-name',
+        source_project_name='test-target-project-name',
+        destination_zone='fake_zone',
+        remote_instance_names='not-found,found',
+        disk_names=None,
+        all_disks=True,
+        stop_instances=False,
+    )
+    with mock.patch.object(
+        self._module, 'PublishMessage') as mock_publishmessage:
+      self._ProcessModule()
+
+    mock_publishmessage.assert_has_calls(
+        [mock.call('Instance "not-found" in test-target-project-name not found '
+                   'or insufficient permissions', is_error=True),
+         mock.call('Disk disk1 successfully copied to disk1-copy'),
+         mock.call('Disk disk2 successfully copied to disk2-copy')],
+        any_order=True)
+  
+    mock_CreateDiskCopy.assert_has_calls([
+        mock.call('test-target-project-name',
+                  'test-analysis-project-name',
+                  'fake_zone',
+                  disk_name='disk1'),
+        mock.call('test-target-project-name',
+                  'test-analysis-project-name',
+                  'fake_zone',
+                  disk_name='disk2')])
+
+    out_disks = [d for d in self._module.GetContainers(containers.GCEDisk)
+                 if d.name not in ('disk1', 'disk2')]
+    out_disk_names = [d.name for d in out_disks]
+    self.assertLen(out_disk_names, 2)
+    expected_disk_names = ['disk1-copy', 'disk2-copy']
+    self.assertListEqual(out_disk_names, expected_disk_names)
+    for d in out_disks:
+      self.assertEqual(d.project, 'test-analysis-project-name')
+
 
 if __name__ == '__main__':
   unittest.main()
