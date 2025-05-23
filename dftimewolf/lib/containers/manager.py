@@ -1,10 +1,11 @@
 """A ContainerManager class."""
 
 
+from concurrent import futures
 import dataclasses
 import logging
 import threading
-from typing import Any, cast, Sequence, Type, TypeVar
+from typing import Any, cast, Sequence, Type, TypeVar, Callable
 
 from dftimewolf.lib.containers import interface
 
@@ -29,6 +30,10 @@ class _MODULE():
   completed: bool = False
 
 
+
+
+
+
 class ContainerManager():
   """A ContainerManager.
   
@@ -47,6 +52,14 @@ class ContainerManager():
     self._logger = logger
     self._mutex = threading.Lock()
     self._modules: dict[str, _MODULE] = {}
+
+    self._streaming_callback_map: dict[Type[T], Callable[[T], None]] = {}
+    self._streaming_records: dict[int, set[str]] = {}
+    self._streaming_pool = futures.ThreadPoolExecutor(max_workers=4)
+
+  def __del__(self):
+    """Clean up the ContainerManager."""
+    self._streaming_pool.shutdown(wait=True)
 
   def ParseRecipe(self, recipe: dict[str, Any]) -> None:
     """Parses a recipe to build the dependency graph.
@@ -122,7 +135,7 @@ class ContainerManager():
           if only one of metadata_filter_(key|value) is specified.
     """
     if not self._modules:
-      raise RuntimeError("Container manager has not parsed a recipe yet")
+      raise RuntimeError('Container manager has not parsed a recipe yet')
     if bool(metadata_filter_key) ^ bool(metadata_filter_value):
       raise RuntimeError('Must specify both key and value for attribute filter')
 
@@ -182,6 +195,19 @@ class ContainerManager():
             del c
           module.storage = []
 
+  def RegisterStreamingCallback(self,
+                                module_name: str,
+                                container_type: Type[T],
+                                callback: Callable[[T], None]) -> None:
+    """Registers a container streaming callback for a module and container type.
+    
+    Args:
+      module_name: The module name registering the callback
+      container_type: The container type to stream
+      callback: The function to call with containers
+    """
+
+
   def _CheckDependenciesCompletion(self, module_name: str) -> bool:
     """For a module, checks if other modules that depend on are complete.
 
@@ -189,7 +215,7 @@ class ContainerManager():
       module_name: The module name to check for.
 
     Returns:
-      True if all modules dependant on the named module have complete; False
+      True if all modules dependent on the named module have complete; False
           otherwise.
     """
     for _, module in self._modules.items():
