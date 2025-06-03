@@ -1,5 +1,5 @@
 # Use the official Docker Hub Ubuntu 20.04 base image
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 
 RUN apt update && apt install -y \
@@ -10,8 +10,7 @@ RUN apt update && apt install -y \
     git \
     ssh
 
-RUN pip install --upgrade pip
-RUN pip install poetry
+RUN pip install poetry --break-system-packages
 
 # /app is defined as the mount in the docker-compose.yaml file and should
 # point to the root of the dftimewolf install
