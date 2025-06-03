@@ -117,10 +117,7 @@ class OpenRelikProcessorTest(modules_test_base.ModuleTestBase):
     mock_run_workflow.assert_called_once()
 
   @mock.patch("openrelik_api_client.api_client.APIClient.download_file")
-  @mock.patch(
-    "dftimewolf.lib.processors.openrelik.OpenRelikProcessor.PublishMessage"
-  )
-  def testDownloadWorkflowOutput(self, mock_publish, _):
+  def testDownloadWorkflowOutput(self, _):
     """Tests the DownloadWorkflowOutput method."""
     # Set up mocks
     self._module.openrelik_api_client = mock.MagicMock()
