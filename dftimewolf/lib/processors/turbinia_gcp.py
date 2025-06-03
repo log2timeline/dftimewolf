@@ -288,7 +288,6 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
             module_name='TurbiniaProcessor',
             text=report,
             text_format='markdown'))
-    self.PublishMessage(report)
 
   @staticmethod
   def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:

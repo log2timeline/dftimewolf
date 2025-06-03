@@ -150,7 +150,7 @@ class GCPCloudResourceTree(module.BaseModule):
         mode='w', delete=False, encoding='utf-8', suffix='.txt')
     output_path = output_file.name
 
-    self.PublishMessage(f'Saving resource tree to {output_path}')
+    self.logger.info(f'Saving resource tree to {output_path}')
 
     # Dump the resource tree to file
     with open(output_path, 'w') as out_file:

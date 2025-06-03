@@ -198,7 +198,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     if self.RefreshClientCredentials():
       self.evidence_api_instance = turbinia_evidence_api.TurbiniaEvidenceApi(
           self.client)
-    self.PublishMessage(
+    self.logger.info(
         f'Uploading evidence at {path_str} for incident {self.incident_id}'
     )
     self.logger.info(f'Incident ID: {self.incident_id}')
@@ -219,7 +219,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     # The API supports multiple file upload, but we're only sending one.
     file = response[0]
     turbinia_evidence_path = file.get('file_path')
-    self.PublishMessage(
+    self.logger.info(
         f'Uploaded {file.get("original_name")} to {turbinia_evidence_path}'
     )
     return turbinia_evidence_path
@@ -244,7 +244,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     filename = f'{task_id}-'
     retries = 0
     # pylint: disable=line-too-long
-    self.PublishMessage(f"Downloading output for task {task_id}")
+    self.logger.debug(f"Downloading output for task {task_id}")
     while retries < 3:
       try:
         api_response = self.results_api_instance.get_task_output_with_http_info(
@@ -256,7 +256,7 @@ class TurbiniaProcessorBase(module.BaseModule):
           file = tempfile.NamedTemporaryFile(
               mode='wb', prefix=f'{filename}', suffix='.tgz', delete=False)
           local_path = file.name
-          self.PublishMessage(f'Saving output for task {task_id} to {local_path}')
+          self.logger.debug(f'Saving output for task {task_id} to {local_path}')
           file.write(api_response.raw_data)
           file.close()
 

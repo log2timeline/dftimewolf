@@ -61,7 +61,7 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
     self.output_directory = output_directory
     if not self.output_directory:
       self.output_directory = tempfile.mkdtemp(prefix='turbinia-results')
-      self.PublishMessage(
+      self.logger.debug(
           f'Turbinia results will be dumped to {self.output_directory}')
 
     self.TurbiniaSetUp(

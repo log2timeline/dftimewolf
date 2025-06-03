@@ -59,7 +59,7 @@ class AWSLogsCollector(module.BaseModule):
     output_file = tempfile.NamedTemporaryFile(
       mode='w', delete=False, encoding='utf-8', suffix='.jsonl')
     output_path = output_file.name
-    self.PublishMessage(f"Downloading logs to {output_path:s}")
+    self.logger.info(f"Downloading logs to {output_path:s}")
 
     if self._profile_name:
       try:
@@ -110,7 +110,7 @@ class AWSLogsCollector(module.BaseModule):
           'are correct https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_LookupEvents.html')  # pylint: disable=line-too-long
         self.ModuleError(str(exception), critical=True)
 
-    self.PublishMessage(f'Downloaded logs to {output_path}')
+    self.logger.info(f'Downloaded logs to {output_path}')
     output_file.close()
 
     logs_report = containers.File('AWSLogsCollector result', output_path)

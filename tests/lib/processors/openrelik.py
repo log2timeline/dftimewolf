@@ -117,10 +117,7 @@ class OpenRelikProcessorTest(modules_test_base.ModuleTestBase):
     mock_run_workflow.assert_called_once()
 
   @mock.patch("openrelik_api_client.api_client.APIClient.download_file")
-  @mock.patch(
-    "dftimewolf.lib.processors.openrelik.OpenRelikProcessor.PublishMessage"
-  )
-  def testDownloadWorkflowOutput(self, mock_publish, _):
+  def testDownloadWorkflowOutput(self, _):
     """Tests the DownloadWorkflowOutput method."""
     # Set up mocks
     self._module.openrelik_api_client = mock.MagicMock()
@@ -129,13 +126,14 @@ class OpenRelikProcessorTest(modules_test_base.ModuleTestBase):
       "fake_filepath"
     )
 
-    # Call the method
-    local_path = self._module.DownloadWorkflowOutput(123, "test_filename.plaso")
-    # pylint: disable=line-too-long
+    with mock.patch.object(self._module.logger, 'info') as mock_log_info:
+      # Call the method
+      local_path = self._module.DownloadWorkflowOutput(123,
+                                                       "test_filename.plaso")
     self._module.openrelik_api_client.download_file.assert_called_with(
       123, "test_filename.plaso"
     )
-    mock_publish.assert_called_with(
+    mock_log_info.assert_called_with(
       "Saved output for file ID 123 to fake_filepath"
     )
     self.assertEqual(local_path, "fake_filepath")

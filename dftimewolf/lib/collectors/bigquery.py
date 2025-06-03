@@ -89,7 +89,7 @@ class BigQueryCollector(module.ThreadAwareModule):
     else:
       filename = utils.WriteDataFrameToJsonl(df)
       out_container = containers.File(name=container.description, path=filename)
-      self.PublishMessage(f'Downloaded logs to {filename}')
+      self.logger.info(f'Downloaded logs to {filename}')
 
     # Copy metadata from source to output
     out_container.metadata = container.metadata

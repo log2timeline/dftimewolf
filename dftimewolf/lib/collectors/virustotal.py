@@ -135,7 +135,7 @@ class VTCollector(module.BaseModule):
       file = open(download_file_path, "wb")
       file.write(file_content)
       file.close()
-      self.PublishMessage(f"File downloaded to: {download_file_path}")
+      self.logger.info(f"File downloaded to: {download_file_path}")
 
     assert isinstance(file, BufferedWriter)
 

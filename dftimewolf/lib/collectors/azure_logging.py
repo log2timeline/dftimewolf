@@ -52,7 +52,7 @@ class AzureLogsCollector(module.BaseModule):
     output_file = tempfile.NamedTemporaryFile(
         mode='w', delete=False, encoding='utf-8', suffix='.jsonl')
     output_path = output_file.name
-    self.PublishMessage(f"Downloading logs to {output_path:s}")
+    self.logger.info(f"Downloading logs to {output_path:s}")
 
     try:
       _, credentials = lcf_common.GetCredentials(
@@ -101,7 +101,7 @@ class AzureLogsCollector(module.BaseModule):
             'Resource not found, ensure that subscription_id is correct.')
       self.ModuleError(str(exception), critical=True)
 
-    self.PublishMessage('Downloaded logs to {output_path}')
+    self.logger.info('Downloaded logs to {output_path}')
     output_file.close()
 
     logs_report = containers.File('AzureLogsCollector result', output_path)

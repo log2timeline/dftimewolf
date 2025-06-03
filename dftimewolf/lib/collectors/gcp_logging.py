@@ -52,7 +52,7 @@ class GCPLogsCollector(module.BaseModule):
     output_file = tempfile.NamedTemporaryFile(
         mode='w', delete=False, encoding='utf-8', suffix='.jsonl')
     output_path = output_file.name
-    self.PublishMessage(f"Downloading logs to {output_path}")
+    self.logger.info(f"Downloading logs to {output_path}")
     return output_file, output_path
 
   def SetupLoggingClient(self) -> Any:
@@ -233,7 +233,7 @@ class GCPLogsCollector(module.BaseModule):
             'GCP resource not found. Maybe a typo in the project name?')
       self.ModuleError(str(exception), critical=True)
 
-    self.PublishMessage(f'Downloaded logs to {output_path}')
+    self.logger.info(f'Downloaded logs to {output_path}')
     output_file.close()
 
     logs_report = containers.File(self._filter_expression, output_path)

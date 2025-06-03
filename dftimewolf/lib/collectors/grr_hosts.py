@@ -558,7 +558,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       if missing:
         message = '\n'.join([self._MISSING_FILE_MESSAGE % (path, size)
                              for path, size in missing])
-        self.PublishMessage(f'\n{message}\n', is_error=True)
+        self.logger.warning(f'\n{message}\n')
     except GRRError:
       pass
 
@@ -776,12 +776,12 @@ Flow ID: {3:s}
         grr_flow.flow_id,
         not yara_hits_df.empty))
       if yara_hits_df.empty:
-        self.PublishMessage(
+        self.logger.info(
           f"{flow_id}: No Yara hits on {grr_hostname}" f" ({client.client_id})"
         )
         continue
 
-      self.PublishMessage(f'{flow_id}: found Yara hits on {grr_hostname}'
+      self.logger.info(f'{flow_id}: found Yara hits on {grr_hostname}'
                           f' ({client.client_id})')
       dataframe = containers.DataFrame(
         data_frame=yara_hits_df,
@@ -1039,7 +1039,7 @@ class GRRArtifactCollector(GRRFlow):
       collected_flow_data = self._DownloadFiles(client, flow_id)
 
       if collected_flow_data:
-        self.PublishMessage(f'{flow_id}: Downloaded: {collected_flow_data}')
+        self.logger.info(f'{flow_id}: Downloaded: {collected_flow_data}')
         cont = containers.File(
             name=client.data.os_info.fqdn.lower(),
             path=collected_flow_data
@@ -1168,7 +1168,7 @@ class GRRFileCollector(GRRFlow):
       self._AwaitFlow(client, flow_id)
       collected_flow_data = self._DownloadFiles(client, flow_id)
       if collected_flow_data:
-        self.PublishMessage(f'{flow_id}: Downloaded: {collected_flow_data}')
+        self.logger.info(f'{flow_id}: Downloaded: {collected_flow_data}')
         cont = containers.File(
             name=client.data.os_info.fqdn.lower(),
             path=collected_flow_data
@@ -1416,7 +1416,7 @@ class GRROsqueryCollector(GRRFlow):
 
     manifest_file_path = os.path.join(self.directory, 'MANIFEST.csv')
 
-    self.PublishMessage(f"Saving osquery flow results to {manifest_file_path}")
+    self.logger.info(f"Saving osquery flow results to {manifest_file_path}")
 
     with open(manifest_file_path, mode='w') as manifest_fd:
       manifest_fd.write('"Flow ID","Hostname","GRR Client Id","Osquery"\n')
@@ -1437,7 +1437,7 @@ class GRROsqueryCollector(GRRFlow):
         with open(output_file_path, mode='w') as fd:
           container.data_frame.to_csv(fd)
 
-        self.PublishMessage(f"Saved OSQuery dataframe to {output_file_path}.")
+        self.logger.info(f"Saved OSQuery dataframe to {output_file_path}.")
 
         manifest_fd.write(f'"{flow_id}","{hostname}","{client_id}","{query}"\n')
 
@@ -1534,7 +1534,7 @@ class GRRFlowCollector(GRRFlow):
     self._CheckSkippedFlows()
     collected_flow_data = self._DownloadFiles(client, container.flow_id)
     if collected_flow_data:
-      self.PublishMessage(
+      self.logger.info(
           f'{container.flow_id}: Downloaded: {collected_flow_data}')
       cont = containers.File(
           name=client.data.os_info.fqdn.lower(),
@@ -1648,7 +1648,7 @@ class GRRTimelineCollector(GRRFlow):
       collected_timeline = self._DownloadTimeline(
         client, client.Flow(flow_id), self.output_path
       )
-      self.PublishMessage(f"{flow_id}: Downloaded: {collected_timeline}")
+      self.logger.info(f"{flow_id}: Downloaded: {collected_timeline}")
       cont = containers.File(
         name=client.data.os_info.fqdn.lower(), path=collected_timeline
       )

@@ -744,7 +744,7 @@ class GRRHuntDownloader(GRRHuntDownloaderBase):
       self.ModuleError(exception.message, critical=exception.critical)
 
     results = self._ExtractHuntResults(output_file_path)
-    self.PublishMessage(
+    self.logger.info(
         f'Wrote results of {hunt.hunt_id} to {output_file_path}')
     return results
 
@@ -903,7 +903,7 @@ class GRRHuntOsqueryDownloader(GRRHuntDownloaderBase):
     except DFTimewolfError as exception:
       self.ModuleError(exception.message, critical=exception.critical)
 
-    self.PublishMessage(
+    self.logger.info(
         f'Wrote results of {hunt.hunt_id} to {self.output_path}')
     return self.results
 
