@@ -130,7 +130,7 @@ class OpenRelikProcessor(module.ThreadAwareModule):
     if not local_path:
       self.logger.error(f"Failed to download {filename}, ID:{file_id}")
       return None
-    self.PublishMessage(f"Saved output for file ID {file_id} to {local_path}")
+    self.logger.info(f"Saved output for file ID {file_id} to {local_path}")
     return str(local_path)
 
   def Process(

@@ -160,7 +160,7 @@ class WorkspaceAuditCollector(module.BaseModule):
     output_file = tempfile.NamedTemporaryFile(
         mode='w', delete=False, encoding='utf-8', suffix='.jsonl')
     output_path = output_file.name
-    self.PublishMessage(f"Downloading logs to {output_path:s}")
+    self.logger.info(f"Downloading logs to {output_path:s}")
 
     audit_resource = self._BuildAuditResource(self._credentials)
     request_parameters = {
@@ -201,7 +201,7 @@ class WorkspaceAuditCollector(module.BaseModule):
         application_name=self._application_name, path=output_path,
         filter_expression=self._filter_expression, user_key=self._user_key,
         start_time=self._start_time, end_time=self._end_time)
-    self.PublishMessage(f'Downloaded logs to {output_path}')
+    self.logger.info(f'Downloaded logs to {output_path}')
     self.StoreContainer(logs_report)
 
 

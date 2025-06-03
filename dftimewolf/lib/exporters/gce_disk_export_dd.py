@@ -180,7 +180,7 @@ class GoogleCloudDiskExportStream(GoogleCloudDiskExportBase):
           disk_path_gcs = value_tuple[-1]
           container = containers.URL(path=disk_path_gcs)
           self.StoreContainer(container)
-          self.PublishMessage(
+          self.logger.info(
             f'Disk "{archived_disk}" exported. Output path: {disk_path_gcs} '
           )
           self.logger.info(

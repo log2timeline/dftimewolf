@@ -217,7 +217,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
         remote_instance.Stop()
       except lcf_errors.InstanceStateChangeError as exception:
         self.ModuleError(str(exception), critical=False)
-      self.PublishMessage(f'Stopped instance {i}')
+      self.logger.info(f'Stopped instance {i}')
 
   def _GetDisksFromInstance(
       self,

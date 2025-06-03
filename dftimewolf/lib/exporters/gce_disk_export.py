@@ -74,7 +74,7 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase):
       output_url = os.path.join(
           self.gcs_output_location,
           '{0:s}.tar.gz'.format(image_name))
-      self.PublishMessage(f'Disk was exported to: {output_url}')
+      self.logger.info(f'Disk was exported to: {output_url}')
       container = containers.URL(path=output_url)
       self.StoreContainer(container)
 
