@@ -53,7 +53,7 @@ class ContainerManager():
     self._modules: dict[str, _MODULE] = {}
     self._callback_pool = futures.ThreadPoolExecutor()
 
-  def __del__(self):
+  def __del__(self) -> None:
     """Clean up the ContainerManager."""
     self.WaitForCallbackCompletion()
 
@@ -187,10 +187,11 @@ class ContainerManager():
     with self._mutex:
       self._modules[module_name].storage = {}
 
-  def RegisterStreamingCallback(self,
-                                module_name: str,
-                                container_type: Type[T],
-                                callback: Callable[[T], None]) -> None:
+  def RegisterStreamingCallback(
+      self,
+      module_name: str,
+      container_type: Type[T],
+      callback: Callable[[interface.AttributeContainer], None]) -> None:
     """Registers a container streaming callback for a module and container type.
     
     Args:
