@@ -2,6 +2,7 @@
 
 import logging
 import unittest
+from unittest import mock
 
 import pandas as pd
 
@@ -364,212 +365,99 @@ class ContainerManagerTest(unittest.TestCase):
               _TEST_RECIPE.get('modules', [])):
       name = c.get('runtime_name', c['name'])
       self._container_manager.StoreContainer(
-        source_module=name, container=_TestContainer1(f'Stored by {name}'))
+          source_module=name, container=_TestContainer1(f'Stored by {name}'))
 
     with self.subTest('Preflight1'):
+      # Delivers to self, Preflight2_1, Preflight2_2 and ModuleA
       self._container_manager.CompleteModule('Preflight1')
 
       actual = self._container_manager.GetContainers(
           requesting_module='Preflight1', container_class=_TestContainer1)
-      self.assertEqual(1, len(actual))
-      self.assertIn(_TestContainer1('Stored by Preflight1'), actual)
+      self.assertEqual(0, len(actual))
 
       actual = self._container_manager.GetContainers(
           requesting_module='Preflight2_1', container_class=_TestContainer1)
-      self.assertEqual(2, len(actual))
       self.assertIn(_TestContainer1('Stored by Preflight1'), actual)
-      self.assertIn(_TestContainer1('Stored by Preflight2_1'), actual)
 
       actual = self._container_manager.GetContainers(
           requesting_module='Preflight2_2', container_class=_TestContainer1)
-      self.assertEqual(2, len(actual))
       self.assertIn(_TestContainer1('Stored by Preflight1'), actual)
-      self.assertIn(_TestContainer1('Stored by Preflight2_2'), actual)
 
       actual = self._container_manager.GetContainers(
           requesting_module='ModuleA', container_class=_TestContainer1)
-      self.assertEqual(2, len(actual))
       self.assertIn(_TestContainer1('Stored by Preflight1'), actual)
-      self.assertIn(_TestContainer1('Stored by ModuleA'), actual)
 
     with self.subTest('Preflight2_1'):
+      # Delivers to self
       self._container_manager.CompleteModule('Preflight2_1')
 
       actual = self._container_manager.GetContainers(
           requesting_module='Preflight2_1', container_class=_TestContainer1)
-      self.assertEqual(1, len(actual))
-      self.assertIn(_TestContainer1('Stored by Preflight1'), actual)
-
-      actual = self._container_manager.GetContainers(
-          requesting_module='Preflight2_2', container_class=_TestContainer1)
-      self.assertEqual(2, len(actual))
-      self.assertIn(_TestContainer1('Stored by Preflight1'), actual)
-      self.assertIn(_TestContainer1('Stored by Preflight2_2'), actual)
-
-      actual = self._container_manager.GetContainers(
-          requesting_module='ModuleA', container_class=_TestContainer1)
-      self.assertEqual(2, len(actual))
-      self.assertIn(_TestContainer1('Stored by Preflight1'), actual)
-      self.assertIn(_TestContainer1('Stored by ModuleA'), actual)
+      self.assertEqual(0, len(actual))
 
     with self.subTest('Preflight2_2'):
+      # Delvers to self
       self._container_manager.CompleteModule('Preflight2_2')
 
       actual = self._container_manager.GetContainers(
           requesting_module='Preflight2_1', container_class=_TestContainer1)
-      self.assertEqual(1, len(actual))
-      self.assertIn(_TestContainer1('Stored by Preflight1'), actual)
-
-      actual = self._container_manager.GetContainers(
-          requesting_module='Preflight2_2', container_class=_TestContainer1)
-      self.assertEqual(1, len(actual))
-      self.assertIn(_TestContainer1('Stored by Preflight1'), actual)
-
-      actual = self._container_manager.GetContainers(
-          requesting_module='ModuleA', container_class=_TestContainer1)
-      self.assertEqual(2, len(actual))
-      self.assertIn(_TestContainer1('Stored by Preflight1'), actual)
-      self.assertIn(_TestContainer1('Stored by ModuleA'), actual)
+      self.assertEqual(0, len(actual))
 
     with self.subTest('ModuleA'):
+      # Delivers to self, ModuleE
       self._container_manager.CompleteModule('ModuleA')
 
       actual = self._container_manager.GetContainers(
-          requesting_module='Preflight2_1', container_class=_TestContainer1)
-      self.assertEqual(0, len(actual))
-
-      actual = self._container_manager.GetContainers(
-          requesting_module='Preflight2_2', container_class=_TestContainer1)
-      self.assertEqual(0, len(actual))
-
-      actual = self._container_manager.GetContainers(
           requesting_module='ModuleA', container_class=_TestContainer1)
-      self.assertEqual(1, len(actual))
-      self.assertIn(_TestContainer1('Stored by ModuleA'), actual)
+      self.assertEqual(0, len(actual))
 
       actual = self._container_manager.GetContainers(
           requesting_module='ModuleE', container_class=_TestContainer1)
-      self.assertEqual(4, len(actual))
       self.assertIn(_TestContainer1('Stored by ModuleA'), actual)
-      self.assertIn(_TestContainer1('Stored by ModuleB'), actual)
-      self.assertIn(_TestContainer1('Stored by ModuleD'), actual)
-      self.assertIn(_TestContainer1('Stored by ModuleE'), actual)
 
     with self.subTest('ModuleB'):
+      # Delivers to self, ModuleD, ModuleE
       self._container_manager.CompleteModule('ModuleB')
 
       actual = self._container_manager.GetContainers(
-          requesting_module='ModuleA', container_class=_TestContainer1)
-      self.assertEqual(1, len(actual))
-      self.assertIn(_TestContainer1('Stored by ModuleA'), actual)
-
-      actual = self._container_manager.GetContainers(
           requesting_module='ModuleB', container_class=_TestContainer1)
-      self.assertEqual(1, len(actual))
-      self.assertIn(_TestContainer1('Stored by ModuleB'), actual)
-
-      actual = self._container_manager.GetContainers(
-          requesting_module='ModuleC', container_class=_TestContainer1)
-      self.assertEqual(1, len(actual))
-      self.assertIn(_TestContainer1('Stored by ModuleC'), actual)
+      self.assertEqual(0, len(actual))
 
       actual = self._container_manager.GetContainers(
           requesting_module='ModuleD', container_class=_TestContainer1)
-      self.assertEqual(3, len(actual))
       self.assertIn(_TestContainer1('Stored by ModuleB'), actual)
-      self.assertIn(_TestContainer1('Stored by ModuleC'), actual)
-      self.assertIn(_TestContainer1('Stored by ModuleD'), actual)
-
+    
       actual = self._container_manager.GetContainers(
           requesting_module='ModuleE', container_class=_TestContainer1)
-      self.assertEqual(4, len(actual))
-      self.assertIn(_TestContainer1('Stored by ModuleA'), actual)
       self.assertIn(_TestContainer1('Stored by ModuleB'), actual)
-      self.assertIn(_TestContainer1('Stored by ModuleD'), actual)
-      self.assertIn(_TestContainer1('Stored by ModuleE'), actual)
-
+    
     with self.subTest('ModuleC'):
+      # Delivers to self, ModuleD
       self._container_manager.CompleteModule('ModuleC')
 
       actual = self._container_manager.GetContainers(
-          requesting_module='ModuleA', container_class=_TestContainer1)
-      self.assertEqual(1, len(actual))
-      self.assertIn(_TestContainer1('Stored by ModuleA'), actual)
-
-      actual = self._container_manager.GetContainers(
-          requesting_module='ModuleB', container_class=_TestContainer1)
-      self.assertEqual(1, len(actual))
-      self.assertIn(_TestContainer1('Stored by ModuleB'), actual)
-
-      actual = self._container_manager.GetContainers(
           requesting_module='ModuleC', container_class=_TestContainer1)
-      self.assertEqual(1, len(actual))
-      self.assertIn(_TestContainer1('Stored by ModuleC'), actual)
+      self.assertEqual(0, len(actual))
 
       actual = self._container_manager.GetContainers(
           requesting_module='ModuleD', container_class=_TestContainer1)
-      self.assertEqual(3, len(actual))
-      self.assertIn(_TestContainer1('Stored by ModuleB'), actual)
       self.assertIn(_TestContainer1('Stored by ModuleC'), actual)
-      self.assertIn(_TestContainer1('Stored by ModuleD'), actual)
-
-      actual = self._container_manager.GetContainers(
-          requesting_module='ModuleE', container_class=_TestContainer1)
-      self.assertEqual(4, len(actual))
-      self.assertIn(_TestContainer1('Stored by ModuleA'), actual)
-      self.assertIn(_TestContainer1('Stored by ModuleB'), actual)
-      self.assertIn(_TestContainer1('Stored by ModuleD'), actual)
-      self.assertIn(_TestContainer1('Stored by ModuleE'), actual)
 
     with self.subTest('ModuleD'):
+      # Delivers to self, ModuleE
       self._container_manager.CompleteModule('ModuleD')
 
       actual = self._container_manager.GetContainers(
-          requesting_module='ModuleA', container_class=_TestContainer1)
-      self.assertEqual(1, len(actual))
-      self.assertIn(_TestContainer1('Stored by ModuleA'), actual)
-
-      actual = self._container_manager.GetContainers(
-          requesting_module='ModuleB', container_class=_TestContainer1)
-      self.assertEqual(1, len(actual))
-      self.assertIn(_TestContainer1('Stored by ModuleB'), actual)
-
-      actual = self._container_manager.GetContainers(
-          requesting_module='ModuleC', container_class=_TestContainer1)
-      self.assertEqual(0, len(actual))
-
-      actual = self._container_manager.GetContainers(
           requesting_module='ModuleD', container_class=_TestContainer1)
-      self.assertEqual(2, len(actual))
-      self.assertIn(_TestContainer1('Stored by ModuleB'), actual)
-      self.assertIn(_TestContainer1('Stored by ModuleD'), actual)
+      self.assertEqual(0, len(actual))
 
       actual = self._container_manager.GetContainers(
           requesting_module='ModuleE', container_class=_TestContainer1)
-      self.assertEqual(4, len(actual))
-      self.assertIn(_TestContainer1('Stored by ModuleA'), actual)
-      self.assertIn(_TestContainer1('Stored by ModuleB'), actual)
       self.assertIn(_TestContainer1('Stored by ModuleD'), actual)
-      self.assertIn(_TestContainer1('Stored by ModuleE'), actual)
-
+    
     with self.subTest('ModuleE'):
+      # Delivers to self
       self._container_manager.CompleteModule('ModuleE')
-
-      actual = self._container_manager.GetContainers(
-          requesting_module='ModuleA', container_class=_TestContainer1)
-      self.assertEqual(0, len(actual))
-
-      actual = self._container_manager.GetContainers(
-          requesting_module='ModuleB', container_class=_TestContainer1)
-      self.assertEqual(0, len(actual))
-
-      actual = self._container_manager.GetContainers(
-          requesting_module='ModuleC', container_class=_TestContainer1)
-      self.assertEqual(0, len(actual))
-
-      actual = self._container_manager.GetContainers(
-          requesting_module='ModuleD', container_class=_TestContainer1)
-      self.assertEqual(0, len(actual))
 
       actual = self._container_manager.GetContainers(
           requesting_module='ModuleE', container_class=_TestContainer1)
@@ -694,6 +582,64 @@ class ContainerManagerTest(unittest.TestCase):
         data_frame=df1, description='Description', name='name'), actual)
     self.assertIn(containers.DataFrame(
         data_frame=df3, description='Description', name='name'), actual)
+
+  def test_ContainerStreaming(self):
+    """Tests that container streaming operates as expected."""
+    # Preflight1 will generate containers
+    # Preflight2_1 sets up a callback for _TestContainer1 (mock_callback_1)
+    # Preflight2_2 sets up a callback for _TestContainer1 (mock_callback_2) and _TestContainer2 (mock_callback_3)
+    # ModuleC sets up a callback for _TestContainer1 (mock_callback_4) which is not used because no dependency exists
+    mock_callback_1 = mock.MagicMock()
+    mock_callback_2 = mock.MagicMock()
+    mock_callback_3 = mock.MagicMock()
+    mock_callback_4 = mock.MagicMock()
+
+    self._container_manager.ParseRecipe(_TEST_RECIPE)
+
+    self._container_manager.RegisterStreamingCallback(
+        module_name='Preflight2_1', container_type=_TestContainer1, callback=mock_callback_1)
+    self._container_manager.RegisterStreamingCallback(
+        module_name='Preflight2_2', container_type=_TestContainer1, callback=mock_callback_2)
+    self._container_manager.RegisterStreamingCallback(
+        module_name='Preflight2_2', container_type=_TestContainer2, callback=mock_callback_3)
+    self._container_manager.RegisterStreamingCallback(
+        module_name='ModuleC', container_type=_TestContainer1, callback=mock_callback_4)
+    
+    # These should result in callbacks being executed
+    self._container_manager.StoreContainer(
+        source_module='Preflight1', container=_TestContainer1('From Preflight1'))
+    self._container_manager.StoreContainer(
+        source_module='Preflight1', container=_TestContainer2('From Preflight1'))
+    # No callback call - from a non-dependant module
+    self._container_manager.StoreContainer(
+        source_module='ModuleB', container=_TestContainer1('From ModuleC'))
+    # No callback call - Wrong container type
+    self._container_manager.StoreContainer(
+        source_module='Preflight1', container=_TestContainer3('From Preflight1'))
+    
+    self._container_manager.WaitForCallbackCompletion()
+
+    mock_callback_1.assert_called_once_with(_TestContainer1('From Preflight1'))
+    mock_callback_2.assert_called_once_with(_TestContainer1('From Preflight1'))
+    mock_callback_3.assert_called_once_with(_TestContainer2('From Preflight1'))
+    mock_callback_4.assert_not_called()
+
+    # Because they were streamed, GetContainers should return nothing.
+    actual = self._container_manager.GetContainers(
+        requesting_module='Preflight2_1', container_class=_TestContainer1)
+    self.assertEqual(len(actual), 0)
+    actual = self._container_manager.GetContainers(
+        requesting_module='Preflight2_2', container_class=_TestContainer1)
+    self.assertEqual(len(actual), 0)
+    actual = self._container_manager.GetContainers(
+        requesting_module='Preflight2_2', container_class=_TestContainer2)
+    self.assertEqual(len(actual), 0)
+
+    # No callback registered by Preflight2_2 for _TestContainer3
+    actual = self._container_manager.GetContainers(
+        requesting_module='Preflight2_2', container_class=_TestContainer3)
+    self.assertEqual(len(actual), 1)
+    self.assertEqual(actual[0], _TestContainer3('From Preflight1'))
 
 
 if __name__ == '__main__':

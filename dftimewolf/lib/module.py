@@ -12,7 +12,7 @@ import traceback
 import threading
 import sys
 
-from typing import Optional, Type, cast, TypeVar, Dict, Any, Sequence
+from typing import Optional, Type, cast, TypeVar, Dict, Any, Sequence, Callable
 from typing import TYPE_CHECKING
 
 from dftimewolf.lib import errors
@@ -165,6 +165,15 @@ class BaseModule(object):
       self.logger.success(message)
     self.state.PublishMessage(self.name, message, is_error)
 
+  def RegisterStreamingCallback(self,
+                                container_type: T,
+                                callback: Callable[[T], None]) -> None:
+    """Registers a streaming callback with the state for this module."""
+    self.state.RegisterStreamingCallback(
+        module_name=self.name,
+        callback=callback,
+        container_type=container_type)
+
   def StoreContainer(self, container: "interface.AttributeContainer") -> None:
     """Stores a container in the state's container store.
 
@@ -172,17 +181,6 @@ class BaseModule(object):
       container (AttributeContainer): data to store.
     """
     self.state.StoreContainer(container, self.name)
-
-  def StreamContainer(self, container: "interface.AttributeContainer") -> None:
-    """Streams a container to the next module in the recipe.
-
-    Args:
-      container (AttributeContainer): data to store.
-    """
-    self.logger.debug(f'{self.name} is streaming a {container.CONTAINER_TYPE} '
-        f'container: {str(container)}')
-
-    self.state.StreamContainer(container, self.name)
 
   def GetContainers(self,
                     container_class: Type[T],

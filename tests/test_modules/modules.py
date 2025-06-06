@@ -16,7 +16,8 @@ class DummyModule1(module.BaseModule):
     """Dummy setup function."""
     self.runtime_value = runtime_value
     print(self.name + ' Setup!')
-    self.state.RegisterStreamingCallback(self.Callback, containers.Report)
+    self.RegisterStreamingCallback(callback=self.Callback,
+                                   container_type=containers.Report)
 
   def Callback(self, container):
     """Dummy callback that we just want to have called"""

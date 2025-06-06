@@ -116,7 +116,7 @@ class TurbiniaArtifactProcessor(TurbiniaProcessorBase,
           continue
         self.logger.info(f'Found plaso result for task {task["id"]}: {path}')
         fs_container = containers.File(path=local_path, name=descriptive_name)
-        self.StreamContainer(fs_container)
+        self.StoreContainer(fs_container)
 
 
   @staticmethod
