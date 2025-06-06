@@ -11,7 +11,7 @@ from dftimewolf.lib.containers import interface
 
 # pylint: disable=line-too-long
 
-T = TypeVar("T", bound="interface.AttributeContainer")  # pylint: invalid-name
+T = TypeVar("T", bound="interface.AttributeContainer")
 
 
 @dataclasses.dataclass
@@ -94,7 +94,7 @@ class ContainerManager():
     with self._mutex:
       self._logger.debug(f'{source_module} is storing a {container.CONTAINER_TYPE} container: {str(container)}')
 
-      for key, module in self._modules.items():
+      for _, module in self._modules.items():
         if source_module in module.dependencies:
           if module.callback_map.get(container.CONTAINER_TYPE):
             # This module has registered callbacks - Use those, rather than storing
@@ -156,7 +156,7 @@ class ContainerManager():
         # needs to be removed
         ids = [id(c) for c, _ in ret_val]
 
-        for key, module in self._modules.items():
+        for _, module in self._modules.items():
           for c, origin in module.storage.get(container_class.CONTAINER_TYPE, []):
             if origin == requesting_module and id(c) in ids:
               module.storage[container_class.CONTAINER_TYPE] = [
@@ -204,7 +204,7 @@ class ContainerManager():
       raise RuntimeError('Registering a callback for a non-existent module')
 
     if container_type.CONTAINER_TYPE not in self._modules[module_name].callback_map:
-      self._modules[module_name].callback_map[container_type.CONTAINER_TYPE] = []  
+      self._modules[module_name].callback_map[container_type.CONTAINER_TYPE] = []
     self._modules[module_name].callback_map[container_type.CONTAINER_TYPE].append(callback)
 
   def WaitForCallbackCompletion(self) -> None:
@@ -220,12 +220,12 @@ class ContainerManager():
       lines.append('  Dependencies:')
       lines.append(f'    {", ".join(module.dependencies)}')
       lines.append('  Callbacks:')
-      for type, cb in module.callback_map.items():
-        lines.append(f'    {type}:{cb}')
+      for type_, cb in module.callback_map.items():
+        lines.append(f'    {type_}:{cb}')
       lines.append('  Containers:')
-      for type in module.storage.keys():
-        lines.append(f'    {type}')
-        for c, origin in module.storage[type]:
+      for type_ in module.storage.keys():
+        lines.append(f'    {type_}')
+        for c, origin in module.storage[type_]:
           lines.append(f'      {origin}:{c}')
       lines.append('')
 

@@ -10,7 +10,6 @@ from dftimewolf import config
 from dftimewolf.cli.curses_display_manager import CursesDisplayManager, Status
 from dftimewolf.lib import resources
 from dftimewolf.lib import state
-from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.recipes import manager as recipes_manager
 from dftimewolf.lib import errors

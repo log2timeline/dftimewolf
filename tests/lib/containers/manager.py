@@ -426,11 +426,11 @@ class ContainerManagerTest(unittest.TestCase):
       actual = self._container_manager.GetContainers(
           requesting_module='ModuleD', container_class=_TestContainer1)
       self.assertIn(_TestContainer1('Stored by ModuleB'), actual)
-    
+
       actual = self._container_manager.GetContainers(
           requesting_module='ModuleE', container_class=_TestContainer1)
       self.assertIn(_TestContainer1('Stored by ModuleB'), actual)
-    
+
     with self.subTest('ModuleC'):
       # Delivers to self, ModuleD
       self._container_manager.CompleteModule('ModuleC')
@@ -454,7 +454,7 @@ class ContainerManagerTest(unittest.TestCase):
       actual = self._container_manager.GetContainers(
           requesting_module='ModuleE', container_class=_TestContainer1)
       self.assertIn(_TestContainer1('Stored by ModuleD'), actual)
-    
+
     with self.subTest('ModuleE'):
       # Delivers to self
       self._container_manager.CompleteModule('ModuleE')
@@ -587,8 +587,10 @@ class ContainerManagerTest(unittest.TestCase):
     """Tests that container streaming operates as expected."""
     # Preflight1 will generate containers
     # Preflight2_1 sets up a callback for _TestContainer1 (mock_callback_1)
-    # Preflight2_2 sets up a callback for _TestContainer1 (mock_callback_2) and _TestContainer2 (mock_callback_3)
-    # ModuleC sets up a callback for _TestContainer1 (mock_callback_4) which is not used because no dependency exists
+    # Preflight2_2 sets up a callback for _TestContainer1 (mock_callback_2) and
+    #   _TestContainer2 (mock_callback_3)
+    # ModuleC sets up a callback for _TestContainer1 (mock_callback_4) which is
+    #   not used because no dependency exists
     mock_callback_1 = mock.MagicMock()
     mock_callback_2 = mock.MagicMock()
     mock_callback_3 = mock.MagicMock()
@@ -597,26 +599,37 @@ class ContainerManagerTest(unittest.TestCase):
     self._container_manager.ParseRecipe(_TEST_RECIPE)
 
     self._container_manager.RegisterStreamingCallback(
-        module_name='Preflight2_1', container_type=_TestContainer1, callback=mock_callback_1)
+        module_name='Preflight2_1',
+        container_type=_TestContainer1,
+        callback=mock_callback_1)
     self._container_manager.RegisterStreamingCallback(
-        module_name='Preflight2_2', container_type=_TestContainer1, callback=mock_callback_2)
+        module_name='Preflight2_2',
+        container_type=_TestContainer1,
+        callback=mock_callback_2)
     self._container_manager.RegisterStreamingCallback(
-        module_name='Preflight2_2', container_type=_TestContainer2, callback=mock_callback_3)
+        module_name='Preflight2_2',
+        container_type=_TestContainer2,
+        callback=mock_callback_3)
     self._container_manager.RegisterStreamingCallback(
-        module_name='ModuleC', container_type=_TestContainer1, callback=mock_callback_4)
-    
+        module_name='ModuleC',
+        container_type=_TestContainer1,
+        callback=mock_callback_4)
+
     # These should result in callbacks being executed
     self._container_manager.StoreContainer(
-        source_module='Preflight1', container=_TestContainer1('From Preflight1'))
+        source_module='Preflight1',
+        container=_TestContainer1('From Preflight1'))
     self._container_manager.StoreContainer(
-        source_module='Preflight1', container=_TestContainer2('From Preflight1'))
+        source_module='Preflight1',
+        container=_TestContainer2('From Preflight1'))
     # No callback call - from a non-dependant module
     self._container_manager.StoreContainer(
         source_module='ModuleB', container=_TestContainer1('From ModuleC'))
     # No callback call - Wrong container type
     self._container_manager.StoreContainer(
-        source_module='Preflight1', container=_TestContainer3('From Preflight1'))
-    
+        source_module='Preflight1',
+        container=_TestContainer3('From Preflight1'))
+
     self._container_manager.WaitForCallbackCompletion()
 
     mock_callback_1.assert_called_once_with(_TestContainer1('From Preflight1'))
