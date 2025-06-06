@@ -266,7 +266,7 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       if container:
         self.logger.debug(f"Streaming container {container.name}")
         try:
-          self.StreamContainer(container)
+          self.StoreContainer(container)
         except RuntimeError as exception:
           message = (f'An error occurred while streaming the container to a '
               f'downstream module. Check the downstream module logs for '

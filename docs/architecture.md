@@ -123,10 +123,6 @@ It has a couple of useful functions and attributes:
 - `GetContainers`: Retrieve the containers stored using `StoreContainer`. It
   takes a `container_class` param where you can select which containers you're
   interested in.
-- `StreamContainer`: This will push a container on the streaming queue, and any
-  registered streaming callbacks will be called on the container. Containers
-  stored this way are not persistent (e.g. can't be accessed with
-  `GetContainers` later on).
 - `RegisterStreamingCallback`: Use this to register a function that will be
   called on the container as it is streamed in real-time.
 
