@@ -166,7 +166,7 @@ class BaseModule(object):
     self.state.PublishMessage(self.name, message, is_error)
 
   def RegisterStreamingCallback(self,
-                                container_type: T,
+                                container_type: Type[T],
                                 callback: Callable[[T], None]) -> None:
     """Registers a streaming callback with the state for this module."""
     self.state.RegisterStreamingCallback(

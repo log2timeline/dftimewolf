@@ -189,7 +189,7 @@ class ContainerManager():
 
   def RegisterStreamingCallback(self,
                                 module_name: str,
-                                container_type: T,
+                                container_type: Type[T],
                                 callback: Callable[[T], None]) -> None:
     """Registers a container streaming callback for a module and container type.
     
