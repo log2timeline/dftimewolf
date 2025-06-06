@@ -530,10 +530,11 @@ class DFTimewolfState(object):
     """Performs the actual processing for each module in the module pool."""
     self._InvokeModulesInThreads(self._RunModuleThread)
 
-  def RegisterStreamingCallback(self,
-                                module_name: str,
-                                callback: Callable[[T], None],
-                                container_type: Type[T]) -> None:
+  def RegisterStreamingCallback(
+      self,
+      module_name: str,
+      callback: Callable[[interface.AttributeContainer], None],
+      container_type: Type[T]) -> None:
     """Registers a callback for a type of container.
 
     The function to be registered should a single parameter of type
