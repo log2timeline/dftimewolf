@@ -863,7 +863,7 @@ class GRRArtifactCollector(GRRFlow):
         collect file system artifacts.
   """
 
-  _DEFAULT_ARTIFACTS_LINUX = [
+  DEFAULT_ARTIFACTS_LINUX = [
       # keep-sorted start
       'LinuxAuditLogs',
       'LinuxAuthLogs',
@@ -874,7 +874,7 @@ class GRRArtifactCollector(GRRFlow):
       # keep-sorted end
   ]
 
-  _DEFAULT_ARTIFACTS_DARWIN = [
+  DEFAULT_ARTIFACTS_DARWIN = [
       # keep-sorted start
       'BashShellHistoryFile',
       'MacOSAppleSetupDoneFile',
@@ -892,7 +892,7 @@ class GRRArtifactCollector(GRRFlow):
       # keep-sorted end
   ]
 
-  _DEFAULT_ARTIFACTS_WINDOWS = [
+  DEFAULT_ARTIFACTS_WINDOWS = [
       # keep-sorted start
       'WindowsAppCompatCache',
       'WindowsEventLogs',
@@ -907,9 +907,9 @@ class GRRArtifactCollector(GRRFlow):
   ]
 
   artifact_registry = {
-      'Linux': _DEFAULT_ARTIFACTS_LINUX,
-      'Darwin': _DEFAULT_ARTIFACTS_DARWIN,
-      'Windows': _DEFAULT_ARTIFACTS_WINDOWS
+      'Linux': DEFAULT_ARTIFACTS_LINUX,
+      'Darwin': DEFAULT_ARTIFACTS_DARWIN,
+      'Windows': DEFAULT_ARTIFACTS_WINDOWS
   }
 
   def __init__(self,
