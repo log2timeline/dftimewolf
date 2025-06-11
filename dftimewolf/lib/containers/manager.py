@@ -99,6 +99,7 @@ class ContainerManager():
           if module.callback_map.get(container.CONTAINER_TYPE):
             # This module has registered callbacks - Use those, rather than storing
             for callback in module.callback_map[container.CONTAINER_TYPE]:
+              self._logger.debug('Executing callback for %s with container %s', module.name, str(container))
               self._callback_pool.submit(callback, container)
           else:
             if container.CONTAINER_TYPE not in module.storage:
