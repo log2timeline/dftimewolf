@@ -152,7 +152,7 @@ class ContainerManager():
 
       if pop:
         # A module can only pop containers it has stored.
-        # But, each module has it's own storage (with refs to containers) that
+        # But, each module has its own storage (with refs to containers) that
         # needs to be removed
         ids = [id(c) for c, _ in ret_val]
 
