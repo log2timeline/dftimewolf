@@ -332,10 +332,7 @@ class DFTimewolfState(object):
 
     Args:
       module: The module to run Process() on."""
-    time_start = time.time()
     module.Process()
-    total_time = utils.CalculateRunTime(time_start)
-    module.LogTelemetry({'total_time': str(total_time)})
 
   def _RunModuleProcessThreaded(
       self, module: ThreadAwareModule) -> List[Future]:  # type: ignore
@@ -363,11 +360,8 @@ class DFTimewolfState(object):
     with ThreadPoolExecutor(max_workers=module.GetThreadPoolSize()) \
         as executor:
       for c in containers:
-        logger.debug(f'Launching {module.name}.Process thread with {str(c)}')
-        time_start = time.time()
+        logger.debug(f"Launching {module.name}.Process thread with {str(c)}")
         futures.append(executor.submit(module.Process, c))
-        total_time = utils.CalculateRunTime(time_start)
-        module.LogTelemetry({'total_time': str(total_time)})
     return futures
 
   def _RunModulePreProcess(self, module: ThreadAwareModule) -> None:
@@ -442,6 +436,7 @@ class DFTimewolfState(object):
       return
 
     logger.info('Running module: {0:s}'.format(runtime_name))
+    time_start = time.time()
 
     try:
       if isinstance(module, ThreadAwareModule):
@@ -470,6 +465,8 @@ class DFTimewolfState(object):
       self.AddError(error)
 
     logger.info('Module {0:s} finished execution'.format(runtime_name))
+    total_time = utils.CalculateRunTime(time_start)
+    module.LogTelemetry({"total_time": str(total_time)})
     self._threading_event_per_module[runtime_name].set()
 
     try:
