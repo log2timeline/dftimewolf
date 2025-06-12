@@ -517,6 +517,19 @@ class ContainerManagerTest(unittest.TestCase):
       self.assertEqual(len(actual), 1)
       self.assertIn(_TestContainer3('Stored by ModuleA'), actual)
 
+    with self.subTest('downstream'):
+      # If a container pops a module it stored, downstream containers should not
+      # be able to receive that container. ModuleA stored a TestContainer3 - pop
+      # it, then have ModuleE attempt to fetch it
+      self._container_manager.GetContainers(
+          requesting_module='ModuleA',
+          container_class=_TestContainer3,
+          pop=True)
+      actual = self._container_manager.GetContainers(
+          requesting_module='ModuleE',
+          container_class=_TestContainer3)
+      self.assertEqual(len(actual), 0)
+
   def test_StoreDuplicateContainers(self):
     """Tests that attempts to store duplicate containers are disregarded."""
     self._container_manager.ParseRecipe(_TEST_RECIPE)

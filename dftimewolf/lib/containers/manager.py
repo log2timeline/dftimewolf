@@ -23,14 +23,26 @@ class _MODULE():
     dependencies: A list of modules that this module depends on.
     storage: A dict, keyed by container type, of:
         A tuple of:
-            The container
-            The origiinating module
+            The container (a ref)
+            The originating module
     callback_map: A dict, keyed by container type of callback methods
   """
   name: str
   dependencies: list[str] = dataclasses.field(default_factory=list)
   storage: dict[str, list[tuple[interface.AttributeContainer, str]]] = dataclasses.field(default_factory=dict)
   callback_map: dict[str, list[Callable[[interface.AttributeContainer], None]]] = dataclasses.field(default_factory=dict)
+
+  def RegisterCallback(
+      self, container_type: str, callback: Callable[[interface.AttributeContainer], None]) -> None:
+    """Registers a callback for the module foir a given container type."""
+    if container_type not in self.callback_map:
+      self.callback_map[container_type] = []
+    self.callback_map[container_type].append(callback)
+
+  def GetCallbacksForContainer(
+      self, container_type: str) -> list[Callable[[interface.AttributeContainer], None]]:
+    """Returns all callbacks for the module, for a given container type."""
+    return self.callback_map.get(container_type, [])
 
 
 class ContainerManager():
@@ -81,6 +93,9 @@ class ContainerManager():
                      container: interface.AttributeContainer) -> None:
     """Adds a container to storage for later retrieval.
 
+    This method will also invoke any applicable callbacks that have been
+    registered.
+
     Args:
       source_module: The module that generated the container.
       container: The container to store.
@@ -96,9 +111,10 @@ class ContainerManager():
 
       for _, module in self._modules.items():
         if source_module in module.dependencies:
-          if module.callback_map.get(container.CONTAINER_TYPE):
+          callbacks = module.GetCallbacksForContainer(container.CONTAINER_TYPE)
+          if callbacks:
             # This module has registered callbacks - Use those, rather than storing
-            for callback in module.callback_map[container.CONTAINER_TYPE]:
+            for callback in callbacks:
               self._logger.debug('Executing callback for %s with container %s', module.name, str(container))
               self._callback_pool.submit(callback, container)
           else:
@@ -152,16 +168,7 @@ class ContainerManager():
         ret_val.append((container, origin))
 
       if pop:
-        # A module can only pop containers it has stored.
-        # But, each module has its own storage (with refs to containers) that
-        # needs to be removed
-        ids = [id(c) for c, _ in ret_val]
-
-        for _, module in self._modules.items():
-          for c, origin in module.storage.get(container_class.CONTAINER_TYPE, []):
-            if origin == requesting_module and id(c) in ids:
-              module.storage[container_class.CONTAINER_TYPE] = [
-                  (c, o) for c, o in module.storage[container_class.CONTAINER_TYPE] if id(c) not in ids]
+        self._pop([c for c, _ in ret_val], requesting_module)
 
     self._logger.debug(f'{requesting_module} is retrieving {len(ret_val)} {container_class.CONTAINER_TYPE} containers')
     for container, origin in ret_val:
@@ -205,13 +212,34 @@ class ContainerManager():
     if module_name not in self._modules:
       raise RuntimeError('Registering a callback for a non-existent module')
 
-    if container_type.CONTAINER_TYPE not in self._modules[module_name].callback_map:
-      self._modules[module_name].callback_map[container_type.CONTAINER_TYPE] = []
-    self._modules[module_name].callback_map[container_type.CONTAINER_TYPE].append(callback)
+    self._modules[module_name].RegisterCallback(container_type.CONTAINER_TYPE, callback)
 
   def WaitForCallbackCompletion(self) -> None:
     """Waits for all scheduled callbacks to be completed."""
     self._callback_pool.shutdown(wait=True)
+
+  def _pop(self, containers: list[T], requesting_module: str) -> None:
+    """Removes containers from storage.
+
+    A module can only remove containers that it has stored.
+
+    Args:
+      containers: The list of containers that to potentially remove from storage
+      requesting_module: The module making the pop request
+    """
+    if not containers:
+      return
+
+    # All the containers will be the same type
+    container_type = containers[0].CONTAINER_TYPE
+    ids = [id(c) for c in containers]
+
+    for _, module in self._modules.items():
+      filtered = []
+      for c, origin in module.storage.get(container_type, []):
+        if not (origin == requesting_module and id(c) in ids):
+          filtered.append((c, origin))
+      module.storage[container_type] = filtered
 
   def __str__(self) -> str:
     """Used for debugging."""
