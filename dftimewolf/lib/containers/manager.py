@@ -170,7 +170,7 @@ class ContainerManager():
       if pop:
         self._pop([c for c, _ in ret_val], requesting_module)
 
-    self._logger.debug(f'{requesting_module} is retrieving {len(ret_val)} {container_class.CONTAINER_TYPE} containers')
+    self._logger.debug(f'{requesting_module} is retrieving {len(ret_val)} {container_class.CONTAINER_TYPE} containers (pop == {pop})')
     for container, origin in ret_val:
       self._logger.debug(f'  * {str(container)} - origin: {origin}')
 
