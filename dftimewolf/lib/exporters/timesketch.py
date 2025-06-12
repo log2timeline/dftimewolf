@@ -141,7 +141,8 @@ class TimesketchExporter(module.ThreadAwareModule):
       self.logger.info('New sketch created: {0:d}'.format(self.sketch_id))
 
     # register callback in timesketch module
-    self.state.RegisterStreamingCallback(self.Process, containers.File)
+    self.RegisterStreamingCallback(callback=self.Process,  # type: ignore
+                                   container_type=containers.File)
 
   def _CreateSketch(
       self, incident_id: Optional[str] = None) -> ts_sketch.Sketch:

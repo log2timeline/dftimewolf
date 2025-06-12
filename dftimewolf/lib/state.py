@@ -66,7 +66,6 @@ class DFTimewolfState(object):
     self.global_errors = []  # type: List[DFTimewolfError]
     self.recipe = {}  # type: Dict[str, Any]
     self._container_manager = container_manager.ContainerManager(logger)
-    self.streaming_callbacks = {}  # type: Dict[Type[interface.AttributeContainer], List[Callable[[Any], Any]]]  # pylint: disable=line-too-long
     self._abort_execution = False
     self.stdout_log = True
     self._progress_warning_shown = False
@@ -529,34 +528,24 @@ class DFTimewolfState(object):
     self._InvokeModulesInThreads(self._RunModuleThread)
 
   def RegisterStreamingCallback(
-      self, target: Callable[[T], Any], container_type: Type[T]) -> None:
+      self,
+      module_name: str,
+      callback: Callable[[interface.AttributeContainer], None],
+      container_type: Type[T]) -> None:
     """Registers a callback for a type of container.
 
     The function to be registered should a single parameter of type
     interface.AttributeContainer.
 
     Args:
-      target (function): function to be called.
-      container_type (type[interface.AttributeContainer]): container type on
-          which the callback will be called.
+      module_name: The name of the module registering the callback
+      callback: The method to be called.
+      container_type: container type on which the callback will be called.
     """
-    if container_type not in self.streaming_callbacks:
-      self.streaming_callbacks[container_type] = []
-    self.streaming_callbacks[container_type].append(target)
-
-  def StreamContainer(
-      self,
-      container: "interface.AttributeContainer",
-      source_module: str = "") -> None:
-    """Streams a container to the callbacks that are registered to handle it.
-
-    Args:
-      container: container instance that will be streamed to any
-          registered callbacks.
-      source_module: the originating module.
-    """
-    for callback in self.streaming_callbacks.get(type(container), []):
-      callback(container)
+    self._container_manager.RegisterStreamingCallback(
+        module_name=module_name,
+        callback=callback,
+        container_type=container_type)
 
   def AddError(self, error: DFTimewolfError) -> None:
     """Adds an error to the state.

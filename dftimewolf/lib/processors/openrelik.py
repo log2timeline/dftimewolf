@@ -157,7 +157,7 @@ class OpenRelikProcessor(module.ThreadAwareModule):
     for local_path in self.PollWorkflowStatus(workflow_id):
       if local_path:
         fs_container = containers.File(path=local_path, name=local_path)
-        self.StreamContainer(fs_container)
+        self.StoreContainer(fs_container)
 
   @staticmethod
   def GetThreadOnContainerType() -> Type[interface.AttributeContainer]:
