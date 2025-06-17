@@ -34,7 +34,7 @@ class _MODULE():
 
   def RegisterCallback(
       self, container_type: str, callback: Callable[[interface.AttributeContainer], None]) -> None:
-    """Registers a callback for the module foir a given container type."""
+    """Registers a callback for the module for a given container type."""
     if container_type not in self.callback_map:
       self.callback_map[container_type] = []
     self.callback_map[container_type].append(callback)
@@ -160,21 +160,22 @@ class ContainerManager():
       raise RuntimeError('Must specify both key and value for attribute filter')
 
     with self._mutex:
-      ret_val: list[tuple[interface.AttributeContainer, str]] = []
+      collected_containers: list[tuple[interface.AttributeContainer, str]] = []
 
       for container, origin in self._modules[requesting_module].storage.get(container_class.CONTAINER_TYPE, []):
         if (metadata_filter_key and container.metadata.get(metadata_filter_key) != metadata_filter_value):
           continue
-        ret_val.append((container, origin))
+        collected_containers.append((container, origin))
 
       if pop:
-        self._pop([c for c, _ in ret_val], requesting_module)
+        self._RemoveStoredContainers([c for c, _ in collected_containers], requesting_module)
 
-    self._logger.debug(f'{requesting_module} is retrieving {len(ret_val)} {container_class.CONTAINER_TYPE} containers (pop == {pop})')
-    for container, origin in ret_val:
+    self._logger.debug(f'{requesting_module} is retrieving {len(collected_containers)} '
+                       f'{container_class.CONTAINER_TYPE} containers (pop == {pop})')
+    for container, origin in collected_containers:
       self._logger.debug(f'  * {str(container)} - origin: {origin}')
 
-    return cast(Sequence[T], [c for c, _ in ret_val])
+    return cast(Sequence[T], [c for c, _ in collected_containers])
 
   def CompleteModule(self, module_name: str) -> None:
     """Mark a module as completed in storage.
@@ -218,7 +219,7 @@ class ContainerManager():
     """Waits for all scheduled callbacks to be completed."""
     self._callback_pool.shutdown(wait=True)
 
-  def _pop(self, containers: list[T], requesting_module: str) -> None:
+  def _RemoveStoredContainers(self, containers: list[T], requesting_module: str) -> None:
     """Removes containers from storage.
 
     A module can only remove containers that it has stored.
