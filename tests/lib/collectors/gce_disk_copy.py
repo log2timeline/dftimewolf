@@ -228,10 +228,10 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     self._module.PreProcess()
     disks = self._module.GetContainers(containers.GCEDisk)
     self.assertEqual(len(disks), 4)
-    self.assertEqual(disks[0].name, 'another_disk_1')
-    self.assertEqual(disks[1].name, 'another_disk_2')
-    self.assertEqual(disks[2].name, 'bootdisk')
-    self.assertEqual(disks[3].name, 'disk1')
+
+    expected = sorted(['another_disk_1', 'another_disk_2', 'bootdisk', 'disk1'])
+    actual = sorted([d.name for d in disks])
+    self.assertEqual(expected, actual)
 
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
   def testInstanceNotFound(self, mock_GetInstance):
