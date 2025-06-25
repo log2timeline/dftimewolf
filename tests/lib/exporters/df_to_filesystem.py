@@ -145,6 +145,26 @@ class DataFrameToDiskExporterTest(modules_test_base.ModuleTestBase):
       self._module.SetUp(output_formats='jsonl,foobar',
                          output_directory=self._out_dir)
 
+  def test_Callback(self):
+    """Tests registering a streaming callback."""
+    self._module.SetUp(output_formats='jsonl',
+                       output_directory='')
+    # Not calling self._ProcessModule; storing a container after setup.
+    self._module.StoreContainer(container=containers.DataFrame(
+      data_frame=_INPUT_DF,
+      description='A test dataframe',
+      name='test_dataframe'))
+
+    self._module.state._container_manager.WaitForCallbackCompletion()  # pylint: disable=protected-access
+
+    out_containers = self._module.GetContainers(containers.File)
+    self.assertLen(out_containers, 1)
+    self.assertEqual(out_containers[0].path, './test_dataframe.jsonl')
+
+    with open(out_containers[0].path, 'r') as f:
+      self.assertEqual(f.read(), _EXPECTED_JSONL)
+
+
 
 if __name__ == '__main__':
   absltest.main()

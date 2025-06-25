@@ -86,6 +86,10 @@ class DataFrameToDiskExporter(module.BaseModule):
 
     self._output_dir = self._VerifyOrCreateOutputDirectory(output_directory)
 
+    self.RegisterStreamingCallback(
+        container_type=containers.DataFrame,  # pytype: disable=wrong-arg-types
+        callback=self._ExportSingleContainer)  # type: ignore[arg-type]
+
   def Process(self) -> None:
     """Perform the exports."""
     to_export = self.GetContainers(containers.DataFrame)
