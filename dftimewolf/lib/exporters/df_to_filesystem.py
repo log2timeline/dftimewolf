@@ -86,6 +86,9 @@ class DataFrameToDiskExporter(module.BaseModule):
 
     self._output_dir = self._VerifyOrCreateOutputDirectory(output_directory)
 
+    self.RegisterStreamingCallback(container_type=containers.DataFrame,
+                                   callback=self._ExportSingleContainer)
+
   def Process(self) -> None:
     """Perform the exports."""
     to_export = self.GetContainers(containers.DataFrame)
