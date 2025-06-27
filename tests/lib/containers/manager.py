@@ -676,6 +676,29 @@ class ContainerManagerTest(unittest.TestCase):
     self.assertEqual(len(actual), 1)
     self.assertEqual(actual[0], _TestContainer3('From Preflight1'))
 
+  def test_SelfStreamContainer(self):
+    """A modules streaming callback does not invoke the callback recursively."""
+    mock_callback = mock.MagicMock()
+
+    self._container_manager.ParseRecipe(_TEST_RECIPE)
+
+    self._container_manager.RegisterStreamingCallback(
+        module_name='Preflight1',
+        container_type=_TestContainer1,
+        callback=mock_callback)
+
+    self._container_manager.StoreContainer(
+        source_module='Preflight1',
+        container=_TestContainer1('From Preflight1'))
+
+    mock_callback.assert_not_called()
+
+    # A module can still GetContainers stored by itself though
+    actual = self._container_manager.GetContainers(
+        requesting_module='Preflight1', container_class=_TestContainer1)
+    self.assertEqual(len(actual), 1)
+    self.assertEqual(actual[0], _TestContainer1('From Preflight1'))
+
 
 if __name__ == '__main__':
   unittest.main()
