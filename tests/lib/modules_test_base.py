@@ -1,7 +1,8 @@
 """A base class for DFTW module testing."""
 
-from absl.testing import parameterized
 from typing import Type
+
+from absl.testing import parameterized
 
 from dftimewolf import config
 from dftimewolf.lib.containers import interface
@@ -13,6 +14,11 @@ class ModuleTestBase(parameterized.TestCase):
   """A base class for DFTW module testing."""
 
   _module = None
+
+  def __init__(self):
+    """Init."""
+    super().__init__()
+    self._test_state: state.DFTimewolfState = None
 
   def _InitModule(self, test_module: type[module.BaseModule]):  # pylint: disable=arguments-differ
     """Initialises the module, the DFTW state and recipe for module testing."""
