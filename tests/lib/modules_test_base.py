@@ -15,9 +15,9 @@ class ModuleTestBase(parameterized.TestCase):
 
   _module = None
 
-  def __init__(self):
+  def __init__(self, *args, **kwargs):
     """Init."""
-    super().__init__()
+    super().__init__(*args, *kwargs)
     self._test_state: state.DFTimewolfState = None
 
   def _InitModule(self, test_module: type[module.BaseModule]):  # pylint: disable=arguments-differ
