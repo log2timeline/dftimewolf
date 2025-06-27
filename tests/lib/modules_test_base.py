@@ -1,8 +1,10 @@
 """A base class for DFTW module testing."""
 
 from absl.testing import parameterized
+from typing import Type
 
 from dftimewolf import config
+from dftimewolf.lib.containers import interface
 from dftimewolf.lib import state
 from dftimewolf.lib import module
 
@@ -14,10 +16,12 @@ class ModuleTestBase(parameterized.TestCase):
 
   def _InitModule(self, test_module: type[module.BaseModule]):  # pylint: disable=arguments-differ
     """Initialises the module, the DFTW state and recipe for module testing."""
-    test_state = state.DFTimewolfState(config.Config)
-    self._module = test_module(test_state)
-    test_state._container_manager.ParseRecipe(  # pylint: disable=protected-access
-        {'modules': [{'name': self._module.name}]})
+    self._test_state = state.DFTimewolfState(config.Config)
+    self._module = test_module(self._test_state)
+    self._test_state._container_manager.ParseRecipe(  # pylint: disable=protected-access
+        {'modules': [{'name': 'upstream'},
+                     {'name': self._module.name, 'wants': ['upstream']},
+                     {'name': 'downstream', 'wants': [self._module.name]}]})
 
   def _ProcessModule(self):
     """Runs the process stage for the module."""
@@ -34,3 +38,15 @@ class ModuleTestBase(parameterized.TestCase):
   def _AssertNoErrors(self):
     """Asserts that no errors have been generated."""
     self.assertEqual([], self._module.state.errors)
+
+  def _UpstreamStoreContainer(self, container: interface.AttributeContainer):
+    """Simulates the storing of a container from an upstream dependency."""
+    self._test_state.StoreContainer(container=container,
+                                    source_module='upstream')
+
+  def _DownstreamGetContainer(
+      self, type_: Type[interface.AttributeContainer]
+  ) -> list[interface.AttributeContainer]:
+    """Simulates the retreival of containers by a downstream dependency."""
+    return self._test_state.GetContainers(requesting_module='downstream',
+                                          container_class=type_)
