@@ -112,7 +112,7 @@ class ContainerManager():
       for _, module in self._modules.items():
         if source_module in module.dependencies:
           callbacks = module.GetCallbacksForContainer(container.CONTAINER_TYPE)
-          if callbacks:
+          if callbacks and module.name != source_module:
             # This module has registered callbacks - Use those, rather than storing
             for callback in callbacks:
               self._logger.debug('Executing callback for %s with container %s', module.name, str(container))

@@ -150,7 +150,7 @@ class DataFrameToDiskExporterTest(modules_test_base.ModuleTestBase):
     self._module.SetUp(output_formats='jsonl',
                        output_directory=self._out_dir)
     # Not calling self._ProcessModule; storing a container after setup.
-    self._module.StoreContainer(container=containers.DataFrame(
+    self._UpstreamStoreContainer(container=containers.DataFrame(
       data_frame=_INPUT_DF,
       description='A test dataframe',
       name='test_dataframe'))
