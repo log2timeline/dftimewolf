@@ -1,6 +1,6 @@
 """A base class for DFTW module testing."""
 
-from typing import Type
+from typing import Sequence, Type
 
 from absl.testing import parameterized
 
@@ -52,7 +52,7 @@ class ModuleTestBase(parameterized.TestCase):
 
   def _DownstreamGetContainer(
       self, type_: Type[interface.AttributeContainer]
-  ) -> list[interface.AttributeContainer]:
+  ) -> Sequence[interface.AttributeContainer]:
     """Simulates the retreival of containers by a downstream dependency."""
     return self._test_state.GetContainers(requesting_module='downstream',
                                           container_class=type_)
