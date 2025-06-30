@@ -4,11 +4,16 @@
 import datetime
 import unittest
 
+from absl.testing import parameterized
+
 from dftimewolf.lib import errors, resources
 from dftimewolf.lib.validators import datetime_validator
 
 
-class DatetimeValidatorTest(unittest.TestCase):
+# pylint: disable=line-too-long
+
+
+class DatetimeValidatorTest(parameterized.TestCase):
   """Tests the DatetimeValidator class."""
 
   FORMAT_STRING = '%Y-%m-%d %H:%M:%S'
@@ -80,6 +85,19 @@ class DatetimeValidatorTest(unittest.TestCase):
     # Reverse order fails
     val = self.validator._ValidateOrder(second, first) #pylint: disable=arguments-out-of-order
     self.assertFalse(val)
+
+  @parameterized.named_parameters(
+      ('1', '20250101', datetime.datetime(2025, 1, 1, 0, 0, 0, 0, tzinfo=datetime.timezone.utc)),
+      ('2', '20250101T01:23:45Z', datetime.datetime(2025, 1, 1, 1, 23, 45, 0, tzinfo=datetime.timezone.utc)),
+      ('3', '20250101 01:23:45', datetime.datetime(2025, 1, 1, 1, 23, 45, 0, tzinfo=datetime.timezone.utc)),
+      ('4', '2025-01-01', datetime.datetime(2025, 1, 1, 0, 0, 0, 0, tzinfo=datetime.timezone.utc)),
+      ('5', '2025-01-01T01:23:45Z', datetime.datetime(2025, 1, 1, 1, 23, 45, 0, tzinfo=datetime.timezone.utc)),
+      ('6', '2025-01-01 01:23:45', datetime.datetime(2025, 1, 1, 1, 23, 45, 0, tzinfo=datetime.timezone.utc))
+  )
+  def testFlexibleFormats(self, input: str, expected: datetime.datetime):
+    """Tests that various flexible formats are parsed correctly."""
+    actual = self.validator.Validate(input, self.recipe_argument)
+    self.assertEqual(actual, expected)
 
 class EndTimeValidatorTest(unittest.TestCase):
   """Tests the EndTimeValidator class."""
