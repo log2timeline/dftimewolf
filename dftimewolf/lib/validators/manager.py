@@ -19,7 +19,6 @@ class ValidatorsManager:
     """
     return list(cls._validator_classes.keys())
 
-
   @classmethod
   def RegisterValidator(
       cls, validator_class: Type['args_validator.AbstractValidator'],
