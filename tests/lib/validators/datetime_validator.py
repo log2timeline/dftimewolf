@@ -94,9 +94,9 @@ class DatetimeValidatorTest(parameterized.TestCase):
       ('5', '2025-01-01T01:23:45Z', datetime.datetime(2025, 1, 1, 1, 23, 45, 0, tzinfo=datetime.timezone.utc)),
       ('6', '2025-01-01 01:23:45', datetime.datetime(2025, 1, 1, 1, 23, 45, 0, tzinfo=datetime.timezone.utc))
   )
-  def testFlexibleFormats(self, input: str, expected: datetime.datetime):
+  def testFlexibleFormats(self, provided: str, expected: datetime.datetime):
     """Tests that various flexible formats are parsed correctly."""
-    actual = self.validator.Validate(input, self.recipe_argument)
+    actual = self.validator.Validate(provided, self.recipe_argument)
     self.assertEqual(actual, expected)
 
 class EndTimeValidatorTest(unittest.TestCase):
