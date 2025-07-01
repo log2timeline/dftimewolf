@@ -37,7 +37,7 @@ class DatetimeValidator(args_validator.AbstractValidator):
     return parsed_datetime
 
   def Validate(self, argument_value: Any,
-              recipe_argument: resources.RecipeArgument) -> datetime.datetime:
+               recipe_argument: resources.RecipeArgument) -> datetime.datetime:
     """Validate that operand is a valid date and time string.
 
     Args:
@@ -45,7 +45,7 @@ class DatetimeValidator(args_validator.AbstractValidator):
       recipe_argument: The definition of the argument.
 
     Returns:
-      A valid datetime string.
+      A valid datetime object.
 
     Raises:
       errors.RecipeArgsValidatorError: An error in validation.
