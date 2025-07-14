@@ -1,11 +1,10 @@
 """Base class for LLM provider interactions."""
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 
-from dftimewolf.lib import logging_utils
-from dftimewolf.lib import module
+from dftimewolf.lib import logging_utils, module
 from dftimewolf.lib import state as state_lib
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.processors.llmproviders import manager as llm_manager
@@ -23,12 +22,13 @@ class LLMProcessorBase(module.BaseModule):
     provider: the LLM provider instance.
     task: the (L)LM task or pipeline to process.
   """
+
   def __init__(
-      self,
-      state: state_lib.DFTimewolfState,
-      logger: logging_utils.WolfLogger,
-      name: str | None = None,
-      critical: bool = False,
+    self,
+    state: state_lib.DFTimewolfState,
+    logger: logging_utils.WolfLogger,
+    name: str | None = None,
+    critical: bool = False,
   ) -> None:
     """Initializes a LLM base processor.
 
@@ -54,30 +54,30 @@ class LLMProcessorBase(module.BaseModule):
       task: the LLM task/pipeline to perform the processing.
     """
     provider_class = llm_manager.LLMProviderManager.GetProvider(
-        provider_name=provider_name
+      provider_name=provider_name
     )
     self.provider = provider_class()  # pytype: disable=not-instantiable
     assert self.provider  # to appease mypy
 
     if model_name not in self.provider.models:
       self.ModuleError(
-          f'Model {model_name} is not supported by the LLM provider',
-          critical=True
+        f"Model {model_name} is not supported by the LLM provider",
+        critical=True,
       )
     self.model_name = model_name
 
-    if task not in self.provider.models[model_name]['tasks']:
+    if task not in self.provider.models[model_name]["tasks"]:
       self.ModuleError(
-          f'Task {task} is not supported by the LLM provider.',
-          critical=True
+        f"Task {task} is not supported by the LLM provider.", critical=True
       )
     self.task = task
 
   def _PromptLLM(
-      self,
-      prompt: str,
-      content: bytes | None = None,
-      mime_type: str | None = None,
+    self,
+    prompt: str,
+    content: bytes | None = None,
+    mime_type: str | None = None,
+    response_schema: Any = None,
   ) -> str:
     """Prompts the LLM with the given prompt and optional content.
 
@@ -86,6 +86,7 @@ class LLMProcessorBase(module.BaseModule):
       content: The optional file content to send to the LLM.  If content is
         provided, the mime_type must also be provided.
       mime_type: The optional mime type of the content.
+      response_schema: The optional response schema to use for the LLM.
 
     Returns:
       The LLM response.
@@ -94,12 +95,14 @@ class LLMProcessorBase(module.BaseModule):
     # (since provider and model attributes are already checked in setup)
     if content and mime_type:
       return self.provider.Generate(
-          prompt=prompt,
-          model=self.model_name,
-          mime_type=mime_type,
-          content=content,
+        prompt=prompt,
+        model=self.model_name,
+        mime_type=mime_type,
+        content=content,
       )  # pytype: disable=wrong-arg-types
-    return self.provider.Generate(prompt=prompt, model=self.model_name)
+    return self.provider.Generate(
+      prompt=prompt, model=self.model_name, response_schema=response_schema
+    )
     # pytype: enable=attribute-error
 
   def Process(self) -> None:
@@ -115,12 +118,13 @@ class DataFrameLLMProcessor(LLMProcessorBase):
     model_name: the name of the model to use.
     task: the (L)LM task or pipeline to process.
   """
+
   def __init__(
-      self,
-      state: state_lib.DFTimewolfState,
-      logger: logging_utils.WolfLogger,
-      name: str | None = None,
-      critical: bool = False,
+    self,
+    state: state_lib.DFTimewolfState,
+    logger: logging_utils.WolfLogger,
+    name: str | None = None,
+    critical: bool = False,
   ) -> None:
     """Initializes a LLM base processor.
 
@@ -135,11 +139,11 @@ class DataFrameLLMProcessor(LLMProcessorBase):
     self.columns_to_process: list[str] = []
 
   def SetUp(  # pylint: disable=arguments-differ
-      self,
-      provider_name: str,
-      model_name: str,
-      task: str,
-      columns_to_process: str = ''
+    self,
+    provider_name: str,
+    model_name: str,
+    task: str,
+    columns_to_process: str = "",
   ) -> None:
     """Sets up the parameters for processing dataframes with a LLM provider.
 
@@ -151,9 +155,9 @@ class DataFrameLLMProcessor(LLMProcessorBase):
           processed.
     """
     super().SetUp(provider_name=provider_name, model_name=model_name, task=task)
-    self.columns_to_process = [x for x in columns_to_process.split(',') if x]
+    self.columns_to_process = [x for x in columns_to_process.split(",") if x]
     if len(self.columns_to_process) == 0:
-      self.ModuleError('No columns to process', critical=True)
+      self.ModuleError("No columns to process", critical=True)
 
   def _ProcessDataFrame(self, dataframe: pd.DataFrame) -> None:
     """Processes a dataframe using a LLM provider.
@@ -169,8 +173,8 @@ class DataFrameLLMProcessor(LLMProcessorBase):
     """
     if not set(dataframe.columns).issuperset(self.columns_to_process):
       raise ValueError(
-          'Dataframe does not contain all the specified columns - '
-          f'{",".join(self.columns_to_process)}'
+        'Dataframe does not contain all the specified columns - '
+        f'{",".join(self.columns_to_process)}'
       )
 
   def Process(self) -> None:
@@ -181,5 +185,5 @@ class DataFrameLLMProcessor(LLMProcessorBase):
         self._ProcessDataFrame(dataframe_container.data_frame)
       except ValueError as error:
         self.ModuleError(
-            f'Error processing dataframe {dataframe_container.name}: {error}'
+          f"Error processing dataframe {dataframe_container.name}: {error}"
         )
