@@ -94,7 +94,7 @@ def generate_args_description(recipe):
   return formatted_string + '\n\n'
 
 
-def recipe_to_doc(recipe, destination_directory=''):
+def recipe_to_doc(recipe, destination_directory='', generate_images=False):
   """Updates recipe-list.md with the markdown and graph for a given recipe."""
   recipe_name = recipe['name']
   module_names = [m.get('runtime_name', m['name']) for m in recipe['modules']]
@@ -107,9 +107,10 @@ def recipe_to_doc(recipe, destination_directory=''):
   with open(f'{destination_directory}/recipe-list.md', 'a') as f:
     f.write(mkd)
 
-  graph = generate_graph(recipe)
-  graph.render(
-      f'{destination_directory}/_static/graphviz/{recipe_name}', cleanup=True)
+  if generate_images:
+    graph = generate_graph(recipe)
+    graph.render(
+        f'{destination_directory}/_static/graphviz/{recipe_name}', cleanup=True)
 
 
 def generate_graph(recipe):
