@@ -861,3 +861,38 @@ class TimesketchEvents(DataFrame):
         f"<TimesketchEvents(query:{self.query}, "
         f"sketch_id:{self.sketch_id}, rows:{len(self.data_frame)})>"
     )
+
+
+class TimesketchAggregation(interface.AttributeContainer):
+  """Attribute container for Timesketch aggregations.
+
+  Attributes:
+    name: Name of the aggregation.
+    key: The key of the aggregation (the column that was aggregated).
+    description: Description of the aggregation.
+    results: The results of the aggregation (a dict where keys are distinct
+      column values and values are counts).
+  """
+
+  CONTAINER_TYPE = "timesketch_aggregation"
+
+  def __init__(
+    self,
+    name: str,
+    key: str,
+    description: str,
+    results: pd.DataFrame,
+    metadata: Optional[Dict[str, Any]] = None,
+  ):
+    """Initializes the TimesketchAggregation container."""
+    self.name = name
+    self.key = key
+    self.description = description
+    self.results = results
+    super().__init__(metadata=metadata)
+
+  def __str__(self) -> str:
+    return (
+      f"<TimesketchAggregation(name:{self.name}, "
+      f"key:{self.key}, rows:{len(self.results)})>"
+    )

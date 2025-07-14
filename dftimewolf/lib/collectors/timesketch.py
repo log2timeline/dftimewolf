@@ -251,7 +251,7 @@ class TimesketchSearchEventCollector(module.BaseModule):
     return search_obj.to_pandas()
 
   def _OutputSearchResults(self, data_frame: pd.DataFrame) -> None:
-    """Outputs the search results.
+    """Stores the search results in a container or file.
 
     Args:
       data_frame: the dataframe containing the Timesketch events.
@@ -319,6 +319,30 @@ class TimesketchSearchEventCollector(module.BaseModule):
       return
     self.sketch = self._GetSketch(self.sketch_id)
 
+  def _StoreDataTypesAggregationContainer(
+    self, data_frame: pd.DataFrame
+  ) -> None:
+    """Aggregates the data types in the search results and stores them.
+
+    Args:
+      data_frame: the dataframe containing the Timesketch events.
+    """
+    if "data_type" not in data_frame.columns:
+      self.logger.warning(
+        "No 'data_type' column found in the search results "
+        "skipping aggregation."
+      )
+      return
+    datatypes = data_frame["data_type"].value_counts().to_dict()
+    self.StoreContainer(
+      containers.TimesketchAggregation(
+        name="data_types",
+        key="data_type",
+        description="Data types in the search results",
+        results=datatypes,
+      )
+    )
+
   def Process(self) -> None:
     """Processes the Timesketch search query."""
     self.FindSketch()
@@ -340,6 +364,7 @@ class TimesketchSearchEventCollector(module.BaseModule):
     if data_frame.empty:
       return
     self._OutputSearchResults(data_frame)
+    self._StoreDataTypesAggregationContainer(data_frame)
 
 
 modules_manager.ModulesManager.RegisterModule(TimesketchSearchEventCollector)

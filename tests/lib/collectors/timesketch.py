@@ -254,3 +254,39 @@ class TimesketchSearchEventCollectorTest(modules_test_base.ModuleTestBase):
     self._ProcessModule()
     self.assertEqual(self._module.sketch_id, 666)
     mock_get_api_client.return_value.get_sketch.assert_not_called()
+
+  @mock.patch("dftimewolf.lib.timesketch_utils.GetApiClient")
+  @mock.patch.object(
+    timesketch.TimesketchSearchEventCollector, "_GetSearchResults"
+  )
+  def testStoreAggregationContainer(
+    self, mock_get_search_results: Any, _mock_get_api_client: Any
+  ) -> None:
+    """Tests the _StoreDataTypesAggregationContainer function."""
+    # Mocking the search results
+    mock_get_search_results.return_value = pd.DataFrame(
+      {"data_type": ["type1", "type2", "type1", "type3", "type2"]}
+    )
+
+    self._module.SetUp(
+      sketch_id="1",
+      start_datetime=datetime.datetime(2024, 11, 11),
+      end_datetime=datetime.datetime(2024, 11, 12),
+      token_password="test_token",
+    )
+
+    # Running the module process
+    self._ProcessModule()
+
+    # Checking if the aggregation container was stored correctly
+    containers_list = self._module.GetContainers(
+      containers.TimesketchAggregation
+    )
+    self.assertEqual(len(containers_list), 1)
+    aggregation_container = containers_list[0]
+
+    self.assertEqual(aggregation_container.name, "data_types")
+    self.assertEqual(aggregation_container.key, "data_type")
+    self.assertEqual(
+      aggregation_container.description, "Data types in the search results"
+    )
