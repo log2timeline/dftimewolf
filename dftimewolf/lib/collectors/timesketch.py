@@ -329,7 +329,8 @@ class TimesketchSearchEventCollector(module.BaseModule):
     """
     if "data_type" not in data_frame.columns:
       self.logger.warning(
-        "No 'data_type' column found in the search results, skipping aggregation."
+        "No 'data_type' column found in the search results "
+        "skipping aggregation."
       )
       return
     datatypes = data_frame["data_type"].value_counts().to_dict()
