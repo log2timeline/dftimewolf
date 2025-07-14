@@ -1,13 +1,13 @@
 """Base class for LLM provider interactions."""
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from dftimewolf.lib import logging_utils
-from dftimewolf.lib import module
+import pandas as pd
+
+from dftimewolf.lib import logging_utils, module
 from dftimewolf.lib import state as state_lib
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.processors.llmproviders import manager as llm_manager
-import pandas as pd
 
 if TYPE_CHECKING:
   from dftimewolf.lib.processors.llmproviders import interface as llm_interface
