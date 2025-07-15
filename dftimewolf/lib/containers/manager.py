@@ -90,7 +90,8 @@ class ContainerManager():
 
   def StoreContainer(self,
                      source_module: str,
-                     container: interface.AttributeContainer) -> None:
+                     container: interface.AttributeContainer,
+                     for_self_only: bool=False) -> None:
     """Adds a container to storage for later retrieval.
 
     This method will also invoke any applicable callbacks that have been
@@ -99,6 +100,8 @@ class ContainerManager():
     Args:
       source_module: The module that generated the container.
       container: The container to store.
+      for_self_only: True of the container should only be available to the same
+          module that stored it.
 
     Raises:
       RuntimeError: If the manager has not been configured with a recipe yet.
@@ -111,6 +114,8 @@ class ContainerManager():
 
       for _, module in self._modules.items():
         if source_module in module.dependencies:
+          if for_self_only and module.name != source_module:
+            continue
           callbacks = module.GetCallbacksForContainer(container.CONTAINER_TYPE)
           if callbacks and module.name != source_module:
             # This module has registered callbacks - Use those, rather than storing
