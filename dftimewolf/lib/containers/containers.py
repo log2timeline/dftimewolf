@@ -881,7 +881,7 @@ class TimesketchAggregation(interface.AttributeContainer):
     name: str,
     key: str,
     description: str,
-    results: pd.DataFrame,
+    results: Dict[str, int],
     metadata: Optional[Dict[str, Any]] = None,
   ):
     """Initializes the TimesketchAggregation container."""
