@@ -175,13 +175,18 @@ class BaseModule(object):
         callback=callback,
         container_type=container_type)
 
-  def StoreContainer(self, container: "interface.AttributeContainer") -> None:
+  def StoreContainer(self,
+                     container: "interface.AttributeContainer",
+                     for_self_only: bool=False) -> None:
     """Stores a container in the state's container store.
 
     Args:
       container (AttributeContainer): data to store.
+      for_self_only: True if the container should only be available to the same
+          module that stored it.
     """
-    self.state.StoreContainer(container, self.name)
+    self.state.StoreContainer(
+        container, self.name, for_self_only=for_self_only)
 
   def GetContainers(self,
                     container_class: Type[T],

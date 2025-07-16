@@ -223,15 +223,19 @@ class DFTimewolfState(object):
   def StoreContainer(
       self,
       container: "interface.AttributeContainer",
-      source_module: str) -> None:
+      source_module: str,
+      for_self_only: bool=False) -> None:
     """Thread-safe method to store data in the state's store.
 
     Args:
       container: data to store.
       source_module: the originating module.
+      for_self_only: True if the container should only be available to the same
+          module that stored it.
     """
     self._container_manager.StoreContainer(source_module=source_module,
-                                           container=container)
+                                           container=container,
+                                           for_self_only=for_self_only)
 
   def LogTelemetry(
       self, telemetry_entry: telemetry.TelemetryCollection) -> None:
