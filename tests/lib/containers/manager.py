@@ -699,9 +699,16 @@ class ContainerManagerTest(unittest.TestCase):
     self.assertEqual(len(actual), 1)
     self.assertEqual(actual[0], _TestContainer1('From Preflight1'))
 
-  def test_ForSelfOnly(self):
+  def test_ForSelfOnlyStoreContainer(self):
     """Tests the for_self_only param of container storage."""
     self._container_manager.ParseRecipe(_TEST_RECIPE)
+
+    # Register a streaming callback that will only get called once
+    mock_callback = mock.MagicMock()
+    self._container_manager.RegisterStreamingCallback(
+        module_name='Preflight2_1',
+        container_type=_TestContainer1,
+        callback=mock_callback)
 
     # Store two containers of the same type, one with for_self_only=True
     self._container_manager.StoreContainer(
@@ -712,6 +719,11 @@ class ContainerManagerTest(unittest.TestCase):
         source_module='Preflight1',
         container=_TestContainer1('for_self_only=True'),
         for_self_only=True)
+
+    # Check callback
+    self.assertEqual(mock_callback.call_count, 1)
+    mock_callback.assert_called_once_with(
+        _TestContainer1('for_self_only=False'))
 
     # The same module can retrieve both
     actual = self._container_manager.GetContainers(
