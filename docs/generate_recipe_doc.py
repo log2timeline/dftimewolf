@@ -94,8 +94,14 @@ def generate_args_description(recipe):
   return formatted_string + '\n\n'
 
 
-def recipe_to_doc(recipe, destination_directory='', generate_images=False):
-  """Updates recipe-list.md with the markdown and graph for a given recipe."""
+def recipe_to_doc(recipe, destination_directory="", generate_images=True):
+  """Updates recipe-list.md with the markdown and graph for a given recipe.
+
+  Args:
+    recipe: The recipe dictionary to convert to documentation.
+    destination_directory: The directory where the documentation will be saved.
+    generate_images: Whether to generate a Graphviz image for the recipe.
+  """
   recipe_name = recipe['name']
   module_names = [m.get('runtime_name', m['name']) for m in recipe['modules']]
   mkd = RECIPE_FORMAT_TEMPLATE.format(
