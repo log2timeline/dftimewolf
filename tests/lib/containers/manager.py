@@ -734,7 +734,7 @@ class ContainerManagerTest(unittest.TestCase):
     self.assertIn(_TestContainer1('for_self_only=False'), actual)
     self.assertIn(_TestContainer1('for_self_only=True'), actual)
 
-    # A dependant module can only retreieve the one
+    # A dependant module can only retrieve the one
     actual = self._container_manager.GetContainers(
         requesting_module='ModuleA',
         container_class=_TestContainer1)

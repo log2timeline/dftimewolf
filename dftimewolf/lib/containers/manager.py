@@ -95,12 +95,13 @@ class ContainerManager():
     """Adds a container to storage for later retrieval.
 
     This method will also invoke any applicable callbacks that have been
-    registered.
+    registered (callbacks for the same module are never invoked to prevent
+    infinite recursion.)
 
     Args:
       source_module: The module that generated the container.
       container: The container to store.
-      for_self_only: True of the container should only be available to the same
+      for_self_only: True if the container should only be available to the same
           module that stored it.
 
     Raises:
