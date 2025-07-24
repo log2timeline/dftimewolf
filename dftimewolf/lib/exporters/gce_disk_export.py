@@ -2,7 +2,6 @@
 """Export disk image from a GCP project to Google Cloud Storage."""
 
 
-import os
 from typing import List, Optional
 
 from libcloudforensics.providers.gcp.internal import project as gcp_project
@@ -59,6 +58,7 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase):
     self.all_disks = False
     self.source_disks = []  # type: List[GoogleComputeDisk]
     self.exported_image_name = str()
+    self.image_format = str()
 
   def Process(self) -> None:
     """Creates and exports disk image to the output bucket."""
@@ -67,15 +67,13 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase):
           source_disk)
       # If self.exported_image_name = None, default output_name is
       # {src_disk.name}-{TIMESTAMP('%Y%m%d%H%M%S')}.tar.gz
-      image_object.ExportImage(
-          self.gcs_output_location, output_name=self.exported_image_name)
-      image_name = self.exported_image_name or image_object.name
-      image_object.Delete()
-      output_url = os.path.join(
+      output_url = image_object.ExportImage(
           self.gcs_output_location,
-          '{0:s}.tar.gz'.format(image_name))
+          output_name=self.exported_image_name,
+          image_format=self.image_format)
+      image_object.Delete()
       self.logger.info(f'Disk was exported to: {output_url}')
-      container = containers.URL(path=output_url)
+      container = containers.GCSObject(path=output_url)
       self.StoreContainer(container)
 
   # pylint: disable=arguments-differ
@@ -86,7 +84,8 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase):
             source_disk_names: Optional[str]=None,
             remote_instance_name: Optional[str]=None,
             all_disks: bool=False,
-            exported_image_name: Optional[str]=None) -> None:
+            exported_image_name: Optional[str]=None,
+            image_format: str='') -> None:
     """Sets up a Google Cloud Platform (GCP) Disk Export.
 
     This method creates the required objects to initialize
@@ -126,6 +125,7 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase):
           the name. Default is None, if not exist or if more than one disk
           is selected, exported image name as
           "exported-image-{TIMESTAMP('%Y%m%d%H%M%S')}".
+      image_format: The image format to use.
     """
     self.source_project = gcp_project.GoogleCloudProject(source_project_name)
     if analysis_project_name:
@@ -143,5 +143,8 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase):
     self.gcs_output_location = gcs_output_location
     if exported_image_name and len(self.source_disks) == 1:
       self.exported_image_name = exported_image_name
+
+    self.image_format = image_format
+
 
 modules_manager.ModulesManager.RegisterModule(GoogleCloudDiskExport)
