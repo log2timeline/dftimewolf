@@ -559,7 +559,7 @@ class GCPCloudResourceTree(module.BaseModule):
       request: Request portion of the log message.
       response: Response portion of the log message.
     """
-    resource.creation_timestamp = response.get('insertTime')
+    resource.creation_timestamp = response.get('insertTime')  # type: ignore
     resource.created_by = response.get('user', '')
 
     if 'sourceDisk' in request:
@@ -642,7 +642,7 @@ class GCPCloudResourceTree(module.BaseModule):
         # created. The automatically created disk has the same name as the
         # gce_instance
         if disk_resource.name == resource.name:
-          disk_resource.creation_timestamp = resource.creation_timestamp
+          disk_resource.creation_timestamp = resource.creation_timestamp  # type: ignore
           resource.parent = disk_resource
           disk_resource.id = resource.id + '-disk'
 
