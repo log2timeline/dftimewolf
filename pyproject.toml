@@ -28,7 +28,7 @@ python-magic = "^0.4.27"
 turbinia-api-lib = "^1.0.2"
 turbinia-client = "^1.0.7"
 grr-api-client = "^3.4.7"
-libcloudforensics = {git = "https://github.com/google/cloud-forensics-utils.git"}
+libcloudforensics = "^20250721"
 docker = "^7.0.0"
 setuptools = "^75.8.1"  # needed by docker
 ratelimit = "^2.2.1"
