@@ -30,7 +30,7 @@ turbinia-client = "^1.0.7"
 grr-api-client = "^3.4.7"
 libcloudforensics = {git = "https://github.com/google/cloud-forensics-utils.git"}
 docker = "^7.0.0"
-setuptools = "^78.1.1"  # needed by docker
+setuptools = "^75.8.1"  # needed by docker
 ratelimit = "^2.2.1"
 backoff = "^2.2.1"
 vertexai = "^1.71.1"

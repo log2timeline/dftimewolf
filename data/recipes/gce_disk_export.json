@@ -32,7 +32,8 @@
         "source_disk_names": "@source_disk_names",
         "remote_instance_name": "@remote_instance_name",
         "all_disks": "@all_disks",
-        "exported_image_name": "@exported_image_name"
+        "exported_image_name": "@exported_image_name",
+        "image_format": "@image_format"
       }
     }
   ],
@@ -98,6 +99,11 @@
         "format": "regex",
         "regex": "^[A-Za-z0-9-]*$"
       }
+    ],
+    [
+      "--image_format",
+      "An image format to use. Example values: qcow2, vmdk. Default (empty value) will be .tar.gz.",
+      ""
     ]
   ]
 }

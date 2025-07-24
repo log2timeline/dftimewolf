@@ -80,7 +80,7 @@ class GoogleCloudDiskExportTest(modules_test_base.ModuleTestBase):
                   mock_export_image,
                   mock_delete_image):
     """Tests the exporter's Process() function."""
-
+    mock_export_image.return_value = 'gs://fake-bucket/image-df-export-temp.tar.gz'
     mock_gcp_project.return_value = FAKE_SOURCE_PROJECT
     FAKE_SOURCE_PROJECT.compute.GetDisk = mock_get_disk
     mock_get_disk.return_value = FAKE_DISK
@@ -88,7 +88,8 @@ class GoogleCloudDiskExportTest(modules_test_base.ModuleTestBase):
         source_project_name='fake-source-project',
         gcs_output_location='gs://fake-bucket',
         source_disk_names='fake-source-disk',
-        exported_image_name='image-df-export-temp'
+        exported_image_name='image-df-export-temp',
+        image_format='qcow2'
     )
     FAKE_SOURCE_PROJECT.compute.CreateImageFromDisk = mock_create_image_from_disk
     mock_create_image_from_disk.return_value = FAKE_IMAGE
@@ -98,11 +99,13 @@ class GoogleCloudDiskExportTest(modules_test_base.ModuleTestBase):
     mock_create_image_from_disk.assert_called_with(
         FAKE_DISK)
     mock_export_image.assert_called_with(
-        'gs://fake-bucket', output_name='image-df-export-temp')
+        'gs://fake-bucket',
+        output_name='image-df-export-temp',
+        image_format='qcow2')
     mock_delete_image.assert_called_once()
     output_url = os.path.join(
         'gs://fake-bucket', 'image-df-export-temp.tar.gz')
-    urls = self._module.GetContainers(containers.URL)
+    urls = self._module.GetContainers(containers.GCSObject)
     self.assertEqual(urls[0].path, output_url)
 
 
