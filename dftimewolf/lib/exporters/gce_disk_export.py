@@ -2,7 +2,6 @@
 """Export disk image from a GCP project to Google Cloud Storage."""
 
 
-import os
 from typing import List, Optional
 
 from libcloudforensics.providers.gcp.internal import project as gcp_project
@@ -86,7 +85,7 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase):
             remote_instance_name: Optional[str]=None,
             all_disks: bool=False,
             exported_image_name: Optional[str]=None,
-            image_format: Optional[str]=None) -> None:
+            image_format: str='') -> None:
     """Sets up a Google Cloud Platform (GCP) Disk Export.
 
     This method creates the required objects to initialize
