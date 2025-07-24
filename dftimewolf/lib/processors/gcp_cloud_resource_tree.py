@@ -642,7 +642,7 @@ class GCPCloudResourceTree(module.BaseModule):
         # created. The automatically created disk has the same name as the
         # gce_instance
         if disk_resource.name == resource.name:
-          disk_resource.creation_timestamp = resource.creation_timestamp  # type: ignore
+          disk_resource.creation_timestamp = resource.creation_timestamp  # type: ignore; pylint: disable=line-too-long
           resource.parent = disk_resource
           disk_resource.id = resource.id + '-disk'
 
