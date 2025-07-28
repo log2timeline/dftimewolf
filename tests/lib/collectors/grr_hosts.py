@@ -354,6 +354,8 @@ class GRRArtifactCollectorTest(modules_test_base.ModuleTestBase):
     result = results[0]
     self.assertEqual(result.name, 'tomchop')
     self.assertEqual(result.path, '/tmp/tmpRandom/tomchop')
+    self.assertIn('SOURCE_MACHINE', result.metadata)
+    self.assertEqual(result.metadata['SOURCE_MACHINE'], 'C.0000000000000001')
 
   @mock.patch('grr_api_client.api.InitHttp')
   @mock.patch("dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow")
@@ -549,6 +551,9 @@ class GRRFileCollectorTest(modules_test_base.ModuleTestBase):
     self.assertEqual(len(results), 1)
     self.assertEqual(results[0].name, 'tomchop')
     self.assertEqual(results[0].path, '/tmp/something')
+    self.assertIn('SOURCE_MACHINE', results[0].metadata)
+    self.assertEqual(results[0].metadata['SOURCE_MACHINE'],
+                     'C.0000000000000001')
 
   @mock.patch("dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow")
   @mock.patch('grr_api_client.api.InitHttp')
@@ -599,6 +604,9 @@ class GRRFileCollectorTest(modules_test_base.ModuleTestBase):
     self.assertEqual(len(results), 1)
     self.assertEqual(results[0].name, 'tomchop')
     self.assertEqual(results[0].path, '/tmp/something')
+    self.assertIn('SOURCE_MACHINE', results[0].metadata)
+    self.assertEqual(results[0].metadata['SOURCE_MACHINE'],
+                     'C.0000000000000002')
 
   @mock.patch("dftimewolf.lib.collectors.grr_hosts.GRRFlow._AwaitFlow")
   @mock.patch('dftimewolf.lib.collectors.grr_hosts.GRRFlow._DownloadFiles')
@@ -687,6 +695,8 @@ class GRRFlowCollectorTest(modules_test_base.ModuleTestBase):
     result = results[0]
     self.assertEqual(result.name, 'tomchop')
     self.assertEqual(result.path, '/tmp/something')
+    self.assertIn('SOURCE_MACHINE', result.metadata)
+    self.assertEqual(result.metadata['SOURCE_MACHINE'], 'C.0000000000000001')
 
   @mock.patch("grr_api_client.client.Client.VerifyAccess")
   @mock.patch('grr_api_client.flow.FlowBase.Get')
