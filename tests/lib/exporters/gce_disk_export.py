@@ -106,7 +106,10 @@ class GoogleCloudDiskExportTest(modules_test_base.ModuleTestBase):
     output_url = os.path.join(
         'gs://fake-bucket', 'image-df-export-temp.tar.gz')
     urls = self._module.GetContainers(containers.GCSObject)
+    self.assertLen(urls, 1)
     self.assertEqual(urls[0].path, output_url)
+    self.assertIn('SOURCE_DISK', urls[0].metadata)
+    self.assertEqual(urls[0].metadata['SOURCE_DISK'], 'fake-source-disk')
 
 
 if __name__ == '__main__':

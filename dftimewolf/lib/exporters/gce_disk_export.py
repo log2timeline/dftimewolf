@@ -74,6 +74,9 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase):
       image_object.Delete()
       self.logger.info(f'Disk was exported to: {output_url}')
       container = containers.GCSObject(path=output_url)
+      if self.remote_instance_name:
+        container.metadata['SOURCE_MACHINE'] = self.remote_instance_name
+      container.metadata['SOURCE_DISK'] = source_disk.name
       self.StoreContainer(container)
 
   # pylint: disable=arguments-differ

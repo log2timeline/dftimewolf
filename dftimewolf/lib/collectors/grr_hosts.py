@@ -1044,6 +1044,7 @@ class GRRArtifactCollector(GRRFlow):
             name=client.data.os_info.fqdn.lower(),
             path=collected_flow_data
         )
+        cont.metadata['SOURCE_MACHINE'] = client.client_id
         self.StoreContainer(cont)
 
   def PreProcess(self) -> None:
@@ -1173,6 +1174,7 @@ class GRRFileCollector(GRRFlow):
             name=client.data.os_info.fqdn.lower(),
             path=collected_flow_data
         )
+        cont.metadata['SOURCE_MACHINE'] = client.client_id
         self.StoreContainer(cont)
 
   def PreProcess(self) -> None:
@@ -1540,6 +1542,7 @@ class GRRFlowCollector(GRRFlow):
           name=client.data.os_info.fqdn.lower(),
           path=collected_flow_data
       )
+      cont.metadata['SOURCE_MACHINE'] = client.client_id
       self.StoreContainer(cont)
     else:
       self.logger.warning('No flow data collected for '
@@ -1652,6 +1655,7 @@ class GRRTimelineCollector(GRRFlow):
       cont = containers.File(
         name=client.data.os_info.fqdn.lower(), path=collected_timeline
       )
+      cont.metadata['SOURCE_MACHINE'] = client.client_id
       self.StoreContainer(cont)
 
   def PreProcess(self) -> None:
