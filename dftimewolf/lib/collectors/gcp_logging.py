@@ -104,6 +104,10 @@ class GCPLogsCollector(module.BaseModule):
       try:
         time.sleep(self._delay)
         page = next(pages)
+        for entry in page:
+          log_dictionary = entry.to_api_repr()
+          output_file.write(json.dumps(log_dictionary))
+          output_file.write('\n')
       except google_api_exceptions.TooManyRequests as exception:
         self.logger.warning("Hit quota limit requesting GCP logs.")
         self.logger.debug(f"exception: {exception}")
@@ -136,11 +140,6 @@ class GCPLogsCollector(module.BaseModule):
           )
       except StopIteration:
         break
-
-      for entry in page:
-        log_dictionary = entry.to_api_repr()
-        output_file.write(json.dumps(log_dictionary))
-        output_file.write('\n')
 
     return output_path
 
@@ -198,7 +197,7 @@ class GCPLogsCollector(module.BaseModule):
     output_file, output_path = self.OutputFile()
 
     try:
-      # Setup a logging client'
+      # Set up a logging client
       logging_client = self.SetupLoggingClient()
 
       # Get a generator of query results
