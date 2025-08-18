@@ -68,8 +68,10 @@ class LocalFilesystemCopy(module.BaseModule):
       else:
         try:
           tar_file = utils.Compress(file_container.path, self._target_directory)
-          self.StoreContainer(containers.File(
-              name=os.path.basename(tar_file), path=tar_file))
+          out_container = containers.File(
+              name=os.path.basename(tar_file), path=tar_file)
+          out_container.metadata.update(file_container.metadata)
+          self.StoreContainer(out_container)
           self.logger.info(
               f'{file_container.path} was compressed into {tar_file}')
         except RuntimeError as exception:
