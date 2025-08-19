@@ -35,10 +35,11 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase):
     super().__init__(state, name=name, critical=critical)
     self._source_project: gcp_project.GoogleCloudProject = None
     self._analysis_project: gcp_project.GoogleCloudProject = None
-    self._gcs_output_location: str = None
-    self._image_format: str = None
-    self._exported_image_name: str = None
+    self._gcs_output_location: str = ''
+    self._image_format: str = ''
+    self._exported_image_name: str = ''
 
+  # pylint: disable=arguments-differ
   def SetUp(self,
             source_project_name: str,
             gcs_output_location: str,
