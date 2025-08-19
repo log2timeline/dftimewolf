@@ -183,7 +183,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
       c = containers.GCEDisk(new_disk.name, self.destination_project.project_id)
       c.metadata.update(container.metadata)
       c.metadata['SOURCE_DISK'] = container.name
-      self.StoreContainer()
+      self.StoreContainer(c)
     except lcf_errors.ResourceNotFoundError as exception:
       self.logger.error(f'Could not find disk "{container.name}": {exception}')
       self.warned = True
