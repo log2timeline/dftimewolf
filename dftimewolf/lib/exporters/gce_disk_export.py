@@ -3,7 +3,6 @@
 
 
 from libcloudforensics.providers.gcp.internal import project as gcp_project
-from libcloudforensics import errors as lcf_errors
 
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
