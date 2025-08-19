@@ -121,6 +121,7 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase):
     for source_disk in self.GetContainers(containers.GCEDisk):
       if source_disk.project != self._source_project.project_id:
         self.logger.info('Source project mismatch: skipping %s', str(source_disk))
+        continue
 
       image_object = self._analysis_project.compute.CreateImageFromDisk(
           self._source_project.compute.GetDisk(source_disk.name))
