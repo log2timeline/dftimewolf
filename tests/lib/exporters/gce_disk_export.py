@@ -109,7 +109,7 @@ class GoogleCloudDiskExportTest(modules_test_base.ModuleTestBase):
                        all_disks=False,
                        exported_image_name='image-df-export-temp',
                        image_format='qcow2')
-    
+
     container = containers.GCEDisk(name='fake-source-disk', project='fake-source-project')
     container.metadata['SOURCE_MACHINE'] = 'fake-source-machine'
     container.metadata['SOURCE_DISK'] = 'fake-source-disk'
