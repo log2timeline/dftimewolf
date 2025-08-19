@@ -113,7 +113,7 @@
     [
       "--backoff",
       "If GCP Cloud Logging API query limits are exceeded, retry with an increased delay between each query to try complete the query at a slower rate.",
-      false
+      true
     ],
     [
       "--delay",
