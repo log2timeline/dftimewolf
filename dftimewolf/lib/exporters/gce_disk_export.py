@@ -3,6 +3,7 @@
 
 
 from libcloudforensics.providers.gcp.internal import project as gcp_project
+from libcloudforensics import errors as lcf_errors
 
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
@@ -118,6 +119,9 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase):
   def Process(self) -> None:
     """Creates and exports disk image to the output bucket."""
     for source_disk in self.GetContainers(containers.GCEDisk):
+      if source_disk.project != self._source_project.project_id:
+        self.logger.info('Source project mismatch: skipping %s', str(source_disk))
+
       image_object = self._analysis_project.compute.CreateImageFromDisk(
           self._source_project.compute.GetDisk(source_disk.name))
       # If self.exported_image_name = None, default output_name is
