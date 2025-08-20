@@ -2,10 +2,7 @@
 """Export disk image from a GCP project to Google Cloud Storage."""
 
 
-from typing import List, Optional
-
 from libcloudforensics.providers.gcp.internal import project as gcp_project
-from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk
 
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
@@ -13,32 +10,18 @@ from dftimewolf.lib.state import DFTimewolfState
 from dftimewolf.lib.exporters.gce_disk_export_base import GoogleCloudDiskExportBase  # pylint: disable=line-too-long
 
 
+# pylint: disable=line-too-long
+
+
 class GoogleCloudDiskExport(GoogleCloudDiskExportBase):
   """Google Cloud Platform (GCP) Disk Export.
 
-  Attributes:
-    source_project (gcp_project.GoogleCloudProject): Source project
-        containing the disk/s to export.
-    gcs_output_location (str): Google Cloud Storage parent bucket/folder
-        path of the exported image.
-    analysis_project (gcp_project.GoogleCloudProject): Project where the
-        disk image is created then exported.
-        If not exit, source_project will be used.
-    remote_instance_name (str): Instance that needs forensicating.
-    source_disk_names (list[str]): Comma-separated list of disk names to copy.
-    all_disks (bool): True if all disks attached to the source
-        instance should be copied.
-    source_disks (list[gcp_project.compute.GoogleComputeDisk]): List of disks
-        to be exported.
-    exported_image_name (Optional[str]): Optional. Name of the output file, must
-        comply with ^[A-Za-z0-9-]*$' and '.tar.gz' will be appended to the name.
-        Default, if not exist or if more than one disk is selected, exported
-        image name as "exported-image-{TIMESTAMP('%Y%m%d%H%M%S')}".
+  This module copies a GCE Disk into GCS storage.
   """
 
   def __init__(self,
                state: DFTimewolfState,
-               name: Optional[str]=None,
+               name: str | None=None,
                critical: bool=False) -> None:
     """Initializes a Google Cloud Platform (GCP) Disk Export.
 
@@ -48,47 +31,23 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase):
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    super(GoogleCloudDiskExport, self).__init__(
-        state, name=name, critical=critical)
-    self.source_project = None  # type: gcp_project.GoogleCloudProject
-    self.gcs_output_location = str()
-    self.analysis_project = None  # type: gcp_project.GoogleCloudProject
-    self.remote_instance_name = None  # type: Optional[str]
-    self.source_disk_names = []  # type: List[str]
-    self.all_disks = False
-    self.source_disks = []  # type: List[GoogleComputeDisk]
-    self.exported_image_name = str()
-    self.image_format = str()
-
-  def Process(self) -> None:
-    """Creates and exports disk image to the output bucket."""
-    for source_disk in self.source_disks:
-      image_object = self.analysis_project.compute.CreateImageFromDisk(
-          source_disk)
-      # If self.exported_image_name = None, default output_name is
-      # {src_disk.name}-{TIMESTAMP('%Y%m%d%H%M%S')}.tar.gz
-      output_url = image_object.ExportImage(
-          self.gcs_output_location,
-          output_name=self.exported_image_name,
-          image_format=self.image_format)
-      image_object.Delete()
-      self.logger.info(f'Disk was exported to: {output_url}')
-      container = containers.GCSObject(path=output_url)
-      if self.remote_instance_name:
-        container.metadata['SOURCE_MACHINE'] = self.remote_instance_name
-      container.metadata['SOURCE_DISK'] = source_disk.name
-      self.StoreContainer(container)
+    super().__init__(state, name=name, critical=critical)
+    self._source_project: gcp_project.GoogleCloudProject = None
+    self._analysis_project: gcp_project.GoogleCloudProject = None
+    self._gcs_output_location: str = ''
+    self._image_format: str = ''
+    self._exported_image_name: str = ''
 
   # pylint: disable=arguments-differ
   def SetUp(self,
             source_project_name: str,
             gcs_output_location: str,
-            analysis_project_name: Optional[str]=None,
-            source_disk_names: Optional[str]=None,
-            remote_instance_name: Optional[str]=None,
-            all_disks: bool=False,
-            exported_image_name: Optional[str]=None,
-            image_format: str='') -> None:
+            analysis_project_name: str,
+            source_disk_names: str,
+            remote_instance_name: str,
+            all_disks: bool,
+            exported_image_name: str,
+            image_format: str) -> None:
     """Sets up a Google Cloud Platform (GCP) Disk Export.
 
     This method creates the required objects to initialize
@@ -130,24 +89,52 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase):
           "exported-image-{TIMESTAMP('%Y%m%d%H%M%S')}".
       image_format: The image format to use.
     """
-    self.source_project = gcp_project.GoogleCloudProject(source_project_name)
+    self._image_format = image_format
+    self._gcs_output_location = gcs_output_location
+    self._exported_image_name = exported_image_name
+
+    self._source_project = gcp_project.GoogleCloudProject(source_project_name)
     if analysis_project_name:
-      self.analysis_project = gcp_project.GoogleCloudProject(
-          analysis_project_name)
+      self._analysis_project = gcp_project.GoogleCloudProject(analysis_project_name)
     else:
-      self.analysis_project = self.source_project
-    self.remote_instance_name = remote_instance_name
-    self.source_disk_names = []
+      self._analysis_project = self._source_project
+
+    if remote_instance_name:
+      instance_disks = self._GetDisksFromInstance(instance_name=remote_instance_name,
+                                                  all_disks=all_disks)
+      for d in instance_disks:
+        container = containers.GCEDisk(name=d.name, project=source_project_name)
+        container.metadata['SOURCE_MACHINE'] = self.remote_instance_name
+        container.metadata['SOURCE_DISK'] = d.name
+        self.StoreContainer(container, for_self_only=True)
+
     if source_disk_names:
-      self.source_disk_names = source_disk_names.split(',')
-    self.all_disks = all_disks
+      disk_names = list(filter(None, [d.strip().lower() for d in source_disk_names.split(',') if d]))
+      for d in disk_names:
+        container = containers.GCEDisk(name=d, project=source_project_name)
+        container.metadata['SOURCE_MACHINE'] = 'UNKNOWN_MACHINE'
+        container.metadata['SOURCE_DISK'] = d
+        self.StoreContainer(container, for_self_only=True)
 
-    self.source_disks = self._FindDisksToCopy()
-    self.gcs_output_location = gcs_output_location
-    if exported_image_name and len(self.source_disks) == 1:
-      self.exported_image_name = exported_image_name
+  def Process(self) -> None:
+    """Creates and exports disk image to the output bucket."""
+    for source_disk in self.GetContainers(containers.GCEDisk):
+      if source_disk.project != self._source_project.project_id:
+        self.logger.info('Source project mismatch: skipping %s', str(source_disk))
+        continue
 
-    self.image_format = image_format
+      image_object = self._analysis_project.compute.CreateImageFromDisk(
+          self._source_project.compute.GetDisk(source_disk.name))
+      # If self.exported_image_name = None, default output_name is
+      # {src_disk.name}-{TIMESTAMP('%Y%m%d%H%M%S')}.tar.gz
+      output_url = image_object.ExportImage(self._gcs_output_location,
+                                            output_name=self._exported_image_name,
+                                            image_format=self._image_format)
+      image_object.Delete()
+      self.logger.info(f'Disk was exported to: {output_url}')
+      container = containers.GCSObject(path=output_url)
+      container.metadata.update(source_disk.metadata)
+      self.StoreContainer(container)
 
 
 modules_manager.ModulesManager.RegisterModule(GoogleCloudDiskExport)
