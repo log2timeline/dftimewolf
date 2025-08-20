@@ -64,8 +64,13 @@ class RecipeTests(unittest.TestCase):
           for wanted in module['wants']:
             wanted_modules.add(wanted)
 
-        self.assertTrue(wanted_modules.issubset(declared_modules),
-                        msg='recipe: {0:s}'.format(recipe.contents['name']))
+        self.assertTrue(
+          wanted_modules.issubset(declared_modules),
+          msg="recipe: {0:s}. Extra wanted modules: {1:s}".format(
+            recipe.contents["name"],
+            str(wanted_modules.difference(declared_modules)),
+          ),
+        )
 
   def testNoDeadlockInRecipe(self):
     """Tests that a recipe will not deadlock."""
