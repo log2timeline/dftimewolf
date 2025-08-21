@@ -136,10 +136,23 @@ class MainToolTest(parameterized.TestCase):
         expected_args.remove('self')
         provided_args = set(module['args'])
 
-        self.assertEqual(
-          expected_args,
-          provided_args,
-          f'Error in {recipe.name}:{runtime_name}')
+        missing_args = sorted(list(expected_args - provided_args))
+        unexpected_args = sorted(list(provided_args - expected_args))
+        expected_args = sorted(list(expected_args))
+        provided_args = sorted(list(provided_args))
+
+        error_message = (
+            f'Error in {recipe.name}. Argument mismatch for preflight or '
+            f'module "{runtime_name}":\n'
+            f' Expected: {expected_args}\n'
+            f' Provided: {provided_args}'
+        )
+        if missing_args:
+          error_message += f'\n Missing arguments: {missing_args}'
+        if unexpected_args:
+          error_message += f'\n Unexpected arguments: {unexpected_args}'
+
+        self.assertListEqual(expected_args, provided_args, error_message)
 
   @parameterized.named_parameters(_EnumerateRecipeNames())
   def testRecipeValidators(self, recipe_name):
