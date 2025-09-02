@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://dfTimewolf.com/developers-guide/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Developers' guide - dfTimewolf</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Developers\u0027 guide";
+        var mkdocs_page_input_path = "developers-guide.md";
+        var mkdocs_page_url = "/developers-guide/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="..">
+          <img src="../_static/logo.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../getting-started/">Getting started</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../user-manual/">User manual</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Developers' guide</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#environment-setup">Environment setup</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#python-virtualenv-with-poetry">Python virtualenv with Poetry</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#docker-container">Docker container</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#code-review-code-style">Code review &amp; code style</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#creating-a-recipe">Creating a recipe</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#recipe-location">Recipe location</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#recipe-arguments">Recipe arguments</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#modules">Modules</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#register-a-new-module">Register a new module</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#run-tests">Run tests</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../module-writing-basics/">Module writing basics</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../architecture/">Architecture</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../recipe-list/">Recipe list</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../recipe-caveat/">Recipe caveats</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">dfTimewolf</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Developers' guide</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="developers-guide">Developer's guide<a class="headerlink" href="#developers-guide" title="Permanent link">&para;</a></h1>
+<p>This page gives a few hints on how to develop new recipes and modules for
+dftimewolf. Start with the <a href="../architecture/">architecture</a> page if you haven't
+read it already.</p>
+<h2 id="environment-setup">Environment setup<a class="headerlink" href="#environment-setup" title="Permanent link">&para;</a></h2>
+<p>You can either use Poetry or Docker to develop on dftimewolf.</p>
+<h3 id="python-virtualenv-with-poetry">Python virtualenv with Poetry<a class="headerlink" href="#python-virtualenv-with-poetry" title="Permanent link">&para;</a></h3>
+<p>To be able to develop you need a local installation of dfTimewolf. To install it locally, a venv is recommended. We use poetry:</p>
+<pre><code class="language-bash">pip install poetry
+poetry install
+</code></pre>
+<p>Now you are ready to run dfTimewolf in your local environment:</p>
+<pre><code class="language-bash">poetry run dftimewolf -h
+</code></pre>
+<h3 id="docker-container">Docker container<a class="headerlink" href="#docker-container" title="Permanent link">&para;</a></h3>
+<p>We also provide a dev Docker container that you can use to install dftimewolf's
+dependencies in.</p>
+<pre><code>$ cd docker/dev
+$ docker compose run --rm dftw envshell
+[...]
+(dftimewolf-py3.10) root@3bb3a1ddec53:/app# poetry run dftimewolf -h
+</code></pre>
+<p>It will pick up changes from your current working directory, so tests will run
+with the version of the code present on your filesystem. See <code>docker/dev/README.md</code>
+for more details.</p>
+<h2 id="code-review-code-style">Code review &amp; code style<a class="headerlink" href="#code-review-code-style" title="Permanent link">&para;</a></h2>
+<p>As for other Log2Timeline projects, all contributions to dfTimewolf undergo code
+review. The process is documented
+<a href="https://github.com/log2timeline/l2tdocs/blob/main/process/Code%20review%20process.md">here</a>.</p>
+<p>dfTimewolf follows the
+<a href="https://github.com/log2timeline/l2tdocs/blob/main/process/Style-guide.md">Log2Timeline style guide</a>.</p>
+<h2 id="creating-a-recipe">Creating a recipe<a class="headerlink" href="#creating-a-recipe" title="Permanent link">&para;</a></h2>
+<p>If you're not satisfied with the way modules are chained, or default arguments
+that are passed to some of the recipes, then you can create your own. See
+<a href="https://github.com/log2timeline/dftimewolf/tree/main/data/recipes">existing recipes</a>
+for simple examples like
+<a href="https://github.com/log2timeline/dftimewolf/blob/main/data/recipes/plaso_ts.json">plaso_ts</a>.
+Details on recipe keys are given <a href="../architecture/#recipes">here</a>.</p>
+<h3 id="recipe-location">Recipe location<a class="headerlink" href="#recipe-location" title="Permanent link">&para;</a></h3>
+<p>A new recipe needs to be added to <code>data/recipes</code> as a JSON file.</p>
+<h3 id="recipe-arguments">Recipe arguments<a class="headerlink" href="#recipe-arguments" title="Permanent link">&para;</a></h3>
+<p>Recipes launch Modules with a given set of arguments. Arguments can be specified
+in different ways:</p>
+<ul>
+<li>Hardcoded values in the recipe's Python code</li>
+<li><code>@</code> parameters that are dynamically changed, either:</li>
+<li>Through a <code>~/.dftimewolfrc</code> file</li>
+<li>Through the command line</li>
+</ul>
+<p>Parameters for each Module are declared in a recipe's <code>recipe</code> key in the
+form of <code>@parameter</code> placeholders. How these are populated is then specified in
+the <code>args</code> key right after, as a list of
+<code>(argument, help_text, default_value)</code> tuples that will be passed to <code>argparse</code>.
+For example, the public version of the
+<a href="https://github.com/log2timeline/dftimewolf/blob/main/data/recipes/gcp_forensics.json">grr_artifact_hosts.py</a>
+recipe specifies arguments in the following way:</p>
+<pre><code>"args": [
+  ["source_project_name", "Name of the project containing the instance / disks to copy.", null],
+  ["analysis_project_name", "Name of the project where the analysis VM will be created and disks copied to.", null],
+  ["--incident_id", "Incident ID to label the VM with.", null],
+  ["--instances", "Name of the instance to analyze.", null],
+  ["--disks", "Comma-separated list of disks to copy from the source GCP project (if `instance` not provided).", null],
+  ["--all_disks", "Copy all disks in the designated instance. Overrides `disk_names` if specified.", false],
+  ["--stop_instances", "Stop the designated instance after copying disks.", false],
+  ["--create_analysis_vm", "Create an analysis VM in the destination project.", true],
+  ["--cpu_cores", "Number of CPU cores of the analysis VM.", 4],
+  ["--boot_disk_size", "The size of the analysis VM boot disk (in GB).", 50.0],
+  ["--boot_disk_type", "Disk type to use [pd-standard, pd-ssd].", "pd-standard"],
+  ["--zone", "The GCP zone where the Analysis VM and copied disks will be created.", "us-central1-f"]
+</code></pre>
+<p>]</p>
+<p><code>source_project_name</code> and <code>analysis_project_name</code> are positional arguments - they <strong>must</strong> be provided
+through the command line. <code>incident_id</code>, <code>instance</code>, <code>disks</code>, <code>all_disks</code>, and all other arguments starting with <code>--</code> are optional. If they are not specified through the command line, the default value will be used. <code>null</code> will be translated to a Python <code>None</code>, and <code>false</code> will be the python <code>False</code> boolean.</p>
+<div class="admonition note">
+  <p class="first admonition-title">Note</p>
+  <p class="last">It's currnetly not possible to make a parameter `false` through a flag. We recommend adding parameters that default to `false`, and turn `true` when provided in the command line.</p>
+</div>
+
+<h2 id="modules">Modules<a class="headerlink" href="#modules" title="Permanent link">&para;</a></h2>
+<p>If dftimewolf lacks the actual processing logic, you need to create a new
+module. If you can achieve your goal in Python, then chances are you can
+write a dfTimewolf module for it.</p>
+<p>Check out the <a href="architecture#modules">Module architecture</a> and read up on simple
+existing modules such as the
+<a href="https://github.com/log2timeline/dftimewolf/blob/main/dftimewolf/lib/processors/localplaso.py">LocalPlasoProcessor</a>
+module for an example of simple Module.</p>
+<p>Additionally, a guide on implementing a module exists <a href="module-writing-basics">here</a></p>
+<h3 id="register-a-new-module">Register a new module<a class="headerlink" href="#register-a-new-module" title="Permanent link">&para;</a></h3>
+<p>There are <strong>two</strong> locations to register new modules:</p>
+<ul>
+<li>registering it at the end of the module file</li>
+<li>adding it to the <code>MODULES</code> dictionary in the main entry point script <a href="https://github.com/log2timeline/dftimewolf/blob/main/dftimewolf/cli/dftimewolf_recipes.py">dftimewolf_recipes.py</a></li>
+</ul>
+<h2 id="run-tests">Run tests<a class="headerlink" href="#run-tests" title="Permanent link">&para;</a></h2>
+<p>It is recommended to run tests locally to discover issues early in the development lifecycle.</p>
+<pre><code class="language-shell">pip install pylint
+pylint --rcfile .pylintrc UPDATED_SOURCE_FILE
+</code></pre>
+<pre><code class="language-bash">pip install poetry
+poetry install
+poetry run python -m unittest discover -s tests -p '*.py'
+poetry run mypy --install-types --cache-dir .mypy_cache --non-interactive -p dftimewolf
+poetry run pytype --config pytype.conf
+</code></pre>
+<p>Docker equivalent:</p>
+<pre><code class="language-bash">cd docker/dev
+docker compose run --rm dftw tests
+docker compose run --rm -v `pwd`/../../:/app dftw poetry run mypy --install-types --cache-dir /tmp/.mypy_cache --non-interactive -p dftimewolf
+docker compose run --rm -v `pwd`/../../:/app dftw poetry run pytype --config /app/pytype.conf
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../user-manual/" class="btn btn-neutral float-left" title="User manual"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../module-writing-basics/" class="btn btn-neutral float-right" title="Module writing basics">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../user-manual/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../module-writing-basics/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
