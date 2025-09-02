@@ -51,10 +51,10 @@ class LocalPlasoProcessor(module.BaseModule):
       client = docker.from_env()  # type: ignore
       client.images.get(DOCKER_IMAGE)
       return True
-    except docker.errors.DockerException as e:
-      self.logger.warning('Docker error: %s', str(e))
-      return False
     except docker.errors.ImageNotFound: # type: ignore
+      return False
+    except docker.errors.DockerException as e: # type: ignore
+      self.logger.warning('Docker error: %s', str(e))
       return False
 
   def _DockerPlasoRun(
