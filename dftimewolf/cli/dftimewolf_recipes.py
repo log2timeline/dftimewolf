@@ -522,7 +522,7 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
     tool.telemetry.LogTelemetry('module', module, 'core', recipe_name)
 
   tool.telemetry.LogTelemetry(
-      'workflow_start', time.time() * 1000, 'core', recipe_name)
+      'workflow_start', str(time.time() * 1000), 'core', recipe_name)
 
   try:
     tool.ValidateArguments(tool.dry_run)
