@@ -4,7 +4,6 @@
 
 import argparse
 from contextlib import redirect_stderr, redirect_stdout
-import datetime
 import curses
 import logging
 import os
