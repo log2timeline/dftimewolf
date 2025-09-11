@@ -31,7 +31,7 @@
       ],
       "name": "TimesketchExporter",
       "args": {
-        "incident_id": "@reason",
+        "incident_id": "@incident_id",
         "token_password": null,
         "endpoint": "@timesketch_endpoint",
         "username": "@timesketch_username",
