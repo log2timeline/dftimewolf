@@ -1,0 +1,4062 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://dfTimewolf.com/recipe-list/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Recipe list - dfTimewolf</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Recipe list";
+        var mkdocs_page_input_path = "recipe-list.md";
+        var mkdocs_page_url = "/recipe-list/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="..">
+          <img src="../_static/logo.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../getting-started/">Getting started</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../user-manual/">User manual</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../developers-guide/">Developers' guide</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../module-writing-basics/">Module writing basics</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../architecture/">Architecture</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Recipe list</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#aws_disk_to_gcp">aws_disk_to_gcp</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#aws_forensics">aws_forensics</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#aws_logging_collect">aws_logging_collect</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#aws_logging_ts">aws_logging_ts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#aws_turbinia_ts">aws_turbinia_ts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#azure_forensics">azure_forensics</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#azure_logging_collect">azure_logging_collect</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#azure_logging_ts">azure_logging_ts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#bigquery_collect">bigquery_collect</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#bigquery_ts">bigquery_ts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gce_disk_copy">gce_disk_copy</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gce_disk_export">gce_disk_export</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gce_disk_export_dd">gce_disk_export_dd</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gcp_cloud_resource_tree">gcp_cloud_resource_tree</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gcp_cloud_resource_tree_offline">gcp_cloud_resource_tree_offline</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gcp_forensics">gcp_forensics</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gcp_logging_cloudaudit_ts">gcp_logging_cloudaudit_ts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gcp_logging_cloudsql_ts">gcp_logging_cloudsql_ts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gcp_logging_collect">gcp_logging_collect</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gcp_logging_gce_instance_ts">gcp_logging_gce_instance_ts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gcp_logging_gce_ts">gcp_logging_gce_ts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gcp_logging_ts">gcp_logging_ts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gcp_turbinia_disk_copy_ts">gcp_turbinia_disk_copy_ts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gcp_turbinia_ts">gcp_turbinia_ts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#grr_artifact_grep">grr_artifact_grep</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#grr_artifact_ts">grr_artifact_ts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#grr_files_collect">grr_files_collect</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#grr_flow_collect">grr_flow_collect</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#grr_hunt_artifacts">grr_hunt_artifacts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#grr_hunt_file">grr_hunt_file</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#grr_hunt_osquery">grr_hunt_osquery</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#grr_huntresults_ts">grr_huntresults_ts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#grr_osquery_flow">grr_osquery_flow</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#grr_timeline_ts">grr_timeline_ts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#grr_yarascan">grr_yarascan</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gsheets_ts">gsheets_ts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#openrelik_ts">openrelik_ts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#plaso_ts">plaso_ts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ts_collect">ts_collect</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#upload_ts">upload_ts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#upload_turbinia">upload_turbinia</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#upload_web_ts">upload_web_ts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#vt_evtx">vt_evtx</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#vt_evtx_ts">vt_evtx_ts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#vt_pcap">vt_pcap</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#workspace_logging_collect">workspace_logging_collect</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#workspace_meet_ts">workspace_meet_ts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#workspace_user_activity_ts">workspace_user_activity_ts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#workspace_user_device_ts">workspace_user_device_ts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#workspace_user_drive_ts">workspace_user_drive_ts</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#workspace_user_login_ts">workspace_user_login_ts</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../recipe-caveat/">Recipe caveats</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">dfTimewolf</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Recipe list</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="recipe-list">Recipe list<a class="headerlink" href="#recipe-list" title="Permanent link">&para;</a></h1>
+<p>This is an auto-generated list of dfTimewolf recipes.</p>
+<p>To regenerate this list, from the repository root, run:</p>
+<pre><code>poetry install -d
+python docs/generate_recipe_doc.py data/recipes
+</code></pre>
+<hr />
+<h2 id="aws_disk_to_gcp"><code>aws_disk_to_gcp</code><a class="headerlink" href="#aws_disk_to_gcp" title="Permanent link">&para;</a></h2>
+<p>Copies EBS volumes from within AWS, and transfers them to GCP.</p>
+<p><strong>Details:</strong></p>
+<p>Copies EBS volumes from within AWS by pushing them to an AWS S3 bucket. The S3 bucket is then copied to a Google Cloud Storage bucket, from which a GCP Disk Image and finally a GCP Persistent Disk are created. This operation happens in the cloud and doesn't touch the local workstation on which the recipe is run.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>aws_region</code></td>
+<td><code>None</code></td>
+<td>AWS region containing the EBS volumes.</td>
+</tr>
+<tr>
+<td><code>gcp_zone</code></td>
+<td><code>None</code></td>
+<td>Destination GCP zone in which to create the disks.</td>
+</tr>
+<tr>
+<td><code>volumes</code></td>
+<td><code>None</code></td>
+<td>Comma separated list of EBS volume IDs (e.g. vol-xxxxxxxx).</td>
+</tr>
+<tr>
+<td><code>aws_bucket</code></td>
+<td><code>None</code></td>
+<td>AWS bucket for image storage.</td>
+</tr>
+<tr>
+<td><code>gcp_bucket</code></td>
+<td><code>None</code></td>
+<td>GCP bucket for image storage.</td>
+</tr>
+<tr>
+<td><code>--subnet</code></td>
+<td><code>None</code></td>
+<td>AWS subnet to copy instances from, required if there is no default subnet in the volume region.</td>
+</tr>
+<tr>
+<td><code>--gcp_project</code></td>
+<td><code>None</code></td>
+<td>Destination GCP project.</td>
+</tr>
+<tr>
+<td><code>--aws_profile</code></td>
+<td><code>None</code></td>
+<td>Source AWS profile.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>AWSVolumeSnapshotCollector</code>, <code>AWSSnapshotS3CopyCollector</code>, <code>S3ToGCSCopy</code>, <code>GCSToGCEImage</code>, <code>GCEDiskFromImage</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="aws_disk_to_gcp" src="../_static/graphviz/aws_disk_to_gcp.png" /></p>
+<hr />
+<h2 id="aws_forensics"><code>aws_forensics</code><a class="headerlink" href="#aws_forensics" title="Permanent link">&para;</a></h2>
+<p>Copies a volume from an AWS account to an analysis VM.</p>
+<p><strong>Details:</strong></p>
+<p>Copies a volume from an AWS account, creates an analysis VM in AWS (with a startup script containing installation instructions for basic forensics tooling), and attaches the copied volume to it.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>remote_profile_name</code></td>
+<td><code>None</code></td>
+<td>Name of the AWS profile pointing to the AWS account where the volume(s) exist(s).</td>
+</tr>
+<tr>
+<td><code>remote_zone</code></td>
+<td><code>None</code></td>
+<td>The AWS zone in which the source volume(s) exist(s).</td>
+</tr>
+<tr>
+<td><code>incident_id</code></td>
+<td><code>None</code></td>
+<td>Incident ID to label the VM with.</td>
+</tr>
+<tr>
+<td><code>--instance_id</code></td>
+<td><code>None</code></td>
+<td>Instance ID of the instance to analyze.</td>
+</tr>
+<tr>
+<td><code>--volume_ids</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of volume IDs to copy.</td>
+</tr>
+<tr>
+<td><code>--all_volumes</code></td>
+<td><code>False</code></td>
+<td>Copy all volumes in the designated instance. Overrides volume_ids if specified.</td>
+</tr>
+<tr>
+<td><code>--boot_volume_size</code></td>
+<td><code>'50'</code></td>
+<td>The size of the analysis VM boot volume (in GB).</td>
+</tr>
+<tr>
+<td><code>--analysis_zone</code></td>
+<td><code>None</code></td>
+<td>The AWS zone in which to create the VM.</td>
+</tr>
+<tr>
+<td><code>--analysis_profile_name</code></td>
+<td><code>None</code></td>
+<td>Name of the AWS profile to use when creating the analysis VM.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>AWSCollector</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="aws_forensics" src="../_static/graphviz/aws_forensics.png" /></p>
+<hr />
+<h2 id="aws_logging_collect"><code>aws_logging_collect</code><a class="headerlink" href="#aws_logging_collect" title="Permanent link">&para;</a></h2>
+<p>Collects logs from an AWS account and dumps the results to the filesystem.</p>
+<p><strong>Details:</strong></p>
+<p>Collects logs from an AWS account using a specified query filter and date ranges, and dumps them on the filesystem. If no args are provided this recipe will collect 90 days of logs for the default AWS profile.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>region</code></td>
+<td><code>None</code></td>
+<td>AWS Region</td>
+</tr>
+<tr>
+<td><code>--profile_name</code></td>
+<td><code>None</code></td>
+<td>Name of the AWS profile to collect logs from.</td>
+</tr>
+<tr>
+<td><code>--query_filter</code></td>
+<td><code>None</code></td>
+<td>Filter expression to use to query logs.</td>
+</tr>
+<tr>
+<td><code>--start_time</code></td>
+<td><code>None</code></td>
+<td>Start time for the query.</td>
+</tr>
+<tr>
+<td><code>--end_time</code></td>
+<td><code>None</code></td>
+<td>End time for the query.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>AWSLogsCollector</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="aws_logging_collect" src="../_static/graphviz/aws_logging_collect.png" /></p>
+<hr />
+<h2 id="aws_logging_ts"><code>aws_logging_ts</code><a class="headerlink" href="#aws_logging_ts" title="Permanent link">&para;</a></h2>
+<p>Collects logs from an AWS account, processes the logs with Plaso and uploads the result to Timesketch.</p>
+<p><strong>Details:</strong></p>
+<p>Collects logs from an AWS account using a specified query filter and date ranges, processes the logs with plaso and uploads the result to Timesketch. If no args are provided this recipe will collect 90 days of logs for the default AWS profile.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>region</code></td>
+<td><code>None</code></td>
+<td>AWS Region</td>
+</tr>
+<tr>
+<td><code>--profile_name</code></td>
+<td><code>None</code></td>
+<td>Name of the AWS profile to collect logs from.</td>
+</tr>
+<tr>
+<td><code>--query_filter</code></td>
+<td><code>None</code></td>
+<td>Filter expression to use to query logs.</td>
+</tr>
+<tr>
+<td><code>--start_time</code></td>
+<td><code>None</code></td>
+<td>Start time for the query.</td>
+</tr>
+<tr>
+<td><code>--end_time</code></td>
+<td><code>None</code></td>
+<td>End time for the query.</td>
+</tr>
+<tr>
+<td><code>--incident_id</code></td>
+<td><code>None</code></td>
+<td>Incident ID (used for Timesketch description).</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>Timesketch sketch to which the timeline should be added.</td>
+</tr>
+<tr>
+<td><code>--timesketch_endpoint</code></td>
+<td><code>'http://localhost:5000/'</code></td>
+<td>Timesketch endpoint</td>
+</tr>
+<tr>
+<td><code>--timesketch_username</code></td>
+<td><code>None</code></td>
+<td>Username for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--timesketch_password</code></td>
+<td><code>None</code></td>
+<td>Password for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--token_password</code></td>
+<td><code>''</code></td>
+<td>Optional custom password to decrypt Timesketch credential file with.</td>
+</tr>
+<tr>
+<td><code>--wait_for_timelines</code></td>
+<td><code>True</code></td>
+<td>Whether to wait for Timesketch to finish processing all timelines.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>AWSLogsCollector</code>, <code>LocalPlasoProcessor</code>, <code>TimesketchExporter</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="aws_logging_ts" src="../_static/graphviz/aws_logging_ts.png" /></p>
+<hr />
+<h2 id="aws_turbinia_ts"><code>aws_turbinia_ts</code><a class="headerlink" href="#aws_turbinia_ts" title="Permanent link">&para;</a></h2>
+<p>Copies EBS volumes from within AWS, transfers them to GCP, analyses with Turbinia and exports the results to Timesketch.</p>
+<p><strong>Details:</strong></p>
+<p>Copies EBS volumes from within AWS, uses buckets and cloud-to-cloud operations to transfer the data to GCP. Once in GCP, a persistent disk is created and a job is added to the Turbinia queue to start analysis. The resulting Plaso file is then exported to Timesketch.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>aws_region</code></td>
+<td><code>None</code></td>
+<td>AWS region containing the EBS volumes.</td>
+</tr>
+<tr>
+<td><code>gcp_zone</code></td>
+<td><code>None</code></td>
+<td>Destination GCP zone in which to create the disks.</td>
+</tr>
+<tr>
+<td><code>volumes</code></td>
+<td><code>None</code></td>
+<td>Comma separated list of EBS volume IDs (e.g. vol-xxxxxxxx).</td>
+</tr>
+<tr>
+<td><code>aws_bucket</code></td>
+<td><code>None</code></td>
+<td>AWS bucket for image storage.</td>
+</tr>
+<tr>
+<td><code>gcp_bucket</code></td>
+<td><code>None</code></td>
+<td>GCP bucket for image storage.</td>
+</tr>
+<tr>
+<td><code>--subnet</code></td>
+<td><code>None</code></td>
+<td>AWS subnet to copy instances from, required if there is no default subnet in the volume region.</td>
+</tr>
+<tr>
+<td><code>--gcp_project</code></td>
+<td><code>None</code></td>
+<td>Destination GCP project.</td>
+</tr>
+<tr>
+<td><code>--aws_profile</code></td>
+<td><code>None</code></td>
+<td>Source AWS profile.</td>
+</tr>
+<tr>
+<td><code>--incident_id</code></td>
+<td><code>None</code></td>
+<td>Incident ID (used for Timesketch description).</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>Timesketch sketch to which the timeline should be added.</td>
+</tr>
+<tr>
+<td><code>--timesketch_endpoint</code></td>
+<td><code>'http://localhost:5000/'</code></td>
+<td>Timesketch endpoint</td>
+</tr>
+<tr>
+<td><code>--timesketch_username</code></td>
+<td><code>None</code></td>
+<td>Username for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--timesketch_password</code></td>
+<td><code>None</code></td>
+<td>Password for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--token_password</code></td>
+<td><code>''</code></td>
+<td>Optional custom password to decrypt Timesketch credential file with.</td>
+</tr>
+<tr>
+<td><code>--request_ids</code></td>
+<td><code>None</code></td>
+<td>Comma separated Turbinia request identifiers to process.</td>
+</tr>
+<tr>
+<td><code>--turbinia_recipe</code></td>
+<td><code>None</code></td>
+<td>The Turbinia recipe name to use for evidence processing.</td>
+</tr>
+<tr>
+<td><code>--turbinia_zone</code></td>
+<td><code>'us-central1-f'</code></td>
+<td>Zone Turbinia is located in</td>
+</tr>
+<tr>
+<td><code>--turbinia_auth</code></td>
+<td><code>False</code></td>
+<td>Flag to indicate whether Turbinia API server requires authentication.</td>
+</tr>
+<tr>
+<td><code>--turbinia_api</code></td>
+<td><code>'http://127.0.0.1:8000'</code></td>
+<td>Turbinia API server endpoint.</td>
+</tr>
+<tr>
+<td><code>--wait_for_timelines</code></td>
+<td><code>True</code></td>
+<td>Whether to wait for Timesketch to finish processing all timelines.</td>
+</tr>
+<tr>
+<td><code>--priority_filter</code></td>
+<td><code>'100'</code></td>
+<td>Filter report findings, range from 0 to 100, 0 is the highest.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>AWSVolumeSnapshotCollector</code>, <code>AWSSnapshotS3CopyCollector</code>, <code>S3ToGCSCopy</code>, <code>GCSToGCEImage</code>, <code>GCEDiskFromImage</code>, <code>TurbiniaGCPProcessor</code>, <code>TimesketchExporter</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="aws_turbinia_ts" src="../_static/graphviz/aws_turbinia_ts.png" /></p>
+<hr />
+<h2 id="azure_forensics"><code>azure_forensics</code><a class="headerlink" href="#azure_forensics" title="Permanent link">&para;</a></h2>
+<p>Copies a disk from an Azure account to an analysis VM.</p>
+<p><strong>Details:</strong></p>
+<p>Copies a disk from an Azure account, creates an analysis VM in Azure (with a startup script containing installation instructions for basic forensics tooling), and attaches the copied disk to it.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>remote_profile_name</code></td>
+<td><code>None</code></td>
+<td>Name of the Azure profile pointing to the Azure account where the disk(s) exist(s).</td>
+</tr>
+<tr>
+<td><code>analysis_resource_group_name</code></td>
+<td><code>None</code></td>
+<td>The Azure resource group name in which to create the VM.</td>
+</tr>
+<tr>
+<td><code>incident_id</code></td>
+<td><code>None</code></td>
+<td>Incident ID to label the VM with.</td>
+</tr>
+<tr>
+<td><code>ssh_public_key</code></td>
+<td><code>None</code></td>
+<td>A SSH public key string to add to the VM (e.g. <code>ssh-rsa AAAAB3NzaC1y...</code>).</td>
+</tr>
+<tr>
+<td><code>--instance_name</code></td>
+<td><code>None</code></td>
+<td>Instance name of the instance to analyze.</td>
+</tr>
+<tr>
+<td><code>--disk_names</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of disk names to copy.</td>
+</tr>
+<tr>
+<td><code>--all_disks</code></td>
+<td><code>False</code></td>
+<td>Copy all disks in the designated instance. Overrides <code>disk_names</code> if specified.</td>
+</tr>
+<tr>
+<td><code>--boot_disk_size</code></td>
+<td><code>'50'</code></td>
+<td>The size of the analysis VM's boot disk (in GB).</td>
+</tr>
+<tr>
+<td><code>--analysis_region</code></td>
+<td><code>None</code></td>
+<td>The Azure region in which to create the VM.</td>
+</tr>
+<tr>
+<td><code>--analysis_profile_name</code></td>
+<td><code>None</code></td>
+<td>Name of the Azure profile to use when creating the analysis VM.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>AzureCollector</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="azure_forensics" src="../_static/graphviz/azure_forensics.png" /></p>
+<hr />
+<h2 id="azure_logging_collect"><code>azure_logging_collect</code><a class="headerlink" href="#azure_logging_collect" title="Permanent link">&para;</a></h2>
+<p>Collects logs from an Azure subscription and dumps the results to the filesystem.</p>
+<p><strong>Details:</strong></p>
+<p>Collects logs from an Azure subscription using a specified filter, and dumps them on the filesystem.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>subscription_id</code></td>
+<td><code>None</code></td>
+<td>Subscription ID for the subscription to collect logs from.</td>
+</tr>
+<tr>
+<td><code>filter_expression</code></td>
+<td><code>None</code></td>
+<td>A filter expression to use for the log query, must specify at least a start date like "eventTimestamp ge '2022-02-01'"</td>
+</tr>
+<tr>
+<td><code>--profile_name</code></td>
+<td><code>None</code></td>
+<td>A profile name to use when looking for Azure credentials.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>AzureLogsCollector</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="azure_logging_collect" src="../_static/graphviz/azure_logging_collect.png" /></p>
+<hr />
+<h2 id="azure_logging_ts"><code>azure_logging_ts</code><a class="headerlink" href="#azure_logging_ts" title="Permanent link">&para;</a></h2>
+<p>Collects logs from an Azure subscription, processes the logs with Plaso and uploads the result to Timesketch.</p>
+<p><strong>Details:</strong></p>
+<p>Collects logs from an Azure subscription using a specified query filter and date ranges, processes the logs with plaso and uploads the result to Timesketch.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>subscription_id</code></td>
+<td><code>None</code></td>
+<td>Subscription ID for the subscription to collect logs from.</td>
+</tr>
+<tr>
+<td><code>filter_expression</code></td>
+<td><code>None</code></td>
+<td>A filter expression to use for the log query, must specify at least a start date like "eventTimestamp ge '2022-02-01'"</td>
+</tr>
+<tr>
+<td><code>--profile_name</code></td>
+<td><code>None</code></td>
+<td>A profile name to use when looking for Azure credentials.</td>
+</tr>
+<tr>
+<td><code>--incident_id</code></td>
+<td><code>None</code></td>
+<td>Incident ID (used for Timesketch description).</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>Timesketch sketch to which the timeline should be added.</td>
+</tr>
+<tr>
+<td><code>--timesketch_endpoint</code></td>
+<td><code>'http://localhost:5000/'</code></td>
+<td>Timesketch endpoint</td>
+</tr>
+<tr>
+<td><code>--timesketch_username</code></td>
+<td><code>None</code></td>
+<td>Username for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--timesketch_password</code></td>
+<td><code>None</code></td>
+<td>Password for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--token_password</code></td>
+<td><code>''</code></td>
+<td>Optional custom password to decrypt Timesketch credential file with.</td>
+</tr>
+<tr>
+<td><code>--wait_for_timelines</code></td>
+<td><code>True</code></td>
+<td>Whether to wait for Timesketch to finish processing all timelines.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>AzureLogsCollector</code>, <code>LocalPlasoProcessor</code>, <code>TimesketchExporter</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="azure_logging_ts" src="../_static/graphviz/azure_logging_ts.png" /></p>
+<hr />
+<h2 id="bigquery_collect"><code>bigquery_collect</code><a class="headerlink" href="#bigquery_collect" title="Permanent link">&para;</a></h2>
+<p>Collects results from BigQuery and dumps them on the filesystem.</p>
+<p><strong>Details:</strong></p>
+<p>Collects results from BigQuery in a GCP project and dumps them in JSONL on the local filesystem.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>project_name</code></td>
+<td><code>None</code></td>
+<td>Name of GCP project to collect logs from.</td>
+</tr>
+<tr>
+<td><code>query</code></td>
+<td><code>None</code></td>
+<td>Query to execute.</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>None</code></td>
+<td>Human-readable description of the query.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>BigQueryCollector</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="bigquery_collect" src="../_static/graphviz/bigquery_collect.png" /></p>
+<hr />
+<h2 id="bigquery_ts"><code>bigquery_ts</code><a class="headerlink" href="#bigquery_ts" title="Permanent link">&para;</a></h2>
+<p>Collects results from BigQuery and uploads them to Timesketch.</p>
+<p><strong>Details:</strong></p>
+<p>Collects results from BigQuery in JSONL form, dumps them to the filesystem, and uploads them to Timesketch.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>project_name</code></td>
+<td><code>None</code></td>
+<td>Name of GCP project to collect logs from.</td>
+</tr>
+<tr>
+<td><code>query</code></td>
+<td><code>None</code></td>
+<td>Query to execute.</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>None</code></td>
+<td>Human-readable description of the query.</td>
+</tr>
+<tr>
+<td><code>--incident_id</code></td>
+<td><code>None</code></td>
+<td>Incident ID (used for Timesketch description).</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>Timesketch sketch to which the timeline should be added.</td>
+</tr>
+<tr>
+<td><code>--timesketch_endpoint</code></td>
+<td><code>'http://localhost:5000/'</code></td>
+<td>Timesketch endpoint</td>
+</tr>
+<tr>
+<td><code>--timesketch_username</code></td>
+<td><code>None</code></td>
+<td>Username for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--timesketch_password</code></td>
+<td><code>None</code></td>
+<td>Password for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--token_password</code></td>
+<td><code>''</code></td>
+<td>Optional custom password to decrypt Timesketch credential file with.</td>
+</tr>
+<tr>
+<td><code>--wait_for_timelines</code></td>
+<td><code>True</code></td>
+<td>Whether to wait for Timesketch to finish processing all timelines.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>BigQueryCollector</code>, <code>TimesketchExporter</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="bigquery_ts" src="../_static/graphviz/bigquery_ts.png" /></p>
+<hr />
+<h2 id="gce_disk_copy"><code>gce_disk_copy</code><a class="headerlink" href="#gce_disk_copy" title="Permanent link">&para;</a></h2>
+<p>Copy disks from one project to another.</p>
+<p><strong>Details:</strong></p>
+<p>Copies disks from one project to another. The disks can be specified individually, or instances can be specified, to copy all their disks or boot disks.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source_project_name</code></td>
+<td><code>None</code></td>
+<td>Source project containing the disks to export.</td>
+</tr>
+<tr>
+<td><code>--destination_project_name</code></td>
+<td><code>None</code></td>
+<td>Project to where the disk images are exported. If not provided, source_project_name is used.</td>
+</tr>
+<tr>
+<td><code>--source_disk_names</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of disk names to export. If not provided, disks attached to <code>remote_instance_name</code> will be used.</td>
+</tr>
+<tr>
+<td><code>--remote_instance_names</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of instances in source project from which to copy disks. If not provided, <code>disk_names</code> will be used.</td>
+</tr>
+<tr>
+<td><code>--all_disks</code></td>
+<td><code>False</code></td>
+<td>If True, copy all disks attached to the <code>remote_instance_names</code> instances. If False and <code>remote_instance_name</code> is provided, it will select the instance's boot disk.</td>
+</tr>
+<tr>
+<td><code>--zone</code></td>
+<td><code>'us-central1-f'</code></td>
+<td>Destination zone for the disks to be copied to.</td>
+</tr>
+<tr>
+<td><code>--stop_instances</code></td>
+<td><code>False</code></td>
+<td>Stop instances after disks have been copied</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>GCEDiskCopy</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="gce_disk_copy" src="../_static/graphviz/gce_disk_copy.png" /></p>
+<hr />
+<h2 id="gce_disk_export"><code>gce_disk_export</code><a class="headerlink" href="#gce_disk_export" title="Permanent link">&para;</a></h2>
+<p>Export a disk image from a GCP project to a Google Cloud Storage bucket.</p>
+<p><strong>Details:</strong></p>
+<p>Creates a disk image from Google Compute persistent disks, compresses the images, and exports them to Google Cloud Storage.</p>
+<p>The exported images names are appended by <code>.tar.gz.</code></p>
+<p>As this export happens through a Cloud Build job, the default service account <code>[PROJECT-NUMBER]@cloudbuild.gserviceaccount.com</code> in the source or analysis project (if provided) must have the IAM role <code>[Storage Admin]</code> on their corresponding project's storage bucket/folder.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source_project_name</code></td>
+<td><code>None</code></td>
+<td>Source project containing the disk to export.</td>
+</tr>
+<tr>
+<td><code>gcs_output_location</code></td>
+<td><code>None</code></td>
+<td>Google Cloud Storage parent bucket/folder to which to export the image.</td>
+</tr>
+<tr>
+<td><code>--analysis_project_name</code></td>
+<td><code>None</code></td>
+<td>Project where the disk image is created then exported. If not provided, the image is exported to a bucket in the source project.</td>
+</tr>
+<tr>
+<td><code>--source_disk_names</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of disk names to export. If not provided, disks attached to <code>remote_instance_name</code> will be used.</td>
+</tr>
+<tr>
+<td><code>--remote_instance_name</code></td>
+<td><code>None</code></td>
+<td>Instance in source project to export its disks. If not provided, <code>disk_names</code> will be used.</td>
+</tr>
+<tr>
+<td><code>--all_disks</code></td>
+<td><code>False</code></td>
+<td>If True, copy all disks attached to the <code>remote_instance_name</code> instance. If False and <code>remote_instance_name</code> is provided, it will select the instance's boot disk.</td>
+</tr>
+<tr>
+<td><code>--exported_image_name</code></td>
+<td><code>None</code></td>
+<td>Name of the output file, must comply with <code>^[A-Za-z0-9-]*$</code> and <code>'.tar.gz'</code> will be appended to the name. If not provided or if more than one disk is selected, the exported image will be named <code>exported-image-{TIMESTAMP('YYYYmmddHHMMSS')}</code>.</td>
+</tr>
+<tr>
+<td><code>--image_format</code></td>
+<td><code>''</code></td>
+<td>An image format to use. Example values: qcow2, vmdk. Default (empty value) will be .tar.gz.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>GoogleCloudDiskExport</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="gce_disk_export" src="../_static/graphviz/gce_disk_export.png" /></p>
+<hr />
+<h2 id="gce_disk_export_dd"><code>gce_disk_export_dd</code><a class="headerlink" href="#gce_disk_export_dd" title="Permanent link">&para;</a></h2>
+<p>Stream the disk bytes from a GCP project to a Google Cloud Storage bucket.</p>
+<p><strong>Details:</strong></p>
+<p>The export is performed via bit streaming the the disk bytes to GCS. This will allow getting a disk image out of the project in case both organization policies <code>constraints/compute.storageResourceUseRestrictions</code> and <code>constraints/compute.trustedImageProjects</code> are enforced and in case OsLogin is allowed only for the organization users while the analyst is an external user with no roles/<code>compute.osLoginExternalUser</code> role.</p>
+<p>The exported images names are appended by <code>.tar.gz.</code></p>
+<p>The compute engine default service account in the source project must have sufficient permissions to Create and List Storage objects on the corresponding storage bucket/folder.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source_project_name</code></td>
+<td><code>None</code></td>
+<td>Source project containing the disk to export.</td>
+</tr>
+<tr>
+<td><code>gcs_output_location</code></td>
+<td><code>None</code></td>
+<td>Google Cloud Storage parent bucket/folder to which to export the image.</td>
+</tr>
+<tr>
+<td><code>--source_disk_names</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of disk names to export. If not provided, disks attached to <code>remote_instance_name</code> will be used.</td>
+</tr>
+<tr>
+<td><code>--remote_instance_name</code></td>
+<td><code>None</code></td>
+<td>Instance in source project to export its disks. If not provided, <code>source_disk_names</code> will be used.</td>
+</tr>
+<tr>
+<td><code>--all_disks</code></td>
+<td><code>False</code></td>
+<td>If True, copy all disks attached to the <code>remote_instance_name</code> instance. If False and <code>remote_instance_name</code> is provided, it will select the instance's boot disk.</td>
+</tr>
+<tr>
+<td><code>--boot_image_project</code></td>
+<td><code>'debian-cloud'</code></td>
+<td>Name of the project where the boot disk image of the export VM is stored.</td>
+</tr>
+<tr>
+<td><code>--boot_image_family</code></td>
+<td><code>'debian-10'</code></td>
+<td>Name of the image to use to create the boot disk of the export VM.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>GoogleCloudDiskExportStream</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="gce_disk_export_dd" src="../_static/graphviz/gce_disk_export_dd.png" /></p>
+<hr />
+<h2 id="gcp_cloud_resource_tree"><code>gcp_cloud_resource_tree</code><a class="headerlink" href="#gcp_cloud_resource_tree" title="Permanent link">&para;</a></h2>
+<p>Generates a parent/children tree for given GCP resource.</p>
+<p><strong>Details:</strong></p>
+<p>Generates a parent/children tree for given GCP resource by enumerating all the currently available resources. It also will attempt to fill any gaps identified in the tree through querying the GCP logs</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>project_id</code></td>
+<td><code>None</code></td>
+<td>ID of the project where the resource is located</td>
+</tr>
+<tr>
+<td><code>location</code></td>
+<td><code>None</code></td>
+<td>Resource location (zone/region) or 'global'</td>
+</tr>
+<tr>
+<td><code>resource_type</code></td>
+<td><code>None</code></td>
+<td>Resource type (currently supported types: gce_instance, gce_disk, gce_image, gce_machine_image, gce_instance_template, gce_snapshot)</td>
+</tr>
+<tr>
+<td><code>--resource_id</code></td>
+<td><code>None</code></td>
+<td>Resource id</td>
+</tr>
+<tr>
+<td><code>--resource_name</code></td>
+<td><code>None</code></td>
+<td>Resource name</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>GCPCloudResourceTree</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="gcp_cloud_resource_tree" src="../_static/graphviz/gcp_cloud_resource_tree.png" /></p>
+<hr />
+<h2 id="gcp_cloud_resource_tree_offline"><code>gcp_cloud_resource_tree_offline</code><a class="headerlink" href="#gcp_cloud_resource_tree_offline" title="Permanent link">&para;</a></h2>
+<p>Generates a parent/children tree for given GCP resource using the supplied exported GCP logs</p>
+<p><strong>Details:</strong></p>
+<p>Generates a parent/children tree for given GCP resource using the supplied exported GCP logs</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>project_id</code></td>
+<td><code>None</code></td>
+<td>ID of the project where the resource is located</td>
+</tr>
+<tr>
+<td><code>location</code></td>
+<td><code>None</code></td>
+<td>Resource location (zone/region) or 'global'</td>
+</tr>
+<tr>
+<td><code>resource_type</code></td>
+<td><code>None</code></td>
+<td>Resource type (currently supported types: gce_instance, gce_disk, gce_image, gce_machine_image, gce_instance_template, gce_snapshot)</td>
+</tr>
+<tr>
+<td><code>paths</code></td>
+<td><code>None</code></td>
+<td>Comma-separated paths to GCP log files. Log files should contain log entiries in json format.</td>
+</tr>
+<tr>
+<td><code>--resource_id</code></td>
+<td><code>None</code></td>
+<td>Resource id</td>
+</tr>
+<tr>
+<td><code>--resource_name</code></td>
+<td><code>None</code></td>
+<td>Resource name</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>FilesystemCollector</code>, <code>GCPCloudResourceTree</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="gcp_cloud_resource_tree_offline" src="../_static/graphviz/gcp_cloud_resource_tree_offline.png" /></p>
+<hr />
+<h2 id="gcp_forensics"><code>gcp_forensics</code><a class="headerlink" href="#gcp_forensics" title="Permanent link">&para;</a></h2>
+<p>Copies disk from a GCP project to an analysis VM.</p>
+<p><strong>Details:</strong></p>
+<p>Copies a persistent disk from a GCP project to another, creates an analysis VM (with a startup script containing installation instructions for basic forensics tooling) in the destination project, and attaches the copied GCP persistent disk to it.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source_project_name</code></td>
+<td><code>None</code></td>
+<td>Name of the project containing the instance / disks to copy.</td>
+</tr>
+<tr>
+<td><code>analysis_project_name</code></td>
+<td><code>None</code></td>
+<td>Name of the project where the analysis VM will be created and disks copied to.</td>
+</tr>
+<tr>
+<td><code>--incident_id</code></td>
+<td><code>None</code></td>
+<td>Incident ID to label the VM with.</td>
+</tr>
+<tr>
+<td><code>--instances</code></td>
+<td><code>None</code></td>
+<td>Name of the instance to analyze.</td>
+</tr>
+<tr>
+<td><code>--disks</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of disks to copy from the source GCP project (if <code>instance</code> not provided).</td>
+</tr>
+<tr>
+<td><code>--all_disks</code></td>
+<td><code>False</code></td>
+<td>Copy all disks in the designated instance. Overrides <code>disk_names</code> if specified.</td>
+</tr>
+<tr>
+<td><code>--stop_instances</code></td>
+<td><code>False</code></td>
+<td>Stop the designated instance after copying disks.</td>
+</tr>
+<tr>
+<td><code>--create_analysis_vm</code></td>
+<td><code>True</code></td>
+<td>Create an analysis VM in the destination project.</td>
+</tr>
+<tr>
+<td><code>--cpu_cores</code></td>
+<td><code>'4'</code></td>
+<td>Number of CPU cores of the analysis VM.</td>
+</tr>
+<tr>
+<td><code>--boot_disk_size</code></td>
+<td><code>'50'</code></td>
+<td>The size of the analysis VM boot disk (in GB).</td>
+</tr>
+<tr>
+<td><code>--boot_disk_type</code></td>
+<td><code>'pd-standard'</code></td>
+<td>Disk type to use [pd-standard, pd-ssd].</td>
+</tr>
+<tr>
+<td><code>--zone</code></td>
+<td><code>'us-central1-f'</code></td>
+<td>The GCP zone where the Analysis VM and copied disks will be created.</td>
+</tr>
+<tr>
+<td><code>--analysis_vm_name</code></td>
+<td><code>'gcp-forensics-vm'</code></td>
+<td>Name (prefix) to give the analysis vm.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>GCEDiskCopy</code>, <code>GCEForensicsVM</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="gcp_forensics" src="../_static/graphviz/gcp_forensics.png" /></p>
+<hr />
+<h2 id="gcp_logging_cloudaudit_ts"><code>gcp_logging_cloudaudit_ts</code><a class="headerlink" href="#gcp_logging_cloudaudit_ts" title="Permanent link">&para;</a></h2>
+<p>Collects GCP logs from a project and exports them to Timesketch.</p>
+<p><strong>Details:</strong></p>
+<p>Collects GCP logs from a project and exports them to Timesketch. Some light processing is made to translate the logs into something Timesketch can process.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>project_name</code></td>
+<td><code>None</code></td>
+<td>Name of the GCP project to collect logs from.</td>
+</tr>
+<tr>
+<td><code>start_date</code></td>
+<td><code>None</code></td>
+<td>Start date.</td>
+</tr>
+<tr>
+<td><code>end_date</code></td>
+<td><code>None</code></td>
+<td>End date.</td>
+</tr>
+<tr>
+<td><code>--incident_id</code></td>
+<td><code>None</code></td>
+<td>Incident ID (used for Timesketch description).</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>Timesketch sketch to which the timeline should be added.</td>
+</tr>
+<tr>
+<td><code>--timesketch_endpoint</code></td>
+<td><code>'http://localhost:5000/'</code></td>
+<td>Timesketch endpoint</td>
+</tr>
+<tr>
+<td><code>--timesketch_username</code></td>
+<td><code>None</code></td>
+<td>Username for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--timesketch_password</code></td>
+<td><code>None</code></td>
+<td>Password for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--token_password</code></td>
+<td><code>''</code></td>
+<td>Optional custom password to decrypt Timesketch credential file with.</td>
+</tr>
+<tr>
+<td><code>--wait_for_timelines</code></td>
+<td><code>True</code></td>
+<td>Whether to wait for Timesketch to finish processing all timelines.</td>
+</tr>
+<tr>
+<td><code>--backoff</code></td>
+<td><code>True</code></td>
+<td>If GCP Cloud Logging API query limits are exceeded, retry with an increased delay between each query to try complete the query at a slower rate.</td>
+</tr>
+<tr>
+<td><code>--delay</code></td>
+<td><code>'0'</code></td>
+<td>Number of seconds to wait between each GCP Cloud Logging query to avoid hitting API query limits</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>GCPLogsCollector</code>, <code>LocalPlasoProcessor</code>, <code>TimesketchExporter</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="gcp_logging_cloudaudit_ts" src="../_static/graphviz/gcp_logging_cloudaudit_ts.png" /></p>
+<hr />
+<h2 id="gcp_logging_cloudsql_ts"><code>gcp_logging_cloudsql_ts</code><a class="headerlink" href="#gcp_logging_cloudsql_ts" title="Permanent link">&para;</a></h2>
+<p>Collects GCP related to Cloud SQL instances in a project and exports them to Timesketch.</p>
+<p><strong>Details:</strong></p>
+<p>Collects GCP related to Cloud SQL instances in a project and exports them to Timesketch. Some light processing is made to translate the logs into something Timesketch can process.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>project_name</code></td>
+<td><code>None</code></td>
+<td>Name of the GCP project to collect logs from.</td>
+</tr>
+<tr>
+<td><code>start_date</code></td>
+<td><code>None</code></td>
+<td>Start date.</td>
+</tr>
+<tr>
+<td><code>end_date</code></td>
+<td><code>None</code></td>
+<td>End date.</td>
+</tr>
+<tr>
+<td><code>--incident_id</code></td>
+<td><code>None</code></td>
+<td>Incident ID (used for Timesketch description).</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>Timesketch sketch to which the timeline should be added.</td>
+</tr>
+<tr>
+<td><code>--timesketch_endpoint</code></td>
+<td><code>'http://localhost:5000/'</code></td>
+<td>Timesketch endpoint</td>
+</tr>
+<tr>
+<td><code>--timesketch_username</code></td>
+<td><code>None</code></td>
+<td>Username for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--timesketch_password</code></td>
+<td><code>None</code></td>
+<td>Password for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--token_password</code></td>
+<td><code>''</code></td>
+<td>Optional custom password to decrypt Timesketch credential file with.</td>
+</tr>
+<tr>
+<td><code>--wait_for_timelines</code></td>
+<td><code>True</code></td>
+<td>Whether to wait for Timesketch to finish processing all timelines.</td>
+</tr>
+<tr>
+<td><code>--backoff</code></td>
+<td><code>True</code></td>
+<td>If GCP Cloud Logging API query limits are exceeded, retry with an increased delay between each query to try complete the query at a slower rate.</td>
+</tr>
+<tr>
+<td><code>--delay</code></td>
+<td><code>'0'</code></td>
+<td>Number of seconds to wait between each GCP Cloud Logging query to avoid hitting API query limits</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>GCPLogsCollector</code>, <code>LocalPlasoProcessor</code>, <code>TimesketchExporter</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="gcp_logging_cloudsql_ts" src="../_static/graphviz/gcp_logging_cloudsql_ts.png" /></p>
+<hr />
+<h2 id="gcp_logging_collect"><code>gcp_logging_collect</code><a class="headerlink" href="#gcp_logging_collect" title="Permanent link">&para;</a></h2>
+<p>Collects logs from a GCP project and dumps on the filesystem (JSON). https://cloud.google.com/logging/docs/view/query-library for example queries.</p>
+<p><strong>Details:</strong></p>
+<p>Collects logs from a GCP project and dumps on the filesystem.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>project_name</code></td>
+<td><code>None</code></td>
+<td>Name of the GCP project to collect logs from.</td>
+</tr>
+<tr>
+<td><code>filter_expression</code></td>
+<td><code>"resource.type = 'gce_instance'"</code></td>
+<td>Filter expression to use to query GCP logs. See https://cloud.google.com/logging/docs/view/query-library for examples.</td>
+</tr>
+<tr>
+<td><code>--backoff</code></td>
+<td><code>True</code></td>
+<td>If GCP Cloud Logging API query limits are exceeded, retry with an increased delay between each query to try complete the query at a slower rate.</td>
+</tr>
+<tr>
+<td><code>--delay</code></td>
+<td><code>'0'</code></td>
+<td>Number of seconds to wait between each GCP Cloud Logging query to avoid hitting API query limits</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>GCPLogsCollector</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="gcp_logging_collect" src="../_static/graphviz/gcp_logging_collect.png" /></p>
+<hr />
+<h2 id="gcp_logging_gce_instance_ts"><code>gcp_logging_gce_instance_ts</code><a class="headerlink" href="#gcp_logging_gce_instance_ts" title="Permanent link">&para;</a></h2>
+<p>GCP Instance Cloud Audit logs to Timesketch</p>
+<p><strong>Details:</strong></p>
+<p>Collects GCP Cloud Audit Logs for a GCE instance and exports them to Timesketch. Some light processing is made to translate the logs into something Timesketch can process.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>project_name</code></td>
+<td><code>None</code></td>
+<td>Name of the GCP project to collect logs from.</td>
+</tr>
+<tr>
+<td><code>instance_id</code></td>
+<td><code>None</code></td>
+<td>Identifier for GCE instance (Instance ID).</td>
+</tr>
+<tr>
+<td><code>--incident_id</code></td>
+<td><code>None</code></td>
+<td>Incident ID (used for Timesketch description).</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>Timesketch sketch to which the timeline should be added.</td>
+</tr>
+<tr>
+<td><code>--timesketch_endpoint</code></td>
+<td><code>'http://localhost:5000/'</code></td>
+<td>Timesketch endpoint</td>
+</tr>
+<tr>
+<td><code>--timesketch_username</code></td>
+<td><code>None</code></td>
+<td>Username for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--timesketch_password</code></td>
+<td><code>None</code></td>
+<td>Password for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--token_password</code></td>
+<td><code>''</code></td>
+<td>Optional custom password to decrypt Timesketch credential file with.</td>
+</tr>
+<tr>
+<td><code>--wait_for_timelines</code></td>
+<td><code>True</code></td>
+<td>Whether to wait for Timesketch to finish processing all timelines.</td>
+</tr>
+<tr>
+<td><code>--backoff</code></td>
+<td><code>True</code></td>
+<td>If GCP Cloud Logging API query limits are exceeded, retry with an increased delay between each query to try complete the query at a slower rate.</td>
+</tr>
+<tr>
+<td><code>--delay</code></td>
+<td><code>'0'</code></td>
+<td>Number of seconds to wait between each GCP Cloud Logging query to avoid hitting API query limits</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>GCPLogsCollector</code>, <code>LocalPlasoProcessor</code>, <code>TimesketchExporter</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="gcp_logging_gce_instance_ts" src="../_static/graphviz/gcp_logging_gce_instance_ts.png" /></p>
+<hr />
+<h2 id="gcp_logging_gce_ts"><code>gcp_logging_gce_ts</code><a class="headerlink" href="#gcp_logging_gce_ts" title="Permanent link">&para;</a></h2>
+<p>Loads all GCE Cloud Audit Logs in a GCP project into Timesketch.</p>
+<p><strong>Details:</strong></p>
+<p>Loads all GCE Cloud Audit Logs for all instances in a GCP project into Timesketch. Some light processing is made to translate the logs into something Timesketch can process.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>project_name</code></td>
+<td><code>None</code></td>
+<td>Name of the GCP project to collect logs from.</td>
+</tr>
+<tr>
+<td><code>start_date</code></td>
+<td><code>None</code></td>
+<td>Start date.</td>
+</tr>
+<tr>
+<td><code>end_date</code></td>
+<td><code>None</code></td>
+<td>End date.</td>
+</tr>
+<tr>
+<td><code>--incident_id</code></td>
+<td><code>None</code></td>
+<td>Incident ID (used for Timesketch description).</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>Timesketch sketch to which the timeline should be added.</td>
+</tr>
+<tr>
+<td><code>--timesketch_endpoint</code></td>
+<td><code>'http://localhost:5000/'</code></td>
+<td>Timesketch endpoint</td>
+</tr>
+<tr>
+<td><code>--timesketch_username</code></td>
+<td><code>None</code></td>
+<td>Username for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--timesketch_password</code></td>
+<td><code>None</code></td>
+<td>Password for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--token_password</code></td>
+<td><code>''</code></td>
+<td>Optional custom password to decrypt Timesketch credential file with.</td>
+</tr>
+<tr>
+<td><code>--wait_for_timelines</code></td>
+<td><code>True</code></td>
+<td>Whether to wait for Timesketch to finish processing all timelines.</td>
+</tr>
+<tr>
+<td><code>--backoff</code></td>
+<td><code>True</code></td>
+<td>If GCP Cloud Logging API query limits are exceeded, retry with an increased delay between each query to try complete the query at a slower rate.</td>
+</tr>
+<tr>
+<td><code>--delay</code></td>
+<td><code>'0'</code></td>
+<td>Number of seconds to wait between each GCP Cloud Logging query to avoid hitting API query limits</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>GCPLogsCollector</code>, <code>LocalPlasoProcessor</code>, <code>TimesketchExporter</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="gcp_logging_gce_ts" src="../_static/graphviz/gcp_logging_gce_ts.png" /></p>
+<hr />
+<h2 id="gcp_logging_ts"><code>gcp_logging_ts</code><a class="headerlink" href="#gcp_logging_ts" title="Permanent link">&para;</a></h2>
+<p>Collects logs from a GCP project and sends them to Timesketch.</p>
+<p><strong>Details:</strong></p>
+<p>Collects logs from a GCP project and sends them to Timesketch. https://cloud.google.com/logging/docs/view/query-library for example queries.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>project_name</code></td>
+<td><code>None</code></td>
+<td>Name of the GCP project to collect logs from.</td>
+</tr>
+<tr>
+<td><code>filter_expression</code></td>
+<td><code>"resource.type = 'gce_instance'"</code></td>
+<td>Filter expression to use to query GCP logs. See https://cloud.google.com/logging/docs/view/query-library for examples.</td>
+</tr>
+<tr>
+<td><code>--backoff</code></td>
+<td><code>True</code></td>
+<td>If GCP Cloud Logging API query limits are exceeded, retry with an increased delay between each query to try complete the query at a slower rate.</td>
+</tr>
+<tr>
+<td><code>--delay</code></td>
+<td><code>'0'</code></td>
+<td>Number of seconds to wait between each GCP Cloud Logging query to avoid hitting API query limits</td>
+</tr>
+<tr>
+<td><code>--analyzers</code></td>
+<td><code>None</code></td>
+<td>Timesketch analyzers to run.</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>Timesketch sketch to which the timeline should be added.</td>
+</tr>
+<tr>
+<td><code>--timesketch_endpoint</code></td>
+<td><code>'http://localhost:5000/'</code></td>
+<td>Timesketch endpoint</td>
+</tr>
+<tr>
+<td><code>--timesketch_username</code></td>
+<td><code>None</code></td>
+<td>Username for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--timesketch_password</code></td>
+<td><code>None</code></td>
+<td>Password for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--token_password</code></td>
+<td><code>''</code></td>
+<td>Optional custom password to decrypt Timesketch credential file with.</td>
+</tr>
+<tr>
+<td><code>--incident_id</code></td>
+<td><code>None</code></td>
+<td>Incident ID (used for Timesketch description).</td>
+</tr>
+<tr>
+<td><code>--wait_for_timelines</code></td>
+<td><code>True</code></td>
+<td>Whether to wait for Timesketch to finish processing all timelines.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>GCPLogsCollector</code>, <code>GCPLoggingTimesketch</code>, <code>TimesketchExporter</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="gcp_logging_ts" src="../_static/graphviz/gcp_logging_ts.png" /></p>
+<hr />
+<h2 id="gcp_turbinia_disk_copy_ts"><code>gcp_turbinia_disk_copy_ts</code><a class="headerlink" href="#gcp_turbinia_disk_copy_ts" title="Permanent link">&para;</a></h2>
+<p>Imports a remote GCP persistent disk, processes it with Turbinia and sends results to Timesketch.</p>
+<p><strong>Details:</strong></p>
+<p>Imports a remote GCP persistent disk into an analysis GCP project and sends the result of Turbinia processing to Timesketch.</p>
+<ul>
+<li>Copies a disk from a remote GCP project into an analysis project</li>
+<li>Creates Turbinia processing request to process the imported disk</li>
+<li>Downloads and sends results of the Turbinia processing to Timesketch.</li>
+</ul>
+<p>This recipe will also start an analysis VM in the destination project with the attached disk (the same one that Turbinia will have processed). If the target disk is already in the same project as Turbinia, you can use the <code>gcp_turbinia_ts</code> recipe.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source_project_name</code></td>
+<td><code>None</code></td>
+<td>Name of the project containing the instance / disks to copy.</td>
+</tr>
+<tr>
+<td><code>analysis_project_name</code></td>
+<td><code>None</code></td>
+<td>Name of the project containing the Turbinia instance.</td>
+</tr>
+<tr>
+<td><code>--request_ids</code></td>
+<td><code>None</code></td>
+<td>Comma separated Turbinia request identifiers to process.</td>
+</tr>
+<tr>
+<td><code>--yara_rules_path</code></td>
+<td><code>None</code></td>
+<td>Paths to Yara rules sent to Turbinia for processing.</td>
+</tr>
+<tr>
+<td><code>--turbinia_recipe</code></td>
+<td><code>None</code></td>
+<td>The Turbinia recipe name to use for evidence processing.</td>
+</tr>
+<tr>
+<td><code>--turbinia_zone</code></td>
+<td><code>'us-central1-f'</code></td>
+<td>The GCP zone the disk to process and Turbinia workers are in.</td>
+</tr>
+<tr>
+<td><code>--turbinia_auth</code></td>
+<td><code>False</code></td>
+<td>Flag to indicate whether Turbinia API server requires authentication.</td>
+</tr>
+<tr>
+<td><code>--turbinia_api</code></td>
+<td><code>'http://127.0.0.1:8000'</code></td>
+<td>Turbinia API server endpoint.</td>
+</tr>
+<tr>
+<td><code>--incident_id</code></td>
+<td><code>None</code></td>
+<td>Incident ID (used for Timesketch description and to label the VM with).</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>Timesketch sketch to which the timeline should be added.</td>
+</tr>
+<tr>
+<td><code>--timesketch_endpoint</code></td>
+<td><code>'http://localhost:5000/'</code></td>
+<td>Timesketch endpoint</td>
+</tr>
+<tr>
+<td><code>--timesketch_username</code></td>
+<td><code>None</code></td>
+<td>Username for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--timesketch_password</code></td>
+<td><code>None</code></td>
+<td>Password for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--token_password</code></td>
+<td><code>''</code></td>
+<td>Optional custom password to decrypt Timesketch credential file with.</td>
+</tr>
+<tr>
+<td><code>--create_analysis_vm</code></td>
+<td><code>True</code></td>
+<td>Create an analysis VM in the destination project.</td>
+</tr>
+<tr>
+<td><code>--wait_for_timelines</code></td>
+<td><code>True</code></td>
+<td>Whether to wait for Timesketch to finish processing all timelines.</td>
+</tr>
+<tr>
+<td><code>--instances</code></td>
+<td><code>None</code></td>
+<td>Name of the instances to analyze.</td>
+</tr>
+<tr>
+<td><code>--disks</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of disks to copy from the source GCP project (if <code>instance</code> not provided).</td>
+</tr>
+<tr>
+<td><code>--all_disks</code></td>
+<td><code>False</code></td>
+<td>Copy all disks in the designated instance. Overrides disk_names if specified.</td>
+</tr>
+<tr>
+<td><code>--stop_instances</code></td>
+<td><code>False</code></td>
+<td>Stop the designated instances after copying disks.</td>
+</tr>
+<tr>
+<td><code>--cpu_cores</code></td>
+<td><code>'4'</code></td>
+<td>Number of CPU cores of the analysis VM.</td>
+</tr>
+<tr>
+<td><code>--boot_disk_size</code></td>
+<td><code>'50'</code></td>
+<td>The size of the analysis VM boot disk (in GB).</td>
+</tr>
+<tr>
+<td><code>--boot_disk_type</code></td>
+<td><code>'pd-standard'</code></td>
+<td>Disk type to use [pd-standard, pd-ssd]</td>
+</tr>
+<tr>
+<td><code>--image_project</code></td>
+<td><code>'ubuntu-os-cloud'</code></td>
+<td>Name of the project where the analysis VM image is hosted.</td>
+</tr>
+<tr>
+<td><code>--image_family</code></td>
+<td><code>'ubuntu-2204-lts'</code></td>
+<td>Name of the image to use to create the analysis VM.</td>
+</tr>
+<tr>
+<td><code>--priority_filter</code></td>
+<td><code>'100'</code></td>
+<td>Filter report findings, range from 0 to 100, 0 is the highest.</td>
+</tr>
+<tr>
+<td><code>--analysis_vm_name</code></td>
+<td><code>'gcp-forensics-vm'</code></td>
+<td>Name (prefix) to give the analysis vm.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>LocalYaraCollector</code>, <code>GCEDiskCopy</code>, <code>GCEForensicsVM</code>, <code>TurbiniaGCPProcessor</code>, <code>TimesketchExporter</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="gcp_turbinia_disk_copy_ts" src="../_static/graphviz/gcp_turbinia_disk_copy_ts.png" /></p>
+<hr />
+<h2 id="gcp_turbinia_ts"><code>gcp_turbinia_ts</code><a class="headerlink" href="#gcp_turbinia_ts" title="Permanent link">&para;</a></h2>
+<p>Processes existing GCP persistent disks with Turbinia project and sends results to Timesketch.</p>
+<p><strong>Details:</strong></p>
+<p>Process GCP persistent disks with Turbinia and send output to Timesketch.</p>
+<p>This processes disks that are already in the project where Turbinia exists. If you want to copy disks from another project, use the <code>gcp_turbinia_disk_copy_ts</code> recipe.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>analysis_project_name</code></td>
+<td><code>None</code></td>
+<td>Name of GCP project the disk exists in.</td>
+</tr>
+<tr>
+<td><code>turbinia_zone</code></td>
+<td><code>None</code></td>
+<td>The GCP zone the disk to process (and Turbinia workers) are in.</td>
+</tr>
+<tr>
+<td><code>--disk_names</code></td>
+<td><code>None</code></td>
+<td>Comma separated names of GCP persistent disks to process. This parameter can only be used if --request_ids is not provided.</td>
+</tr>
+<tr>
+<td><code>--request_ids</code></td>
+<td><code>None</code></td>
+<td>Comma separated Turbinia request identifiers to process. This parameter can only be used if --disk_names is not provided.</td>
+</tr>
+<tr>
+<td><code>--incident_id</code></td>
+<td><code>None</code></td>
+<td>Incident ID (used for Timesketch description).</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>Timesketch sketch to which the timeline should be added.</td>
+</tr>
+<tr>
+<td><code>--timesketch_endpoint</code></td>
+<td><code>'http://localhost:5000/'</code></td>
+<td>Timesketch endpoint</td>
+</tr>
+<tr>
+<td><code>--timesketch_username</code></td>
+<td><code>None</code></td>
+<td>Username for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--timesketch_password</code></td>
+<td><code>None</code></td>
+<td>Password for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--token_password</code></td>
+<td><code>''</code></td>
+<td>Optional custom password to decrypt Timesketch credential file with.</td>
+</tr>
+<tr>
+<td><code>--turbinia_recipe</code></td>
+<td><code>None</code></td>
+<td>The Turbinia recipe name to use for evidence processing.</td>
+</tr>
+<tr>
+<td><code>--turbinia_auth</code></td>
+<td><code>False</code></td>
+<td>Flag to indicate whether Turbinia API server requires authentication.</td>
+</tr>
+<tr>
+<td><code>--turbinia_api</code></td>
+<td><code>'http://127.0.0.1:8000'</code></td>
+<td>Turbinia API server endpoint.</td>
+</tr>
+<tr>
+<td><code>--wait_for_timelines</code></td>
+<td><code>True</code></td>
+<td>Whether to wait for Timesketch to finish processing all timelines.</td>
+</tr>
+<tr>
+<td><code>--priority_filter</code></td>
+<td><code>'100'</code></td>
+<td>Filter report findings, range from 0 to 100, 0 is the highest.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>TurbiniaGCPProcessor</code>, <code>TimesketchExporter</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="gcp_turbinia_ts" src="../_static/graphviz/gcp_turbinia_ts.png" /></p>
+<hr />
+<h2 id="grr_artifact_grep"><code>grr_artifact_grep</code><a class="headerlink" href="#grr_artifact_grep" title="Permanent link">&para;</a></h2>
+<p>Fetches ForensicArtifacts from GRR hosts and runs grep with a list of keywords on them.</p>
+<p><strong>Details:</strong></p>
+<p>Collect ForensicArtifacts from hosts using GRR.</p>
+<ul>
+<li>Collect a predefined list of artifacts from hosts using GRR</li>
+<li>Process them locally with grep to extract keywords.</li>
+</ul>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hostnames</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of hostnames or GRR client IDs to process.</td>
+</tr>
+<tr>
+<td><code>reason</code></td>
+<td><code>None</code></td>
+<td>Reason for collection.</td>
+</tr>
+<tr>
+<td><code>keywords</code></td>
+<td><code>None</code></td>
+<td>Pipe-separated list of keywords to search for (e.g. key1</td>
+</tr>
+<tr>
+<td><code>--artifacts</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of artifacts to fetch (override default artifacts).</td>
+</tr>
+<tr>
+<td><code>--extra_artifacts</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of artifacts to append to the default artifact list.</td>
+</tr>
+<tr>
+<td><code>--use_raw_filesystem_access</code></td>
+<td><code>False</code></td>
+<td>Use raw disk access to fetch artifacts.</td>
+</tr>
+<tr>
+<td><code>--approvers</code></td>
+<td><code>None</code></td>
+<td>Emails for GRR approval request.</td>
+</tr>
+<tr>
+<td><code>--grr_server_url</code></td>
+<td><code>'http://localhost:8000'</code></td>
+<td>GRR endpoint.</td>
+</tr>
+<tr>
+<td><code>--verify</code></td>
+<td><code>True</code></td>
+<td>Whether to verify the GRR TLS certificate.</td>
+</tr>
+<tr>
+<td><code>--skip_offline_clients</code></td>
+<td><code>False</code></td>
+<td>Whether to skip clients that are offline.</td>
+</tr>
+<tr>
+<td><code>--grr_username</code></td>
+<td><code>'admin'</code></td>
+<td>GRR username.</td>
+</tr>
+<tr>
+<td><code>--grr_password</code></td>
+<td><code>'admin'</code></td>
+<td>GRR password.</td>
+</tr>
+<tr>
+<td><code>--max_file_size</code></td>
+<td><code>'5368709120'</code></td>
+<td>Maximum size of files to collect (in bytes).</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>GRRArtifactCollector</code>, <code>GrepperSearch</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="grr_artifact_grep" src="../_static/graphviz/grr_artifact_grep.png" /></p>
+<hr />
+<h2 id="grr_artifact_ts"><code>grr_artifact_ts</code><a class="headerlink" href="#grr_artifact_ts" title="Permanent link">&para;</a></h2>
+<p>Fetches default ForensicArtifacts from a sequence of GRR hosts, processes them with plaso, and sends the results to Timesketch.</p>
+<p><strong>Details:</strong></p>
+<p>Collect artifacts from hosts using GRR.</p>
+<ul>
+<li>Collect a predefined list of artifacts from hosts using GRR</li>
+<li>Process them with a local install of plaso</li>
+<li>Export them to a Timesketch sketch.</li>
+</ul>
+<p>The default set of artifacts is defined in the GRRArtifactCollector module (see the <code>_DEFAULT_ARTIFACTS_*</code> class attributes in <code>grr_hosts.py</code>), and varies per platform.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hostnames</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of hostnames or GRR client IDs to process.</td>
+</tr>
+<tr>
+<td><code>reason</code></td>
+<td><code>None</code></td>
+<td>Reason for collection.</td>
+</tr>
+<tr>
+<td><code>--artifacts</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of artifacts to fetch (override default artifacts).</td>
+</tr>
+<tr>
+<td><code>--extra_artifacts</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of artifacts to append to the default artifact list.</td>
+</tr>
+<tr>
+<td><code>--use_raw_filesystem_access</code></td>
+<td><code>False</code></td>
+<td>Use raw disk access to fetch artifacts.</td>
+</tr>
+<tr>
+<td><code>--approvers</code></td>
+<td><code>None</code></td>
+<td>Emails for GRR approval request.</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>Timesketch sketch to which the timeline should be added.</td>
+</tr>
+<tr>
+<td><code>--wait_for_timelines</code></td>
+<td><code>True</code></td>
+<td>Whether to wait for Timesketch to finish processing all timelines.</td>
+</tr>
+<tr>
+<td><code>--analyzers</code></td>
+<td><code>None</code></td>
+<td>Timesketch analyzers to run</td>
+</tr>
+<tr>
+<td><code>--token_password</code></td>
+<td><code>''</code></td>
+<td>Optional custom password to decrypt Timesketch credential file with.</td>
+</tr>
+<tr>
+<td><code>--timesketch_endpoint</code></td>
+<td><code>'http://localhost:5000/'</code></td>
+<td>Timesketch endpoint</td>
+</tr>
+<tr>
+<td><code>--timesketch_username</code></td>
+<td><code>None</code></td>
+<td>Username for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--timesketch_password</code></td>
+<td><code>None</code></td>
+<td>Password for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--incident_id</code></td>
+<td><code>None</code></td>
+<td>Incident ID (used for Timesketch description).</td>
+</tr>
+<tr>
+<td><code>--grr_server_url</code></td>
+<td><code>'http://localhost:8000'</code></td>
+<td>GRR endpoint.</td>
+</tr>
+<tr>
+<td><code>--verify</code></td>
+<td><code>True</code></td>
+<td>Whether to verify the GRR TLS certificate.</td>
+</tr>
+<tr>
+<td><code>--skip_offline_clients</code></td>
+<td><code>False</code></td>
+<td>Whether to skip clients that are offline.</td>
+</tr>
+<tr>
+<td><code>--grr_username</code></td>
+<td><code>'admin'</code></td>
+<td>GRR username</td>
+</tr>
+<tr>
+<td><code>--grr_password</code></td>
+<td><code>'admin'</code></td>
+<td>GRR password</td>
+</tr>
+<tr>
+<td><code>--user_docker</code></td>
+<td><code>True</code></td>
+<td>Whether the LocalPlasoProcessor should use Docker or not.</td>
+</tr>
+<tr>
+<td><code>--max_file_size</code></td>
+<td><code>'5368709120'</code></td>
+<td>Maximum size of files to collect (in bytes).</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>GRRArtifactCollector</code>, <code>LocalPlasoProcessor</code>, <code>TimesketchExporter</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="grr_artifact_ts" src="../_static/graphviz/grr_artifact_ts.png" /></p>
+<hr />
+<h2 id="grr_files_collect"><code>grr_files_collect</code><a class="headerlink" href="#grr_files_collect" title="Permanent link">&para;</a></h2>
+<p>Collects specific files from one or more GRR hosts.</p>
+<p><strong>Details:</strong></p>
+<p>Collects specific files from one or more GRR hosts. Files can be a glob pattern (e.g. <code>/tmp/*.so</code>) and support GRR variable interpolation (e.g. <code>%%users.localappdata%%/Directory/</code>) </p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hostnames</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of hostnames or GRR client IDs to process.</td>
+</tr>
+<tr>
+<td><code>reason</code></td>
+<td><code>None</code></td>
+<td>Reason for collection.</td>
+</tr>
+<tr>
+<td><code>files</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of files to fetch (supports globs and GRR variable interpolation).</td>
+</tr>
+<tr>
+<td><code>directory</code></td>
+<td><code>None</code></td>
+<td>Directory in which to export files.</td>
+</tr>
+<tr>
+<td><code>--use_raw_filesystem_access</code></td>
+<td><code>False</code></td>
+<td>Use raw disk access to fetch artifacts.</td>
+</tr>
+<tr>
+<td><code>--approvers</code></td>
+<td><code>None</code></td>
+<td>Emails for GRR approval request.</td>
+</tr>
+<tr>
+<td><code>--verify</code></td>
+<td><code>True</code></td>
+<td>Whether to verify the GRR TLS certificate.</td>
+</tr>
+<tr>
+<td><code>--skip_offline_clients</code></td>
+<td><code>False</code></td>
+<td>Whether to skip clients that are offline.</td>
+</tr>
+<tr>
+<td><code>--action</code></td>
+<td><code>'download'</code></td>
+<td>String denoting action (download/hash/stat) to take</td>
+</tr>
+<tr>
+<td><code>--grr_server_url</code></td>
+<td><code>'http://localhost:8000'</code></td>
+<td>GRR endpoint</td>
+</tr>
+<tr>
+<td><code>--grr_username</code></td>
+<td><code>'admin'</code></td>
+<td>GRR username</td>
+</tr>
+<tr>
+<td><code>--grr_password</code></td>
+<td><code>'admin'</code></td>
+<td>GRR password</td>
+</tr>
+<tr>
+<td><code>--max_file_size</code></td>
+<td><code>'5368709120'</code></td>
+<td>Maximum size of files to collect (in bytes).</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>GRRFileCollector</code>, <code>LocalFilesystemCopy</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="grr_files_collect" src="../_static/graphviz/grr_files_collect.png" /></p>
+<hr />
+<h2 id="grr_flow_collect"><code>grr_flow_collect</code><a class="headerlink" href="#grr_flow_collect" title="Permanent link">&para;</a></h2>
+<p>Download the result of a GRR flow to the local filesystem.</p>
+<p><strong>Details:</strong></p>
+<p>Download the result of a GRR flow to the local filesystem. Flow IDs are unique <em>per client</em>, so both need to be provided in sequence.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hostnames</code></td>
+<td><code>None</code></td>
+<td>Hostname(s) to collect the flow from.</td>
+</tr>
+<tr>
+<td><code>flow_ids</code></td>
+<td><code>None</code></td>
+<td>Flow ID(s) to download.</td>
+</tr>
+<tr>
+<td><code>reason</code></td>
+<td><code>None</code></td>
+<td>Reason for collection.</td>
+</tr>
+<tr>
+<td><code>directory</code></td>
+<td><code>None</code></td>
+<td>Directory in which to export files.</td>
+</tr>
+<tr>
+<td><code>--approvers</code></td>
+<td><code>None</code></td>
+<td>Emails for GRR approval request.</td>
+</tr>
+<tr>
+<td><code>--grr_server_url</code></td>
+<td><code>'http://localhost:8000'</code></td>
+<td>GRR endpoint</td>
+</tr>
+<tr>
+<td><code>--verify</code></td>
+<td><code>True</code></td>
+<td>Whether to verify the GRR TLS certificate.</td>
+</tr>
+<tr>
+<td><code>--skip_offline_clients</code></td>
+<td><code>False</code></td>
+<td>Whether to skip clients that are offline.</td>
+</tr>
+<tr>
+<td><code>--grr_username</code></td>
+<td><code>'admin'</code></td>
+<td>GRR username</td>
+</tr>
+<tr>
+<td><code>--grr_password</code></td>
+<td><code>'admin'</code></td>
+<td>GRR password</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>GRRFlowCollector</code>, <code>LocalFilesystemCopy</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="grr_flow_collect" src="../_static/graphviz/grr_flow_collect.png" /></p>
+<hr />
+<h2 id="grr_hunt_artifacts"><code>grr_hunt_artifacts</code><a class="headerlink" href="#grr_hunt_artifacts" title="Permanent link">&para;</a></h2>
+<p>Starts a GRR hunt for the default set of artifacts.</p>
+<p><strong>Details:</strong></p>
+<p>Starts a GRR artifact hunt and provides the Hunt ID to the user. Feed the Hunt ID to <code>grr_huntresults_ts</code> to process results through Plaso and export them to Timesketch.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>artifacts</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of artifacts to hunt for.</td>
+</tr>
+<tr>
+<td><code>reason</code></td>
+<td><code>None</code></td>
+<td>Reason for collection.</td>
+</tr>
+<tr>
+<td><code>--use_raw_filesystem_access</code></td>
+<td><code>False</code></td>
+<td>Use raw disk access to fetch artifacts.</td>
+</tr>
+<tr>
+<td><code>--approvers</code></td>
+<td><code>None</code></td>
+<td>Emails for GRR approval request.</td>
+</tr>
+<tr>
+<td><code>--grr_server_url</code></td>
+<td><code>'http://localhost:8000'</code></td>
+<td>GRR endpoint</td>
+</tr>
+<tr>
+<td><code>--verify</code></td>
+<td><code>True</code></td>
+<td>Whether to verify the GRR TLS certificate.</td>
+</tr>
+<tr>
+<td><code>--grr_username</code></td>
+<td><code>'admin'</code></td>
+<td>GRR username</td>
+</tr>
+<tr>
+<td><code>--grr_password</code></td>
+<td><code>'admin'</code></td>
+<td>GRR password</td>
+</tr>
+<tr>
+<td><code>--max_file_size</code></td>
+<td><code>'5368709120'</code></td>
+<td>Maximum size of files to collect (in bytes).</td>
+</tr>
+<tr>
+<td><code>--match_mode</code></td>
+<td><code>None</code></td>
+<td>Match mode of the client rule set (ANY or ALL)</td>
+</tr>
+<tr>
+<td><code>--client_operating_systems</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of client operating systems to filter hosts on (linux, osx, win).</td>
+</tr>
+<tr>
+<td><code>--client_labels</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of client labels to filter GRR hosts on.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>GRRHuntArtifactCollector</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="grr_hunt_artifacts" src="../_static/graphviz/grr_hunt_artifacts.png" /></p>
+<hr />
+<h2 id="grr_hunt_file"><code>grr_hunt_file</code><a class="headerlink" href="#grr_hunt_file" title="Permanent link">&para;</a></h2>
+<p>Starts a GRR hunt for a list of files.</p>
+<p><strong>Details:</strong></p>
+<p>Starts a GRR hunt for a list of files and provides a Hunt ID to the user. Feed the Hunt ID to <code>grr_huntresults_ts</code> to process results through Plaso and export them to Timesketch.</p>
+<p>Like in <code>grr_files_collect</code>, files can be globs and support variable interpolation.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>file_path_list</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of file paths to hunt for.</td>
+</tr>
+<tr>
+<td><code>reason</code></td>
+<td><code>None</code></td>
+<td>Reason for collection.</td>
+</tr>
+<tr>
+<td><code>--approvers</code></td>
+<td><code>None</code></td>
+<td>Emails for GRR approval request.</td>
+</tr>
+<tr>
+<td><code>--grr_server_url</code></td>
+<td><code>'http://localhost:8000'</code></td>
+<td>GRR endpoint</td>
+</tr>
+<tr>
+<td><code>--verify</code></td>
+<td><code>True</code></td>
+<td>Whether to verify the GRR TLS certificate.</td>
+</tr>
+<tr>
+<td><code>--grr_username</code></td>
+<td><code>'admin'</code></td>
+<td>GRR username</td>
+</tr>
+<tr>
+<td><code>--grr_password</code></td>
+<td><code>'admin'</code></td>
+<td>GRR password</td>
+</tr>
+<tr>
+<td><code>--max_file_size</code></td>
+<td><code>'5368709120'</code></td>
+<td>Maximum size of files to collect (in bytes).</td>
+</tr>
+<tr>
+<td><code>--match_mode</code></td>
+<td><code>None</code></td>
+<td>Match mode of the client rule set (ANY or ALL)</td>
+</tr>
+<tr>
+<td><code>--client_operating_systems</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of client operating systems to filter hosts on (linux, osx, win).</td>
+</tr>
+<tr>
+<td><code>--client_labels</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of client labels to filter GRR hosts on.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>GRRHuntFileCollector</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="grr_hunt_file" src="../_static/graphviz/grr_hunt_file.png" /></p>
+<hr />
+<h2 id="grr_hunt_osquery"><code>grr_hunt_osquery</code><a class="headerlink" href="#grr_hunt_osquery" title="Permanent link">&para;</a></h2>
+<p>Starts a GRR hunt for an Osquery flow.</p>
+<p><strong>Details:</strong></p>
+<p>Starts a GRR osquery hunt and provides the Hunt ID to the user.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>reason</code></td>
+<td><code>None</code></td>
+<td>Reason for collection.</td>
+</tr>
+<tr>
+<td><code>--osquery_query</code></td>
+<td><code>None</code></td>
+<td>Osquery query to hunt for.</td>
+</tr>
+<tr>
+<td><code>--osquery_paths</code></td>
+<td><code>None</code></td>
+<td>Path(s) to text file containing one osquery query per line.</td>
+</tr>
+<tr>
+<td><code>--remote_configuration_path</code></td>
+<td><code>''</code></td>
+<td>Path to a remote osquery configuration file on the GRR client.</td>
+</tr>
+<tr>
+<td><code>--local_configuration_path</code></td>
+<td><code>''</code></td>
+<td>Path to a local osquery configuration file.</td>
+</tr>
+<tr>
+<td><code>--configuration_content</code></td>
+<td><code>''</code></td>
+<td>Osquery configuration as a JSON string.</td>
+</tr>
+<tr>
+<td><code>--file_collection_columns</code></td>
+<td><code>''</code></td>
+<td>The file collection columns.</td>
+</tr>
+<tr>
+<td><code>--timeout_millis</code></td>
+<td><code>'300000'</code></td>
+<td>Osquery timeout in milliseconds</td>
+</tr>
+<tr>
+<td><code>--ignore_stderr_errors</code></td>
+<td><code>False</code></td>
+<td>Ignore osquery stderr errors</td>
+</tr>
+<tr>
+<td><code>--approvers</code></td>
+<td><code>None</code></td>
+<td>Emails for GRR approval request.</td>
+</tr>
+<tr>
+<td><code>--grr_server_url</code></td>
+<td><code>'http://localhost:8000'</code></td>
+<td>GRR endpoint</td>
+</tr>
+<tr>
+<td><code>--verify</code></td>
+<td><code>True</code></td>
+<td>Whether to verify the GRR TLS certificate.</td>
+</tr>
+<tr>
+<td><code>--grr_username</code></td>
+<td><code>'admin'</code></td>
+<td>GRR username</td>
+</tr>
+<tr>
+<td><code>--grr_password</code></td>
+<td><code>'admin'</code></td>
+<td>GRR password</td>
+</tr>
+<tr>
+<td><code>--match_mode</code></td>
+<td><code>None</code></td>
+<td>Match mode of the client rule set (ANY or ALL)</td>
+</tr>
+<tr>
+<td><code>--client_operating_systems</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of client operating systems to filter hosts on (linux, osx, win).</td>
+</tr>
+<tr>
+<td><code>--client_labels</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of client labels to filter GRR hosts on.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>OsqueryCollector</code>, <code>GRRHuntOsqueryCollector</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="grr_hunt_osquery" src="../_static/graphviz/grr_hunt_osquery.png" /></p>
+<hr />
+<h2 id="grr_huntresults_ts"><code>grr_huntresults_ts</code><a class="headerlink" href="#grr_huntresults_ts" title="Permanent link">&para;</a></h2>
+<p>Fetches the results of a GRR hunt, processes them with Plaso, and exports the results to Timesketch.</p>
+<p><strong>Details:</strong></p>
+<p>Download the results of a GRR hunt and process them.</p>
+<ul>
+<li>Collect results of a hunt given its Hunt ID</li>
+<li>Processes results with a local install of Plaso</li>
+<li>Exports processed items to a new Timesketch sketch</li>
+</ul>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hunt_id</code></td>
+<td><code>None</code></td>
+<td>ID of GRR Hunt results to fetch.</td>
+</tr>
+<tr>
+<td><code>reason</code></td>
+<td><code>None</code></td>
+<td>Reason for exporting hunt (used for Timesketch description).</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>Timesketch sketch to which the timeline should be added.</td>
+</tr>
+<tr>
+<td><code>--timesketch_endpoint</code></td>
+<td><code>'http://localhost:5000/'</code></td>
+<td>Timesketch endpoint</td>
+</tr>
+<tr>
+<td><code>--timesketch_username</code></td>
+<td><code>None</code></td>
+<td>Username for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--timesketch_password</code></td>
+<td><code>None</code></td>
+<td>Password for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--token_password</code></td>
+<td><code>''</code></td>
+<td>Optional custom password to decrypt Timesketch credential file with.</td>
+</tr>
+<tr>
+<td><code>--wait_for_timelines</code></td>
+<td><code>True</code></td>
+<td>Whether to wait for Timesketch to finish processing all timelines.</td>
+</tr>
+<tr>
+<td><code>--approvers</code></td>
+<td><code>None</code></td>
+<td>Emails for GRR approval request.</td>
+</tr>
+<tr>
+<td><code>--grr_server_url</code></td>
+<td><code>'http://localhost:8000'</code></td>
+<td>GRR endpoint</td>
+</tr>
+<tr>
+<td><code>--verify</code></td>
+<td><code>True</code></td>
+<td>Whether to verify the GRR TLS certificate.</td>
+</tr>
+<tr>
+<td><code>--grr_username</code></td>
+<td><code>'admin'</code></td>
+<td>GRR username</td>
+</tr>
+<tr>
+<td><code>--grr_password</code></td>
+<td><code>'admin'</code></td>
+<td>GRR password</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>GRRHuntDownloader</code>, <code>LocalPlasoProcessor</code>, <code>TimesketchExporter</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="grr_huntresults_ts" src="../_static/graphviz/grr_huntresults_ts.png" /></p>
+<hr />
+<h2 id="grr_osquery_flow"><code>grr_osquery_flow</code><a class="headerlink" href="#grr_osquery_flow" title="Permanent link">&para;</a></h2>
+<p>Runs osquery on GRR hosts and save any results to local CSV files.</p>
+<p><strong>Details:</strong></p>
+<p>Runs osquery on GRR hosts and save any results to local CSV files.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>reason</code></td>
+<td><code>None</code></td>
+<td>Reason for collection.</td>
+</tr>
+<tr>
+<td><code>hostnames</code></td>
+<td><code>None</code></td>
+<td>Hostname(s) to collect the osquery flow from.</td>
+</tr>
+<tr>
+<td><code>--osquery_query</code></td>
+<td><code>None</code></td>
+<td>Osquery query to hunt for.</td>
+</tr>
+<tr>
+<td><code>--osquery_paths</code></td>
+<td><code>None</code></td>
+<td>Path(s) to text file containing one osquery query per line.</td>
+</tr>
+<tr>
+<td><code>--remote_configuration_path</code></td>
+<td><code>''</code></td>
+<td>Path to a remote osquery configuration file on the GRR client.</td>
+</tr>
+<tr>
+<td><code>--local_configuration_path</code></td>
+<td><code>''</code></td>
+<td>Path to a local osquery configuration file.</td>
+</tr>
+<tr>
+<td><code>--configuration_content</code></td>
+<td><code>''</code></td>
+<td>Osquery configuration as a JSON string.</td>
+</tr>
+<tr>
+<td><code>--file_collection_columns</code></td>
+<td><code>''</code></td>
+<td>The file collection columns.</td>
+</tr>
+<tr>
+<td><code>--timeout_millis</code></td>
+<td><code>'300000'</code></td>
+<td>Osquery timeout in milliseconds</td>
+</tr>
+<tr>
+<td><code>--ignore_stderr_errors</code></td>
+<td><code>False</code></td>
+<td>Ignore osquery stderr errors</td>
+</tr>
+<tr>
+<td><code>--directory</code></td>
+<td><code>None</code></td>
+<td>Directory in which to export results.</td>
+</tr>
+<tr>
+<td><code>--approvers</code></td>
+<td><code>None</code></td>
+<td>Emails for GRR approval request.</td>
+</tr>
+<tr>
+<td><code>--grr_server_url</code></td>
+<td><code>'http://localhost:8000'</code></td>
+<td>GRR endpoint</td>
+</tr>
+<tr>
+<td><code>--verify</code></td>
+<td><code>True</code></td>
+<td>Whether to verify the GRR TLS certificate.</td>
+</tr>
+<tr>
+<td><code>--skip_offline_clients</code></td>
+<td><code>False</code></td>
+<td>Whether to skip clients that are offline.</td>
+</tr>
+<tr>
+<td><code>--grr_username</code></td>
+<td><code>'admin'</code></td>
+<td>GRR username</td>
+</tr>
+<tr>
+<td><code>--grr_password</code></td>
+<td><code>'admin'</code></td>
+<td>GRR password</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>OsqueryCollector</code>, <code>GRROsqueryCollector</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="grr_osquery_flow" src="../_static/graphviz/grr_osquery_flow.png" /></p>
+<hr />
+<h2 id="grr_timeline_ts"><code>grr_timeline_ts</code><a class="headerlink" href="#grr_timeline_ts" title="Permanent link">&para;</a></h2>
+<p>Runs a TimelineFlow on a set of GRR hosts, generating a filesystem bodyfile for each host. These bodyfiles are processed results with Plaso, and the resulting plaso files are exported to Timesketch.</p>
+<p><strong>Details:</strong></p>
+<p>Uses the GRR TimelineFlow to generate a filesystem timeline and exports it to Timesketch..</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hostnames</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of hostnames or GRR client IDs to process.</td>
+</tr>
+<tr>
+<td><code>root_path</code></td>
+<td><code>'/'</code></td>
+<td>Root path for timeline generation.</td>
+</tr>
+<tr>
+<td><code>reason</code></td>
+<td><code>None</code></td>
+<td>Reason for collection.</td>
+</tr>
+<tr>
+<td><code>--skip_offline_clients</code></td>
+<td><code>False</code></td>
+<td>Whether to skip clients that are offline.</td>
+</tr>
+<tr>
+<td><code>--approvers</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of usernames to ask for approval.</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>Timesketch sketch to which the timeline should be added.</td>
+</tr>
+<tr>
+<td><code>--grr_server_url</code></td>
+<td><code>'http://localhost:8000'</code></td>
+<td>GRR endpoint.</td>
+</tr>
+<tr>
+<td><code>--timesketch_endpoint</code></td>
+<td><code>'http://localhost:5000/'</code></td>
+<td>Timesketch endpoint</td>
+</tr>
+<tr>
+<td><code>--timesketch_username</code></td>
+<td><code>None</code></td>
+<td>Username for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--timesketch_password</code></td>
+<td><code>None</code></td>
+<td>Password for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--token_password</code></td>
+<td><code>''</code></td>
+<td>Optional custom password to decrypt Timesketch credential file with.</td>
+</tr>
+<tr>
+<td><code>--wait_for_timelines</code></td>
+<td><code>True</code></td>
+<td>Whether to wait for Timesketch to finish processing all timelines.</td>
+</tr>
+<tr>
+<td><code>--grr_username</code></td>
+<td><code>'admin'</code></td>
+<td>GRR username.</td>
+</tr>
+<tr>
+<td><code>--grr_password</code></td>
+<td><code>'admin'</code></td>
+<td>GRR password.</td>
+</tr>
+<tr>
+<td><code>--user_docker</code></td>
+<td><code>True</code></td>
+<td>Whether the LocalPlasoProcessor should use Docker or not.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>GRRTimelineCollector</code>, <code>LocalPlasoProcessor</code>, <code>TimesketchExporter</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="grr_timeline_ts" src="../_static/graphviz/grr_timeline_ts.png" /></p>
+<hr />
+<h2 id="grr_yarascan"><code>grr_yarascan</code><a class="headerlink" href="#grr_yarascan" title="Permanent link">&para;</a></h2>
+<p>Run Yara rules on hosts memory.</p>
+<p><strong>Details:</strong></p>
+<p>Run Yara rules on hosts memory.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>reason</code></td>
+<td><code>None</code></td>
+<td>Reason for collection.</td>
+</tr>
+<tr>
+<td><code>hostnames</code></td>
+<td><code>None</code></td>
+<td>Hostname(s) to collect the flow from.</td>
+</tr>
+<tr>
+<td><code>--yara_name_filter</code></td>
+<td><code>None</code></td>
+<td>Filter to filter Yara sigs by.</td>
+</tr>
+<tr>
+<td><code>--dump_process_on_match</code></td>
+<td><code>False</code></td>
+<td>Whether to dump the process on match.</td>
+</tr>
+<tr>
+<td><code>--api_key</code></td>
+<td><code>None</code></td>
+<td>API Key to the Yeti instance</td>
+</tr>
+<tr>
+<td><code>--api_root</code></td>
+<td><code>'http://localhost/api/'</code></td>
+<td>API root of the Yeti instance (e.g. http://localhost/api/)</td>
+</tr>
+<tr>
+<td><code>--approvers</code></td>
+<td><code>None</code></td>
+<td>Emails for GRR approval request.</td>
+</tr>
+<tr>
+<td><code>--grr_server_url</code></td>
+<td><code>'http://localhost:8000'</code></td>
+<td>GRR endpoint</td>
+</tr>
+<tr>
+<td><code>--verify</code></td>
+<td><code>True</code></td>
+<td>Whether to verify the GRR TLS certificate.</td>
+</tr>
+<tr>
+<td><code>--skip_offline_clients</code></td>
+<td><code>False</code></td>
+<td>Whether to skip clients that are offline.</td>
+</tr>
+<tr>
+<td><code>--grr_username</code></td>
+<td><code>'admin'</code></td>
+<td>GRR username</td>
+</tr>
+<tr>
+<td><code>--grr_password</code></td>
+<td><code>'demo'</code></td>
+<td>GRR password</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>YetiYaraCollector</code>, <code>GRRYaraScanner</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="grr_yarascan" src="../_static/graphviz/grr_yarascan.png" /></p>
+<hr />
+<h2 id="gsheets_ts"><code>gsheets_ts</code><a class="headerlink" href="#gsheets_ts" title="Permanent link">&para;</a></h2>
+<p>Collects data from google sheets and outputs them to Timesketch.</p>
+<p><strong>Details:</strong></p>
+<p>Collects data from google sheets and outputs them to Timesketch.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>spreadsheet</code></td>
+<td><code>None</code></td>
+<td>ID or URL of the Google Sheet spreadsheet to collect data from.</td>
+</tr>
+<tr>
+<td><code>--sheet_names</code></td>
+<td><code>[]</code></td>
+<td>Comma-separated list sheet names to collect date from. If not set all sheets in the spreadsheet will be parsed.</td>
+</tr>
+<tr>
+<td><code>--validate_columns</code></td>
+<td><code>True</code></td>
+<td>Set to True to check for mandatory columns required by Timesketch while extracting data. Set to False to ignore validation. Default is True.</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>Sketch to which the timeline should be added</td>
+</tr>
+<tr>
+<td><code>--timesketch_endpoint</code></td>
+<td><code>'http://localhost:5000/'</code></td>
+<td>Timesketch endpoint</td>
+</tr>
+<tr>
+<td><code>--timesketch_username</code></td>
+<td><code>None</code></td>
+<td>Username for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--timesketch_password</code></td>
+<td><code>None</code></td>
+<td>Password for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--token_password</code></td>
+<td><code>''</code></td>
+<td>Optional custom password to decrypt Timesketch credential file with</td>
+</tr>
+<tr>
+<td><code>--incident_id</code></td>
+<td><code>None</code></td>
+<td>Incident ID (used for Timesketch description)</td>
+</tr>
+<tr>
+<td><code>--wait_for_timelines</code></td>
+<td><code>True</code></td>
+<td>Whether to wait for timelines to finish processing.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>GoogleSheetsCollector</code>, <code>TimesketchExporter</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="gsheets_ts" src="../_static/graphviz/gsheets_ts.png" /></p>
+<hr />
+<h2 id="openrelik_ts"><code>openrelik_ts</code><a class="headerlink" href="#openrelik_ts" title="Permanent link">&para;</a></h2>
+<p>Processes files from the local file system using OpenRelik. Sends the results to Timesketch.</p>
+<p><strong>Details:</strong></p>
+<p>Processes files from the local file system using OpenRelik. Sends the results to Timesketch.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>paths</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of paths to process.</td>
+</tr>
+<tr>
+<td><code>--incident_id</code></td>
+<td><code>None</code></td>
+<td>Incident ID (used for Timesketch description).</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>Timesketch sketch to which the timeline should be added.</td>
+</tr>
+<tr>
+<td><code>--folder_id</code></td>
+<td><code>None</code></td>
+<td>OpenRelik Folder ID.</td>
+</tr>
+<tr>
+<td><code>--template_workflow_id</code></td>
+<td><code>None</code></td>
+<td>OpenRelik workflow template ID.</td>
+</tr>
+<tr>
+<td><code>--openrelik_api</code></td>
+<td><code>'http://localhost:8710'</code></td>
+<td>OpenRelik API server URI.</td>
+</tr>
+<tr>
+<td><code>--openrelik_ui</code></td>
+<td><code>'http://localhost:8711'</code></td>
+<td>OpenRelik UI URI.</td>
+</tr>
+<tr>
+<td><code>--openrelik_api_key</code></td>
+<td><code>''</code></td>
+<td>OpenRelik API key</td>
+</tr>
+<tr>
+<td><code>--wait_for_timelines</code></td>
+<td><code>True</code></td>
+<td>Whether to wait for Timesketch to finish processing all timelines.</td>
+</tr>
+<tr>
+<td><code>--analyzers</code></td>
+<td><code>None</code></td>
+<td>Timesketch analyzers to run</td>
+</tr>
+<tr>
+<td><code>--token_password</code></td>
+<td><code>''</code></td>
+<td>Optional custom password to decrypt Timesketch credential file with.</td>
+</tr>
+<tr>
+<td><code>--timesketch_endpoint</code></td>
+<td><code>'http://localhost:5000/'</code></td>
+<td>Timesketch endpoint</td>
+</tr>
+<tr>
+<td><code>--timesketch_username</code></td>
+<td><code>None</code></td>
+<td>Username for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--timesketch_password</code></td>
+<td><code>None</code></td>
+<td>Password for Timesketch server.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>FilesystemCollector</code>, <code>OpenRelikProcessor</code>, <code>TimesketchExporter</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="openrelik_ts" src="../_static/graphviz/openrelik_ts.png" /></p>
+<hr />
+<h2 id="plaso_ts"><code>plaso_ts</code><a class="headerlink" href="#plaso_ts" title="Permanent link">&para;</a></h2>
+<p>Processes a list of file paths using a Plaso and export results to Timesketch.</p>
+<p><strong>Details:</strong></p>
+<p>Processes a list of file paths using Plaso and sends results to Timesketch.</p>
+<ul>
+<li>Collectors collect from a path in the FS</li>
+<li>Processes them with a local install of plaso</li>
+<li>Exports them to a new Timesketch sketch</li>
+</ul>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>paths</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of paths to process.</td>
+</tr>
+<tr>
+<td><code>--analyzers</code></td>
+<td><code>None</code></td>
+<td>Timesketch analyzers to run</td>
+</tr>
+<tr>
+<td><code>--incident_id</code></td>
+<td><code>None</code></td>
+<td>Incident ID (used for Timesketch description).</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>Timesketch sketch to which the timeline should be added.</td>
+</tr>
+<tr>
+<td><code>--timesketch_endpoint</code></td>
+<td><code>'http://localhost:5000/'</code></td>
+<td>Timesketch endpoint</td>
+</tr>
+<tr>
+<td><code>--timesketch_username</code></td>
+<td><code>None</code></td>
+<td>Username for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--timesketch_password</code></td>
+<td><code>None</code></td>
+<td>Password for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--token_password</code></td>
+<td><code>''</code></td>
+<td>Optional custom password to decrypt Timesketch credential file with.</td>
+</tr>
+<tr>
+<td><code>--wait_for_timelines</code></td>
+<td><code>True</code></td>
+<td>Whether to wait for Timesketch to finish processing all timelines.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>FilesystemCollector</code>, <code>LocalPlasoProcessor</code>, <code>TimesketchExporter</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="plaso_ts" src="../_static/graphviz/plaso_ts.png" /></p>
+<hr />
+<h2 id="ts_collect"><code>ts_collect</code><a class="headerlink" href="#ts_collect" title="Permanent link">&para;</a></h2>
+<p>Collects Timesketch events.</p>
+<p><strong>Details:</strong></p>
+<p>Collects Timesketch events to a local file.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>directory</code></td>
+<td><code>None</code></td>
+<td>Directory in which to export files.</td>
+</tr>
+<tr>
+<td><code>query_string</code></td>
+<td><code>'*'</code></td>
+<td>The query string.  Defaults to '*' (all events).</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>the Timesketch sketch ID.</td>
+</tr>
+<tr>
+<td><code>--start_datetime</code></td>
+<td><code>None</code></td>
+<td>The start datetime.</td>
+</tr>
+<tr>
+<td><code>--end_datetime</code></td>
+<td><code>None</code></td>
+<td>The end datetime.</td>
+</tr>
+<tr>
+<td><code>--indices</code></td>
+<td><code>None</code></td>
+<td>The comma-separated Timesketch indices.</td>
+</tr>
+<tr>
+<td><code>--labels</code></td>
+<td><code>None</code></td>
+<td>the comma-separated Timesketch event labels.</td>
+</tr>
+<tr>
+<td><code>--output_format</code></td>
+<td><code>'csv'</code></td>
+<td>The output format (csv/json/jsonl).  Defaults to csv</td>
+</tr>
+<tr>
+<td><code>--include_internal_columns</code></td>
+<td><code>False</code></td>
+<td>Include internal Timesketch fields in output.  Defaults to false.</td>
+</tr>
+<tr>
+<td><code>--return_fields</code></td>
+<td><code>'*'</code></td>
+<td>The Timesketch fields to return from the search query. Defaults to *.</td>
+</tr>
+<tr>
+<td><code>--search_name</code></td>
+<td><code>None</code></td>
+<td>The search name (used as a filename prefix).</td>
+</tr>
+<tr>
+<td><code>--token_password</code></td>
+<td><code>''</code></td>
+<td>Optional custom password to decrypt Timesketch credential file with.</td>
+</tr>
+<tr>
+<td><code>--timesketch_endpoint</code></td>
+<td><code>None</code></td>
+<td>The Timesketch endpoint URL</td>
+</tr>
+<tr>
+<td><code>--timesketch_username</code></td>
+<td><code>None</code></td>
+<td>The Timesketch username.</td>
+</tr>
+<tr>
+<td><code>--timesketch_password</code></td>
+<td><code>None</code></td>
+<td>The Timesketch password.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>TimesketchSearchEventCollector</code>, <code>LocalFilesystemCopy</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="ts_collect" src="../_static/graphviz/ts_collect.png" /></p>
+<hr />
+<h2 id="upload_ts"><code>upload_ts</code><a class="headerlink" href="#upload_ts" title="Permanent link">&para;</a></h2>
+<p>Uploads a local CSV or Plaso file to Timesketch.</p>
+<p><strong>Details:</strong></p>
+<p>Uploads a CSV or Plaso file to Timesketch.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>files</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of paths to CSV files or Plaso storage files.</td>
+</tr>
+<tr>
+<td><code>--analyzers</code></td>
+<td><code>None</code></td>
+<td>Timesketch analyzers to run.</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>Timesketch sketch to which the timeline should be added.</td>
+</tr>
+<tr>
+<td><code>--timesketch_endpoint</code></td>
+<td><code>'http://localhost:5000/'</code></td>
+<td>Timesketch endpoint</td>
+</tr>
+<tr>
+<td><code>--timesketch_username</code></td>
+<td><code>None</code></td>
+<td>Username for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--timesketch_password</code></td>
+<td><code>None</code></td>
+<td>Password for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--token_password</code></td>
+<td><code>''</code></td>
+<td>Optional custom password to decrypt Timesketch credential file with.</td>
+</tr>
+<tr>
+<td><code>--incident_id</code></td>
+<td><code>None</code></td>
+<td>Incident ID (used for Timesketch description).</td>
+</tr>
+<tr>
+<td><code>--wait_for_timelines</code></td>
+<td><code>True</code></td>
+<td>Whether to wait for Timesketch to finish processing all timelines.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>FilesystemCollector</code>, <code>TimesketchExporter</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="upload_ts" src="../_static/graphviz/upload_ts.png" /></p>
+<hr />
+<h2 id="upload_turbinia"><code>upload_turbinia</code><a class="headerlink" href="#upload_turbinia" title="Permanent link">&para;</a></h2>
+<p>Uploads arbitrary files to Turbinia and downloads results.</p>
+<p><strong>Details:</strong></p>
+<p>Uploads arbitrary files to Turbinia for processing. The recipe will wait for Turbinia to return with results and will download them back to the filesystem. The Turbinia system needs to be accessible via SSH.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>files</code></td>
+<td><code>None</code></td>
+<td>Paths to process.</td>
+</tr>
+<tr>
+<td><code>--turbinia_recipe</code></td>
+<td><code>None</code></td>
+<td>The Turbinia recipe name to use for evidence processing.</td>
+</tr>
+<tr>
+<td><code>--destination_turbinia_dir</code></td>
+<td><code>None</code></td>
+<td>Destination path in Turbinia host to write the files to.</td>
+</tr>
+<tr>
+<td><code>--hostname</code></td>
+<td><code>None</code></td>
+<td>Remote host.</td>
+</tr>
+<tr>
+<td><code>--directory</code></td>
+<td><code>None</code></td>
+<td>Directory in which to copy and compress files.</td>
+</tr>
+<tr>
+<td><code>--turbinia_auth</code></td>
+<td><code>False</code></td>
+<td>Flag to indicate whether Turbinia API server requires authentication.</td>
+</tr>
+<tr>
+<td><code>--turbinia_api</code></td>
+<td><code>'http://127.0.0.1:8000'</code></td>
+<td>Turbinia API server endpoint.</td>
+</tr>
+<tr>
+<td><code>--local_turbinia_results</code></td>
+<td><code>None</code></td>
+<td>Directory where Turbinia results will be downloaded to.</td>
+</tr>
+<tr>
+<td><code>--turbinia_zone</code></td>
+<td><code>'us-central1-f'</code></td>
+<td>The GCP zone the disk to process and Turbinia workers are in.</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>Timesketch sketch ID.</td>
+</tr>
+<tr>
+<td><code>--priority_filter</code></td>
+<td><code>'100'</code></td>
+<td>Filter report findings, range from 0 to 100, 0 is the highest.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>FilesystemCollector</code>, <code>LocalFilesystemCopy</code>, <code>TurbiniaArtifactProcessor</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="upload_turbinia" src="../_static/graphviz/upload_turbinia.png" /></p>
+<hr />
+<h2 id="upload_web_ts"><code>upload_web_ts</code><a class="headerlink" href="#upload_web_ts" title="Permanent link">&para;</a></h2>
+<p>Uploads a CSV/JSONL or Plaso file to Timesketch and runs web-related Timesketch analyzers.</p>
+<p><strong>Details:</strong></p>
+<p>Uploads a CSV or Plaso file to Timesketch and runs a series of web-related analyzers on the uploaded data.</p>
+<p>The following analyzers will run on the processed timeline: <code>browser_search,browser_timeframe,account_finder,phishy_domains,evtx_gap,login,win_crash,safebrowsing,chain</code>.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>files</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of paths to CSV files or Plaso storage files.</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>Timesketch sketch to which the timeline should be added.</td>
+</tr>
+<tr>
+<td><code>--timesketch_endpoint</code></td>
+<td><code>'http://localhost:5000/'</code></td>
+<td>Timesketch endpoint</td>
+</tr>
+<tr>
+<td><code>--timesketch_username</code></td>
+<td><code>None</code></td>
+<td>Username for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--timesketch_password</code></td>
+<td><code>None</code></td>
+<td>Password for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--token_password</code></td>
+<td><code>''</code></td>
+<td>Optional custom password to decrypt Timesketch credential file with.</td>
+</tr>
+<tr>
+<td><code>--incident_id</code></td>
+<td><code>None</code></td>
+<td>Incident ID (used for Timesketch description).</td>
+</tr>
+<tr>
+<td><code>--wait_for_analyzers</code></td>
+<td><code>True</code></td>
+<td>Wait for analyzers until they complete their run, if set to False the TS enhancer will be skipped.</td>
+</tr>
+<tr>
+<td><code>--searches_to_skip</code></td>
+<td><code>None</code></td>
+<td>A comma separated list of saved searches that should not be uploaded.</td>
+</tr>
+<tr>
+<td><code>--analyzer_max_checks</code></td>
+<td><code>'0'</code></td>
+<td>Number of wait cycles (per cycle is 3 seconds) before terminating wait for analyzers to complete.</td>
+</tr>
+<tr>
+<td><code>--aggregations_to_skip</code></td>
+<td><code>None</code></td>
+<td>A comma separated list of aggregation names that should not be uploaded.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>FilesystemCollector</code>, <code>TimesketchExporter</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="upload_web_ts" src="../_static/graphviz/upload_web_ts.png" /></p>
+<hr />
+<h2 id="vt_evtx"><code>vt_evtx</code><a class="headerlink" href="#vt_evtx" title="Permanent link">&para;</a></h2>
+<p>Downloads the EVTX files from VirusTotal for a specific hash.</p>
+<p><strong>Details:</strong></p>
+<p>Downloads the EVTX files from VirusTotal sandbox run for a specific hash, processes it with Plaso.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hashes</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of hashes to process.</td>
+</tr>
+<tr>
+<td><code>directory</code></td>
+<td><code>None</code></td>
+<td>Directory in which to export files.</td>
+</tr>
+<tr>
+<td><code>--vt_api_key</code></td>
+<td><code>'admin'</code></td>
+<td>Virustotal API key</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>VTCollector</code>, <code>LocalPlasoProcessor</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="vt_evtx" src="../_static/graphviz/vt_evtx.png" /></p>
+<hr />
+<h2 id="vt_evtx_ts"><code>vt_evtx_ts</code><a class="headerlink" href="#vt_evtx_ts" title="Permanent link">&para;</a></h2>
+<p>Downloads the EVTX from VirusTotal sandbox runs for a specific hash and uploads the corresponding timeline to Timesketch.</p>
+<p><strong>Details:</strong></p>
+<p>Downloads the EVTX file generated by VirusTotal during the sandbox runs for a specific hash, processes the EVTX files with Plaso and uploads the resulting Plaso file to Timesketch.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hashes</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of hashes to process.</td>
+</tr>
+<tr>
+<td><code>directory</code></td>
+<td><code>None</code></td>
+<td>Directory in which to export files.</td>
+</tr>
+<tr>
+<td><code>--vt_api_key</code></td>
+<td><code>'admin'</code></td>
+<td>Virustotal API key</td>
+</tr>
+<tr>
+<td><code>--incident_id</code></td>
+<td><code>None</code></td>
+<td>Incident ID (used for Timesketch description).</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>Timesketch sketch to which the timeline should be added.</td>
+</tr>
+<tr>
+<td><code>--timesketch_endpoint</code></td>
+<td><code>'http://localhost:5000/'</code></td>
+<td>Timesketch endpoint</td>
+</tr>
+<tr>
+<td><code>--timesketch_username</code></td>
+<td><code>None</code></td>
+<td>Username for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--timesketch_password</code></td>
+<td><code>None</code></td>
+<td>Password for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--token_password</code></td>
+<td><code>''</code></td>
+<td>Optional custom password to decrypt Timesketch credential file with</td>
+</tr>
+<tr>
+<td><code>--wait_for_timelines</code></td>
+<td><code>True</code></td>
+<td>Whether to wait for Timesketch to finish processing all timelines.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>VTCollector</code>, <code>LocalPlasoProcessor</code>, <code>TimesketchExporter</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="vt_evtx_ts" src="../_static/graphviz/vt_evtx_ts.png" /></p>
+<hr />
+<h2 id="vt_pcap"><code>vt_pcap</code><a class="headerlink" href="#vt_pcap" title="Permanent link">&para;</a></h2>
+<p>Downloads the PCAP from VirusTotal for a specific hash.</p>
+<p><strong>Details:</strong></p>
+<p>Downloads the PCAP files generated from VirusTotal sandbox's run for a specific hash.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hashes</code></td>
+<td><code>None</code></td>
+<td>Comma-separated list of hashes to process.</td>
+</tr>
+<tr>
+<td><code>directory</code></td>
+<td><code>None</code></td>
+<td>Directory in which to export files.</td>
+</tr>
+<tr>
+<td><code>--vt_api_key</code></td>
+<td><code>'admin'</code></td>
+<td>Virustotal API key</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>VTCollector</code>, <code>LocalFilesystemCopy</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="vt_pcap" src="../_static/graphviz/vt_pcap.png" /></p>
+<hr />
+<h2 id="workspace_logging_collect"><code>workspace_logging_collect</code><a class="headerlink" href="#workspace_logging_collect" title="Permanent link">&para;</a></h2>
+<p>Collects Workspace Audit logs and dumps them on the filesystem.</p>
+<p><strong>Details:</strong></p>
+<p>Collects logs from Workspace Audit log and dumps them on the filesystem.</p>
+<p>See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#ApplicationName for a list of application names.</p>
+<p>For filters, see https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>application_name</code></td>
+<td><code>None</code></td>
+<td>Name of application to to collect logs for. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#ApplicationName for a list of possible values.</td>
+</tr>
+<tr>
+<td><code>--user</code></td>
+<td><code>'all'</code></td>
+<td>email address of the user to query logs for</td>
+</tr>
+<tr>
+<td><code>--start_time</code></td>
+<td><code>None</code></td>
+<td>Start time.</td>
+</tr>
+<tr>
+<td><code>--end_time</code></td>
+<td><code>None</code></td>
+<td>End time.</td>
+</tr>
+<tr>
+<td><code>--filter_expression</code></td>
+<td><code>''</code></td>
+<td>Filter expression to use to query Workspace logs. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>WorkspaceAuditCollector</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="workspace_logging_collect" src="../_static/graphviz/workspace_logging_collect.png" /></p>
+<hr />
+<h2 id="workspace_meet_ts"><code>workspace_meet_ts</code><a class="headerlink" href="#workspace_meet_ts" title="Permanent link">&para;</a></h2>
+<p>Collects Meet records and adds them to Timesketch</p>
+<p><strong>Details:</strong></p>
+<p>Collects Google Workspace audit records or a Google Meet and adds them to Timesketch.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>meeting_id</code></td>
+<td><code>None</code></td>
+<td>ID for the Meeting to look up. (Without the '-' delimiter)</td>
+</tr>
+<tr>
+<td><code>--start_time</code></td>
+<td><code>None</code></td>
+<td>Start time.</td>
+</tr>
+<tr>
+<td><code>--end_time</code></td>
+<td><code>None</code></td>
+<td>End time.</td>
+</tr>
+<tr>
+<td><code>--incident_id</code></td>
+<td><code>None</code></td>
+<td>Incident ID (used for Timesketch description).</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>Timesketch sketch to which the timeline should be added.</td>
+</tr>
+<tr>
+<td><code>--timesketch_endpoint</code></td>
+<td><code>'http://localhost:5000/'</code></td>
+<td>Timesketch endpoint</td>
+</tr>
+<tr>
+<td><code>--timesketch_username</code></td>
+<td><code>None</code></td>
+<td>Username for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--timesketch_password</code></td>
+<td><code>None</code></td>
+<td>Password for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--token_password</code></td>
+<td><code>''</code></td>
+<td>Optional custom password to decrypt Timesketch credential file with.</td>
+</tr>
+<tr>
+<td><code>--wait_for_timelines</code></td>
+<td><code>True</code></td>
+<td>Whether to wait for Timesketch to finish processing all timelines.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>WorkspaceAuditCollector</code>, <code>WorkspaceAuditTimesketch</code>, <code>TimesketchExporter</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="workspace_meet_ts" src="../_static/graphviz/workspace_meet_ts.png" /></p>
+<hr />
+<h2 id="workspace_user_activity_ts"><code>workspace_user_activity_ts</code><a class="headerlink" href="#workspace_user_activity_ts" title="Permanent link">&para;</a></h2>
+<p>Collects records for a Google Workspace user and adds them to Timesketch</p>
+<p><strong>Details:</strong></p>
+<p>Collects records for a Google Workspace user and adds them to Timesketch.</p>
+<p>Collects logs for the following apps: <code>Login</code>, <code>Drive</code>, <code>Token</code>, <code>Chrome</code>, <code>CAA</code>, <code>DataStudio</code>, <code>GroupsEnterprise</code>, <code>Calendar</code>, <code>Chat</code>, <code>Groups</code>, <code>Meet</code>, <code>UserAccounts</code>.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>user</code></td>
+<td><code>''</code></td>
+<td>email address of the user to query logs for</td>
+</tr>
+<tr>
+<td><code>--start_time</code></td>
+<td><code>None</code></td>
+<td>Start time (yyyy-mm-ddTHH:MM:SSZ).</td>
+</tr>
+<tr>
+<td><code>--end_time</code></td>
+<td><code>None</code></td>
+<td>End time (yyyy-mm-ddTHH:MM:SSZ).</td>
+</tr>
+<tr>
+<td><code>--filter_expression</code></td>
+<td><code>''</code></td>
+<td>Filter expression to use to query Workspace logs. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list</td>
+</tr>
+<tr>
+<td><code>--incident_id</code></td>
+<td><code>None</code></td>
+<td>Incident ID (used for Timesketch description).</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>Timesketch sketch to which the timeline should be added.</td>
+</tr>
+<tr>
+<td><code>--timesketch_endpoint</code></td>
+<td><code>'http://localhost:5000/'</code></td>
+<td>Timesketch endpoint</td>
+</tr>
+<tr>
+<td><code>--timesketch_username</code></td>
+<td><code>None</code></td>
+<td>Username for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--timesketch_password</code></td>
+<td><code>None</code></td>
+<td>Password for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--token_password</code></td>
+<td><code>''</code></td>
+<td>Optional custom password to decrypt Timesketch credential file with.</td>
+</tr>
+<tr>
+<td><code>--wait_for_timelines</code></td>
+<td><code>True</code></td>
+<td>Whether to wait for Timesketch to finish processing all timelines.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>WorkspaceAuditCollector-Login</code>, <code>WorkspaceAuditCollector-Drive</code>, <code>WorkspaceAuditCollector-Token</code>, <code>WorkspaceAuditCollector-Chrome</code>, <code>WorkspaceAuditCollector-CAA</code>, <code>WorkspaceAuditCollector-DataStudio</code>, <code>WorkspaceAuditCollector-GroupsEnterprise</code>, <code>WorkspaceAuditCollector-Calendar</code>, <code>WorkspaceAuditCollector-Chat</code>, <code>WorkspaceAuditCollector-GCP</code>, <code>WorkspaceAuditCollector-Groups</code>, <code>WorkspaceAuditCollector-Meet</code>, <code>WorkspaceAuditCollector-UserAccounts</code>, <code>WorkspaceAuditTimesketch</code>, <code>TimesketchExporter</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="workspace_user_activity_ts" src="../_static/graphviz/workspace_user_activity_ts.png" /></p>
+<hr />
+<h2 id="workspace_user_device_ts"><code>workspace_user_device_ts</code><a class="headerlink" href="#workspace_user_device_ts" title="Permanent link">&para;</a></h2>
+<p>Collects mobile records and adds to Timesketch</p>
+<p><strong>Details:</strong></p>
+<p>Collects mobile (Device Audit activity) records for a Workspace user and adds them to Timesketch.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>user</code></td>
+<td><code>''</code></td>
+<td>email address of the user to query logs for</td>
+</tr>
+<tr>
+<td><code>--start_time</code></td>
+<td><code>None</code></td>
+<td>Start time.</td>
+</tr>
+<tr>
+<td><code>--end_time</code></td>
+<td><code>None</code></td>
+<td>End time.</td>
+</tr>
+<tr>
+<td><code>--filter_expression</code></td>
+<td><code>''</code></td>
+<td>Filter expression to use to query Workspace logs. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list</td>
+</tr>
+<tr>
+<td><code>--incident_id</code></td>
+<td><code>None</code></td>
+<td>Incident ID (used for Timesketch description).</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>Timesketch sketch to which the timeline should be added.</td>
+</tr>
+<tr>
+<td><code>--timesketch_endpoint</code></td>
+<td><code>'http://localhost:5000/'</code></td>
+<td>Timesketch endpoint</td>
+</tr>
+<tr>
+<td><code>--timesketch_username</code></td>
+<td><code>None</code></td>
+<td>Username for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--timesketch_password</code></td>
+<td><code>None</code></td>
+<td>Password for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--token_password</code></td>
+<td><code>''</code></td>
+<td>Optional custom password to decrypt Timesketch credential file with.</td>
+</tr>
+<tr>
+<td><code>--wait_for_timelines</code></td>
+<td><code>True</code></td>
+<td>Whether to wait for Timesketch to finish processing all timelines.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>WorkspaceAuditCollector</code>, <code>WorkspaceAuditTimesketch</code>, <code>TimesketchExporter</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="workspace_user_device_ts" src="../_static/graphviz/workspace_user_device_ts.png" /></p>
+<hr />
+<h2 id="workspace_user_drive_ts"><code>workspace_user_drive_ts</code><a class="headerlink" href="#workspace_user_drive_ts" title="Permanent link">&para;</a></h2>
+<p>Collects Drive records for a Workspace user and adds them to Timesketch</p>
+<p><strong>Details:</strong></p>
+<p>Collects Drive records for a Workspace user and adds them to Timesketch.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>user</code></td>
+<td><code>''</code></td>
+<td>email address of the user to query logs for</td>
+</tr>
+<tr>
+<td><code>--start_time</code></td>
+<td><code>None</code></td>
+<td>Start time.</td>
+</tr>
+<tr>
+<td><code>--end_time</code></td>
+<td><code>None</code></td>
+<td>End time.</td>
+</tr>
+<tr>
+<td><code>--filter_expression</code></td>
+<td><code>''</code></td>
+<td>Filter expression to use to query Workspace logs. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list</td>
+</tr>
+<tr>
+<td><code>--incident_id</code></td>
+<td><code>None</code></td>
+<td>Incident ID (used for Timesketch description).</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>Timesketch sketch to which the timeline should be added.</td>
+</tr>
+<tr>
+<td><code>--timesketch_endpoint</code></td>
+<td><code>'http://localhost:5000/'</code></td>
+<td>Timesketch endpoint</td>
+</tr>
+<tr>
+<td><code>--timesketch_username</code></td>
+<td><code>None</code></td>
+<td>Username for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--timesketch_password</code></td>
+<td><code>None</code></td>
+<td>Password for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--token_password</code></td>
+<td><code>''</code></td>
+<td>Optional custom password to decrypt Timesketch credential file with.</td>
+</tr>
+<tr>
+<td><code>--wait_for_timelines</code></td>
+<td><code>True</code></td>
+<td>Whether to wait for Timesketch to finish processing all timelines.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>WorkspaceAuditCollector</code>, <code>WorkspaceAuditTimesketch</code>, <code>TimesketchExporter</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="workspace_user_drive_ts" src="../_static/graphviz/workspace_user_drive_ts.png" /></p>
+<hr />
+<h2 id="workspace_user_login_ts"><code>workspace_user_login_ts</code><a class="headerlink" href="#workspace_user_login_ts" title="Permanent link">&para;</a></h2>
+<p>Collects login records and adds to Timesketch</p>
+<p><strong>Details:</strong></p>
+<p>Collects login records for a Workspace user and adds them to Timesketch.</p>
+<p><strong>CLI parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>user</code></td>
+<td><code>''</code></td>
+<td>email address of the user to query logs for</td>
+</tr>
+<tr>
+<td><code>--start_time</code></td>
+<td><code>None</code></td>
+<td>Start time.</td>
+</tr>
+<tr>
+<td><code>--end_time</code></td>
+<td><code>None</code></td>
+<td>End time.</td>
+</tr>
+<tr>
+<td><code>--filter_expression</code></td>
+<td><code>''</code></td>
+<td>Filter expression to use to query Workspace logs. See https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list</td>
+</tr>
+<tr>
+<td><code>--incident_id</code></td>
+<td><code>None</code></td>
+<td>Incident ID (used for Timesketch description).</td>
+</tr>
+<tr>
+<td><code>--sketch_id</code></td>
+<td><code>None</code></td>
+<td>Timesketch sketch to which the timeline should be added.</td>
+</tr>
+<tr>
+<td><code>--timesketch_endpoint</code></td>
+<td><code>'http://localhost:5000/'</code></td>
+<td>Timesketch endpoint</td>
+</tr>
+<tr>
+<td><code>--timesketch_username</code></td>
+<td><code>None</code></td>
+<td>Username for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--timesketch_password</code></td>
+<td><code>None</code></td>
+<td>Password for Timesketch server.</td>
+</tr>
+<tr>
+<td><code>--token_password</code></td>
+<td><code>''</code></td>
+<td>Optional custom password to decrypt Timesketch credential file with.</td>
+</tr>
+<tr>
+<td><code>--wait_for_timelines</code></td>
+<td><code>True</code></td>
+<td>Whether to wait for Timesketch to finish processing all timelines.</td>
+</tr>
+</tbody>
+</table>
+<p>Modules: <code>WorkspaceAuditCollector</code>, <code>WorkspaceAuditTimesketch</code>, <code>TimesketchExporter</code></p>
+<p><strong>Module graph</strong></p>
+<p><img alt="workspace_user_login_ts" src="../_static/graphviz/workspace_user_login_ts.png" /></p>
+<hr />
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../architecture/" class="btn btn-neutral float-left" title="Architecture"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../recipe-caveat/" class="btn btn-neutral float-right" title="Recipe caveats">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../architecture/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../recipe-caveat/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
