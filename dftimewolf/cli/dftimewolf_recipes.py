@@ -4,7 +4,6 @@
 
 import argparse
 from contextlib import redirect_stderr, redirect_stdout
-import datetime
 import curses
 import logging
 import os
@@ -522,10 +521,7 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
     tool.telemetry.LogTelemetry('module', module, 'core', recipe_name)
 
   tool.telemetry.LogTelemetry(
-    'workflow_start',
-    datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-    'core',
-    recipe_name)
+      'workflow_start', str(time.time() * 1000), 'core', recipe_name)
 
   try:
     tool.ValidateArguments(tool.dry_run)
