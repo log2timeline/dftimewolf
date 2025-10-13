@@ -743,6 +743,34 @@ class ContainerManagerTest(unittest.TestCase):
     self.assertIn(_TestContainer1('for_self_only=False'), actual)
     self.assertNotIn(_TestContainer1('for_self_only=True'), actual)
 
+  def test_CallbackErrorReporting(self):
+    """Tests that an error in a callback is correctly reported."""
+    mock_logger_error = mock.MagicMock()
+    mock_callback = mock.MagicMock()
+    mock_callback.side_effect = RuntimeError('Test Exception')
+
+    self._container_manager._logger.error = mock_logger_error
+
+    self._container_manager.ParseRecipe(_TEST_RECIPE)
+
+    # Register the callback
+    self._container_manager.RegisterStreamingCallback(
+        module_name='Preflight2_1',
+        container_type=_TestContainer1,
+        callback=mock_callback)
+
+    # Fire the callback
+    self._container_manager.StoreContainer(
+        source_module='Preflight1',
+        container=_TestContainer1('From Preflight1'))
+    self._container_manager.WaitForCallbackCompletion()
+
+    # Was the message logged?
+    mock_logger_error.assert_called_once_with('Callback %s encountered error: %s',
+                                              str(mock_callback),
+                                              'Test Exception',
+                                              exc_info=True)
+
 
 if __name__ == '__main__':
   unittest.main()
