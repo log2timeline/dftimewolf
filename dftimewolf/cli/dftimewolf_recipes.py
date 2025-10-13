@@ -90,9 +90,7 @@ MODULES = {
   'OpenRelikProcessor': 'dftimewolf.lib.processors.openrelik',
   'WorkspaceAuditCollector': 'dftimewolf.lib.collectors.workspace_audit',
   'WorkspaceAuditTimesketch': 'dftimewolf.lib.processors.workspace_audit_timesketch',
-  'YetiYaraCollector': 'dftimewolf.lib.collectors.yara',
-  'TestCollector': 'dftimewolf.lib.collectors.test_collector',
-  'TestProcessor': 'dftimewolf.lib.processors.test_processor'
+  'YetiYaraCollector': 'dftimewolf.lib.collectors.yara'
 }
 # pylint: enable=line-too-long
 
