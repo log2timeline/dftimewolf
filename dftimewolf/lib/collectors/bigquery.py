@@ -61,6 +61,7 @@ class BigQueryCollector(module.ThreadAwareModule):
       else:
         bq_client = bigquery.Client()
       df = bq_client.query(container.query).to_dataframe()
+      self.logger.info('Query returned %d rows', df.shape[0])
 
     # pytype: disable=module-attr
     except google.cloud.exceptions.NotFound as exception:
