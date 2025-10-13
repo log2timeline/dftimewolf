@@ -31,7 +31,6 @@ class _MODULE():
   dependencies: list[str] = dataclasses.field(default_factory=list)
   storage: dict[str, list[tuple[interface.AttributeContainer, str]]] = dataclasses.field(default_factory=dict)
   callback_map: dict[str, list[Callable[[interface.AttributeContainer], None]]] = dataclasses.field(default_factory=dict)
-  completed: bool = False
 
   def RegisterCallback(
       self, container_type: str, callback: Callable[[interface.AttributeContainer], None]) -> None:
@@ -66,6 +65,10 @@ class ContainerManager():
     self._modules: dict[str, _MODULE] = {}
     self._callback_pool = futures.ThreadPoolExecutor()
     self._futures: list[tuple[str, futures.Future[None]]] = []
+
+  def __del__(self) -> None:
+    """Clean up the ContainerManager."""
+    self.WaitForCallbackCompletion()
 
   def ParseRecipe(self, recipe: dict[str, Any]) -> None:
     """Parses a recipe to build the dependency graph.
@@ -200,10 +203,6 @@ class ContainerManager():
 
     with self._mutex:
       self._modules[module_name].storage = {}
-      self._modules[module_name].completed = True
-
-      if all((self._modules[name].completed for name in self._modules)):
-        self.WaitForCallbackCompletion()
 
   def RegisterStreamingCallback(
       self,

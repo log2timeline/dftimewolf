@@ -763,6 +763,7 @@ class ContainerManagerTest(unittest.TestCase):
     self._container_manager.StoreContainer(
         source_module='Preflight1',
         container=_TestContainer1('From Preflight1'))
+    
     self._container_manager.WaitForCallbackCompletion()
 
     # Was the message logged?
