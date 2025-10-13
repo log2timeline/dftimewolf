@@ -99,7 +99,7 @@ class ContainerManagerTest(unittest.TestCase):
 
   def _CompleteRecipe(self):
     """Marks all the modules as completed."""
-    for k in self._container_manager._modules.keys():
+    for k in self._container_manager._modules:  # pylint: disable=protected-access
       self._container_manager.CompleteModule(k)
 
   def setUp(self):
@@ -755,7 +755,7 @@ class ContainerManagerTest(unittest.TestCase):
     mock_callback = mock.MagicMock()
     mock_callback.side_effect = RuntimeError('Test Exception')
 
-    self._container_manager._logger.error = mock_logger_error
+    self._container_manager._logger.error = mock_logger_error  # pylint: disable=protected-access
 
     self._container_manager.ParseRecipe(_TEST_RECIPE)
 
@@ -769,15 +769,16 @@ class ContainerManagerTest(unittest.TestCase):
     self._container_manager.StoreContainer(
         source_module='Preflight1',
         container=_TestContainer1('From Preflight1'))
-    
+
     # Complete processing (and therefore wait for callbacks to finish)
     self._CompleteRecipe()
 
     # Was the message logged?
-    mock_logger_error.assert_called_once_with('Callback %s encountered error: %s',
-                                              str(mock_callback),
-                                              'Test Exception',
-                                              exc_info=True)
+    mock_logger_error.assert_called_once_with(
+        'Callback %s encountered error: %s',
+        str(mock_callback),
+        'Test Exception',
+        exc_info=True)
 
 
 if __name__ == '__main__':
