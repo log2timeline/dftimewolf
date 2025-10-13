@@ -231,7 +231,7 @@ class ContainerManager():
     for callback, future in self._futures:
       try:
         future.result()
-      except Exception as e:
+      except Exception as e:  # pylint: disable=broad-exception-caught
         self._logger.error('Callback %s encountered error: %s', callback, str(e), exc_info=True)
 
   def _RemoveStoredContainers(self, containers: list[T], requesting_module: str) -> None:
