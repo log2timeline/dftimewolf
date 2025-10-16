@@ -202,7 +202,7 @@ class ContainerManager():
       self._modules[module_name].storage = {}
       self._modules[module_name].completed = True
 
-      if all((module.completed for _, module in self._modules.items())):
+      if all((module.completed for module in self._modules.values())):
         self.WaitForCallbackCompletion()
 
   def RegisterStreamingCallback(
