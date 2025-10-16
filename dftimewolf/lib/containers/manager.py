@@ -31,6 +31,7 @@ class _MODULE():
   dependencies: list[str] = dataclasses.field(default_factory=list)
   storage: dict[str, list[tuple[interface.AttributeContainer, str]]] = dataclasses.field(default_factory=dict)
   callback_map: dict[str, list[Callable[[interface.AttributeContainer], None]]] = dataclasses.field(default_factory=dict)
+  completed: bool = False
 
   def RegisterCallback(
       self, container_type: str, callback: Callable[[interface.AttributeContainer], None]) -> None:
@@ -64,10 +65,7 @@ class ContainerManager():
     self._mutex = threading.Lock()
     self._modules: dict[str, _MODULE] = {}
     self._callback_pool = futures.ThreadPoolExecutor()
-
-  def __del__(self) -> None:
-    """Clean up the ContainerManager."""
-    self.WaitForCallbackCompletion()
+    self._futures: list[tuple[str, futures.Future[None]]] = []
 
   def ParseRecipe(self, recipe: dict[str, Any]) -> None:
     """Parses a recipe to build the dependency graph.
@@ -122,7 +120,8 @@ class ContainerManager():
             # This module has registered callbacks - Use those, rather than storing
             for callback in callbacks:
               self._logger.debug('Executing callback for %s with container %s', module.name, str(container))
-              self._callback_pool.submit(callback, container)
+              self._futures.append((str(callback),
+                                    self._callback_pool.submit(callback, container)))
           else:
             if container.CONTAINER_TYPE not in module.storage:
               module.storage[container.CONTAINER_TYPE] = []
@@ -201,6 +200,10 @@ class ContainerManager():
 
     with self._mutex:
       self._modules[module_name].storage = {}
+      self._modules[module_name].completed = True
+
+      if all((module.completed for module in self._modules.values())):
+        self.WaitForCallbackCompletion()
 
   def RegisterStreamingCallback(
       self,
@@ -224,6 +227,12 @@ class ContainerManager():
   def WaitForCallbackCompletion(self) -> None:
     """Waits for all scheduled callbacks to be completed."""
     self._callback_pool.shutdown(wait=True)
+
+    for callback, future in self._futures:
+      try:
+        future.result()
+      except Exception as e:  # pylint: disable=broad-exception-caught
+        self._logger.error('Callback %s encountered error: %s', callback, str(e), exc_info=True)
 
   def _RemoveStoredContainers(self, containers: list[T], requesting_module: str) -> None:
     """Removes containers from storage.

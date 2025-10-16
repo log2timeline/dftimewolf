@@ -97,6 +97,11 @@ class _TestContainer3(interface.AttributeContainer):
 class ContainerManagerTest(unittest.TestCase):
   """Tests for the ContainerManager."""
 
+  def _CompleteRecipe(self):
+    """Marks all the modules as completed."""
+    for k in self._container_manager._modules:  # pylint: disable=protected-access
+      self._container_manager.CompleteModule(k)
+
   def setUp(self):
     """Set up."""
     super().setUp()
@@ -652,13 +657,6 @@ class ContainerManagerTest(unittest.TestCase):
         source_module='Preflight1',
         container=_TestContainer3('From Preflight1'))
 
-    self._container_manager.WaitForCallbackCompletion()
-
-    mock_callback_1.assert_called_once_with(_TestContainer1('From Preflight1'))
-    mock_callback_2.assert_called_once_with(_TestContainer1('From Preflight1'))
-    mock_callback_3.assert_called_once_with(_TestContainer2('From Preflight1'))
-    mock_callback_4.assert_not_called()
-
     # Because they were streamed, GetContainers should return nothing.
     actual = self._container_manager.GetContainers(
         requesting_module='Preflight2_1', container_class=_TestContainer1)
@@ -675,6 +673,14 @@ class ContainerManagerTest(unittest.TestCase):
         requesting_module='Preflight2_2', container_class=_TestContainer3)
     self.assertEqual(len(actual), 1)
     self.assertEqual(actual[0], _TestContainer3('From Preflight1'))
+
+    # Complete processing (and therefore wait for callbacks to finish)
+    self._CompleteRecipe()
+
+    mock_callback_1.assert_called_once_with(_TestContainer1('From Preflight1'))
+    mock_callback_2.assert_called_once_with(_TestContainer1('From Preflight1'))
+    mock_callback_3.assert_called_once_with(_TestContainer2('From Preflight1'))
+    mock_callback_4.assert_not_called()
 
   def test_SelfStreamContainer(self):
     """A modules streaming callback does not invoke the callback recursively."""
@@ -742,6 +748,37 @@ class ContainerManagerTest(unittest.TestCase):
     self.assertEqual(len(actual), 1)
     self.assertIn(_TestContainer1('for_self_only=False'), actual)
     self.assertNotIn(_TestContainer1('for_self_only=True'), actual)
+
+  def test_CallbackErrorReporting(self):
+    """Tests that an error in a callback is correctly reported."""
+    mock_logger_error = mock.MagicMock()
+    mock_callback = mock.MagicMock()
+    mock_callback.side_effect = RuntimeError('Test Exception')
+
+    self._container_manager._logger.error = mock_logger_error  # pylint: disable=protected-access
+
+    self._container_manager.ParseRecipe(_TEST_RECIPE)
+
+    # Register the callback
+    self._container_manager.RegisterStreamingCallback(
+        module_name='Preflight2_1',
+        container_type=_TestContainer1,
+        callback=mock_callback)
+
+    # Fire the callback
+    self._container_manager.StoreContainer(
+        source_module='Preflight1',
+        container=_TestContainer1('From Preflight1'))
+
+    # Complete processing (and therefore wait for callbacks to finish)
+    self._CompleteRecipe()
+
+    # Was the message logged?
+    mock_logger_error.assert_called_once_with(
+        'Callback %s encountered error: %s',
+        str(mock_callback),
+        'Test Exception',
+        exc_info=True)
 
 
 if __name__ == '__main__':
