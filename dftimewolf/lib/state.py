@@ -493,6 +493,7 @@ class DFTimewolfState(object):
       try:
         self._RunModuleSetUp(preflight, **new_args)
         self._RunModuleProcess(preflight)
+        self._container_manager.CompleteModule(runtime_name)
         self._threading_event_per_module[runtime_name] = threading.Event()
         self._threading_event_per_module[runtime_name].set()
       finally:
