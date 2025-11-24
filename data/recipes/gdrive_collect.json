@@ -1,0 +1,32 @@
+{
+    "name": "gdrive_collect",
+    "description": "Collect files from Google Drive.",
+    "short_description": "Collect files from Google Drive.",
+    "test_params": "files",
+    "modules": [
+      {
+        "wants": [],
+        "name": "GoogleDriveCollector",
+        "args": {
+            "folder_id": "@folder_id",
+            "recursive": "@recursive",
+            "drive_ids": "@drive_ids",
+            "output_directory": "@output_directory"
+        }
+      }
+    ],
+    "args": [
+        ["--folder_id", "Parent Google drive folder ID to download from. Mutually exclusive with drive_ids.", null],
+        ["--recursive", "Recursively collect from folder_id", false],
+        [
+          "--drive_ids",
+          "Comma-separated list of drive IDs to download. Mutually exclusive with folder_id.",
+          null
+        ],
+        [
+          "--output_directory",
+          "Output directory for collected files.",
+          null
+        ]
+    ]
+}

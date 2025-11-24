@@ -1,0 +1,25 @@
+{
+    "name": "upload_gdrive",
+    "description": "Uploads file(s) to Google Drive.",
+    "short_description": "Uploads local file(s) to Google Drive.",
+    "test_params": "files",
+    "modules": [{
+        "wants": [],
+        "name": "FilesystemCollector",
+        "args": {
+            "paths": "@files"
+        }
+    }, {
+        "wants": ["FilesystemCollector"],
+        "name": "GoogleDriveExporter",
+        "args": {
+            "parent_folder_id": "@parent_folder_id",
+            "new_folder_name": "@new_folder_name"
+        }
+    }],
+    "args": [
+        ["files", "Comma-separated list of paths to files.", null],
+        ["--parent_folder_id", "", "0B0m2ov3yrR0bNzBhNjcxNjctN2EyYS00ZTgxLTk3YjgtMTI5NGI1OGI3MTJh"],
+        ["--new_folder_name", "Optional new folder name.  ", null]
+    ]
+}

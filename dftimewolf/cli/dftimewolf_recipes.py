@@ -59,6 +59,8 @@ MODULES = {
   'GCSToGCEImage': 'dftimewolf.lib.exporters.gcs_to_gce_image',
   'GoogleCloudDiskExport': 'dftimewolf.lib.exporters.gce_disk_export',
   'GoogleCloudDiskExportStream': 'dftimewolf.lib.exporters.gce_disk_export_dd',
+  'GoogleDriveCollector': 'dftimewolf.lib.collectors.gdrive',
+  'GoogleDriveExporter': 'dftimewolf.lib.exporters.gdrive',
   'GoogleSheetsCollector': 'dftimewolf.lib.collectors.gsheets',
   'GrepperSearch': 'dftimewolf.lib.processors.grepper',
   'GRRArtifactCollector': 'dftimewolf.lib.collectors.grr_hosts',
