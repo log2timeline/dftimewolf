@@ -22,7 +22,7 @@ from dftimewolf.lib.state import DFTimewolfState
 
 
 def ListDriveFolder(
-    drive_resource: Credentials,
+    drive_resource: discovery.Resource,
     folder_id: str,
     fields: str,
     recursive: bool = False,
