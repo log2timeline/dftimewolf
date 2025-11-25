@@ -98,7 +98,10 @@ class GoogleDriveExporter(module.BaseModule):
       )
 
   def CreateFolderInDrive(
-      self, drive_resource: discovery.Resource, parent_folder_id: str, folder_name: str
+      self,
+      drive_resource: discovery.Resource,
+      parent_folder_id: str,
+      folder_name: str
   ) -> Any:
     """Creates a folder in Google Drive under a specific parent folder.
 
