@@ -95,8 +95,8 @@ class GoogleDriveCollector(module.BaseModule):
     self._folder_id: str = ""
     self._output_directory: str = ""
     self._recursive: bool = False
-    self._drive_resource = None
-    self._fields = "nextPageToken, files"
+    self._drive_resource: discovery.Resource = None
+    self._fields: str = "nextPageToken, files"
 
   # pylint: disable=arguments-differ
   def SetUp(
@@ -242,7 +242,7 @@ class GoogleDriveCollector(module.BaseModule):
     with open(output_file, "wb") as out_file:
       try:
         # pylint: disable=maybe-no-member
-        request = self._drive_resource.files().get_media(fileId=drive_id)  # type: ignore[attr-defined]  # pylint: disable=line-too-long
+        request = self._drive_resource.files().get_media(fileId=drive_id)  # pylint: disable=line-too-long
         downloader = MediaIoBaseDownload(out_file, request)
         done = False
         while done is False:
