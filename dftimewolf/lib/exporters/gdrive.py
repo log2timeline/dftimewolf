@@ -6,7 +6,7 @@ to upload files to a specified folder.
 """
 
 import io
-from typing import Optional
+from typing import Any, Optional
 
 from google.oauth2.credentials import Credentials
 from googleapiclient import discovery
@@ -40,15 +40,17 @@ class GoogleDriveExporter(module.BaseModule):
         state, name=name, critical=critical
     )
     self.parent_folder_id: Optional[str] = None
+    self.new_folder_name: Optional[str] = None
     self._credentials: Optional[Credentials] = None
     self._drive_resource = None
 
+  # pylint: disable=arguments-differ
   def SetUp(self, parent_folder_id: str, new_folder_name: str) -> None:
     """Sets up the Google Drive Exporter module.
 
     Args:
         parent_folder_id (str): ID of the parent folder in Google Drive.
-        new_folder_name (str): Name of the new folder to create in the parent 
+        new_folder_name (str): Name of the new folder to create in the parent
             folder.
 
     Raises:
@@ -81,24 +83,28 @@ class GoogleDriveExporter(module.BaseModule):
     folder_id = self.parent_folder_id
     if self.new_folder_name:
       new_folder = self.CreateFolderInDrive(
-          self._drive_resource, self.parent_folder_id, self.new_folder_name
+          self._drive_resource,
+          self.parent_folder_id,  # type: ignore[arg-type]
+          self.new_folder_name
       )
       folder_id = new_folder["id"]
 
     self.logger.info(f"Uploading to folder ID {folder_id}")
     for file_container in self.GetContainers(containers.File):
       self.UploadFileToDrive(
-          folder_id=folder_id,
+          folder_id=folder_id,  # type: ignore[arg-type]
           file_name=file_container.name,
           file_path=file_container.path,
       )
 
-  def CreateFolderInDrive(self, drive_resource, parent_folder_id, folder_name):
+  def CreateFolderInDrive(
+      self, drive_resource: Credentials, parent_folder_id: str, folder_name: str
+  ) -> Any:
     """Creates a folder in Google Drive under a specific parent folder.
 
     Args:
         drive_resource: Authorized Google Drive API resource.
-        parent_folder_id (str): ID of the parent folder where the new folder 
+        parent_folder_id (str): ID of the parent folder where the new folder
             will be created.
         folder_name (str): Name of the new folder to create.
 
@@ -131,13 +137,15 @@ class GoogleDriveExporter(module.BaseModule):
       self.ModuleError(f"Could not create folder {folder_name}: {error}")
       return None
 
-  def UploadFileToDrive(self, folder_id, file_path, file_name=None):
+  def UploadFileToDrive(
+      self, folder_id: str, file_path: str, file_name: Optional[str] = None
+  ) -> Any:
     """Uploads a file to Google Drive into a specific folder.
 
     Args:
         folder_id (str): ID of the folder to upload the file to.
         file_path (str): Path to the file to upload.
-        file_name (str, optional): Name for the uploaded file. Defaults to the 
+        file_name (str, optional): Name for the uploaded file. Defaults to the
             original file name.
 
     Returns:
@@ -149,7 +157,7 @@ class GoogleDriveExporter(module.BaseModule):
     try:
       # pylint: disable=maybe-no-member
       uploaded_file = (
-          self._drive_resource.files()
+          self._drive_resource.files()  # type: ignore[attr-defined]
           .create(
               body={
                   "name": file_name,

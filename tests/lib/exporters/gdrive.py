@@ -38,6 +38,7 @@ class GoogleDriveExporterTest(modules_test_base.ModuleTestBase):
     self._module.SetUp(
         parent_folder_id="parent_folder_id", new_folder_name="new_folder_name"
     )
+    # pylint: disable=protected-access
     self.assertEqual(self._module.parent_folder_id, "parent_folder_id")
     self.assertEqual(self._module.new_folder_name, "new_folder_name")
 
@@ -49,6 +50,7 @@ class GoogleDriveExporterTest(modules_test_base.ModuleTestBase):
   )
   def testProcess(self, mock_upload_file_to_drive, mock_create_folder_in_drive):
     """Tests the Process method."""
+    # pylint: disable=protected-access
     self._module.SetUp(
         parent_folder_id="parent_folder_id", new_folder_name="new_folder_name"
     )
@@ -73,12 +75,14 @@ class GoogleDriveExporterTest(modules_test_base.ModuleTestBase):
 
   def testCreateFolderInDrive(self):
     """Tests the CreateFolderInDrive method."""
+    # pylint: disable=protected-access
     self._module._drive_resource = self.mock_drive_service
 
-    self.mock_drive_service.files.return_value.create.return_value.execute.return_value = {
-        "id": "folder_id",
-        "name": "folder_name",
-    }
+    (self.mock_drive_service.files.return_value
+        .create.return_value.execute.return_value) = {
+            "id": "folder_id",
+            "name": "folder_name",
+        }
 
     folder_metadata = self._module.CreateFolderInDrive(
         self.mock_drive_service, "parent_folder_id", "folder_name"
@@ -88,14 +92,16 @@ class GoogleDriveExporterTest(modules_test_base.ModuleTestBase):
     self.assertEqual(folder_metadata["name"], "folder_name")
 
   @mock.patch("io.FileIO")
-  def testUploadFileToDrive(self, mock_file_io):
+  def testUploadFileToDrive(self, _mock_file_io):
     """Tests the UploadFileToDrive method."""
+    # pylint: disable=protected-access
     self._module._drive_resource = self.mock_drive_service
 
-    self.mock_drive_service.files.return_value.create.return_value.execute.return_value = {
-        "id": "file_id",
-        "name": "file_name",
-    }
+    (self.mock_drive_service.files.return_value
+        .create.return_value.execute.return_value) = {
+            "id": "file_id",
+            "name": "file_name",
+        }
 
     file_metadata = self._module.UploadFileToDrive(
         folder_id="folder_id", file_path="/path/to/file", file_name="file_name"

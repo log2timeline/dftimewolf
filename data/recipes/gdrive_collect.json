@@ -2,7 +2,7 @@
     "name": "gdrive_collect",
     "description": "Collect files from Google Drive.",
     "short_description": "Collect files from Google Drive.",
-    "test_params": "files",
+    "test_params": "--folder_id 1234567890 --output_directory /tmp/gdrive_collect",
     "modules": [
       {
         "wants": [],

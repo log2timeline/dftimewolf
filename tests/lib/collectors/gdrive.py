@@ -7,7 +7,6 @@ from unittest import mock
 
 from dftimewolf.lib.collectors import gdrive
 from dftimewolf.lib.containers import containers
-from dftimewolf.lib.state import DFTimewolfState
 from tests.lib import modules_test_base
 
 
@@ -15,6 +14,7 @@ class GoogleDriveCollectorTest(modules_test_base.ModuleTestBase):
   """Tests for the Google Drive collector."""
 
   def setUp(self):
+    # pylint: disable=protected-access
     self._InitModule(gdrive.GoogleDriveCollector)
     super(GoogleDriveCollectorTest, self).setUp()
 
@@ -37,6 +37,7 @@ class GoogleDriveCollectorTest(modules_test_base.ModuleTestBase):
   def testSetUp(self):
     """Tests the SetUp method."""
     # Test with folder_id
+    # pylint: disable=protected-access
     self._module.SetUp(
         folder_id="folder_id",
         recursive=False,
@@ -78,7 +79,7 @@ class GoogleDriveCollectorTest(modules_test_base.ModuleTestBase):
   @mock.patch("dftimewolf.lib.collectors.gdrive.ListDriveFolder")
   def testProcess(self, mock_list_drive_folder, mock_download_file):
     """Tests the Process method."""
-
+    # pylint: disable=protected-access
     # Test with folder_id
     self._module.SetUp(
         folder_id="folder_id",

@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 """Downloads files from Google Drive.
 
-  This module handles the authentication and interaction with the Google Drive 
+  This module handles the authentication and interaction with the Google Drive
   API to download files from a specified folder or by file IDs.
 """
 
-import io
 import os.path
 import tempfile
 from typing import Optional
@@ -22,7 +21,23 @@ from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.state import DFTimewolfState
 
 
-def ListDriveFolder(drive_resource, folder_id, fields, recursive: bool = False):
+def ListDriveFolder(
+    drive_resource: Credentials,
+    folder_id: str,
+    fields: str,
+    recursive: bool = False,
+) -> list[discovery.Resource]:
+  """Lists files in a Google Drive folder.
+
+  Args:
+    drive_resource (Credentials): Google Drive API resource.
+    folder_id (str): ID of the folder to list files from.
+    fields (str): Fields to return in the response.
+    recursive (bool): Whether to list files recursively from subfolders.
+
+  Returns:
+    list[discovery.Resource]: List of files in the folder.
+  """
   files = []
   page_token = None
   query = f"'{folder_id}' in parents and trashed = false"
@@ -62,7 +77,7 @@ class GoogleDriveCollector(module.BaseModule):
       "https://www.googleapis.com/auth/drive.readonly",
       "https://www.googleapis.com/auth/drive.metadata.readonly",
   ]
-  _CREDENTIALS_FILENAME = ".dftimewolf_drive_credentials.json"
+  _CREDENTIALS_FILENAME = ".dftimewolf_drive_collect_credentials.json"
   _CLIENT_SECRET_FILENAME = ".dftimewolf_drive_client_secret.json"
 
   def __init__(
@@ -83,25 +98,26 @@ class GoogleDriveCollector(module.BaseModule):
     self._drive_resource = None
     self._fields = "nextPageToken, files"
 
+  # pylint: disable=arguments-differ
   def SetUp(
       self,
       folder_id: str,
       recursive: bool,
       drive_ids: str,
       output_directory: str | None,
-  ):
+  ) -> None:
     """Sets up the Google Drive Collector module.
 
     Args:
-        folder_id (str): ID of the folder in Google Drive to download files 
+        folder_id (str): ID of the folder in Google Drive to download files
           from.
         recursive (bool): Whether to download files recursively from subfolders.
         drive_ids (str): Comma-separated list of file IDs to download.
-        output_directory (str | None): Directory to save downloaded files. 
+        output_directory (str | None): Directory to save downloaded files.
           Defaults to a temporary directory.
 
     Raises:
-        ModuleError: If neither folder_id nor drive_ids are specified, or if 
+        ModuleError: If neither folder_id nor drive_ids are specified, or if
           both are provided.
     """
     if not folder_id and not drive_ids:
@@ -145,14 +161,13 @@ class GoogleDriveCollector(module.BaseModule):
     if folder_id:
       self._folder_id = folder_id
       self._recursive = recursive
-      self._query = f"'{folder_id}' in parents and trashed = false"  # https://developers.google.com/workspace/drive/api/guides/search-files
 
     if drive_ids:
       self._drive_ids = [
           drive_id for drive_id in drive_ids.split(",") if drive_id
       ]
 
-  def Process(self):
+  def Process(self) -> None:
     """Processes the files and downloads them from Google Drive.
 
     Raises:
@@ -179,7 +194,7 @@ class GoogleDriveCollector(module.BaseModule):
           continue
         if mime_type and mime_type.startswith("application/vnd.google-apps."):
           self.logger.info(
-              f'Skipping Google Workspace native file: '
+              f"Skipping Google Workspace native file: "
               f'{drive_file.get("name")} '
               f'({drive_file.get("id")}) with mimeType: {mime_type}. '
           )
@@ -205,9 +220,8 @@ class GoogleDriveCollector(module.BaseModule):
 
     if self._drive_ids:
       for drive_id in self._drive_ids:
-        file_name = self._DownloadFile(
-            drive_id, os.path.join(self._output_directory, drive_id)
-        )
+        file_name = os.path.join(self._output_directory, drive_id)
+        self._DownloadFile(drive_id, file_name)
         self.StoreContainer(
             container=containers.File(
                 name=drive_id, path=file_name, description=""
@@ -228,7 +242,7 @@ class GoogleDriveCollector(module.BaseModule):
     with open(output_file, "wb") as out_file:
       try:
         # pylint: disable=maybe-no-member
-        request = self._drive_resource.files().get_media(fileId=drive_id)
+        request = self._drive_resource.files().get_media(fileId=drive_id)  # type: ignore[attr-defined]  # pylint: disable=line-too-long
         downloader = MediaIoBaseDownload(out_file, request)
         done = False
         while done is False:

@@ -1,3 +1,4 @@
+"""Authentication module."""
 import os.path
 from typing import Optional
 
@@ -10,7 +11,16 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 def GetGoogleOauth2Credential(
     scopes: list[str], credential_path: str, secret_path: str
 ) -> Optional[Credentials]:
-  """Gets a Google Oauth2 credential."""
+  """Gets a Google Oauth2 credential.
+  
+  Args:
+    scopes (list[str]): List of scopes to request.
+    credential_path (str): Path to the credentials file.
+    secret_path (str): Path to the secret file.
+  
+  Returns:
+    Optional[Credentials]: Google Oauth2 credential.
+  """
   credentials: Optional[Credentials] = None
 
   # The credentials file stores the user's access and refresh tokens, and is
@@ -31,7 +41,7 @@ def GetGoogleOauth2Credential(
       else:
         secrets_path = os.path.join(os.path.expanduser("~"), secret_path)
         if not os.path.exists(secrets_path):
-          InstalledAppFlow.run_local_server()
+          InstalledAppFlow.run_local_server()  # pylint: disable=no-value-for-parameter
           error_message = (
               "No OAuth application credentials available to retrieve "
               "workspace logs. Please generate OAuth application credentials "

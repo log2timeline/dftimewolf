@@ -4,10 +4,8 @@
 
 import unittest
 from unittest import mock
-import os
 
 from dftimewolf.lib import auth
-from google.oauth2.credentials import Credentials
 
 
 class AuthTest(unittest.TestCase):
@@ -23,7 +21,7 @@ class AuthTest(unittest.TestCase):
   @mock.patch("dftimewolf.lib.auth.Credentials")
   @mock.patch("dftimewolf.lib.auth.filelock.FileLock")
   def testGetGoogleOauth2CredentialValid(
-      self, mock_filelock, mock_credentials, mock_exists, mock_expanduser
+      self, _mock_filelock, mock_credentials, mock_exists, mock_expanduser
   ):
     """Tests getting valid credentials from file."""
     mock_expanduser.return_value = "/tmp"
@@ -49,8 +47,8 @@ class AuthTest(unittest.TestCase):
   def testGetGoogleOauth2CredentialExpiredRefreshable(
       self,
       mock_open,
-      mock_request,
-      mock_filelock,
+      _mock_request,
+      _mock_filelock,
       mock_credentials,
       mock_exists,
       mock_expanduser,
@@ -65,7 +63,7 @@ class AuthTest(unittest.TestCase):
     mock_creds.refresh_token = "token"
     mock_credentials.from_authorized_user_file.return_value = mock_creds
 
-    creds = auth.GetGoogleOauth2Credential(
+    _ = auth.GetGoogleOauth2Credential(
         self.scopes, self.credential_path, self.secret_path
     )
 
@@ -78,7 +76,7 @@ class AuthTest(unittest.TestCase):
   @mock.patch("dftimewolf.lib.auth.filelock.FileLock")
   @mock.patch("builtins.open", new_callable=mock.mock_open)
   def testGetGoogleOauth2CredentialNoCredsSecretExists(
-      self, mock_open, mock_filelock, mock_flow, mock_exists, mock_expanduser
+      self, mock_open, _mock_filelock, mock_flow, mock_exists, mock_expanduser
   ):
     """Tests full flow when no credentials exist but secret does."""
     mock_expanduser.return_value = "/tmp"
@@ -106,7 +104,7 @@ class AuthTest(unittest.TestCase):
   )  # Mock this to avoid actual run_local_server call if logic fails
   @mock.patch("dftimewolf.lib.auth.filelock.FileLock")
   def testGetGoogleOauth2CredentialNoCredsNoSecret(
-      self, mock_filelock, mock_flow, mock_exists, mock_expanduser
+      self, _mock_filelock, _mock_flow, mock_exists, mock_expanduser
   ):
     """Tests error when neither credentials nor secret exist."""
     mock_expanduser.return_value = "/tmp"
@@ -127,7 +125,7 @@ class AuthTest(unittest.TestCase):
   def testGetGoogleOauth2CredentialInvalidNotRefreshable(
       self,
       mock_open,
-      mock_filelock,
+      _mock_filelock,
       mock_credentials,
       mock_flow,
       mock_exists,
