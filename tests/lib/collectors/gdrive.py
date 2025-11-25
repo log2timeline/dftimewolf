@@ -44,7 +44,7 @@ class GoogleDriveCollectorTest(modules_test_base.ModuleTestBase):
     self._module.SetUp(
         folder_id="folder_id",
         recursive=False,
-        drive_ids=None,
+        drive_ids="",
         output_directory=None,
     )
     self.assertEqual(self._module._folder_id, "folder_id")
@@ -56,7 +56,7 @@ class GoogleDriveCollectorTest(modules_test_base.ModuleTestBase):
 
     # Test with drive_ids
     self._module.SetUp(
-        folder_id=None,
+        folder_id="",
         recursive=False,
         drive_ids="id1,id2",
         output_directory=None,
@@ -71,7 +71,7 @@ class GoogleDriveCollectorTest(modules_test_base.ModuleTestBase):
     self._module.SetUp(
         folder_id="folder_id",
         recursive=False,
-        drive_ids=None,
+        drive_ids="",
         output_directory="/tmp/output",
     )
     self.assertEqual(self._module._output_directory, "/tmp/output")
@@ -87,7 +87,7 @@ class GoogleDriveCollectorTest(modules_test_base.ModuleTestBase):
     self._module.SetUp(
         folder_id="folder_id",
         recursive=False,
-        drive_ids=None,
+        drive_ids="",
         output_directory=None,
     )
 
@@ -119,7 +119,7 @@ class GoogleDriveCollectorTest(modules_test_base.ModuleTestBase):
 
     # Test with drive_ids
     self._module.SetUp(
-        folder_id=None,
+        folder_id="",
         recursive=False,
         drive_ids="id3,id4",
         output_directory=None,
