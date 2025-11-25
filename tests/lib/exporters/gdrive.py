@@ -13,6 +13,9 @@ from tests.lib import modules_test_base
 class GoogleDriveExporterTest(modules_test_base.ModuleTestBase):
   """Tests for the Google Drive exporter."""
 
+  # For pytype
+  _module: gdrive.GoogleDriveExporter
+
   def setUp(self):
     self._InitModule(gdrive.GoogleDriveExporter)
     super(GoogleDriveExporterTest, self).setUp()
