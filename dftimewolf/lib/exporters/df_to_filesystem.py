@@ -3,10 +3,11 @@
 
 from typing import Optional
 import os
-import pandas as pd
 import random
 import re
 import string
+
+import pandas as pd
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
@@ -131,7 +132,7 @@ class DataFrameToDiskExporter(module.BaseModule):
       output_path = os.path.join(
           self._output_dir,
           f'{_ConvertToValidFilename(container.name)}{_EXTENSION_MAP[f]}')
-      
+
       while os.path.exists(output_path):
         output_path = os.path.join(
             self._output_dir,
