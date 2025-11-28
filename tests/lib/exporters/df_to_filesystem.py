@@ -163,6 +163,24 @@ class DataFrameToDiskExporterTest(modules_test_base.ModuleTestBase):
     with open(out_containers[0].path, 'r') as f:
       self.assertEqual(f.read(), _EXPECTED_JSONL)
 
+  def test_filename_clash(self):
+    """Tests existing files are not overwritten."""
+    existing_file = f'{self._out_dir}/test_dataframe.jsonl'
+    with open(existing_file, 'w') as fh:
+      fh.write('foobar')
+
+    self._module.SetUp(output_formats='jsonl',
+                       output_directory=self._out_dir)
+    self._ProcessModule()
+
+    out_containers = self._module.GetContainers(containers.File)
+    self.assertLen(out_containers, 1)
+
+    self.assertNotEqual(existing_file, out_containers[0].path)
+    self.assertEndsWith(out_containers[0].path, '.jsonl')
+    with open(out_containers[0].path, 'r') as f:
+      self.assertEqual(f.read(), _EXPECTED_JSONL)
+
 
 if __name__ == '__main__':
   absltest.main()
