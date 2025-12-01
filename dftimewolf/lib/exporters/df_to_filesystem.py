@@ -3,7 +3,10 @@
 
 from typing import Optional
 import os
+import random
 import re
+import string
+
 import pandas as pd
 
 from dftimewolf.lib import module
@@ -129,6 +132,13 @@ class DataFrameToDiskExporter(module.BaseModule):
       output_path = os.path.join(
           self._output_dir,
           f'{_ConvertToValidFilename(container.name)}{_EXTENSION_MAP[f]}')
+
+      while os.path.exists(output_path):
+        output_path = os.path.join(
+            self._output_dir,
+            (f'{_ConvertToValidFilename(container.name)}_' +
+             "".join(random.sample(string.ascii_lowercase, 4)) +
+             _EXTENSION_MAP[f]))
 
       self.logger.debug(f'Exporting {container.name} to {output_path}')
 
