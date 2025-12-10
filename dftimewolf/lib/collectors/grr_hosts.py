@@ -246,9 +246,8 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     )
 
     approval_url = (
-      # pylint: disable=line-too-long
-      f"{self.grr_url}/v2/clients/{approval.client_id}/users/{approval.username}/approvals/{approval.approval_id}"
-      # pylint: enable=line-too-long
+      f"{self.grr_url}/v2/clients/{approval.client_id}"
+      f"/approvals/{approval.approval_id}/users/{approval.username}"
     )
     self.PublishMessage(f"Approval URL: {approval_url}")
     approval.WaitUntilValid()

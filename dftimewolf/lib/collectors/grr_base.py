@@ -152,14 +152,13 @@ class GRRBaseModule:
         approval_sent = True
         if hasattr(approval, "client_id"):
           approval_url = (
-            # pylint: disable=line-too-long
-            f"{self.grr_url}/v2/clients/{approval.client_id}/users/{approval.username}/approvals/{approval.approval_id}"
-            # pylint: enable=line-too-long
+            f"{self.grr_url}/v2/clients/{approval.client_id}"
+            f"/approvals/{approval.approval_id}/users/{approval.username}"
           )
         elif hasattr(approval, "hunt_id"):
           approval_url = (
-            f"{self.grr_url}/v2/hunts/{approval.hunt_id}/users/"
-            f"{approval.username}/approvals/{approval.approval_id}"
+            f"{self.grr_url}/v2/hunts/{approval.hunt_id}"
+            f"/approvals/{approval.approval_id}/users/{approval.username}"
           )
         logger.info(
           f"{grr_object}: approval request sent to: "
