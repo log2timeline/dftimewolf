@@ -17,7 +17,6 @@ from dftimewolf.lib import errors, utils
 from dftimewolf.lib import telemetry
 from dftimewolf.lib.containers import interface
 from dftimewolf.lib.containers import manager as container_manager
-from dftimewolf.lib.containers.interface import AttributeContainer
 from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.module import ThreadAwareModule, BaseModule
@@ -633,4 +632,3 @@ class DFTimewolfState(object):
     if not self._progress_warning_shown:
       self._progress_warning_shown = True
       logger.debug('ProgressUpdate called in unsupported display mode.')
-
