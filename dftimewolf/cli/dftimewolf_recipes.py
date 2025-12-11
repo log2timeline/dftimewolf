@@ -3,9 +3,7 @@
 """dftimewolf main entrypoint."""
 
 import argparse
-from contextlib import redirect_stderr, redirect_stdout
 import datetime
-import curses
 import logging
 import os
 import signal
@@ -16,8 +14,6 @@ import uuid
 from typing import TYPE_CHECKING, List, Optional, Dict, Any, cast
 
 from dftimewolf.lib.validators import manager as validators_manager
-from dftimewolf.cli.curses_display_manager import CursesDisplayManager
-from dftimewolf.cli.curses_display_manager import CDMStringIOWrapper
 
 # The following import makes sure validators are registered.
 from dftimewolf.lib import validators # pylint: disable=unused-import
@@ -95,7 +91,7 @@ MODULES = {
 # pylint: enable=line-too-long
 
 from dftimewolf.lib.recipes import manager as recipes_manager
-from dftimewolf.lib.state import DFTimewolfState, DFTimewolfStateWithCDM
+from dftimewolf.lib.state import DFTimewolfState
 
 logger = cast(logging_utils.WolfLogger, logging.getLogger('dftimewolf'))
 
@@ -108,7 +104,6 @@ class DFTimewolfTool(object):
 
   def __init__(
       self,
-      cdm: Optional[CursesDisplayManager] = None,
       workflow_uuid: Optional[str] = None) -> None:
     """Initializes a DFTimewolf tool."""
     super(DFTimewolfTool, self).__init__()
@@ -119,7 +114,6 @@ class DFTimewolfTool(object):
     self._state = None  # type: Optional[DFTimewolfState]
     self._command_line_options = argparse.Namespace()
     self.dry_run = False
-    self.cdm = cdm
     if not workflow_uuid:
       workflow_uuid = str(uuid.uuid4())
     self.uuid = workflow_uuid
@@ -293,11 +287,7 @@ class DFTimewolfTool(object):
     self._recipe = self._command_line_options.recipe
     self.dry_run = self._command_line_options.dry_run
 
-    state: DFTimewolfState
-    if self.cdm:
-      state = DFTimewolfStateWithCDM(config.Config, self.cdm)
-    else:
-      state = DFTimewolfState(config.Config)
+    state = DFTimewolfState(config.Config)
     state.telemetry = self.telemetry
     self._state = state
 
@@ -348,8 +338,6 @@ class DFTimewolfTool(object):
 
     if error_messages:
       for message in error_messages:
-        if self.cdm:
-          self.cdm.EnqueueMessage('dftimewolf', message, True)
         logger.critical(message)
       raise errors.CriticalError(
           'At least one argument failed validation')
@@ -420,13 +408,6 @@ def SignalHandler(*unused_argvs: Any) -> None:
   """Catches Ctrl + C to exit cleanly."""
   sys.stderr.write("\nCtrl^C caught, bailing...\n")
 
-  try:
-    curses.nocbreak()
-    curses.echo()
-    curses.endwin()
-  except curses.error:
-    pass
-
   sys.exit(1)
 
 
@@ -477,7 +458,7 @@ def SetupLogging(stdout_log: bool = False) -> None:
     logger.info(f'Logging to {logging_utils.DEFAULT_LOG_FILE}')
 
 
-def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
+def RunTool() -> int:
   """
   Runs DFTimewolfTool.
 
@@ -485,18 +466,15 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
     int: 0 DFTimewolf could be run successfully, 1 otherwise.
   """
   time_start = time.time()*1000
-  tool = DFTimewolfTool(cdm) # type: DFTimewolfTool
+  tool = DFTimewolfTool()
 
   # TODO: log errors if this fails.
   tool.LoadConfiguration()
-  tool.telemetry.LogTelemetry('no_curses', str(cdm is None), 'core', 'N/A')
   logger.success(f'dfTimewolf tool initialized with UUID: {tool.uuid}')
 
   try:
     tool.ReadRecipes()
   except (KeyError, errors.RecipeParseError, errors.CriticalError) as exception:
-    if cdm:
-      cdm.EnqueueMessage('dftimewolf', str(exception), True)
     logger.critical(str(exception))
     return 1
 
@@ -505,8 +483,6 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
   except (errors.CommandLineParseError,
           errors.RecipeParseError,
           errors.CriticalError) as exception:
-    if cdm:
-      cdm.EnqueueMessage('dftimewolf', str(exception), True)
     logger.critical(str(exception))
     return 1
 
@@ -530,8 +506,6 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
   try:
     tool.ValidateArguments(tool.dry_run)
   except errors.CriticalError as exception:
-    if cdm:
-      cdm.EnqueueMessage('dftimewolf', str(exception), True)
     logger.critical(str(exception))
     return 1
 
@@ -557,8 +531,6 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
   try:
     tool.SetupModules()
   except errors.CriticalError as exception:
-    if cdm:
-      cdm.EnqueueMessage('dftimewolf', str(exception), True)
     logger.critical(str(exception))
     return 1
 
@@ -569,8 +541,6 @@ def RunTool(cdm: Optional[CursesDisplayManager] = None) -> int:
   try:
     tool.RunModules()
   except errors.CriticalError as exception:
-    if cdm:
-      cdm.EnqueueMessage('dftimewolf', str(exception), True)
     logger.critical(str(exception))
     return 1
   finally:
@@ -595,34 +565,9 @@ def Main() -> int:
   Returns:
     int: 0 on success, 1 otherwise.
   """
-  enable_curses = bool(os.environ.get('DFTIMEWOLF_CURSES'))
-  SetupLogging(stdout_log=not enable_curses)
-  if any([not enable_curses, '-h' in sys.argv, '--help' in sys.argv]):
-    return RunTool()
+  SetupLogging(stdout_log=True)
+  return RunTool()
 
-  cursesdisplaymanager = CursesDisplayManager()
-  cursesdisplaymanager.StartCurses()
-  cursesdisplaymanager.EnqueueMessage(
-    'dftimewolf', f'Debug log: {logging_utils.DEFAULT_LOG_FILE}')
-
-  stdout_null = open(os.devnull, "w")
-  stderr_sio = CDMStringIOWrapper(
-      'stderr', True, cursesdisplaymanager.EnqueueMessage)
-  exit_code = 0
-
-  try:
-    with redirect_stdout(stdout_null), redirect_stderr(stderr_sio):
-      exit_code = RunTool(cursesdisplaymanager)
-  except Exception as e:  # pylint: disable=broad-except
-    cursesdisplaymanager.SetException(e)
-    cursesdisplaymanager.Draw()
-  finally:
-    cursesdisplaymanager.Draw()
-    cursesdisplaymanager.EndCurses()
-    cursesdisplaymanager.PrintMessages()
-
-  return exit_code
-  # TODO: Telemetry to log errors
 
 if __name__ == '__main__':
   signal.signal(signal.SIGINT, SignalHandler)
