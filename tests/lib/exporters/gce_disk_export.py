@@ -57,9 +57,9 @@ class GoogleCloudDiskExportTest(modules_test_base.ModuleTestBase):
     mock_get_disk.return_value = FAKE_DISK
     self._module.SetUp(source_project_name='fake-source-project',
                        gcs_output_location='gs://fake-bucket',
-                       analysis_project_name=None,
+                       analysis_project_name='',
                        source_disk_names='fake-source-disk',
-                       remote_instance_name=None,
+                       remote_instance_name='',
                        all_disks=False,
                        exported_image_name='image-df-export-temp',
                        image_format='qcow2')
@@ -103,9 +103,9 @@ class GoogleCloudDiskExportTest(modules_test_base.ModuleTestBase):
     mock_get_disk.return_value = FAKE_DISK
     self._module.SetUp(source_project_name='fake-source-project',
                        gcs_output_location='gs://fake-bucket',
-                       analysis_project_name=None,
-                       source_disk_names=None,
-                       remote_instance_name=None,
+                       analysis_project_name='',
+                       source_disk_names='',
+                       remote_instance_name='',
                        all_disks=False,
                        exported_image_name='image-df-export-temp',
                        image_format='qcow2')
