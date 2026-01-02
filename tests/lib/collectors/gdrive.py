@@ -37,9 +37,8 @@ class GoogleDriveCollectorTest(modules_test_base.ModuleTestBase):
     self.mock_build_patcher.stop()
     super(GoogleDriveCollectorTest, self).tearDown()
 
-  def testSetUp(self):
-    """Tests the SetUp method."""
-    # Test with folder_id
+  def testSetUpWithFolderId(self):
+    """Tests the SetUp method with folder id."""
     # pylint: disable=protected-access
     self._module.SetUp(
         folder_id="folder_id",
@@ -51,10 +50,9 @@ class GoogleDriveCollectorTest(modules_test_base.ModuleTestBase):
     self.assertFalse(self._module._recursive)
     self.assertEqual(self._module._drive_ids, [])
 
-    # Reset module
-    self._InitModule(gdrive.GoogleDriveCollector)
-
-    # Test with drive_ids
+  def testSetUpWithDriveIds(self):
+    """Tests the SetUp method with drive ids."""
+    # pylint: disable=protected-access
     self._module.SetUp(
         folder_id="",
         recursive=False,
@@ -64,10 +62,9 @@ class GoogleDriveCollectorTest(modules_test_base.ModuleTestBase):
     self.assertEqual(self._module._drive_ids, ["id1", "id2"])
     self.assertEqual(self._module._folder_id, "")
 
-    # Reset module
-    self._InitModule(gdrive.GoogleDriveCollector)
-
-    # Test with output_directory
+  def testSetUpWithOutputDirectory(self):
+    """Tests the SetUp method with output directory."""
+    # pylint: disable=protected-access
     self._module.SetUp(
         folder_id="folder_id",
         recursive=False,
@@ -80,10 +77,9 @@ class GoogleDriveCollectorTest(modules_test_base.ModuleTestBase):
       "dftimewolf.lib.collectors.gdrive.GoogleDriveCollector._DownloadFile"
   )
   @mock.patch("dftimewolf.lib.collectors.gdrive.ListDriveFolder")
-  def testProcess(self, mock_list_drive_folder, mock_download_file):
-    """Tests the Process method."""
+  def testProcessWithFolderId(self, mock_list_drive_folder, mock_download_file):
+    """Tests the Process method with folder id."""
     # pylint: disable=protected-access
-    # Test with folder_id
     self._module.SetUp(
         folder_id="folder_id",
         recursive=False,
@@ -113,11 +109,9 @@ class GoogleDriveCollectorTest(modules_test_base.ModuleTestBase):
         2,
     )
 
-    # Reset for drive_ids test
-    self._InitModule(gdrive.GoogleDriveCollector)
-    mock_download_file.reset_mock()
-
-    # Test with drive_ids
+  def testProcessWithDriveIds(self, mock_list_drive_folder, mock_download_file):
+    """Tests the Process method with drive ids."""
+    # pylint: disable=protected-access
     self._module.SetUp(
         folder_id="",
         recursive=False,
@@ -141,7 +135,6 @@ class GoogleDriveCollectorTest(modules_test_base.ModuleTestBase):
     mock_files = mock_drive_resource.files.return_value
     mock_list = mock_files.list.return_value
 
-    # Mock response with pagination
     mock_list.execute.side_effect = [
         {
             "files": [
@@ -163,10 +156,8 @@ class GoogleDriveCollectorTest(modules_test_base.ModuleTestBase):
     self.assertEqual(files[0]["id"], "file1")
     self.assertEqual(files[1]["id"], "file2")
 
-    # Verify calls
     self.assertEqual(mock_list.execute.call_count, 2)
 
-    # Test recursive
     mock_list.execute.side_effect = [
         {
             "files": [
