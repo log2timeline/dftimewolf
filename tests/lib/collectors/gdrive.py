@@ -112,8 +112,7 @@ class GoogleDriveCollectorTest(modules_test_base.ModuleTestBase):
   @mock.patch(
       "dftimewolf.lib.collectors.gdrive.GoogleDriveCollector._DownloadFile"
   )
-  @mock.patch("dftimewolf.lib.collectors.gdrive.ListDriveFolder")
-  def testProcessWithDriveIds(self, mock_list_drive_folder, mock_download_file):
+  def testProcessWithDriveIds(self, mock_download_file):
     """Tests the Process method with drive ids."""
     # pylint: disable=protected-access
     self._module.SetUp(
