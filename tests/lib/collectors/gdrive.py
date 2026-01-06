@@ -47,10 +47,28 @@ class GoogleDriveCollectorTest(modules_test_base.ModuleTestBase):
         mock.Mock()
     )
 
+    self.mock_mkdtemp_patcher = mock.patch("tempfile.mkdtemp")
+    self.mock_mkdtemp = self.mock_mkdtemp_patcher.start()
+    self.mock_mkdtemp.return_value = "/tmp/dftimewolf_gdrive_collect"
+
+    self.mock_exists_patcher = mock.patch("os.path.exists")
+    self.mock_exists = self.mock_exists_patcher.start()
+    self.mock_exists.return_value = False
+
+    self.mock_makedirs_patcher = mock.patch("os.makedirs")
+    self.mock_makedirs = self.mock_makedirs_patcher.start()
+
+    self.mock_open_patcher = mock.patch("builtins.open", mock.mock_open())
+    self.mock_open = self.mock_open_patcher.start()
+
   def tearDown(self):
     self.mock_get_credentials_patcher.stop()
     self.mock_build_patcher.stop()
     self.mock_media_io_patcher.stop()
+    self.mock_mkdtemp_patcher.stop()
+    self.mock_exists_patcher.stop()
+    self.mock_makedirs_patcher.stop()
+    self.mock_open_patcher.stop()
     super(GoogleDriveCollectorTest, self).tearDown()
 
   @parameterized.named_parameters(
@@ -131,10 +149,16 @@ class GoogleDriveCollectorTest(modules_test_base.ModuleTestBase):
         self._module.name, containers.File
     )
     self.assertLen(file_containers, 2)
-    self.assertEqual(file_containers[0].name, "id1")
-    self.assertEqual(file_containers[1].name, "id2")
-    self.assertEndsWith(file_containers[0].path, "id1_file1.txt")
-    self.assertEndsWith(file_containers[1].path, "id2_file2.txt")
+    self.assertSameElements(
+        [container.name for container in file_containers], ["id1", "id2"]
+    )
+    self.assertSameElements(
+        [container.path for container in file_containers],
+        [
+            "/tmp/dftimewolf_gdrive_collect/id1_file1.txt",
+            "/tmp/dftimewolf_gdrive_collect/id2_file2.txt",
+        ],
+    )
 
   def testProcessWithDriveIds(self):
     """Tests the Process method with drive ids."""
@@ -159,10 +183,16 @@ class GoogleDriveCollectorTest(modules_test_base.ModuleTestBase):
     file_containers = self._module.state.GetContainers(
         self._module.name, containers.File
     )
-    self.assertEqual(file_containers[0].name, "id3")
-    self.assertEqual(file_containers[1].name, "id4")
-    self.assertEndsWith(file_containers[0].path, "id3_file3.txt")
-    self.assertEndsWith(file_containers[1].path, "id4_file4.txt")
+    self.assertSameElements(
+        [container.name for container in file_containers], ["id3", "id4"]
+    )
+    self.assertSameElements(
+        [container.path for container in file_containers],
+        [
+            "/tmp/dftimewolf_gdrive_collect/id3_file3.txt",
+            "/tmp/dftimewolf_gdrive_collect/id4_file4.txt",
+        ],
+    )
 
   def testListDriveFolder(self):
     """Tests the ListDriveFolder function."""
