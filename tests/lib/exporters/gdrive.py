@@ -17,8 +17,9 @@ class GoogleDriveExporterTest(modules_test_base.ModuleTestBase):
   _module: gdrive.GoogleDriveExporter
 
   def setUp(self):
+    # pylint: disable=protected-access
     self._InitModule(gdrive.GoogleDriveExporter)
-    super(GoogleDriveExporterTest, self).setUp()
+    super().setUp()
 
     self.mock_get_credentials_patcher = mock.patch(
         "dftimewolf.lib.auth.GetGoogleOauth2Credential"
@@ -31,87 +32,65 @@ class GoogleDriveExporterTest(modules_test_base.ModuleTestBase):
     self.mock_drive_service = mock.Mock()
     self.mock_build.return_value = self.mock_drive_service
 
+    self.mock_file_io_patcher = mock.patch("io.FileIO")
+    self.mock_file_io = self.mock_file_io_patcher.start()
+
   def tearDown(self):
     self.mock_get_credentials_patcher.stop()
     self.mock_build_patcher.stop()
-    super(GoogleDriveExporterTest, self).tearDown()
+    self.mock_file_io_patcher.stop()
+    super().tearDown()
 
   def testSetUp(self):
     """Tests the SetUp method."""
     self._module.SetUp(
-        parent_folder_id="parent_folder_id", new_folder_name="new_folder_name"
+        parent_folder_id="parent_folder_id",
+        new_folder_name="new_folder_name",
+        max_upload_workers=5,
     )
     # pylint: disable=protected-access
     self.assertEqual(self._module.parent_folder_id, "parent_folder_id")
     self.assertEqual(self._module.new_folder_name, "new_folder_name")
+    self.assertEqual(self._module._max_upload_workers, 5)
 
-  @mock.patch(
-      "dftimewolf.lib.exporters.gdrive.GoogleDriveExporter.CreateFolderInDrive"
-  )
-  @mock.patch(
-      "dftimewolf.lib.exporters.gdrive.GoogleDriveExporter.UploadFileToDrive"
-  )
-  def testProcess(self, mock_upload_file_to_drive, mock_create_folder_in_drive):
+  def testProcess(self):
     """Tests the Process method."""
     # pylint: disable=protected-access
     self._module.SetUp(
-        parent_folder_id="parent_folder_id", new_folder_name="new_folder_name"
+        parent_folder_id="parent_folder_id",
+        new_folder_name="new_folder_name",
+        max_upload_workers=5,
     )
 
-    mock_create_folder_in_drive.return_value = {"id": "new_folder_id"}
+    self.mock_drive_service.files.return_value.create.return_value.execute.side_effect = [  # pylint: disable=line-too-long
+        {"id": "new_folder_id", "name": "new_folder_name"},
+        {"id": "file_id", "name": "test_file"},
+    ]
 
     file_container = containers.File(
         name="test_file", path="/path/to/test_file"
     )
     self._module.StoreContainer(file_container)
 
-    self._module.Process()
+    self._ProcessModule()
 
-    mock_create_folder_in_drive.assert_called_once_with(
-        self.mock_drive_service, "parent_folder_id", "new_folder_name"
-    )
-    mock_upload_file_to_drive.assert_called_once_with(
-        folder_id="new_folder_id",
-        file_name="test_file",
-        file_path="/path/to/test_file",
-    )
-
-  def testCreateFolderInDrive(self):
-    """Tests the CreateFolderInDrive method."""
-    # pylint: disable=protected-access
-    self._module._drive_resource = self.mock_drive_service
-
-    (self.mock_drive_service.files.return_value
-        .create.return_value.execute.return_value) = {
-            "id": "folder_id",
-            "name": "folder_name",
-        }
-
-    folder_metadata = self._module.CreateFolderInDrive(
-        self.mock_drive_service, "parent_folder_id", "folder_name"
+    self.mock_drive_service.files.return_value.create.assert_any_call(
+        body={
+            "name": "new_folder_name",
+            "mimeType": "application/vnd.google-apps.folder",
+            "parents": ["parent_folder_id"],
+        },
+        fields="id, name, mimeType, parents",
     )
 
-    self.assertEqual(folder_metadata["id"], "folder_id")
-    self.assertEqual(folder_metadata["name"], "folder_name")
-
-  @mock.patch("io.FileIO")
-  def testUploadFileToDrive(self, _mock_file_io):
-    """Tests the UploadFileToDrive method."""
-    # pylint: disable=protected-access
-    self._module._drive_resource = self.mock_drive_service
-
-    (self.mock_drive_service.files.return_value
-        .create.return_value.execute.return_value) = {
-            "id": "file_id",
-            "name": "file_name",
-        }
-
-    file_metadata = self._module.UploadFileToDrive(
-        folder_id="folder_id", file_path="/path/to/file", file_name="file_name"
+    self.mock_drive_service.files.return_value.create.assert_any_call(
+        body={
+            "name": "test_file",
+            "parents": ["new_folder_id"],
+        },
+        media_body=mock.ANY,
+        fields="id, name, mimeType, parents",
     )
-
-    self.assertEqual(file_metadata["id"], "file_id")
-    self.assertEqual(file_metadata["name"], "file_name")
 
 
 if __name__ == "__main__":

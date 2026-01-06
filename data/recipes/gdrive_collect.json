@@ -11,7 +11,9 @@
             "folder_id": "@folder_id",
             "recursive": "@recursive",
             "drive_ids": "@drive_ids",
-            "output_directory": "@output_directory"
+            "output_directory": "@output_directory",
+            "overwrite_existing": "@overwrite_existing",
+            "max_download_workers": "@max_download_workers"
         }
       }
     ],
@@ -19,14 +21,24 @@
         ["--folder_id", "Parent Google drive folder ID to download from. Mutually exclusive with drive_ids.", null],
         ["--recursive", "Recursively collect from folder_id", false],
         [
-          "--drive_ids",
-          "Comma-separated list of drive IDs to download. Mutually exclusive with folder_id.",
-          null
+            "--drive_ids",
+            "Comma-separated list of drive IDs to download. Mutually exclusive with folder_id.",
+            null
         ],
         [
-          "--output_directory",
-          "Output directory for collected files.",
-          null
+            "--output_directory",
+            "Output directory for collected files.",
+            null
+        ],
+        [
+            "--overwrite_existing",
+            "Overwrite existing files.",
+            false
+        ],
+        [
+            "--max_download_workers",
+            "Maximum number of worker threads to use for downloading files.",
+            5
         ]
     ]
 }

@@ -14,12 +14,22 @@
         "name": "GoogleDriveExporter",
         "args": {
             "parent_folder_id": "@parent_folder_id",
-            "new_folder_name": "@new_folder_name"
+            "new_folder_name": "@new_folder_name",
+            "max_upload_workers": "@max_upload_workers"
         }
     }],
     "args": [
         ["files", "Comma-separated list of paths to files.", null],
         ["--parent_folder_id", "", "0B0m2ov3yrR0bNzBhNjcxNjctN2EyYS00ZTgxLTk3YjgtMTI5NGI1OGI3MTJh"],
-        ["--new_folder_name", "Optional new folder name.  ", null]
+        [
+            "--new_folder_name",
+            "Optional new folder name.  ",
+            null
+        ],
+        [
+            "--max_upload_workers",
+            "Maximum number of worker threads to use for uploading files.",
+            5
+        ]
     ]
 }
