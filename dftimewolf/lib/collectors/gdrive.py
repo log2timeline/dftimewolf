@@ -46,7 +46,7 @@ def ListDriveFolder(
   while True:
     # pylint: disable=maybe-no-member
     response = (
-        drive_resource.files()  # type: ignore[attr-defined]
+        drive_resource.files()
         .list(
             q=query,
             spaces="drive",
@@ -176,9 +176,9 @@ class GoogleDriveCollector(module.BaseModule):
       self._recursive = recursive
 
     if drive_ids:
-      self._drive_ids = list(
-          set(drive_id for drive_id in drive_ids.split(",") if drive_id)
-      )
+      self._drive_ids = [
+          drive_id for drive_id in drive_ids.split(",") if drive_id
+      ]
 
   def _FilterDriveFiles(
       self, drive_files: list[dict[str, Any]]
@@ -195,26 +195,28 @@ class GoogleDriveCollector(module.BaseModule):
     """
     drive_ids_and_names = []
     for drive_file in drive_files:
+      drive_id = drive_file.get("id")
+      if not drive_id:
+        self.logger.info(f"Skipping file with no ID: {drive_file}")
+        continue
+
+      drive_name = drive_file.get("name")
       if drive_file.get("mimeType") == "application/vnd.google-apps.folder":
-        self.logger.info(
-            f"Skipping folder: {drive_file.get('name')} "
-            f"({drive_file.get('id')})"
-        )
+        self.logger.info(f"Skipping folder: {drive_name} ({drive_id})")
         continue
       if drive_file.get("mimeType", "").startswith(
           "application/vnd.google-apps."
       ):
         self.logger.info(
-            f"Skipping Google Workspace native file: {drive_file.get('name')} "
-            f"({drive_file.get('id')})"
+            f"Skipping Google Workspace native file: {drive_name} ({drive_id})"
         )
         continue
       drive_ids_and_names.append(
           (
-              drive_file.get("id"),
+              drive_id,
               os.path.join(
                   self._output_directory,
-                  f"{drive_file['id']}_{drive_file['name']}",
+                  f"{drive_id}_{drive_name}",
               ),
           )
       )

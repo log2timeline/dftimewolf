@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Uploads files to Google Drive.
 
-This module handles the authentication and interaction with the Google Drive API
+This module handles the interaction with the Google Drive API
 to upload files to a specified folder.
 """
 
@@ -35,7 +35,7 @@ class GoogleDriveExporter(module.ThreadAwareModule):
       name: Optional[str] = None,
       critical: bool = False,
   ) -> None:
-    """Initializes a Google Drive collector."""
+    """Initializes a Google Drive exporter."""
     super(GoogleDriveExporter, self).__init__(
         state, name=name, critical=critical
     )
@@ -50,16 +50,16 @@ class GoogleDriveExporter(module.ThreadAwareModule):
   def SetUp(
       self, parent_folder_id: str, new_folder_name: str, max_upload_workers: int
   ) -> None:
-    """Sets up the Google Drive Exporter module.
+    """Sets up the Google Drive exporter module.
 
     Args:
-        parent_folder_id (str): ID of the parent folder in Google Drive.
-        new_folder_name (str): Name of the new folder to create in the parent
-            folder.
-        max_upload_workers (int): Maximum number of upload workers.
+      parent_folder_id (str): ID of the parent folder in Google Drive.
+      new_folder_name (str): Name of the new folder to create in the parent
+          folder.
+      max_upload_workers (int): Maximum number of upload workers.
 
     Raises:
-        ModuleError: If the parent folder ID is not specified.
+      ModuleError: If the parent folder ID is not specified.
     """
     if max_upload_workers < 1:
       self.ModuleError("Specify a valid max upload workers.", critical=True)
@@ -91,8 +91,11 @@ class GoogleDriveExporter(module.ThreadAwareModule):
   def Process(self, container: interface.AttributeContainer) -> None:
     """Processes the files and uploads them to Google Drive.
 
+    Args:
+      container: The container to process.
+
     Raises:
-        ModuleError: If the Drive resource is not initialized.
+      ModuleError: If the Drive resource is not initialized.
     """
     container = cast(containers.File, container)
     self.logger.info(f"Uploading to folder ID {self.folder_id}")
@@ -120,7 +123,6 @@ class GoogleDriveExporter(module.ThreadAwareModule):
           f"Uploaded file: {uploaded_file.get('name')} "
           f"(ID: {uploaded_file.get('id')})"
       )
-      return uploaded_file
     except (
         googleapi_errors.HttpError,
         googleauth_exceptions.MutualTLSChannelError,
@@ -129,28 +131,27 @@ class GoogleDriveExporter(module.ThreadAwareModule):
           f"Error while uploading {container.name} ({container.path}): {error}",
           critical=True,
       )
-      return None
 
   def CreateFolderInDrive(self, parent_folder_id: str, folder_name: str) -> Any:
     """Creates a folder in Google Drive under a specific parent folder.
 
     Args:
-        parent_folder_id (str): ID of the parent folder where the new folder
-            will be created.
-        folder_name (str): Name of the new folder to create.
+      parent_folder_id (str): ID of the parent folder where the new folder
+          will be created.
+      folder_name (str): Name of the new folder to create.
 
     Returns:
-        dict: The metadata of the created folder.
+      dict: The metadata of the created folder.
 
     Raises:
-        ModuleError: If the folder creation fails.
+      ModuleError: If the folder creation fails.
     """
     try:
       drive_resource = discovery.build(
           "drive", "v3", credentials=self._credentials
       )
       created_folder = (
-          drive_resource.files()  # type: ignore[attr-defined]
+          drive_resource.files()
           .create(
               body={
                   "name": folder_name,
