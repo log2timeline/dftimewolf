@@ -41,7 +41,6 @@ def GetGoogleOauth2Credential(
       else:
         secrets_path = os.path.join(os.path.expanduser("~"), secret_path)
         if not os.path.exists(secrets_path):
-          InstalledAppFlow.run_local_server()  # pylint: disable=no-value-for-parameter
           error_message = (
               "No OAuth application credentials available to retrieve "
               "workspace logs. Please generate OAuth application credentials "
