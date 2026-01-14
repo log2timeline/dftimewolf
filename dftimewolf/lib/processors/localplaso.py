@@ -76,6 +76,7 @@ class LocalPlasoProcessor(module.BaseModule):
         DOCKER_IMAGE,
         volumes=volumes,
         command=command,
+        user='root',
         auto_remove=True)
     self.logger.debug("Docker container finished running and is auto-removed.")
 
