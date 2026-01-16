@@ -183,7 +183,7 @@ class GCEForensicsEndToEndTest(unittest.TestCase):
     self.test_state._container_manager.CompleteModule = mock.MagicMock()  # pylint: disable=protected-access
 
     self.test_state.SetupModules()
-    self.test_state.RunModules()
+    self.test_state.RunAllModules()
 
     # Get the forensics VM name, confirm it exists
     vm_containers = self.test_state.GetContainers(
@@ -238,7 +238,7 @@ class GCEForensicsEndToEndTest(unittest.TestCase):
     self.test_state._container_manager.CompleteModule = mock.MagicMock()  # pylint: disable=protected-access
 
     self.test_state.SetupModules()
-    self.test_state.RunModules()
+    self.test_state.RunAllModules()
 
     # Get the forensics VM name, confirm it exists
     vm_containers = self.test_state.GetContainers(

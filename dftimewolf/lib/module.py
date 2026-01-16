@@ -128,19 +128,14 @@ class BaseModule(object):
     stacktrace = None
     if sys.exc_info() != (None, None, None):
       stacktrace = traceback.format_exc()
-      if self.state.telemetry:
-        self.state.telemetry.LogTelemetry(
-          'error_stacktrace', stacktrace, self.name,
-          self.state.recipe.get('name', 'N/A')
-        )
+      if self.state._telemetry:
+        self.state._telemetry.LogTelemetry(
+            'error_stacktrace', stacktrace, self.name)
 
     error = errors.DFTimewolfError(
         message, name=self.name, stacktrace=stacktrace, critical=critical)
-    if self.state.telemetry:
-      recipe_name = self.state.recipe.get('name', 'N/A')
-      self.state.telemetry.LogTelemetry(
-          'error_detail',message, self.name, recipe_name
-      )
+    if self.state._telemetry:
+      self.state._telemetry.LogTelemetry('error_detail',message, self.name)
 
     self.state.AddError(error)
     self.PublishMessage(message, is_error=True, is_critical=critical)

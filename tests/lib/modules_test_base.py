@@ -8,6 +8,7 @@ from dftimewolf import config
 from dftimewolf.lib.containers import interface
 from dftimewolf.lib import state
 from dftimewolf.lib import module
+from unittest import mock
 
 
 class ModuleTestBase(parameterized.TestCase):
@@ -22,7 +23,8 @@ class ModuleTestBase(parameterized.TestCase):
 
   def _InitModule(self, test_module: type[module.BaseModule]):  # pylint: disable=arguments-differ
     """Initialises the module, the DFTW state and recipe for module testing."""
-    self._test_state = state.DFTimewolfState(config.Config)
+    self._test_state = state.DFTimewolfState(config.Config,
+                                             telemetry=mock.MagicMock())
     self._module = test_module(self._test_state)
     self._test_state._container_manager.ParseRecipe(  # pylint: disable=protected-access
         {'modules': [{'name': 'upstream'},

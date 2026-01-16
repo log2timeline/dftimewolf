@@ -45,6 +45,11 @@ class BaseTelemetry():
     if not self.uuid:
       self.uuid = str(uuid_lib.uuid4())
     self.entries = [] # type: List[str]
+    self._recipe_name: str = 'unset'
+
+  def SetRecipeName(self, recipe_name: str) -> None:
+    """Sets a recipe name."""
+    self._recipe_name = recipe_name
 
   def FormatTelemetry(self) -> str:
     """Gets all telemetry for a given workflow UUID."""
@@ -56,8 +61,7 @@ class BaseTelemetry():
     self,
     key: str,
     value: str,
-    src_module_name: str,
-    recipe_name: str) -> None:
+    src_module_name: str) -> None:
     """Logs a telemetry event.
 
     Args:
@@ -65,7 +69,7 @@ class BaseTelemetry():
       value: Telemetry value.
       src_module_name: Name of the module that generated the telemetry.
     """
-    entry = f'\t{key}: \t{value} ({src_module_name} in {recipe_name})'
+    entry = f'\t{key}: \t{value} ({src_module_name} in {self._recipe_name})'
     self.entries.append(entry)
 
 
@@ -124,8 +128,7 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
     self,
     key: str,
     value: str,
-    src_module_name: str,
-    recipe_name: str) -> None:
+    src_module_name: str) -> None:
     """Logs a telemetry event.
 
     Args:
@@ -138,7 +141,7 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
       'workflow_uuid': self.uuid,
       'time': datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
       'source_module': src_module_name,
-      'recipe': recipe_name,
+      'recipe': self._recipe_name,
       'key': key,
       'value': value,
     }
@@ -173,11 +176,10 @@ def GetTelemetry(
   return BaseTelemetry(uuid=uuid)
 
 
-def LogTelemetry(
-    key: str, value: str, src_module_name: str, recipe_name: str = '') -> None:
+def LogTelemetry(key: str, value: str, src_module_name: str) -> None:
   """"Logs a Telemetry entry using the currently configured Telemetry object."""
   telemetry = GetTelemetry()
-  telemetry.LogTelemetry(key, value, src_module_name, recipe_name)
+  telemetry.LogTelemetry(key, value, src_module_name)
 
 
 def FormatTelemetry() -> str:

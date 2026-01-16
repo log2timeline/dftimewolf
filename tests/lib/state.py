@@ -188,7 +188,7 @@ class StateTest(unittest.TestCase):
     test_state.command_line_options = {}
     test_state.LoadRecipe(test_recipe.contents, TEST_MODULES)
     test_state.SetupModules()
-    test_state.RunModules()
+    test_state.RunAllModules()
     mock_process1.assert_called_with()
     mock_process2.assert_called_with()
 
@@ -200,7 +200,7 @@ class StateTest(unittest.TestCase):
     test_state.command_line_options = {}
     test_state.LoadRecipe(test_recipe.named_modules_contents, TEST_MODULES)
     test_state.SetupModules()
-    test_state.RunModules()
+    test_state.RunAllModules()
     # pylint: disable=protected-access
     self.assertIn('DummyModule1', test_state._threading_event_per_module)
     self.assertIn('DummyModule2', test_state._threading_event_per_module)
@@ -227,7 +227,7 @@ class StateTest(unittest.TestCase):
     test_state._container_manager.CompleteModule = mock.MagicMock()  # pylint: disable=protected-access
 
     test_state.SetupModules()
-    test_state.RunModules()
+    test_state.RunAllModules()
     self.assertEqual(mock_threaded_process.call_count, 3)
     self.assertEqual(mock_post_process.call_count, 1)
     self.assertEqual(mock_pre_process.call_count, 1)
@@ -246,7 +246,7 @@ class StateTest(unittest.TestCase):
     test_state._container_manager.CompleteModule = mock.MagicMock()  # pylint: disable=protected-access
 
     test_state.SetupModules()
-    test_state.RunModules()
+    test_state.RunAllModules()
 
     self.assertEqual(len(test_state.errors), 0)
 
@@ -291,7 +291,7 @@ class StateTest(unittest.TestCase):
     test_state.command_line_options = {}
     test_state.LoadRecipe(test_recipe.threaded_no_preflights, TEST_MODULES)
     test_state.SetupModules()
-    test_state.RunModules()
+    test_state.RunAllModules()
 
     self.assertEqual(mock_pre_process.call_count, 1)
     self.assertEqual(mock_process.call_count, 0)
@@ -314,7 +314,7 @@ class StateTest(unittest.TestCase):
     test_state.command_line_options = {}
     test_state.LoadRecipe(test_recipe.threaded_no_preflights, TEST_MODULES)
     test_state.SetupModules()
-    test_state.RunModules()
+    test_state.RunAllModules()
 
     self.assertEqual(mock_pre_process.call_count, 1)
     self.assertEqual(mock_process.call_count, 3)
@@ -330,7 +330,7 @@ class StateTest(unittest.TestCase):
     mock_process1.side_effect = Exception('asd')
     test_state.SetupModules()
     with self.assertRaises(errors.CriticalError):
-      test_state.RunModules()
+      test_state.RunAllModules()
     mock_process1.assert_called_with()
     # Process() in module 2 is never called since the failure in Module1
     # will abort execution
@@ -359,7 +359,7 @@ class StateTest(unittest.TestCase):
     test_state.StoreContainer(container=thread_aware_modules.TestContainer('two'), source_module='Issue503Module')
     test_state.StoreContainer(container=thread_aware_modules.TestContainer('three'), source_module='Issue503Module')
     test_state.SetupModules()
-    test_state.RunModules()
+    test_state.RunAllModules()
 
     values = [container.value for container in test_state.GetContainers(
         container_class=thread_aware_modules.TestContainer,

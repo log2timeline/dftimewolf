@@ -9,6 +9,7 @@ import os
 import signal
 import sys
 import time
+import typing
 import uuid
 
 from typing import TYPE_CHECKING, List, Optional, Dict, Any, cast
@@ -289,8 +290,9 @@ class DFTimewolfTool(object):
     self._recipe = self._command_line_options.recipe
     self.dry_run = self._command_line_options.dry_run
 
-    state = DFTimewolfState(config.Config)
-    state.telemetry = self.telemetry
+    self.telemetry.SetRecipeName(self._recipe['name'])
+
+    state = DFTimewolfState(config.Config, self.telemetry)
     self._state = state
 
     logger.info('Loading recipe {0:s}...'.format(self._recipe['name']))
@@ -363,11 +365,6 @@ class DFTimewolfTool(object):
                 self.state.command_line_options[to_substitute])
     return arg
 
-  def RunPreflights(self) -> None:
-    """Runs preflight modules."""
-    logger.info('Running preflights...')
-    self.state.RunPreflights()
-
   def ReadRecipes(self) -> None:
     """Reads the recipe files."""
     if os.path.isdir(self._data_files_path):
@@ -375,23 +372,11 @@ class DFTimewolfTool(object):
       if os.path.isdir(recipes_path):
         self._recipes_manager.ReadRecipesFromDirectory(recipes_path)
 
-  def RunModules(self) -> None:
+  def RunAllModules(self, running_args: dict[str, typing.Any]) -> None:
     """Runs the modules."""
     logger.info('Running modules...')
-    self.state.RunModules()
+    self.state.RunAllModules(running_args)
     logger.info('Modules run successfully!')
-
-  def SetupModules(self) -> None:
-    """Sets up the modules."""
-    # TODO: refactor to only load modules that are used by the recipe.
-
-    logger.info('Setting up modules...')
-    self.state.SetupModules()
-    logger.info('Modules successfully set up!')
-
-  def CleanUpPreflights(self) -> None:
-    """Calls the preflight's CleanUp functions."""
-    self.state.CleanUpPreflights()
 
   def FormatTelemetry(self) -> str:
     """Prints collected telemetry if existing."""
@@ -494,16 +479,14 @@ def RunTool() -> int:
   modules.extend([
     module['name'] for module in tool.state.recipe.get('preflights', [])
   ])
-  recipe_name = tool.state.recipe['name']
 
   for module in sorted(modules):
-    tool.telemetry.LogTelemetry('module', module, 'core', recipe_name)
+    tool.telemetry.LogTelemetry('module', module, 'core')
 
   tool.telemetry.LogTelemetry(
     'workflow_start',
     datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-    'core',
-    recipe_name)
+    'core')
 
   try:
     tool.ValidateArguments(tool.dry_run)
@@ -524,39 +507,12 @@ def RunTool() -> int:
     logger.info("Exiting as --dry_run flag is set.")
     return 0
 
-  time_ready = time.time()*1000
-  tool.RunPreflights()
-  time_preflights = time.time()*1000
-  tool.telemetry.LogTelemetry(
-    'preflights_delta', str(time_preflights - time_ready), 'core', recipe_name)
+  tool.RunAllModules(tool.state.command_line_options)
 
-  try:
-    tool.SetupModules()
-  except errors.CriticalError as exception:
-    logger.critical(str(exception))
-    return 1
-
-  time_setup = time.time()*1000
-  tool.telemetry.LogTelemetry(
-    'setup_delta', str(time_setup - time_preflights), 'core', recipe_name)
-
-  try:
-    tool.RunModules()
-  except errors.CriticalError as exception:
-    logger.critical(str(exception))
-    return 1
-  finally:
-    time_run = time.time()*1000
-    tool.telemetry.LogTelemetry(
-      'run_delta', str(time_run - time_setup), 'core', recipe_name)
-
-    tool.CleanUpPreflights()
-
-    total_time = time.time()*1000 - time_start
-    tool.telemetry.LogTelemetry(
-      'total_time', str(total_time), 'core', recipe_name)
-    for telemetry_row in tool.FormatTelemetry().split('\n'):
-      logger.debug(telemetry_row)
+  total_time = time.time()*1000 - time_start
+  tool.telemetry.LogTelemetry('total_time', str(total_time), 'core')
+  for telemetry_row in tool.FormatTelemetry().split('\n'):
+    logger.debug(telemetry_row)
 
   return 0
 

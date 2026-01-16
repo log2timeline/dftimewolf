@@ -75,6 +75,7 @@ class LocalPlasoProcessor(module.BaseModule):
     client.containers.run(
         DOCKER_IMAGE,
         volumes=volumes,
+        user='root',
         command=command,
         auto_remove=True)
     self.logger.debug("Docker container finished running and is auto-removed.")
