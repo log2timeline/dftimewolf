@@ -4,25 +4,17 @@
 Use it to track errors, abort on global failures, clean up after modules, etc.
 """
 
-from concurrent.futures import ThreadPoolExecutor, Future
 import logging
-import time
 import threading
-import traceback
 from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Sequence, Type, Any, TypeVar, Union  # pylint: disable=line-too-long
 
 from dftimewolf.config import Config
-from dftimewolf.lib import errors, utils
+from dftimewolf.lib import errors
 from dftimewolf.lib import telemetry
 from dftimewolf.lib.containers import interface
 from dftimewolf.lib.containers import manager as container_manager
 from dftimewolf.lib.errors import DFTimewolfError
-from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.modules import module_runner
-from dftimewolf.lib.module import ThreadAwareModule, BaseModule
-
-if TYPE_CHECKING:
-  from dftimewolf.lib import module as dftw_module
 
 T = TypeVar("T", bound="interface.AttributeContainer")  # pylint: disable=invalid-name,line-too-long
 
@@ -30,7 +22,7 @@ logger = logging.getLogger('dftimewolf.state')
 
 NEW_ISSUE_URL = 'https://github.com/log2timeline/dftimewolf/issues/new'
 
-TELEMETRY = telemetry
+# TELEMETRY = telemetry
 
 
 class DFTimewolfState(object):
@@ -56,9 +48,7 @@ class DFTimewolfState(object):
     super(DFTimewolfState, self).__init__()
     self.command_line_options = {}  # type: Dict[str, Any]
     self._cache = {}  # type: Dict[str, str]
-    #self._module_pool = {}  # type: Dict[str, BaseModule]
     self._state_lock = threading.Lock()
-#    self._threading_event_per_module = {}  # type: Dict[str, threading.Event]
     self.config = config
     self.errors = []  # type: List[DFTimewolfError]
     self.global_errors = []  # type: List[DFTimewolfError]

@@ -3,6 +3,7 @@
 """Tests the Google Cloud Platform (GCP) logging collector."""
 
 import unittest
+from unittest import mock
 
 from dftimewolf.lib import state
 from dftimewolf.lib.collectors import gcp_logging
@@ -14,7 +15,7 @@ class GCPLoggingTest(unittest.TestCase):
 
   def testInitialization(self):
     """Tests that the collector can be initialized."""
-    test_state = state.DFTimewolfState(config.Config)
+    test_state = state.DFTimewolfState(config.Config, mock.MagicMock())
     gcp_logging_collector = gcp_logging.GCPLogsCollector(test_state)
     self.assertIsNotNone(gcp_logging_collector)
 
