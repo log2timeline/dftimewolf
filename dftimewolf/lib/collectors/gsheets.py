@@ -4,8 +4,7 @@
 import os.path
 import re
 import tempfile
-from typing import List
-from typing import Optional
+from typing import List, Optional, Callable
 
 import filelock
 import pandas as pd
@@ -19,7 +18,9 @@ from googleapiclient import discovery
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.state import DFTimewolfState
+from dftimewolf.lib import cache
+from dftimewolf.lib import telemetry
+from dftimewolf.lib.containers import manager as container_manager
 
 
 class GoogleSheetsCollector(module.BaseModule):
@@ -30,14 +31,19 @@ class GoogleSheetsCollector(module.BaseModule):
   _CREDENTIALS_FILENAME = '.dftimewolf_google_sheets_credentials.json'
   _CLIENT_SECRET_FILENAME = '.dftimewolf_google_sheets_client_secret.json'
 
-  def __init__(
-      self,
-      state: DFTimewolfState,
-      name: Optional[str] = None,
-      critical: bool = False) -> None:
+  def __init__(self,
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
     """Initializes a Google Sheets collector."""
-    super(GoogleSheetsCollector, self).__init__(
-        state, name=name, critical=critical)
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
+
     self._sheets_resource = None
     self._credentials: Optional[Credentials] = None
     self._spreadsheet_id = ''

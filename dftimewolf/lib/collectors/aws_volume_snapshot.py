@@ -1,13 +1,15 @@
 # Lint as: python3
 """AWS Volume snapshot collector."""
 
-from typing import Optional, Any
+from typing import Optional, Any, Callable
 import boto3
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.state import DFTimewolfState
+from dftimewolf.lib import cache
+from dftimewolf.lib import telemetry
+from dftimewolf.lib.containers import manager as container_manager
 
 
 class AWSVolumeSnapshotCollector(module.BaseModule):
@@ -21,12 +23,18 @@ class AWSVolumeSnapshotCollector(module.BaseModule):
   """
 
   def __init__(self,
-      state: DFTimewolfState,
-      name: Optional[str]=None,
-      critical: Optional[bool] = False) -> None:
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
     """Initializes a AWSVolumeToS3 collector."""
-    super(AWSVolumeSnapshotCollector, self).__init__(
-        state, name=name, critical=critical)
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
+
     self.region: Any = ''
 
   # pylint: disable=arguments-differ

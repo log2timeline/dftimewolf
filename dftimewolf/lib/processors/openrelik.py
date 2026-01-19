@@ -2,12 +2,14 @@
 
 import time
 
-from typing import Type, Iterator
+from typing import Type, Iterator, Callable
 
 from openrelik_api_client import api_client, folders, workflows
 
 from dftimewolf.lib import module
-from dftimewolf.lib import state as state_lib
+from dftimewolf.lib import cache
+from dftimewolf.lib import telemetry
+from dftimewolf.lib.containers import manager as container_manager
 from dftimewolf.lib.containers import containers, interface
 from dftimewolf.lib.modules import manager as modules_manager
 
@@ -16,21 +18,26 @@ from dftimewolf.lib.modules import manager as modules_manager
 class OpenRelikProcessor(module.ThreadAwareModule):
   """Processes artifacts with OpenRelik."""
 
-  def __init__(
-    self,
-    state: state_lib.DFTimewolfState,
-    name: str | None = None,
-    critical: bool = False,
-  ) -> None:
+  def __init__(self,
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
     """Initializes an OpenRelik processor.
 
     Args:
-      state (DFTimewolfState): recipe state.
-      name (Optional[str]): The module's runtime name.
-      critical (Optional[bool]): True if the module is critical, which causes
-          the entire recipe to fail if the module encounters an error.
+      name: The modules runtime name.
+      container_manager_: A common container manager object.
+      cache_: A common DFTWCache object.
+      telemetry_: A common telemetry collector object.
+      publish_message_callback: A callback to send modules messages to.
     """
-    super().__init__(state=state, name=name, critical=critical)
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
     self.openrelik_api_client: api_client.APIClient = None
     self.openrelik_folder_client: folders.FoldersAPI = None
     self.openrelik_workflow_client: workflows.WorkflowsAPI = None

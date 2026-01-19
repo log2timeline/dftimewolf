@@ -3,11 +3,13 @@
 import subprocess
 import uuid
 
-from typing import Optional, List
+from typing import Optional, List, Callable
 
 from dftimewolf.lib import module
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.state import DFTimewolfState
+from dftimewolf.lib import cache
+from dftimewolf.lib import telemetry
+from dftimewolf.lib.containers import manager as container_manager
 
 
 class SSHMultiplexer(module.PreflightModule):
@@ -20,11 +22,16 @@ class SSHMultiplexer(module.PreflightModule):
   """
 
   def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str]=None,
-               critical: bool=False) -> None:
-    super(SSHMultiplexer, self).__init__(
-        state, name=name, critical=critical)
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
     self.hostname = str()
     self.user = None # type: Optional[str]
     self.id_file = None  # type: Optional[str]
@@ -70,7 +77,7 @@ class SSHMultiplexer(module.PreflightModule):
     if ret != 0:
       self.ModuleError(
         'Unable to SSH to host {0:s}.'.format(self.hostname), critical=True)
-    self.state.AddToCache('ssh_control', self.control_filename)
+    self._cache.AddToCache('ssh_control', self.control_filename)
 
   def CleanUp(self) -> None:
     """Close the shared SSH connection."""

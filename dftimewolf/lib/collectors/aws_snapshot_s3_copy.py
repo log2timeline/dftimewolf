@@ -2,7 +2,7 @@
 """Copies AWS EBS snapshots into AWS S3."""
 
 import time
-from typing import Any, Optional, Type, List
+from typing import Any, Optional, Type, List, Callable
 import boto3
 
 from libcloudforensics.providers.aws import forensics
@@ -11,7 +11,9 @@ from libcloudforensics.errors import ResourceCreationError
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers, interface
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.state import DFTimewolfState
+from dftimewolf.lib import cache
+from dftimewolf.lib import telemetry
+from dftimewolf.lib.containers import manager as container_manager
 
 
 INSTANCE_PROFILE_NAME = 'ebsCopy'
@@ -45,12 +47,17 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
   """
 
   def __init__(self,
-      state: DFTimewolfState,
-      name: Optional[str]=None,
-      critical: Optional[bool]=False) -> None:
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
     """Initializes a AWSVolumeToS3 collector."""
-    super(AWSSnapshotS3CopyCollector, self).__init__(
-        state, name=name, critical=critical)
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
     self.bucket: str = ''
     self.region: str = ''
     self.subnet: Any = None

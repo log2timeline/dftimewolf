@@ -4,7 +4,7 @@
 import json
 import tempfile
 import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Callable
 
 from boto3 import session as boto3_session
 from botocore import exceptions as boto_exceptions
@@ -12,18 +12,27 @@ from botocore import exceptions as boto_exceptions
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.state import DFTimewolfState
+from dftimewolf.lib import cache
+from dftimewolf.lib import telemetry
+from dftimewolf.lib.containers import manager as container_manager
 
 
 class AWSLogsCollector(module.BaseModule):
   """Collector for Amazon Web Services (AWS) logs."""
 
   def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str]=None,
-               critical: bool=False) -> None:
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
     """Initializes an AWS logs collector."""
-    super(AWSLogsCollector, self).__init__(state, name=name, critical=critical)
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
+
     self._profile_name: Optional[str] = None
     self._query_filter: Optional[str] = None
     self._start_time: Optional[datetime.datetime] = None

@@ -32,7 +32,6 @@ class TelemetryCollection:
   """
   module_type: str
   module_name: str
-  recipe: str
   telemetry: Dict[str, str]
 
 class BaseTelemetry():

@@ -3,13 +3,15 @@
 
 import datetime
 import tempfile
-from typing import List
+from typing import List, Callable
 
 import pandas as pd
 from timesketch_api_client import client, search, sketch
 
 from dftimewolf.lib import module, timesketch_utils
-from dftimewolf.lib import state as state_lib
+from dftimewolf.lib import cache
+from dftimewolf.lib import telemetry
+from dftimewolf.lib.containers import manager as container_manager
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 
@@ -58,16 +60,18 @@ class TimesketchSearchEventCollector(module.BaseModule):
     sketch: the Timesketch sketch.
   """
 
-  def __init__(
-    self,
-    state: state_lib.DFTimewolfState,
-    name: str | None = None,
-    critical: bool = False,
-  ) -> None:
-    """"""
-    super(TimesketchSearchEventCollector, self).__init__(
-      state, name=name, critical=critical
-    )
+  def __init__(self,
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
+    """Initialise a TimesketchSearchEventCollector."""
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
     self.query_string: str = ""
     self.start_datetime: datetime.datetime | None = None
     self.end_datetime: datetime.datetime | None = None
@@ -169,10 +173,10 @@ class TimesketchSearchEventCollector(module.BaseModule):
       timesketch_api = client.TimesketchApi(endpoint, username, password)
     elif token_password:
       timesketch_api = timesketch_utils.GetApiClient(
-        self.state, token_password=token_password
+        self._cache, token_password=token_password
       )
     else:
-      timesketch_api = timesketch_utils.GetApiClient(self.state)
+      timesketch_api = timesketch_utils.GetApiClient(self._cache)
 
     if not timesketch_api:
       self.ModuleError(
@@ -197,7 +201,7 @@ class TimesketchSearchEventCollector(module.BaseModule):
     sketch_obj = self.timesketch_api_client.get_sketch(sketch_id)
     if not sketch_obj:
       self.ModuleError(f"Could not get sketch {sketch_id}", critical=True)
-    self.state.AddToCache("timesketch_sketch", sketch_obj)
+    self._cache.AddToCache("timesketch_sketch", sketch_obj)
     self.logger.warning(f"Adding sketch {sketch_obj} to cache")
     return sketch_obj
 
@@ -307,7 +311,7 @@ class TimesketchSearchEventCollector(module.BaseModule):
       self.sketch = self._GetSketch(self.sketch_id)
       return
 
-    cached_sketch = self.state.GetFromCache("timesketch_sketch")
+    cached_sketch = self._cache.GetFromCache("timesketch_sketch")
     if cached_sketch:
       self.sketch_id = cached_sketch.id
       self.sketch = cached_sketch

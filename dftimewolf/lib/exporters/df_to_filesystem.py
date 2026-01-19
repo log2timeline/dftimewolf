@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Export Dataframes in the state to disk."""
 
-from typing import Optional
+from typing import Callable
 import os
 import random
 import re
@@ -12,7 +12,9 @@ import pandas as pd
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.state import DFTimewolfState
+from dftimewolf.lib import cache
+from dftimewolf.lib import telemetry
+from dftimewolf.lib.containers import manager as container_manager
 
 
 _JSONL = 'jsonl'
@@ -53,13 +55,17 @@ def _ConvertToValidFilename(filename: str, no_spaces: bool = True) -> str:
 class DataFrameToDiskExporter(module.BaseModule):
   """Exports pandas Dataframes in the state to the local filesystem."""
 
-  def __init__(
-      self,
-      state: DFTimewolfState,
-      name: Optional[str] = None,
-      critical: bool = False) -> None:
-    super(DataFrameToDiskExporter, self).__init__(
-        state, name=name, critical=critical)
+  def __init__(self,
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
 
     self._formats: list[str] = []
     self._output_dir: str = ''

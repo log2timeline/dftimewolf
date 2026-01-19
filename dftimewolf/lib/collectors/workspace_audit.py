@@ -7,7 +7,7 @@ import json
 import re
 import tempfile
 
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, Callable
 
 import filelock
 from google.auth.exceptions import DefaultCredentialsError, RefreshError
@@ -19,9 +19,10 @@ from googleapiclient import discovery
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
+from dftimewolf.lib import cache
+from dftimewolf.lib import telemetry
+from dftimewolf.lib.containers import manager as container_manager
 
-if TYPE_CHECKING:
-  from dftimewolf.lib import state
 
 RE_TIMESTAMP = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$')
 WORKSPACE_TIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
@@ -34,12 +35,17 @@ class WorkspaceAuditCollector(module.BaseModule):
   _CLIENT_SECRET_FILENAME = '.dftimewolf_workspace_client_secret.json'
 
   def __init__(self,
-               state: 'state.DFTimewolfState',
-               name: Optional[str]=None,
-               critical: bool=False):
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
     """Initializes a Workspace Audit Log collector."""
-    super(WorkspaceAuditCollector, self).__init__(state, name=name,
-        critical=critical)
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
     self._credentials: Optional[Credentials] = None
     self._application_name = ''
     self._filter_expression = ''

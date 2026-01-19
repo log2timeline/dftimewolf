@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Reads logs from a BigQuery table."""
-from typing import Optional, Type, Union
+from typing import Callable, Type, Union
 
 from google.auth import exceptions as google_auth_exceptions
 from google.cloud import bigquery
@@ -9,7 +9,9 @@ import google.cloud.exceptions
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers, interface
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.state import DFTimewolfState
+from dftimewolf.lib import cache
+from dftimewolf.lib import telemetry
+from dftimewolf.lib.containers import manager as container_manager
 from dftimewolf.lib import utils
 
 
@@ -17,11 +19,18 @@ class BigQueryCollector(module.ThreadAwareModule):
   """Collector for BigQuery."""
 
   def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str] = None,
-               critical: bool = False) -> None:
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
     """Initializes a GCP logs collector."""
-    super(BigQueryCollector, self).__init__(state, name=name, critical=critical)
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
+
     self._project_name: str = ''
 
   # pylint: disable=arguments-differ

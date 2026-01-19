@@ -1,6 +1,6 @@
 """Processes GCP cloud disks using Turbinia."""
 
-from typing import Any, Dict, Optional, TYPE_CHECKING, Type, Union, Set
+from typing import Any, Dict, Optional, Callable, Type, Union, Set
 
 import cProfile
 import magic
@@ -10,9 +10,9 @@ from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers, interface
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.processors.turbinia_base import TurbiniaProcessorBase
-
-if TYPE_CHECKING:
-  from dftimewolf.lib import state
+from dftimewolf.lib import cache
+from dftimewolf.lib import telemetry
+from dftimewolf.lib.containers import manager as container_manager
 
 
 class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
@@ -22,11 +22,12 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
     request_ids Set[str]: Turbinia requests for jobs being processed.
   """
 
-  def __init__(
-      self,
-      state: "state.DFTimewolfState",
-      name: Optional[str] = None,
-      critical: bool = False) -> None:
+  def __init__(self,
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
     """Initializes a Turbinia Google Cloud (GCP) disks processor.
 
     Args:
@@ -35,9 +36,21 @@ class TurbiniaGCPProcessor(TurbiniaProcessorBase, module.ThreadAwareModule):
       critical (Optional[bool]): True if the module is critical, which causes
           the entire recipe to fail if the module encounters an error.
     """
-    module.ThreadAwareModule.__init__(self, state, name=name, critical=critical)
+    module.ThreadAwareModule.__init__(
+        self,
+        name=name,
+        cache_=cache_,
+        container_manager_=container_manager_,
+        telemetry_=telemetry_,
+        publish_message_callback=publish_message_callback)
     TurbiniaProcessorBase.__init__(
-        self, state, self.logger, name=name, critical=critical)
+        self,
+        name=name,
+        cache_=cache_,
+        container_manager_=container_manager_,
+        telemetry_=telemetry_,
+        publish_message_callback=publish_message_callback)
+
     self.request_ids: Set[str] = set()
     self.profiler = cProfile.Profile(subcalls=True, builtins=False)
     self.profiler_methods = [

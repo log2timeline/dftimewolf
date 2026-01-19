@@ -1,6 +1,7 @@
+from dftimewolf.lib import cache
 from dftimewolf.lib import errors
 from dftimewolf.lib import module as dftw_module
-from dftimewolf.lib import state
+from dftimewolf.lib.containers import manager as container_manager
 from dftimewolf.lib import telemetry
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib import utils
@@ -20,18 +21,26 @@ class ModuleRunner(object):
   """Handles running DFTW modules."""
 
   def __init__(self,
-               state: "state.DFTimewolfState",
                logger: logging.Logger,
-               telemetry: telemetry.BaseTelemetry) -> None:
+               telemetry: telemetry.BaseTelemetry,
+               publish_message_callback: typing.Callable[[str, str, bool], None]) -> None:
     """Initialise the class."""
-    self._module_pool: dict[str, dftw_module.BaseModule] = {}
-    self._threading_event_per_module: dict[str, threading.Event] = {}
-    self._state = state
+
+
+
     self._logger = logger
-    self._telemetry = telemetry
     self._recipe: dict[str, typing.Any] = {}
     self._running_args: dict[str, typing.Any] = {}
     self._abort_execution = False
+
+
+    self._module_pool: dict[str, dftw_module.BaseModule] = {}
+    self._threading_event_per_module: dict[str, threading.Event] = {}
+
+    self._cache = cache.DFTWCache()
+    self._container_manager = container_manager.ContainerManager(self._logger)
+    self._telemetry = telemetry
+    self._publish_message_callback = publish_message_callback
 
 
   def LoadModules(self, recipe: dict[str, typing.Any], module_locations: dict[str, str]) -> None:
@@ -52,9 +61,14 @@ class ModuleRunner(object):
         runtime_name = module_name
       module_class = modules_manager.ModulesManager.GetModuleByName(module_name)
       if module_class:
-        self._module_pool[runtime_name] = module_class(self._state, name=runtime_name)
+        self._module_pool[runtime_name] = module_class(name=runtime_name,
+                                                       cache_=self._cache,
+                                                       container_manager_=self._container_manager,
+                                                       telemetry_=self._telemetry,
+                                                       publish_message_callback=self._publish_message_callback)
 
-
+    self._container_manager.ParseRecipe(self._recipe)
+    self._cache.AddToCache('recipe_name', recipe['name'])
 
   def Run(self, running_args: dict[str, typing.Any]) -> int:
     """Runs the modules."""
@@ -158,7 +172,7 @@ class ModuleRunner(object):
       try:
         preflight.SetUp(**new_args)
         preflight.Process()
-        self._state._container_manager.CompleteModule(runtime_name)
+        self._container_manager.CompleteModule(runtime_name)
         self._threading_event_per_module[runtime_name] = threading.Event()
         self._threading_event_per_module[runtime_name].set()
       finally:
@@ -215,7 +229,7 @@ class ModuleRunner(object):
     Returns:
       List of futures for the threads that were started.
     """
-    containers = self._state.GetContainers(
+    containers = self._container_manager.GetContainers(
         requesting_module=module.name,
         container_class=module.GetThreadOnContainerType(),
         pop=not module.KeepThreadedContainersInState())
@@ -295,7 +309,7 @@ class ModuleRunner(object):
     self._threading_event_per_module[runtime_name].set()
 
     try:
-      self._state._container_manager.CompleteModule(runtime_name)
+      self._container_manager.CompleteModule(runtime_name)
     except Exception:  # pylint: disable=broad-exception-caught
       self._logger.warning('Unknown exception encountered', exc_info=True)
 

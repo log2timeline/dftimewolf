@@ -3,15 +3,16 @@ import os
 import subprocess
 import tempfile
 import uuid
-from typing import Optional
-from typing import Union
-from typing import List
+from typing import Optional, Union, List, Callable
 import docker
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.state import DFTimewolfState
+from dftimewolf.lib import cache
+from dftimewolf.lib import telemetry
+from dftimewolf.lib.containers import manager as container_manager
+
 
 DOCKER_IMAGE = 'log2timeline/plaso:latest'
 
@@ -23,13 +24,17 @@ class LocalPlasoProcessor(module.BaseModule):
   output: The path to the resulting Plaso storage file.
   """
 
-  def __init__(
-      self,
-      state: DFTimewolfState,
-      name: Optional[str] = None,
-      critical: bool = False) -> None:
-    super(LocalPlasoProcessor, self).__init__(
-        state, name=name, critical=critical)
+  def __init__(self,
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
     self._timezone = None  # type: Optional[str]
     self._output_path = str()
     self._plaso_path = str()
@@ -75,7 +80,6 @@ class LocalPlasoProcessor(module.BaseModule):
     client.containers.run(
         DOCKER_IMAGE,
         volumes=volumes,
-        user='root',
         command=command,
         user='root',
         auto_remove=True)

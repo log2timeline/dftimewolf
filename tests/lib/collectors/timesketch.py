@@ -159,8 +159,8 @@ class TimesketchSearchEventCollectorTest(modules_test_base.ModuleTestBase):
   ) -> None:
     """Test the Process function with no sketch ID."""
 
-    self._module.state.GetFromCache = mock.MagicMock(return_value=None)
-    self._module.state.GetFromCache.return_value = None
+    self._module.GetFromCache = mock.MagicMock(return_value=None)
+    self._module.GetFromCache.return_value = None
 
     self._module.SetUp(
       sketch_id=None,
@@ -179,7 +179,7 @@ class TimesketchSearchEventCollectorTest(modules_test_base.ModuleTestBase):
     )
 
     self._ProcessModule()
-    self._module.state.GetFromCache.assert_has_calls(
+    self._module.GetFromCache.assert_has_calls(
       [mock.call("timesketch_sketch"), mock.call("timesketch_sketch")]
     )
     mock_get_api_client.return_value.get_sketch.assert_called_with(123)
@@ -194,7 +194,7 @@ class TimesketchSearchEventCollectorTest(modules_test_base.ModuleTestBase):
     """Tests that the ID passed in SetUp takes precedence over cached
     sketches and attribute containers."""
 
-    self._module.state.GetFromCache = mock.MagicMock(return_value=None)
+    self._module.GetFromCache = mock.MagicMock(return_value=None)
 
     self._module.StoreContainer(
       containers.TicketAttribute(
@@ -204,7 +204,7 @@ class TimesketchSearchEventCollectorTest(modules_test_base.ModuleTestBase):
 
     mock_cached_sketch = mock.MagicMock()
     mock_cached_sketch.id = 666
-    self._module.state.AddToCache("timesketch_sketch", mock_cached_sketch)
+    self._module.AddToCache("timesketch_sketch", mock_cached_sketch)
 
     self._module.SetUp(
       sketch_id="999",
@@ -217,7 +217,7 @@ class TimesketchSearchEventCollectorTest(modules_test_base.ModuleTestBase):
     # netween SetUp() and Process()
 
     self._ProcessModule()
-    self._module.state.GetFromCache.assert_not_called()
+    self._module.GetFromCache.assert_not_called()
     self.assertEqual(self._module.sketch_id, 999)
     mock_get_api_client.return_value.get_sketch.assert_called_once_with(999)
 
@@ -239,7 +239,7 @@ class TimesketchSearchEventCollectorTest(modules_test_base.ModuleTestBase):
 
     mock_sketch = mock.MagicMock()
     mock_sketch.id = 666
-    self._module.state.AddToCache("timesketch_sketch", mock_sketch)
+    self._module.AddToCache("timesketch_sketch", mock_sketch)
 
     self._module.SetUp(
       sketch_id=None,

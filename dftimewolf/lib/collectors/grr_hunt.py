@@ -5,7 +5,7 @@ import os
 import re
 import tempfile
 import zipfile
-from typing import List, Optional, Set, Tuple, Union, Dict
+from typing import List, Optional, Set, Tuple, Union, Dict, Callable
 
 import pandas as pd
 import yaml
@@ -18,7 +18,9 @@ from dftimewolf.lib.collectors import grr_base
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.state import DFTimewolfState
+from dftimewolf.lib import cache
+from dftimewolf.lib import telemetry
+from dftimewolf.lib.containers import manager as container_manager
 
 
 # TODO: GRRHunt should be extended by classes that actually implement
@@ -36,10 +38,18 @@ class GRRHunt(grr_base.GRRBaseModule, module.BaseModule):  # pylint: disable=abs
   """
 
   def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str],
-               critical: bool = False):
-    module.BaseModule.__init__(self, state, name=name, critical=critical)
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
+    module.BaseModule.__init__(
+        self,
+        name=name,
+        cache_=cache_,
+        container_manager_=container_manager_,
+        telemetry_=telemetry_,
+        publish_message_callback=publish_message_callback)
     grr_base.GRRBaseModule.__init__(self)
     self.match_mode: str = ""
     self.client_operating_systems : Set[str] = set()
@@ -151,19 +161,26 @@ class GRRHuntArtifactCollector(GRRHunt):
   """
 
   def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str] = None,
-               critical: bool = False) -> None:
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
     """Initializes a GRR artifact collector hunt.
 
     Args:
-      state (DFTimewolfState): recipe state.
-      name (Optional[str]): The module's runtime name.
-      critical (bool): True if the module is critical, which causes
-          the entire recipe to fail if the module encounters an error.
+      name: The modules runtime name.
+      container_manager_: A common container manager object.
+      cache_: A common DFTWCache object.
+      telemetry_: A common telemetry collector object.
+      publish_message_callback: A callback to send modules messages to.
     """
-    super(GRRHuntArtifactCollector, self).__init__(
-        state, name=name, critical=critical)
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
+
     self.artifacts = []  # type: List[str]
     self.use_raw_filesystem_access = False
     self.hunt = None  # type: Hunt
@@ -241,19 +258,26 @@ class GRRHuntFileCollector(GRRHunt):
   """
 
   def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str] = None,
-               critical: bool = False) -> None:
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
     """Initializes a GRR file collector hunt.
 
     Args:
-      state (DFTimewolfState): recipe state.
-      name (Optional[str]): The module's runtime name.
-      critical (bool): True if the module is critical, which causes
-          the entire recipe to fail if the module encounters an error.
+      name: The modules runtime name.
+      container_manager_: A common container manager object.
+      cache_: A common DFTWCache object.
+      telemetry_: A common telemetry collector object.
+      publish_message_callback: A callback to send modules messages to.
     """
-    super(GRRHuntFileCollector, self).__init__(
-        state, name=name, critical=critical)
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
+
     self.file_path_list = []  # type: List[str]
     self.max_file_size = 5*1024*1024*1024  # 5 GB
 
@@ -338,19 +362,25 @@ class GRRHuntOsqueryCollector(GRRHunt):
   DEFAULT_OSQUERY_TIMEOUT_MILLIS = 300000
 
   def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str] = None,
-               critical: bool = False) -> None:
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
     """Initializes a GRR file collector hunt.
 
     Args:
-      state (DFTimewolfState): recipe state.
-      name (Optional[str]): The module's runtime name.
-      critical (bool): True if the module is critical, which causes
-          the entire recipe to fail if the module encounters an error.
+      name: The modules runtime name.
+      container_manager_: A common container manager object.
+      cache_: A common DFTWCache object.
+      telemetry_: A common telemetry collector object.
+      publish_message_callback: A callback to send modules messages to.
     """
-    super(GRRHuntOsqueryCollector, self).__init__(
-        state, name=name, critical=critical)
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
     self.timeout_millis = self.DEFAULT_OSQUERY_TIMEOUT_MILLIS
     self.ignore_stderr_errors = True
 
@@ -414,6 +444,7 @@ class GRRHuntOsqueryCollector(GRRHunt):
 
       self._CreateAndStartHunt('OsqueryFlow', hunt_args)
 
+
 class GRRHuntYaraScanner(GRRHunt):
   """Yara collector for a GRR Hunt.
 
@@ -434,22 +465,30 @@ class GRRHuntYaraScanner(GRRHunt):
   FLOW_NAME = 'YaraProcessScan'
 
   def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str] = None,
-               critical: bool = False) -> None:
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
     """Initializes a GRR file collector hunt.
 
     Args:
-      state (DFTimewolfState): recipe state.
-      name (Optional[str]): The module's runtime name.
-      critical (bool): True if the module is critical, which causes
-          the entire recipe to fail if the module encounters an error.
+      name: The modules runtime name.
+      container_manager_: A common container manager object.
+      cache_: A common DFTWCache object.
+      telemetry_: A common telemetry collector object.
+      publish_message_callback: A callback to send modules messages to.
 
     Raises:
       DFTimewolfError: if both process_ignorelist and cmdline_ignorelist
           are specified.
     """
-    super().__init__(state, name=name, critical=critical)
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
+
     self.process_ignorelist_regex: Optional[str] = None
     self.cmdline_ignorelist_regex: Optional[str] = None
     self.dump_process_on_match: bool = False
@@ -594,7 +633,6 @@ class GRRHuntYaraScanner(GRRHunt):
     self._CreateAndStartHunt(self.FLOW_NAME, flow_args)
 
 
-
 class GRRHuntDownloaderBase(GRRHunt):
   """Base class for modules that download results from a GRR Hunt.
 
@@ -606,19 +644,26 @@ class GRRHuntDownloaderBase(GRRHunt):
   """
 
   def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str] = None,
-               critical: bool = False) -> None:
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
     """Initializes a GRR hunt results downloader.
 
     Args:
-      state (DFTimewolfState): recipe state.
-      name (Optional[str]): The module's runtime name.
-      critical (bool): True if the module is critical, which causes
-          the entire recipe to fail if the module encounters an error.
+      name: The modules runtime name.
+      container_manager_: A common container manager object.
+      cache_: A common DFTWCache object.
+      telemetry_: A common telemetry collector object.
+      publish_message_callback: A callback to send modules messages to.
     """
-    super(GRRHuntDownloaderBase, self).__init__(
-        state, name=name, critical=critical)
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
+
     self.hunt_id = str()
     self.output_path = str()
 
@@ -692,19 +737,25 @@ class GRRHuntDownloader(GRRHuntDownloaderBase):
   """
 
   def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str] = None,
-               critical: bool = False) -> None:
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
     """Initializes a GRR hunt results downloader.
 
     Args:
-      state (DFTimewolfState): recipe state.
-      name (Optional[str]): The module's runtime name.
-      critical (bool): True if the module is critical, which causes
-          the entire recipe to fail if the module encounters an error.
+      name: The modules runtime name.
+      container_manager_: A common container manager object.
+      cache_: A common DFTWCache object.
+      telemetry_: A common telemetry collector object.
+      publish_message_callback: A callback to send modules messages to.
     """
-    super(GRRHuntDownloader, self).__init__(
-        state, name=name, critical=critical)
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
 
   # TODO: change object to more specific GRR type information.
   def _CollectHuntResults(self, hunt: Hunt) -> List[Tuple[str, str]]:
@@ -862,19 +913,26 @@ class GRRHuntOsqueryDownloader(GRRHuntDownloaderBase):
   """
 
   def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str] = None,
-               critical: bool = False) -> None:
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
     """Initializes a GRR hunt results downloader.
 
     Args:
-      state (DFTimewolfState): recipe state.
-      name (Optional[str]): The module's runtime name.
-      critical (bool): True if the module is critical, which causes
-          the entire recipe to fail if the module encounters an error.
+      name: The modules runtime name.
+      container_manager_: A common container manager object.
+      cache_: A common DFTWCache object.
+      telemetry_: A common telemetry collector object.
+      publish_message_callback: A callback to send modules messages to.
     """
-    super(GRRHuntOsqueryDownloader, self).__init__(
-        state, name=name, critical=critical)
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
+
     self.results: List[Tuple[str, str]] = []
 
   def _CollectHuntResults(self, hunt: Hunt) -> List[Tuple[str, str]]:
