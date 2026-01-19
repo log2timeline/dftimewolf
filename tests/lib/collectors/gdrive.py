@@ -145,7 +145,7 @@ class GoogleDriveCollectorTest(modules_test_base.ModuleTestBase):
         pageToken=None,
     )
     self.assertEqual(self.mock_media_io.call_count, 2)
-    file_containers = self._module.state.GetContainers(
+    file_containers = self._container_manager.GetContainers(
         self._module.name, containers.File
     )
     self.assertLen(file_containers, 2)
@@ -180,7 +180,7 @@ class GoogleDriveCollectorTest(modules_test_base.ModuleTestBase):
     self._module.Process()
 
     self.assertEqual(self.mock_media_io.call_count, 2)
-    file_containers = self._module.state.GetContainers(
+    file_containers = self._container_manager.GetContainers(
         self._module.name, containers.File
     )
     self.assertSameElements(

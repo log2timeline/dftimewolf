@@ -5,9 +5,7 @@
 import unittest
 import mock
 
-from dftimewolf import config
 from dftimewolf.lib import errors
-from dftimewolf.lib import state
 from dftimewolf.lib.collectors import gsheets
 
 # pylint: disable=line-too-long
@@ -28,35 +26,40 @@ INVALID_SHEET = {'range': 'Sheet2!A1:Y1000', 'majorDimension': 'ROWS', 'values':
 class GoogleSheetsCollectorTest(unittest.TestCase):
   """Tests for the Google Sheets collector module ."""
 
+  def setUp(self):
+    super().setUp()
+
+    self._collector = gsheets.GoogleSheetsCollector(
+        name='',
+        cache_=mock.MagicMock(),
+        container_manager_=mock.MagicMock(),
+        telemetry_=mock.MagicMock(),
+        publish_message_callback=mock.MagicMock())
+
   def testInitialization(self):
     """Tests that the collector can be initialized."""
-    test_state = state.DFTimewolfState(config.Config)
-    collector = gsheets.GoogleSheetsCollector(test_state)
-    self.assertIsNotNone(collector)
+    self.assertIsNotNone(self._collector)
 
   # pylint: disable=protected-access
   def testValidateSpreadSheetId(self):
     """Tests that the collector validate and extract spreadsheet id."""
-    test_state = state.DFTimewolfState(config.Config)
-    collector = gsheets.GoogleSheetsCollector(test_state)
-
     with self.assertRaises(errors.DFTimewolfError):
       invalid_id = 'invalid-id'
-      collector._ValidateSpreadSheetId(invalid_id)
+      self._collector._ValidateSpreadSheetId(invalid_id)
 
     valid_id = '1DD78vj61BEBoqpw69EdOoaxBUdDqM1GFxk5qRj7-vr4'
     self.assertEqual(
-        collector._ValidateSpreadSheetId(valid_id),
+        self._collector._ValidateSpreadSheetId(valid_id),
         '1DD78vj61BEBoqpw69EdOoaxBUdDqM1GFxk5qRj7-vr4')
 
     with self.assertRaises(errors.DFTimewolfError):
       invalid_id_in_url = 'https://docs.google.com/spreadsheets/d/invalid-id/edit#gid=0' # pylint: disable=line-too-long
-      collector._ValidateSpreadSheetId(invalid_id_in_url)
+      self._collector._ValidateSpreadSheetId(invalid_id_in_url)
 
     valid_id_in_url = 'https://docs.google.com/spreadsheets/d/1DD78vj61BEBoqpw69EdOoaxBUdDqM1GFxk5qRj7-vr4/edit#gid=0' # pylint: disable=line-too-long
-    collector._ValidateSpreadSheetId(valid_id_in_url)
+    self._collector._ValidateSpreadSheetId(valid_id_in_url)
     self.assertEqual(
-        collector._ValidateSpreadSheetId(valid_id_in_url),
+        self._collector._ValidateSpreadSheetId(valid_id_in_url),
         '1DD78vj61BEBoqpw69EdOoaxBUdDqM1GFxk5qRj7-vr4')
 
   # pylint: disable=invalid-name
@@ -66,8 +69,6 @@ class GoogleSheetsCollectorTest(unittest.TestCase):
   def testExtractEntriesFromSheet(self, _mock_discovery, _mock_credentials,
                                   _mock_exists):
     """Test _ExtractEntriesFromSheet() function."""
-    test_state = state.DFTimewolfState(config.Config)
-    collector = gsheets.GoogleSheetsCollector(test_state)
     spreadsheet_id = '1DD78vj61BEBoqpw69EdOoaxBUdDqM1GFxk5qRj7-vr4'
     sheet_title = 'Sheet1'
 
@@ -80,22 +81,22 @@ class GoogleSheetsCollectorTest(unittest.TestCase):
     mock_spreadsheet_call = _mock_discovery.build.return_value.spreadsheets.return_value.values.return_value.get.return_value.execute # pylint: disable=line-too-long
 
     # Testing with column validation is True
-    collector.SetUp(spreadsheet_id, [sheet_title], True)
+    self._collector.SetUp(spreadsheet_id, [sheet_title], True)
     mock_spreadsheet_call.return_value = VALID_SHEET
     self.assertIsNotNone(
-        collector._ExtractEntriesFromSheet(spreadsheet_id, sheet_title))
+        self._collector._ExtractEntriesFromSheet(spreadsheet_id, sheet_title))
     mock_spreadsheet_call.return_value = INVALID_SHEET
     self.assertIsNone(
-        collector._ExtractEntriesFromSheet(spreadsheet_id, sheet_title))
+        self._collector._ExtractEntriesFromSheet(spreadsheet_id, sheet_title))
 
     # Testing with column validation is False
-    collector.SetUp(spreadsheet_id, [sheet_title], False)
+    self._collector.SetUp(spreadsheet_id, [sheet_title], False)
     mock_spreadsheet_call.return_value = VALID_SHEET
     self.assertIsNotNone(
-        collector._ExtractEntriesFromSheet(spreadsheet_id, sheet_title))
+        self._collector._ExtractEntriesFromSheet(spreadsheet_id, sheet_title))
     mock_spreadsheet_call.return_value = INVALID_SHEET
     self.assertIsNotNone(
-        collector._ExtractEntriesFromSheet(spreadsheet_id, sheet_title))
+        self._collector._ExtractEntriesFromSheet(spreadsheet_id, sheet_title))
 
 
 if __name__ == '__main__':

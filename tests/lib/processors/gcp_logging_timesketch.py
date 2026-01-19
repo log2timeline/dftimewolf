@@ -4,11 +4,9 @@
 
 import json
 import unittest
+from unittest import mock
 
-from dftimewolf.lib import state
 from dftimewolf.lib.processors import gcp_logging_timesketch
-
-from dftimewolf import config
 
 
 class GCPLoggingTimesketchTest(unittest.TestCase):
@@ -16,17 +14,22 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
 
   maxDiff = None
 
+  def setUp(self):
+    super().setUp()
+
+    self._processor = gcp_logging_timesketch.GCPLoggingTimesketch(
+        name='',
+        cache_=mock.MagicMock(),
+        container_manager_=mock.MagicMock(),
+        telemetry_=mock.MagicMock(),
+        publish_message_callback=mock.MagicMock())
+
   def testInitialization(self):
     """Tests that the processor can be initialized."""
-    test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_logging_timesketch.GCPLoggingTimesketch(test_state)
-    self.assertIsNotNone(processor)
+    self.assertIsNotNone(self._processor)
 
   def testGCEFirewallLog(self):
     """Tests that a firewall log is transformed correctly."""
-    test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_logging_timesketch.GCPLoggingTimesketch(test_state)
-
     firewall_addition = {
         'logName':
             'projects/ketchup-research/logs/'
@@ -103,7 +106,7 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
     }
 
     # pylint: disable=protected-access
-    actual_timesketch_record = processor._ProcessLogLine(
+    actual_timesketch_record = self._processor._ProcessLogLine(
         firewall_addition_json, 'test_query')
     actual_timesketch_record = json.loads(actual_timesketch_record)
     self.assertDictEqual(expected_addition_record, actual_timesketch_record)
@@ -244,16 +247,13 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
         'severity': 'NOTICE'
     }
 
-    actual_timesketch_record = processor._ProcessLogLine(
+    actual_timesketch_record = self._processor._ProcessLogLine(
         firewall_creation_json, 'test_query')
     actual_timesketch_record = json.loads(actual_timesketch_record)
     self.assertDictEqual(expected_creation_record, actual_timesketch_record)
 
   def testGCECreateLog(self):
     """Tests that a GCE instance creation log is transformed correctly."""
-    test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_logging_timesketch.GCPLoggingTimesketch(test_state)
-
     gce_creation = {
         'logName':
             'projects/ketchup-research/logs/'
@@ -388,16 +388,13 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
     }
 
     # pylint: disable=protected-access
-    actual_timesketch_record = processor._ProcessLogLine(
+    actual_timesketch_record = self._processor._ProcessLogLine(
         gce_creation, 'test_query')
     actual_timesketch_record = json.loads(actual_timesketch_record)
     self.assertDictEqual(expected_timesketch_record, actual_timesketch_record)
 
   def testGCSCreateLog(self):
     """Tests that a GCS bucket creation log is transformed correctly."""
-    test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_logging_timesketch.GCPLoggingTimesketch(test_state)
-
     gcs_creation = {
         'protoPayload': {
             '@type': 'type.googleapis.com/google.cloud.audit.AuditLog',
@@ -526,16 +523,13 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
     }
 
     # pylint: disable=protected-access
-    actual_timesketch_record = processor._ProcessLogLine(
+    actual_timesketch_record = self._processor._ProcessLogLine(
         gcs_creation, 'test_query')
     actual_timesketch_record = json.loads(actual_timesketch_record)
     self.assertDictEqual(expected_timesketch_record, actual_timesketch_record)
 
   def testDataProcYarn(self):
     """Tests that a Yarn dataproc log is transformed correctly."""
-    test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_logging_timesketch.GCPLoggingTimesketch(test_state)
-
     yarn_log = {
         "logName":
             "projects/test-project-name/logs/yarn-userlogs",
@@ -582,7 +576,7 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
         'timestamp_desc': 'Event Recorded'}
 
     # pylint: disable=protected-access
-    actual_timesketch_record = processor._ProcessLogLine(
+    actual_timesketch_record = self._processor._ProcessLogLine(
         yarn_log, 'test_query')
     actual_timesketch_record = json.loads(actual_timesketch_record)
     self.assertDictEqual(expected_timesketch_record, actual_timesketch_record)
@@ -591,9 +585,6 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
     """Tests `type.googleapis.com/compute.instances.insert` is parsed
         correctly.
     """
-    test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_logging_timesketch.GCPLoggingTimesketch(test_state)
-
     compute_instance_insert_log = {
       'insertId':'-ft34ekedkmxm',
       'labels': {
@@ -698,16 +689,13 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
     compute_instance_insert_log = json.dumps(compute_instance_insert_log)
 
     # pylint: disable=protected-access
-    actual_timesketch_record = processor._ProcessLogLine(
+    actual_timesketch_record = self._processor._ProcessLogLine(
         compute_instance_insert_log, 'test_query')
     actual_timesketch_record = json.loads(actual_timesketch_record)
     self.assertDictEqual(expected_timesketch_record, actual_timesketch_record)
 
   def testServiceAccountCreateFailed(self):
     """Test the failed service account create logs with reasons."""
-    test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_logging_timesketch.GCPLoggingTimesketch(test_state)
-
     service_create_log = {
       'protoPayload': {
         '@type': 'type.googleapis.com/google.cloud.audit.AuditLog',
@@ -829,7 +817,7 @@ class GCPLoggingTimesketchTest(unittest.TestCase):
     failed_service_account_create_log = json.dumps(service_create_log)
 
     # pylint: disable=protected-access
-    actual_timesketch_record = processor._ProcessLogLine(
+    actual_timesketch_record = self._processor._ProcessLogLine(
         failed_service_account_create_log, 'test_query')
 
     actual_timesketch_record = json.loads(actual_timesketch_record)

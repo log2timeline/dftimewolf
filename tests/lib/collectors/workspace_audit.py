@@ -9,16 +9,17 @@ from dftimewolf.lib import errors
 from dftimewolf.lib import state
 from dftimewolf.lib.collectors import workspace_audit
 
-from dftimewolf import config
-
 
 class WorkspaceAuditCollectorTest(unittest.TestCase):
   """Tests for the Workspace audit collector."""
 
   def setUp(self):
-    test_state = state.DFTimewolfState(config.Config)
     self.ws_collector = workspace_audit.WorkspaceAuditCollector(
-      test_state, name='test')
+        name='',
+        cache_=mock.MagicMock(),
+        container_manager_=mock.MagicMock(),
+        telemetry_=mock.MagicMock(),
+        publish_message_callback=mock.MagicMock())
 
   def testInitialization(self):
     """Tests that the collector can be initialized."""

@@ -13,7 +13,7 @@ class DFTWCache:
 
   def __init__(self):
     """Init."""
-    self._cache: dict[str, typing.Any]
+    self._cache: dict[str, typing.Any] = {}
     self._mutex = threading.Lock()
 
   def AddToCache(self, name: str, value: typing.Any) -> None:

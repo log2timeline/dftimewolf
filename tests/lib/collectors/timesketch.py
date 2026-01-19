@@ -44,8 +44,7 @@ class TimesketchSearchEventCollectorTest(modules_test_base.ModuleTestBase):
     self.assertEqual(self._module.search_name, "")
     self.assertEqual(self._module.search_description, "")
     mock_get_api_client.assert_called_with(
-      self._module.state, token_password="test_token"
-    )
+      self._cache, token_password="test_token")
 
   @mock.patch("dftimewolf.lib.timesketch_utils.GetApiClient")
   def testSetupWithTicketAttributeContainer(
@@ -159,8 +158,8 @@ class TimesketchSearchEventCollectorTest(modules_test_base.ModuleTestBase):
   ) -> None:
     """Test the Process function with no sketch ID."""
 
-    self._module.GetFromCache = mock.MagicMock(return_value=None)
-    self._module.GetFromCache.return_value = None
+    self._cache.GetFromCache = mock.MagicMock(return_value=None)
+    self._cache.GetFromCache.return_value = None
 
     self._module.SetUp(
       sketch_id=None,
@@ -179,7 +178,7 @@ class TimesketchSearchEventCollectorTest(modules_test_base.ModuleTestBase):
     )
 
     self._ProcessModule()
-    self._module.GetFromCache.assert_has_calls(
+    self._cache.GetFromCache.assert_has_calls(
       [mock.call("timesketch_sketch"), mock.call("timesketch_sketch")]
     )
     mock_get_api_client.return_value.get_sketch.assert_called_with(123)

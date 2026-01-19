@@ -8,11 +8,9 @@ import json
 from datetime import timedelta
 import mock
 
-from dftimewolf.lib import state
 from dftimewolf.lib.processors import gcp_cloud_resource_tree as gcp_crt
 from dftimewolf.lib.processors import gcp_cloud_resource_tree_helper as gcp_crt_helper # pylint: disable=line-too-long
 
-from dftimewolf import config
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -20,33 +18,37 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 class GCPCloudResourceTreeModuleTest(unittest.TestCase):
   """Tests for the Module class of the GCPCloudResourceTree."""
 
+  def setUp(self):
+    super().setUp()
+
+    self._processor = gcp_crt.GCPCloudResourceTree(
+        name='',
+        cache_=mock.MagicMock(),
+        container_manager_=mock.MagicMock(),
+        telemetry_=mock.MagicMock(),
+        publish_message_callback=mock.MagicMock())
+
   def testInitialization(self) -> None:
     """Tests that the processor can be initialized."""
-    test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_crt.GCPCloudResourceTree(test_state)
-    self.assertIsNotNone(processor)
+    self.assertIsNotNone(self._processor)
 
   def testSetup(self) -> None:
     """Tests that the processor is set up correctly."""
-    test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_crt.GCPCloudResourceTree(test_state)
-    processor.SetUp(project_id='test-project-hkhalifa',
-                    location='us-central1-a',
-                    resource_name='vm1',
-                    resource_id='1809669853321684335',
-                    resource_type='gcp_instance',
-                    mode='offline')
-    self.assertEqual(processor.project_id, 'test-project-hkhalifa')
-    self.assertEqual(processor.resource_name, 'vm1')
-    self.assertEqual(processor.resource_type, 'gcp_instance')
-    self.assertEqual(processor.mode, gcp_crt_helper.OperatingMode.OFFLINE)
+    self._processor.SetUp(project_id='test-project-hkhalifa',
+                          location='us-central1-a',
+                          resource_name='vm1',
+                          resource_id='1809669853321684335',
+                          resource_type='gcp_instance',
+                          mode='offline')
+    self.assertEqual(self._processor.project_id, 'test-project-hkhalifa')
+    self.assertEqual(self._processor.resource_name, 'vm1')
+    self.assertEqual(self._processor.resource_type, 'gcp_instance')
+    self.assertEqual(self._processor.mode, gcp_crt_helper.OperatingMode.OFFLINE)
 
   @mock.patch('dftimewolf.lib.processors.gcp_cloud_resource_tree.GCPCloudResourceTree._GetLogMessages') # pylint: disable=line-too-long
   # pylint: disable=invalid-name
   def testGetResourcesMetaDataFromLogs(self, _mock_GetLogMessages) -> None:
     """Tests creation of time ranges for logs query."""
-    test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_crt.GCPCloudResourceTree(test_state)
     r1 = gcp_crt_helper.Resource()
     r1.creation_timestamp = '2021-09-30T03:00:00.000+07:00'
     r2 = gcp_crt_helper.Resource()
@@ -54,13 +56,13 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
     r3 = gcp_crt_helper.Resource()
     r3.creation_timestamp = '2021-11-01T06:00:00.000+07:00'
     #r1 and r2 are within 30 days
-    processor.resources_dict['1'] = r1
-    processor.resources_dict['2'] = r2
+    self._processor.resources_dict['1'] = r1
+    self._processor.resources_dict['2'] = r2
     #r3 is not within 30 days or r1 or r2
-    processor.resources_dict['3'] = r3
+    self._processor.resources_dict['3'] = r3
 
     # pylint: disable=protected-access
-    processor._GetResourcesMetaDataFromLogs('test-project-hkhalifa')
+    self._processor._GetResourcesMetaDataFromLogs('test-project-hkhalifa')
 
     _mock_GetLogMessages.assert_has_calls([
         mock.call('test-project-hkhalifa',
@@ -76,8 +78,6 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
   # pylint: disable=invalid-name
   def testRetrieveListOfSnapshots(self, _mock_CreateService) -> None:
     """Tests retrieval of project snapshots."""
-    test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_crt.GCPCloudResourceTree(test_state)
     file_path = os.path.join(current_dir, 'test_data',
                              'compute_api_snapshots_response.jsonl')
     with open(file_path) as json_file:
@@ -86,7 +86,7 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
     _mock_CreateService.snapshots().list().execute.return_value = response
 
     # pylint: disable=protected-access
-    result = processor._RetrieveListOfSnapshots(
+    result = self._processor._RetrieveListOfSnapshots(
         'test-project-hkhalifa', _mock_CreateService)
 
     _mock_CreateService.snapshots().list.assert_called_with(
@@ -109,8 +109,6 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
   # pylint: disable=invalid-name
   def testRetrieveListOfInstanceTemplates(self, _mock_CreateService) -> None:
     """Tests retrieval of project instance templates."""
-    test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_crt.GCPCloudResourceTree(test_state)
     file_path = os.path.join(current_dir, 'test_data',
                              'compute_api_instance_templates_response.jsonl')
     with open(file_path) as json_file:
@@ -120,7 +118,7 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
     ).execute.return_value = response
 
     # pylint: disable=protected-access
-    result = processor._RetrieveListOfInstanceTemplates(
+    result = self._processor._RetrieveListOfInstanceTemplates(
         'test-project-hkhalifa', _mock_CreateService)
 
     _mock_CreateService.instanceTemplates().list.assert_called_with(
@@ -141,8 +139,6 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
   # pylint: disable=invalid-name
   def testRetrieveListOfMachineImages(self, _mock_CreateService) -> None:
     """Tests retrieval of project machine images."""
-    test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_crt.GCPCloudResourceTree(test_state)
     file_path = os.path.join(current_dir, 'test_data',
                              'compute_api_machine_images_response.jsonl')
     with open(file_path) as json_file:
@@ -153,7 +149,7 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
     ).execute.return_value = response
 
     # pylint: disable=protected-access
-    result = processor._RetrieveListOfMachineImages(
+    result = self._processor._RetrieveListOfMachineImages(
         'test-project-hkhalifa', _mock_CreateService)
 
     _mock_CreateService.machineImages().list.assert_called_with(
@@ -175,8 +171,6 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
   # pylint: disable=invalid-name
   def testRetrieveListOfDisks(self, _mock_CreateService) -> None:
     """Tests retrieval of project disks."""
-    test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_crt.GCPCloudResourceTree(test_state)
     file_path = os.path.join(current_dir, 'test_data',
                              'compute_api_disks_response.jsonl')
     with open(file_path) as json_file:
@@ -186,7 +180,7 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
     _mock_CreateService.disks().aggregatedList().execute.return_value = response
 
     # pylint: disable=protected-access
-    result = processor._RetrieveListOfDisks(
+    result = self._processor._RetrieveListOfDisks(
         'test-project-hkhalifa', _mock_CreateService)
 
     _mock_CreateService.disks().aggregatedList.assert_called_with(
@@ -209,8 +203,6 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
   # pylint: disable=invalid-name
   def testRetrieveListOfDiskImages(self, _mock_CreateService) -> None:
     """Tests retrieval of project disk images."""
-    test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_crt.GCPCloudResourceTree(test_state)
     file_path = os.path.join(current_dir, 'test_data',
                              'compute_api_disk_images_response.jsonl')
     with open(file_path) as json_file:
@@ -219,7 +211,7 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
     _mock_CreateService.images().list().execute.return_value = response
 
     # pylint: disable=protected-access
-    result = processor._RetrieveListOfDiskImages(
+    result = self._processor._RetrieveListOfDiskImages(
         'test-project-hkhalifa', _mock_CreateService)
 
     _mock_CreateService.images().list.assert_called_with(
@@ -242,8 +234,6 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
   # pylint: disable=invalid-name
   def testRetrieveListOfInstances(self, _mock_CreateService) -> None:
     """Tests retrieval of project instances."""
-    test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_crt.GCPCloudResourceTree(test_state)
     file_path = os.path.join(current_dir, 'test_data',
                              'compute_api_instances_response.jsonl')
     with open(file_path) as json_file:
@@ -253,7 +243,7 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
     _mock_CreateService.instances().aggregatedList().execute.return_value = response # pylint: disable=line-too-long
 
     # pylint: disable=protected-access
-    result = processor._RetrieveListOfInstances(
+    result = self._processor._RetrieveListOfInstances(
         'test-project-hkhalifa', _mock_CreateService)
 
     _mock_CreateService.instances().aggregatedList.assert_called_with(
@@ -276,8 +266,6 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
   # pylint: disable=invalid-name
   def testGetResourceParentTree(self, _mock_SearchForDeletedResource) -> None:
     """Tests retrieval of resource parent tree."""
-    test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_crt.GCPCloudResourceTree(test_state)
     file_path = os.path.join(current_dir, 'test_data',
                              'gcp-project-logs.jsonl')
     _mock_SearchForDeletedResource.return_value = None
@@ -286,11 +274,11 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
       for line in log_file:
         log_messages.append(json.loads(line))
     # pylint: disable=protected-access
-    processor._ParseLogMessages(log_messages)
+    self._processor._ParseLogMessages(log_messages)
 
     # pylint: disable=line-too-long
-    parent_resource_of_vm1 = processor._GetResourceParentTree(
-        processor.resources_dict['1809669853321684335'])
+    parent_resource_of_vm1 = self._processor._GetResourceParentTree(
+        self._processor.resources_dict['1809669853321684335'])
 
     self.assertIsNotNone(parent_resource_of_vm1)
     if parent_resource_of_vm1:
@@ -305,17 +293,15 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
         self.assertIsNone(parent_resource_of_vm1.parent.parent)
       # check if resource is in children
       self.assertEqual(len(parent_resource_of_vm1.children), 1)
-      self.assertIn(processor.resources_dict['1809669853321684335'], parent_resource_of_vm1.children) # pylint: disable=line-too-long
+      self.assertIn(self._processor.resources_dict['1809669853321684335'], parent_resource_of_vm1.children) # pylint: disable=line-too-long
 
     # Test if deleted resource is detected while building parent tree
-    parent_resource_of_vm10 = processor._GetResourceParentTree(processor.resources_dict['963895663494893499']) # pylint: disable=line-too-long
+    parent_resource_of_vm10 = self._processor._GetResourceParentTree(self._processor.resources_dict['963895663494893499']) # pylint: disable=line-too-long
     self.assertIsNotNone(parent_resource_of_vm10)
     _mock_SearchForDeletedResource.assert_called()
 
   def testParseLogMessages(self) -> None:
     """Tests parse log messages."""
-    test_state = state.DFTimewolfState(config.Config)
-    processor = gcp_crt.GCPCloudResourceTree(test_state)
     file_path_resources_dict = os.path.join(current_dir, 'test_data',
                              'resources_dict_dump.jsonl')
     with open(file_path_resources_dict) as resources_dict_file:
@@ -329,9 +315,9 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
         log_messages.append(json.loads(line))
 
     # pylint: disable=protected-access
-    processor._ParseLogMessages(log_messages)
+    self._processor._ParseLogMessages(log_messages)
 
-    current_resources_dict = json.dumps(processor.resources_dict, cls=gcp_crt_helper.ResourceEncoder) # pylint: disable=line-too-long
+    current_resources_dict = json.dumps(self._processor.resources_dict, cls=gcp_crt_helper.ResourceEncoder) # pylint: disable=line-too-long
     current_resources_dict = json.loads(current_resources_dict)
-    self.assertEqual(len(processor.resources_dict), 32)
+    self.assertEqual(len(self._processor.resources_dict), 32)
     self.assertEqual(stored_resources_dict, current_resources_dict)

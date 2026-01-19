@@ -1,15 +1,17 @@
 """A base class for DFTW module testing."""
 
 from typing import Sequence, Type
+from unittest import mock
 
 from absl.testing import parameterized
 
-from dftimewolf import config
 from dftimewolf.lib.containers import interface
 from dftimewolf.lib.containers import manager as container_manager
 from dftimewolf.lib import cache
 from dftimewolf.lib import module
-from unittest import mock
+
+
+# pylint: disable=line-too-long
 
 
 class ModuleTestBase(parameterized.TestCase):
@@ -21,17 +23,23 @@ class ModuleTestBase(parameterized.TestCase):
     """Init."""
     super().__init__(*args, *kwargs)
 
+    self._cache: cache.DFTWCache = None
+    self._container_manager: container_manager.ContainerManager = None
+    self._telemetry: mock.MagicMock = None
+
   def _InitModule(self, test_module: type[module.BaseModule]):  # pylint: disable=arguments-differ
     """Initialises the module, the DFTW state and recipe for module testing."""
+    name = test_module.__name__
     self._cache = cache.DFTWCache()
-    self._container_manager = container_manager.ContainerManager()
+    self._container_manager = container_manager.ContainerManager(
+        logger=mock.MagicMock())
     self._container_manager.ParseRecipe(
         {'modules': [{'name': 'upstream'},
-                     {'name': self._module.name, 'wants': ['upstream']},
-                     {'name': 'downstream', 'wants': [self._module.name]}]}).
+                     {'name': name, 'wants': ['upstream']},
+                     {'name': 'downstream', 'wants': [name]}]})
     self._telemetry = mock.MagicMock()
 
-    self._module = test_module(name=self._module.name,
+    self._module = test_module(name=name,
                                container_manager_=self._container_manager,
                                cache_=self._cache,
                                telemetry_=self._telemetry,
@@ -42,6 +50,7 @@ class ModuleTestBase(parameterized.TestCase):
     if isinstance(self._module, module.ThreadAwareModule):
       self._module.PreProcess()
       containers = self._container_manager.GetContainers(
+          self._module.name,
           self._module.GetThreadOnContainerType())
       for c in containers:
         self._module.Process(c)

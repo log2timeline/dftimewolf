@@ -32,13 +32,15 @@ class FakeLLMProvider(interface.LLMProvider):
 class DataFrameLLMProcessorTest(modules_test_base.ModuleTestBase):
   """Tests for the DataFrameLLMProcessor."""
 
-  def _InitModule(self, test_module: type[llm_base.DataFrameLLMProcessor]
-                  ):  # pytype: disable=signature-mismatch
-    self._logger = WolfLogger(name='test logger')
-    self._test_state = state_lib.DFTimewolfState(config.Config)
-    self._module = test_module(self._test_state, logger=self._logger)
-    self._test_state._container_manager.ParseRecipe(  # pylint: disable=protected-access
-        {'modules': [{'name': self._module.name}]})
+#  def _InitModule(self, test_module: type[llm_base.DataFrameLLMProcessor]
+#                  ):  # pytype: disable=signature-mismatch
+#    self._logger = WolfLogger(name='test logger')
+#    self._test_state = state_lib.DFTimewolfState(config.Config)
+#    self._module = test_module(self._test_state, logger=self._logger)
+#    self._test_state._container_manager.ParseRecipe(  # pylint: disable=protected-access
+#        {'modules': [{'name': self._module.name}]})
+
+  _module: llm_base.DataFrameLLMProcessor
 
   def setUp(self):
     """Tests that the processor can be initialized."""
@@ -70,7 +72,6 @@ class DataFrameLLMProcessorTest(modules_test_base.ModuleTestBase):
     self.assertIsNotNone(self._module)
     self.assertEqual(self._module.columns_to_process, [])
     self.assertIsNone(self._module.task)
-    self.assertEqual(self._module.logger, self._logger)
 
   def testSetUp(self):
     """Tests the SetUp method."""

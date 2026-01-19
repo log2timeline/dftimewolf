@@ -155,7 +155,7 @@ class DataFrameToDiskExporterTest(modules_test_base.ModuleTestBase):
       description='A test dataframe',
       name='test_dataframe'))
 
-    self._module.state._container_manager.WaitForCallbackCompletion()  # pylint: disable=protected-access
+    self._container_manager.WaitForCallbackCompletion()
 
     out_containers = self._module.GetContainers(containers.File)
     self.assertLen(out_containers, 1)
