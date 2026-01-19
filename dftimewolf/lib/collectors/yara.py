@@ -2,7 +2,7 @@
 """Definition of modules for collecting Yara rules from TIPs."""
 
 import os
-from typing import Optional, Callable
+from typing import Callable
 
 import requests
 

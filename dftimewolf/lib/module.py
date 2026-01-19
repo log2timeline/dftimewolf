@@ -227,10 +227,6 @@ class BaseModule(object):
       name (str): string with the name of the cache variable.
       default_value (object): the value that will be returned if the item does
           not exist in the cache. Optional argumentand defaults to None.
-
-    Returns:
-      object: object from the cache that corresponds to the name, or the value
-          of "default_value" if the cache does not contain the variable.
     """
     self._cache.GetFromCache(name, default_value)
 

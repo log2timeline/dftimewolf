@@ -24,7 +24,6 @@ from turbinia_api_lib.api import (
 from turbinia_api_lib.api import turbinia_request_results_api
 from turbinia_api_lib.api_response import ApiResponse
 
-from dftimewolf.lib.logging_utils import WolfLogger
 from dftimewolf.lib import module
 # pylint: disable=unused-import
 from dftimewolf.lib import cache

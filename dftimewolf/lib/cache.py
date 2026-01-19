@@ -1,5 +1,7 @@
-import typing
+"""A simple cache by name."""
+
 import threading
+import typing
 
 
 # pylint: disable=line-too-long

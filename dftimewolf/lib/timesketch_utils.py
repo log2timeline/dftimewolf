@@ -2,7 +2,7 @@
 """Utility functions to get a Timesketch API client and an importer client."""
 import re
 import threading
-from typing import Sequence, TYPE_CHECKING
+from typing import Sequence
 
 from timesketch_api_client import client
 from timesketch_api_client import config
@@ -38,7 +38,7 @@ def GetSketchIDFromAttributes(
         return sketch_id
   return 0
 
-def GetApiClient(cache: cache.DFTWCache,
+def GetApiClient(cache_: cache.DFTWCache,
                  token_password: str='') -> client.TimesketchApi:
   """Returns a Timesketch API client using thread safe methods.
 
@@ -49,7 +49,7 @@ def GetApiClient(cache: cache.DFTWCache,
   the client.
 
   Args:
-    cache: recipe cache.
+    cache_: recipe cache.
     token_password (str): optional password used to decrypt the
         Timesketch credential storage. Defaults to an empty string since
         the upstream library expects a string value. An empty string means
@@ -62,7 +62,7 @@ def GetApiClient(cache: cache.DFTWCache,
     DFTimewolfError: If the configuration file cannot be modified.
   """
   with LOCK:
-    ts_client = cache.GetFromCache('timesketch_client', default_value=None)
+    ts_client = cache_.GetFromCache('timesketch_client', default_value=None)
     if ts_client:
       return ts_client
 
@@ -91,5 +91,5 @@ def GetApiClient(cache: cache.DFTWCache,
           ts_client.credentials, config_assistant=assistant,
           password=token_password)
 
-    cache.AddToCache('timesketch_client', ts_client)
+    cache_.AddToCache('timesketch_client', ts_client)
     return ts_client
