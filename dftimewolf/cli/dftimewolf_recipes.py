@@ -284,7 +284,7 @@ class DFTimewolfTool(object):
 
     logger.info('Loading recipe {0:s}...'.format(self._recipe['name']))
     # Raises errors.RecipeParseError on error.
-    self._module_runner.LoadModules(self._recipe, MODULES)
+    self._module_runner.Initialise(self._recipe, MODULES)
 
     module_cnt = len(self._recipe.get('modules', [])) + \
                  len(self._recipe.get('preflights', []))

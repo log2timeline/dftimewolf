@@ -21,7 +21,7 @@ class DummyModule1(module.BaseModule):
                      telemetry_=telemetry_,
                      publish_message_callback=publish_message_callback)
 
-  def SetUp(self, runtime_value=None):  # pylint: disable=arguments-differ
+  def SetUp(self, runtime_value):  # pylint: disable=arguments-differ
     """Dummy setup function."""
     self.runtime_value = runtime_value
     print(self.name + ' Setup!')
@@ -53,7 +53,7 @@ class DummyModule2(module.BaseModule):
                      telemetry_=telemetry_,
                      publish_message_callback=publish_message_callback)
 
-  def SetUp(self, runtime_value=None):  # pylint: disable=arguments-differ
+  def SetUp(self, runtime_value):  # pylint: disable=arguments-differ
     """Dummy setup function."""
     self.runtime_value = runtime_value
     print(self.name + ' Setup!')

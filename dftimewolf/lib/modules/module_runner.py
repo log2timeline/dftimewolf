@@ -34,7 +34,6 @@ class ModuleRunner(object):
 
     self._logger = logger
     self._recipe: dict[str, typing.Any] = {}
-    self._running_args: dict[str, typing.Any] = {}
     self._abort_execution = False
 
 
@@ -46,8 +45,10 @@ class ModuleRunner(object):
     self._telemetry = telemetry_
     self._publish_message_callback = publish_message_callback
 
+    self._module_setup_args: dict[str, dict[str, typing.Any]] = {}
 
-  def LoadModules(self, recipe: dict[str, typing.Any], module_locations: dict[str, str]) -> None:
+
+  def Initialise(self, recipe: dict[str, typing.Any], module_locations: dict[str, str]) -> None:
     """Based on a recipe and module mapping, load and instantiate required modules.
     
     
@@ -70,6 +71,8 @@ class ModuleRunner(object):
                                                        container_manager_=self._container_manager,
                                                        telemetry_=self._telemetry,
                                                        publish_message_callback=self._publish_message_callback)
+      else:
+        raise RuntimeError(f'Could not instantiate module {module_name}')
 
     self._container_manager.ParseRecipe(self._recipe)
     self._cache.AddToCache('recipe_name', recipe['name'])
@@ -90,8 +93,13 @@ class ModuleRunner(object):
       self._logger.debug(line)
 
   def Run(self, running_args: dict[str, typing.Any]) -> int:
-    """Runs the modules."""
-    self._running_args = running_args
+    """Runs the modules.
+
+    Args:
+      running_args: An already parsed and interpolated args object from the
+          recipe parsing layer.
+    """
+    self._ExtractParsedSetUpArgs(running_args)
 
     time_ready = time.time()*1000
     self._SetUpAndRunPreflights()
@@ -100,23 +108,25 @@ class ModuleRunner(object):
       'preflights_delta', str(time_preflights - time_ready), 'core')
 
     try:
-      self._SetupModules()
-    except errors.CriticalError as exception:
-      self._logger.critical(str(exception))
-      return 1
+      if not self._abort_execution:
+        self._SetupModules()
+      else:
+        return 1
 
-    time_setup = time.time()*1000
-    self._telemetry.LogTelemetry('setup_delta', str(time_setup - time_preflights), 'core')
+      time_setup = time.time()*1000
+      self._telemetry.LogTelemetry('setup_delta', str(time_setup - time_preflights), 'core')
 
-    try:
-      self._RunModules()
+      if not self._abort_execution:
+        self._RunModules()
+      else:
+        return 1
+
+      time_run = time.time()*1000
+      self._telemetry.LogTelemetry('run_delta', str(time_run - time_setup), 'core')
     except errors.CriticalError as exception:
       self._logger.critical(str(exception))
       return 1
     finally:
-      time_run = time.time()*1000
-      self._telemetry.LogTelemetry('run_delta', str(time_run - time_setup), 'core')
-
       self._CleanUpPreflights()
 
     total_time = time.time()*1000 - time_ready
@@ -147,6 +157,13 @@ class ModuleRunner(object):
         msg = f'Cannot find Python module for {name} ({location}): {exception}'
         raise errors.RecipeParseError(msg)
 
+  def _ExtractParsedSetUpArgs(self, running_args: dict[str, typing.Any]) -> None:
+    """Given parsed running args, extract module set up args."""
+    for module_definition in (running_args.get('recipe', {}).get('preflights', []) +
+                   running_args.get('recipe', {}).get('modules', [])):
+      runtime_name = module_definition.get('runtime_name', module_definition['name'])
+      self._module_setup_args[runtime_name] = module_definition.get('args', {})
+
   def _SetupModules(self) -> None:
     """Performs setup tasks for each module in the module pool.
 
@@ -165,7 +182,7 @@ class ModuleRunner(object):
     Args:
       callback (function): callback function to invoke on all the modules.
     """
-    threads = []
+    threads: list[threading.Thread] = []
     for module_definition in self._recipe['modules']:
       thread_args = (module_definition,)
       thread = threading.Thread(target=callback, args=thread_args)
@@ -183,16 +200,20 @@ class ModuleRunner(object):
       preflight_name = preflight_definition['name']
       runtime_name = preflight_definition.get('runtime_name', preflight_name)
 
-      args = preflight_definition.get('args', {})
+      if self._abort_execution:
+        self._logger.warning('Aborting execution of %s due to previous unhandled error', runtime_name)
+        return
 
-      new_args = utils.ImportArgsFromDict(args, self._running_args)
       preflight = self._module_pool[runtime_name]
       try:
-        preflight.SetUp(**new_args)
+        preflight.SetUp(**(self._module_setup_args[runtime_name]))
         preflight.Process()
         self._container_manager.CompleteModule(runtime_name)
         self._threading_event_per_module[runtime_name] = threading.Event()
         self._threading_event_per_module[runtime_name].set()
+      except Exception:  # pylint: disable=broad-exception-caught
+        self._logger.error('Unhandled exception encountered in %s', runtime_name, exc_info=True)
+        self._abort_execution = True
       finally:
         self._CheckErrors()
 
@@ -208,14 +229,18 @@ class ModuleRunner(object):
     runtime_name = module_definition.get('runtime_name', module_name)
     self._logger.info('Setting up module: {0:s}'.format(runtime_name))
 
-    setup_args = utils.ImportArgsFromDict(module_definition['args'], self._running_args)
     module = self._module_pool[runtime_name]
 
     try:
-      module.SetUp(**setup_args)
+      if self._abort_execution:
+        self._logger.warning('Aborting execution of %s due to previous unhandled error', runtime_name)
+        return
+
+      module.SetUp(**(self._module_setup_args[runtime_name]))
     except errors.DFTimewolfError:
       msg = "A critical error occurred in module {0:s}, aborting execution."
       self._logger.critical(msg.format(module.name))
+      self._abort_execution = True
     except Exception as exception:  # pylint: disable=broad-except
       msg = 'An unknown error occurred in module {0:s}: {1!s}'.format(
           module.name, exception)
@@ -279,7 +304,7 @@ class ModuleRunner(object):
 
     module = self._module_pool[runtime_name]
 
-    # Abort processing if a module has had critical failures before.
+    # Abort processing if a previous module has had critical failures.
     if self._abort_execution:
       self._logger.critical(
           'Aborting execution of {0:s} due to previous errors'.format(
@@ -344,10 +369,7 @@ class ModuleRunner(object):
       preflight_name = preflight_definition['name']
       runtime_name = preflight_definition.get('runtime_name', preflight_name)
       preflight = self._module_pool[runtime_name]
-      try:
-        preflight.CleanUp()
-      finally:
-        self._CheckErrors()
+      preflight.CleanUp()
 
   def _CheckErrors(self) -> None:
     """Checks for errors and exits if any of them are critical.
