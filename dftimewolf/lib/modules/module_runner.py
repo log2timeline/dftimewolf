@@ -1,18 +1,21 @@
-from dftimewolf.lib import cache
-from dftimewolf.lib import errors
-from dftimewolf.lib import module as dftw_module
-from dftimewolf.lib.containers import manager as container_manager
-from dftimewolf.lib import telemetry
-from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib import utils
+"""Handles running DFTW modules."""
 
 import importlib
-from concurrent import futures
 import logging
 import threading
 import time
 import traceback
 import typing
+from concurrent import futures
+
+from dftimewolf import cli
+from dftimewolf.lib import cache
+from dftimewolf.lib import errors
+from dftimewolf.lib import module as dftw_module
+from dftimewolf.lib import telemetry
+from dftimewolf.lib import utils
+from dftimewolf.lib.containers import manager as container_manager
+from dftimewolf.lib.modules import manager as modules_manager
 
 # pylint: disable=line-too-long
 
@@ -22,10 +25,11 @@ class ModuleRunner(object):
 
   def __init__(self,
                logger: logging.Logger,
-               telemetry: telemetry.BaseTelemetry,
+               telemetry_: telemetry.BaseTelemetry,
                publish_message_callback: typing.Callable[[str, str, bool], None]) -> None:
     """Initialise the class."""
 
+    self._errors: list[errors.DFTimewolfError] = []
 
 
     self._logger = logger
@@ -39,7 +43,7 @@ class ModuleRunner(object):
 
     self._cache = cache.DFTWCache()
     self._container_manager = container_manager.ContainerManager(self._logger)
-    self._telemetry = telemetry
+    self._telemetry = telemetry_
     self._publish_message_callback = publish_message_callback
 
 
@@ -70,6 +74,21 @@ class ModuleRunner(object):
     self._container_manager.ParseRecipe(self._recipe)
     self._cache.AddToCache('recipe_name', recipe['name'])
 
+    modules = [
+      module['name'] for module in self._recipe.get('modules', [])
+    ]
+    modules.extend([
+      module['name'] for module in self._recipe.get('preflights', [])
+    ])
+
+    for module in sorted(modules):
+      self._telemetry.LogTelemetry('module', module, 'core')
+
+  def LogExecutionPlan(self) -> None:
+    """Logs the result of FormatExecutionPlan() using the base logger."""
+    for line in self._FormatExecutionPlan().split('\n'):
+      self._logger.debug(line)
+
   def Run(self, running_args: dict[str, typing.Any]) -> int:
     """Runs the modules."""
     self._running_args = running_args
@@ -87,8 +106,7 @@ class ModuleRunner(object):
       return 1
 
     time_setup = time.time()*1000
-    self._telemetry.LogTelemetry(
-      'setup_delta', str(time_setup - time_preflights), 'core')
+    self._telemetry.LogTelemetry('setup_delta', str(time_setup - time_preflights), 'core')
 
     try:
       self._RunModules()
@@ -97,14 +115,14 @@ class ModuleRunner(object):
       return 1
     finally:
       time_run = time.time()*1000
-      self._telemetry.LogTelemetry(
-        'run_delta', str(time_run - time_setup), 'core')
+      self._telemetry.LogTelemetry('run_delta', str(time_run - time_setup), 'core')
 
       self._CleanUpPreflights()
 
+    total_time = time.time()*1000 - time_ready
+    self._telemetry.LogTelemetry('total_time', str(total_time), 'core')
+
     return 0
-
-
 
   def _ImportRecipeModules(self, recipe: dict[str, typing.Any], module_locations: dict[str, str]) -> None:
     """Dynamically loads the modules declared in a recipe.
@@ -128,18 +146,18 @@ class ModuleRunner(object):
       except ModuleNotFoundError as exception:
         msg = f'Cannot find Python module for {name} ({location}): {exception}'
         raise errors.RecipeParseError(msg)
-      
+ 
   def _SetupModules(self) -> None:
     """Performs setup tasks for each module in the module pool.
 
     Threads declared modules' SetUp() functions. Takes CLI arguments into
     account when replacing recipe parameters for each module.
     """
-    self._InvokeModulesInThreads(self._SetupModuleThread)
+    self._InvokeModulesInThreads(self._SetupModuleThreadCallback)
 
   def _RunModules(self) -> None:
     """Performs the actual processing for each module in the module pool."""
-    self._InvokeModulesInThreads(self._RunModuleThread)
+    self._InvokeModulesInThreads(self._RunModuleThreadCallback)
 
   def _InvokeModulesInThreads(self, callback: typing.Callable[[typing.Any], typing.Any]) -> None:
     """Invokes the callback function on all the modules in separate threads.
@@ -157,7 +175,7 @@ class ModuleRunner(object):
     for thread in threads:
       thread.join()
 
-#    self.CheckErrors(is_global=True)
+    self._CheckErrors()
 
   def _SetUpAndRunPreflights(self) -> None:
     """Run all preflight modules."""
@@ -176,10 +194,9 @@ class ModuleRunner(object):
         self._threading_event_per_module[runtime_name] = threading.Event()
         self._threading_event_per_module[runtime_name].set()
       finally:
-        pass
-        # self.CheckErrors(is_global=True)
+        self._CheckErrors()
 
-  def _SetupModuleThread(self, module_definition: dict[str, str]) -> None:
+  def _SetupModuleThreadCallback(self, module_definition: dict[str, str]) -> None:
     """Calls the module's SetUp() function and sets a threading event for it.
 
     Callback for _InvokeModulesInThreads.
@@ -211,11 +228,10 @@ class ModuleRunner(object):
           stacktrace=traceback.format_exc(),
           critical=True,
           unexpected=True)
-#      self.AddError(error)
+      self._errors.append(error)
       self._abort_execution = True
 
     self._threading_event_per_module[runtime_name] = threading.Event()
-#    self.CleanUp()
 
   def _RunModuleProcessThreaded(self, module: dftw_module.ThreadAwareModule) -> list[futures.Future]:
     """Runs Process of a single ThreadAwareModule module.
@@ -244,7 +260,7 @@ class ModuleRunner(object):
         future_results.append(executor.submit(module.Process, c))
     return future_results
 
-  def _RunModuleThread(self, module_definition: dict[str, str]) -> None:
+  def _RunModuleThreadCallback(self, module_definition: dict[str, str]) -> None:
     """Runs the module's Process() function.
 
     Callback for _InvokeModulesInThreads.
@@ -269,7 +285,6 @@ class ModuleRunner(object):
           'Aborting execution of {0:s} due to previous errors'.format(
               module.name))
       self._threading_event_per_module[runtime_name].set()
-#      self.CleanUp()
       return
 
     self._logger.info('Running module: {0:s}'.format(runtime_name))
@@ -278,9 +293,9 @@ class ModuleRunner(object):
     try:
       if isinstance(module, dftw_module.ThreadAwareModule):
         module.PreProcess()
-        futures = self._RunModuleProcessThreaded(module)
+        futures_ = self._RunModuleProcessThreaded(module)
         module.PostProcess()
-        self._HandleFuturesFromThreadedModule(futures, runtime_name)
+        self._HandleFuturesFromThreadedModule(futures_)
       else:
         module.Process()
     except errors.DFTimewolfError:
@@ -301,7 +316,7 @@ class ModuleRunner(object):
           stacktrace=traceback.format_exc(),
           critical=True,
           unexpected=True)
-#      self.AddError(error)
+      self._errors.append(error)
 
     self._logger.info('Module {0:s} finished execution'.format(runtime_name))
     total_time = utils.CalculateRunTime(time_start)
@@ -315,13 +330,12 @@ class ModuleRunner(object):
 
   def _HandleFuturesFromThreadedModule(
       self,
-      futures: list[futures.Future],
-      runtime_name: str) -> None:
+      futures: list[futures.Future]) -> None:
     """Handles any futures raised by the async processing of a module.
 
     Args:
       futures: A list of futures, returned by RunModuleProcessThreaded().
-      runtime_name: runtime name of the module."""
+    """
     for fut in futures:
       if fut.exception():
         raise fut.exception()
@@ -335,5 +349,67 @@ class ModuleRunner(object):
       try:
         preflight.CleanUp()
       finally:
-        pass
-#        self.CheckErrors(is_global=True)
+        self._CheckErrors()
+
+  def _CheckErrors(self) -> None:
+    """Checks for errors and exits if any of them are critical.
+
+    Raises:
+      errors.CriticalError: If any critical errors were found.
+    """
+    critical_errors = False
+
+    if self._errors:
+      self._logger.error('dfTimewolf encountered one or more errors:')
+
+    for index, error in enumerate(self._errors):
+      self._logger.error(
+          '{0:d}: error from {1:s}: {2:s}'.format(
+              index + 1, error.name, error.message))
+      if error.stacktrace:
+        for line in error.stacktrace.split('\n'):
+          self._logger.error(line)
+      if error.critical:
+        critical_errors = True
+
+    if any(error.unexpected for error in self._errors):
+      self._logger.critical('One or more unexpected errors occurred.')
+      self._logger.critical(
+          'Please consider opening an issue: {0:s}'.format(cli.NEW_ISSUE_URL))
+
+    if critical_errors:
+      raise errors.CriticalError('Critical error found. Aborting.')
+
+  def _FormatExecutionPlan(self) -> str:
+    """Formats execution plan.
+
+    Returns information about loaded modules and their corresponding arguments
+    to stdout.
+
+    Returns:
+      str: String representation of loaded modules and their parameters.
+    """
+    plan = ""
+    maxlen = 0
+
+    modules = self._recipe.get('preflights', []) + self._recipe.get('modules', [])
+
+    for module in modules:
+      if not module['args']:
+        continue
+      spacing = len(max(module['args'].keys(), key=len))
+      maxlen = maxlen if maxlen > spacing else spacing
+
+    for module in modules:
+      runtime_name = module.get('runtime_name')
+      if runtime_name:
+        plan += '{0:s} ({1:s}):\n'.format(runtime_name, module['name'])
+      else:
+        plan += '{0:s}:\n'.format(module['name'])
+
+      if not module['args']:
+        plan += '  *No params*\n'
+      for key, value in module['args'].items():
+        plan += '  {0:s}{1:s}\n'.format(key.ljust(maxlen + 3), repr(value))
+
+    return plan
