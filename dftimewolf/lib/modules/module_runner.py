@@ -146,7 +146,7 @@ class ModuleRunner(object):
       except ModuleNotFoundError as exception:
         msg = f'Cannot find Python module for {name} ({location}): {exception}'
         raise errors.RecipeParseError(msg)
- 
+
   def _SetupModules(self) -> None:
     """Performs setup tasks for each module in the module pool.
 
@@ -328,15 +328,13 @@ class ModuleRunner(object):
     except Exception:  # pylint: disable=broad-exception-caught
       self._logger.warning('Unknown exception encountered', exc_info=True)
 
-  def _HandleFuturesFromThreadedModule(
-      self,
-      futures: list[futures.Future]) -> None:
+  def _HandleFuturesFromThreadedModule(self, futures_: list[futures.Future]) -> None:
     """Handles any futures raised by the async processing of a module.
 
     Args:
       futures: A list of futures, returned by RunModuleProcessThreaded().
     """
-    for fut in futures:
+    for fut in futures_:
       if fut.exception():
         raise fut.exception()
 

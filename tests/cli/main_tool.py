@@ -9,7 +9,6 @@ from absl.testing import absltest
 from absl.testing import parameterized
 
 from dftimewolf.cli import dftimewolf_recipes
-from dftimewolf.lib import state as dftw_state
 from dftimewolf.lib import resources, errors
 from dftimewolf.lib.validators import manager as validators_manager
 

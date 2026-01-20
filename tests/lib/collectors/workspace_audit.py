@@ -6,7 +6,6 @@ import unittest
 import datetime
 
 from dftimewolf.lib import errors
-from dftimewolf.lib import state
 from dftimewolf.lib.collectors import workspace_audit
 
 

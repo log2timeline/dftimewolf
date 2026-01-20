@@ -157,31 +157,29 @@ class TimesketchSearchEventCollectorTest(modules_test_base.ModuleTestBase):
     mock_get_api_client: Any
   ) -> None:
     """Test the Process function with no sketch ID."""
-
-    self._cache.GetFromCache = mock.MagicMock(return_value=None)
-    self._cache.GetFromCache.return_value = None
-
-    self._module.SetUp(
-      sketch_id=None,
-      start_datetime=datetime.datetime(2024, 11, 11),
-      end_datetime=datetime.datetime(2024, 11, 12),
-      token_password="test_token",
-    )
+    with (mock.patch.object(self._cache, 'GetFromCache', return_value=None)
+          as mock_getfromcache):
+      self._module.SetUp(
+        sketch_id=None,
+        start_datetime=datetime.datetime(2024, 11, 11),
+        end_datetime=datetime.datetime(2024, 11, 12),
+        token_password="test_token",
+      )
 
     # Simulating another module adding a TicketAttribute container
     # netween SetUp() and Process()
 
-    self._module.StoreContainer(
-      containers.TicketAttribute(
-        name="Timesketch URL", value="sketch/123/", type_="text"
+      self._module.StoreContainer(
+        containers.TicketAttribute(
+          name="Timesketch URL", value="sketch/123/", type_="text"
+        )
       )
-    )
 
-    self._ProcessModule()
-    self._cache.GetFromCache.assert_has_calls(
-      [mock.call("timesketch_sketch"), mock.call("timesketch_sketch")]
-    )
-    mock_get_api_client.return_value.get_sketch.assert_called_with(123)
+      self._ProcessModule()
+      mock_getfromcache.assert_has_calls(
+        [mock.call("timesketch_sketch"), mock.call("timesketch_sketch")]
+      )
+      mock_get_api_client.return_value.get_sketch.assert_called_with(123)
 
   @mock.patch("dftimewolf.lib.timesketch_utils.GetApiClient")
   @mock.patch.object(

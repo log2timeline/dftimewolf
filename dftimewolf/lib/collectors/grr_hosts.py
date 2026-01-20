@@ -41,7 +41,6 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
 
   Modules that use GRR flows or interact with hosts should extend this class.
   """
-  _CHECK_APPROVAL_INTERVAL_SEC = 10
   _CHECK_FLOW_INTERVAL_SEC = 10
   _MAX_OFFLINE_TIME_SEC = 3600  # One hour
   _LARGE_FILE_SIZE_THRESHOLD = 1 * 1024 * 1024 * 1024  # 1 GB

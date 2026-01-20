@@ -49,9 +49,18 @@ class TestContainerThree(interface.AttributeContainer):
 class ContainerGeneratorModule(module.BaseModule):
   """This is a dummy module. Generates test containers."""
 
-  def __init__(self, state, name=None):
+  def __init__(self,
+               name,
+               container_manager_,
+               cache_,
+               telemetry_,
+               publish_message_callback):
     self.list = []
-    super(ContainerGeneratorModule, self).__init__(state, name)
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
 
   def SetUp(self, runtime_value=None): # pylint: disable=arguments-differ
     """Dummy setup function."""
@@ -71,8 +80,17 @@ class ThreadAwareConsumerModule(module.ThreadAwareModule):
   """This is a dummy Thread Aware Module. Consumes from
   ContainerGeneratorModule based on the number of containers generated."""
 
-  def __init__(self, state, name=None):
-    super(ThreadAwareConsumerModule, self).__init__(state, name)
+  def __init__(self,
+               name,
+               container_manager_,
+               cache_,
+               telemetry_,
+               publish_message_callback):
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
     self.output_values = ['one', 'two', 'three']
     self.output_lock = threading.Lock()
 
@@ -116,8 +134,18 @@ class Issue503Module(module.ThreadAwareModule):
   As described by https://github.com/log2timeline/dftimewolf/issues/503 this
   module pops containers for input, and uses the same container type as output.
   """
-  def __init__(self, state, name=None):
-    super(Issue503Module, self).__init__(state, name)
+
+  def __init__(self,
+               name,
+               container_manager_,
+               cache_,
+               telemetry_,
+               publish_message_callback):
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
 
   def SetUp(self): # pylint: disable=arguments-differ
     """SetUp"""
