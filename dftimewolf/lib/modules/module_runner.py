@@ -35,13 +35,13 @@ class ModuleRunner(object):
     self._module_pool: dict[str, dftw_module.BaseModule] = {}
     self._threading_event_per_module: dict[str, threading.Event] = {}
 
-    self._container_manager = container_manager.ContainerManager(self._logger)
-    self._telemetry = telemetry_
-    self._publish_message_callback = publish_message_callback
-
     self._errors: list[errors.DFTimewolfError] = []
     self._abort_execution = False
     self._logger = logger
+
+    self._container_manager = container_manager.ContainerManager(self._logger)
+    self._telemetry = telemetry_
+    self._publish_message_callback = publish_message_callback
 
     self._module_setup_args: dict[str, dict[str, typing.Any]] = {}
 
