@@ -15,7 +15,6 @@ from dftimewolf.lib.validators import manager as validators_manager
 # The following import makes sure validators are registered.
 from dftimewolf.lib import validators # pylint: disable=unused-import
 
-from dftimewolf import config
 
 # This test recipe requires two args: Anything for arg1, and the word 'Second'
 # for arg2. The value for arg1 will be substituted into 'other_arg' in arg2.
@@ -175,6 +174,8 @@ class MainToolTest(parameterized.TestCase):
     else:
       self.fail('No test_params in recipe')
 
+    self.tool._module_runner.Initialise(recipe.contents,
+                                        dftimewolf_recipes.MODULES)
     for arg in recipe.args:
       if arg.validation_params:
         self.assertIn(
@@ -193,6 +194,8 @@ class MainToolTest(parameterized.TestCase):
         NO_ARG_RECIPE,
         [])
     self.tool._recipes_manager.RegisterRecipe(no_arg_recipe)
+    self.tool._module_runner.Initialise(NO_ARG_RECIPE,
+                                        dftimewolf_recipes.MODULES)
 
     test_params = no_arg_recipe.GetTestParams()
     recipe_args = [no_arg_recipe.name] + test_params
@@ -208,6 +211,8 @@ class MainToolTest(parameterized.TestCase):
         OPTIONAL_ARG_RECIPE,
         OPTIONAL_ARG_RECIPE_ARGS)
     self.tool._recipes_manager.RegisterRecipe(optional_arg_recipe)
+    self.tool._module_runner.Initialise(OPTIONAL_ARG_RECIPE,
+                                        dftimewolf_recipes.MODULES)
 
     with self.assertRaisesRegex(resources.NoTestParamsError,
                                 'No test parameters specified in recipe'):
@@ -221,6 +226,8 @@ class MainToolTest(parameterized.TestCase):
         NESTED_ARG_RECIPE,
         NESTED_ARG_RECIPE_ARGS)
     self.tool._recipes_manager.RegisterRecipe(nested_arg_recipe)
+    self.tool._module_runner.Initialise(NESTED_ARG_RECIPE,
+                                        dftimewolf_recipes.MODULES)
 
     self.tool.ParseArguments(['nested_arg_recipe', 'First', 'Second'])
     self.tool.ValidateArguments()
@@ -239,6 +246,8 @@ class MainToolTest(parameterized.TestCase):
         NESTED_ARG_RECIPE,
         NESTED_ARG_RECIPE_ARGS)
     self.tool._recipes_manager.RegisterRecipe(nested_arg_recipe)
+    self.tool._module_runner.Initialise(NESTED_ARG_RECIPE,
+                                        dftimewolf_recipes.MODULES)
 
     self.tool.ParseArguments(['nested_arg_recipe', 'First', 'Not Second'])
 
@@ -254,6 +263,8 @@ class MainToolTest(parameterized.TestCase):
         NESTED_ARG_RECIPE,
         NESTED_ARG_RECIPE_ARGS)
     self.tool._recipes_manager.RegisterRecipe(nested_arg_recipe)
+    self.tool._module_runner.Initialise(NESTED_ARG_RECIPE,
+                                        dftimewolf_recipes.MODULES)
 
     self.tool.ParseArguments(
         ['--dry_run', 'nested_arg_recipe', 'First', 'Not Second'])
@@ -268,6 +279,8 @@ class MainToolTest(parameterized.TestCase):
         OPTIONAL_ARG_RECIPE,
         OPTIONAL_ARG_RECIPE_ARGS)
     self.tool._recipes_manager.RegisterRecipe(optional_arg_recipe)
+    self.tool._module_runner.Initialise(OPTIONAL_ARG_RECIPE,
+                                        dftimewolf_recipes.MODULES)
 
     self.tool.ParseArguments(['optional_arg_recipe', 'First'])
     self.tool.ValidateArguments() # No value for optional arg is ok.
