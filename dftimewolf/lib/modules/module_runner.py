@@ -31,21 +31,17 @@ class ModuleRunner(object):
                telemetry_: telemetry.BaseTelemetry,
                publish_message_callback: typing.Callable[[str, str, bool], None]) -> None:
     """Initialise the class."""
-
-    self._errors: list[errors.DFTimewolfError] = []
-
-
-    self._logger = logger
     self._recipe: dict[str, typing.Any] = {}
-    self._abort_execution = False
-
-
     self._module_pool: dict[str, dftw_module.BaseModule] = {}
     self._threading_event_per_module: dict[str, threading.Event] = {}
 
     self._container_manager = container_manager.ContainerManager(self._logger)
     self._telemetry = telemetry_
     self._publish_message_callback = publish_message_callback
+
+    self._errors: list[errors.DFTimewolfError] = []
+    self._abort_execution = False
+    self._logger = logger
 
     self._module_setup_args: dict[str, dict[str, typing.Any]] = {}
 
@@ -54,8 +50,10 @@ class ModuleRunner(object):
 
   def Initialise(self, recipe: dict[str, typing.Any], module_locations: dict[str, str]) -> None:
     """Based on a recipe and module mapping, load and instantiate required modules.
-    
-    
+
+    Args:
+      recipe: A parsed and interpolated recipe dict.
+      module_locations: A mapping of module names to package paths.
     """
     self._recipe = recipe
     self._cache.SetRecipeName(self._recipe['name'])
@@ -110,6 +108,9 @@ class ModuleRunner(object):
     Args:
       running_args: An already parsed and interpolated args object from the
           recipe parsing layer.
+
+    Returns:
+      Unix style - 1 on failure, 0 on success.
     """
     self._ExtractParsedSetUpArgs(running_args)
 
@@ -150,6 +151,8 @@ class ModuleRunner(object):
     """Dynamically loads the modules declared in a recipe.
 
     Args:
+      recipe: A parsed and interpolated recipe dict.
+      module_locations: A mapping of module names to package paths.
 
     Raises:
       errors.RecipeParseError: if a module requested in a recipe does not
@@ -369,7 +372,7 @@ class ModuleRunner(object):
     """Handles any futures raised by the async processing of a module.
 
     Args:
-      futures_1: A list of futures, returned by RunModuleProcessThreaded().
+      futures_: A list of futures, returned by RunModuleProcessThreaded().
     """
     for fut in futures_:
       fut.result()
