@@ -263,7 +263,7 @@ class ModuleRunnerTest(parameterized.TestCase):
 
   def test_PreflightProcessUnhandledError(self):
     """Tests an error in Preflights Process cancels execution of later modules."""
-    # If a preflight Process fails, then no module shoudl have SetUp or Process
+    # If a preflight Process fails, then no module should have SetUp or Process
     # called.
     with (mock.patch('tests.test_modules.modules.DummyPreflightModule.SetUp') as mock_dp_1_setup,
           mock.patch('tests.test_modules.modules.DummyPreflightModule.Process') as mock_dp_1_process,
@@ -313,7 +313,7 @@ class ModuleRunnerTest(parameterized.TestCase):
       mock_dp_1_cleanup.assert_called_once()
 
   def test_ModuleProcessUnhandledError(self):
-    """Tests an error in a modules Processs cancels execution of later modules."""
+    """Tests an error in a modules Process cancels execution of later modules."""
     # If a module fails in Process, then dependant modules should not have
     # Process called.
     with (mock.patch('tests.test_modules.modules.DummyPreflightModule.SetUp') as mock_dp_1_setup,
