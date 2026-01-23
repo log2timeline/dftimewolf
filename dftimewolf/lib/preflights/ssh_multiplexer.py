@@ -77,7 +77,7 @@ class SSHMultiplexer(module.PreflightModule):
     if ret != 0:
       self.ModuleError(
         'Unable to SSH to host {0:s}.'.format(self.hostname), critical=True)
-    self._cache.AddToCache('ssh_control', self.control_filename)
+    self.AddToCache('ssh_control', self.control_filename)
 
   def CleanUp(self) -> None:
     """Close the shared SSH connection."""

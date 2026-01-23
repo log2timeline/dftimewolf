@@ -2,13 +2,13 @@
 
 import importlib
 import logging
+import sys
 import threading
 import time
 import traceback
 import typing
 from concurrent import futures
 
-from dftimewolf import cli
 from dftimewolf.lib import cache
 from dftimewolf.lib import errors
 from dftimewolf.lib import module as dftw_module
@@ -18,6 +18,9 @@ from dftimewolf.lib.containers import manager as container_manager
 from dftimewolf.lib.modules import manager as modules_manager
 
 # pylint: disable=line-too-long
+
+
+NEW_ISSUE_URL = 'https://github.com/log2timeline/dftimewolf/issues/new'
 
 
 class ModuleRunner(object):
@@ -40,13 +43,14 @@ class ModuleRunner(object):
     self._module_pool: dict[str, dftw_module.BaseModule] = {}
     self._threading_event_per_module: dict[str, threading.Event] = {}
 
-    self._cache = cache.DFTWCache()
     self._container_manager = container_manager.ContainerManager(self._logger)
     self._telemetry = telemetry_
     self._publish_message_callback = publish_message_callback
 
     self._module_setup_args: dict[str, dict[str, typing.Any]] = {}
 
+    self._cache = cache.DFTWCache()
+    self._cache.SetCLIArgs(' '.join(sys.argv))
 
   def Initialise(self, recipe: dict[str, typing.Any], module_locations: dict[str, str]) -> None:
     """Based on a recipe and module mapping, load and instantiate required modules.
@@ -54,6 +58,7 @@ class ModuleRunner(object):
     
     """
     self._recipe = recipe
+    self._cache.SetRecipeName(self._recipe['name'])
 
     module_definitions = self._recipe.get('modules', [])
     preflight_definitions = self._recipe.get('preflights', [])
@@ -86,6 +91,13 @@ class ModuleRunner(object):
 
     for module in sorted(modules):
       self._telemetry.LogTelemetry('module', module, 'core')
+
+  def AddLoggingHandler(self, handler: logging.Handler) -> None:
+    """Adds a logging handler to module runner, and all modules."""
+    self._logger.addHandler(handler)
+
+    for _, module in self._module_pool.items():
+      module.logger.addHandler(handler)
 
   def LogExecutionPlan(self) -> None:
     """Logs the result of FormatExecutionPlan() using the base logger."""
@@ -395,7 +407,7 @@ class ModuleRunner(object):
     if any(error.unexpected for error in self._errors):
       self._logger.critical('One or more unexpected errors occurred.')
       self._logger.critical(
-          'Please consider opening an issue: {0:s}'.format(cli.NEW_ISSUE_URL))
+          'Please consider opening an issue: {0:s}'.format(NEW_ISSUE_URL))
 
     if critical_errors:
       raise errors.CriticalError('Critical error found. Aborting.')

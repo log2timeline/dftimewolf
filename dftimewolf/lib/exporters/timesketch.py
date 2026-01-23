@@ -130,13 +130,13 @@ class TimesketchExporter(module.ThreadAwareModule):
             'No write access to sketch ID {0:d}, aborting'.format(
                 self.sketch_id),
             critical=True)
-      self._cache.AddToCache('timesketch_sketch', self.sketch)
+      self.AddToCache('timesketch_sketch', self.sketch)
       self.sketch_id = self.sketch.id
 
     if analyzers:
       self._analyzers = [x.strip() for x in analyzers.split(',')]
 
-    self.sketch = self._cache.GetFromCache('timesketch_sketch')
+    self.sketch = self.GetFromCache('timesketch_sketch')
     if not self.sketch and self.sketch_id:
       self.logger.info("Using existing sketch: {0:d}".format(self.sketch_id))
       self.sketch = self.timesketch_api.get_sketch(self.sketch_id)
@@ -176,7 +176,7 @@ class TimesketchExporter(module.ThreadAwareModule):
     self.sketch_id = sketch.id
     if incident_id:
       sketch.add_attribute('incident_id', incident_id, ontology='text')
-    self._cache.AddToCache('timesketch_sketch', sketch)
+    self.AddToCache('timesketch_sketch', sketch)
 
     return sketch
 
@@ -241,7 +241,7 @@ class TimesketchExporter(module.ThreadAwareModule):
     Args:
       container (containers.File): A container holding a File to import."""
 
-    recipe_name = self._cache.GetFromCache('recipe_name', 'no_recipe')
+    recipe_name = self._cache.GetRecipeName()
     rand = uuid.uuid4().hex[-5:]
     description = container.name
     if description:

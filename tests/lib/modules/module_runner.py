@@ -85,9 +85,11 @@ class ModuleRunnerTest(parameterized.TestCase):
       mock_dm_1_process.side_effect = mock_delay
 
       running_args = {'recipe': test_recipe.basic_recipe}
+      # pytype: disable=unsupported-operands
       running_args['recipe']['preflights'][0]['args'] = {'args': 'none'}
       running_args['recipe']['modules'][0]['args'] = {'runtime_value': 'value 1'}
       running_args['recipe']['modules'][1]['args'] = {'runtime_value': 'value 2'}
+      # pytype: enable=unsupported-operands
 
       self._runner.Initialise(test_recipe.basic_recipe, TEST_MODULES)
       self._runner.Run(running_args=running_args)
@@ -129,7 +131,7 @@ class ModuleRunnerTest(parameterized.TestCase):
       mock_parent.attach_mock(mock_dm_2_process, 'mock_dm_2_process')
 
       running_args = {'recipe': test_recipe.with_runtime_names}
-      running_args['recipe']['preflights'][0]['args'] = {'args': 'none'}
+      running_args['recipe']['preflights'][0]['args'] = {'args': 'none'}  # pytype: disable=unsupported-operands
 
       self._runner.Initialise(test_recipe.with_runtime_names, TEST_MODULES)
       self._runner.Run(running_args=running_args)
@@ -170,7 +172,7 @@ class ModuleRunnerTest(parameterized.TestCase):
 
       # The generator module will create 3 containers with values 'one', 'two', 'three'
       running_args = {'recipe': test_recipe.threaded_no_preflights}
-      running_args['recipe']['modules'][0]['args'] = {'runtime_value': 'one,two,three'}
+      running_args['recipe']['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
 
       self._runner.Initialise(test_recipe.threaded_no_preflights, TEST_MODULES)
       self._runner.Run(running_args=running_args)
@@ -187,7 +189,7 @@ class ModuleRunnerTest(parameterized.TestCase):
     """Tests container handling and delivery with threaded modules."""
     # The generator module will create 3 containers with values 'one', 'two', 'three'
     running_args = {'recipe': test_recipe.threaded_no_preflights}
-    running_args['recipe']['modules'][0]['args'] = {'runtime_value': 'one,two,three'}
+    running_args['recipe']['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
 
     self._runner.Initialise(test_recipe.threaded_no_preflights, TEST_MODULES)
 
@@ -349,7 +351,7 @@ class ModuleRunnerTest(parameterized.TestCase):
 
       # The generator module will create 3 containers with values 'one', 'two', 'three'
       running_args = {'recipe': test_recipe.threaded_no_preflights}
-      running_args['recipe']['modules'][0]['args'] = {'runtime_value': 'one,two,three'}
+      running_args['recipe']['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
 
       self._runner.Initialise(test_recipe.threaded_no_preflights, TEST_MODULES)
       self._runner.Run(running_args=running_args)
@@ -370,7 +372,7 @@ class ModuleRunnerTest(parameterized.TestCase):
 
       # The generator module will create 3 containers with values 'one', 'two', 'three'
       running_args = {'recipe': test_recipe.threaded_no_preflights}
-      running_args['recipe']['modules'][0]['args'] = {'runtime_value': 'one,two,three'}
+      running_args['recipe']['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
 
       self._runner.Initialise(test_recipe.threaded_no_preflights, TEST_MODULES)
       self._runner.Run(running_args=running_args)
@@ -391,7 +393,7 @@ class ModuleRunnerTest(parameterized.TestCase):
 
       # The generator module will create 3 containers with values 'one', 'two', 'three'
       running_args = {'recipe': test_recipe.threaded_no_preflights}
-      running_args['recipe']['modules'][0]['args'] = {'runtime_value': 'one,two,three'}
+      running_args['recipe']['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
 
       self._runner.Initialise(test_recipe.threaded_no_preflights, TEST_MODULES)
       self._runner.Run(running_args=running_args)
@@ -402,6 +404,8 @@ class ModuleRunnerTest(parameterized.TestCase):
       mock_tacm_postprocess.assert_called_once()
 
   # TODO - Handled errors (eg, self.ModuleError)
+  # I won't bother testing handled errors - I plan to update how errors are
+  # handled very soon anyway.
 
 
 if __name__ == '__main__':

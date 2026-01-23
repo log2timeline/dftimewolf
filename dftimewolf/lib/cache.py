@@ -7,6 +7,10 @@ import typing
 # pylint: disable=line-too-long
 
 
+_RECIPE_NAME_CACHE_KEY = 'recipe_name'
+_CLI_ARGS_CACHE_KEY = 'cli_args'
+
+
 class DFTWCache:
   """A simple cache by name.
 
@@ -45,3 +49,19 @@ class DFTWCache:
     """
     with self._mutex:
       return self._cache.get(name, default_value)
+
+  def SetRecipeName(self, recipe_name: str) -> None:
+    """Dedicated method for setting the name of the current recipe."""
+    self.AddToCache(_RECIPE_NAME_CACHE_KEY, recipe_name)
+
+  def GetRecipeName(self) -> str:
+    """Dedicated method for fetching the name of the current recipe."""
+    return self.GetFromCache(_RECIPE_NAME_CACHE_KEY)
+
+  def SetCLIArgs(self, args: str) -> None:
+    """Dedicated method for setting the CLI arguments for this execution."""
+    self.AddToCache(_CLI_ARGS_CACHE_KEY, args)
+
+  def GetCLIArgs(self) -> str:
+    """Dedicated method for getting the CLI arguments for this execution."""
+    return self.GetFromCache(_CLI_ARGS_CACHE_KEY)

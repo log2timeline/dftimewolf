@@ -103,7 +103,8 @@ class DFTimewolfTool(object):
 
   def __init__(
       self,
-      workflow_uuid: Optional[str] = None) -> None:
+      workflow_uuid: Optional[str] = None,
+      telemetry_: Optional[telemetry.BaseTelemetry] = None) -> None:
     """Initializes a DFTimewolf tool."""
     super(DFTimewolfTool, self).__init__()
     self._data_files_path = ''
@@ -112,11 +113,12 @@ class DFTimewolfTool(object):
     self._command_line_options = argparse.Namespace()
     self._running_args: dict[str, typing.Any] = {}
     self.dry_run = False
-    if not workflow_uuid:
-      workflow_uuid = str(uuid.uuid4())
-    self.uuid = workflow_uuid
 
-    self._telemetry = self.InitializeTelemetry()
+    self._uuid = workflow_uuid or str(uuid.uuid4())
+
+    logger.success(f'dfTimewolf tool initialized with UUID: {self._uuid}')
+
+    self._telemetry = telemetry_ or self.InitializeTelemetry()
     self._DetermineDataFilesPath()
     self._module_runner = module_runner.ModuleRunner(
         logger, self._telemetry, self.PublishMessage)
@@ -367,6 +369,10 @@ class DFTimewolfTool(object):
       if os.path.isdir(recipes_path):
         self._recipes_manager.ReadRecipesFromDirectory(recipes_path)
 
+  def ReadAdditionalRecipes(self, directory: str) -> None:
+    """Reads additional recipes from a given directory."""
+    self._recipes_manager.ReadRecipesFromDirectory(directory)
+
   def RunAllModules(self) -> None:
     """Runs the modules."""
     logger.info('Running modules...')
@@ -385,7 +391,7 @@ class DFTimewolfTool(object):
 
   def InitializeTelemetry(self) -> telemetry.BaseTelemetry:
     """Initializes the telemetry object."""
-    return telemetry.GetTelemetry(uuid=self.uuid)
+    return telemetry.GetTelemetry(uuid=self._uuid)
 
   def PublishMessage(
       self, source: str, message: str, is_error: bool = False) -> None:
@@ -466,12 +472,10 @@ def RunTool() -> int:
   Returns:
     int: 0 DFTimewolf could be run successfully, 1 otherwise.
   """
-  time_start = time.time()*1000
   tool = DFTimewolfTool()
 
   # TODO: log errors if this fails.
   tool.LoadConfiguration()
-  logger.success(f'dfTimewolf tool initialized with UUID: {tool.uuid}')
 
   try:
     tool.ReadRecipes()
