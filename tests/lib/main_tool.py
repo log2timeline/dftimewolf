@@ -123,10 +123,14 @@ class MainToolTest(parameterized.TestCase):
     # pylint: disable=protected-access
     recipe = self.tool._recipes_manager.Recipes()[recipe_name]
 
+    self.tool._module_runner.Initialise(recipe.contents,
+                                        dftimewolf_recipes.MODULES)
+
     modules = recipe.contents['modules']
     preflights = recipe.contents.get('preflights', [])
     for module in modules + preflights:
       runtime_name = module.get('runtime_name', module['name'])
+
       if runtime_name in self.tool._module_runner._module_pool:
         setup_func = self.tool._module_runner._module_pool[runtime_name].SetUp
         expected_args = set(inspect.getfullargspec(setup_func).args)
@@ -160,6 +164,9 @@ class MainToolTest(parameterized.TestCase):
     """Tests that a recipe does not specify invalid validators."""
     # pylint: disable=protected-access
     recipe = self.tool._recipes_manager.Recipes()[recipe_name]
+
+    self.tool._module_runner.Initialise(recipe.contents,
+                                        dftimewolf_recipes.MODULES)
 
     test_params = recipe.GetTestParams()
     if test_params:
