@@ -2,7 +2,6 @@
 """Contains dummy modules used in thread aware tests."""
 
 from typing import TypeVar
-import threading
 import time
 
 from dftimewolf.lib import module

@@ -228,7 +228,7 @@ class BaseModule(object):
       default_value (object): the value that will be returned if the item does
           not exist in the cache. Optional argumentand defaults to None.
     """
-    self._cache.GetFromCache(name, default_value)
+    return self._cache.GetFromCache(name, default_value)
 
   @abc.abstractmethod
   def Process(self) -> None:

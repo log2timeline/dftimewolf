@@ -270,7 +270,7 @@ class ModuleRunner(object):
 
     self._threading_event_per_module[runtime_name] = threading.Event()
 
-  def _RunModuleProcessThreaded(self, module: dftw_module.ThreadAwareModule) -> list[futures.Future]:
+  def _RunModuleProcessThreaded(self, module: dftw_module.ThreadAwareModule) -> list[futures.Future[None]]:
     """Runs Process of a single ThreadAwareModule module.
 
     Designed to be wrapped by an output handling subclass.
@@ -365,15 +365,14 @@ class ModuleRunner(object):
     except Exception:  # pylint: disable=broad-exception-caught
       self._logger.warning('Unknown exception encountered', exc_info=True)
 
-  def _HandleFuturesFromThreadedModule(self, futures_: list[futures.Future]) -> None:
+  def _HandleFuturesFromThreadedModule(self, futures_: list[futures.Future[None]]) -> None:
     """Handles any futures raised by the async processing of a module.
 
     Args:
-      futures: A list of futures, returned by RunModuleProcessThreaded().
+      futures_1: A list of futures, returned by RunModuleProcessThreaded().
     """
     for fut in futures_:
-      if fut.exception():
-        raise fut.exception()
+      fut.result()
 
   def _CleanUpPreflights(self) -> None:
     """Executes any cleanup actions defined in preflight modules."""

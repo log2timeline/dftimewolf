@@ -1,7 +1,7 @@
 """A simple cache by name."""
 
 import threading
-import typing
+from typing import Any
 
 
 # pylint: disable=line-too-long
@@ -17,12 +17,12 @@ class DFTWCache:
   A replacement for the legacy state.py based cache.
   """
 
-  def __init__(self):
+  def __init__(self) -> None:
     """Init."""
-    self._cache: dict[str, typing.Any] = {}
+    self._cache: dict[str, Any] = {}
     self._mutex = threading.Lock()
 
-  def AddToCache(self, name: str, value: typing.Any) -> None:
+  def AddToCache(self, name: str, value: Any) -> None:
     """Thread-safe method to add data to the state's cache.
 
     If the cached item is already in the cache it will be overwritten with the
@@ -35,7 +35,7 @@ class DFTWCache:
     with self._mutex:
       self._cache[name] = value
 
-  def GetFromCache(self, name: str, default_value: typing.Any = None) -> typing.Any:
+  def GetFromCache(self, name: str, default_value: Any = None) -> Any:
     """Thread-safe method to get data from the state's cache.
 
     Args:
@@ -56,7 +56,7 @@ class DFTWCache:
 
   def GetRecipeName(self) -> str:
     """Dedicated method for fetching the name of the current recipe."""
-    return self.GetFromCache(_RECIPE_NAME_CACHE_KEY)
+    return str(self.GetFromCache(_RECIPE_NAME_CACHE_KEY))
 
   def SetCLIArgs(self, args: str) -> None:
     """Dedicated method for setting the CLI arguments for this execution."""
@@ -64,4 +64,4 @@ class DFTWCache:
 
   def GetCLIArgs(self) -> str:
     """Dedicated method for getting the CLI arguments for this execution."""
-    return self.GetFromCache(_CLI_ARGS_CACHE_KEY)
+    return str(self.GetFromCache(_CLI_ARGS_CACHE_KEY))

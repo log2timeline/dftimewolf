@@ -3,12 +3,10 @@
 """dftimewolf main entrypoint."""
 
 import argparse
-import datetime
 import logging
 import os
 import signal
 import sys
-import time
 import typing
 import uuid
 
@@ -335,7 +333,7 @@ class DFTimewolfTool(object):
       raise errors.CriticalError(
           'At least one argument failed validation')
 
-  def InterpolateArgs(self):
+  def InterpolateArgs(self) -> None:
     """Interpolate config values and CLI args into the recipe args."""
     for module in (self._recipe.get('preflights', []) +
                    self._recipe.get('modules', [])):

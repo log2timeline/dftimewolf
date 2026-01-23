@@ -194,9 +194,8 @@ class ModuleRunnerTest(parameterized.TestCase):
     self._runner.Initialise(test_recipe.threaded_no_preflights, TEST_MODULES)
 
     # Mock out the container cleanup for this test
-    self._runner._container_manager.CompleteModule = mock.MagicMock()  # pylint: disable=protected-access
-
-    self._runner.Run(running_args=running_args)
+    with mock.patch.object(self._runner._container_manager, 'CompleteModule'):  # pylint: disable=protected-access
+      self._runner.Run(running_args=running_args)
 
     output_containers = self._runner._container_manager.GetContainers(  # pylint: disable=protected-access
         'ThreadAwareConsumerModule', thread_aware_modules.TestContainerThree)
@@ -220,14 +219,13 @@ class ModuleRunnerTest(parameterized.TestCase):
     self._runner.Initialise(test_recipe.issue_503_recipe, TEST_MODULES)
 
     container_manager = self._runner._container_manager  # pylint: disable=protected-access
-    # Mock out the container cleanup for this test
-    container_manager.CompleteModule = mock.MagicMock()
 
     container_manager.StoreContainer(container=thread_aware_modules.TestContainer('one'), source_module='Issue503Module')
     container_manager.StoreContainer(container=thread_aware_modules.TestContainer('two'), source_module='Issue503Module')
     container_manager.StoreContainer(container=thread_aware_modules.TestContainer('three'), source_module='Issue503Module')
 
-    self._runner.Run(running_args=running_args)
+    with mock.patch.object(container_manager, 'CompleteModule'):
+      self._runner.Run(running_args=running_args)
 
     values = [container.value for container in container_manager.GetContainers(
         container_class=thread_aware_modules.TestContainer,
