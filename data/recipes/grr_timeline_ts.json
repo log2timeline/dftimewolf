@@ -28,7 +28,7 @@
       "name": "LocalPlasoProcessor",
       "args": {
         "timezone": null,
-        "use_docker": "@use_docker"
+        "use_docker": true
       }
     },
     {

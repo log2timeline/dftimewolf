@@ -8,11 +8,20 @@ from dftimewolf.lib.containers import containers
 class DummyModule1(module.BaseModule):
   """This is a dummy module."""
 
-  def __init__(self, state, name=None):
+  def __init__(self,
+               name,
+               container_manager_,
+               cache_,
+               telemetry_,
+               publish_message_callback):
     self.runtime_value = None
-    super(DummyModule1, self).__init__(state, name)
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
 
-  def SetUp(self, runtime_value=None):  # pylint: disable=arguments-differ
+  def SetUp(self, runtime_value):  # pylint: disable=arguments-differ
     """Dummy setup function."""
     self.runtime_value = runtime_value
     print(self.name + ' Setup!')
@@ -31,11 +40,20 @@ class DummyModule1(module.BaseModule):
 class DummyModule2(module.BaseModule):
   """This is a dummy module."""
 
-  def __init__(self, state, name=None):
+  def __init__(self,
+               name,
+               container_manager_,
+               cache_,
+               telemetry_,
+               publish_message_callback):
     self.runtime_value = None
-    super(DummyModule2, self).__init__(state, name)
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
 
-  def SetUp(self, runtime_value=None):  # pylint: disable=arguments-differ
+  def SetUp(self, runtime_value):  # pylint: disable=arguments-differ
     """Dummy setup function."""
     self.runtime_value = runtime_value
     print(self.name + ' Setup!')
@@ -49,8 +67,17 @@ class DummyModule2(module.BaseModule):
 class DummyPreflightModule(module.PreflightModule):
   """Dummy preflight module."""
 
-  def __init__(self, state, name=None):
-    super(DummyPreflightModule, self).__init__(state, name)
+  def __init__(self,
+               name,
+               container_manager_,
+               cache_,
+               telemetry_,
+               publish_message_callback):
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
 
   def SetUp(self, args):  # pylint: disable=arguments-differ
     """Dummy Process function."""

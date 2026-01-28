@@ -2,17 +2,15 @@
 """Utility functions to get a Timesketch API client and an importer client."""
 import re
 import threading
-from typing import Sequence, TYPE_CHECKING
+from typing import Sequence
 
 from timesketch_api_client import client
 from timesketch_api_client import config
 from timesketch_api_client import crypto
 
+from dftimewolf.lib import cache
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.errors import DFTimewolfError
-
-if TYPE_CHECKING:
-  from dftimewolf.lib import state
 
 # The name of a ticket attribute that contains the URL to a sketch.
 _SKETCH_ATTRIBUTE_NAME = 'Timesketch URL'
@@ -40,18 +38,18 @@ def GetSketchIDFromAttributes(
         return sketch_id
   return 0
 
-def GetApiClient(state: "state.DFTimewolfState",
+def GetApiClient(cache_: cache.DFTWCache,
                  token_password: str='') -> client.TimesketchApi:
   """Returns a Timesketch API client using thread safe methods.
 
   This function either returns an API client that has been stored
-  in the state object, or if not it will read Timesketch RC files
+  in the cache object, or if not it will read Timesketch RC files
   to configure a Timesketch API client. If the RC file does not exist
   or is missing values questions will be asked to fully configure
   the client.
 
   Args:
-    state (DFTimewolfState): recipe state.
+    cache_: recipe cache.
     token_password (str): optional password used to decrypt the
         Timesketch credential storage. Defaults to an empty string since
         the upstream library expects a string value. An empty string means
@@ -64,7 +62,7 @@ def GetApiClient(state: "state.DFTimewolfState",
     DFTimewolfError: If the configuration file cannot be modified.
   """
   with LOCK:
-    ts_client = state.GetFromCache('timesketch_client', default_value=None)
+    ts_client = cache_.GetFromCache('timesketch_client', default_value=None)
     if ts_client:
       return ts_client
 
@@ -93,5 +91,5 @@ def GetApiClient(state: "state.DFTimewolfState",
           ts_client.credentials, config_assistant=assistant,
           password=token_password)
 
-    state.AddToCache('timesketch_client', ts_client)
+    cache_.AddToCache('timesketch_client', ts_client)
     return ts_client

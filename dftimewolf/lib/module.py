@@ -9,19 +9,17 @@ import logging
 from logging import handlers
 import os
 import traceback
-import threading
 import sys
 
 from typing import Optional, Type, cast, TypeVar, Dict, Any, Sequence, Callable
-from typing import TYPE_CHECKING
 
+from dftimewolf.lib import cache
 from dftimewolf.lib import errors
 from dftimewolf.lib import logging_utils
 from dftimewolf.lib import telemetry
 from dftimewolf.lib.containers import interface
+from dftimewolf.lib.containers import manager as container_manager
 
-if TYPE_CHECKING:
-  from dftimewolf.lib import state as state_lib  # pylint: disable=cyclic-import
 
 T = TypeVar("T", bound="interface.AttributeContainer")  # pylint: disable=invalid-name,line-too-long
 
@@ -40,22 +38,28 @@ class BaseModule(object):
   """
 
   def __init__(self,
-               state: "state_lib.DFTimewolfState",
-               name: Optional[str]=None,
-               critical: Optional[bool]=False):
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
     """Initialize a module.
 
     Args:
-      state (DFTimewolfState): recipe state.
-      name (Optional[str]): A unique name for a specific instance of the module
-          class. If not provided, will default to the module's class name.
-      critical (Optional[bool]): True if the module is critical, which causes
-          the entire recipe to fail if the module encounters an error.
+      name: The modules runtime name.
+      container_manager: A common container manager object.
+      cache: A common DFTWCache object.
+      telemetry: A common telemetry collector object.
+      publish_message_callback: A callback to send modules messages to.
     """
-    super(BaseModule, self).__init__()
+    super().__init__()
     self.name = name if name else self.__class__.__name__
-    self.critical = critical
-    self.state = state
+
+    self._cache = cache_
+    self._container_manager = container_manager_
+    self._telemetry = telemetry_
+    self._publish_message_callback = publish_message_callback
+
     self.logger = cast(logging_utils.WolfLogger,
                        logging.getLogger(name=self.name))
     self.logger.propagate = False
@@ -76,13 +80,11 @@ class BaseModule(object):
     file_handler.setLevel(logging.DEBUG)  # Always log DEBUG to file
     self.logger.addHandler(file_handler)
 
-    if self.state.stdout_log:
-      console_handler = logging.StreamHandler(stream=sys.stdout)
-      formatter = logging_utils.WolfFormatter(
-          random_color=True)
-      console_handler.setFormatter(formatter)
+    console_handler = logging.StreamHandler(stream=sys.stdout)
+    formatter = logging_utils.WolfFormatter(random_color=True)
+    console_handler.setFormatter(formatter)
 
-      self.logger.addHandler(console_handler)
+    self.logger.addHandler(console_handler)
 
   def LogTelemetry(self, data: Dict[str, str]) -> None:
     """Logs useful telemetry using the telemetry attribute in the state object.
@@ -97,13 +99,9 @@ class BaseModule(object):
       raise ValueError("telemetry keys must be strings.")
     if not all (isinstance(value, str) for value in data.values()):
       raise ValueError("telemetry values must be strings.")
-    entry = telemetry.TelemetryCollection(
-        type(self).__name__,
-        self.name,
-        self.state.recipe.get('name', 'N/A'),
-        data,
-    )
-    self.state.LogTelemetry(entry)
+    for key, value in data.items():
+      if self._telemetry is not None:
+        self._telemetry.LogTelemetry(key, value, type(self).__name__)
 
   def CleanUp(self) -> None:
     """Cleans up module output to prepare it for the next module."""
@@ -128,21 +126,15 @@ class BaseModule(object):
     stacktrace = None
     if sys.exc_info() != (None, None, None):
       stacktrace = traceback.format_exc()
-      if self.state.telemetry:
-        self.state.telemetry.LogTelemetry(
-          'error_stacktrace', stacktrace, self.name,
-          self.state.recipe.get('name', 'N/A')
-        )
+      if self._telemetry:
+        self._telemetry.LogTelemetry(
+            'error_stacktrace', stacktrace, self.name)
 
     error = errors.DFTimewolfError(
         message, name=self.name, stacktrace=stacktrace, critical=critical)
-    if self.state.telemetry:
-      recipe_name = self.state.recipe.get('name', 'N/A')
-      self.state.telemetry.LogTelemetry(
-          'error_detail',message, self.name, recipe_name
-      )
+    if self._telemetry:
+      self._telemetry.LogTelemetry('error_detail',message, self.name)
 
-    self.state.AddError(error)
     self.PublishMessage(message, is_error=True, is_critical=critical)
     if critical:
       raise error
@@ -163,14 +155,14 @@ class BaseModule(object):
       self.logger.error(message)
     else:
       self.logger.success(message)
-    self.state.PublishMessage(self.name, message, is_error)
+    self._publish_message_callback(self.name, message, is_error)
 
   def RegisterStreamingCallback(
       self,
       container_type: Type[T],
       callback: Callable[[interface.AttributeContainer], None]) -> None:
-    """Registers a streaming callback with the state for this module."""
-    self.state.RegisterStreamingCallback(
+    """Register a streaming callback with the container manager."""
+    self._container_manager.RegisterStreamingCallback(
         module_name=self.name,
         callback=callback,
         container_type=container_type)
@@ -178,22 +170,23 @@ class BaseModule(object):
   def StoreContainer(self,
                      container: "interface.AttributeContainer",
                      for_self_only: bool=False) -> None:
-    """Stores a container in the state's container store.
+    """Stores a container in the container manager.
 
     Args:
       container (AttributeContainer): data to store.
       for_self_only: True if the container should only be available to the same
           module that stored it.
     """
-    self.state.StoreContainer(
-        container, self.name, for_self_only=for_self_only)
+    self._container_manager.StoreContainer(source_module=self.name,
+                                           container=container,
+                                           for_self_only=for_self_only)
 
   def GetContainers(self,
                     container_class: Type[T],
                     pop: bool=False,
                     metadata_filter_key: Optional[str]=None,
                     metadata_filter_value: Optional[Any]=None) -> Sequence[T]:
-    """Retrieve containers from the state container store.
+    """Retrieve containers from the container manager.
 
     Args:
       container_class (type): AttributeContainer class used to filter data.
@@ -209,11 +202,33 @@ class BaseModule(object):
     Raises:
       RuntimeError: If only one metadata filter parameter is specified.
     """
-    return self.state.GetContainers(self.name,
-                                    container_class,
-                                    pop,
-                                    metadata_filter_key,
-                                    metadata_filter_value)
+    return self._container_manager.GetContainers(self.name,
+                                                 container_class,
+                                                 pop,
+                                                 metadata_filter_key,
+                                                 metadata_filter_value)
+
+  def AddToCache(self, name: str, value: Any) -> None:
+    """Thread-safe method to add data to the state's cache.
+
+    If the cached item is already in the cache it will be overwritten with the
+    new value.
+
+    Args:
+      name (str): string with the name of the cache variable.
+      value (object): the value that will be stored in the cache.
+    """
+    self._cache.AddToCache(name, value)
+
+  def GetFromCache(self, name: str, default_value: Any = None) -> Any:
+    """Thread-safe method to get data from the state's cache.
+
+    Args:
+      name (str): string with the name of the cache variable.
+      default_value (object): the value that will be returned if the item does
+          not exist in the cache. Optional argumentand defaults to None.
+    """
+    return self._cache.GetFromCache(name, default_value)
 
   @abc.abstractmethod
   def Process(self) -> None:
@@ -226,11 +241,6 @@ class BaseModule(object):
   @abc.abstractmethod
   def SetUp(self, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
     """Sets up necessary module configuration options."""
-
-  def ProgressUpdate(self, steps_taken: int, steps_expected: int) -> None:
-    """Send an update to the state on progress."""
-    self.state.ProgressUpdate(
-        self.name, steps_taken, steps_expected)
 
 
 class PreflightModule(BaseModule):
@@ -279,19 +289,25 @@ class ThreadAwareModule(BaseModule):
   """
 
   def __init__(self,
-               state: "state_lib.DFTimewolfState",
-               name: Optional[str]=None,
-               critical: Optional[bool]=False) -> None:
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
     """Initializes a ThreadAwareModule.
 
     Args:
-      state (DFTimewolfState): recipe state.
-      name (Optional[str]): The module's runtime name.
-      critical (Optional[bool]): True if the module is critical, which causes
-          the entire recipe to fail if the module encounters an error.
+      name: The modules runtime name.
+      container_manager_: A common container manager object.
+      cache_: A common DFTWCache object.
+      telemetry_: A common telemetry collector object.
+      publish_message_callback: A callback to send modules messages to.
     """
-    super(ThreadAwareModule, self).__init__(
-        state, name=name, critical=critical)
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
 
     # The call to super.__init__ sets up the logger, but we want to change it
     # for threaded modules.
@@ -333,9 +349,3 @@ class ThreadAwareModule(BaseModule):
     or pop them. Default behaviour is to keep the containers. Override this
     method to return false to pop them from the state."""
     return True
-
-  def ThreadProgressUpdate(self, steps_taken: int, steps_expected: int) -> None:
-    """Send an update to the state on progress."""
-    thread_id = threading.current_thread().name
-    self.state.ThreadProgressUpdate(
-        self.name, thread_id, steps_taken, steps_expected)

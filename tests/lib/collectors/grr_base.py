@@ -40,6 +40,11 @@ class MockGRRObject(object):
 class GRRBaseModuleTest(unittest.TestCase):
   """Tests for the GRR base collector."""
 
+  def setUp(self):
+    super().setUp()
+
+    grr_base.CHECK_APPROVAL_INTERVAL_SEC = 0
+
   def testInitialization(self):
     """Tests that the collector can be initialized."""
     grr_base_module = grr_base.GRRBaseModule()
@@ -83,13 +88,11 @@ class GRRBaseModuleTest(unittest.TestCase):
         approvers='approver1@example.com,approver2@example.com',
         verify=True
     )
-    # pylint: disable=protected-access,invalid-name
-    grr_base_module._CHECK_APPROVAL_INTERVAL_SEC = 0
     mock_grr_object = MockGRRObject()
     mock_telemetry = mock.MagicMock()
     mock_forbidden_function = mock.Mock(
         wraps=mock_grr_object.ForbiddenFunction)
-    result = grr_base_module._WrapGRRRequestWithApproval(
+    result = grr_base_module._WrapGRRRequestWithApproval(  # pylint: disable=protected-access
       mock_grr_object,
       mock_forbidden_function,
       logging.getLogger("GRRBaseModuleTest"),
@@ -141,14 +144,12 @@ class GRRBaseModuleTest(unittest.TestCase):
         verify=True
     )
 
-    # pylint: disable=protected-access
-    grr_base_module._CHECK_APPROVAL_INTERVAL_SEC = 0
     mock_grr_object = MockGRRObject()
     mock_telemetry = mock.MagicMock()
     mock_forbidden_function = mock.Mock(
         wraps=mock_grr_object.ForbiddenFunction)
     with self.assertRaises(errors.DFTimewolfError) as error:
-      grr_base_module._WrapGRRRequestWithApproval(
+      grr_base_module._WrapGRRRequestWithApproval(  # pylint: disable=protected-access
         mock_grr_object,
         mock_forbidden_function,
         logging.getLogger("GRRBaseModuleTest"),

@@ -6,15 +6,15 @@ import tempfile
 import json
 import string
 
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, Callable
 
 from dftimewolf.lib.module import BaseModule
 from dftimewolf.lib.containers import containers
-
 from dftimewolf.lib.modules import manager as modules_manager
+from dftimewolf.lib import cache
+from dftimewolf.lib import telemetry
+from dftimewolf.lib.containers import manager as container_manager
 
-if TYPE_CHECKING:
-  from dftimewolf.lib import state
 
 class WorkspaceAuditTimesketch(BaseModule):
   """Transforms Google Workspace logs for Timesketch."""
@@ -26,11 +26,16 @@ class WorkspaceAuditTimesketch(BaseModule):
       'time', 'datetime', 'timestamp', 'data_type', 'timestamp_desc']
 
   def __init__(self,
-               state: "state.DFTimewolfState",
-               name: Optional[str]=None,
-               critical: bool=False):
-    super(WorkspaceAuditTimesketch, self).__init__(
-        state, name=name, critical=critical)
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
 
     with open(self._FORMAT_STRINGS_PATH, 'r') as formatters_json:
       self._all_application_format_strings = json.load(formatters_json)

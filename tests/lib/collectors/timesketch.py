@@ -44,8 +44,7 @@ class TimesketchSearchEventCollectorTest(modules_test_base.ModuleTestBase):
     self.assertEqual(self._module.search_name, "")
     self.assertEqual(self._module.search_description, "")
     mock_get_api_client.assert_called_with(
-      self._module.state, token_password="test_token"
-    )
+      self._cache, token_password="test_token")
 
   @mock.patch("dftimewolf.lib.timesketch_utils.GetApiClient")
   def testSetupWithTicketAttributeContainer(
@@ -158,31 +157,29 @@ class TimesketchSearchEventCollectorTest(modules_test_base.ModuleTestBase):
     mock_get_api_client: Any
   ) -> None:
     """Test the Process function with no sketch ID."""
-
-    self._module.state.GetFromCache = mock.MagicMock(return_value=None)
-    self._module.state.GetFromCache.return_value = None
-
-    self._module.SetUp(
-      sketch_id=None,
-      start_datetime=datetime.datetime(2024, 11, 11),
-      end_datetime=datetime.datetime(2024, 11, 12),
-      token_password="test_token",
-    )
+    with (mock.patch.object(self._cache, 'GetFromCache', return_value=None)
+          as mock_getfromcache):
+      self._module.SetUp(
+        sketch_id=None,
+        start_datetime=datetime.datetime(2024, 11, 11),
+        end_datetime=datetime.datetime(2024, 11, 12),
+        token_password="test_token",
+      )
 
     # Simulating another module adding a TicketAttribute container
     # netween SetUp() and Process()
 
-    self._module.StoreContainer(
-      containers.TicketAttribute(
-        name="Timesketch URL", value="sketch/123/", type_="text"
+      self._module.StoreContainer(
+        containers.TicketAttribute(
+          name="Timesketch URL", value="sketch/123/", type_="text"
+        )
       )
-    )
 
-    self._ProcessModule()
-    self._module.state.GetFromCache.assert_has_calls(
-      [mock.call("timesketch_sketch"), mock.call("timesketch_sketch")]
-    )
-    mock_get_api_client.return_value.get_sketch.assert_called_with(123)
+      self._ProcessModule()
+      mock_getfromcache.assert_has_calls(
+        [mock.call("timesketch_sketch"), mock.call("timesketch_sketch")]
+      )
+      mock_get_api_client.return_value.get_sketch.assert_called_with(123)
 
   @mock.patch("dftimewolf.lib.timesketch_utils.GetApiClient")
   @mock.patch.object(
@@ -194,7 +191,7 @@ class TimesketchSearchEventCollectorTest(modules_test_base.ModuleTestBase):
     """Tests that the ID passed in SetUp takes precedence over cached
     sketches and attribute containers."""
 
-    self._module.state.GetFromCache = mock.MagicMock(return_value=None)
+    self._module.GetFromCache = mock.MagicMock(return_value=None)
 
     self._module.StoreContainer(
       containers.TicketAttribute(
@@ -204,7 +201,7 @@ class TimesketchSearchEventCollectorTest(modules_test_base.ModuleTestBase):
 
     mock_cached_sketch = mock.MagicMock()
     mock_cached_sketch.id = 666
-    self._module.state.AddToCache("timesketch_sketch", mock_cached_sketch)
+    self._module.AddToCache("timesketch_sketch", mock_cached_sketch)
 
     self._module.SetUp(
       sketch_id="999",
@@ -217,7 +214,7 @@ class TimesketchSearchEventCollectorTest(modules_test_base.ModuleTestBase):
     # netween SetUp() and Process()
 
     self._ProcessModule()
-    self._module.state.GetFromCache.assert_not_called()
+    self._module.GetFromCache.assert_not_called()
     self.assertEqual(self._module.sketch_id, 999)
     mock_get_api_client.return_value.get_sketch.assert_called_once_with(999)
 
@@ -239,7 +236,7 @@ class TimesketchSearchEventCollectorTest(modules_test_base.ModuleTestBase):
 
     mock_sketch = mock.MagicMock()
     mock_sketch.id = 666
-    self._module.state.AddToCache("timesketch_sketch", mock_sketch)
+    self._module.AddToCache("timesketch_sketch", mock_sketch)
 
     self._module.SetUp(
       sketch_id=None,

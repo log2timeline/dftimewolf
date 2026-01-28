@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Create disks in GCE from disk images."""
 
-from typing import Optional, Type, Union
+from typing import Callable, Type, Union
 
 from libcloudforensics.providers.gcp.internal import common
 from libcloudforensics.providers.gcp.internal import project as gcp_project
@@ -9,26 +9,34 @@ from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers, interface
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.state import DFTimewolfState
+from dftimewolf.lib import cache
+from dftimewolf.lib import telemetry
+from dftimewolf.lib.containers import manager as container_manager
 
 
 class GCEImageFromDisk(module.ThreadAwareModule):
   """Create images in GCE from disks."""
 
   def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str]=None,
-               critical: bool=False) -> None:
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
     """Initialises creating disks in GCE from disk images.
 
     Args:
-      state (DFTimewolfState): recipe state.
-      name (Optional[str]): The module's runtime name.
-      critical (Optional[bool]): True if the module is critical, which causes
-          the entire recipe to fail if the module encounters an error.
+      name: The modules runtime name.
+      container_manager_: A common container manager object.
+      cache_: A common DFTWCache object.
+      telemetry_: A common telemetry collector object.
+      publish_message_callback: A callback to send modules messages to.
     """
-    super(GCEImageFromDisk, self).__init__(
-        state, name=name, critical=critical)
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
     self.source_project: str = ''
     self.source_zone: str = ''
     self.dest_project: str = ''

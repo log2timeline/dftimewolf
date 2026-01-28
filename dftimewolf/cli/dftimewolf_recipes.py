@@ -3,12 +3,11 @@
 """dftimewolf main entrypoint."""
 
 import argparse
-import datetime
 import logging
 import os
 import signal
 import sys
-import time
+import typing
 import uuid
 
 from typing import TYPE_CHECKING, List, Optional, Dict, Any, cast
@@ -22,12 +21,11 @@ from dftimewolf.lib import validators # pylint: disable=unused-import
 from dftimewolf.lib import logging_utils
 from dftimewolf.lib import telemetry
 from dftimewolf import config
-
+from dftimewolf.lib.modules import module_runner
 from dftimewolf.lib import errors
 from dftimewolf.lib import utils
 
 if TYPE_CHECKING:
-  from dftimewolf.lib import state as dftw_state
   from dftimewolf.lib import resources
 
 TELEMETRY = telemetry
@@ -89,9 +87,10 @@ MODULES = {
 # pylint: enable=line-too-long
 
 from dftimewolf.lib.recipes import manager as recipes_manager
-from dftimewolf.lib.state import DFTimewolfState
+
 
 logger = cast(logging_utils.WolfLogger, logging.getLogger('dftimewolf'))
+
 
 class DFTimewolfTool(object):
   """DFTimewolf tool."""
@@ -102,29 +101,25 @@ class DFTimewolfTool(object):
 
   def __init__(
       self,
-      workflow_uuid: Optional[str] = None) -> None:
+      workflow_uuid: Optional[str] = None,
+      telemetry_: Optional[telemetry.BaseTelemetry] = None) -> None:
     """Initializes a DFTimewolf tool."""
     super(DFTimewolfTool, self).__init__()
-    self._command_line_options: Optional[argparse.Namespace]
     self._data_files_path = ''
     self._recipes_manager = recipes_manager.RecipesManager()
     self._recipe = {}  # type: Dict[str, Any]
-    self._state = None  # type: Optional[DFTimewolfState]
     self._command_line_options = argparse.Namespace()
+    self._running_args: dict[str, typing.Any] = {}
     self.dry_run = False
-    if not workflow_uuid:
-      workflow_uuid = str(uuid.uuid4())
-    self.uuid = workflow_uuid
 
-    self.telemetry = self.InitializeTelemetry()
+    self._uuid = workflow_uuid or str(uuid.uuid4())
+
+    logger.success(f'dfTimewolf tool initialized with UUID: {self._uuid}')
+
+    self._telemetry = telemetry_ or self.InitializeTelemetry()
     self._DetermineDataFilesPath()
-
-  @property
-  def state(self) -> "dftw_state.DFTimewolfState":
-    """Returns the internal state object."""
-    if not self._state:
-      raise errors.CriticalError('State not initialized')
-    return self._state
+    self._module_runner = module_runner.ModuleRunner(
+        logger, self._telemetry, self.PublishMessage)
 
   def _AddRecipeOptions(self, argument_parser: argparse.ArgumentParser) -> None:
     """Adds the recipe options to the argument group.
@@ -285,20 +280,18 @@ class DFTimewolfTool(object):
     self._recipe = self._command_line_options.recipe
     self.dry_run = self._command_line_options.dry_run
 
-    state = DFTimewolfState(config.Config)
-    state.telemetry = self.telemetry
-    self._state = state
+    self._telemetry.SetRecipeName(self._recipe['name'])
 
     logger.info('Loading recipe {0:s}...'.format(self._recipe['name']))
     # Raises errors.RecipeParseError on error.
-    self._state.LoadRecipe(self._recipe, MODULES)
+    self._module_runner.Initialise(self._recipe, MODULES)
 
     module_cnt = len(self._recipe.get('modules', [])) + \
                  len(self._recipe.get('preflights', []))
     logger.info('Loaded recipe {0:s} with {1:d} modules'.format(
         self._recipe['name'], module_cnt))
 
-    self._state.command_line_options = vars(self._command_line_options)
+    self._running_args = vars(self._command_line_options)
 
   def ValidateArguments(self, dry_run: bool=False) -> None:
     """Validate the arguments.
@@ -317,13 +310,13 @@ class DFTimewolfTool(object):
 
       switch = expanded_argument.switch.replace('--', '')
       argument_mandatory = switch == arg.switch
-      argument_value = self.state.command_line_options.get(switch)
+      argument_value = self._running_args.get(switch)
 
       if argument_mandatory or argument_value is not None:
         try:
           valid_value = validators_manager.ValidatorsManager.Validate(
               argument_value, arg, dry_run)
-          self.state.command_line_options[switch] = valid_value
+          self._running_args[switch] = valid_value
         except errors.RecipeArgsValidationFailure as exception:
           error_messages.append(
               f'Invalid argument: "{arg.switch}" with value "{argument_value}".'
@@ -340,6 +333,14 @@ class DFTimewolfTool(object):
       raise errors.CriticalError(
           'At least one argument failed validation')
 
+  def InterpolateArgs(self) -> None:
+    """Interpolate config values and CLI args into the recipe args."""
+    for module in (self._recipe.get('preflights', []) +
+                   self._recipe.get('modules', [])):
+      module['args'] = utils.ImportArgsFromDict(module['args'],
+                                                self._running_args,
+                                                config.Config)
+
   def _SubstituteValidationParameters(
       self, arg: "resources.RecipeArgument") -> "resources.RecipeArgument":
     """Replaces parameters in the format specification of an argument validator.
@@ -354,15 +355,10 @@ class DFTimewolfTool(object):
       for key, value in arg.validation_params.items():
         if isinstance(value, str) and '@' in value:
           to_substitute = value.replace('@', '')
-          if to_substitute in self.state.command_line_options:
+          if to_substitute in self._running_args:
             arg.validation_params[key] = (
-                self.state.command_line_options[to_substitute])
+                self._running_args[to_substitute])
     return arg
-
-  def RunPreflights(self) -> None:
-    """Runs preflight modules."""
-    logger.info('Running preflights...')
-    self.state.RunPreflights()
 
   def ReadRecipes(self) -> None:
     """Reads the recipe files."""
@@ -371,27 +367,21 @@ class DFTimewolfTool(object):
       if os.path.isdir(recipes_path):
         self._recipes_manager.ReadRecipesFromDirectory(recipes_path)
 
-  def RunModules(self) -> None:
+  def ReadAdditionalRecipes(self, directory: str) -> None:
+    """Reads additional recipes from a given directory."""
+    self._recipes_manager.ReadRecipesFromDirectory(directory)
+
+  def RunAllModules(self) -> None:
     """Runs the modules."""
     logger.info('Running modules...')
-    self.state.RunModules()
+    self._module_runner.Run(self._running_args)
     logger.info('Modules run successfully!')
 
-  def SetupModules(self) -> None:
-    """Sets up the modules."""
-    # TODO: refactor to only load modules that are used by the recipe.
-
-    logger.info('Setting up modules...')
-    self.state.SetupModules()
-    logger.info('Modules successfully set up!')
-
-  def CleanUpPreflights(self) -> None:
-    """Calls the preflight's CleanUp functions."""
-    self.state.CleanUpPreflights()
-
-  def FormatTelemetry(self) -> str:
+  def LogTelemetry(self) -> None:
     """Prints collected telemetry if existing."""
-    return self.telemetry.FormatTelemetry()
+
+    for line in self._telemetry.FormatTelemetry().split('\n'):
+      logger.debug(line)
 
   def RecipesManager(self) -> recipes_manager.RecipesManager:
     """Returns the recipes manager."""
@@ -399,7 +389,24 @@ class DFTimewolfTool(object):
 
   def InitializeTelemetry(self) -> telemetry.BaseTelemetry:
     """Initializes the telemetry object."""
-    return telemetry.GetTelemetry(uuid=self.uuid)
+    return telemetry.GetTelemetry(uuid=self._uuid)
+
+  def PublishMessage(
+      self, source: str, message: str, is_error: bool = False) -> None:
+    """Receives a message for publishing.
+
+    The base class does nothing with this (as the method in module also logs the
+    message). This method exists to be overridden for other UIs.
+
+    Args:
+      source: The source of the message.
+      message: The message content.
+      is_error: True if the message is an error message, False otherwise.
+    """
+
+  def LogExecutionPlan(self) -> None:
+    """log the execution plan."""
+    self._module_runner.LogExecutionPlan()
 
 
 def SignalHandler(*unused_argvs: Any) -> None:
@@ -463,12 +470,10 @@ def RunTool() -> int:
   Returns:
     int: 0 DFTimewolf could be run successfully, 1 otherwise.
   """
-  time_start = time.time()*1000
   tool = DFTimewolfTool()
 
   # TODO: log errors if this fails.
   tool.LoadConfiguration()
-  logger.success(f'dfTimewolf tool initialized with UUID: {tool.uuid}')
 
   try:
     tool.ReadRecipes()
@@ -484,75 +489,22 @@ def RunTool() -> int:
     logger.critical(str(exception))
     return 1
 
-  modules = [
-    module['name'] for module in tool.state.recipe.get('modules', [])
-  ]
-  modules.extend([
-    module['name'] for module in tool.state.recipe.get('preflights', [])
-  ])
-  recipe_name = tool.state.recipe['name']
-
-  for module in sorted(modules):
-    tool.telemetry.LogTelemetry('module', module, 'core', recipe_name)
-
-  tool.telemetry.LogTelemetry(
-    'workflow_start',
-    datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-    'core',
-    recipe_name)
-
   try:
     tool.ValidateArguments(tool.dry_run)
   except errors.CriticalError as exception:
     logger.critical(str(exception))
     return 1
 
-  # Interpolate arguments into recipe
-  recipe = tool.state.recipe
-  for module in recipe.get('preflights', []) + recipe.get('modules', []):
-    module['args'] = utils.ImportArgsFromDict(module['args'],
-                                              tool.state.command_line_options,
-                                              tool.state.config)
-
-  tool.state.LogExecutionPlan()
+  tool.InterpolateArgs()
+  tool.LogExecutionPlan()
 
   if tool.dry_run:
     logger.info("Exiting as --dry_run flag is set.")
     return 0
 
-  time_ready = time.time()*1000
-  tool.RunPreflights()
-  time_preflights = time.time()*1000
-  tool.telemetry.LogTelemetry(
-    'preflights_delta', str(time_preflights - time_ready), 'core', recipe_name)
+  tool.RunAllModules()
 
-  try:
-    tool.SetupModules()
-  except errors.CriticalError as exception:
-    logger.critical(str(exception))
-    return 1
-
-  time_setup = time.time()*1000
-  tool.telemetry.LogTelemetry(
-    'setup_delta', str(time_setup - time_preflights), 'core', recipe_name)
-
-  try:
-    tool.RunModules()
-  except errors.CriticalError as exception:
-    logger.critical(str(exception))
-    return 1
-  finally:
-    time_run = time.time()*1000
-    tool.telemetry.LogTelemetry(
-      'run_delta', str(time_run - time_setup), 'core', recipe_name)
-
-    tool.CleanUpPreflights()
-
-    total_time = time.time()*1000 - time_start
-    tool.telemetry.LogTelemetry(
-      'total_time', str(total_time), 'core', recipe_name)
-    for telemetry_row in tool.FormatTelemetry().split('\n'):
-      logger.debug(telemetry_row)
+  tool.LogTelemetry()
 
   return 0
 

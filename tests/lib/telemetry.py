@@ -34,8 +34,8 @@ class BaseTelemetryTest(unittest.TestCase):
   def testLogTelemetry(self):
     """Tests that LogTelemetry logs the correct data."""
     telemetry1 = telemetry.BaseTelemetry()
-    telemetry1.LogTelemetry(
-      'test_key', 'test_value', 'random_module', 'random_recipe')
+    telemetry1.SetRecipeName('random_recipe')
+    telemetry1.LogTelemetry('test_key', 'test_value', 'random_module')
     self.assertEqual(len(telemetry1.entries), 1)
     self.assertEqual(
         telemetry1.entries[0],
@@ -46,8 +46,8 @@ class BaseTelemetryTest(unittest.TestCase):
   def testFormatTelemetry(self, unused_mock_uuid):
     """Tests that the resulting Telemetry is properly formatted."""
     telemetry1 = telemetry.BaseTelemetry()
-    telemetry1.LogTelemetry(
-      'test_key', 'test_value', 'random_module', 'random_recipe')
+    telemetry1.SetRecipeName('random_recipe')
+    telemetry1.LogTelemetry('test_key', 'test_value', 'random_module')
     result = telemetry1.FormatTelemetry()
     self.assertEqual(
         result,
@@ -157,8 +157,8 @@ class GoogleCloudSpannerTelemetryTest(unittest.TestCase):
         project_name='test_project',
         instance_name='test_instance',
         database_name='test_database')
-    telemetry1.LogTelemetry(
-      'test_key', 'test_value', 'random_module', 'random_recipe')
+    telemetry1.SetRecipeName('random_recipe')
+    telemetry1.LogTelemetry('test_key', 'test_value', 'random_module')
     instance = self.mock_spanner_client.return_value.instance.return_value
     database = instance.database.return_value
     database.run_in_transaction.assert_called_with(

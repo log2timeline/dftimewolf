@@ -9,7 +9,7 @@ import time
 import traceback
 import math
 
-from typing import Dict, List, Optional, Tuple, Any, Union, Iterator
+from typing import Dict, List, Optional, Tuple, Any, Union, Iterator, Callable
 from pathlib import Path
 
 from google_auth_oauthlib import flow
@@ -24,10 +24,12 @@ from turbinia_api_lib.api import (
 from turbinia_api_lib.api import turbinia_request_results_api
 from turbinia_api_lib.api_response import ApiResponse
 
-from dftimewolf.lib.logging_utils import WolfLogger
 from dftimewolf.lib import module
 # pylint: disable=unused-import
-from dftimewolf.lib import state as state_lib
+from dftimewolf.lib import cache
+from dftimewolf.lib import telemetry
+from dftimewolf.lib.containers import manager as container_manager
+
 
 WAITING_STATES = frozenset(['pending', 'running'])
 
@@ -61,23 +63,26 @@ class TurbiniaProcessorBase(module.BaseModule):
   DEFAULT_YARA_MODULES = 'import "pe"\nimport "math"\nimport "hash"\n\n'
   HTTP_TIMEOUT = (30, 600) # Connection, Read timeout in seconds.
 
-  def __init__(
-      self,
-      state: "state_lib.DFTimewolfState",
-      logger: WolfLogger,
-      name: Optional[str] = None,
-      critical: bool = False,
-  ) -> None:
+  def __init__(self,
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
     """Initializes a Turbinia base processor.
 
     Args:
-      state (state.DFTimewolfState): recipe state.
-      logger: A logger instance.
-      name (Optional[str]): The module's runtime name.
-      critical (Optional[bool]): True if the module is critical, which causes
-          the entire recipe to fail if the module encounters an error.
+      name: The modules runtime name.
+      container_manager: A common container manager object.
+      cache: A common DFTWCache object.
+      telemetry: A common telemetry collector object.
+      publish_message_callback: A callback to send modules messages to.
     """
-    super().__init__(state=state, name=name, critical=critical)
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
     self.client: Optional[turbinia_api_lib.api_client.ApiClient] = None
     # pylint: disable=line-too-long
     self.client_config: Optional[turbinia_api_lib.configuration.Configuration] = None
@@ -86,14 +91,12 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.credentials_path = os.path.join(
         os.path.expanduser('~'), ".dftimewolf_turbinia.token")
     self.credentials: Optional[Credentials] = None
-    self.critical = critical
     self.extensions = [
         '.plaso', 'BinaryExtractorTask.tar.gz', 'hashes.json',
         'fraken_stdout.log', 'loki_stdout.log'
     ]
     self.instance = None
     self.incident_id = str()
-    self.logger = logger
     self.name = name if name else self.__class__.__name__
     self.output_path = str()
     self.parallel_count = 5  # Arbitrary, used by ThreadAwareModule
@@ -102,7 +105,6 @@ class TurbiniaProcessorBase(module.BaseModule):
     self.results_api_instance: turbinia_request_results_api.TurbiniaRequestResultsApi = None # type: ignore
     self.evidence_api_instance: turbinia_evidence_api.TurbiniaEvidenceApi = None # type: ignore
     self.sketch_id = int()
-    self.state = state
     self.turbinia_auth: bool = False
     self.priority_filter = int()
     self.turbinia_recipe = str()  # type: Any

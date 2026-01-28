@@ -42,14 +42,14 @@ import json
 import re
 import tempfile
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional, TYPE_CHECKING
+from typing import Any, Dict, Callable
 
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.module import BaseModule
 from dftimewolf.lib.modules import manager as modules_manager
-
-if TYPE_CHECKING:
-  from dftimewolf.lib import state
+from dftimewolf.lib import cache
+from dftimewolf.lib import telemetry
+from dftimewolf.lib.containers import manager as container_manager
 
 
 class GCPLoggingTimesketch(BaseModule):
@@ -58,11 +58,16 @@ class GCPLoggingTimesketch(BaseModule):
   DATA_TYPE = 'gcp:log:json'
 
   def __init__(self,
-               state: "state.DFTimewolfState",
-               name: Optional[str]=None,
-               critical: bool=False) -> None:
-    super(GCPLoggingTimesketch, self).__init__(
-        state, name=name, critical=critical)
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
 
   def SetUp(self, *args, **kwargs):  # type: ignore
     """Sets up necessary module configuration options."""

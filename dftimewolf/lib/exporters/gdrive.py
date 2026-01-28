@@ -6,7 +6,7 @@ to upload files to a specified folder.
 """
 
 import io
-from typing import Any, Optional, Type, cast
+from typing import Any, Optional, Type, cast, Callable
 
 from google.auth import exceptions as googleauth_exceptions
 from google.oauth2.credentials import Credentials
@@ -17,7 +17,9 @@ from dftimewolf.lib import auth
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers, interface
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.state import DFTimewolfState
+from dftimewolf.lib import cache
+from dftimewolf.lib import telemetry
+from dftimewolf.lib.containers import manager as container_manager
 
 
 class GoogleDriveExporter(module.ThreadAwareModule):
@@ -29,16 +31,19 @@ class GoogleDriveExporter(module.ThreadAwareModule):
   _CREDENTIALS_FILENAME = ".dftimewolf_drive_export_credentials.json"
   _CLIENT_SECRET_FILENAME = ".dftimewolf_drive_client_secret.json"
 
-  def __init__(
-      self,
-      state: DFTimewolfState,
-      name: Optional[str] = None,
-      critical: bool = False,
-  ) -> None:
+  def __init__(self,
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
     """Initializes a Google Drive exporter."""
-    super(GoogleDriveExporter, self).__init__(
-        state, name=name, critical=critical
-    )
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
+
     self.parent_folder_id: Optional[str] = None
     self.folder_id: Optional[str] = None
     self.new_folder_name: Optional[str] = None

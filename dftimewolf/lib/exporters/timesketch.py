@@ -4,7 +4,7 @@ Threaded version of existing Timesketch module."""
 
 import time
 import uuid
-from typing import Optional, List, Type, Union, Set
+from typing import Optional, List, Type, Union, Set, Callable
 
 from timesketch_import_client import importer
 from timesketch_api_client import sketch as ts_sketch
@@ -15,7 +15,9 @@ from timesketch_api_client import analyzer as ts_analyzer
 from dftimewolf.lib import module, timesketch_utils
 from dftimewolf.lib.containers import containers, interface
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.state import DFTimewolfState
+from dftimewolf.lib import cache
+from dftimewolf.lib import telemetry
+from dftimewolf.lib.containers import manager as container_manager
 
 
 class TimesketchExporter(module.ThreadAwareModule):
@@ -34,13 +36,18 @@ class TimesketchExporter(module.ThreadAwareModule):
 
   sketch: ts_sketch.Sketch
 
-  def __init__(
-      self,
-      state: DFTimewolfState,
-      name: Optional[str] = None,
-      critical: bool = False) -> None:
-    super(TimesketchExporter, self).__init__(
-        state, name=name, critical=critical)
+  def __init__(self,
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
+
     self.incident_id = None  # type: Union[str, None]
     self.sketch_id = 0  # type: int
     self.timesketch_api = None  # type: ts_client.TimesketchApi
@@ -88,12 +95,12 @@ class TimesketchExporter(module.ThreadAwareModule):
     elif token_password:
       self.logger.debug("Using token password from recipe config.")
       self.timesketch_api = timesketch_utils.GetApiClient(
-          self.state, token_password=token_password)
+          self._cache, token_password=token_password)
     else:
       self.logger.debug(
         "No username / password or token password specified, creating config"
       )
-      self.timesketch_api = timesketch_utils.GetApiClient(self.state)
+      self.timesketch_api = timesketch_utils.GetApiClient(self._cache)
 
     if not self.timesketch_api:
       self.ModuleError(
@@ -123,13 +130,13 @@ class TimesketchExporter(module.ThreadAwareModule):
             'No write access to sketch ID {0:d}, aborting'.format(
                 self.sketch_id),
             critical=True)
-      self.state.AddToCache('timesketch_sketch', self.sketch)
+      self.AddToCache('timesketch_sketch', self.sketch)
       self.sketch_id = self.sketch.id
 
     if analyzers:
       self._analyzers = [x.strip() for x in analyzers.split(',')]
 
-    self.sketch = self.state.GetFromCache('timesketch_sketch')
+    self.sketch = self.GetFromCache('timesketch_sketch')
     if not self.sketch and self.sketch_id:
       self.logger.info("Using existing sketch: {0:d}".format(self.sketch_id))
       self.sketch = self.timesketch_api.get_sketch(self.sketch_id)
@@ -169,7 +176,7 @@ class TimesketchExporter(module.ThreadAwareModule):
     self.sketch_id = sketch.id
     if incident_id:
       sketch.add_attribute('incident_id', incident_id, ontology='text')
-    self.state.AddToCache('timesketch_sketch', sketch)
+    self.AddToCache('timesketch_sketch', sketch)
 
     return sketch
 
@@ -234,7 +241,7 @@ class TimesketchExporter(module.ThreadAwareModule):
     Args:
       container (containers.File): A container holding a File to import."""
 
-    recipe_name = self.state.recipe.get('name', 'no_recipe')
+    recipe_name = self._cache.GetRecipeName()
     rand = uuid.uuid4().hex[-5:]
     description = container.name
     if description:

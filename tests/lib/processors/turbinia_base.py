@@ -10,8 +10,6 @@ import turbinia_api_lib
 from google.oauth2.credentials import Credentials
 
 from dftimewolf.lib.processors import turbinia_base
-from dftimewolf import config
-from dftimewolf.lib import state
 
 YARA_RULE = """rule dummy { condition: false }"""
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -37,9 +35,12 @@ class TurbiniaBaseTest(unittest.TestCase):
   def setUp(self):
     """Tests that the processor can be initialized."""
     self.logger = mock.MagicMock()
-    test_state = state.DFTimewolfState(config.Config)
     self.turbinia_processor = turbinia_base.TurbiniaProcessorBase(
-        test_state, self.logger)
+        name='',
+        cache_=mock.MagicMock(),
+        container_manager_=mock.MagicMock(),
+        telemetry_=mock.MagicMock(),
+        publish_message_callback=mock.MagicMock())
     file_path = os.path.join(
         CURRENT_DIR, "test_data", "turbinia_request_status.json")
     self._request_status = json.load(open(file_path))

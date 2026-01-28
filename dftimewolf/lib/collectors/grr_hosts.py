@@ -8,7 +8,7 @@ import re
 import stat
 import time
 from concurrent.futures import ThreadPoolExecutor
-from typing import List, Optional, Tuple, Type
+from typing import List, Optional, Tuple, Type, Callable
 
 import pandas as pd
 from grr_api_client import errors as grr_errors
@@ -22,7 +22,9 @@ from dftimewolf.lib.collectors.grr_base import GRRBaseModule
 from dftimewolf.lib.containers import containers, interface
 from dftimewolf.lib.errors import DFTimewolfError
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.state import DFTimewolfState
+from dftimewolf.lib import cache
+from dftimewolf.lib import telemetry
+from dftimewolf.lib.containers import manager as container_manager
 
 
 class GRRError(Exception):
@@ -39,7 +41,6 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
 
   Modules that use GRR flows or interact with hosts should extend this class.
   """
-  _CHECK_APPROVAL_INTERVAL_SEC = 10
   _CHECK_FLOW_INTERVAL_SEC = 10
   _MAX_OFFLINE_TIME_SEC = 3600  # One hour
   _LARGE_FILE_SIZE_THRESHOLD = 1 * 1024 * 1024 * 1024  # 1 GB
@@ -49,18 +50,27 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
   _CLIENT_ID_REGEX = re.compile(r'^c\.[0-9a-f]{16}$', re.IGNORECASE)
 
   def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str]=None,
-               critical: bool=False) -> None:
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
     """Initializes a GRR flow module.
 
     Args:
-      state (DFTimewolfState): recipe state.
-      name (Optional[str]): The module's runtime name.
-      critical (Optional[bool]): True if the module is critical, which causes
-          the entire recipe to fail if the module encounters an error.
+      name: The modules runtime name.
+      container_manager_: A common container manager object.
+      cache_: A common DFTWCache object.
+      telemetry_: A common telemetry collector object.
+      publish_message_callback: A callback to send modules messages to.
     """
-    module.ThreadAwareModule.__init__(self, state, name=name, critical=critical)
+    module.ThreadAwareModule.__init__(
+        self,
+        name=name,
+        cache_=cache_,
+        container_manager_=container_manager_,
+        telemetry_=telemetry_,
+        publish_message_callback=publish_message_callback)
     GRRBaseModule.__init__(self)
     self._skipped_flows = []  # type: List[Tuple[str, str]]
     self.skip_offline_clients = False
@@ -637,11 +647,16 @@ Flow ID: {3:s}
 
   # pylint: disable=arguments-differ
   def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str]=None,
-               critical: bool=False) -> None:
-    super(GRRYaraScanner, self).__init__(
-          state, name=name, critical=critical)
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
     self.process_ignorelist_regex = ''
     self.cmdline_ignorelist_regex = ''
     self.rule_text = ''
@@ -913,11 +928,16 @@ class GRRArtifactCollector(GRRFlow):
   }
 
   def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str]=None,
-               critical: bool=False) -> None:
-    super(GRRArtifactCollector, self).__init__(
-        state, name=name, critical=critical)
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
     self._clients = []  # type: List[Client]
     self.artifacts = []  # type: List[str]
     self.extra_artifacts = [] # type: List[str]
@@ -1074,10 +1094,16 @@ class GRRFileCollector(GRRFlow):
              }
 
   def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str]=None,
-               critical: bool=False) -> None:
-    super(GRRFileCollector, self).__init__(state, name=name, critical=critical)
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
     self._clients = []  # type: List[Client]
     self.files = []  # type: List[str]
     self.hosts = []  # type: List[containers.Host]
@@ -1212,11 +1238,16 @@ class GRROsqueryCollector(GRRFlow):
   DEFAULT_OSQUERY_TIMEOUT_MILLIS = 300000
 
   def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str]=None,
-               critical: bool=False) -> None:
-    super(GRROsqueryCollector, self).__init__(
-        state, name=name, critical=critical)
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
     self.directory = ""
     self.timeout_millis = self.DEFAULT_OSQUERY_TIMEOUT_MILLIS
     self.ignore_stderr_errors = False
@@ -1462,10 +1493,17 @@ class GRRFlowCollector(GRRFlow):
   """
 
   def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str]=None,
-               critical: bool=False) -> None:
-    super(GRRFlowCollector, self).__init__(state, name=name, critical=critical)
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
+
     self.client_id = str()
     self.flow_id = str()
     self.host: containers.Host
@@ -1572,11 +1610,17 @@ class GRRTimelineCollector(GRRFlow):
   """
 
   def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str]=None,
-               critical: bool=False) -> None:
-    super(GRRTimelineCollector, self).__init__(
-        state, name=name, critical=critical)
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
+
     self._clients = []  # type: List[Client]
     self.root_path = bytes()
     self.hosts = []  # type: List[containers.Host]

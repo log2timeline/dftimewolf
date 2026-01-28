@@ -14,6 +14,9 @@ from grr_api_client.hunt import Hunt
 from dftimewolf.lib.errors import DFTimewolfError
 
 
+CHECK_APPROVAL_INTERVAL_SEC = 10
+
+
 class GRRBaseModule:
   """Base module for GRR hunt and flow modules.
 
@@ -26,8 +29,6 @@ class GRRBaseModule:
     message_callback: Callback method used to notify the operator of approval
         URLs.
   """
-
-  _CHECK_APPROVAL_INTERVAL_SEC = 10
 
   def __init__(self) -> None:
     """Initializes a GRR hunt or flow module.
@@ -126,7 +127,7 @@ class GRRBaseModule:
         if approval_sent:
           logger.info(
             "Approval not yet granted, waiting {0:d}s".format(
-              self._CHECK_APPROVAL_INTERVAL_SEC
+              CHECK_APPROVAL_INTERVAL_SEC
             )
           )
           if not approval_url_shown:
@@ -134,7 +135,7 @@ class GRRBaseModule:
             approval_url_shown = True
           else:
             logger.info(f"Approval needed at: {approval_url}")
-          time.sleep(self._CHECK_APPROVAL_INTERVAL_SEC)
+          time.sleep(CHECK_APPROVAL_INTERVAL_SEC)
           continue
 
         # If no approvers were specified, abort.

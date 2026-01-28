@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Copies GCE Disks across projects."""
 
-from typing import List, Optional, Dict, Type, Union
+from typing import List, Optional, Dict, Type, Union, Callable
 
 from googleapiclient.errors import HttpError
 from libcloudforensics import errors as lcf_errors
@@ -11,7 +11,9 @@ from libcloudforensics.providers.gcp.internal import project as gcp_project
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers, interface
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.state import DFTimewolfState
+from dftimewolf.lib import cache
+from dftimewolf.lib import telemetry
+from dftimewolf.lib.containers import manager as container_manager
 
 
 class GCEDiskCopy(module.ThreadAwareModule):
@@ -33,19 +35,26 @@ class GCEDiskCopy(module.ThreadAwareModule):
   """
 
   def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str]=None,
-               critical: bool=False) -> None:
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
     """Initializes a Google Cloud Platform (GCP) collector.
 
     Args:
-      state (DFTimewolfState): recipe state.
-      name (Optional[str]): The module's runtime name.
-      critical (Optional[bool]): True if the module is critical, which causes
-          the entire recipe to fail if the module encounters an error.
+      name: The modules runtime name.
+      container_manager_: A common container manager object.
+      cache_: A common DFTWCache object.
+      telemetry_: A common telemetry collector object.
+      publish_message_callback: A callback to send modules messages to.
     """
-    super(GCEDiskCopy, self).__init__(
-        state, name=name, critical=critical)
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
+
     self.destination_project = None  # type: gcp_project.GoogleCloudProject
     self.source_project = None  # type: gcp_project.GoogleCloudProject
     self.remote_instance_names = []  # type: List[str]

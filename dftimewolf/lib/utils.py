@@ -91,7 +91,7 @@ class DFTimewolfFormatterClass(
 
 def ImportArgsFromDict(value: Any,
                        args: Dict[str, Any],
-                       config: Type[Config]) -> Any:
+                       config: Type[Config] | None = None) -> Any:
   """Replaces some arguments by those specified by a key-value dictionary.
 
   This function will be recursively called on a dictionary looking for any

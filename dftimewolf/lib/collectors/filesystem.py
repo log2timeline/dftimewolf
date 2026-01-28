@@ -2,12 +2,14 @@
 """Collects artifacts from the local file system."""
 
 import os
-from typing import Optional, List
+from typing import Callable, List
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.state import DFTimewolfState
+from dftimewolf.lib import cache
+from dftimewolf.lib import telemetry
+from dftimewolf.lib.containers import manager as container_manager
 
 
 class FilesystemCollector(module.BaseModule):
@@ -18,19 +20,25 @@ class FilesystemCollector(module.BaseModule):
   """
 
   def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str]=None,
-               critical: bool=False) -> None:
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
     """Initializes a local file system collector.
 
     Args:
-      state (DFTimewolfState): recipe state.
-      name (Optional[str]): The module's runtime name.
-      critical (Optional[bool]): True if the module is critical, which causes
-          the entire recipe to fail if the module encounters an error.
+      name: The modules runtime name.
+      container_manager_: A common container manager object.
+      cache_: A common DFTWCache object.
+      telemetry_: A common telemetry collector object.
+      publish_message_callback: A callback to send modules messages to.
     """
-    super(FilesystemCollector, self).__init__(
-        state, name=name, critical=critical)
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
     self._paths = [] # type: List[str]
 
   def SetUp(self, paths: str) -> None:  # pylint: disable=arguments-differ

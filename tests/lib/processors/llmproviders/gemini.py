@@ -159,32 +159,32 @@ class GeminiLLMProviderTest(unittest.TestCase):
   def test_generate_from_template(self):
     """Tests the GenerateFromTemplate method."""
     provider = gemini.GeminiLLMProvider()
-    mock_generate = mock.Mock()
-    provider.Generate = mock_generate
-    with self.subTest('valid template'):
-      template = 'This is a test message from {name} {surname}.'
-      kwargs = {'name': 'Bob', 'surname': 'Smith'}
-      _ = provider.GenerateFromTemplate(
-          template=template,
-          model='fake-gemini',
-          **kwargs
-      )
-      mock_generate.assert_called_with(
-          prompt='This is a test message from Bob Smith.',
-          model='fake-gemini',
-          name='Bob',
-          surname='Smith'
-      )
 
-    with self.subTest('missing keyword'):
-      template = 'This is a test message from {name} {surname}.'
-      kwargs = {'name': 'Bob'}
-      with self.assertRaises(KeyError):
+    with mock.patch.object(provider, 'Generate') as mock_generate:
+      with self.subTest('valid template'):
+        template = 'This is a test message from {name} {surname}.'
+        kwargs = {'name': 'Bob', 'surname': 'Smith'}
         _ = provider.GenerateFromTemplate(
             template=template,
             model='fake-gemini',
             **kwargs
         )
+        mock_generate.assert_called_with(
+            prompt='This is a test message from Bob Smith.',
+            model='fake-gemini',
+            name='Bob',
+            surname='Smith'
+        )
+
+      with self.subTest('missing keyword'):
+        template = 'This is a test message from {name} {surname}.'
+        kwargs = {'name': 'Bob'}
+        with self.assertRaises(KeyError):
+          _ = provider.GenerateFromTemplate(
+              template=template,
+              model='fake-gemini',
+              **kwargs
+          )
 
 
 if __name__ == '__main__':

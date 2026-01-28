@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Creates an analysis VM and copies Azure disks to it for analysis."""
 
-from typing import List, Optional
+from typing import List, Optional, Callable
 
 from libcloudforensics.providers.azure import forensics as az_forensics
 from libcloudforensics.providers.azure.internal import account
@@ -10,7 +10,9 @@ from libcloudforensics.providers.azure.internal import compute
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
-from dftimewolf.lib.state import DFTimewolfState
+from dftimewolf.lib import cache
+from dftimewolf.lib import telemetry
+from dftimewolf.lib.containers import manager as container_manager
 
 
 class AzureCollector(module.BaseModule):
@@ -41,18 +43,25 @@ class AzureCollector(module.BaseModule):
   _ANALYSIS_VM_CONTAINER_ATTRIBUTE_TYPE = 'text'
 
   def __init__(self,
-               state: DFTimewolfState,
-               name: Optional[str]=None,
-               critical: bool=False) -> None:
+               name: str,
+               container_manager_: container_manager.ContainerManager,
+               cache_: cache.DFTWCache,
+               telemetry_: telemetry.BaseTelemetry,
+               publish_message_callback: Callable[[str, str, bool], None]):
     """Initializes a Microsoft Azure collector.
 
     Args:
-      state (DFTimewolfState): recipe state.
-      name (Optional[str]): The module's runtime name.
-      critical (Optional[bool]): True if the module is critical, which causes
-          the entire recipe to fail if the module encounters an error.
+      name: The modules runtime name.
+      container_manager_: A common container manager object.
+      cache_: A common DFTWCache object.
+      telemetry_: A common telemetry collector object.
+      publish_message_callback: A callback to send modules messages to.
     """
-    super(AzureCollector, self).__init__(state, critical=critical)
+    super().__init__(name=name,
+                     cache_=cache_,
+                     container_manager_=container_manager_,
+                     telemetry_=telemetry_,
+                     publish_message_callback=publish_message_callback)
     self.remote_profile_name = str()
     self.source_account = None  # type: account.AZAccount
     self.incident_id = str()
