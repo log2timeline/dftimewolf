@@ -418,6 +418,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
             | flows_pb2.FileFinderResult
             | flows_pb2.CollectFilesByKnownPathResult
             | flows_pb2.CollectBrowserHistoryResult
+            | flows_pb2.CollectMultipleFilesResult
         ):
           if hasattr(payload, 'stat'):
             stats = payload.stat
