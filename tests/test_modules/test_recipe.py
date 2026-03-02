@@ -2,8 +2,7 @@
 """Dummy recipe"""
 
 basic_recipe = {
-	'name':
-		'dummy_recipe',
+	'name': 'dummy_recipe',
 	'short_description': 'Nothing to see here.',
 	'preflights': [{
 		'name': 'DummyPreflightModule'
@@ -20,9 +19,9 @@ basic_recipe = {
 }
 
 basic_no_preflights = {
-	'name':
-		'dummy_recipe',
+	'name': 'dummy_recipe',
 	'short_description': 'Nothing to see here.',
+  'preflights': [],
 	'modules': [{
 		'wants': [],
 		'name': 'DummyModule1',
@@ -40,6 +39,7 @@ threaded_no_preflights = {
 	'name':
 		'dummy_threaded_recipe',
 	'short_description': 'Nothing to see here.',
+  'preflights': [],
 	'modules': [{
 		'wants': [],
 		'name': 'ContainerGeneratorModule',
@@ -93,6 +93,7 @@ with_runtime_names = {
 issue_503_recipe = {
 	'name': 'issue_503_recipe',
 	'short_description': 'Nothing to see here.',
+  'preflights': [],
 	'modules': [{
 		'wants': [],
 		'name': 'Issue503Module',

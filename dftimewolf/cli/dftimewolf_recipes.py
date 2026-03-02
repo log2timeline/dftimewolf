@@ -102,7 +102,7 @@ class DFTimewolfTool(object):
     self._data_files_path = ''
     self._running_args: dict[str, typing.Any] = {}
     self._recipes_manager = recipes_manager.RecipesManager()
-    self._recipe: resources.Recipe = None
+    self._recipe: resources.Recipe = None  # type: ignore
     self._uuid = workflow_uuid or str(uuid.uuid4())
     self._telemetry = telemetry_ or telemetry.GetTelemetry(uuid=self._uuid)
     self._module_runner = module_runner.ModuleRunner(logger, self._telemetry, self.PublishMessage)
@@ -112,7 +112,7 @@ class DFTimewolfTool(object):
     self._DetermineDataFilesPath()
 
   @property
-  def dry_run(self):
+  def dry_run(self) -> bool:
     """Whether we should just be testing parameters, or full execution."""
     return self._dry_run
 
@@ -171,7 +171,7 @@ class DFTimewolfTool(object):
     if additional_path:
       paths.append(additional_path)
     if os.environ.get('DFTIMEWOLF_CONFIG'):
-      paths.append(os.environ.get('DFTIMEWOLF_CONFIG'))
+      paths.append(os.environ['DFTIMEWOLF_CONFIG'])
 
     for path in paths:
       self._LoadConfigurationFromFile(path)
@@ -188,6 +188,9 @@ class DFTimewolfTool(object):
 
     for directory in directories:
       self._recipes_manager.ReadRecipesFromDirectory(directory)
+
+    if not self._recipes_manager.Recipes():
+      raise RuntimeError('No recipes loaded.')
 
   def SelectRecipe(self, recipe_name: str) -> None:
     """Selects a recipe for usage.
@@ -219,6 +222,10 @@ class DFTimewolfTool(object):
     parser.set_defaults(**config.Config.GetExtra())
 
     return parser
+
+  def GetRecipeDefaults(self) -> dict[str, Any]:
+    """Collects recipe argument defaults."""
+    return {arg.switch.replace('--', ''): arg.default for arg in self._recipe.args}
 
   def ApplyArgs(self, params: dict[str, Any]) -> None:
     """Validates and applies parameters to interpolate into a recipe.
@@ -436,8 +443,7 @@ def SetupLogging(stdout_log: bool = False) -> None:
 
 
 def RunTool() -> int:
-  """
-  Runs DFTimewolfTool.
+  """Runs DFTimewolfTool.
 
   Returns:
     int: 0 DFTimewolf could be run successfully, 1 otherwise.

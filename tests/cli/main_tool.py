@@ -87,10 +87,10 @@ class MainToolTest(parameterized.TestCase):
   def setUp(self):
     self.tool = _CreateToolObject()
 
-  def tearDown(self):
-    # pylint: disable=protected-access
-    for recipe in self.tool._recipes_manager.GetRecipes():
-      self.tool._recipes_manager.DeregisterRecipe(recipe)
+#  def tearDown(self):
+#    # pylint: disable=protected-access
+#    for recipe in self.tool._recipes_manager.GetRecipes():
+#      self.tool._recipes_manager.DeregisterRecipe(recipe)
 
   def testSetupLogging(self):
     """Tests the SetupLogging function."""
@@ -105,9 +105,12 @@ class MainToolTest(parameterized.TestCase):
     # We want to ensure that recipes are loaded (10 is arbitrary)
     # pylint: disable=protected-access
     self.assertGreater(len(self.tool._recipes_manager._recipes), 10)
-    # Conversion to parse arguments is done within ParseArguments
-    # We can pass an arbitrary recipe with valid args here.
-    self.tool.ParseArguments(['upload_ts', '/tmp/test'])
+
+    self.tool.SelectRecipe('upload_ts')
+    args_parser = self.tool.GenerateArgsParserForRecipe()
+    params = vars(args_parser.parse_args(['/tmp/test']))
+    self.tool.ApplyArgs(params)
+
     self.tool.LogExecutionPlan()
 
   @parameterized.named_parameters(_EnumerateRecipeNames())
@@ -169,8 +172,10 @@ class MainToolTest(parameterized.TestCase):
 
     test_params = recipe.GetTestParams()
     if test_params:
-      recipe_args = [recipe_name] + test_params
-      self.tool.ParseArguments(recipe_args)
+      self.tool.SelectRecipe(recipe_name)
+      args_parser = self.tool.GenerateArgsParserForRecipe()
+      params = vars(args_parser.parse_args(test_params))
+      self.tool.ApplyArgs(params)
     else:
       self.fail('No test_params in recipe')
 
@@ -184,8 +189,6 @@ class MainToolTest(parameterized.TestCase):
             f'Error in {recipe.name}:{arg.switch} - '
             f'Invalid validator {arg.validation_params["format"]}.')
 
-    self.tool.ValidateArguments()
-
   def testNoArgRecipeValidation(self):
     """Tests recipe validation when there are no args."""
     # pylint: disable=protected-access
@@ -198,10 +201,11 @@ class MainToolTest(parameterized.TestCase):
                                         dftimewolf_recipes.MODULES)
 
     test_params = no_arg_recipe.GetTestParams()
-    recipe_args = [no_arg_recipe.name] + test_params
 
-    self.tool.ParseArguments(recipe_args)
-    self.tool.ValidateArguments()
+    self.tool.SelectRecipe(no_arg_recipe.name)
+    args_parser = self.tool.GenerateArgsParserForRecipe()
+    params = vars(args_parser.parse_args(test_params))
+    self.tool.ApplyArgs(params)
 
   def testRecipeWithNoTestParams(self):
     """Tests that a recipe with no test params specified generates an error."""
@@ -229,8 +233,10 @@ class MainToolTest(parameterized.TestCase):
     self.tool._module_runner.Initialise(NESTED_ARG_RECIPE,
                                         dftimewolf_recipes.MODULES)
 
-    self.tool.ParseArguments(['nested_arg_recipe', 'First', 'Second'])
-    self.tool.ValidateArguments()
+    self.tool.SelectRecipe('nested_arg_recipe')
+    args_parser = self.tool.GenerateArgsParserForRecipe()
+    params = vars(args_parser.parse_args(['First', 'Second']))
+    self.tool.ApplyArgs(params)
 
     # Check the nested arg 'First' has been inserted into the 'other_arg' value
     # of 'arg2'
@@ -249,11 +255,12 @@ class MainToolTest(parameterized.TestCase):
     self.tool._module_runner.Initialise(NESTED_ARG_RECIPE,
                                         dftimewolf_recipes.MODULES)
 
-    self.tool.ParseArguments(['nested_arg_recipe', 'First', 'Not Second'])
-
     with self.assertRaisesRegex(
         errors.CriticalError, 'At least one argument failed validation'):
-      self.tool.ValidateArguments()
+      self.tool.SelectRecipe('nested_arg_recipe')
+      args_parser = self.tool.GenerateArgsParserForRecipe()
+      params = vars(args_parser.parse_args(['First', 'Not Second']))
+      self.tool.ApplyArgs(params)
 
   def testDryRun(self):
     """Tests setting the dry_run flag."""
@@ -266,12 +273,18 @@ class MainToolTest(parameterized.TestCase):
     self.tool._module_runner.Initialise(NESTED_ARG_RECIPE,
                                         dftimewolf_recipes.MODULES)
 
-    self.tool.ParseArguments(
-        ['--dry_run', 'nested_arg_recipe', 'First', 'Not Second'])
+    self.tool.SelectRecipe('nested_arg_recipe')
+    args_parser = self.tool.GenerateArgsParserForRecipe()
+    params = vars(args_parser.parse_args(['--dry_run', 'First', 'Second']))
+    self.tool.ApplyArgs(params)
 
     self.assertTrue(self.tool.dry_run)
 
-  def testOptionalArguments(self):
+  @parameterized.named_parameters(
+      ('no_value', ['First']),
+      ('valid', ['First', '--optional_arg', 'Second'])
+  )
+  def testOptionalArguments(self, args_list):
     """Tests handling of optional arguments."""
     # pylint: disable=protected-access
     optional_arg_recipe = resources.Recipe(
@@ -282,18 +295,28 @@ class MainToolTest(parameterized.TestCase):
     self.tool._module_runner.Initialise(OPTIONAL_ARG_RECIPE,
                                         dftimewolf_recipes.MODULES)
 
-    self.tool.ParseArguments(['optional_arg_recipe', 'First'])
-    self.tool.ValidateArguments() # No value for optional arg is ok.
+    self.tool.SelectRecipe('optional_arg_recipe')
+    args_parser = self.tool.GenerateArgsParserForRecipe()
+    params = vars(args_parser.parse_args(args_list))
+    self.tool.ApplyArgs(params)
 
-    self.tool.ParseArguments([
-        'optional_arg_recipe', 'First', '--optional_arg', 'Second'])
-    self.tool.ValidateArguments() # Valid value for optional arg is ok.
+  def testOptionalArgumentsFailure(self):
+    """Tests handling of optional arguments."""
+    # pylint: disable=protected-access
+    optional_arg_recipe = resources.Recipe(
+        OPTIONAL_ARG_RECIPE.__doc__,
+        OPTIONAL_ARG_RECIPE,
+        OPTIONAL_ARG_RECIPE_ARGS)
+    self.tool._recipes_manager.RegisterRecipe(optional_arg_recipe)
+    self.tool._module_runner.Initialise(OPTIONAL_ARG_RECIPE,
+                                        dftimewolf_recipes.MODULES)
 
-    # Invalid value for optional arg is not ok.
-    self.tool.ParseArguments([
-        'optional_arg_recipe', 'First', '--optional_arg', 'not_second'])
+    self.tool.SelectRecipe('optional_arg_recipe')
+    args_parser = self.tool.GenerateArgsParserForRecipe()
+    params = vars(args_parser.parse_args(
+        ['First', '--optional_arg', 'not_second']))
     with self.assertRaises(errors.CriticalError):
-      self.tool.ValidateArguments()
+      self.tool.ApplyArgs(params)
 
 
 if __name__ == '__main__':

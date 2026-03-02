@@ -109,7 +109,7 @@ class RecipesManager(object):
       path (str): path of the directory containing the recipes JSON files.
     """
     if not os.path.isdir(path):
-      raise RuntimeError('Recipe path is not a directory')
+      return
 
     for file_path in glob.glob(os.path.join(path, '*.json')):
       self.ReadRecipeFromFile(file_path)

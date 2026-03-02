@@ -173,6 +173,9 @@ class ModuleRunner(object):
 
   def _ExtractParsedSetUpArgs(self, running_args: dict[str, typing.Any]) -> None:
     """Given parsed running args, extract module set up args."""
+    if 'preflights' not in self._recipe or 'modules' not in self._recipe:
+      raise RuntimeError('Recipe is malformed.')
+
     for module_definition in (running_args.get('preflights', []) +
                               running_args.get('modules', [])):
       runtime_name = module_definition.get('runtime_name', module_definition['name'])
