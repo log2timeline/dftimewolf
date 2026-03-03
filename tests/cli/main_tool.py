@@ -87,11 +87,6 @@ class MainToolTest(parameterized.TestCase):
   def setUp(self):
     self.tool = _CreateToolObject()
 
-#  def tearDown(self):
-#    # pylint: disable=protected-access
-#    for recipe in self.tool._recipes_manager.GetRecipes():
-#      self.tool._recipes_manager.DeregisterRecipe(recipe)
-
   def testSetupLogging(self):
     """Tests the SetupLogging function."""
     dftimewolf_recipes.SetupLogging(True)

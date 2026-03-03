@@ -454,7 +454,7 @@ def RunTool() -> int:
     tool.LoadConfiguration()
     tool.ReadRecipes()
 
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 2 or sys.argv[1] in ('-h', '--help'):
       print(tool.GenerateHelpText(), file=sys.stderr)
       return 1
 
