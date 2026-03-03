@@ -2,7 +2,7 @@
 
 from typing import Sequence, Type
 from unittest import mock
-
+import dataclasses
 from absl.testing import parameterized
 
 from dftimewolf.lib.containers import interface
@@ -12,6 +12,13 @@ from dftimewolf.lib import module
 
 
 # pylint: disable=line-too-long
+
+
+@dataclasses.dataclass
+class _message:
+  source: str
+  message: str
+  is_error: bool
 
 
 class ModuleTestBase(parameterized.TestCase):
@@ -26,6 +33,8 @@ class ModuleTestBase(parameterized.TestCase):
     self._cache: cache.DFTWCache = None
     self._container_manager: container_manager.ContainerManager = None
     self._telemetry: mock.MagicMock = None
+
+    self._messages: list[_message] = []
 
   def _InitModule(self, test_module: type[module.BaseModule]):  # pylint: disable=arguments-differ
     """Initialises the module, the DFTW state and recipe for module testing."""
@@ -60,12 +69,13 @@ class ModuleTestBase(parameterized.TestCase):
 
   def _AssertNoErrors(self):
     """Asserts that no errors have been generated."""
-    # TODO - DO NOT SUBMIT
+    if any(m.is_error for m in self._messages):
+      self.fail(f'Error messages found: {"\n".join(m.message for m in self._messages if m.is_error)}')
 
   def _UpstreamStoreContainer(self, container: interface.AttributeContainer):
     """Simulates the storing of a container from an upstream dependency."""
     self._container_manager.StoreContainer(container=container,
-                                    source_module='upstream')
+                                           source_module='upstream')
 
   def _DownstreamGetContainer(
       self, type_: Type[interface.AttributeContainer]
@@ -76,3 +86,4 @@ class ModuleTestBase(parameterized.TestCase):
 
   def _PublishMessage(self, source: str, message: str, is_error: bool = False) -> None:
     """Testing version of PublishMessage"""
+    self._messages.append(_message(source, message, is_error))
