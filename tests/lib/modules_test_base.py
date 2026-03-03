@@ -70,7 +70,8 @@ class ModuleTestBase(parameterized.TestCase):
   def _AssertNoErrors(self):
     """Asserts that no errors have been generated."""
     if any(m.is_error for m in self.messages):
-      self.fail(f'Error messages found: {"\n".join(m.message for m in self.messages if m.is_error)}')
+      messages = "\n".join(m.message for m in self.messages if m.is_error)
+      self.fail(f'Error messages found: {messages}')
 
   def _UpstreamStoreContainer(self, container: interface.AttributeContainer):
     """Simulates the storing of a container from an upstream dependency."""
