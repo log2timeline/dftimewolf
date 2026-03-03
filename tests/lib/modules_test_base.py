@@ -69,8 +69,8 @@ class ModuleTestBase(parameterized.TestCase):
 
   def _AssertNoErrors(self):
     """Asserts that no errors have been generated."""
-    if any(m.is_error for m in self._messages):
-      self.fail(f'Error messages found: {"\n".join(m.message for m in self._messages if m.is_error)}')
+    if any(m.is_error for m in self.messages):
+      self.fail(f'Error messages found: {"\n".join(m.message for m in self.messages if m.is_error)}')
 
   def _UpstreamStoreContainer(self, container: interface.AttributeContainer):
     """Simulates the storing of a container from an upstream dependency."""
@@ -86,4 +86,4 @@ class ModuleTestBase(parameterized.TestCase):
 
   def _PublishMessage(self, source: str, message: str, is_error: bool = False) -> None:
     """Testing version of PublishMessage"""
-    self._messages.append(_message(source, message, is_error))
+    self.messages.append(_message(source, message, is_error))
