@@ -456,7 +456,7 @@ def RunTool() -> int:
 
     if len(sys.argv) < 2 or sys.argv[1] in ('-h', '--help'):
       print(tool.GenerateHelpText(), file=sys.stderr)
-      return 1
+      return sys.argv[1] not in ('-h', '--help')
 
     tool.SelectRecipe(sys.argv[1])
     args_parser = tool.GenerateArgsParserForRecipe()
