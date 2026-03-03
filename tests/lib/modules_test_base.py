@@ -34,7 +34,7 @@ class ModuleTestBase(parameterized.TestCase):
     self._container_manager: container_manager.ContainerManager = None
     self._telemetry: mock.MagicMock = None
 
-    self._messages: list[_message] = []
+    self.messages: list[_message] = []
 
   def _InitModule(self, test_module: type[module.BaseModule]):  # pylint: disable=arguments-differ
     """Initialises the module, the DFTW state and recipe for module testing."""
