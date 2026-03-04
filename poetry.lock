@@ -4632,5 +4632,5 @@ turbinia-legacy = []
 
 [metadata]
 lock-version = "2.0"
-python-versions = ">=3.12,<=3.14"
-content-hash = "981080fe5913f8e2ed19b02a701c8215525b838d4956c2c7b97facdc0f728fbf"
+python-versions = ">=3.12,<3.15"
+content-hash = "5175d64826dd10db4a9185e5c8864227b8ac58993eea925da6f61f0dca09b155"
