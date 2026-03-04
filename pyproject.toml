@@ -9,7 +9,7 @@ license = "Apache"
 dftimewolf = 'dftimewolf.cli.dftimewolf_recipes:Main'
 
 [tool.poetry.dependencies]
-python = ">=3.11,<=3.13"
+python = ">=3.12,<=3.14"
 filelock = "*"
 google-cloud-storage = "*"
 google-cloud-logging = "*"
