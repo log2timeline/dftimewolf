@@ -10,27 +10,23 @@ import sys
 import typing
 import uuid
 
-from typing import TYPE_CHECKING, List, Optional, Dict, Any, cast
+from typing import Optional, Any, cast
 
 from dftimewolf.lib.validators import manager as validators_manager
+from dftimewolf.lib import resources
 
-# The following import makes sure validators are registered.
-from dftimewolf.lib import validators # pylint: disable=unused-import
-
-# pylint: disable=wrong-import-position
 from dftimewolf.lib import logging_utils
 from dftimewolf.lib import telemetry
 from dftimewolf import config
 from dftimewolf.lib.modules import module_runner
 from dftimewolf.lib import errors
 from dftimewolf.lib import utils
+from dftimewolf.lib.recipes import manager as recipes_manager
 
-if TYPE_CHECKING:
-  from dftimewolf.lib import resources
-
-TELEMETRY = telemetry
 
 # pylint: disable=line-too-long
+
+
 MODULES = {
   'AWSAccountCheck': 'dftimewolf.lib.preflights.cloud_token',
   'AWSCollector': 'dftimewolf.lib.collectors.aws',
@@ -84,9 +80,6 @@ MODULES = {
   'WorkspaceAuditTimesketch': 'dftimewolf.lib.processors.workspace_audit_timesketch',
   'YetiYaraCollector': 'dftimewolf.lib.collectors.yara'
 }
-# pylint: enable=line-too-long
-
-from dftimewolf.lib.recipes import manager as recipes_manager
 
 
 logger = cast(logging_utils.WolfLogger, logging.getLogger('dftimewolf'))
@@ -94,7 +87,6 @@ logger = cast(logging_utils.WolfLogger, logging.getLogger('dftimewolf'))
 
 class DFTimewolfTool(object):
   """DFTimewolf tool."""
-
 
   _DEFAULT_DATA_FILES_PATH = os.path.join(
       os.sep, 'usr', 'local', 'share', 'dftimewolf')
@@ -104,52 +96,183 @@ class DFTimewolfTool(object):
       workflow_uuid: Optional[str] = None,
       telemetry_: Optional[telemetry.BaseTelemetry] = None) -> None:
     """Initializes a DFTimewolf tool."""
-    super(DFTimewolfTool, self).__init__()
-    self._data_files_path = ''
-    self._recipes_manager = recipes_manager.RecipesManager()
-    self._recipe = {}  # type: Dict[str, Any]
-    self._command_line_options = argparse.Namespace()
-    self._running_args: dict[str, typing.Any] = {}
-    self.dry_run = False
+    super().__init__()
 
+    self._dry_run = False
+    self._data_files_path = ''
+    self._running_args: dict[str, typing.Any] = {}
+    self._recipes_manager = recipes_manager.RecipesManager()
+    self._recipe: resources.Recipe = None  # type: ignore
     self._uuid = workflow_uuid or str(uuid.uuid4())
+    self._telemetry = telemetry_ or telemetry.GetTelemetry(uuid=self._uuid)
+    self._module_runner = module_runner.ModuleRunner(logger, self._telemetry, self.PublishMessage)
 
     logger.success(f'dfTimewolf tool initialized with UUID: {self._uuid}')
 
-    self._telemetry = telemetry_ or self.InitializeTelemetry()
     self._DetermineDataFilesPath()
-    self._module_runner = module_runner.ModuleRunner(
-        logger, self._telemetry, self.PublishMessage)
 
-  def _AddRecipeOptions(self, argument_parser: argparse.ArgumentParser) -> None:
-    """Adds the recipe options to the argument group.
+  @property
+  def dry_run(self) -> bool:
+    """Whether we should just be testing parameters, or full execution."""
+    return self._dry_run
+
+  def PublishMessage(
+      self, source: str, message: str, is_error: bool = False) -> None:
+    """Receives a message for publishing.
+
+    The base class does nothing with this (as the method in module also logs the
+    message). This method exists to be overridden for other UIs.
 
     Args:
-      argument_parser (argparse.ArgumentParser): argparse argument parser.
+      source: The source of the message.
+      message: The message content.
+      is_error: True if the message is an error message, False otherwise.
     """
-    argument_parser.add_argument('--dry_run', help='Tool dry run',
-                                 default=False, action='store_true')
 
-    subparsers = argument_parser.add_subparsers()
+  def GenerateHelpText(self) -> str:
+    """Generates help text with alphabetically sorted recipes.
 
-    for recipe in self._recipes_manager.GetRecipes():
-      description = recipe.description
-      subparser = subparsers.add_parser(
-          recipe.name, formatter_class=utils.DFTimewolfFormatterClass,
-          description=description)
-      subparser.set_defaults(recipe=recipe.contents)
+    Returns:
+      str: help text.
+    """
+    recipes = self._recipes_manager.GetRecipes()
+    if not recipes:
+      help_text = '\nNo recipes found.'
+    else:
+      help_text = '\nAvailable recipes:\n\n'
+      for recipe in recipes:
+        short_description = recipe.contents.get('short_description', 'No description')
+        help_text += ' {0:<35s}{1:s}\n'.format(recipe.name, short_description)
 
-      for args in recipe.args:
-        if isinstance(args.default, bool):
-          subparser.add_argument(args.switch, help=args.help_text,
-                                 default=args.default, action='store_true')
-        else:
-          subparser.add_argument(args.switch, help=args.help_text,
-                                 default=args.default)
+    return help_text
 
-      # Override recipe defaults with those specified in Config
-      # so that they can in turn be overridden in the commandline
-      subparser.set_defaults(**config.Config.GetExtra())
+  def LoadConfiguration(self, additional_path: str | None = None) -> None:
+    """Loads config DFTW config files.
+
+    The following paths are tried. Values loaded last take precedence.
+
+    * <_data_files_path>/config.json
+    * /etc/dftimewolf.conf
+    * /usr/share/dftimewolf/dftimewolf.conf
+    * ~/.dftimewolfrc
+    * If set, additional_path arg
+    * If set, wherever the DFTIMEWOLF_CONFIG environment variable points to
+
+    Args:
+      additional_path: An optional extra filepath to load config from.
+    """
+    paths = [
+        os.path.join(self._data_files_path, 'config.json'),
+        os.path.join('/', 'etc', 'dftimewolf.conf'),
+        os.path.join('/', 'usr', 'share', 'dftimewolf', 'dftimewolf.conf'),
+        os.path.join(os.path.expanduser('~'), '.dftimewolfrc')
+    ]
+
+    if additional_path:
+      paths.append(additional_path)
+    if os.environ.get('DFTIMEWOLF_CONFIG'):
+      paths.append(os.environ['DFTIMEWOLF_CONFIG'])
+
+    for path in paths:
+      self._LoadConfigurationFromFile(path)
+
+  def ReadRecipes(self, additional_directories: list[str] | None = None) -> None:
+    """Reads recipes from the default directory, and any additional paths.
+
+    Args:
+      additional_directories: A list of directory paths to load recipes from.
+    """
+    directories = [os.path.join(self._data_files_path, 'recipes')]
+    if additional_directories:
+      directories.extend(additional_directories)
+
+    for directory in directories:
+      self._recipes_manager.ReadRecipesFromDirectory(directory)
+
+    if not self._recipes_manager.Recipes():
+      raise RuntimeError('No recipes loaded.')
+
+  def SelectRecipe(self, recipe_name: str) -> None:
+    """Selects a recipe for usage.
+
+    Args:
+      recipe_name: The name of the recipe to use.
+    """
+    self._recipe = self._recipes_manager.GetRecipe(recipe_name)
+    self._module_runner.Initialise(self._recipe.contents, MODULES)
+
+    # At this point we no longer need the recipe manager
+    del self._recipes_manager
+
+  def GenerateArgsParserForRecipe(self) -> argparse.ArgumentParser:
+    """Generate an args parsing object that can be used to parse sys.argv[x:y].
+
+    Used for a recipe to be able to take parameters from the command line.
+
+    Returns:
+      An args parsing object that can be used to parse command line options.
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dry_run', help='Tool dry run', default=False, action='store_true')
+
+    for arg in self._recipe.args:
+      action = 'store_true' if isinstance(arg.default, bool) else 'store'
+      parser.add_argument(arg.switch, help=arg.help_text, default=arg.default, action=action)
+
+    parser.set_defaults(**config.Config.GetExtra())
+
+    return parser
+
+  def GetRecipeDefaults(self) -> dict[str, Any]:
+    """Collects recipe argument defaults."""
+    return {arg.switch.replace('--', ''): arg.default for arg in self._recipe.args}
+
+  def ApplyArgs(self, params: dict[str, Any]) -> None:
+    """Validates and applies parameters to interpolate into a recipe.
+
+    Args:
+      params: A dict of arg name to value
+
+    Raises:
+      errors.CriticalError: If one or more arguments could not be validated.
+    """
+    self._running_args = params
+    self._dry_run = self._running_args.get('dry_run', False)
+
+    # Validate the args first
+    self._ValidateArguments(self._dry_run)
+
+    # Then interpolate them into the recipe
+    self._InterpolateArgs()
+
+  def RunAllModules(self) -> int:
+    """Runs the modules.
+
+    Returns:
+      Unix style - 1 on error, 0 on success.
+    """
+    logger.info('Running modules...')
+
+    return_value = self._module_runner.Run(self._recipe.contents)
+    if not return_value:
+      logger.info('Modules run successfully!')
+    return return_value
+
+  def LogTelemetry(self) -> None:
+    """Prints collected telemetry if existing."""
+
+    for line in self._telemetry.FormatTelemetry().split('\n'):
+      logger.debug(line)
+
+  def LogExecutionPlan(self) -> None:
+    """log the execution plan."""
+    self._module_runner.LogExecutionPlan()
+
+  def AddLoggingHandler(self, handler: logging.Handler) -> None:
+    """Adds an additional logging handler."""
+    if handler not in logger.handlers:
+      logger.addHandler(handler)
+    self._module_runner.AddLoggingHandler(handler)
 
   def _DetermineDataFilesPath(self) -> None:
     """Determines the data files path.
@@ -192,24 +315,6 @@ class DFTimewolfTool(object):
     logger.debug("Recipe data path: {0:s}".format(data_files_path))
     self._data_files_path = data_files_path
 
-  def _GenerateHelpText(self) -> str:
-    """Generates help text with alphabetically sorted recipes.
-
-    Returns:
-      str: help text.
-    """
-    recipes = self._recipes_manager.GetRecipes()
-    if not recipes:
-      help_text = '\nNo recipes found.'
-    else:
-      help_text = '\nAvailable recipes:\n\n'
-      for recipe in recipes:
-        short_description = recipe.contents.get(
-            'short_description', 'No description')
-        help_text += ' {0:<35s}{1:s}\n'.format(recipe.name, short_description)
-
-    return help_text
-
   def _LoadConfigurationFromFile(self, configuration_file_path: str) -> None:
     """Loads a configuration from file.
 
@@ -224,76 +329,7 @@ class DFTimewolfTool(object):
     except errors.BadConfigurationError as exception:
       logger.warning('{0!s}'.format(exception))
 
-  def LoadConfiguration(self) -> None:
-    """Loads the configuration.
-
-    The following paths are tried. Values loaded last take precedence.
-
-    * <_data_files_path>/config.json
-    * /etc/dftimewolf.conf
-    * /usr/share/dftimewolf/dftimewolf.conf
-    * ~/.dftimewolfrc
-    * If set, wherever the DFTIMEWOLF_CONFIG environment variable points to.
-
-    """
-    configuration_file_path = os.path.join(self._data_files_path, 'config.json')
-    self._LoadConfigurationFromFile(configuration_file_path)
-
-    configuration_file_path = os.path.join('/', 'etc', 'dftimewolf.conf')
-    self._LoadConfigurationFromFile(configuration_file_path)
-
-    configuration_file_path = os.path.join(
-        '/', 'usr', 'share', 'dftimewolf', 'dftimewolf.conf')
-    self._LoadConfigurationFromFile(configuration_file_path)
-
-    user_directory = os.path.expanduser('~')
-    configuration_file_path = os.path.join(user_directory, '.dftimewolfrc')
-    self._LoadConfigurationFromFile(configuration_file_path)
-
-    env_config = os.environ.get('DFTIMEWOLF_CONFIG')
-    if env_config:
-      self._LoadConfigurationFromFile(env_config)
-
-  def ParseArguments(self, arguments: List[str]) -> None:
-    """Parses the command line arguments.
-
-    Args:
-      arguments (list[str]): command line arguments.
-
-    Raises:
-      CommandLineParseError: If arguments could not be parsed.
-    """
-    help_text = self._GenerateHelpText()
-
-    argument_parser = argparse.ArgumentParser(
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        description=help_text)
-
-    self._AddRecipeOptions(argument_parser)
-
-    self._command_line_options = argument_parser.parse_args(arguments)
-
-    if not getattr(self._command_line_options, 'recipe', None):
-      error_message = '\nPlease specify a recipe.\n' + help_text
-      raise errors.CommandLineParseError(error_message)
-
-    self._recipe = self._command_line_options.recipe
-    self.dry_run = self._command_line_options.dry_run
-
-    self._telemetry.SetRecipeName(self._recipe['name'])
-
-    logger.info('Loading recipe {0:s}...'.format(self._recipe['name']))
-    # Raises errors.RecipeParseError on error.
-    self._module_runner.Initialise(self._recipe, MODULES)
-
-    module_cnt = len(self._recipe.get('modules', [])) + \
-                 len(self._recipe.get('preflights', []))
-    logger.info('Loaded recipe {0:s} with {1:d} modules'.format(
-        self._recipe['name'], module_cnt))
-
-    self._running_args = vars(self._command_line_options)
-
-  def ValidateArguments(self, dry_run: bool=False) -> None:
+  def _ValidateArguments(self, dry_run: bool=False) -> None:
     """Validate the arguments.
 
     Args:
@@ -302,10 +338,9 @@ class DFTimewolfTool(object):
     Raises:
       errors.CriticalError: If one or more arguments could not be validated.
     """
-    recipe = self._recipes_manager.Recipes()[self._recipe['name']]
     error_messages = []
 
-    for arg in recipe.args:
+    for arg in self._recipe.args:
       expanded_argument = self._SubstituteValidationParameters(arg)
 
       switch = expanded_argument.switch.replace('--', '')
@@ -314,34 +349,27 @@ class DFTimewolfTool(object):
 
       if argument_mandatory or argument_value is not None:
         try:
-          valid_value = validators_manager.ValidatorsManager.Validate(
-              argument_value, arg, dry_run)
+          valid_value = validators_manager.ValidatorsManager.Validate(argument_value, arg, dry_run)
           self._running_args[switch] = valid_value
         except errors.RecipeArgsValidationFailure as exception:
-          error_messages.append(
-              f'Invalid argument: "{arg.switch}" with value "{argument_value}".'
-              f' Error: {str(exception)}')
+          error_messages.append(f'Invalid argument: "{arg.switch}" with value "{argument_value}". Error: {str(exception)}')
         except errors.RecipeArgsValidatorError as exception:
-          error_messages.append(
-            f'Argument validation error: "{arg.switch}" with '
-            f'value "{argument_value}". Error: '
-            f'{str(exception)}')
+          error_messages.append(f'Argument validation error: "{arg.switch}" with value "{argument_value}". Error: {str(exception)}')
 
     if error_messages:
       for message in error_messages:
         logger.critical(message)
       raise errors.CriticalError('At least one argument failed validation')
 
-  def InterpolateArgs(self) -> None:
+  def _InterpolateArgs(self) -> None:
     """Interpolate config values and CLI args into the recipe args."""
-    for module in (self._recipe.get('preflights', []) +
-                   self._recipe.get('modules', [])):
+    for module in (self._recipe.contents.get('preflights', []) +
+                   self._recipe.contents.get('modules', [])):
       module['args'] = utils.ImportArgsFromDict(module['args'],
                                                 self._running_args,
                                                 config.Config)
 
-  def _SubstituteValidationParameters(
-      self, arg: "resources.RecipeArgument") -> "resources.RecipeArgument":
+  def _SubstituteValidationParameters(self, arg: resources.RecipeArgument) -> resources.RecipeArgument:
     """Replaces parameters in the format specification of an argument validator.
 
     Args:
@@ -359,68 +387,9 @@ class DFTimewolfTool(object):
                 self._running_args[to_substitute])
     return arg
 
-  def ReadRecipes(self) -> None:
-    """Reads the recipe files."""
-    if os.path.isdir(self._data_files_path):
-      recipes_path = os.path.join(self._data_files_path, 'recipes')
-      if os.path.isdir(recipes_path):
-        self._recipes_manager.ReadRecipesFromDirectory(recipes_path)
-
-  def ReadAdditionalRecipes(self, directory: str) -> None:
-    """Reads additional recipes from a given directory."""
-    self._recipes_manager.ReadRecipesFromDirectory(directory)
-
-  def RunAllModules(self) -> int:
-    """Runs the modules.
-
-    Returns:
-      0 on success, 1 on error."""
-    logger.info('Running modules...')
-    return_value = self._module_runner.Run(self._running_args)
-    if not return_value:
-      logger.info('Modules run successfully!')
-    return return_value
-
-  def LogTelemetry(self) -> None:
-    """Prints collected telemetry if existing."""
-
-    for line in self._telemetry.FormatTelemetry().split('\n'):
-      logger.debug(line)
-
-  def RecipesManager(self) -> recipes_manager.RecipesManager:
-    """Returns the recipes manager."""
-    return self._recipes_manager
-
-  def InitializeTelemetry(self) -> telemetry.BaseTelemetry:
-    """Initializes the telemetry object."""
-    return telemetry.GetTelemetry(uuid=self._uuid)
-
-  def PublishMessage(
-      self, source: str, message: str, is_error: bool = False) -> None:
-    """Receives a message for publishing.
-
-    The base class does nothing with this (as the method in module also logs the
-    message). This method exists to be overridden for other UIs.
-
-    Args:
-      source: The source of the message.
-      message: The message content.
-      is_error: True if the message is an error message, False otherwise.
-    """
-
-  def LogExecutionPlan(self) -> None:
-    """log the execution plan."""
-    self._module_runner.LogExecutionPlan()
-
   def GetReport(self) -> str:
     """Fetches the runtime report from the module runner."""
     return f'\n{self._module_runner.GenerateReport()}'
-
-  def AddLoggingHandler(self, handler: logging.Handler) -> None:
-    """Adds an additional logging handler."""
-    if handler not in logger.handlers:
-      logger.addHandler(handler)
-    self._module_runner.AddLoggingHandler(handler)
 
 
 def SignalHandler(*unused_argvs: Any) -> None:
@@ -478,43 +447,42 @@ def SetupLogging(stdout_log: bool = False) -> None:
 
 
 def RunTool() -> int:
-  """
-  Runs DFTimewolfTool.
+  """Runs DFTimewolfTool.
 
   Returns:
     int: 0 DFTimewolf could be run successfully, 1 otherwise.
   """
   tool = DFTimewolfTool()
 
-  # TODO: log errors if this fails.
-  tool.LoadConfiguration()
-
   try:
+    tool.LoadConfiguration()
     tool.ReadRecipes()
-  except (KeyError, errors.RecipeParseError, errors.CriticalError) as exception:
-    logger.critical(str(exception))
-    return 1
 
-  try:
-    tool.ParseArguments(sys.argv[1:])
-  except (errors.CommandLineParseError,
-          errors.RecipeParseError,
-          errors.CriticalError) as exception:
-    logger.critical(str(exception))
-    return 1
+    help_requested = any(h in sys.argv for h in ('-h', '--help'))
 
-  try:
-    tool.ValidateArguments(tool.dry_run)
-  except errors.CriticalError as exception:
-    logger.critical(str(exception))
-    return 1
+    if len(sys.argv) < 2 or help_requested:
+      print(tool.GenerateHelpText(), file=sys.stderr)
+      return not help_requested
 
-  tool.InterpolateArgs()
-  tool.LogExecutionPlan()
+    tool.SelectRecipe(sys.argv[1])
+    args_parser = tool.GenerateArgsParserForRecipe()
+    params = vars(args_parser.parse_args(sys.argv[2:]))
+
+    tool.ApplyArgs(params)
+  except recipes_manager.RecipeNotFoundError as error:
+    logger.error(str(error))
+    print(tool.GenerateHelpText(), file=sys.stderr)
+    return 1
+  except Exception as error:  # pylint: disable=broad-except
+    logger.critical(str(error))
+    logger.debug('', exc_info=True)
+    return 1
 
   if tool.dry_run:
     logger.info("Exiting as --dry_run flag is set.")
     return 0
+
+  tool.LogExecutionPlan()
 
   return_value = tool.RunAllModules()
 

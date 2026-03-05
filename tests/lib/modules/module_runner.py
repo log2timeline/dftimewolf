@@ -95,11 +95,11 @@ class ModuleRunnerTest(parameterized.TestCase):
         time.sleep(1)
       mock_dm_1_process.side_effect = mock_delay
 
-      running_args = {'recipe': test_recipe.basic_recipe}
+      running_args = test_recipe.basic_recipe
       # pytype: disable=unsupported-operands
-      running_args['recipe']['preflights'][0]['args'] = {'args': 'none'}
-      running_args['recipe']['modules'][0]['args'] = {'runtime_value': 'value 1'}
-      running_args['recipe']['modules'][1]['args'] = {'runtime_value': 'value 2'}
+      running_args['preflights'][0]['args'] = {'args': 'none'}
+      running_args['modules'][0]['args'] = {'runtime_value': 'value 1'}
+      running_args['modules'][1]['args'] = {'runtime_value': 'value 2'}
       # pytype: enable=unsupported-operands
 
       self._runner.Initialise(test_recipe.basic_recipe, TEST_MODULES)
@@ -142,8 +142,8 @@ class ModuleRunnerTest(parameterized.TestCase):
       mock_parent.attach_mock(mock_dm_1_process, 'mock_dm_1_process')
       mock_parent.attach_mock(mock_dm_2_process, 'mock_dm_2_process')
 
-      running_args = {'recipe': test_recipe.with_runtime_names}
-      running_args['recipe']['preflights'][0]['args'] = {'args': 'none'}  # pytype: disable=unsupported-operands
+      running_args = test_recipe.with_runtime_names
+      running_args['preflights'][0]['args'] = {'args': 'none'}  # pytype: disable=unsupported-operands
 
       self._runner.Initialise(test_recipe.with_runtime_names, TEST_MODULES)
       return_value = self._runner.Run(running_args=running_args)
@@ -184,8 +184,8 @@ class ModuleRunnerTest(parameterized.TestCase):
       mock_parent.attach_mock(mock_tacm_postprocess, 'mock_tacm_postprocess')
 
       # The generator module will create 3 containers with values 'one', 'two', 'three'
-      running_args = {'recipe': test_recipe.threaded_no_preflights}
-      running_args['recipe']['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
+      running_args = test_recipe.threaded_no_preflights
+      running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
 
       self._runner.Initialise(test_recipe.threaded_no_preflights, TEST_MODULES)
       return_value = self._runner.Run(running_args=running_args)
@@ -202,8 +202,8 @@ class ModuleRunnerTest(parameterized.TestCase):
   def test_ContainerHandlingWithThreadedModules(self):
     """Tests container handling and delivery with threaded modules."""
     # The generator module will create 3 containers with values 'one', 'two', 'three'
-    running_args = {'recipe': test_recipe.threaded_no_preflights}
-    running_args['recipe']['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
+    running_args = test_recipe.threaded_no_preflights
+    running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
 
     self._runner.Initialise(test_recipe.threaded_no_preflights, TEST_MODULES)
 
@@ -229,7 +229,7 @@ class ModuleRunnerTest(parameterized.TestCase):
 
     Ref: https://github.com/log2timeline/dftimewolf/issues/503
     """
-    running_args = {'recipe': test_recipe.issue_503_recipe}
+    running_args = test_recipe.issue_503_recipe
 
     self._runner.Initialise(test_recipe.issue_503_recipe, TEST_MODULES)
 
@@ -390,7 +390,7 @@ class ModuleRunnerTest(parameterized.TestCase):
           mock.patch('tests.test_modules.modules.DummyModule2.Process') as mock_dm_2_process):
       mock_dp_1_setup.side_effect = exception
 
-      running_args = {'recipe': test_recipe.basic_recipe}
+      running_args = test_recipe.basic_recipe
 
       self._runner.Initialise(test_recipe.basic_recipe, TEST_MODULES)
       return_value = self._runner.Run(running_args=running_args)
@@ -424,7 +424,7 @@ class ModuleRunnerTest(parameterized.TestCase):
           mock.patch('tests.test_modules.modules.DummyModule2.Process') as mock_dm_2_process):
       mock_dp_1_process.side_effect = exception
 
-      running_args = {'recipe': test_recipe.basic_recipe}
+      running_args = test_recipe.basic_recipe
 
       self._runner.Initialise(test_recipe.basic_recipe, TEST_MODULES)
       return_value = self._runner.Run(running_args=running_args)
@@ -457,7 +457,7 @@ class ModuleRunnerTest(parameterized.TestCase):
           mock.patch('tests.test_modules.modules.DummyModule2.Process') as mock_dm_2_process):
       mock_dm_1_setup.side_effect = exception
 
-      running_args = {'recipe': test_recipe.basic_recipe}
+      running_args = test_recipe.basic_recipe
 
       self._runner.Initialise(test_recipe.basic_recipe, TEST_MODULES)
       return_value = self._runner.Run(running_args=running_args)
@@ -489,7 +489,7 @@ class ModuleRunnerTest(parameterized.TestCase):
           mock.patch('tests.test_modules.modules.DummyModule2.Process') as mock_dm_2_process):
       mock_dm_1_process.side_effect = exception
 
-      running_args = {'recipe': test_recipe.basic_recipe}
+      running_args = test_recipe.basic_recipe
 
       self._runner.Initialise(test_recipe.basic_recipe, TEST_MODULES)
       return_value = self._runner.Run(running_args=running_args)
@@ -520,8 +520,8 @@ class ModuleRunnerTest(parameterized.TestCase):
       mock_tacm_setup.side_effect = exception
 
       # The generator module will create 3 containers with values 'one', 'two', 'three'
-      running_args = {'recipe': test_recipe.threaded_no_preflights}
-      running_args['recipe']['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
+      running_args = test_recipe.threaded_no_preflights
+      running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
 
       self._runner.Initialise(test_recipe.threaded_no_preflights, TEST_MODULES)
       return_value = self._runner.Run(running_args=running_args)
@@ -549,8 +549,8 @@ class ModuleRunnerTest(parameterized.TestCase):
       mock_tacm_preprocess.side_effect = exception
 
       # The generator module will create 3 containers with values 'one', 'two', 'three'
-      running_args = {'recipe': test_recipe.threaded_no_preflights}
-      running_args['recipe']['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
+      running_args = test_recipe.threaded_no_preflights
+      running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
 
       self._runner.Initialise(test_recipe.threaded_no_preflights, TEST_MODULES)
       return_value = self._runner.Run(running_args=running_args)
@@ -578,8 +578,8 @@ class ModuleRunnerTest(parameterized.TestCase):
       mock_tacm_process.side_effect = [None, exception, None]
 
       # The generator module will create 3 containers with values 'one', 'two', 'three'
-      running_args = {'recipe': test_recipe.threaded_no_preflights}
-      running_args['recipe']['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
+      running_args = test_recipe.threaded_no_preflights
+      running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
 
       self._runner.Initialise(test_recipe.threaded_no_preflights, TEST_MODULES)
       return_value = self._runner.Run(running_args=running_args)

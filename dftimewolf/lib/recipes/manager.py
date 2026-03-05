@@ -11,6 +11,10 @@ from typing import List, Union, Dict, TextIO
 from dftimewolf.lib import errors, resources
 
 
+class RecipeNotFoundError(Exception):
+  """Error for a recipe not being found."""
+
+
 class RecipesManager(object):
   """Recipes manager."""
 
@@ -68,6 +72,17 @@ class RecipesManager(object):
     """
     return sorted(self._recipes.values(), key=lambda recipe: recipe.name)
 
+  def GetRecipe(self, recipe_name: str) -> resources.Recipe:
+    """Retrieves the requested recipe.
+
+    Returns:
+      The recipe matching the name
+    """
+    if recipe_name not in self._recipes:
+      raise RecipeNotFoundError(f'Recipe {recipe_name} not found')
+
+    return self._recipes[recipe_name]
+
   def ReadRecipeFromFile(self, path: str) -> None:
     """Reads a recipe from a JSON file.
 
@@ -93,6 +108,9 @@ class RecipesManager(object):
     Args:
       path (str): path of the directory containing the recipes JSON files.
     """
+    if not os.path.isdir(path):
+      return
+
     for file_path in glob.glob(os.path.join(path, '*.json')):
       self.ReadRecipeFromFile(file_path)
 
