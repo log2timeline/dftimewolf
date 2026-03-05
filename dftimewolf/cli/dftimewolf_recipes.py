@@ -9,19 +9,17 @@ import signal
 import sys
 import typing
 import uuid
+from typing import Any, Optional, cast
 
-from typing import Optional, Any, cast
-
-from dftimewolf.lib.validators import manager as validators_manager
-from dftimewolf.lib import resources
-
-from dftimewolf.lib import logging_utils
-from dftimewolf.lib import telemetry
 from dftimewolf import config
-from dftimewolf.lib.modules import module_runner
 from dftimewolf.lib import errors
+from dftimewolf.lib import logging_utils
+from dftimewolf.lib import resources
+from dftimewolf.lib import telemetry
 from dftimewolf.lib import utils
+from dftimewolf.lib.modules import module_runner
 from dftimewolf.lib.recipes import manager as recipes_manager
+from dftimewolf.lib.validators import manager as validators_manager
 
 
 # pylint: disable=line-too-long

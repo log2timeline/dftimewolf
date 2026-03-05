@@ -2,8 +2,8 @@
 
 # pylint: disable=line-too-long
 
-from unittest import mock
 import time
+from unittest import mock
 
 from absl.testing import absltest
 from absl.testing import parameterized
@@ -11,10 +11,9 @@ from absl.testing import parameterized
 from dftimewolf.lib import errors
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.modules import module_runner
-
 from tests.test_modules import modules
-from tests.test_modules import thread_aware_modules
 from tests.test_modules import test_recipe
+from tests.test_modules import thread_aware_modules
 
 
 TEST_MODULES = {
@@ -253,11 +252,11 @@ class ModuleRunnerTest(parameterized.TestCase):
 
   def test_FinalReportBasicRecipe(self):
     """Tests the final report against a simple recipe."""
-    running_args = {'recipe': test_recipe.basic_recipe}
+    running_args = test_recipe.basic_recipe
     # pytype: disable=unsupported-operands
-    running_args['recipe']['preflights'][0]['args'] = {'args': 'none'}
-    running_args['recipe']['modules'][0]['args'] = {'runtime_value': 'value 1'}
-    running_args['recipe']['modules'][1]['args'] = {'runtime_value': 'value 2'}
+    running_args['preflights'][0]['args'] = {'args': 'none'}
+    running_args['modules'][0]['args'] = {'runtime_value': 'value 1'}
+    running_args['modules'][1]['args'] = {'runtime_value': 'value 2'}
     # pytype: enable=unsupported-operands
 
     self._runner.Initialise(test_recipe.basic_recipe, TEST_MODULES)
@@ -284,18 +283,18 @@ class ModuleRunnerTest(parameterized.TestCase):
   def test_FinalReportBasicRecipeErrors(self):
     """Tests the final report against a simple recipe."""
     def _new_dummy1_process(self):
-      self.ModuleError('Non-critical error', critical=False)
+      self.ModuleError('Non-critical error message', critical=False)
     def _new_dummy2_process(self):
-      self.ModuleError('Critical error', critical=True)
+      self.ModuleError('Critical error message', critical=True)
 
     modules.DummyModule1.Process = _new_dummy1_process
     modules.DummyModule2.Process = _new_dummy2_process
 
-    running_args = {'recipe': test_recipe.basic_recipe}
+    running_args = test_recipe.basic_recipe
     # pytype: disable=unsupported-operands
-    running_args['recipe']['preflights'][0]['args'] = {'args': 'none'}
-    running_args['recipe']['modules'][0]['args'] = {'runtime_value': 'value 1'}
-    running_args['recipe']['modules'][1]['args'] = {'runtime_value': 'value 2'}
+    running_args['preflights'][0]['args'] = {'args': 'none'}
+    running_args['modules'][0]['args'] = {'runtime_value': 'value 1'}
+    running_args['modules'][1]['args'] = {'runtime_value': 'value 2'}
     # pytype: enable=unsupported-operands
 
     self._runner.Initialise(test_recipe.basic_recipe, TEST_MODULES)
@@ -312,17 +311,18 @@ class ModuleRunnerTest(parameterized.TestCase):
                      '----------\n'
                      'DummyModule1:\n'
                      '  Message from DummyModule1:SetUp\n'
-                     '  Non-critical error\n'
+                     '  Non-critical error message\n'
                      '----------\n'
                      'DummyModule2:\n'
                      '  Message from DummyModule2:SetUp\n'
-                     '  Critical error\n'
+                     '  Critical error message\n'
+                     '  Critical error encountered in DummyModule2: Critical error message\n'
                      '----------')
 
   def test_FinalReportThreadedRecipe(self):
     """Tests the final report against a simple recipe."""
-    running_args = {'recipe': test_recipe.threaded_no_preflights}
-    running_args['recipe']['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
+    running_args = test_recipe.threaded_no_preflights
+    running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
 
     self._runner.Initialise(test_recipe.threaded_no_preflights, TEST_MODULES)
     return_value = self._runner.Run(running_args=running_args)
@@ -347,11 +347,11 @@ class ModuleRunnerTest(parameterized.TestCase):
   def test_FinalReportThreadedRecipeErrors(self):
     """Tests the final report against a simple recipe."""
     def _new_tacm_process(self, _unused):
-      self.ModuleError('Critical error', critical=True)
+      self.ModuleError('Critical error message', critical=True)
     thread_aware_modules.ThreadAwareConsumerModule.Process = _new_tacm_process
 
-    running_args = {'recipe': test_recipe.threaded_no_preflights}
-    running_args['recipe']['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
+    running_args = test_recipe.threaded_no_preflights
+    running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
 
     self._runner.Initialise(test_recipe.threaded_no_preflights, TEST_MODULES)
     return_value = self._runner.Run(running_args=running_args)
@@ -367,10 +367,11 @@ class ModuleRunnerTest(parameterized.TestCase):
                      'ThreadAwareConsumerModule:\n'
                      '  Message from ThreadAwareConsumerModule:SetUp\n'
                      '  Message from ThreadAwareConsumerModule:PreProcess\n'
-                     '  Critical error\n'
-                     '  Critical error\n'
-                     '  Critical error\n'
+                     '  Critical error message\n'
+                     '  Critical error message\n'
+                     '  Critical error message\n'
                      '  Message from ThreadAwareConsumerModule:PostProcess\n'
+                     '  Critical error encountered in ThreadAwareConsumerModule: Critical error message\n'
                      '----------')
 
   @parameterized.named_parameters(

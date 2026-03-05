@@ -28,7 +28,7 @@ class DummyModule1(module.BaseModule):
                                    container_type=containers.Report)
     self.PublishMessage('Message from DummyModule1:SetUp')
 
-  def Callback(self, container):
+  def Callback(self, _container):
     """Dummy callback that we just want to have called"""
     self.PublishMessage('Message from DummyModule1:Callback')
 

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """Contains dummy modules used in thread aware tests."""
 
-from typing import TypeVar
 import time
+from typing import TypeVar
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import interface
