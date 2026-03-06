@@ -82,6 +82,7 @@ class AWSCollectorTest(modules_test_base.ModuleTestBase):
         'fake_incident_id',
         remote_instance_id='my-owned-instance-id'
     )
+    self._AssertNoErrors()
     self.assertEqual(
         'test-remote-profile-name', self._module.remote_profile_name)
     self.assertEqual('test-remote-zone', self._module.remote_zone)
@@ -119,6 +120,7 @@ class AWSCollectorTest(modules_test_base.ModuleTestBase):
         analysis_profile_name='test-analysis-profile-name',
         analysis_zone='test-analysis-zone'
     )
+    self._AssertNoErrors()
     self.assertEqual(
         'test-remote-profile-name', self._module.remote_profile_name)
     self.assertEqual('test-remote-zone', self._module.remote_zone)

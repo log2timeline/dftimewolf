@@ -416,7 +416,7 @@ class ModuleRunner(object):
 
   def _HandledException(self, error: errors.DFTimewolfError, runtime_name: str) -> None:
     """Handles DFTimewolfError exceptions."""
-    message = f'Critical error encountered in {runtime_name}: {str(error)}'
+    message = f'Critical error encountered: {str(error)}'
     self._logger.error(message)
     self.PublishMessage(source=runtime_name, message=message, is_error=True)
     self._logger.debug('', exc_info=True)
@@ -424,7 +424,7 @@ class ModuleRunner(object):
 
   def _UnhandledException(self, error: Exception, runtime_name: str) -> None:
     """Handles an otherwise unhandled exception."""
-    message = f'Unhandled critical exception encountered in {runtime_name}: {str(error)}'
+    message = f'Unhandled critical exception encountered: {str(error)}'
     self._logger.error(message)
     self.PublishMessage(source=runtime_name, message=message, is_error=True)
     self._logger.debug('', exc_info=True)

@@ -42,6 +42,7 @@ class OpenRelikProcessorTest(modules_test_base.ModuleTestBase):
       api_client.APIClient("fake_api", "fake_key")
     )
     status_generator = self._module.PollWorkflowStatus(456)
+    self._AssertNoErrors()
 
     # Create some fake data for a successful workflow
     fake_workflow = {

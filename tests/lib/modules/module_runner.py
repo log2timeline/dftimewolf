@@ -316,7 +316,7 @@ class ModuleRunnerTest(parameterized.TestCase):
                      'DummyModule2:\n'
                      '  Message from DummyModule2:SetUp\n'
                      '  Critical error message\n'
-                     '  Critical error encountered in DummyModule2: Critical error message\n'
+                     '  Critical error encountered: Critical error message\n'
                      '----------')
 
   def test_FinalReportThreadedRecipe(self):
@@ -371,14 +371,14 @@ class ModuleRunnerTest(parameterized.TestCase):
                      '  Critical error message\n'
                      '  Critical error message\n'
                      '  Message from ThreadAwareConsumerModule:PostProcess\n'
-                     '  Critical error encountered in ThreadAwareConsumerModule: Critical error message\n'
+                     '  Critical error encountered: Critical error message\n'
                      '----------')
 
   @parameterized.named_parameters(
-      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True)),
-      ('unhandled', RuntimeError('Test error'))
+      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Critical error encountered: Critical error'),
+      ('unhandled', RuntimeError('Test error'), 'Unhandled critical exception encountered: Test error')
   )
-  def test_PreflightSetUpCriticalError(self, exception):
+  def test_PreflightSetUpCriticalError(self, exception, expected_error_message):
     """Tests an error in Preflights SetUp cancels execution of later modules."""
     # If a preflight SetUp fails, then the Process for the same preflight should
     # not be attempted, and no modules SetUp or Process should be attempted.
@@ -408,11 +408,13 @@ class ModuleRunnerTest(parameterized.TestCase):
       # Make sure a stacktrace makes it to the debug log
       self._mock_logger.assert_has_calls([mock.call.debug('', exc_info=True)])
 
+      self.assertIn(expected_error_message, self._runner.GenerateReport())
+
   @parameterized.named_parameters(
-      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True)),
-      ('unhandled', RuntimeError('Test error'))
+      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Critical error encountered: Critical error'),
+      ('unhandled', RuntimeError('Test error'), 'Unhandled critical exception encountered: Test error')
   )
-  def test_PreflightProcessCriticalError(self, exception):
+  def test_PreflightProcessCriticalError(self, exception, expected_error_message):
     """Tests an error in Preflights Process cancels execution of later modules."""
     # If a preflight Process fails, then no module should have SetUp or Process
     # called.
@@ -442,11 +444,13 @@ class ModuleRunnerTest(parameterized.TestCase):
       # Make sure a stacktrace makes it to the debug log
       self._mock_logger.assert_has_calls([mock.call.debug('', exc_info=True)])
 
+      self.assertIn(expected_error_message, self._runner.GenerateReport())
+
   @parameterized.named_parameters(
-      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True)),
-      ('unhandled', RuntimeError('Test error'))
+      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Critical error encountered: Critical error'),
+      ('unhandled', RuntimeError('Test error'), 'Unhandled critical exception encountered: Test error')
   )
-  def test_ModuleSetUpCriticalError(self, exception):
+  def test_ModuleSetUpCriticalError(self, exception, expected_error_message):
     """Tests an error in a modules SetUp cancels execution of later modules."""
     # If a module fails in SetUp, then that module should not have Process called.
     with (mock.patch('tests.test_modules.modules.DummyPreflightModule.SetUp') as mock_dp_1_setup,
@@ -475,11 +479,13 @@ class ModuleRunnerTest(parameterized.TestCase):
       # Make sure a stacktrace makes it to the debug log
       self._mock_logger.assert_has_calls([mock.call.debug('', exc_info=True)])
 
+      self.assertIn(expected_error_message, self._runner.GenerateReport())
+
   @parameterized.named_parameters(
-      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True)),
-      ('unhandled', RuntimeError('Test error'))
+      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Critical error encountered: Critical error'),
+      ('unhandled', RuntimeError('Test error'), 'Unhandled critical exception encountered: Test error')
   )
-  def test_ModuleProcessCriticalError(self, exception):
+  def test_ModuleProcessCriticalError(self, exception, expected_error_message):
     """Tests an error in a modules Process doesn't cancel execution of later modules."""
     with (mock.patch('tests.test_modules.modules.DummyPreflightModule.SetUp') as mock_dp_1_setup,
           mock.patch('tests.test_modules.modules.DummyPreflightModule.Process') as mock_dp_1_process,
@@ -507,11 +513,13 @@ class ModuleRunnerTest(parameterized.TestCase):
       # Make sure a stacktrace makes it to the debug log
       self._mock_logger.assert_has_calls([mock.call.debug('', exc_info=True)])
 
+      self.assertIn(expected_error_message, self._runner.GenerateReport())
+
   @parameterized.named_parameters(
-      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True)),
-      ('unhandled', RuntimeError('Test error'))
+      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Critical error encountered: Critical error'),
+      ('unhandled', RuntimeError('Test error'), 'Unhandled critical exception encountered: Test error')
   )
-  def test_ThreadedModuleSetUpCriticalError(self, exception):
+  def test_ThreadedModuleSetUpCriticalError(self, exception, expected_error_message):
     """Tests an error in SetUp of a threaded module."""
     # If a module fails in SetUp, process methods shouldn't be called.
     with (mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.SetUp') as mock_tacm_setup,
@@ -536,11 +544,13 @@ class ModuleRunnerTest(parameterized.TestCase):
       # Make sure a stacktrace makes it to the debug log
       self._mock_logger.assert_has_calls([mock.call.debug('', exc_info=True)])
 
+      self.assertIn(expected_error_message, self._runner.GenerateReport())
+
   @parameterized.named_parameters(
-      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True)),
-      ('unhandled', RuntimeError('Test error'))
+      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Critical error encountered: Critical error'),
+      ('unhandled', RuntimeError('Test error'), 'Unhandled critical exception encountered: Test error')
   )
-  def test_ThreadedModulePreProcessCriticalError(self, exception):
+  def test_ThreadedModulePreProcessCriticalError(self, exception, expected_error_message):
     """Tests an error in PreProcess of a threaded module."""
     # If a module fails in PreProcess, other process methods shouldn't be called.
     with (mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.SetUp') as mock_tacm_setup,
@@ -565,11 +575,13 @@ class ModuleRunnerTest(parameterized.TestCase):
       # Make sure a stacktrace makes it to the debug log
       self._mock_logger.assert_has_calls([mock.call.debug('', exc_info=True)])
 
+      self.assertIn(expected_error_message, self._runner.GenerateReport())
+
   @parameterized.named_parameters(
-      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True)),
-      ('unhandled', RuntimeError('Test error'))
+      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Critical error encountered: Critical error'),
+      ('unhandled', RuntimeError('Test error'), 'Unhandled critical exception encountered: Test error')
   )
-  def test_ThreadedModuleProcessCriticalError(self, exception):
+  def test_ThreadedModuleProcessCriticalError(self, exception, expected_error_message):
     """Tests an error in Process of a threaded module."""
     # If a module fails in Process, PostProcess is still called.
     with (mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.SetUp') as mock_tacm_setup,
@@ -593,6 +605,8 @@ class ModuleRunnerTest(parameterized.TestCase):
 
       # Make sure a stacktrace makes it to the debug log
       self._mock_logger.assert_has_calls([mock.call.debug('', exc_info=True)])
+
+      self.assertIn(expected_error_message, self._runner.GenerateReport())
 
 
 if __name__ == '__main__':
