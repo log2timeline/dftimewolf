@@ -890,7 +890,6 @@ class GRROsqueryCollectorTest(modules_test_base.ModuleTestBase):
     self._module.StoreContainer(
       containers.OsqueryQuery(
           'SELECT * FROM processes',
-          configuration_path='/test/path',
           file_collection_columns=['path']))
     self._module.SetUp(
         hostnames='C.0000000000000001',
@@ -931,7 +930,6 @@ class GRROsqueryCollectorTest(modules_test_base.ModuleTestBase):
             timeout_millis=300000,
             ignore_stderr_errors=False,
             configuration_content='',
-            configuration_path='/test/path',
             file_collection_columns=['path']
         )
     )

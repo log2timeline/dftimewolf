@@ -1365,7 +1365,6 @@ class GRROsqueryCollector(GRRFlow):
     flow_args.timeout_millis = self.timeout_millis
     flow_args.ignore_stderr_errors = self.ignore_stderr_errors
     flow_args.configuration_content = osquery_container.configuration_content
-    flow_args.configuration_path = osquery_container.configuration_path
     flow_args.file_collection_columns.extend(
         osquery_container.file_collection_columns)
 

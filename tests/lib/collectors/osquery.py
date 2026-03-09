@@ -26,7 +26,6 @@ class OsqueryCollectorTest(modules_test_base.ModuleTestBase):
     """Tests that the collector can be initialized."""
     self.assertEqual(self._module.osqueries, [])
     self.assertEqual(self._module.configuration_content, '')
-    self.assertEqual(self._module.configuration_path, '')
     self.assertEqual(self._module.file_collection_columns, [])
 
   def testSetupError(self) -> None:
@@ -79,22 +78,6 @@ class OsqueryCollectorTest(modules_test_base.ModuleTestBase):
     with self.assertRaises(DFTimewolfError) as context:
       self._module.SetUp(
           query='SELECT * FROM processes;', paths='',
-          configuration_content='test', remote_configuration_path='test')
-    self.assertEqual(
-        context.exception.message,
-        'Only one configuration argument can be set.')
-
-    with self.assertRaises(DFTimewolfError) as context:
-      self._module.SetUp(
-          query='SELECT * FROM processes;', paths='',
-          local_configuration_path ='test', remote_configuration_path='test')
-    self.assertEqual(
-        context.exception.message,
-        'Only one configuration argument can be set.')
-
-    with self.assertRaises(DFTimewolfError) as context:
-      self._module.SetUp(
-          query='SELECT * FROM processes;', paths='',
           local_configuration_path ='test', configuration_content='test')
     self.assertEqual(
         context.exception.message,
@@ -107,14 +90,6 @@ class OsqueryCollectorTest(modules_test_base.ModuleTestBase):
     self.assertEqual(
         context.exception.message,
         'Osquery configuration does not contain valid JSON.')
-
-  def testSetUpRemoteConfigurationPath(self) -> None:
-    """Tests the collector's SetUp() function with the remote config path."""
-    self._module.SetUp(
-        query='SELECT * from test;',
-        paths='ok',
-        remote_configuration_path='/test/path')
-    self.assertEqual(self._module.configuration_path, '/test/path')
 
   def testSetUpLocalConfigurationPath(self) -> None:
     """Tests the collector's SetUp() function with the local config path."""
@@ -164,7 +139,6 @@ class OsqueryCollectorTest(modules_test_base.ModuleTestBase):
     self.assertEqual(len(containers), 1)
     self.assertEqual(containers[0].query, "SELECT * FROM processes;")
     self.assertEqual(containers[0].configuration_content, '')
-    self.assertEqual(containers[0].configuration_path, '')
 
   @mock.patch('os.path.exists')
   def testProcessQueryPack(self, mock_exists) -> None:

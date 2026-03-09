@@ -577,8 +577,6 @@ class OsqueryQuery(interface.AttributeContainer):
     query (str): The osquery query.
     configuration_content (str): The JSON content of an osquery
         configuration.
-    configuration_path (str): The path to an osquery configuration
-        file on the client.
     name (Optional[str]): A name for the osquery.
     platforms (Optional[List[str]]): A constraint on the platform(s) the query
         should be run.  Valid values are 'darwin', 'linux', 'windows',
@@ -593,7 +591,6 @@ class OsqueryQuery(interface.AttributeContainer):
     self,
     query: str,
     configuration_content: str = '',
-    configuration_path: str = '',
     name: Optional[str] = None,
     platforms: Optional[List[str]] = None,
     description: Optional[str] = None,
@@ -605,7 +602,6 @@ class OsqueryQuery(interface.AttributeContainer):
     self.platforms = platforms
     self.query = query
     self.configuration_content = configuration_content
-    self.configuration_path = configuration_path
     self.file_collection_columns = file_collection_columns or []
 
   def __str__(self) -> str:

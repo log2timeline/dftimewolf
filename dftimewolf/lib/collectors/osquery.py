@@ -21,8 +21,6 @@ class OsqueryCollector(module.BaseModule):
 
   Attributes:
     osqueries (List[containers.OsqueryQuery]): list of osquery containers.
-    configuration_path (str): the path to a configuration file on the
-        client.
     configuration_content (str): the JSON configuration content.
     file_collection_columns (List[str]): The list of file collection
         columns.
@@ -49,7 +47,6 @@ class OsqueryCollector(module.BaseModule):
                      telemetry_=telemetry_,
                      publish_message_callback=publish_message_callback)
     self.osqueries: List[containers.OsqueryQuery] = []
-    self.configuration_path: str = ''
     self.configuration_content: str = ''
     self.file_collection_columns: List[str] = []
 
@@ -129,7 +126,6 @@ class OsqueryCollector(module.BaseModule):
               description=entry.get('description', ''),
               platforms=platform,
               configuration_content=self.configuration_content,
-              configuration_path=self.configuration_path,
               file_collection_columns=self.file_collection_columns))
 
   def _LoadTextFileToState(self, path: str) -> None:
@@ -148,7 +144,6 @@ class OsqueryCollector(module.BaseModule):
                   description='',
                   platforms=None,
                   configuration_content=self.configuration_content,
-                  configuration_path=self.configuration_path,
                   file_collection_columns=self.file_collection_columns))
         else:
           self.ModuleError(
@@ -160,7 +155,6 @@ class OsqueryCollector(module.BaseModule):
       self,
       query: str,
       paths: str,
-      remote_configuration_path: str = '',
       local_configuration_path: str = '',
       configuration_content: str = '',
       file_collection_columns: Optional[str] = None
@@ -176,9 +170,7 @@ class OsqueryCollector(module.BaseModule):
     The GRR osquery flow can also be set up to use a custom osquery
     configuration on invocation (see
     https://osquery.readthedocs.io/en/stable/deployment/configuration/)
-    either:
-    * as an existing file on the GRR client using remote_configuration_path
-    * as a temporary file on the GRR client where the content can come from
+    as a temporary file on the GRR client where the content can come from
     a file, using local_cofiguration_path, on the user's local machine or a
     string value, using configuration_content.
 
@@ -188,8 +180,6 @@ class OsqueryCollector(module.BaseModule):
     Args:
       query: osquery query.
       paths: osquery filepaths.
-      remote_configuration_path: the path to a remote osquery configuration file
-          on the GRR client.
       configuration_content: the configuration content, in JSON format.
       local_configuration_path: the path to a local osquery configuration file.
       file_collection_columns: The comma-seaparated list of file collection
@@ -198,16 +188,11 @@ class OsqueryCollector(module.BaseModule):
     if not query and not paths:
       self.ModuleError('Both query and paths cannot be empty.', critical=True)
 
-    if (remote_configuration_path and (
-        local_configuration_path or configuration_content) or (
-            local_configuration_path and configuration_content
-        )):
+    if local_configuration_path and configuration_content:
       self.ModuleError(
           'Only one configuration argument can be set.', critical=True)
 
-    if remote_configuration_path:
-      self.configuration_path = remote_configuration_path
-    elif local_configuration_path:
+    if local_configuration_path:
       with open(local_configuration_path, mode='r') as fd:
         configuration_content = fd.read()
 
@@ -229,7 +214,6 @@ class OsqueryCollector(module.BaseModule):
         self.osqueries.append(containers.OsqueryQuery(
             query=query,
             configuration_content=self.configuration_content,
-            configuration_path=self.configuration_path,
             file_collection_columns=self.file_collection_columns))
       else:
         self.ModuleError(

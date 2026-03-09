@@ -109,11 +109,11 @@ class OsqueryQueryDataTest(unittest.TestCase):
     """Tests the GetAttributeNames function."""
     attribute_container = containers.OsqueryQuery(
         query='', name='', description='', platforms=[],
-        configuration_content='', configuration_path='',
+        configuration_content='',
         file_collection_columns=[])
 
     expected_attribute_names = [
-        'configuration_content', 'configuration_path', 'description',
+        'configuration_content', 'description',
         'file_collection_columns', 'metadata', 'name', 'platforms', 'query',
     ]
 
