@@ -129,7 +129,6 @@ class GRRHuntOsqueryCollectorTest(modules_test_base.ModuleTestBase):
     self._module.StoreContainer(
         containers.OsqueryQuery(
             query='SELECT * FROM processes',
-            configuration_path='/test/path',
             file_collection_columns=['path']))
     self._module.SetUp(
         reason='random reason',
@@ -154,7 +153,6 @@ class GRRHuntOsqueryCollectorTest(modules_test_base.ModuleTestBase):
     self.assertEqual(call_kwargs['flow_args'].timeout_millis,
                      300000)
     self.assertEqual(call_kwargs['flow_args'].ignore_stderr_errors, False)
-    self.assertEqual(call_kwargs['flow_args'].configuration_path, '/test/path')
     self.assertEqual(call_kwargs['flow_args'].file_collection_columns, ['path'])
     self.assertEqual(call_kwargs['flow_name'], 'OsqueryFlow')
     self.assertEqual(call_kwargs['hunt_runner_args'].description,

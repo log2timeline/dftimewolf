@@ -10,7 +10,6 @@
       "args": {
         "query": "@osquery_query",
         "paths": "@osquery_paths",
-        "remote_configuration_path": "@remote_configuration_path",
         "local_configuration_path": "@local_configuration_path",
         "configuration_content": "@configuration_content",
         "file_collection_columns": "@file_collection_columns"
@@ -51,11 +50,6 @@
       "--osquery_paths",
       "Path(s) to text file containing one osquery query per line.",
       null
-    ],
-    [
-      "--remote_configuration_path",
-      "Path to a remote osquery configuration file on the GRR client.",
-      ""
     ],
     [
       "--local_configuration_path",
