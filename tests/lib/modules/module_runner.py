@@ -316,7 +316,7 @@ class ModuleRunnerTest(parameterized.TestCase):
                      'DummyModule2:\n'
                      '  Message from DummyModule2:SetUp\n'
                      '  Critical error message\n'
-                     '  Critical error encountered: Critical error message\n'
+                     '  Error encountered: Critical error message\n'
                      '----------')
 
   def test_FinalReportThreadedRecipe(self):
@@ -371,11 +371,11 @@ class ModuleRunnerTest(parameterized.TestCase):
                      '  Critical error message\n'
                      '  Critical error message\n'
                      '  Message from ThreadAwareConsumerModule:PostProcess\n'
-                     '  Critical error encountered: Critical error message\n'
+                     '  Error encountered: Critical error message\n'
                      '----------')
 
   @parameterized.named_parameters(
-      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Critical error encountered: Critical error'),
+      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Error encountered: Critical error'),
       ('unhandled', RuntimeError('Test error'), 'Unhandled critical exception encountered: Test error')
   )
   def test_PreflightSetUpCriticalError(self, exception, expected_error_message):
@@ -411,7 +411,7 @@ class ModuleRunnerTest(parameterized.TestCase):
       self.assertIn(expected_error_message, self._runner.GenerateReport())
 
   @parameterized.named_parameters(
-      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Critical error encountered: Critical error'),
+      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Error encountered: Critical error'),
       ('unhandled', RuntimeError('Test error'), 'Unhandled critical exception encountered: Test error')
   )
   def test_PreflightProcessCriticalError(self, exception, expected_error_message):
@@ -447,7 +447,7 @@ class ModuleRunnerTest(parameterized.TestCase):
       self.assertIn(expected_error_message, self._runner.GenerateReport())
 
   @parameterized.named_parameters(
-      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Critical error encountered: Critical error'),
+      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Error encountered: Critical error'),
       ('unhandled', RuntimeError('Test error'), 'Unhandled critical exception encountered: Test error')
   )
   def test_ModuleSetUpCriticalError(self, exception, expected_error_message):
@@ -482,7 +482,7 @@ class ModuleRunnerTest(parameterized.TestCase):
       self.assertIn(expected_error_message, self._runner.GenerateReport())
 
   @parameterized.named_parameters(
-      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Critical error encountered: Critical error'),
+      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Error encountered: Critical error'),
       ('unhandled', RuntimeError('Test error'), 'Unhandled critical exception encountered: Test error')
   )
   def test_ModuleProcessCriticalError(self, exception, expected_error_message):
@@ -516,7 +516,7 @@ class ModuleRunnerTest(parameterized.TestCase):
       self.assertIn(expected_error_message, self._runner.GenerateReport())
 
   @parameterized.named_parameters(
-      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Critical error encountered: Critical error'),
+      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Error encountered: Critical error'),
       ('unhandled', RuntimeError('Test error'), 'Unhandled critical exception encountered: Test error')
   )
   def test_ThreadedModuleSetUpCriticalError(self, exception, expected_error_message):
@@ -547,7 +547,7 @@ class ModuleRunnerTest(parameterized.TestCase):
       self.assertIn(expected_error_message, self._runner.GenerateReport())
 
   @parameterized.named_parameters(
-      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Critical error encountered: Critical error'),
+      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Error encountered: Critical error'),
       ('unhandled', RuntimeError('Test error'), 'Unhandled critical exception encountered: Test error')
   )
   def test_ThreadedModulePreProcessCriticalError(self, exception, expected_error_message):
@@ -578,7 +578,7 @@ class ModuleRunnerTest(parameterized.TestCase):
       self.assertIn(expected_error_message, self._runner.GenerateReport())
 
   @parameterized.named_parameters(
-      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Critical error encountered: Critical error'),
+      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Error encountered: Critical error'),
       ('unhandled', RuntimeError('Test error'), 'Unhandled critical exception encountered: Test error')
   )
   def test_ThreadedModuleProcessCriticalError(self, exception, expected_error_message):
