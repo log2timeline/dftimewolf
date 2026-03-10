@@ -9,19 +9,17 @@ import signal
 import sys
 import typing
 import uuid
+from typing import Any, Optional, cast
 
-from typing import Optional, Any, cast
-
-from dftimewolf.lib.validators import manager as validators_manager
-from dftimewolf.lib import resources
-
-from dftimewolf.lib import logging_utils
-from dftimewolf.lib import telemetry
 from dftimewolf import config
-from dftimewolf.lib.modules import module_runner
 from dftimewolf.lib import errors
+from dftimewolf.lib import logging_utils
+from dftimewolf.lib import resources
+from dftimewolf.lib import telemetry
 from dftimewolf.lib import utils
+from dftimewolf.lib.modules import module_runner
 from dftimewolf.lib.recipes import manager as recipes_manager
+from dftimewolf.lib.validators import manager as validators_manager
 
 
 # pylint: disable=line-too-long
@@ -387,6 +385,10 @@ class DFTimewolfTool(object):
                 self._running_args[to_substitute])
     return arg
 
+  def GetReport(self) -> str:
+    """Fetches the runtime report from the module runner."""
+    return f'\n{self._module_runner.GenerateReport()}'
+
 
 def SignalHandler(*unused_argvs: Any) -> None:
   """Catches Ctrl + C to exit cleanly."""
@@ -483,6 +485,8 @@ def RunTool() -> int:
   return_value = tool.RunAllModules()
 
   tool.LogTelemetry()
+
+  print(tool.GetReport())
 
   return return_value
 

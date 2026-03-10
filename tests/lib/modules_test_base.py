@@ -1,14 +1,15 @@
 """A base class for DFTW module testing."""
 
+import dataclasses
 from typing import Sequence, Type
 from unittest import mock
-import dataclasses
+
 from absl.testing import parameterized
 
-from dftimewolf.lib.containers import interface
-from dftimewolf.lib.containers import manager as container_manager
 from dftimewolf.lib import cache
 from dftimewolf.lib import module
+from dftimewolf.lib.containers import interface
+from dftimewolf.lib.containers import manager as container_manager
 
 
 # pylint: disable=line-too-long

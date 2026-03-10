@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """Contains dummy modules used in thread aware tests."""
 
-from typing import TypeVar
 import time
+from typing import TypeVar
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import interface
@@ -26,6 +26,7 @@ class TestContainer(interface.AttributeContainer):
   def __str__(self) -> str:
     return self.value
 
+
 class TestContainerTwo(interface.AttributeContainer):
   """Test attribute container."""
 
@@ -34,6 +35,7 @@ class TestContainerTwo(interface.AttributeContainer):
   def __init__(self, value: str) -> None:
     super(TestContainerTwo, self).__init__()
     self.value = value
+
 
 class TestContainerThree(interface.AttributeContainer):
   """Test attribute container."""
@@ -63,17 +65,18 @@ class ContainerGeneratorModule(module.BaseModule):
 
   def SetUp(self, runtime_value=None): # pylint: disable=arguments-differ
     """Dummy setup function."""
-    print(self.name + ' Setup!')
     self.list = runtime_value.split(',')
+    self.PublishMessage('Message from ContainerGeneratorModule:SetUp')
 
   def Process(self):
     """Dummy Process function."""
-    print(self.name + ' Process!')
     for item in self.list:
       container = TestContainer(item)
       self.StoreContainer(container)
     container = TestContainerTwo(','.join(self.list))
     self.StoreContainer(container)
+    self.PublishMessage('Message from ContainerGeneratorModule:Process')
+
 
 class ThreadAwareConsumerModule(module.ThreadAwareModule):
   """This is a dummy Thread Aware Module. Consumes from
@@ -81,12 +84,10 @@ class ThreadAwareConsumerModule(module.ThreadAwareModule):
 
   def SetUp(self): # pylint: disable=arguments-differ
     """SetUp"""
-    self.logger.info('{0:s} SetUp!'.format(self.name))
+    self.PublishMessage('Message from ThreadAwareConsumerModule:SetUp')
 
   def Process(self, container) -> None:
     """Process"""
-    self.logger.info('{0:s} Process!'.format(self.name))
-
     time.sleep(1)
 
     # This generates and stores a container in state.
@@ -96,6 +97,9 @@ class ThreadAwareConsumerModule(module.ThreadAwareModule):
     # This modifies the container passed in as a parameter.
     container.value += ' appended'
 
+    self.PublishMessage(
+        f'Message from ThreadAwareConsumerModule:Process - {container.value}')
+
   def GetThreadOnContainerType(self):
     return TestContainer
 
@@ -103,10 +107,11 @@ class ThreadAwareConsumerModule(module.ThreadAwareModule):
     return 2
 
   def PreProcess(self) -> None:
-    self.logger.info("ThreadAwareConsumerModule Static Pre Process")
+    self.PublishMessage('Message from ThreadAwareConsumerModule:PreProcess')
 
   def PostProcess(self) -> None:
-    self.logger.info("ThreadAwareConsumerModule Static Post Process")
+    self.PublishMessage('Message from ThreadAwareConsumerModule:PostProcess')
+
 
 class Issue503Module(module.ThreadAwareModule):
   """This is a module for testing a certain pattern of container handling.
@@ -129,11 +134,12 @@ class Issue503Module(module.ThreadAwareModule):
 
   def SetUp(self): # pylint: disable=arguments-differ
     """SetUp"""
-    self.logger.info('{0:s} SetUp!'.format(self.name))
+    self.PublishMessage('Message from Issue503Module:SetUp')
 
   def Process(self, container) -> None:
     """Process"""
-    self.logger.info('{0:s} Process!'.format(self.name))
+    self.PublishMessage(
+        f'Message from Issue503Module:Process - {container.value}')
     self.StoreContainer(TestContainer(container.value + " Processed"))
 
   def GetThreadOnContainerType(self):

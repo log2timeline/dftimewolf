@@ -1,5 +1,6 @@
 """Handles running DFTW modules."""
 
+import collections
 import importlib
 import logging
 import sys
@@ -35,8 +36,7 @@ class ModuleRunner(object):
     self._module_pool: dict[str, dftw_module.BaseModule] = {}
     self._threading_event_per_module: dict[str, threading.Event] = {}
 
-    self._errors: list[errors.DFTimewolfError] = []
-    self._abort_execution = False
+    self._errors: dict[str, list[errors.DFTimewolfError]] = collections.defaultdict(list)
     self._logger = logger
 
     self._container_manager = container_manager.ContainerManager(self._logger)
@@ -47,6 +47,19 @@ class ModuleRunner(object):
 
     self._cache = cache.DFTWCache()
     self._cache.SetCLIArgs(' '.join(sys.argv))
+
+    self._messages: dict[str, list[str]] = collections.defaultdict(list)
+
+  def PublishMessage(self, source: str, message: str, is_error: bool = False) -> None:
+    """Wrapper for a passed in PublishMessage.
+
+    Args:
+      source: The source module of the message
+      message: The message content
+      is_error: True if the message is for an error, false otherwise.
+    """
+    self._messages[source].append(message)
+    self._publish_message_callback(source, message, is_error)
 
   def Initialise(self, recipe_dict: dict[str, typing.Any], module_locations: dict[str, str]) -> None:
     """Based on a recipe and module mapping, load and instantiate required modules.
@@ -73,7 +86,7 @@ class ModuleRunner(object):
                                                        cache_=self._cache,
                                                        container_manager_=self._container_manager,
                                                        telemetry_=self._telemetry,
-                                                       publish_message_callback=self._publish_message_callback)
+                                                       publish_message_callback=self.PublishMessage)
       else:
         raise RuntimeError(f'Could not instantiate module {module_name}')
 
@@ -120,19 +133,19 @@ class ModuleRunner(object):
     self._telemetry.LogTelemetry(
       'preflights_delta', str(time_preflights - time_ready), 'core')
 
-    try:
-      if not self._abort_execution:
-        self._SetupModules()
-      else:
+    # If a preflight has a critical error, bail out.
+    for _, exceptions in self._errors.items():
+      if any(e.critical for e in exceptions):
+        self._logger.error('Halting execution due to preflight failure.')
         return 1
+
+    try:
+      self._SetupModules()
 
       time_setup = time.time()*1000
       self._telemetry.LogTelemetry('setup_delta', str(time_setup - time_preflights), 'core')
 
-      if not self._abort_execution:
-        self._RunModules()
-      else:
-        return 1
+      self._RunModules()
 
       time_run = time.time()*1000
       self._telemetry.LogTelemetry('run_delta', str(time_run - time_setup), 'core')
@@ -145,7 +158,24 @@ class ModuleRunner(object):
     total_time = time.time()*1000 - time_ready
     self._telemetry.LogTelemetry('total_time', str(total_time), 'core')
 
+    if self._errors:
+      return 1
     return 0
+
+  def GenerateReport(self) -> str:
+    """Generates the runtime report from the module results and errors."""
+    separator = '----------'
+
+    lines = [self._recipe['name'], separator]
+
+    for module, messages in self._messages.items():
+      if not messages:
+        continue
+      lines.append(f'{module}:')
+      lines.extend(f'  {message}' for message in messages)
+      lines.append(separator)
+
+    return '\n'.join(lines)
 
   def _ImportRecipeModules(self, module_locations: dict[str, str]) -> None:
     """Dynamically loads the modules declared in a recipe.
@@ -209,30 +239,25 @@ class ModuleRunner(object):
     for thread in threads:
       thread.join()
 
-    self._CheckErrors()
-
   def _SetUpAndRunPreflights(self) -> None:
     """Run all preflight modules."""
     for preflight_definition in self._recipe.get('preflights', []):
       preflight_name = preflight_definition['name']
       runtime_name = preflight_definition.get('runtime_name', preflight_name)
 
-      if self._abort_execution:
-        self._logger.warning('Aborting execution of %s due to previous unhandled error', runtime_name)
-        return
-
       preflight = self._module_pool[runtime_name]
+
       try:
         preflight.SetUp(**(self._module_setup_args[runtime_name]))
         preflight.Process()
-        self._container_manager.CompleteModule(runtime_name)
-        self._threading_event_per_module[runtime_name] = threading.Event()
-        self._threading_event_per_module[runtime_name].set()
-      except Exception:  # pylint: disable=broad-exception-caught
-        self._logger.error('Unhandled exception encountered in %s', runtime_name, exc_info=True)
-        self._abort_execution = True
-      finally:
-        self._CheckErrors()
+      except errors.DFTimewolfError as error:
+        self._HandledException(error, runtime_name)
+      except Exception as error:  # pylint: disable=broad-exception-caught
+        self._UnhandledException(error, runtime_name)
+
+      self._container_manager.CompleteModule(runtime_name)
+      self._threading_event_per_module[runtime_name] = threading.Event()
+      self._threading_event_per_module[runtime_name].set()
 
   def _SetupModuleThreadCallback(self, module_definition: dict[str, str]) -> None:
     """Calls the module's SetUp() function and sets a threading event for it.
@@ -248,30 +273,18 @@ class ModuleRunner(object):
 
     module = self._module_pool[runtime_name]
 
+    self._messages[runtime_name] = []
+
     try:
-      if self._abort_execution:
-        self._logger.warning('Aborting execution of %s due to previous unhandled error', runtime_name)
+      if runtime_name in self._errors and any(e.critical for e in self._errors[runtime_name]):
+        self._logger.warning('Aborting execution of %s due to previous critical error', runtime_name)
         return
 
       module.SetUp(**(self._module_setup_args[runtime_name]))
-    except errors.DFTimewolfError:
-      msg = "A critical error occurred in module {0:s}, aborting execution."
-      self._logger.critical(msg.format(module.name))
-      self._abort_execution = True
-    except Exception as exception:  # pylint: disable=broad-except
-      msg = 'An unknown error occurred in module {0:s}: {1!s}'.format(
-          module.name, exception)
-      self._logger.critical(msg)
-      # We're catching any exception that is not a DFTimewolfError, so we want
-      # to generate an error for further reporting.
-      error = errors.DFTimewolfError(
-          message=msg,
-          name='dftimewolf',
-          stacktrace=traceback.format_exc(),
-          critical=True,
-          unexpected=True)
-      self._errors.append(error)
-      self._abort_execution = True
+    except errors.DFTimewolfError as error:
+      self._HandledException(error, runtime_name)
+    except Exception as error:  # pylint: disable=broad-exception-caught
+      self._UnhandledException(error, runtime_name)
 
     self._threading_event_per_module[runtime_name] = threading.Event()
 
@@ -321,11 +334,8 @@ class ModuleRunner(object):
 
     module = self._module_pool[runtime_name]
 
-    # Abort processing if a previous module has had critical failures.
-    if self._abort_execution:
-      self._logger.critical(
-          'Aborting execution of {0:s} due to previous errors'.format(
-              module.name))
+    if runtime_name in self._errors and any(e.critical for e in self._errors[runtime_name]):
+      self._logger.warning('Aborting execution of %s due to previous critical error', runtime_name)
       self._threading_event_per_module[runtime_name].set()
       return
 
@@ -340,35 +350,18 @@ class ModuleRunner(object):
         self._HandleFuturesFromThreadedModule(futures_)
       else:
         module.Process()
-    except errors.DFTimewolfError:
-      self._logger.critical(
-          "Critical error in module {0:s}, aborting execution".format(
-              module.name))
-      self._abort_execution = True
-    except Exception as exception:  # pylint: disable=broad-except
-      self._abort_execution = True
-      msg = 'An unknown error occurred in module {0:s}: {1!s}'.format(
-          module.name, exception)
-      self._logger.critical(msg)
-      # We're catching any exception that is not a DFTimewolfError, so we want
-      # to generate an error for further reporting.
-      error = errors.DFTimewolfError(
-          message=msg,
-          name='dftimewolf',
-          stacktrace=traceback.format_exc(),
-          critical=True,
-          unexpected=True)
-      self._errors.append(error)
 
+      self._container_manager.CompleteModule(runtime_name)
+
+    except errors.DFTimewolfError as error:
+      self._HandledException(error, runtime_name)
+    except Exception as error:  # pylint: disable=broad-exception-caught
+      self._UnhandledException(error, runtime_name)
+
+    self._threading_event_per_module[runtime_name].set()
     self._logger.info('Module {0:s} finished execution'.format(runtime_name))
     total_time = utils.CalculateRunTime(time_start)
     module.LogTelemetry({"total_time": str(total_time)})
-    self._threading_event_per_module[runtime_name].set()
-
-    try:
-      self._container_manager.CompleteModule(runtime_name)
-    except Exception:  # pylint: disable=broad-exception-caught
-      self._logger.warning('Unknown exception encountered', exc_info=True)
 
   def _HandleFuturesFromThreadedModule(self, futures_: list[futures.Future[None]]) -> None:
     """Handles any futures raised by the async processing of a module.
@@ -386,35 +379,6 @@ class ModuleRunner(object):
       runtime_name = preflight_definition.get('runtime_name', preflight_name)
       preflight = self._module_pool[runtime_name]
       preflight.CleanUp()
-
-  def _CheckErrors(self) -> None:
-    """Checks for errors and exits if any of them are critical.
-
-    Raises:
-      errors.CriticalError: If any critical errors were found.
-    """
-    critical_errors = False
-
-    if self._errors:
-      self._logger.error('dfTimewolf encountered one or more errors:')
-
-    for index, error in enumerate(self._errors):
-      self._logger.error(
-          '{0:d}: error from {1:s}: {2:s}'.format(
-              index + 1, error.name, error.message))
-      if error.stacktrace:
-        for line in error.stacktrace.split('\n'):
-          self._logger.error(line)
-      if error.critical:
-        critical_errors = True
-
-    if any(error.unexpected for error in self._errors):
-      self._logger.critical('One or more unexpected errors occurred.')
-      self._logger.critical(
-          'Please consider opening an issue: {0:s}'.format(NEW_ISSUE_URL))
-
-    if critical_errors:
-      raise errors.CriticalError('Critical error found. Aborting.')
 
   def _FormatExecutionPlan(self) -> str:
     """Formats execution plan.
@@ -449,3 +413,24 @@ class ModuleRunner(object):
         plan += '  {0:s}{1:s}\n'.format(key.ljust(maxlen + 3), repr(value))
 
     return plan
+
+  def _HandledException(self, error: errors.DFTimewolfError, runtime_name: str) -> None:
+    """Handles DFTimewolfError exceptions."""
+    message = f'Error encountered: {str(error)}'
+    self._logger.error(message)
+    self.PublishMessage(source=runtime_name, message=message, is_error=True)
+    self._logger.debug('', exc_info=True)
+    self._errors[runtime_name].append(error)
+
+  def _UnhandledException(self, error: Exception, runtime_name: str) -> None:
+    """Handles an otherwise unhandled exception."""
+    message = f'Unhandled critical exception encountered: {str(error)}'
+    self._logger.error(message)
+    self.PublishMessage(source=runtime_name, message=message, is_error=True)
+    self._logger.debug('', exc_info=True)
+    self._errors[runtime_name].append(errors.DFTimewolfError(
+        message=message,
+        name=runtime_name,
+        stacktrace=traceback.format_exc(),
+        critical=True,
+        unexpected=True))

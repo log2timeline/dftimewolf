@@ -2,18 +2,18 @@
 
 # pylint: disable=line-too-long
 
-from unittest import mock
 import time
+from unittest import mock
 
 from absl.testing import absltest
 from absl.testing import parameterized
 
+from dftimewolf.lib import errors
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib.modules import module_runner
-
 from tests.test_modules import modules
-from tests.test_modules import thread_aware_modules
 from tests.test_modules import test_recipe
+from tests.test_modules import thread_aware_modules
 
 
 TEST_MODULES = {
@@ -50,6 +50,11 @@ class ModuleRunnerTest(parameterized.TestCase):
         telemetry_=self._mock_telemetry,
         publish_message_callback=self._mock_publish_message_callback)
 
+    # Back up some method pointers we will mess with to generate errors
+    self._orig_dummy1_process = modules.DummyModule1.Process
+    self._orig_dummy2_process = modules.DummyModule2.Process
+    self._orig_tacm_process = thread_aware_modules.ThreadAwareConsumerModule.Process
+
   def tearDown(self):
     """Deregister the modules used in tests."""
     modules_manager.ModulesManager.DeregisterModule(modules.DummyModule1)
@@ -58,6 +63,11 @@ class ModuleRunnerTest(parameterized.TestCase):
     modules_manager.ModulesManager.DeregisterModule(thread_aware_modules.ContainerGeneratorModule)
     modules_manager.ModulesManager.DeregisterModule(thread_aware_modules.ThreadAwareConsumerModule)
     modules_manager.ModulesManager.DeregisterModule(thread_aware_modules.Issue503Module)
+
+    # Restore method pointers
+    modules.DummyModule1.Process = self._orig_dummy1_process
+    modules.DummyModule2.Process = self._orig_dummy2_process
+    thread_aware_modules.ThreadAwareConsumerModule.Process = self._orig_tacm_process
 
   def test_BasicRecipe(self):
     """Tests method ordering with basic, single threaded modules."""
@@ -92,7 +102,8 @@ class ModuleRunnerTest(parameterized.TestCase):
       # pytype: enable=unsupported-operands
 
       self._runner.Initialise(test_recipe.basic_recipe, TEST_MODULES)
-      self._runner.Run(running_args=running_args)
+      return_value = self._runner.Run(running_args=running_args)
+      self.assertEqual(return_value, 0)
 
       self.assertEqual(mock_dp_1_setup.call_count, 1)
       self.assertEqual(mock_dp_1_process.call_count, 1)
@@ -134,7 +145,8 @@ class ModuleRunnerTest(parameterized.TestCase):
       running_args['preflights'][0]['args'] = {'args': 'none'}  # pytype: disable=unsupported-operands
 
       self._runner.Initialise(test_recipe.with_runtime_names, TEST_MODULES)
-      self._runner.Run(running_args=running_args)
+      return_value = self._runner.Run(running_args=running_args)
+      self.assertEqual(return_value, 0)
 
       self.assertEqual(mock_dp_1_setup.call_count, 1)
       self.assertEqual(mock_dp_1_process.call_count, 1)
@@ -175,7 +187,8 @@ class ModuleRunnerTest(parameterized.TestCase):
       running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
 
       self._runner.Initialise(test_recipe.threaded_no_preflights, TEST_MODULES)
-      self._runner.Run(running_args=running_args)
+      return_value = self._runner.Run(running_args=running_args)
+      self.assertEqual(return_value, 0)
 
       mock_parent.assert_has_calls([mock.call.mock_tacm_setup(),
                                     mock.call.mock_tacm_preprocess(),
@@ -195,7 +208,8 @@ class ModuleRunnerTest(parameterized.TestCase):
 
     # Mock out the container cleanup for this test
     with mock.patch.object(self._runner._container_manager, 'CompleteModule'):  # pylint: disable=protected-access
-      self._runner.Run(running_args=running_args)
+      return_value = self._runner.Run(running_args=running_args)
+      self.assertEqual(return_value, 0)
 
     output_containers = self._runner._container_manager.GetContainers(  # pylint: disable=protected-access
         'ThreadAwareConsumerModule', thread_aware_modules.TestContainerThree)
@@ -207,7 +221,7 @@ class ModuleRunnerTest(parameterized.TestCase):
     self.assertListEqual(sorted([c.value for c in output_containers]),
                          sorted(['one appended', 'two appended', 'three appended']))
 
-  def testThreadAwareModuleContainerReuse(self):
+  def test_ThreadAwareModuleContainerReuse(self):
     """Tests that containers are handled properly when they are configured to
     pop from the state by a ThreadAwareModule that uses the same container type
     for input and output.
@@ -225,7 +239,8 @@ class ModuleRunnerTest(parameterized.TestCase):
     container_manager.StoreContainer(container=thread_aware_modules.TestContainer('three'), source_module='Issue503Module')
 
     with mock.patch.object(container_manager, 'CompleteModule'):
-      self._runner.Run(running_args=running_args)
+      return_value = self._runner.Run(running_args=running_args)
+      self.assertEqual(return_value, 0)
 
     values = [container.value for container in container_manager.GetContainers(
         container_class=thread_aware_modules.TestContainer,
@@ -235,7 +250,135 @@ class ModuleRunnerTest(parameterized.TestCase):
                        'three Processed']
     self.assertEqual(sorted(values), sorted(expected_values))
 
-  def test_PreflightSetUpUnhandledError(self):
+  def test_FinalReportBasicRecipe(self):
+    """Tests the final report against a simple recipe."""
+    running_args = test_recipe.basic_recipe
+    # pytype: disable=unsupported-operands
+    running_args['preflights'][0]['args'] = {'args': 'none'}
+    running_args['modules'][0]['args'] = {'runtime_value': 'value 1'}
+    running_args['modules'][1]['args'] = {'runtime_value': 'value 2'}
+    # pytype: enable=unsupported-operands
+
+    self._runner.Initialise(test_recipe.basic_recipe, TEST_MODULES)
+    return_value = self._runner.Run(running_args=running_args)
+    self.assertEqual(return_value, 0)
+
+    self.assertEqual(self._runner.GenerateReport(),
+                     'dummy_recipe\n'
+                     '----------\n'
+                     'DummyPreflightModule:\n'
+                     '  Message from DummyPreflightModule:SetUp\n'
+                     '  Message from DummyPreflightModule:Process\n'
+                     '  Message from DummyPreflightModule:CleanUp\n'
+                     '----------\n'
+                     'DummyModule1:\n'
+                     '  Message from DummyModule1:SetUp\n'
+                     '  Message from DummyModule1:Process\n'
+                     '----------\n'
+                     'DummyModule2:\n'
+                     '  Message from DummyModule2:SetUp\n'
+                     '  Message from DummyModule2:Process\n'
+                     '----------')
+
+  def test_FinalReportBasicRecipeErrors(self):
+    """Tests the final report against a simple recipe."""
+    def _new_dummy1_process(self):
+      self.ModuleError('Non-critical error message', critical=False)
+    def _new_dummy2_process(self):
+      self.ModuleError('Critical error message', critical=True)
+
+    modules.DummyModule1.Process = _new_dummy1_process
+    modules.DummyModule2.Process = _new_dummy2_process
+
+    running_args = test_recipe.basic_recipe
+    # pytype: disable=unsupported-operands
+    running_args['preflights'][0]['args'] = {'args': 'none'}
+    running_args['modules'][0]['args'] = {'runtime_value': 'value 1'}
+    running_args['modules'][1]['args'] = {'runtime_value': 'value 2'}
+    # pytype: enable=unsupported-operands
+
+    self._runner.Initialise(test_recipe.basic_recipe, TEST_MODULES)
+    return_value = self._runner.Run(running_args=running_args)
+    self.assertEqual(return_value, 1)
+
+    self.assertEqual(self._runner.GenerateReport(),
+                     'dummy_recipe\n'
+                     '----------\n'
+                     'DummyPreflightModule:\n'
+                     '  Message from DummyPreflightModule:SetUp\n'
+                     '  Message from DummyPreflightModule:Process\n'
+                     '  Message from DummyPreflightModule:CleanUp\n'
+                     '----------\n'
+                     'DummyModule1:\n'
+                     '  Message from DummyModule1:SetUp\n'
+                     '  Non-critical error message\n'
+                     '----------\n'
+                     'DummyModule2:\n'
+                     '  Message from DummyModule2:SetUp\n'
+                     '  Critical error message\n'
+                     '  Error encountered: Critical error message\n'
+                     '----------')
+
+  def test_FinalReportThreadedRecipe(self):
+    """Tests the final report against a simple recipe."""
+    running_args = test_recipe.threaded_no_preflights
+    running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
+
+    self._runner.Initialise(test_recipe.threaded_no_preflights, TEST_MODULES)
+    return_value = self._runner.Run(running_args=running_args)
+    self.assertEqual(return_value, 0)
+
+    self.assertEqual(self._runner.GenerateReport(),
+                     'dummy_threaded_recipe\n'
+                     '----------\n'
+                     'ContainerGeneratorModule:\n'
+                     '  Message from ContainerGeneratorModule:SetUp\n'
+                     '  Message from ContainerGeneratorModule:Process\n'
+                     '----------\n'
+                     'ThreadAwareConsumerModule:\n'
+                     '  Message from ThreadAwareConsumerModule:SetUp\n'
+                     '  Message from ThreadAwareConsumerModule:PreProcess\n'
+                     '  Message from ThreadAwareConsumerModule:Process - one appended\n'
+                     '  Message from ThreadAwareConsumerModule:Process - two appended\n'
+                     '  Message from ThreadAwareConsumerModule:Process - three appended\n'
+                     '  Message from ThreadAwareConsumerModule:PostProcess\n'
+                     '----------')
+
+  def test_FinalReportThreadedRecipeErrors(self):
+    """Tests the final report against a simple recipe."""
+    def _new_tacm_process(self, _unused):
+      self.ModuleError('Critical error message', critical=True)
+    thread_aware_modules.ThreadAwareConsumerModule.Process = _new_tacm_process
+
+    running_args = test_recipe.threaded_no_preflights
+    running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
+
+    self._runner.Initialise(test_recipe.threaded_no_preflights, TEST_MODULES)
+    return_value = self._runner.Run(running_args=running_args)
+    self.assertEqual(return_value, 1)
+
+    self.assertEqual(self._runner.GenerateReport(),
+                     'dummy_threaded_recipe\n'
+                     '----------\n'
+                     'ContainerGeneratorModule:\n'
+                     '  Message from ContainerGeneratorModule:SetUp\n'
+                     '  Message from ContainerGeneratorModule:Process\n'
+                     '----------\n'
+                     'ThreadAwareConsumerModule:\n'
+                     '  Message from ThreadAwareConsumerModule:SetUp\n'
+                     '  Message from ThreadAwareConsumerModule:PreProcess\n'
+                     '  Critical error message\n'
+                     '  Critical error message\n'
+                     '  Critical error message\n'
+                     '  Message from ThreadAwareConsumerModule:PostProcess\n'
+                     '  Error encountered: Critical error message\n'
+                     '----------')
+
+  @parameterized.named_parameters(
+      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Error encountered: Critical error'),
+      ('unhandled', RuntimeError('Test error'), 'Unhandled critical exception encountered: Test error')
+  )
+  def test_PreflightSetUpCriticalError(self, exception, expected_error_message):
     """Tests an error in Preflights SetUp cancels execution of later modules."""
     # If a preflight SetUp fails, then the Process for the same preflight should
     # not be attempted, and no modules SetUp or Process should be attempted.
@@ -246,12 +389,13 @@ class ModuleRunnerTest(parameterized.TestCase):
           mock.patch('tests.test_modules.modules.DummyModule1.Process') as mock_dm_1_process,
           mock.patch('tests.test_modules.modules.DummyModule2.SetUp') as mock_dm_2_setup,
           mock.patch('tests.test_modules.modules.DummyModule2.Process') as mock_dm_2_process):
-      mock_dp_1_setup.side_effect = RuntimeError('Test error')
+      mock_dp_1_setup.side_effect = exception
 
       running_args = test_recipe.basic_recipe
 
       self._runner.Initialise(test_recipe.basic_recipe, TEST_MODULES)
-      self._runner.Run(running_args=running_args)
+      return_value = self._runner.Run(running_args=running_args)
+      self.assertEqual(return_value, 1)
 
       mock_dp_1_setup.assert_called_once()
       mock_dp_1_process.assert_not_called()
@@ -259,9 +403,18 @@ class ModuleRunnerTest(parameterized.TestCase):
       mock_dm_2_setup.assert_not_called()
       mock_dm_1_process.assert_not_called()
       mock_dm_2_process.assert_not_called()
-      mock_dp_1_cleanup.assert_called_once()
+      mock_dp_1_cleanup.assert_not_called()
 
-  def test_PreflightProcessUnhandledError(self):
+      # Make sure a stacktrace makes it to the debug log
+      self._mock_logger.assert_has_calls([mock.call.debug('', exc_info=True)])
+
+      self.assertIn(expected_error_message, self._runner.GenerateReport())
+
+  @parameterized.named_parameters(
+      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Error encountered: Critical error'),
+      ('unhandled', RuntimeError('Test error'), 'Unhandled critical exception encountered: Test error')
+  )
+  def test_PreflightProcessCriticalError(self, exception, expected_error_message):
     """Tests an error in Preflights Process cancels execution of later modules."""
     # If a preflight Process fails, then no module should have SetUp or Process
     # called.
@@ -272,12 +425,13 @@ class ModuleRunnerTest(parameterized.TestCase):
           mock.patch('tests.test_modules.modules.DummyModule1.Process') as mock_dm_1_process,
           mock.patch('tests.test_modules.modules.DummyModule2.SetUp') as mock_dm_2_setup,
           mock.patch('tests.test_modules.modules.DummyModule2.Process') as mock_dm_2_process):
-      mock_dp_1_process.side_effect = RuntimeError('Test error')
+      mock_dp_1_process.side_effect = exception
 
       running_args = test_recipe.basic_recipe
 
       self._runner.Initialise(test_recipe.basic_recipe, TEST_MODULES)
-      self._runner.Run(running_args=running_args)
+      return_value = self._runner.Run(running_args=running_args)
+      self.assertEqual(return_value, 1)
 
       mock_dp_1_setup.assert_called_once()
       mock_dp_1_process.assert_called_once()
@@ -285,11 +439,20 @@ class ModuleRunnerTest(parameterized.TestCase):
       mock_dm_2_setup.assert_not_called()
       mock_dm_1_process.assert_not_called()
       mock_dm_2_process.assert_not_called()
-      mock_dp_1_cleanup.assert_called_once()
+      mock_dp_1_cleanup.assert_not_called()
 
-  def test_ModuleSetUpUnhandledError(self):
+      # Make sure a stacktrace makes it to the debug log
+      self._mock_logger.assert_has_calls([mock.call.debug('', exc_info=True)])
+
+      self.assertIn(expected_error_message, self._runner.GenerateReport())
+
+  @parameterized.named_parameters(
+      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Error encountered: Critical error'),
+      ('unhandled', RuntimeError('Test error'), 'Unhandled critical exception encountered: Test error')
+  )
+  def test_ModuleSetUpCriticalError(self, exception, expected_error_message):
     """Tests an error in a modules SetUp cancels execution of later modules."""
-    # If a module fails in SetUp, then no modules should have Process called.
+    # If a module fails in SetUp, then that module should not have Process called.
     with (mock.patch('tests.test_modules.modules.DummyPreflightModule.SetUp') as mock_dp_1_setup,
           mock.patch('tests.test_modules.modules.DummyPreflightModule.Process') as mock_dp_1_process,
           mock.patch('tests.test_modules.modules.DummyPreflightModule.CleanUp') as mock_dp_1_cleanup,
@@ -297,25 +460,33 @@ class ModuleRunnerTest(parameterized.TestCase):
           mock.patch('tests.test_modules.modules.DummyModule1.Process') as mock_dm_1_process,
           mock.patch('tests.test_modules.modules.DummyModule2.SetUp') as mock_dm_2_setup,
           mock.patch('tests.test_modules.modules.DummyModule2.Process') as mock_dm_2_process):
-      mock_dm_1_setup.side_effect = RuntimeError('Test error')
+      mock_dm_1_setup.side_effect = exception
 
       running_args = test_recipe.basic_recipe
 
       self._runner.Initialise(test_recipe.basic_recipe, TEST_MODULES)
-      self._runner.Run(running_args=running_args)
+      return_value = self._runner.Run(running_args=running_args)
+      self.assertEqual(return_value, 1)
 
       mock_dp_1_setup.assert_called_once()
       mock_dp_1_process.assert_called_once()
       mock_dm_1_setup.assert_called_once()
-      mock_dm_2_setup.assert_not_called()
+      mock_dm_2_setup.assert_called_once()
       mock_dm_1_process.assert_not_called()
-      mock_dm_2_process.assert_not_called()
+      mock_dm_2_process.assert_called_once()
       mock_dp_1_cleanup.assert_called_once()
 
-  def test_ModuleProcessUnhandledError(self):
-    """Tests an error in a modules Process cancels execution of later modules."""
-    # If a module fails in Process, then dependant modules should not have
-    # Process called.
+      # Make sure a stacktrace makes it to the debug log
+      self._mock_logger.assert_has_calls([mock.call.debug('', exc_info=True)])
+
+      self.assertIn(expected_error_message, self._runner.GenerateReport())
+
+  @parameterized.named_parameters(
+      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Error encountered: Critical error'),
+      ('unhandled', RuntimeError('Test error'), 'Unhandled critical exception encountered: Test error')
+  )
+  def test_ModuleProcessCriticalError(self, exception, expected_error_message):
+    """Tests an error in a modules Process doesn't cancel execution of later modules."""
     with (mock.patch('tests.test_modules.modules.DummyPreflightModule.SetUp') as mock_dp_1_setup,
           mock.patch('tests.test_modules.modules.DummyPreflightModule.Process') as mock_dp_1_process,
           mock.patch('tests.test_modules.modules.DummyPreflightModule.CleanUp') as mock_dp_1_cleanup,
@@ -323,87 +494,119 @@ class ModuleRunnerTest(parameterized.TestCase):
           mock.patch('tests.test_modules.modules.DummyModule1.Process') as mock_dm_1_process,
           mock.patch('tests.test_modules.modules.DummyModule2.SetUp') as mock_dm_2_setup,
           mock.patch('tests.test_modules.modules.DummyModule2.Process') as mock_dm_2_process):
-      mock_dm_1_process.side_effect = RuntimeError('Test error')
+      mock_dm_1_process.side_effect = exception
 
       running_args = test_recipe.basic_recipe
 
       self._runner.Initialise(test_recipe.basic_recipe, TEST_MODULES)
-      self._runner.Run(running_args=running_args)
+      return_value = self._runner.Run(running_args=running_args)
+      self.assertEqual(return_value, 1)
 
       mock_dp_1_setup.assert_called_once()
       mock_dp_1_process.assert_called_once()
       mock_dm_1_setup.assert_called_once()
       mock_dm_2_setup.assert_called_once()
       mock_dm_1_process.assert_called_once()
-      mock_dm_2_process.assert_not_called()
+      mock_dm_2_process.assert_called_once()
       mock_dp_1_cleanup.assert_called_once()
 
-  def test_ThreadedModuleSetUpUnhandledError(self):
+      # Make sure a stacktrace makes it to the debug log
+      self._mock_logger.assert_has_calls([mock.call.debug('', exc_info=True)])
+
+      self.assertIn(expected_error_message, self._runner.GenerateReport())
+
+  @parameterized.named_parameters(
+      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Error encountered: Critical error'),
+      ('unhandled', RuntimeError('Test error'), 'Unhandled critical exception encountered: Test error')
+  )
+  def test_ThreadedModuleSetUpCriticalError(self, exception, expected_error_message):
     """Tests an error in SetUp of a threaded module."""
     # If a module fails in SetUp, process methods shouldn't be called.
     with (mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.SetUp') as mock_tacm_setup,
           mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PreProcess') as mock_tacm_preprocess,
           mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.Process') as mock_tacm_process,
           mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PostProcess') as mock_tacm_postprocess):
-      mock_tacm_setup.side_effect = RuntimeError('Test error')
+      mock_tacm_setup.side_effect = exception
 
       # The generator module will create 3 containers with values 'one', 'two', 'three'
       running_args = test_recipe.threaded_no_preflights
       running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
 
       self._runner.Initialise(test_recipe.threaded_no_preflights, TEST_MODULES)
-      self._runner.Run(running_args=running_args)
+      return_value = self._runner.Run(running_args=running_args)
+      self.assertEqual(return_value, 1)
 
       mock_tacm_setup.assert_called_once()
       mock_tacm_preprocess.assert_not_called()
       mock_tacm_process.assert_not_called()
       mock_tacm_postprocess.assert_not_called()
 
-  def test_ThreadedModulePreProcessUnhandledError(self):
+      # Make sure a stacktrace makes it to the debug log
+      self._mock_logger.assert_has_calls([mock.call.debug('', exc_info=True)])
+
+      self.assertIn(expected_error_message, self._runner.GenerateReport())
+
+  @parameterized.named_parameters(
+      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Error encountered: Critical error'),
+      ('unhandled', RuntimeError('Test error'), 'Unhandled critical exception encountered: Test error')
+  )
+  def test_ThreadedModulePreProcessCriticalError(self, exception, expected_error_message):
     """Tests an error in PreProcess of a threaded module."""
     # If a module fails in PreProcess, other process methods shouldn't be called.
     with (mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.SetUp') as mock_tacm_setup,
           mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PreProcess') as mock_tacm_preprocess,
           mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.Process') as mock_tacm_process,
           mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PostProcess') as mock_tacm_postprocess):
-      mock_tacm_preprocess.side_effect = RuntimeError('Test error')
+      mock_tacm_preprocess.side_effect = exception
 
       # The generator module will create 3 containers with values 'one', 'two', 'three'
       running_args = test_recipe.threaded_no_preflights
       running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
 
       self._runner.Initialise(test_recipe.threaded_no_preflights, TEST_MODULES)
-      self._runner.Run(running_args=running_args)
+      return_value = self._runner.Run(running_args=running_args)
+      self.assertEqual(return_value, 1)
 
       mock_tacm_setup.assert_called_once()
       mock_tacm_preprocess.assert_called_once()
       mock_tacm_process.assert_not_called()
       mock_tacm_postprocess.assert_not_called()
 
-  def test_ThreadedModuleProcessUnhandledError(self):
+      # Make sure a stacktrace makes it to the debug log
+      self._mock_logger.assert_has_calls([mock.call.debug('', exc_info=True)])
+
+      self.assertIn(expected_error_message, self._runner.GenerateReport())
+
+  @parameterized.named_parameters(
+      ('handled', errors.DFTimewolfError(message='Critical error', name='name', critical=True), 'Error encountered: Critical error'),
+      ('unhandled', RuntimeError('Test error'), 'Unhandled critical exception encountered: Test error')
+  )
+  def test_ThreadedModuleProcessCriticalError(self, exception, expected_error_message):
     """Tests an error in Process of a threaded module."""
-    # If a module fails in Process, Postprecoess is still called.
+    # If a module fails in Process, PostProcess is still called.
     with (mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.SetUp') as mock_tacm_setup,
           mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PreProcess') as mock_tacm_preprocess,
           mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.Process') as mock_tacm_process,
           mock.patch('tests.test_modules.thread_aware_modules.ThreadAwareConsumerModule.PostProcess') as mock_tacm_postprocess):
-      mock_tacm_process.side_effect = [None, RuntimeError('Test error'), None]
+      mock_tacm_process.side_effect = [None, exception, None]
 
       # The generator module will create 3 containers with values 'one', 'two', 'three'
       running_args = test_recipe.threaded_no_preflights
       running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
 
       self._runner.Initialise(test_recipe.threaded_no_preflights, TEST_MODULES)
-      self._runner.Run(running_args=running_args)
+      return_value = self._runner.Run(running_args=running_args)
+      self.assertEqual(return_value, 1)
 
       mock_tacm_setup.assert_called_once()
       mock_tacm_preprocess.assert_called_once()
       self.assertEqual(mock_tacm_process.call_count, 3)
       mock_tacm_postprocess.assert_called_once()
 
-  # TODO - Handled errors (eg, self.ModuleError)
-  # I won't bother testing handled errors - I plan to update how errors are
-  # handled very soon anyway.
+      # Make sure a stacktrace makes it to the debug log
+      self._mock_logger.assert_has_calls([mock.call.debug('', exc_info=True)])
+
+      self.assertIn(expected_error_message, self._runner.GenerateReport())
 
 
 if __name__ == '__main__':

@@ -24,17 +24,18 @@ class DummyModule1(module.BaseModule):
   def SetUp(self, runtime_value):  # pylint: disable=arguments-differ
     """Dummy setup function."""
     self.runtime_value = runtime_value
-    print(self.name + ' Setup!')
     self.RegisterStreamingCallback(callback=self.Callback,
                                    container_type=containers.Report)
+    self.PublishMessage('Message from DummyModule1:SetUp')
 
-  def Callback(self, container):
+  def Callback(self, _container):
     """Dummy callback that we just want to have called"""
+    self.PublishMessage('Message from DummyModule1:Callback')
 
   def Process(self):
     """Dummy Process function."""
-    print(self.name + ' Process!')
     self.LogTelemetry({'random_key1': 'random_value1'})
+    self.PublishMessage('Message from DummyModule1:Process')
 
 
 class DummyModule2(module.BaseModule):
@@ -56,12 +57,12 @@ class DummyModule2(module.BaseModule):
   def SetUp(self, runtime_value):  # pylint: disable=arguments-differ
     """Dummy setup function."""
     self.runtime_value = runtime_value
-    print(self.name + ' Setup!')
+    self.PublishMessage('Message from DummyModule2:SetUp')
 
   def Process(self):
     """Dummy Process function."""
-    print(self.name + ' Process!')
     self.LogTelemetry({'random_key2': 'random_value2'})
+    self.PublishMessage('Message from DummyModule2:Process')
 
 
 class DummyPreflightModule(module.PreflightModule):
@@ -81,12 +82,12 @@ class DummyPreflightModule(module.PreflightModule):
 
   def SetUp(self, args):  # pylint: disable=arguments-differ
     """Dummy Process function."""
-    print(self.name + ' SetUp!')
+    self.PublishMessage('Message from DummyPreflightModule:SetUp')
 
   def Process(self):
     """Dummy Process function."""
-    print(self.name + ' Process!')
+    self.PublishMessage('Message from DummyPreflightModule:Process')
 
   def CleanUp(self):
     """Dummy cleanup function."""
-    print(self.name + 'CleanUp!')
+    self.PublishMessage('Message from DummyPreflightModule:CleanUp')
