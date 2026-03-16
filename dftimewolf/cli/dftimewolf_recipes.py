@@ -214,7 +214,7 @@ class DFTimewolfTool(object):
     parser.add_argument('--dry_run', help='Tool dry run', default=False, action='store_true')
 
     for arg in self._recipe.args:
-      action = 'store_true' if isinstance(arg.default, bool) else 'store'
+      action = argparse.BooleanOptionalAction if isinstance(arg.default, bool) else 'store'
       parser.add_argument(arg.switch, help=arg.help_text, default=arg.default, action=action)
 
     parser.set_defaults(**config.Config.GetExtra())
