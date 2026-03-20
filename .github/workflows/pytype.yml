@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.12"]
+        python-version: ["3.12"]  # Pytype won't suppoer higher than 3.12 - https://github.com/google/pytype/tree/main
 
     steps:
     - uses: actions/checkout@v2
