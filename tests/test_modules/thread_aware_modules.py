@@ -104,7 +104,7 @@ class ThreadAwareConsumerModule(module.ThreadAwareModule):
     return TestContainer
 
   def GetThreadPoolSize(self):
-    return 2
+    return 1
 
   def PreProcess(self) -> None:
     self.PublishMessage('Message from ThreadAwareConsumerModule:PreProcess')

@@ -84,7 +84,7 @@ class WorkspaceAuditCollector(module.BaseModule):
       if os.path.exists(credentials_path):
         try:
           credentials = Credentials.from_authorized_user_file(
-              credentials_path, self.SCOPES)
+              credentials_path, self.SCOPES)  # type: ignore[no-untyped-call]
         except ValueError as exception:
           self.logger.warning(
               f'Unable to load credentials: {exception:s}')

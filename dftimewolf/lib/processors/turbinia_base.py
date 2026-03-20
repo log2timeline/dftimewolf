@@ -292,7 +292,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     if os.path.exists(credentials_path):
       try:
         credentials = Credentials.from_authorized_user_file(
-            credentials_path, scopes)
+            credentials_path, scopes)  # type: ignore[no-untyped-call]
       except ValueError as exception:
         msg = f'Error loading credentials: {exception!s}'
         self.ModuleError(msg, critical=True)
@@ -330,7 +330,7 @@ class TurbiniaProcessorBase(module.BaseModule):
     # Save credentials
     if credentials:
       with open(credentials_path, 'w', encoding='utf-8') as token:
-        token.write(credentials.to_json())
+        token.write(credentials.to_json())  # type: ignore[no-untyped-call]
 
     return credentials
 

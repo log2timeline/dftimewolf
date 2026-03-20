@@ -7,7 +7,7 @@ import pathlib
 import re
 import stat
 import time
-from concurrent.futures import ThreadPoolExecutor
+from concurrent import futures
 from typing import List, Optional, Tuple, Type, Callable
 
 import pandas as pd
@@ -1422,7 +1422,7 @@ class GRROsqueryCollector(GRRFlow):
     osquery_containers = self.GetContainers(containers.OsqueryQuery)
 
     host_osquery_futures = []
-    with ThreadPoolExecutor(self.GetQueryThreadPoolSize()) as executor:
+    with futures.ThreadPoolExecutor(self.GetQueryThreadPoolSize()) as executor:
       for osquery_container in osquery_containers:
         host_osquery_future = executor.submit(
           self._ProcessQuery, container.hostname, client, osquery_container)
