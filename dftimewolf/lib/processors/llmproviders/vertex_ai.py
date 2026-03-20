@@ -62,7 +62,7 @@ class VertexAILLMProvider(interface.LLMProvider):
       with open(service_account_path) as sa_file:
         info = json.loads(sa_file.read())
       sa_credential = (
-          service_account.Credentials.from_service_account_info(info))
+          service_account.Credentials.from_service_account_info(info))  # type: ignore[no-untyped-call]
       vertexai.init(
           credentials=sa_credential,
           api_key=api_key,

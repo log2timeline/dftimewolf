@@ -31,8 +31,7 @@ def GetGoogleOauth2Credential(
   with lock:
     if os.path.exists(credentials_path):
       credentials = Credentials.from_authorized_user_file(
-          credentials_path, scopes
-      )
+          credentials_path, scopes)  # type: ignore[no-untyped-call]
 
     # If there are no (valid) credentials available, let the user log in.
     if not credentials or not credentials.valid:

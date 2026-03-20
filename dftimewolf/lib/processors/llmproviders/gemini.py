@@ -57,9 +57,7 @@ class GeminiLLMProvider(interface.LLMProvider):
         sa_content = json.loads(sa_file.read())
       sa_credential = (
           service_account.Credentials.from_service_account_info(
-              sa_content
-          )
-      )
+              sa_content))  # type: ignore[no-untyped-call]
       genai.configure(credentials=sa_credential)  # type: ignore
     else:
       raise RuntimeError(
