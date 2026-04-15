@@ -62,6 +62,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
     self.all_disks = False
     self.stop_instances = False
     self._gcp_label = {}  # type: Dict[str, str]
+    self.source_zone = None  # type: Optional[str]
     self.warned = False  # type: bool
     self.failed_disks = []  # type: List[str]
     self.at_least_one_success = False
@@ -70,6 +71,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
   def SetUp(self,
             destination_project_name: Optional[str],
             source_project_name: str,
+            source_zone: Optional[str],
             destination_zone: str,
             remote_instance_names: Union[str, List[str], None],
             disk_names: Union[str, List[str], None],
@@ -93,6 +95,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
           to.
       source_project_name: Name of the remote project where the disks must be
           copied from.
+      source_zone: GCP zone in which the source disks are located.
       destination_zone: GCP zone in which disks should be copied to.
       remote_instance_names: Name of the instances in the remote project
           containing the disks to be copied.
@@ -131,6 +134,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
       self.disk_names = disk_names or []
     self.all_disks = all_disks
     self.stop_instances = stop_instances
+    self.source_zone = source_zone
 
   def PreProcess(self) -> None:
     """Organise any disks to be copied.
@@ -185,7 +189,8 @@ class GCEDiskCopy(module.ThreadAwareModule):
           self.source_project.project_id,
           self.destination_project.project_id,
           self.destination_project.default_zone,
-          disk_name=container.name)
+          disk_name=container.name,
+          src_zone=self.source_zone)
       self.at_least_one_success = True
       self.PublishMessage(f'Disk {container.name} successfully copied to '
           f'{new_disk.name}')
@@ -247,7 +252,8 @@ class GCEDiskCopy(module.ThreadAwareModule):
       list[str]: List of disk names to copy.
     """
     try:
-      remote_instance = self.source_project.compute.GetInstance(instance_name)
+      remote_instance = self.source_project.compute.GetInstance(
+          instance_name, zone=self.source_zone)
     except RuntimeError as exception:
       self.ModuleError(str(exception), critical=True)
 

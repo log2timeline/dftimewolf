@@ -9,6 +9,8 @@ from googleapiclient.errors import HttpError
 import httplib2
 
 import mock
+import typing
+
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal import compute
 from libcloudforensics import errors as lcf_errors
@@ -61,22 +63,24 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
   # For pytype
   _module: gce_disk_copy.GCEDiskCopy
 
-  def setUp(self):
+  def setUp(self) -> None:
     self._InitModule(gce_disk_copy.GCEDiskCopy)
     super().setUp()
 
-  def testSetUp(self):
+  def testSetUp(self) -> None:
     """Tests the SetUp method of the collector."""
     # Test setup with single disk and instance
     self._module.SetUp(
         'test-destination-project-name',
         'test-source-project-name',
+        'source_zone',
         'fake_zone',
         remote_instance_names='my-owned-instance',
         disk_names='fake-disk',
         all_disks=True,
         stop_instances=True
     )
+    self.assertEqual(self._module.source_zone, 'source_zone')
     self.assertEqual(self._module.destination_project.project_id,
                      'test-destination-project-name')
     self.assertEqual(self._module.source_project.project_id,
@@ -90,6 +94,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     self._module.SetUp(
         'test-destination-project-name',
         'test-source-project-name',
+        'source_zone',
         'fake_zone',
         'my-owned-instance1,my-owned-instance2',
         'fake-disk-1,fake-disk-2',
@@ -111,6 +116,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     self._module.SetUp(
         None,
         'test-source-project-name',
+        'source_zone',
         'fake_zone',
         remote_instance_names='my-owned-instance',
         disk_names='fake-disk',
@@ -126,12 +132,13 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     self.assertEqual(self._module.all_disks, True)
     self.assertEqual(self._module.stop_instances, True)
 
-  def testSetUpNothingProvided(self):
+  def testSetUpNothingProvided(self) -> None:
     """Tests that SetUp fails if no disks or instances are provided."""
     with self.assertRaises(errors.DFTimewolfError) as error:
       self._module.SetUp(
           'test-destination-project-name',
           'test-source-project-name',
+          'source_zone',
           'fake_zone',
           None,
           None,
@@ -141,7 +148,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     self.assertEqual(error.exception.message,
         'You need to specify at least an instance name or disks to copy')
 
-  def testStopWithNoInstance(self):
+  def testStopWithNoInstance(self) -> None:
     """Tests that SetUp fails if stop instance is requested, but no instance
     provided.
     """
@@ -149,6 +156,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
       self._module.SetUp(
           'test-destination-project-name',
           'test-source-project-name',
+          'source_zone',
           'fake_zone',
           None,
           'disk1',
@@ -159,6 +167,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
         'You need to specify an instance name to stop the instance')
 
   # pylint: disable=line-too-long,invalid-name
+  @typing.no_type_check
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.GetBootDisk')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetDisk')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.ListDisks')
@@ -184,6 +193,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     self._module.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
+        'source_zone',
         'fake_zone',
         'my-owned-instance',
         None,
@@ -202,6 +212,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     self._module.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
+        'source_zone',
         'fake_zone',
         'my-owned-instance',
         None,
@@ -219,6 +230,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     self._module.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
+        'source_zone',
         'fake_zone',
         'my-owned-instance',
         'another_disk_1,another_disk_2',
@@ -233,6 +245,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     actual = sorted([d.name for d in disks])
     self.assertEqual(expected, actual)
 
+  @typing.no_type_check
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
   def testInstanceNotFound(self, mock_GetInstance):
     """Test that an error is thrown when the instance isn't found."""
@@ -242,6 +255,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     self._module.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
+        'source_zone',
         'fake_zone',
         'nonexistent',
         None,
@@ -254,6 +268,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     self.assertEqual(
         error.exception.message, 'No instances found with disks to copy.')
 
+  @typing.no_type_check
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
   def testHTTPErrors(self, mock_GetInstance):
     """Tests the 403 checked for in PreProcess."""
@@ -266,6 +281,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     self._module.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
+        'source_zone',
         'fake_zone',
         'nonexistent',
         None,
@@ -286,6 +302,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     self._module.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
+        'source_zone',
         'fake_zone',
         'nonexistent',
         None,
@@ -298,6 +315,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
         '<HttpError 500 "Ok">')
 
   # pylint: disable=line-too-long
+  @typing.no_type_check
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
   @mock.patch('libcloudforensics.providers.gcp.forensics.CreateDiskCopy')
   @mock.patch('dftimewolf.lib.collectors.gce_disk_copy.GCEDiskCopy._GetDisksFromInstance')
@@ -320,6 +338,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     self._module.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
+        'source_zone',
         'fake_zone',
         'my-owned-instance',
         None,
@@ -334,11 +353,13 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
         mock.call('test-target-project-name',
                   'test-analysis-project-name',
                   'fake_zone',
-                  disk_name='disk1'),
+                  disk_name='disk1',
+                  src_zone='source_zone'),
         mock.call('test-target-project-name',
                   'test-analysis-project-name',
                   'fake_zone',
-                  disk_name='disk2')])
+                  disk_name='disk2',
+                  src_zone='source_zone')])
 
     FAKE_INSTANCE.Stop.assert_called_once()
 
@@ -352,6 +373,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
       self.assertEqual(d.project, 'test-analysis-project-name')
 
   # pylint: disable=line-too-long
+  @typing.no_type_check
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
   @mock.patch('libcloudforensics.providers.gcp.forensics.CreateDiskCopy')
   @mock.patch('dftimewolf.lib.collectors.gce_disk_copy.GCEDiskCopy._GetDisksFromInstance')
@@ -374,6 +396,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     self._module.SetUp(
         'test-analysis-project-name',
         'test-target-project-name',
+        'source_zone',
         'fake_zone',
         'my-owned-instance',
         None,
@@ -388,11 +411,13 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
         mock.call('test-target-project-name',
                   'test-analysis-project-name',
                   'fake_zone',
-                  disk_name='disk1'),
+                  disk_name='disk1',
+                  src_zone='source_zone'),
         mock.call('test-target-project-name',
                   'test-analysis-project-name',
                   'fake_zone',
-                  disk_name='disk2')])
+                  disk_name='disk2',
+                  src_zone='source_zone')])
 
     FAKE_INSTANCE.Stop.assert_not_called()
 
@@ -405,6 +430,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     for d in out_disks:
       self.assertEqual(d.project, 'test-analysis-project-name')
 
+  @typing.no_type_check
   @mock.patch('libcloudforensics.providers.gcp.forensics.CreateDiskCopy')
   def testProcessDiskCopyErrors(self, mock_CreateDiskCopy):
     """Tests that Process errors correctly in some scenarios."""
@@ -417,6 +443,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     self._module.SetUp(
         'test-destination-project-name',
         'test-source-project-name',
+        'source_zone',
         'fake_zone',
         None,
         'nonexistent',
@@ -442,6 +469,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     self._module.SetUp(
         'test-destination-project-name',
         'test-source-project-name',
+        'source_zone',
         'fake_zone',
         None,
         'nonexistent',
@@ -458,6 +486,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     self.assertEqual(error.exception.message,
         'Could not create disk. Permission denied.')
 
+  @typing.no_type_check
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
   @mock.patch('libcloudforensics.providers.gcp.forensics.CreateDiskCopy')
   @mock.patch('dftimewolf.lib.collectors.gce_disk_copy.GCEDiskCopy._GetDisksFromInstance')
@@ -481,6 +510,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     self._module.SetUp(
         destination_project_name='test-analysis-project-name',
         source_project_name='test-target-project-name',
+        source_zone='source_zone',
         destination_zone='fake_zone',
         remote_instance_names='not-found,found',
         disk_names=None,
@@ -502,11 +532,13 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
         mock.call('test-target-project-name',
                   'test-analysis-project-name',
                   'fake_zone',
-                  disk_name='disk1'),
+                  disk_name='disk1',
+                  src_zone='source_zone'),
         mock.call('test-target-project-name',
                   'test-analysis-project-name',
                   'fake_zone',
-                  disk_name='disk2')])
+                  disk_name='disk2',
+                  src_zone='source_zone')])
 
     out_disks = [d for d in self._module.GetContainers(containers.GCEDisk)
                  if d.name not in ('disk1', 'disk2')]
