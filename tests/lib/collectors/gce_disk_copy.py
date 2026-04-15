@@ -4,12 +4,12 @@
 
 
 import unittest
+import typing
 
 from googleapiclient.errors import HttpError
 import httplib2
 
 import mock
-import typing
 
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal import compute
