@@ -34,6 +34,7 @@ backoff = "^2.2.1"
 vertexai = "^1.71.1"
 google-generativeai = "^0.8.3"
 openrelik-api-client = "0.2.3"
+python-dateutil = "^2.9.0.post0"
 
 [tool.poetry.group.dev.dependencies]
 mock = "^4.0.3"
