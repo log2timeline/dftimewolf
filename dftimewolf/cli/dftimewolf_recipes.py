@@ -71,8 +71,6 @@ MODULES = {
   'TestLogger': 'dftimewolf.lib.collectors.test_logger',  # DO NOT MERGE
   'TimesketchExporter': 'dftimewolf.lib.exporters.timesketch',
   'TimesketchSearchEventCollector': 'dftimewolf.lib.collectors.timesketch',
-  'TurbiniaArtifactProcessor': 'dftimewolf.lib.processors.turbinia_artifact',
-  'TurbiniaGCPProcessor': 'dftimewolf.lib.processors.turbinia_gcp',
   'VTCollector' : 'dftimewolf.lib.collectors.virustotal',
   'OpenRelikProcessor': 'dftimewolf.lib.processors.openrelik',
   'WorkspaceAuditCollector': 'dftimewolf.lib.collectors.workspace_audit',

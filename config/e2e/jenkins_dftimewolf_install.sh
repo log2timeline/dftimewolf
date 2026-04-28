@@ -88,12 +88,6 @@ if [[ "$*" =~ "include-plaso" ]]; then
     docker pull log2timeline/plaso:latest
 fi
 
-# pending resolution of https://github.com/log2timeline/l2tdevtools/issues/595
-if [[ "$*" =~ "include-turbinia" ]]; then
-    echo "Installing Turbinia"
-    /usr/bin/python3 -m pip install turbinia
-fi
-
 echo "Installing dftimewolf via Poetry"
 # Install dftimewolf's pinned dependencies
 poetry install

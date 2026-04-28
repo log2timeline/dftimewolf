@@ -711,40 +711,6 @@ class Telemetry(interface.AttributeContainer):
     return f"Telemetry<{self.key}:{self.value}>"
 
 
-class TurbiniaRequest(interface.AttributeContainer):
-  """Turbinia request container.
-
-  Attributes:
-    project (str): name of the GCP project containing the disk to process.
-    request_id (str): Turbinia request identifier.
-    evidence_name (str): Name of the evidence being processed.
-  """
-
-  CONTAINER_TYPE = "turbiniarequest"
-
-  def __init__(
-    self,
-    project: str,
-    request_id: Optional[str] = None,
-    evidence_name: Optional[str] = None,
-  ) -> None:
-    """Initializes the Turbinia-request attribute container.
-
-    Args:
-      project (str): name of the GCP project containing the disk to process.
-      request_id: Turbinia request identifier.
-      evidence_name: Name of the evidence being processed.
-    """
-    super().__init__()
-    self.request_id = request_id
-    self.evidence_name = evidence_name
-    self.project = project
-
-  def __str__(self) -> Optional[str]:
-    """Overrides __str()__."""
-    return self.request_id if self.request_id else self.evidence_name
-
-
 class GRRArtifact(interface.AttributeContainer):
   """GRR Artifact container.
 
