@@ -68,7 +68,6 @@ MODULES = {
   'OsqueryCollector': 'dftimewolf.lib.collectors.osquery',
   'S3ToGCSCopy': 'dftimewolf.lib.exporters.s3_to_gcs',
   'SSHMultiplexer': 'dftimewolf.lib.preflights.ssh_multiplexer',
-  'TestLogger': 'dftimewolf.lib.collectors.test_logger',  # DO NOT MERGE
   'TimesketchExporter': 'dftimewolf.lib.exporters.timesketch',
   'TimesketchSearchEventCollector': 'dftimewolf.lib.collectors.timesketch',
   'VTCollector' : 'dftimewolf.lib.collectors.virustotal',
@@ -404,9 +403,10 @@ def SetupLogging(stdout_log: bool = False) -> None:
   # Add a custom level name
   logging.addLevelName(logging_utils.SUCCESS, 'SUCCESS')
 
-  # Clear root handlers (for dependencies that are setting them)
+  # Clear handlers (for dependencies that are setting them)
   root_log = logging.getLogger()
   root_log.handlers = []
+  logger.handlers = []
 
   logger.setLevel(logging.DEBUG)
 
