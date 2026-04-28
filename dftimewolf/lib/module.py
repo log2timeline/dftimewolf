@@ -261,32 +261,6 @@ class ThreadAwareModule(BaseModule):
   GetThreadOnContainerType().
   """
 
-  def __init__(self,
-               name: str,
-               container_manager_: container_manager.ContainerManager,
-               cache_: cache.DFTWCache,
-               telemetry_: telemetry.BaseTelemetry,
-               publish_message_callback: Callable[[str, str, bool], None]):
-    """Initializes a ThreadAwareModule.
-
-    Args:
-      name: The modules runtime name.
-      container_manager_: A common container manager object.
-      cache_: A common DFTWCache object.
-      telemetry_: A common telemetry collector object.
-      publish_message_callback: A callback to send modules messages to.
-    """
-    super().__init__(name=name,
-                     cache_=cache_,
-                     container_manager_=container_manager_,
-                     telemetry_=telemetry_,
-                     publish_message_callback=publish_message_callback)
-
-    # The call to super.__init__ sets up the logger, but we want to change it
-    # for threaded modules.
-#    self.logger.handlers.clear()
-#    self.SetupLogging(threaded=True)
-
   @abc.abstractmethod
   def PreProcess(self) -> None:
     """Carries out optional Process actions that only need to be performed
