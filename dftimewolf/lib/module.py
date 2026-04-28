@@ -61,29 +61,7 @@ class BaseModule(object):
 
     self.logger = cast(logging_utils.WolfLogger,
                        logging.getLogger(name=self.name))
-    self.logger.propagate = False
-    self.SetupLogging()
-
-  def SetupLogging(self, threaded: bool = False) -> None:
-    """Sets up stream and file logging for a specific module."""
-    debug = bool(os.environ.get("DFTIMEWOLF_DEBUG"))
-    if debug:
-      self.logger.setLevel(logging.DEBUG)
-    else:
-      self.logger.setLevel(logging.INFO)
-
-    file_handler = handlers.RotatingFileHandler(logging_utils.DEFAULT_LOG_FILE)
-    file_handler.setFormatter(logging_utils.WolfFormatter(
-        colorize=False,
-        threaded=threaded))
-    file_handler.setLevel(logging.DEBUG)  # Always log DEBUG to file
-    self.logger.addHandler(file_handler)
-
-    console_handler = logging.StreamHandler(stream=sys.stdout)
-    formatter = logging_utils.WolfFormatter(random_color=True)
-    console_handler.setFormatter(formatter)
-
-    self.logger.addHandler(console_handler)
+    self.logger.parent = logging.getLogger('dftimewolf')
 
   def LogTelemetry(self, data: Dict[str, str]) -> None:
     """Logs useful telemetry using the telemetry attribute in the state object.
@@ -310,8 +288,8 @@ class ThreadAwareModule(BaseModule):
 
     # The call to super.__init__ sets up the logger, but we want to change it
     # for threaded modules.
-    self.logger.handlers.clear()
-    self.SetupLogging(threaded=True)
+#    self.logger.handlers.clear()
+#    self.SetupLogging(threaded=True)
 
   @abc.abstractmethod
   def PreProcess(self) -> None:

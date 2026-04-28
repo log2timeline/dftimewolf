@@ -68,6 +68,7 @@ MODULES = {
   'OsqueryCollector': 'dftimewolf.lib.collectors.osquery',
   'S3ToGCSCopy': 'dftimewolf.lib.exporters.s3_to_gcs',
   'SSHMultiplexer': 'dftimewolf.lib.preflights.ssh_multiplexer',
+  'TestLogger': 'dftimewolf.lib.collectors.test_logger',  # DO NOT MERGE
   'TimesketchExporter': 'dftimewolf.lib.exporters.timesketch',
   'TimesketchSearchEventCollector': 'dftimewolf.lib.collectors.timesketch',
   'TurbiniaArtifactProcessor': 'dftimewolf.lib.processors.turbinia_artifact',
@@ -415,31 +416,24 @@ def SetupLogging(stdout_log: bool = False) -> None:
   root_log = logging.getLogger()
   root_log.handlers = []
 
-  # Add a silent default stream handler, this is automatically set
-  # when other libraries call logging.info() or similar methods.
-  root_handler = logging.StreamHandler(stream=sys.stdout)
-  root_handler.addFilter(lambda x: False)
-  root_log.addHandler(root_handler)
-
   logger.setLevel(logging.DEBUG)
-  logger.propagate = False
 
-  # File handler needs go be added first because it doesn't format messages
-  # with color
-  file_handler = logging.FileHandler(logging_utils.DEFAULT_LOG_FILE)
-  file_handler.setFormatter(logging_utils.WolfFormatter(colorize=False))
+  file_handler = logging.FileHandler(logging_utils.GenerateTempLogFile())
+  file_handler.setFormatter(logging_utils.WolfFormatter(
+      handler_level=logging.DEBUG, colorize=False))
   file_handler.setLevel(logging.DEBUG)  # Always log DEBUG logs to files.
   logger.addHandler(file_handler)
 
   if stdout_log:
     console_handler = logging.StreamHandler(stream=sys.stdout)
-    colorize = not bool(os.environ.get('DFTIMEWOLF_NO_RAINBOW'))
-    console_handler.setFormatter(logging_utils.WolfFormatter(colorize=colorize))
+    colorize = not (sys.stdout.isatty() and bool(os.environ.get('DFTIMEWOLF_NO_RAINBOW')))
     console_handler.setLevel(logging.DEBUG
                              if os.environ.get("DFTIMEWOLF_DEBUG") else
                              logging.INFO)
+    console_handler.setFormatter(logging_utils.WolfFormatter(
+        handler_level=console_handler.level, colorize=colorize))
     logger.addHandler(console_handler)
-    logger.info(f'Logging to stdout and {logging_utils.DEFAULT_LOG_FILE}')
+    logger.info(f'Logging to stdout and {file_handler.stream.name}')
   else:
     logger.info(f'Logging to {logging_utils.DEFAULT_LOG_FILE}')
 
