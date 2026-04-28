@@ -75,13 +75,18 @@ class WolfFormatter(logging.Formatter):
     Returns:
       str: The formatted message string.
     """
-    message = record.msg
+    old_message = record.msg
+    formatted_message = record.msg
 
     if self._colorize:
       loglevel_color = LEVEL_COLOR_MAP.get(record.levelname)
       if loglevel_color:
-        message = loglevel_color + message + RESET_SEQ
+        formatted_message = loglevel_color + formatted_message + RESET_SEQ
 
-    record.msg = message
+    record.msg = formatted_message
 
-    return self._formatter.format(record)
+    formatted_message = self._formatter.format(record)
+
+    record.msg = old_message
+
+    return formatted_message
