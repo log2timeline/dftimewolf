@@ -7,12 +7,6 @@
   "modules": [
     {
       "wants": [],
-      "name": "TestLogger",
-      "args": {},
-      "_comment": "DO NOT MERGE"
-    },
-    {
-      "wants": ["TestLogger"],
       "name": "GRRFlowCollector",
       "args": {
         "hostnames": "@hostnames",
