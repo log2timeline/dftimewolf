@@ -4,12 +4,8 @@
 
 import abc
 import logging
-import os
 import sys
 import traceback
-# Some AttributeErrors occurred when trying to access logging.handlers, so
-# we import them separately
-from logging import handlers
 from typing import Any, Callable, Dict, Optional, Sequence, Type, TypeVar, cast
 
 from dftimewolf.lib import cache

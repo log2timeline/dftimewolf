@@ -1,13 +1,10 @@
 """Module providing custom logging formatters and colorization for ANSI
 compatible terminals."""
 import datetime
-import inspect
 import logging
-import random
 import tempfile
-import threading
 from logging import LogRecord
-from typing import Any, List
+from typing import Any
 
 
 def GenerateTempLogFile() -> str:

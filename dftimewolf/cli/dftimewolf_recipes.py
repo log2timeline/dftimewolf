@@ -267,12 +267,6 @@ class DFTimewolfTool(object):
     """log the execution plan."""
     self._module_runner.LogExecutionPlan()
 
-  def AddLoggingHandler(self, handler: logging.Handler) -> None:
-    """Adds an additional logging handler."""
-    if handler not in logger.handlers:
-      logger.addHandler(handler)
-    self._module_runner.AddLoggingHandler(handler)
-
   def _DetermineDataFilesPath(self) -> None:
     """Determines the data files path.
 
@@ -435,7 +429,7 @@ def SetupLogging(stdout_log: bool = False) -> None:
     logger.addHandler(console_handler)
     logger.info(f'Logging to stdout and {file_handler.stream.name}')
   else:
-    logger.info(f'Logging to {logging_utils.DEFAULT_LOG_FILE}')
+    logger.info(f'Logging to {file_handler.stream.name}')
 
 
 def RunTool() -> int:
