@@ -103,13 +103,6 @@ class ModuleRunner(object):
     for module in sorted(modules):
       self._telemetry.LogTelemetry('module', module, 'core')
 
-  def AddLoggingHandler(self, handler: logging.Handler) -> None:
-    """Adds a logging handler to module runner, and all modules."""
-    self._logger.addHandler(handler)
-
-    for _, module in self._module_pool.items():
-      module.logger.addHandler(handler)
-
   def LogExecutionPlan(self) -> None:
     """Logs the result of FormatExecutionPlan() using the base logger."""
     for line in self._FormatExecutionPlan().split('\n'):
@@ -233,6 +226,7 @@ class ModuleRunner(object):
     for module_definition in self._recipe['modules']:
       thread_args = (module_definition,)
       thread = threading.Thread(target=callback, args=thread_args)
+      thread.name = thread.name.split(' ')[0]
       threads.append(thread)
       thread.start()
 
