@@ -226,7 +226,7 @@ class ModuleRunner(object):
     for module_definition in self._recipe['modules']:
       thread_args = (module_definition,)
       thread = threading.Thread(target=callback, args=thread_args)
-      thread.name = thread.name[:thread.name.find(' ')]
+      thread.name = thread.name.split(' ')[0]
       threads.append(thread)
       thread.start()
 

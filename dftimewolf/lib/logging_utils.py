@@ -84,9 +84,6 @@ class WolfFormatter(logging.Formatter):
         formatted_message = loglevel_color + formatted_message + RESET_SEQ
 
     record.msg = formatted_message
-
     formatted_message = self._formatter.format(record)
-
     record.msg = old_message
-
     return formatted_message
