@@ -418,7 +418,7 @@ def SetupLogging(stdout_log: bool = False) -> None:
 
   if stdout_log:
     console_handler = logging.StreamHandler(stream=sys.stdout)
-    colorize = not (sys.stdout.isatty() and bool(os.environ.get('DFTIMEWOLF_NO_RAINBOW')))
+    colorize = sys.stdout.isatty() and not bool(os.environ.get('DFTIMEWOLF_NO_RAINBOW'))
     console_handler.setLevel(logging.DEBUG
                              if os.environ.get("DFTIMEWOLF_DEBUG") else
                              logging.INFO)
