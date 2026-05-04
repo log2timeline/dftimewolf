@@ -100,7 +100,7 @@ class DFTimewolfTool(object):
     self._recipes_manager = recipes_manager.RecipesManager()
     self._recipe: resources.Recipe = None  # type: ignore
     self._uuid = workflow_uuid or str(uuid.uuid4())
-    self._telemetry: telemetry.BaseTelemetry = telemetry_ or None  # pytype: disable=annotation-type-mismatch
+    self._telemetry: telemetry.BaseTelemetry = telemetry_ or None  # type: ignore
     self._module_runner: module_runner.ModuleRunner
 
     logger.success(f'dfTimewolf tool initialized with UUID: {self._uuid}')
@@ -204,7 +204,7 @@ class DFTimewolfTool(object):
     self._module_runner.Initialise(self._recipe.contents, MODULES)
 
     # At this point we no longer need the recipe manager
-    del self._recipes_manager
+#    del self._recipes_manager
 
   def GenerateArgsParserForRecipe(self) -> argparse.ArgumentParser:
     """Generate an args parsing object that can be used to parse sys.argv[x:y].

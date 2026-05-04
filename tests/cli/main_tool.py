@@ -120,8 +120,7 @@ class MainToolTest(parameterized.TestCase):
     # pylint: disable=protected-access
     recipe = self.tool._recipes_manager.Recipes()[recipe_name]
 
-    self.tool._module_runner.Initialise(recipe.contents,
-                                        dftimewolf_recipes.MODULES)
+    self.tool.SelectRecipe(recipe_name)
 
     modules = recipe.contents['modules']
     preflights = recipe.contents.get('preflights', [])
@@ -162,8 +161,7 @@ class MainToolTest(parameterized.TestCase):
     # pylint: disable=protected-access
     recipe = self.tool._recipes_manager.Recipes()[recipe_name]
 
-    self.tool._module_runner.Initialise(recipe.contents,
-                                        dftimewolf_recipes.MODULES)
+    self.tool.SelectRecipe(recipe_name)
 
     test_params = recipe.GetTestParams()
     if test_params:
@@ -174,8 +172,7 @@ class MainToolTest(parameterized.TestCase):
     else:
       self.fail('No test_params in recipe')
 
-    self.tool._module_runner.Initialise(recipe.contents,
-                                        dftimewolf_recipes.MODULES)
+    self.tool.SelectRecipe(recipe_name)
     for arg in recipe.args:
       if arg.validation_params:
         self.assertIn(
@@ -192,8 +189,7 @@ class MainToolTest(parameterized.TestCase):
         NO_ARG_RECIPE,
         [])
     self.tool._recipes_manager.RegisterRecipe(no_arg_recipe)
-    self.tool._module_runner.Initialise(NO_ARG_RECIPE,
-                                        dftimewolf_recipes.MODULES)
+    self.tool.SelectRecipe(NO_ARG_RECIPE['name'])
 
     test_params = no_arg_recipe.GetTestParams()
 
@@ -210,8 +206,7 @@ class MainToolTest(parameterized.TestCase):
         OPTIONAL_ARG_RECIPE,
         OPTIONAL_ARG_RECIPE_ARGS)
     self.tool._recipes_manager.RegisterRecipe(optional_arg_recipe)
-    self.tool._module_runner.Initialise(OPTIONAL_ARG_RECIPE,
-                                        dftimewolf_recipes.MODULES)
+    self.tool.SelectRecipe(OPTIONAL_ARG_RECIPE['name'])
 
     with self.assertRaisesRegex(resources.NoTestParamsError,
                                 'No test parameters specified in recipe'):
@@ -225,8 +220,7 @@ class MainToolTest(parameterized.TestCase):
         NESTED_ARG_RECIPE,
         NESTED_ARG_RECIPE_ARGS)
     self.tool._recipes_manager.RegisterRecipe(nested_arg_recipe)
-    self.tool._module_runner.Initialise(NESTED_ARG_RECIPE,
-                                        dftimewolf_recipes.MODULES)
+    self.tool.SelectRecipe(NESTED_ARG_RECIPE['name'])
 
     self.tool.SelectRecipe('nested_arg_recipe')
     args_parser = self.tool.GenerateArgsParserForRecipe()
@@ -247,8 +241,7 @@ class MainToolTest(parameterized.TestCase):
         NESTED_ARG_RECIPE,
         NESTED_ARG_RECIPE_ARGS)
     self.tool._recipes_manager.RegisterRecipe(nested_arg_recipe)
-    self.tool._module_runner.Initialise(NESTED_ARG_RECIPE,
-                                        dftimewolf_recipes.MODULES)
+    self.tool.SelectRecipe(NESTED_ARG_RECIPE['name'])
 
     with self.assertRaisesRegex(
         errors.CriticalError, 'At least one argument failed validation'):
@@ -265,8 +258,7 @@ class MainToolTest(parameterized.TestCase):
         NESTED_ARG_RECIPE,
         NESTED_ARG_RECIPE_ARGS)
     self.tool._recipes_manager.RegisterRecipe(nested_arg_recipe)
-    self.tool._module_runner.Initialise(NESTED_ARG_RECIPE,
-                                        dftimewolf_recipes.MODULES)
+    self.tool.SelectRecipe(NESTED_ARG_RECIPE['name'])
 
     self.tool.SelectRecipe('nested_arg_recipe')
     args_parser = self.tool.GenerateArgsParserForRecipe()
@@ -287,8 +279,7 @@ class MainToolTest(parameterized.TestCase):
         OPTIONAL_ARG_RECIPE,
         OPTIONAL_ARG_RECIPE_ARGS)
     self.tool._recipes_manager.RegisterRecipe(optional_arg_recipe)
-    self.tool._module_runner.Initialise(OPTIONAL_ARG_RECIPE,
-                                        dftimewolf_recipes.MODULES)
+    self.tool.SelectRecipe(OPTIONAL_ARG_RECIPE['name'])
 
     self.tool.SelectRecipe('optional_arg_recipe')
     args_parser = self.tool.GenerateArgsParserForRecipe()
@@ -303,8 +294,7 @@ class MainToolTest(parameterized.TestCase):
         OPTIONAL_ARG_RECIPE,
         OPTIONAL_ARG_RECIPE_ARGS)
     self.tool._recipes_manager.RegisterRecipe(optional_arg_recipe)
-    self.tool._module_runner.Initialise(OPTIONAL_ARG_RECIPE,
-                                        dftimewolf_recipes.MODULES)
+    self.tool.SelectRecipe(OPTIONAL_ARG_RECIPE['name'])
 
     self.tool.SelectRecipe('optional_arg_recipe')
     args_parser = self.tool.GenerateArgsParserForRecipe()
