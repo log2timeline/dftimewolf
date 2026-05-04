@@ -90,7 +90,8 @@ class DFTimewolfTool(object):
   def __init__(
       self,
       workflow_uuid: Optional[str] = None,
-      telemetry_: Optional[telemetry.BaseTelemetry] = None) -> None:
+      telemetry_: Optional[telemetry.BaseTelemetry] = None,
+      config_path: Optional[str] = None) -> None:
     """Initializes a DFTimewolf tool."""
     super().__init__()
 
@@ -100,12 +101,14 @@ class DFTimewolfTool(object):
     self._recipes_manager = recipes_manager.RecipesManager()
     self._recipe: resources.Recipe = None  # type: ignore
     self._uuid = workflow_uuid or str(uuid.uuid4())
-    self._telemetry = telemetry_ or telemetry.GetTelemetry(uuid=self._uuid)
-    self._module_runner = module_runner.ModuleRunner(logger, self._telemetry, self.PublishMessage)
 
     logger.success(f'dfTimewolf tool initialized with UUID: {self._uuid}')
 
     self._DetermineDataFilesPath()
+    self.LoadConfiguration(config_path)
+
+    self._telemetry = telemetry_ or telemetry.GetTelemetry(uuid=self._uuid)
+    self._module_runner = module_runner.ModuleRunner(logger, self._telemetry, self.PublishMessage)
 
   @property
   def dry_run(self) -> bool:
@@ -194,11 +197,9 @@ class DFTimewolfTool(object):
     Args:
       recipe_name: The name of the recipe to use.
     """
+    self._telemetry.SetRecipeName(recipe_name)
     self._recipe = self._recipes_manager.GetRecipe(recipe_name)
     self._module_runner.Initialise(self._recipe.contents, MODULES)
-
-    # At this point we no longer need the recipe manager
-    del self._recipes_manager
 
   def GenerateArgsParserForRecipe(self) -> argparse.ArgumentParser:
     """Generate an args parsing object that can be used to parse sys.argv[x:y].
@@ -439,7 +440,6 @@ def RunTool() -> int:
   tool = DFTimewolfTool()
 
   try:
-    tool.LoadConfiguration()
     tool.ReadRecipes()
 
     help_requested = any(h in sys.argv for h in ('-h', '--help'))
