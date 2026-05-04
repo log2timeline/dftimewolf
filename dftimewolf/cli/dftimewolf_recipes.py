@@ -100,8 +100,8 @@ class DFTimewolfTool(object):
     self._recipes_manager = recipes_manager.RecipesManager()
     self._recipe: resources.Recipe = None  # type: ignore
     self._uuid = workflow_uuid or str(uuid.uuid4())
-    self._telemetry = telemetry_ or telemetry.GetTelemetry(uuid=self._uuid)
-    self._module_runner = module_runner.ModuleRunner(logger, self._telemetry, self.PublishMessage)
+    self._telemetry: telemetry.BaseTelemetry = telemetry_ or None  # pytype: disable=annotation-type-mismatch
+    self._module_runner: module_runner.ModuleRunner
 
     logger.success(f'dfTimewolf tool initialized with UUID: {self._uuid}')
 
@@ -172,6 +172,9 @@ class DFTimewolfTool(object):
     for path in paths:
       self._LoadConfigurationFromFile(path)
 
+    if not self._telemetry:
+      self._telemetry = telemetry.GetTelemetry(uuid=self._uuid)
+
   def ReadRecipes(self, additional_directories: list[str] | None = None) -> None:
     """Reads recipes from the default directory, and any additional paths.
 
@@ -196,6 +199,8 @@ class DFTimewolfTool(object):
     """
     self._telemetry.SetRecipeName(recipe_name)
     self._recipe = self._recipes_manager.GetRecipe(recipe_name)
+
+    self._module_runner = module_runner.ModuleRunner(logger, self._telemetry, self.PublishMessage)
     self._module_runner.Initialise(self._recipe.contents, MODULES)
 
     # At this point we no longer need the recipe manager
