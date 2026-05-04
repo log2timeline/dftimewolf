@@ -113,15 +113,17 @@ class ModuleRunnerTest(parameterized.TestCase):
       self.assertEqual(mock_dm_2_process.call_count, 1)
       self.assertEqual(mock_dp_1_cleanup.call_count, 1)
 
-      # Check call ordering
-      mock_parent.assert_has_calls([mock.call.mock_dp_1_setup(args='none'),
-                                    mock.call.mock_dp_1_process(),
+      # Check call ordering - The SetUps may appear in any order
+      self.assertEqual(mock_parent.mock_calls[0], mock.call.mock_dp_1_setup(args='none'))
+      self.assertEqual(mock_parent.mock_calls[1], mock.call.mock_dp_1_process())
+      mock_parent.assert_has_calls([mock.call.mock_dp_1_process(),
                                     mock.call.mock_dm_1_setup(runtime_value='value 1'),
                                     mock.call.mock_dm_2_setup(runtime_value='value 2'),
-                                    mock.call.mock_dm_1_process(),
-                                    mock.call.mock_dm_2_process(),
-                                    mock.call.mock_dp_1_cleanup()],
-                                   any_order=False)
+                                    mock.call.mock_dm_1_process()],
+                                   any_order=True)
+      self.assertEqual(mock_parent.mock_calls[-3], mock.call.mock_dm_1_process())
+      self.assertEqual(mock_parent.mock_calls[-2], mock.call.mock_dm_2_process())
+      self.assertEqual(mock_parent.mock_calls[-1], mock.call.mock_dp_1_cleanup())
 
   def test_BasicRecipeWithRuntimeNames(self):
     """Tests method ordering with basic modules, with runtime names."""
@@ -156,19 +158,21 @@ class ModuleRunnerTest(parameterized.TestCase):
       self.assertEqual(mock_dm_2_process.call_count, 2)
       self.assertEqual(mock_dp_1_cleanup.call_count, 1)
 
-      # Check call ordering
-      mock_parent.assert_has_calls([mock.call.mock_dp_1_setup(args='none'),
-                                    mock.call.mock_dp_1_process(),
+      # Check call ordering - The SetUps may appear in any order
+      self.assertEqual(mock_parent.mock_calls[0], mock.call.mock_dp_1_setup(args='none'))
+      self.assertEqual(mock_parent.mock_calls[1], mock.call.mock_dp_1_process())
+      mock_parent.assert_has_calls([mock.call.mock_dp_1_process(),
                                     mock.call.mock_dm_1_setup(runtime_value='1-1'),
                                     mock.call.mock_dm_2_setup(runtime_value='2-1'),
                                     mock.call.mock_dm_1_setup(runtime_value='1-2'),
                                     mock.call.mock_dm_2_setup(runtime_value='2-2'),
-                                    mock.call.mock_dm_1_process(),
-                                    mock.call.mock_dm_2_process(),
-                                    mock.call.mock_dm_1_process(),
-                                    mock.call.mock_dm_2_process(),
-                                    mock.call.mock_dp_1_cleanup()],
-                                   any_order=False)
+                                    mock.call.mock_dm_1_process()],
+                                   any_order=True)
+      self.assertEqual(mock_parent.mock_calls[-5], mock.call.mock_dm_1_process())
+      self.assertEqual(mock_parent.mock_calls[-4], mock.call.mock_dm_2_process())
+      self.assertEqual(mock_parent.mock_calls[-3], mock.call.mock_dm_1_process())
+      self.assertEqual(mock_parent.mock_calls[-2], mock.call.mock_dm_2_process())
+      self.assertEqual(mock_parent.mock_calls[-1], mock.call.mock_dp_1_cleanup())
 
   def test_RecipeWithThreadedModules(self):
     """Tests method ordering with threaded modules."""

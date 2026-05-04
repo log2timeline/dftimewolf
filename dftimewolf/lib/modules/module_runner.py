@@ -75,7 +75,7 @@ class ModuleRunner(object):
     preflight_definitions = self._recipe.get('preflights', [])
     self._ImportRecipeModules(module_locations)
 
-    for module_definition in module_definitions + preflight_definitions:
+    for module_definition in preflight_definitions + module_definitions:
       module_name = module_definition['name']
       runtime_name = module_definition.get('runtime_name')
       if not runtime_name:
@@ -89,6 +89,8 @@ class ModuleRunner(object):
                                                        publish_message_callback=self.PublishMessage)
       else:
         raise RuntimeError(f'Could not instantiate module {module_name}')
+
+      self._messages[runtime_name] = []
 
     self._container_manager.ParseRecipe(self._recipe)
     self._cache.AddToCache('recipe_name', self._recipe['name'])
@@ -266,8 +268,6 @@ class ModuleRunner(object):
     self._logger.info('Setting up module: {0:s}'.format(runtime_name))
 
     module = self._module_pool[runtime_name]
-
-    self._messages[runtime_name] = []
 
     try:
       if runtime_name in self._errors and any(e.critical for e in self._errors[runtime_name]):
