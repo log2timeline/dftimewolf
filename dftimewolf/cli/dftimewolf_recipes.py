@@ -201,9 +201,6 @@ class DFTimewolfTool(object):
     self._recipe = self._recipes_manager.GetRecipe(recipe_name)
     self._module_runner.Initialise(self._recipe.contents, MODULES)
 
-    # At this point we no longer need the recipe manager
-    del self._recipes_manager
-
   def GenerateArgsParserForRecipe(self) -> argparse.ArgumentParser:
     """Generate an args parsing object that can be used to parse sys.argv[x:y].
 
