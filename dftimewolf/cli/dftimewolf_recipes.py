@@ -194,6 +194,7 @@ class DFTimewolfTool(object):
     Args:
       recipe_name: The name of the recipe to use.
     """
+    self._telemetry.SetRecipeName(recipe_name)
     self._recipe = self._recipes_manager.GetRecipe(recipe_name)
     self._module_runner.Initialise(self._recipe.contents, MODULES)
 
