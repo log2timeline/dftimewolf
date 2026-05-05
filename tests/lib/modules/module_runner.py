@@ -44,6 +44,7 @@ class ModuleRunnerTest(parameterized.TestCase):
     self._mock_telemetry = mock.MagicMock()
     self._mock_publish_message_callback = mock.MagicMock()
     self._mock_logger = mock.MagicMock()
+    self._mock_telemetry.uuid = 'mock_uuid'
 
     self._runner = module_runner.ModuleRunner(
         logger=self._mock_logger,
@@ -268,7 +269,8 @@ class ModuleRunnerTest(parameterized.TestCase):
     self.assertEqual(return_value, 0)
 
     self.assertEqual(self._runner.GenerateReport(),
-                     'dummy_recipe\n'
+                     'Recipe: dummy_recipe\n'
+                     'Workflow ID: mock_uuid\n'
                      '----------\n'
                      'DummyPreflightModule:\n'
                      '  Message from DummyPreflightModule:SetUp\n'
@@ -306,7 +308,8 @@ class ModuleRunnerTest(parameterized.TestCase):
     self.assertEqual(return_value, 1)
 
     self.assertEqual(self._runner.GenerateReport(),
-                     'dummy_recipe\n'
+                     'Recipe: dummy_recipe\n'
+                     'Workflow ID: mock_uuid\n'
                      '----------\n'
                      'DummyPreflightModule:\n'
                      '  Message from DummyPreflightModule:SetUp\n'
@@ -333,7 +336,8 @@ class ModuleRunnerTest(parameterized.TestCase):
     self.assertEqual(return_value, 0)
 
     self.assertEqual(self._runner.GenerateReport(),
-                     'dummy_threaded_recipe\n'
+                     'Recipe: dummy_threaded_recipe\n'
+                     'Workflow ID: mock_uuid\n'
                      '----------\n'
                      'ContainerGeneratorModule:\n'
                      '  Message from ContainerGeneratorModule:SetUp\n'
@@ -362,7 +366,8 @@ class ModuleRunnerTest(parameterized.TestCase):
     self.assertEqual(return_value, 1)
 
     self.assertEqual(self._runner.GenerateReport(),
-                     'dummy_threaded_recipe\n'
+                     'Recipe: dummy_threaded_recipe\n'
+                     'Workflow ID: mock_uuid\n'
                      '----------\n'
                      'ContainerGeneratorModule:\n'
                      '  Message from ContainerGeneratorModule:SetUp\n'
