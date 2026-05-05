@@ -47,6 +47,7 @@ class ModuleRunner(object):
 
     self._cache = cache.DFTWCache()
     self._cache.SetCLIArgs(' '.join(sys.argv))
+    self._cache.SetWorkflowUUID(self._telemetry.uuid)
 
     self._messages: dict[str, list[str]] = collections.defaultdict(list)
 
@@ -161,7 +162,7 @@ class ModuleRunner(object):
     """Generates the runtime report from the module results and errors."""
     separator = '----------'
 
-    lines = [self._recipe['name'], separator]
+    lines = [f'Recipe: {self._recipe["name"]}', f'Workflow ID: {self._cache.GetWorkflowUUID()}', separator]
 
     for module, messages in self._messages.items():
       if not messages:
