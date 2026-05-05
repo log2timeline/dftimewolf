@@ -81,7 +81,7 @@ class WolfFormatter(logging.Formatter):
     if self._colorize:
       loglevel_color = LEVEL_COLOR_MAP.get(record.levelname)
       if loglevel_color:
-        formatted_message = loglevel_color + formatted_message + RESET_SEQ
+        formatted_message = loglevel_color + str(formatted_message) + RESET_SEQ
 
     record.msg = formatted_message
     formatted_message = self._formatter.format(record)
