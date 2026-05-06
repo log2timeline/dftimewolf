@@ -40,9 +40,12 @@ class BaseTelemetry():
   def __init__(self, uuid: Optional[str] = None) -> None:
     """Initializes a BaseTelemetry object."""
     super().__init__()
-    self.uuid = uuid
-    if not self.uuid:
+
+    self.uuid: str
+    if not uuid:
       self.uuid = str(uuid_lib.uuid4())
+    else:
+      self.uuid = uuid
     self.entries = [] # type: List[str]
     self._recipe_name: str = 'unset'
 

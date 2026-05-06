@@ -4,12 +4,8 @@
 
 import abc
 import logging
-import os
 import sys
 import traceback
-# Some AttributeErrors occurred when trying to access logging.handlers, so
-# we import them separately
-from logging import handlers
 from typing import Any, Callable, Dict, Optional, Sequence, Type, TypeVar, cast
 
 from dftimewolf.lib import cache
@@ -61,29 +57,7 @@ class BaseModule(object):
 
     self.logger = cast(logging_utils.WolfLogger,
                        logging.getLogger(name=self.name))
-    self.logger.propagate = False
-    self.SetupLogging()
-
-  def SetupLogging(self, threaded: bool = False) -> None:
-    """Sets up stream and file logging for a specific module."""
-    debug = bool(os.environ.get("DFTIMEWOLF_DEBUG"))
-    if debug:
-      self.logger.setLevel(logging.DEBUG)
-    else:
-      self.logger.setLevel(logging.INFO)
-
-    file_handler = handlers.RotatingFileHandler(logging_utils.DEFAULT_LOG_FILE)
-    file_handler.setFormatter(logging_utils.WolfFormatter(
-        colorize=False,
-        threaded=threaded))
-    file_handler.setLevel(logging.DEBUG)  # Always log DEBUG to file
-    self.logger.addHandler(file_handler)
-
-    console_handler = logging.StreamHandler(stream=sys.stdout)
-    formatter = logging_utils.WolfFormatter(random_color=True)
-    console_handler.setFormatter(formatter)
-
-    self.logger.addHandler(console_handler)
+    self.logger.parent = logging.getLogger('dftimewolf')
 
   def LogTelemetry(self, data: Dict[str, str]) -> None:
     """Logs useful telemetry using the telemetry attribute in the state object.
@@ -286,32 +260,6 @@ class ThreadAwareModule(BaseModule):
   Process will be passed one container of the type specified by
   GetThreadOnContainerType().
   """
-
-  def __init__(self,
-               name: str,
-               container_manager_: container_manager.ContainerManager,
-               cache_: cache.DFTWCache,
-               telemetry_: telemetry.BaseTelemetry,
-               publish_message_callback: Callable[[str, str, bool], None]):
-    """Initializes a ThreadAwareModule.
-
-    Args:
-      name: The modules runtime name.
-      container_manager_: A common container manager object.
-      cache_: A common DFTWCache object.
-      telemetry_: A common telemetry collector object.
-      publish_message_callback: A callback to send modules messages to.
-    """
-    super().__init__(name=name,
-                     cache_=cache_,
-                     container_manager_=container_manager_,
-                     telemetry_=telemetry_,
-                     publish_message_callback=publish_message_callback)
-
-    # The call to super.__init__ sets up the logger, but we want to change it
-    # for threaded modules.
-    self.logger.handlers.clear()
-    self.SetupLogging(threaded=True)
 
   @abc.abstractmethod
   def PreProcess(self) -> None:

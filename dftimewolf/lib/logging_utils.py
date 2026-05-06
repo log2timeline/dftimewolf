@@ -1,16 +1,13 @@
 """Module providing custom logging formatters and colorization for ANSI
 compatible terminals."""
 import datetime
-import inspect
 import logging
-import random
 import tempfile
-import threading
 from logging import LogRecord
-from typing import Any, List
+from typing import Any
 
 
-def _GenerateTempLogFile() -> str:
+def GenerateTempLogFile() -> str:
   """Generates a temporary log file name."""
   now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
   logfile = tempfile.NamedTemporaryFile(
@@ -23,49 +20,22 @@ def _GenerateTempLogFile() -> str:
   return log_filename
 
 
-DEFAULT_LOG_FILE = _GenerateTempLogFile()
 SUCCESS = 25  # 25 is right between INFO and WARNING
 
 
-def _GenerateColorSequences() -> List[str]:
-  """Generates ANSI codes for 256 colors.
-
-  Works on Linux and macOS, Windows (WSL) to be confirmed.
-  """
-  sequences = []
-  for i in range(0, 16):
-    for j in range(0, 16):
-      code = str(i * 16 + j)
-      seq = '\u001b[38;5;' + code + 'm'
-      sequences.append(seq)
-  return sequences
-
-
-COLOR_SEQS = _GenerateColorSequences()
+LEVEL_COLOR_MAP = {
+    'WARNING': '\u001b[0;93m',
+    'SUCCESS': '\u001b[1;30;42m',
+    'INFO': '\u001b[0;97m',
+    'DEBUG': '\u001b[0;94m',
+    'CRITICAL': '\u001b[1;31;107m',
+    'ERROR': '\u001b[0;91m'
+}
 RESET_SEQ = '\u001b[0m'
 
-# Cherrypick a few interesting values. We still want the whole list of colors
-# so that modules have a good amount colors to chose from.
-# pylint: disable=unbalanced-tuple-unpacking
-BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = COLOR_SEQS[8:16]
-BG_RED = '\u001b[41m'  # Red background
-BG_GREEN = '\u001b[42m'  # Green background
-BOLD = '\u001b[1m'  # Bold / bright modifier
 
-# We'll get something like this:
-# [2020-07-09 18:06:05,187] [TimesketchExporter  ] INFO     Sketch 23 created
-LOG_FORMAT = (
-    '[%(asctime)s] [{0:s}{color:s}%(name)-20s{1:s}] %(levelname)-8s'
-    ' %(message)s')
-
-LEVEL_COLOR_MAP = {
-    'WARNING': YELLOW,
-    'SUCCESS': BOLD + BG_GREEN + BLACK,
-    'INFO': WHITE,
-    'DEBUG': BLUE,
-    'CRITICAL': BOLD + BG_RED + WHITE,
-    'ERROR': RED
-}
+_DEBUG_FORMATTER = logging.Formatter('[%(asctime)s] [%(name)-20s] %(levelname)-8s [%(threadName)-22s] %(message)s')
+_DEFAULT_FORMATTER = logging.Formatter('[%(asctime)s] [%(name)-20s] %(levelname)-8s %(message)s')
 
 
 class WolfLogger(logging.getLoggerClass()):  # type: ignore
@@ -83,26 +53,18 @@ class WolfFormatter(logging.Formatter):
 
   def __init__(
       self,
+      handler_level: int,
       colorize: bool = True,
-      random_color: bool = False,
-      threaded: bool = False,
       **kwargs: Any) -> None:
     """Initializes the WolfFormatter object.
 
     Args:
       colorize (bool): If True, output will be colorized.
-      random_color (bool): If True, will colorize the module name with a random
-          color picked from COLOR_SEQS.
     """
-    self.threaded = threaded
-    self.colorize = colorize
-    kwargs['fmt'] = LOG_FORMAT.format('', '', color='')
-    if self.colorize:
-      color = ''
-      if random_color:
-        color = random.choice(COLOR_SEQS)
-      kwargs['fmt'] = LOG_FORMAT.format(BOLD, RESET_SEQ, color=color)
-    super(WolfFormatter, self).__init__(**kwargs)
+    self._formatter = _DEBUG_FORMATTER if handler_level == logging.DEBUG else _DEFAULT_FORMATTER
+    self._colorize = colorize
+
+    super().__init__(**kwargs)
 
   def format(self, record: LogRecord) -> str:
     """Hooks the native format method and colorizes messages if needed.
@@ -113,17 +75,15 @@ class WolfFormatter(logging.Formatter):
     Returns:
       str: The formatted message string.
     """
-    if self.colorize:
-      message = str(record.msg)
+    old_message = record.msg
+    formatted_message = record.msg
+
+    if self._colorize:
       loglevel_color = LEVEL_COLOR_MAP.get(record.levelname)
       if loglevel_color:
-        message = loglevel_color + message + RESET_SEQ
-      record.msg = message
+        formatted_message = loglevel_color + str(formatted_message) + RESET_SEQ
 
-    if self.threaded:
-      stack = [i.function for i in inspect.stack()]
-      if 'Process' in stack:
-        thread_name = threading.current_thread().name
-        message = str(record.msg)
-        record.msg = f"[{thread_name}] {message}"
-    return super(WolfFormatter, self).format(record)
+    record.msg = formatted_message
+    formatted_message = self._formatter.format(record)
+    record.msg = old_message
+    return formatted_message

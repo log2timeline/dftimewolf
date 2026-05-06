@@ -9,6 +9,7 @@ from typing import Any
 
 _RECIPE_NAME_CACHE_KEY = 'recipe_name'
 _CLI_ARGS_CACHE_KEY = 'cli_args'
+_WORKFLOW_UUID_CACHE_KEY = 'workflow_uuid'
 
 
 class DFTWCache:
@@ -65,3 +66,11 @@ class DFTWCache:
   def GetCLIArgs(self) -> str:
     """Dedicated method for getting the CLI arguments for this execution."""
     return str(self.GetFromCache(_CLI_ARGS_CACHE_KEY))
+
+  def SetWorkflowUUID(self, args: str) -> None:
+    """Dedicated method for setting the CLI arguments for this execution."""
+    self.AddToCache(_WORKFLOW_UUID_CACHE_KEY, args)
+
+  def GetWorkflowUUID(self) -> str:
+    """Dedicated method for getting the CLI arguments for this execution."""
+    return str(self.GetFromCache(_WORKFLOW_UUID_CACHE_KEY))

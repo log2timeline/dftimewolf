@@ -90,7 +90,8 @@ class DFTimewolfTool(object):
   def __init__(
       self,
       workflow_uuid: Optional[str] = None,
-      telemetry_: Optional[telemetry.BaseTelemetry] = None) -> None:
+      telemetry_: Optional[telemetry.BaseTelemetry] = None,
+      config_path: Optional[str] = None) -> None:
     """Initializes a DFTimewolf tool."""
     super().__init__()
 
@@ -100,12 +101,14 @@ class DFTimewolfTool(object):
     self._recipes_manager = recipes_manager.RecipesManager()
     self._recipe: resources.Recipe = None  # type: ignore
     self._uuid = workflow_uuid or str(uuid.uuid4())
-    self._telemetry = telemetry_ or telemetry.GetTelemetry(uuid=self._uuid)
-    self._module_runner = module_runner.ModuleRunner(logger, self._telemetry, self.PublishMessage)
 
     logger.success(f'dfTimewolf tool initialized with UUID: {self._uuid}')
 
     self._DetermineDataFilesPath()
+    self.LoadConfiguration(config_path)
+
+    self._telemetry = telemetry_ or telemetry.GetTelemetry(uuid=self._uuid)
+    self._module_runner = module_runner.ModuleRunner(logger, self._telemetry, self.PublishMessage)
 
   @property
   def dry_run(self) -> bool:
@@ -194,11 +197,9 @@ class DFTimewolfTool(object):
     Args:
       recipe_name: The name of the recipe to use.
     """
+    self._telemetry.SetRecipeName(recipe_name)
     self._recipe = self._recipes_manager.GetRecipe(recipe_name)
     self._module_runner.Initialise(self._recipe.contents, MODULES)
-
-    # At this point we no longer need the recipe manager
-    del self._recipes_manager
 
   def GenerateArgsParserForRecipe(self) -> argparse.ArgumentParser:
     """Generate an args parsing object that can be used to parse sys.argv[x:y].
@@ -263,12 +264,6 @@ class DFTimewolfTool(object):
   def LogExecutionPlan(self) -> None:
     """log the execution plan."""
     self._module_runner.LogExecutionPlan()
-
-  def AddLoggingHandler(self, handler: logging.Handler) -> None:
-    """Adds an additional logging handler."""
-    if handler not in logger.handlers:
-      logger.addHandler(handler)
-    self._module_runner.AddLoggingHandler(handler)
 
   def _DetermineDataFilesPath(self) -> None:
     """Determines the data files path.
@@ -409,37 +404,31 @@ def SetupLogging(stdout_log: bool = False) -> None:
   # Add a custom level name
   logging.addLevelName(logging_utils.SUCCESS, 'SUCCESS')
 
-  # Clear root handlers (for dependencies that are setting them)
+  # Clear handlers (for dependencies that are setting them)
   root_log = logging.getLogger()
   root_log.handlers = []
-
-  # Add a silent default stream handler, this is automatically set
-  # when other libraries call logging.info() or similar methods.
-  root_handler = logging.StreamHandler(stream=sys.stdout)
-  root_handler.addFilter(lambda x: False)
-  root_log.addHandler(root_handler)
+  logger.handlers = []
 
   logger.setLevel(logging.DEBUG)
-  logger.propagate = False
 
-  # File handler needs go be added first because it doesn't format messages
-  # with color
-  file_handler = logging.FileHandler(logging_utils.DEFAULT_LOG_FILE)
-  file_handler.setFormatter(logging_utils.WolfFormatter(colorize=False))
+  file_handler = logging.FileHandler(logging_utils.GenerateTempLogFile())
+  file_handler.setFormatter(logging_utils.WolfFormatter(
+      handler_level=logging.DEBUG, colorize=False))
   file_handler.setLevel(logging.DEBUG)  # Always log DEBUG logs to files.
   logger.addHandler(file_handler)
 
   if stdout_log:
     console_handler = logging.StreamHandler(stream=sys.stdout)
-    colorize = not bool(os.environ.get('DFTIMEWOLF_NO_RAINBOW'))
-    console_handler.setFormatter(logging_utils.WolfFormatter(colorize=colorize))
+    colorize = sys.stdout.isatty() and not bool(os.environ.get('DFTIMEWOLF_NO_RAINBOW'))
     console_handler.setLevel(logging.DEBUG
                              if os.environ.get("DFTIMEWOLF_DEBUG") else
                              logging.INFO)
+    console_handler.setFormatter(logging_utils.WolfFormatter(
+        handler_level=console_handler.level, colorize=colorize))
     logger.addHandler(console_handler)
-    logger.info(f'Logging to stdout and {logging_utils.DEFAULT_LOG_FILE}')
+    logger.info(f'Logging to stdout and {file_handler.stream.name}')
   else:
-    logger.info(f'Logging to {logging_utils.DEFAULT_LOG_FILE}')
+    logger.info(f'Logging to {file_handler.stream.name}')
 
 
 def RunTool() -> int:
@@ -451,7 +440,6 @@ def RunTool() -> int:
   tool = DFTimewolfTool()
 
   try:
-    tool.LoadConfiguration()
     tool.ReadRecipes()
 
     help_requested = any(h in sys.argv for h in ('-h', '--help'))

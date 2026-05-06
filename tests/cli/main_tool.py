@@ -93,7 +93,7 @@ class MainToolTest(parameterized.TestCase):
     logger = logging.getLogger('dftimewolf')
     root_logger = logging.getLogger()
     self.assertEqual(len(logger.handlers), 2)
-    self.assertEqual(len(root_logger.handlers), 1)
+    self.assertEqual(len(root_logger.handlers), 0)
 
   def testToolWithArbitraryRecipe(self):
     """Tests that recipes are read and valid, and an exec plan is logged."""

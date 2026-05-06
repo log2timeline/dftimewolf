@@ -47,6 +47,7 @@ class ModuleRunner(object):
 
     self._cache = cache.DFTWCache()
     self._cache.SetCLIArgs(' '.join(sys.argv))
+    self._cache.SetWorkflowUUID(self._telemetry.uuid)
 
     self._messages: dict[str, list[str]] = collections.defaultdict(list)
 
@@ -75,7 +76,7 @@ class ModuleRunner(object):
     preflight_definitions = self._recipe.get('preflights', [])
     self._ImportRecipeModules(module_locations)
 
-    for module_definition in module_definitions + preflight_definitions:
+    for module_definition in preflight_definitions + module_definitions:
       module_name = module_definition['name']
       runtime_name = module_definition.get('runtime_name')
       if not runtime_name:
@@ -90,6 +91,8 @@ class ModuleRunner(object):
       else:
         raise RuntimeError(f'Could not instantiate module {module_name}')
 
+      self._messages[runtime_name] = []
+
     self._container_manager.ParseRecipe(self._recipe)
     self._cache.AddToCache('recipe_name', self._recipe['name'])
 
@@ -102,13 +105,6 @@ class ModuleRunner(object):
 
     for module in sorted(modules):
       self._telemetry.LogTelemetry('module', module, 'core')
-
-  def AddLoggingHandler(self, handler: logging.Handler) -> None:
-    """Adds a logging handler to module runner, and all modules."""
-    self._logger.addHandler(handler)
-
-    for _, module in self._module_pool.items():
-      module.logger.addHandler(handler)
 
   def LogExecutionPlan(self) -> None:
     """Logs the result of FormatExecutionPlan() using the base logger."""
@@ -166,7 +162,7 @@ class ModuleRunner(object):
     """Generates the runtime report from the module results and errors."""
     separator = '----------'
 
-    lines = [self._recipe['name'], separator]
+    lines = [f'Recipe: {self._recipe["name"]}', f'Workflow ID: {self._cache.GetWorkflowUUID()}', separator]
 
     for module, messages in self._messages.items():
       if not messages:
@@ -233,6 +229,7 @@ class ModuleRunner(object):
     for module_definition in self._recipe['modules']:
       thread_args = (module_definition,)
       thread = threading.Thread(target=callback, args=thread_args)
+      thread.name = thread.name.split(' ')[0]
       threads.append(thread)
       thread.start()
 
@@ -272,8 +269,6 @@ class ModuleRunner(object):
     self._logger.info('Setting up module: {0:s}'.format(runtime_name))
 
     module = self._module_pool[runtime_name]
-
-    self._messages[runtime_name] = []
 
     try:
       if runtime_name in self._errors and any(e.critical for e in self._errors[runtime_name]):
