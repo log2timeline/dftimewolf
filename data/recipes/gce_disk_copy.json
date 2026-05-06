@@ -33,7 +33,8 @@
         "all_disks": "@all_disks",
         "source_zone": "@source_zone",
         "destination_zone": "@zone",
-        "stop_instances": "@stop_instances"
+        "stop_instances": "@stop_instances",
+        "label": "@label"
       }
     }
   ],
@@ -103,6 +104,11 @@
       {
         "format": "gcp_zone"
       }
+    ],
+    [
+      "--label",
+      "Optional label to apply to the copied disks (formatted as key:value or just value).",
+      null
     ]
   ]
 }

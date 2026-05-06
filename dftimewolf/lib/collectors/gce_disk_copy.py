@@ -76,7 +76,8 @@ class GCEDiskCopy(module.ThreadAwareModule):
             remote_instance_names: Union[str, List[str], None],
             disk_names: Union[str, List[str], None],
             all_disks: bool,
-            stop_instances: bool) -> None:
+            stop_instances: bool,
+            label: Optional[str] = None) -> None:
     """Sets up a GCEDiskCopyCollector.
 
     This method sets up the module for copying disks.
@@ -103,6 +104,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
       all_disks: True if all disks attached to the source instance should be
           copied.
       stop_instances: Stop the target instance after copying disks.
+      label: Optional label to add to copied disks.
     """
     if not (remote_instance_names or disk_names):
       self.ModuleError(
@@ -135,6 +137,13 @@ class GCEDiskCopy(module.ThreadAwareModule):
     self.all_disks = all_disks
     self.stop_instances = stop_instances
     self.source_zone = source_zone
+
+    if label:
+      if ':' in label:
+        key, value = label.split(':', 1)
+        self._gcp_label[key] = value
+      else:
+        self._gcp_label['dftw-label'] = label
 
   def PreProcess(self) -> None:
     """Organise any disks to be copied.
@@ -191,6 +200,8 @@ class GCEDiskCopy(module.ThreadAwareModule):
           self.destination_project.default_zone,
           disk_name=container.name,
           src_zone=self.source_zone)
+      if self._gcp_label:
+        new_disk.AddLabels(self._gcp_label)
       self.at_least_one_success = True
       self.PublishMessage(f'Disk {container.name} successfully copied to '
           f'{new_disk.name}')
