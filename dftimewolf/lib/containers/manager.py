@@ -2,6 +2,7 @@
 
 
 from concurrent import futures
+import contextvars
 import dataclasses
 import logging
 import threading
@@ -120,8 +121,9 @@ class ContainerManager():
             # This module has registered callbacks - Use those, rather than storing
             for callback in callbacks:
               self._logger.debug('Executing callback for %s with container %s', module.name, str(container))
+              ctx = contextvars.copy_context()
               self._futures.append((str(callback),
-                                    self._callback_pool.submit(callback, container)))
+                                    self._callback_pool.submit(ctx.run, callback, container)))
           else:
             if container.CONTAINER_TYPE not in module.storage:
               module.storage[container.CONTAINER_TYPE] = []
