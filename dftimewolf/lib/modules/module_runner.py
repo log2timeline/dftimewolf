@@ -1,6 +1,7 @@
 """Handles running DFTW modules."""
 
 import collections
+import contextvars
 import importlib
 import logging
 import sys
@@ -228,7 +229,8 @@ class ModuleRunner(object):
     threads: list[threading.Thread] = []
     for module_definition in self._recipe['modules']:
       thread_args = (module_definition,)
-      thread = threading.Thread(target=callback, args=thread_args)
+      ctx = contextvars.copy_context()
+      thread = threading.Thread(target=ctx.run, args=(callback,) + thread_args)
       thread.name = thread.name.split(' ')[0]
       threads.append(thread)
       thread.start()
@@ -307,7 +309,8 @@ class ModuleRunner(object):
     with futures.ThreadPoolExecutor(max_workers=module.GetThreadPoolSize()) as executor:
       for c in containers:
         self._logger.debug(f"Launching {module.name}.Process thread with {str(c)}")
-        future_results.append(executor.submit(module.Process, c))
+        ctx = contextvars.copy_context()
+        future_results.append(executor.submit(ctx.run, module.Process, c))
     return future_results
 
   def _RunModuleThreadCallback(self, module_definition: dict[str, str]) -> None:
