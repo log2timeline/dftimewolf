@@ -87,6 +87,8 @@ recipe specifies arguments in the following way:
       ["--disks", "Comma-separated list of disks to copy from the source GCP project (if `instance` not provided).", null],
       ["--all_disks", "Copy all disks in the designated instance. Overrides `disk_names` if specified.", false],
       ["--stop_instances", "Stop the designated instance after copying disks.", false],
+      ["--quarantine_instances", "Quarantine the designated instance after copying disks.", false],
+      ["--exempted_src_ips", "Comma-separated list of IPs to exempt from quarantine.", null],
       ["--create_analysis_vm", "Create an analysis VM in the destination project.", true],
       ["--cpu_cores", "Number of CPU cores of the analysis VM.", 4],
       ["--boot_disk_size", "The size of the analysis VM boot disk (in GB).", 50.0],
