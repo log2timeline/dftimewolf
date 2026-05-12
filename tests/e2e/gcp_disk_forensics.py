@@ -68,6 +68,8 @@ RECIPE = {
                 'all_disks': '@all_disks',
                 'destination_zone': '@zone',
                 'stop_instances': '@stop_instances',
+                'quarantine_instances': '@quarantine_instances',
+                'exempted_src_ips': '@exempted_src_ips',
             }
         }, {
             'wants': ['GCEDiskCopy'],
@@ -94,6 +96,8 @@ RECIPE = {
         ['--disks', 'Comma-separated list of disks to copy from the source GCP project (if `instance` not provided).', None],
         ['--all_disks', 'Copy all disks in the designated instance. Overrides `disk_names` if specified.', False],
         ['--stop_instances', 'Stop the designated instance after copying disks.', False],
+        ['--quarantine_instances', 'Quarantine the designated instance after copying disks.', False],
+        ['--exempted_src_ips', 'Comma-separated list of IPs to exempt from quarantine.', None],
         ['--zone', 'The GCP zone where the Analysis VM and copied disks will be created.', 'us-central1-f', {'format': 'gcp_zone'}]
     ]
 }

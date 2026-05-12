@@ -78,7 +78,9 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
         remote_instance_names='my-owned-instance',
         disk_names='fake-disk',
         all_disks=True,
-        stop_instances=True
+        stop_instances=True,
+        quarantine_instances=True,
+        exempted_src_ips='10.0.0.1,10.0.0.2'
     )
     self.assertEqual(self._module.source_zone, 'source_zone')
     self.assertEqual(self._module.destination_project.project_id,
@@ -89,8 +91,10 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     self.assertEqual(self._module.disk_names, ['fake-disk'])
     self.assertEqual(self._module.all_disks, True)
     self.assertEqual(self._module.stop_instances, True)
+    self.assertEqual(self._module.quarantine_instances, True)
+    self.assertEqual(self._module.exempted_src_ips, ['10.0.0.1', '10.0.0.2'])
 
-    # Test setup with multiple disks and instances
+    # Test setup with multiple disks and instances and default quarantine options
     self._module.SetUp(
         'test-destination-project-name',
         'test-source-project-name',
@@ -111,6 +115,8 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
                      'fake-disk-1', 'fake-disk-2']))
     self.assertEqual(self._module.all_disks, False)
     self.assertEqual(self._module.stop_instances, False)
+    self.assertEqual(self._module.quarantine_instances, False)
+    self.assertEqual(self._module.exempted_src_ips, [])
 
     # Test setup with no destination project
     self._module.SetUp(
@@ -131,6 +137,8 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     self.assertEqual(self._module.disk_names, ['fake-disk'])
     self.assertEqual(self._module.all_disks, True)
     self.assertEqual(self._module.stop_instances, True)
+    self.assertEqual(self._module.quarantine_instances, False)
+    self.assertEqual(self._module.exempted_src_ips, [])
 
   def testSetUpNothingProvided(self) -> None:
     """Tests that SetUp fails if no disks or instances are provided."""
@@ -148,9 +156,9 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     self.assertEqual(error.exception.message,
         'You need to specify at least an instance name or disks to copy')
 
-  def testStopWithNoInstance(self) -> None:
-    """Tests that SetUp fails if stop instance is requested, but no instance
-    provided.
+  def testStopOrQuarantineWithNoInstance(self) -> None:
+    """Tests that SetUp fails if stop/quarantine instance is requested, but no
+    instance provided.
     """
     with self.assertRaises(errors.DFTimewolfError) as error:
       self._module.SetUp(
@@ -164,7 +172,22 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
           True
       )
     self.assertEqual(error.exception.message,
-        'You need to specify an instance name to stop the instance')
+        'You need to specify an instance name to stop or quarantine the instance')
+
+    with self.assertRaises(errors.DFTimewolfError) as error:
+      self._module.SetUp(
+          'test-destination-project-name',
+          'test-source-project-name',
+          'source_zone',
+          'fake_zone',
+          None,
+          'disk1',
+          False,
+          False,
+          quarantine_instances=True
+      )
+    self.assertEqual(error.exception.message,
+        'You need to specify an instance name to stop or quarantine the instance')
 
   # pylint: disable=line-too-long,invalid-name
   @typing.no_type_check
@@ -539,6 +562,69 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
                   'fake_zone',
                   disk_name='disk2',
                   src_zone='source_zone')])
+
+    out_disks = [d for d in self._module.GetContainers(containers.GCEDisk)
+                 if d.name not in ('disk1', 'disk2')]
+    out_disk_names = [d.name for d in out_disks]
+    self.assertLen(out_disk_names, 2)
+    expected_disk_names = ['disk1-copy', 'disk2-copy']
+    self.assertListEqual(out_disk_names, expected_disk_names)
+    for d in out_disks:
+      self.assertEqual(d.project, 'test-analysis-project-name')
+
+  @typing.no_type_check
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
+  @mock.patch('libcloudforensics.providers.gcp.forensics.CreateDiskCopy')
+  @mock.patch('dftimewolf.lib.collectors.gce_disk_copy.GCEDiskCopy._GetDisksFromInstance')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.ListDisks')
+  @mock.patch('libcloudforensics.providers.gcp.forensics.InstanceNetworkQuarantine')
+  def testProcessWithQuarantine(self,
+                                mock_quarantine,
+                                mock_list_disks,
+                                mock_getDisksFromInstance,
+                                mock_CreateDiskCopy,
+                                mock_GetInstance):
+    """Tests the collector's Process() function, quarantining the instance."""
+    mock_getDisksFromInstance.return_value = [
+        d.name for d in FAKE_DISK_MULTIPLE]
+    mock_CreateDiskCopy.side_effect = FAKE_DISK_COPY
+    mock_GetInstance.return_value = FAKE_INSTANCE
+    mock_list_disks.return_value = {
+        'bootdisk': FAKE_BOOT_DISK,
+        'disk1': FAKE_DISK
+    }
+
+    self._module.SetUp(
+        'test-analysis-project-name',
+        'test-target-project-name',
+        'source_zone',
+        'fake_zone',
+        'my-owned-instance',
+        None,
+        True,
+        False,
+        quarantine_instances=True,
+        exempted_src_ips='10.0.0.1'
+    )
+
+    self._ProcessModule()
+
+    mock_CreateDiskCopy.assert_has_calls([
+        mock.call('test-target-project-name',
+                  'test-analysis-project-name',
+                  'fake_zone',
+                  disk_name='disk1',
+                  src_zone='source_zone'),
+        mock.call('test-target-project-name',
+                  'test-analysis-project-name',
+                  'fake_zone',
+                  disk_name='disk2',
+                  src_zone='source_zone')])
+
+    mock_quarantine.assert_called_once_with(
+        'test-target-project-name',
+        'my-owned-instance',
+        exempted_src_ips=['10.0.0.1'])
 
     out_disks = [d for d in self._module.GetContainers(containers.GCEDisk)
                  if d.name not in ('disk1', 'disk2')]

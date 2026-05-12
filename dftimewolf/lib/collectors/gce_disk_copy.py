@@ -61,6 +61,8 @@ class GCEDiskCopy(module.ThreadAwareModule):
     self.disk_names = []  # type: List[str]
     self.all_disks = False
     self.stop_instances = False
+    self.quarantine_instances = False
+    self.exempted_src_ips = []  # type: List[str]
     self._gcp_label = {}  # type: Dict[str, str]
     self.source_zone = None  # type: Optional[str]
     self.warned = False  # type: bool
@@ -77,6 +79,8 @@ class GCEDiskCopy(module.ThreadAwareModule):
             disk_names: Union[str, List[str], None],
             all_disks: bool,
             stop_instances: bool,
+            quarantine_instances: bool = False,
+            exempted_src_ips: Optional[str] = None,
             label: Optional[str] = None) -> None:
     """Sets up a GCEDiskCopyCollector.
 
@@ -104,6 +108,8 @@ class GCEDiskCopy(module.ThreadAwareModule):
       all_disks: True if all disks attached to the source instance should be
           copied.
       stop_instances: Stop the target instance after copying disks.
+      quarantine_instances: Quarantine the target instance after copying disks.
+      exempted_src_ips: Comma-separated list of IPs to exempt from quarantine.
       label: Optional label to add to copied disks.
     """
     if not (remote_instance_names or disk_names):
@@ -111,9 +117,9 @@ class GCEDiskCopy(module.ThreadAwareModule):
           'You need to specify at least an instance name or disks to copy',
           critical=True)
 
-    if stop_instances and not remote_instance_names:
+    if (stop_instances or quarantine_instances) and not remote_instance_names:
       self.ModuleError(
-          'You need to specify an instance name to stop the instance',
+          'You need to specify an instance name to stop or quarantine the instance',
           critical=True)
 
     self.source_project = gcp_project.GoogleCloudProject(
@@ -136,6 +142,12 @@ class GCEDiskCopy(module.ThreadAwareModule):
       self.disk_names = disk_names or []
     self.all_disks = all_disks
     self.stop_instances = stop_instances
+    self.quarantine_instances = quarantine_instances
+    if isinstance(exempted_src_ips, str):
+      self.exempted_src_ips = (
+          exempted_src_ips.split(',') if exempted_src_ips else [])
+    else:
+      self.exempted_src_ips = exempted_src_ips or []
     self.source_zone = source_zone
 
     if label:
@@ -220,9 +232,12 @@ class GCEDiskCopy(module.ThreadAwareModule):
       self.ModuleError(str(exception), critical=True)
 
   def PostProcess(self) -> None:
-    """Stops instances where it was requested."""
+    """Stops or quarantines instances where it was requested."""
     if self.stop_instances:
       self._StopInstances()
+
+    if self.quarantine_instances:
+      self._QuarantineInstances()
 
     if self.failed_disks:
       self.logger.warning('The following disks dould not be found: '
@@ -247,6 +262,23 @@ class GCEDiskCopy(module.ThreadAwareModule):
       except lcf_errors.InstanceStateChangeError as exception:
         self.ModuleError(str(exception), critical=False)
       self.logger.info(f'Stopped instance {i}')
+
+  def _QuarantineInstances(self) -> None:
+    """Quarantines instances where it was requested."""
+    if self.warned:
+      self.logger.warning(
+          'Not quarantining instance due to previous warnings on disk copy')
+      return
+
+    for i in self.remote_instance_names:
+      try:
+        gcp_forensics.InstanceNetworkQuarantine(
+            self.source_project.project_id,
+            i,
+            exempted_src_ips=self.exempted_src_ips)
+      except lcf_errors.LCFError as exception:
+        self.ModuleError(str(exception), critical=False)
+      self.logger.info(f'Quarantined instance {i}')
 
   def _GetDisksFromInstance(
       self,

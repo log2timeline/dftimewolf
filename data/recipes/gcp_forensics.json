@@ -34,6 +34,8 @@
         "disk_names": "@disks",
         "all_disks": "@all_disks",
         "stop_instances": "@stop_instances",
+        "quarantine_instances": "@quarantine_instances",
+        "exempted_src_ips": "@exempted_src_ips",
         "label": "@label"
       }
     },
@@ -101,6 +103,16 @@
       "--stop_instances",
       "Stop the designated instance after copying disks.",
       false
+    ],
+    [
+      "--quarantine_instances",
+      "Quarantine the designated instance after copying disks.",
+      false
+    ],
+    [
+      "--exempted_src_ips",
+      "Comma-separated list of IPs to exempt from quarantine.",
+      null
     ],
     [
       "--create_analysis_vm",
