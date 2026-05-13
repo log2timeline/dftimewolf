@@ -49,7 +49,6 @@ MODULES = {
   'GoogleCloudDiskExportStream': 'dftimewolf.lib.exporters.gce_disk_export_dd',
   'GoogleDriveCollector': 'dftimewolf.lib.collectors.gdrive',
   'GoogleDriveExporter': 'dftimewolf.lib.exporters.gdrive',
-  'GoogleSheetsCollector': 'dftimewolf.lib.collectors.gsheets',
   'GRRArtifactCollector': 'dftimewolf.lib.collectors.grr_hosts',
   'GRRFileCollector': 'dftimewolf.lib.collectors.grr_hosts',
   'GRRFlowCollector': 'dftimewolf.lib.collectors.grr_hosts',
