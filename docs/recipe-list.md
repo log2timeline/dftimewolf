@@ -1131,40 +1131,6 @@ Modules: `YetiYaraCollector`, `GRRYaraScanner`
 
 ----
 
-## `gsheets_ts`
-
-Collects data from google sheets and outputs them to Timesketch.
-
-**Details:**
-
-Collects data from google sheets and outputs them to Timesketch.
-
-**CLI parameters:**
-
-Parameter|Default value|Description
----------|-------------|-----------
-`spreadsheet`|`None`|ID or URL of the Google Sheet spreadsheet to collect data from.
-`--sheet_names`|`[]`|Comma-separated list sheet names to collect date from. If not set all sheets in the spreadsheet will be parsed.
-`--validate_columns`|`True`|Set to True to check for mandatory columns required by Timesketch while extracting data. Set to False to ignore validation. Default is True.
-`--sketch_id`|`None`|Sketch to which the timeline should be added
-`--timesketch_endpoint`|`'http://localhost:5000/'`|Timesketch endpoint
-`--timesketch_username`|`None`|Username for Timesketch server.
-`--timesketch_password`|`None`|Password for Timesketch server.
-`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with
-`--incident_id`|`None`|Incident ID (used for Timesketch description)
-`--wait_for_timelines`|`True`|Whether to wait for timelines to finish processing.
-
-
-
-
-Modules: `GoogleSheetsCollector`, `TimesketchExporter`
-
-**Module graph**
-
-![gsheets_ts](_static/graphviz/gsheets_ts.png)
-
-----
-
 ## `openrelik_ts`
 
 Processes files from the local file system using OpenRelik. Sends the results to Timesketch.
