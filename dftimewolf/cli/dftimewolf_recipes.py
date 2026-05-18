@@ -41,7 +41,6 @@ MODULES = {
   'GCEForensicsVM': 'dftimewolf.lib.processors.gce_forensics_vm',
   'GCEImageFromDisk': 'dftimewolf.lib.exporters.gce_image_from_disk',
   'GCPCloudResourceTree': 'dftimewolf.lib.processors.gcp_cloud_resource_tree',
-  'GCPLoggingTimesketch': 'dftimewolf.lib.processors.gcp_logging_timesketch',
   'GCPLogsCollector': 'dftimewolf.lib.collectors.gcp_logging',
   'GCPTokenCheck': 'dftimewolf.lib.preflights.cloud_token',
   'GCSToGCEImage': 'dftimewolf.lib.exporters.gcs_to_gce_image',
