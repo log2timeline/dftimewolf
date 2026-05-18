@@ -489,7 +489,8 @@ class GRRFileCollectorTest(modules_test_base.ModuleTestBase):
   def testPreProcess(self, mock_InitHttp):
     """Tests the preprocess method."""
     mock_InitHttp.return_value = self.mock_grr_api
-    self._module.StoreContainer(containers.FSPath(path='/etc/hosts'))
+    self._module.StoreContainer(containers.File(name='hosts',
+                                                path='/etc/hosts'))
     self._module.SetUp(
         hostnames='C.0000000000000001',
         files='/etc/passwd',
@@ -517,8 +518,8 @@ class GRRFileCollectorTest(modules_test_base.ModuleTestBase):
     self.mock_grr_api.SearchClients.return_value = \
         mock_grr_hosts.MOCK_CLIENT_LIST
     mock_DownloadFiles.return_value = '/tmp/something'
-    self._module.StoreContainer(containers.FSPath(path='/etc/hosts'))
-
+    self._module.StoreContainer(containers.File(name='hosts',
+                                                path='/etc/hosts'))
     self._module.SetUp(
         hostnames='C.0000000000000001',
         files='/etc/passwd',
@@ -547,7 +548,8 @@ class GRRFileCollectorTest(modules_test_base.ModuleTestBase):
             )
         )
     )
-    results = self._module.GetContainers(containers.File)
+    results = [c for c in self._module.GetContainers(containers.File)
+               if c.path != '/etc/hosts']
     self.assertEqual(len(results), 1)
     self.assertEqual(results[0].name, 'tomchop')
     self.assertEqual(results[0].path, '/tmp/something')
@@ -569,8 +571,8 @@ class GRRFileCollectorTest(modules_test_base.ModuleTestBase):
         [mock_grr_hosts.MOCK_WINDOWS_CLIENT]
     mock_DownloadFiles.return_value = '/tmp/something'
 
-    self._module.StoreContainer(containers.FSPath(path='/etc/hosts'))
-
+    self._module.StoreContainer(containers.File(name='hosts',
+                                                path='/etc/hosts'))
     self._module.SetUp(
         hostnames='C.0000000000000002',
         files='/etc/passwd',
@@ -600,7 +602,8 @@ class GRRFileCollectorTest(modules_test_base.ModuleTestBase):
             )
         )
     )
-    results = self._module.GetContainers(containers.File)
+    results = [c for c in self._module.GetContainers(containers.File)
+               if c.path != '/etc/hosts']
     self.assertEqual(len(results), 1)
     self.assertEqual(results[0].name, 'tomchop')
     self.assertEqual(results[0].path, '/tmp/something')

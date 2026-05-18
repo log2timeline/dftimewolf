@@ -325,7 +325,7 @@ class GRRHuntFileCollector(GRRHunt):
   def PreProcess(self) -> None:
     """Load File paths from containers and check there are files to download."""
     for file_container in self.GetContainers(
-        container_class=containers.FSPath):
+        container_class=containers.File):
       self.file_path_list.append(file_container.path)
 
     if not self.file_path_list:

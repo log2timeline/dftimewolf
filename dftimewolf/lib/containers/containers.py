@@ -16,54 +16,6 @@ if TYPE_CHECKING:
   from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk
 
 
-class FSPath(interface.AttributeContainer):
-  """Filesystem path container.
-
-  Attributes:
-    path (str): Filesystem path.
-  """
-
-  CONTAINER_TYPE = "fspath"
-
-  def __init__(self, path: str) -> None:
-    """Initializes the FSPath object.
-
-    Args:
-      path (str): Filesystem path
-    """
-    super(FSPath, self).__init__()
-    self.path = path
-
-  def __str__(self) -> str:
-    """Override __str()__."""
-    return self.path
-
-
-class RemoteFSPath(FSPath):
-  """Remote Filesystem path container.
-
-  Attributes:
-    hostname (str): Hostname where the file is located.
-    path (str): Filesystem path.
-  """
-
-  CONTAINER_TYPE = "remotefspath"
-
-  def __init__(self, path: str, hostname: str) -> None:
-    """Initializes the FSPath object.
-
-    Args:
-      path (str): Filesystem path
-      hostname (str): Hostname where the file is located
-    """
-    super(RemoteFSPath, self).__init__(path=path)
-    self.hostname = hostname
-
-  def __str__(self) -> str:
-    """Override __str()__."""
-    return f"{self.hostname}:{self.path}"
-
-
 class Report(interface.AttributeContainer):
   """Report attribute container.
 
