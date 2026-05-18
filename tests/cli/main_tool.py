@@ -4,6 +4,8 @@
 
 import logging
 import inspect
+import json
+import re
 
 from absl.testing import absltest
 from absl.testing import parameterized
@@ -312,6 +314,35 @@ class MainToolTest(parameterized.TestCase):
         ['First', '--optional_arg', 'not_second']))
     with self.assertRaises(errors.CriticalError):
       self.tool.ApplyArgs(params)
+
+  @parameterized.named_parameters(_EnumerateRecipeNames())
+  def testArgumentUsedButNotDefined(self, recipe_name):
+    """Parameterised version of _testArgumentUsedButNotDefined."""
+    self._testArgumentUsedButNotDefined(recipe_name)
+
+  def _testArgumentUsedButNotDefined(self, recipe_name):
+    """Tests that interpolated params to modules are actually defined."""
+    # pylint: disable=protected-access
+    recipe = self.tool._recipes_manager.GetRecipe(recipe_name)
+
+    haystack = '\n'.join((json.dumps(recipe.contents.get('modules', '')),
+                          json.dumps(recipe.contents.get('preflights', ''))))
+
+    # Match @arguments
+    needle = re.compile(r'@([-_a-z0-9]+)')
+
+    defined_args = [arg.switch.replace('--', '') for arg in recipe.args]
+
+    missing_args: set[str] = set()
+
+    for match in re.findall(needle, haystack):
+      if match not in defined_args:
+        missing_args.add(match)
+
+    if missing_args:
+      self.fail(
+          f'In recipe {recipe_name}, the following args were used, but were not'
+          ' defined in the recipe: ' + ', '.join(missing_args))
 
 
 if __name__ == '__main__':
