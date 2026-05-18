@@ -69,8 +69,8 @@ class GRRHuntFileCollectorTest(modules_test_base.ModuleTestBase):
     self._InitModule(grr_hunt.GRRHuntFileCollector)
     self.mock_grr_api = mock.Mock()
     mock_InitHttp.return_value = self.mock_grr_api
-    self._module.StoreContainer(
-        containers.FSPath(path='/etc/hosts'))
+    self._module.StoreContainer(containers.File(name='hosts',
+                                                path='/etc/hosts'))
     self._module.SetUp(
         file_path_list='/etc/passwd,/etc/shadow',
         reason='random reason',

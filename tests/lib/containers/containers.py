@@ -14,7 +14,6 @@ CONTAINER_CLASSES = [
   containers.Directory,
   containers.File,
   containers.ForensicsVM,
-  containers.FSPath,
   containers.GCEImage,
   containers.GCPLogs,
   containers.GCSObject,
@@ -22,7 +21,6 @@ CONTAINER_CLASSES = [
   containers.Host,
   containers.OsqueryQuery,
   containers.OsqueryResult,
-  containers.RemoteFSPath,
   containers.Report,
   containers.ThreatIntelligence,
   containers.TicketAttribute,
@@ -68,34 +66,6 @@ class ThreatIntelligenceDataTest(unittest.TestCase):
         path='/')
 
     expected_attribute_names = ['indicator', 'metadata', 'name', 'path']
-
-    attribute_names = sorted(attribute_container.GetAttributeNames())
-
-    self.assertEqual(attribute_names, expected_attribute_names)
-
-
-class FSPathDataTest(unittest.TestCase):
-  """Tests for the FSPath data attribute container."""
-
-  def testGetAttributeNames(self):
-    """Tests the GetAttributeNames function."""
-    attribute_container = containers.FSPath(path='name')
-
-    expected_attribute_names = ['metadata', 'path']
-
-    attribute_names = sorted(attribute_container.GetAttributeNames())
-
-    self.assertEqual(attribute_names, expected_attribute_names)
-
-
-class RemoteFSPathDataTest(unittest.TestCase):
-  """Tests for the RemoteFSPath data attribute container."""
-
-  def testGetAttributeNames(self):
-    """Tests the GetAttributeNames function."""
-    attribute_container = containers.RemoteFSPath(path='name', hostname='host')
-
-    expected_attribute_names = ['hostname', 'metadata', 'path']
 
     attribute_names = sorted(attribute_container.GetAttributeNames())
 
