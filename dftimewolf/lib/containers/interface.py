@@ -23,8 +23,8 @@ class AttributeContainer():
     metadata: A dict of container metadata that can be used for passing
       metadata between collection/processing module and output modules.
   """
-  CONTAINER_TYPE = None  # type: str
-  metadata = {}  # type: Dict[str, Any]
+  CONTAINER_TYPE: str = None  # type: ignore
+  metadata: dict[str, Any] = {}
 
   def __init__(self, metadata: Optional[Dict[str, Any]] = None):
     """Initializes an AttributeContainer.

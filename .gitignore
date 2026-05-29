@@ -106,3 +106,5 @@ dftimewolf/user_config.py
 .DS_Store
 
 *.code-workspace
+
+.vscode

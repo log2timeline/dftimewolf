@@ -36,7 +36,7 @@ def GetGoogleOauth2Credential(
     # If there are no (valid) credentials available, let the user log in.
     if not credentials or not credentials.valid:
       if credentials and credentials.expired and credentials.refresh_token:
-        credentials.refresh(Request())
+        credentials.refresh(Request())  # type: ignore
       else:
         secrets_path = os.path.join(os.path.expanduser("~"), secret_path)
         if not os.path.exists(secrets_path):

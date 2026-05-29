@@ -674,42 +674,6 @@ Modules: `GCPLogsCollector`, `LocalPlasoProcessor`, `TimesketchExporter`
 
 ----
 
-## `gcp_logging_ts`
-
-Collects logs from a GCP project and sends them to Timesketch.
-
-**Details:**
-
-Collects logs from a GCP project and sends them to Timesketch. https://cloud.google.com/logging/docs/view/query-library for example queries.
-
-**CLI parameters:**
-
-Parameter|Default value|Description
----------|-------------|-----------
-`project_name`|`None`|Name of the GCP project to collect logs from.
-`filter_expression`|`"resource.type = 'gce_instance'"`|Filter expression to use to query GCP logs. See https://cloud.google.com/logging/docs/view/query-library for examples.
-`--backoff`|`True`|If GCP Cloud Logging API query limits are exceeded, retry with an increased delay between each query to try complete the query at a slower rate.
-`--delay`|`'0'`|Number of seconds to wait between each GCP Cloud Logging query to avoid hitting API query limits
-`--analyzers`|`None`|Timesketch analyzers to run.
-`--sketch_id`|`None`|Timesketch sketch to which the timeline should be added.
-`--timesketch_endpoint`|`'http://localhost:5000/'`|Timesketch endpoint
-`--timesketch_username`|`None`|Username for Timesketch server.
-`--timesketch_password`|`None`|Password for Timesketch server.
-`--token_password`|`''`|Optional custom password to decrypt Timesketch credential file with.
-`--incident_id`|`None`|Incident ID (used for Timesketch description).
-`--wait_for_timelines`|`True`|Whether to wait for Timesketch to finish processing all timelines.
-
-
-
-
-Modules: `GCPLogsCollector`, `GCPLoggingTimesketch`, `TimesketchExporter`
-
-**Module graph**
-
-![gcp_logging_ts](_static/graphviz/gcp_logging_ts.png)
-
-----
-
 ## `gdrive_collect`
 
 Collect files from Google Drive.

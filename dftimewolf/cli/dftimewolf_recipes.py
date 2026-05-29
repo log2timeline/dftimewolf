@@ -424,9 +424,9 @@ def SetupLogging(stdout_log: bool = False) -> None:
     console_handler.setFormatter(logging_utils.WolfFormatter(
         handler_level=console_handler.level, colorize=colorize))
     logger.addHandler(console_handler)
-    logger.info(f'Logging to stdout and {file_handler.stream.name}')
+    logger.info(f'Logging to stdout and {file_handler.stream.name}')  # type: ignore
   else:
-    logger.info(f'Logging to {file_handler.stream.name}')
+    logger.info(f'Logging to {file_handler.stream.name}')  # type: ignore
 
 
 def RunTool() -> int:
