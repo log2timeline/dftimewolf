@@ -86,6 +86,8 @@ def _EnumerateRecipeNames():
 class MainToolTest(parameterized.TestCase):
   """Tests for main tool functions."""
 
+  ARG_NEEDLE = re.compile(r'@([-_a-z0-9]+)')
+
   def setUp(self):
     self.tool = _CreateToolObject()
 
@@ -328,8 +330,7 @@ class MainToolTest(parameterized.TestCase):
     haystack = '\n'.join((json.dumps(recipe.contents.get('modules', '')),
                           json.dumps(recipe.contents.get('preflights', ''))))
 
-    # Match @arguments
-    needle = re.compile(r'@([-_a-z0-9]+)')
+    needle = self.ARG_NEEDLE
 
     defined_args = [arg.switch.replace('--', '') for arg in recipe.args]
 
