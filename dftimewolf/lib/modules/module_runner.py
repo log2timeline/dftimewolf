@@ -174,6 +174,14 @@ class ModuleRunner(object):
 
     return '\n'.join(lines)
 
+  def GetErrors(self) -> dict[str, list[errors.DFTimewolfError]]:
+    """Collect any errors that have been raised by modules.
+
+    Returns:
+      A dict of module errors, keyed by the name of the generating module.
+    """
+    return self._errors
+
   def _ImportRecipeModules(self, module_locations: dict[str, str]) -> None:
     """Dynamically loads the modules declared in a recipe.
 

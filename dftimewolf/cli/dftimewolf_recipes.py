@@ -253,6 +253,14 @@ class DFTimewolfTool(object):
       logger.info('Modules run successfully!')
     return return_value
 
+  def GetModuleErrors(self) -> dict[str, list[errors.DFTimewolfError]]:
+    """Collect any errors that have been raised by modules.
+
+    Returns:
+      A dict of module errors, keyed by the name of the generating module.
+    """
+    return self._module_runner.GetErrors()
+
   def LogTelemetry(self) -> None:
     """Prints collected telemetry if existing."""
 
