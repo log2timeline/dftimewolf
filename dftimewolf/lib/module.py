@@ -6,7 +6,7 @@ import abc
 import logging
 import sys
 import traceback
-from typing import Any, Callable, Dict, Optional, Sequence, Type, TypeVar, cast
+from typing import Any, Callable, Dict, Literal, NoReturn, Optional, overload, Sequence, Type, TypeVar, cast
 
 from dftimewolf.lib import cache
 from dftimewolf.lib import errors
@@ -81,6 +81,10 @@ class BaseModule(object):
     # No clean up is required.
     return
 
+  @overload
+  def ModuleError(self, message: str, critical: Literal[True]) -> NoReturn: ...
+  @overload
+  def ModuleError(self, message: str, critical: Literal[False]=False) -> None: ...
   def ModuleError(self, message: str, critical: bool=False) -> None:
     """Declares a module error.
 
@@ -103,14 +107,13 @@ class BaseModule(object):
         self._telemetry.LogTelemetry(
             'error_stacktrace', stacktrace, self.name)
 
-    error = errors.DFTimewolfError(
-        message, name=self.name, stacktrace=stacktrace, critical=critical)
     if self._telemetry:
       self._telemetry.LogTelemetry('error_detail', message, self.name)
 
     self.PublishMessage(message, is_error=True, is_critical=critical)
     if critical:
-      raise error
+      raise errors.DFTimewolfError(
+          message, name=self.name, stacktrace=stacktrace, critical=critical)
 
   def PublishMessage(
       self, message: str, is_error: bool = False, is_critical: bool = False

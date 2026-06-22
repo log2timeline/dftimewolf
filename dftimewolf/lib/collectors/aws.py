@@ -65,7 +65,7 @@ class AWSCollector(module.BaseModule):
                      publish_message_callback=publish_message_callback)
     self.remote_profile_name = str()
     self.remote_zone = str()
-    self.source_account = None  # type: aws_account.AWSAccount
+    self.source_account: aws_account.AWSAccount = None  # pyrefly: ignore[bad-assignment]
     self.incident_id = str()
     self.remote_instance_id = None  # type: Optional[str]
     self.volume_ids = []  # type: List[str]
@@ -94,7 +94,7 @@ class AWSCollector(module.BaseModule):
             volume.volume_id, new_volume.volume_id))
 
         container = containers.ForensicsVM(
-            name=self.analysis_vm.name,
+            name=str(self.analysis_vm.name),
             evidence_disk=new_volume,
             platform='aws')
         self.StoreContainer(container)

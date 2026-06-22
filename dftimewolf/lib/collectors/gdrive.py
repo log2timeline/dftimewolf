@@ -11,7 +11,8 @@ from typing import Any, Optional, Callable
 
 from concurrent import futures
 from google.auth import exceptions as googleauth_exceptions
-from google.oauth2.credentials import Credentials
+from google.oauth2 import credentials as oauth_credentials
+from google.auth import external_account_authorized_user
 from googleapiclient import discovery
 from googleapiclient import errors as googleapi_errors
 from googleapiclient.http import MediaIoBaseDownload
@@ -48,7 +49,7 @@ def ListDriveFolder(
   while True:
     # pylint: disable=maybe-no-member
     response = (
-        drive_resource.files()
+        drive_resource.files()  # pyrefly: ignore=[missing-attribute]
         .list(
             q=query,
             spaces="drive",
@@ -96,7 +97,7 @@ class GoogleDriveCollector(module.BaseModule):
                      container_manager_=container_manager_,
                      telemetry_=telemetry_,
                      publish_message_callback=publish_message_callback)
-    self._credentials: Optional[Credentials] = None
+    self._credentials: external_account_authorized_user.Credentials | oauth_credentials.Credentials = None  # pyrefly: ignore=[bad-assignment]
     self._drive_ids: list[str] = []
     self._folder_id: str = ""
     self._output_directory: str = ""
@@ -235,7 +236,7 @@ class GoogleDriveCollector(module.BaseModule):
     if self._drive_ids:
       drive_files.extend(
           [
-              drive_resource.files().get(fileId=drive_id).execute()
+              drive_resource.files().get(fileId=drive_id).execute()  # pyrefly: ignore=[missing-attribute]
               for drive_id in self._drive_ids
           ]
       )
@@ -299,7 +300,7 @@ class GoogleDriveCollector(module.BaseModule):
         drive_resource = discovery.build(
             "drive", "v3", credentials=self._credentials
         )
-        request = drive_resource.files().get_media(fileId=drive_id)
+        request = drive_resource.files().get_media(fileId=drive_id)  # pyrefly: ignore=[missing-attribute]
         downloader = MediaIoBaseDownload(out_file, request)
         done = False
         while not done:

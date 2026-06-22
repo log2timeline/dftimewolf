@@ -63,7 +63,7 @@ class AzureCollector(module.BaseModule):
                      telemetry_=telemetry_,
                      publish_message_callback=publish_message_callback)
     self.remote_profile_name = str()
-    self.source_account = None  # type: account.AZAccount
+    self.source_account: account.AZAccount = None  # pyrefly: ignore=[bad-assignment]
     self.incident_id = str()
     self.remote_instance_name = str()  # type: Optional[str]
     self.disk_names = []  # type: List[str]
@@ -71,7 +71,7 @@ class AzureCollector(module.BaseModule):
     self.analysis_profile_name = str()
     self.analysis_region = str()  # type: Optional[str]
     self.analysis_resource_group_name = str()
-    self.analysis_vm = None  # type: compute.AZComputeVirtualMachine
+    self.analysis_vm: compute.AZComputeVirtualMachine = None  # pyrefly: ignore=[bad-assignment]
 
   def Process(self) -> None:
     """Copies a disk to the analysis account."""
@@ -99,11 +99,11 @@ class AzureCollector(module.BaseModule):
             analysis_resource_group_name: str,
             incident_id: str,
             ssh_public_key: str,
-            remote_instance_name: Optional[str]=None,
+            remote_instance_name: str='',
             disk_names: Optional[str]=None,
             all_disks: bool=False,
             analysis_profile_name: Optional[str]=None,
-            analysis_region: Optional[str]=None,
+            analysis_region: str='',
             boot_disk_size: int=50,
             cpu_cores: int=4,
             memory_in_mb: int=8192) -> None:

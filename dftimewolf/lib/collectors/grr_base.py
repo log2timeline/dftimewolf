@@ -3,7 +3,7 @@
 import tempfile
 import time
 from logging import Logger
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, Optional, Union, overload
 
 from grr_api_client import api as grr_api
 from grr_api_client import errors as grr_errors
@@ -40,9 +40,9 @@ class GRRBaseModule:
           the entire recipe to fail if the module encounters an error.
     """
     self.reason = str()
-    self.grr_api: grr_api.GrrApi = None
+    self.grr_api: grr_api.GrrApi = None  # pyrefly: ignore=[bad-assignment]
     self.grr_url = str()
-    self.approvers = []  # type: list[str]
+    self.approvers: list[str] = []
     self.output_path = str()
     self.message_callback: Callable[[str, bool], None] = None  # type: ignore
 
@@ -80,16 +80,32 @@ class GRRBaseModule:
     self.reason = reason
     self.message_callback = message_callback
 
-  # TODO: change object to more specific GRR type information.
+  @overload
   def _WrapGRRRequestWithApproval(
-    self,
-    grr_object: Union[Hunt, Client],
-    grr_function: Callable,  # type: ignore[type-arg]
-    logger: Logger,
-    telemetry_callback: Callable[[dict[str, str]], None],
-    *args: Any,
-    **kwargs: Any,
-  ) -> Union[Flow, Hunt]:
+      self,
+      grr_object: Hunt,
+      grr_function: Callable,
+      logger: Logger,
+      telemetry_callback: Callable[[dict[str, str]], None],
+      *args: Any,
+      **kwargs: Any) -> Hunt: ...
+  @overload
+  def _WrapGRRRequestWithApproval(
+      self,
+      grr_object: Client,
+      grr_function: Callable,
+      logger: Logger,
+      telemetry_callback: Callable[[dict[str, str]], None],
+      *args: Any,
+      **kwargs: Any,) -> Flow: ...
+  def _WrapGRRRequestWithApproval(
+      self,
+      grr_object: Union[Hunt, Client],
+      grr_function: Callable,
+      logger: Logger,
+      telemetry_callback: Callable[[dict[str, str]], None],
+      *args: Any,
+      **kwargs: Any) -> Union[Flow, Hunt]:
     """Wraps a GRR request with approval.
 
     This method will request the approval if not yet granted.

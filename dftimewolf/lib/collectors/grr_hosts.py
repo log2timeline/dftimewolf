@@ -281,17 +281,13 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       DFTimewolfError: If approvers are required but none were specified.
     """
     # Start the flow and get the flow ID
-    try:
-      grr_flow = self._WrapGRRRequestWithApproval(
-        client,
-        client.CreateFlow,
-        self.logger,
-        self.LogTelemetry,
-        name=name,
-        args=args,
-      )
-    except DFTimewolfError as exception:
-      self.ModuleError(exception.message, critical=exception.critical)
+    grr_flow = self._WrapGRRRequestWithApproval(
+      client,
+      client.CreateFlow,
+      self.logger,
+      self.LogTelemetry,
+      name=name,
+      args=args)
     if not grr_flow:
       return ''
 
@@ -341,7 +337,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
         )
         self.ModuleError(msg, critical=True)
 
-      if status.state == flows_pb2.FlowContext.ERROR:
+      if status.state == flows_pb2.FlowContext.ERROR:  # pyrefly: ignore=[missing-attribute]
         # TODO(jbn): If one artifact fails, what happens? Test.
         message = status.context.backtrace
         if "ArtifactNotRegisteredError" in status.context.backtrace:
@@ -355,7 +351,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
         self.ModuleError(f"{flow_id:s}: Crashed", critical=False)
         break
 
-      if status.state == flows_pb2.FlowContext.TERMINATED:
+      if status.state == flows_pb2.FlowContext.TERMINATED:  # pyrefly: ignore=[missing-attribute
         self.logger.info(f"{flow_id:s}: Complete")
         break
 
@@ -381,11 +377,11 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
       self,
       client: Client,
       payloads: List[
-          jobs_pb2.StatEntry
-          | jobs_pb2.PathSpec
-          | flows_pb2.FileFinderResult
-          | flows_pb2.CollectFilesByKnownPathResult
-          | flows_pb2.CollectBrowserHistoryResult
+          jobs_pb2.StatEntry  # pyrefly: ignore=[not-a-type]
+          | jobs_pb2.PathSpec  # pyrefly: ignore=[not-a-type]
+          | flows_pb2.FileFinderResult  # pyrefly: ignore=[not-a-type]
+          | flows_pb2.CollectFilesByKnownPathResult  # pyrefly: ignore=[not-a-type]
+          | flows_pb2.CollectBrowserHistoryResult  # pyrefly: ignore=[not-a-type]
       ],
       flow_output_dir: str,
   ) -> None:
@@ -399,8 +395,8 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
     Raises:
       RuntimeError: if the file collection is not supported.
     """
-    stats: jobs_pb2.StatEntry = None
-    pathspec: jobs_pb2.PathSpec = None
+    stats: jobs_pb2.StatEntry = None  # pyrefly: ignore=[not-a-type]
+    pathspec: jobs_pb2.PathSpec = None  # pyrefly: ignore=[not-a-type]
     size: int = 0
     vfspath: str = ''
 
@@ -432,7 +428,7 @@ class GRRFlow(GRRBaseModule, module.ThreadAwareModule):
 
       if stats:
         pathspec = stats.pathspec
-      if pathspec.nested_path.pathtype == jobs_pb2.PathSpec.NTFS:
+      if pathspec.nested_path.pathtype == jobs_pb2.PathSpec.NTFS:  # pyrefly: ignore=[missing-attribute]
         vfspath = f'fs/ntfs{pathspec.path}{pathspec.nested_path.path}'
       else:
         vfspath = re.sub('^([a-zA-Z]:)?/(.*)$', 'fs/os/\\1/\\2', pathspec.path)

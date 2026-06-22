@@ -64,6 +64,16 @@ class AzureLogsCollector(module.BaseModule):
     try:
       _, credentials = lcf_common.GetCredentials(
           profile_name=self._profile_name)
+      monitoring_client = az_monitor.MonitorManagementClient(
+          credentials, self._subscription_id)
+      activity_logs_client = monitoring_client.activity_logs
+
+      results = activity_logs_client.list(filter=self._filter_expression)
+
+      for result_entry in results:
+        log_dict = result_entry.as_dict()
+        output_file.write(json.dumps(log_dict))
+        output_file.write('\n')
     except (lcf_errors.CredentialsConfigurationError,
             FileNotFoundError) as exception:
       self.ModuleError('Ensure credentials are properly configured as expected '
@@ -72,24 +82,6 @@ class AzureLogsCollector(module.BaseModule):
           'https://docs.microsoft.com/en-us/azure/developer/python/azure-sdk-authenticate ' # pylint: disable=line-too-long
           ', or Azure CLI credentials.')
       self.ModuleError(str(exception), critical=True)
-
-    monitoring_client = az_monitor.MonitorManagementClient(
-        credentials, self._subscription_id)
-    activity_logs_client = monitoring_client.activity_logs
-
-    try:
-      results = activity_logs_client.list(filter=self._filter_expression)
-
-      while True:
-        try:
-          result_entry = next(results)
-        except StopIteration:
-          break
-
-        log_dict = result_entry.as_dict()
-        output_file.write(json.dumps(log_dict))
-        output_file.write('\n')
-
     except az_exceptions.ClientAuthenticationError as exception:
       self.ModuleError('Ensure credentials are properly configured.')
       self.ModuleError(str(exception), critical=True)

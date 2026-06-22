@@ -3,14 +3,14 @@ import os.path
 
 import filelock
 from google.auth.transport.requests import Request
-from google.auth import external_account_authorized_user
 from google.oauth2 import credentials as oauth_credentials
+from google.auth import external_account_authorized_user
 from google_auth_oauthlib.flow import InstalledAppFlow
 
 
 def GetGoogleOauth2Credential(
     scopes: list[str], credential_path: str, secret_path: str
-) -> None | external_account_authorized_user.Credentials | oauth_credentials.Credentials:
+) -> external_account_authorized_user.Credentials | oauth_credentials.Credentials:
   """Gets a Google Oauth2 credential.
   
   Args:
@@ -21,7 +21,7 @@ def GetGoogleOauth2Credential(
   Returns:
     Optional[Credentials]: Google Oauth2 credential.
   """
-  credentials: None | external_account_authorized_user.Credentials | oauth_credentials.Credentials = None
+  credentials: external_account_authorized_user.Credentials | oauth_credentials.Credentials = None  # pyrefly: ignore=[bad-assignment]
 
   # The credentials file stores the user's access and refresh tokens, and is
   # created automatically when the authorization flow completes for the first

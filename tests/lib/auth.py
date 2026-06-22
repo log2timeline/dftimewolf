@@ -18,7 +18,7 @@ class AuthTest(unittest.TestCase):
 
   @mock.patch("dftimewolf.lib.auth.os.path.expanduser")
   @mock.patch("dftimewolf.lib.auth.os.path.exists")
-  @mock.patch("dftimewolf.lib.auth.Credentials")
+  @mock.patch("dftimewolf.lib.auth.oauth_credentials.Credentials")
   @mock.patch("dftimewolf.lib.auth.filelock.FileLock")
   def testGetGoogleOauth2CredentialValid(
       self, _mock_filelock, mock_credentials, mock_exists, mock_expanduser
@@ -40,7 +40,7 @@ class AuthTest(unittest.TestCase):
 
   @mock.patch("dftimewolf.lib.auth.os.path.expanduser")
   @mock.patch("dftimewolf.lib.auth.os.path.exists")
-  @mock.patch("dftimewolf.lib.auth.Credentials")
+  @mock.patch("dftimewolf.lib.auth.oauth_credentials.Credentials")
   @mock.patch("dftimewolf.lib.auth.filelock.FileLock")
   @mock.patch("dftimewolf.lib.auth.Request")
   @mock.patch("builtins.open", new_callable=mock.mock_open)
@@ -119,7 +119,7 @@ class AuthTest(unittest.TestCase):
   @mock.patch("dftimewolf.lib.auth.os.path.expanduser")
   @mock.patch("dftimewolf.lib.auth.os.path.exists")
   @mock.patch("dftimewolf.lib.auth.InstalledAppFlow")
-  @mock.patch("dftimewolf.lib.auth.Credentials")
+  @mock.patch("dftimewolf.lib.auth.oauth_credentials.Credentials")
   @mock.patch("dftimewolf.lib.auth.filelock.FileLock")
   @mock.patch("builtins.open", new_callable=mock.mock_open)
   def testGetGoogleOauth2CredentialInvalidNotRefreshable(

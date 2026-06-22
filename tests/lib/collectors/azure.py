@@ -105,7 +105,7 @@ class AzureCollectorTest(modules_test_base.ModuleTestBase):
         ssh_public_key='fake-ssh-public-key',
         cpu_cores=4,
         memory_in_mb=8192,
-        region=None,
+        region='',
         dst_profile='test-remote-profile-name'
     )
 
