@@ -3,6 +3,7 @@ compatible terminals."""
 import datetime
 import logging
 import tempfile
+import time
 from logging import LogRecord
 from typing import Any
 
@@ -34,8 +35,9 @@ LEVEL_COLOR_MAP = {
 RESET_SEQ = '\u001b[0m'
 
 
-_DEBUG_FORMATTER = logging.Formatter('[%(asctime)s] [%(name)-20s] %(levelname)-8s [%(threadName)-22s] %(message)s')
-_DEFAULT_FORMATTER = logging.Formatter('[%(asctime)s] [%(name)-20s] %(levelname)-8s %(message)s')
+logging.Formatter.converter = time.gmtime
+_DEBUG_FORMATTER = logging.Formatter('[%(asctime)sZ] [%(name)-20s] %(levelname)-8s [%(threadName)-22s] %(message)s')
+_DEFAULT_FORMATTER = logging.Formatter('[%(asctime)sZ] [%(name)-20s] %(levelname)-8s %(message)s')
 
 
 class WolfLogger(logging.getLoggerClass()):  # type: ignore
