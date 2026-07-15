@@ -51,7 +51,6 @@ MODULES = {
   'LocalFilesystemCopy': 'dftimewolf.lib.exporters.local_filesystem',
   'LocalPlasoProcessor': 'dftimewolf.lib.processors.localplaso',
   'LocalYaraCollector': 'dftimewolf.lib.collectors.yara',
-  'OsqueryCollector': 'dftimewolf.lib.collectors.osquery',
   'S3ToGCSCopy': 'dftimewolf.lib.exporters.s3_to_gcs',
   'SSHMultiplexer': 'dftimewolf.lib.preflights.ssh_multiplexer',
   'TimesketchExporter': 'dftimewolf.lib.exporters.timesketch',
