@@ -253,7 +253,7 @@ def SetupOpenTelemetry(tracer_provider: trace.TracerProvider | None = None) -> N
     return
 
   resource = Resource.create({'service.name': 'dftimewolf'})
-  trace_exporter = None
+  trace_exporter: Any = None
 
   if otel_mode == 'otlp-grpc':
     try:

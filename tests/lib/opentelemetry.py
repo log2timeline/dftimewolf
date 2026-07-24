@@ -6,6 +6,10 @@ from typing import Any, cast
 import unittest
 from unittest import mock
 
+# pylint: disable=unused-import
+import opentelemetry.exporter.otlp.proto.http.trace_exporter  # type: ignore
+import opentelemetry.sdk.trace  # type: ignore
+
 from dftimewolf.lib import module
 from dftimewolf.lib.opentelemetry import (
     SetupOpenTelemetry,
@@ -15,10 +19,6 @@ from dftimewolf.lib.opentelemetry import (
     safe_telemetry_call,
     start_span,
 )
-
-# pylint: disable=unused-import
-import opentelemetry.exporter.otlp.proto.http.trace_exporter  # type: ignore
-import opentelemetry.sdk.trace  # type: ignore
 
 
 class OpenTelemetryTest(unittest.TestCase):
