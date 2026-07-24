@@ -16,13 +16,9 @@ from dftimewolf.lib.opentelemetry import (
     start_span,
 )
 
-try:
-  # pylint: disable=unused-import
-  import opentelemetry.sdk.trace  # type: ignore
-  import opentelemetry.exporter.otlp.proto.http.trace_exporter  # type: ignore
-  HAS_OTEL_SDK = True
-except (ImportError, ModuleNotFoundError):
-  HAS_OTEL_SDK = False
+# pylint: disable=unused-import
+import opentelemetry.exporter.otlp.proto.http.trace_exporter  # type: ignore
+import opentelemetry.sdk.trace  # type: ignore
 
 
 class OpenTelemetryTest(unittest.TestCase):
@@ -66,7 +62,6 @@ class OpenTelemetryTest(unittest.TestCase):
       SetupOpenTelemetry(tracer_provider=mock_provider)
       mock_set.assert_called_once_with(mock_provider)
 
-  @unittest.skipUnless(HAS_OTEL_SDK, 'opentelemetry-sdk not installed')
   @mock.patch('dftimewolf.config.Config.GetExtra')
   @mock.patch(
       'opentelemetry.exporter.otlp.proto.http.trace_exporter.OTLPSpanExporter'
