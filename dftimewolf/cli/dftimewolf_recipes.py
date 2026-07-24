@@ -48,22 +48,9 @@ MODULES = {
   'GoogleCloudDiskExportStream': 'dftimewolf.lib.exporters.gce_disk_export_dd',
   'GoogleDriveCollector': 'dftimewolf.lib.collectors.gdrive',
   'GoogleDriveExporter': 'dftimewolf.lib.exporters.gdrive',
-  'GRRArtifactCollector': 'dftimewolf.lib.collectors.grr_hosts',
-  'GRRFileCollector': 'dftimewolf.lib.collectors.grr_hosts',
-  'GRRFlowCollector': 'dftimewolf.lib.collectors.grr_hosts',
-  'GRRHuntArtifactCollector': 'dftimewolf.lib.collectors.grr_hunt',
-  'GRRHuntDownloader': 'dftimewolf.lib.collectors.grr_hunt',
-  'GRRHuntFileCollector': 'dftimewolf.lib.collectors.grr_hunt',
-  'GRRHuntOsqueryCollector': 'dftimewolf.lib.collectors.grr_hunt',
-  'GRRHuntOsqueryDownloader': 'dftimewolf.lib.collectors.grr_hunt',
-  'GRRHuntYaraScanner': 'dftimewolf.lib.collectors.grr_hunt',
-  'GRROsqueryCollector': 'dftimewolf.lib.collectors.grr_hosts',
-  'GRRTimelineCollector': 'dftimewolf.lib.collectors.grr_hosts',
-  'GRRYaraScanner': 'dftimewolf.lib.collectors.grr_hosts',
   'LocalFilesystemCopy': 'dftimewolf.lib.exporters.local_filesystem',
   'LocalPlasoProcessor': 'dftimewolf.lib.processors.localplaso',
   'LocalYaraCollector': 'dftimewolf.lib.collectors.yara',
-  'OsqueryCollector': 'dftimewolf.lib.collectors.osquery',
   'S3ToGCSCopy': 'dftimewolf.lib.exporters.s3_to_gcs',
   'SSHMultiplexer': 'dftimewolf.lib.preflights.ssh_multiplexer',
   'TimesketchExporter': 'dftimewolf.lib.exporters.timesketch',
@@ -252,6 +239,14 @@ class DFTimewolfTool(object):
     if not return_value:
       logger.info('Modules run successfully!')
     return return_value
+
+  def GetModuleErrors(self) -> dict[str, list[errors.DFTimewolfError]]:
+    """Collect any errors that have been raised by modules.
+
+    Returns:
+      A dict of module errors, keyed by the name of the generating module.
+    """
+    return self._module_runner.GetErrors()
 
   def LogTelemetry(self) -> None:
     """Prints collected telemetry if existing."""

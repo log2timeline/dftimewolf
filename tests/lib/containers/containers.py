@@ -3,7 +3,6 @@
 
 import unittest
 
-import pandas
 from dftimewolf.lib.containers import containers
 
 CONTAINER_CLASSES = [
@@ -17,10 +16,7 @@ CONTAINER_CLASSES = [
   containers.GCEImage,
   containers.GCPLogs,
   containers.GCSObject,
-  containers.GrrFlow,
   containers.Host,
-  containers.OsqueryQuery,
-  containers.OsqueryResult,
   containers.Report,
   containers.ThreatIntelligence,
   containers.TicketAttribute,
@@ -71,43 +67,6 @@ class ThreatIntelligenceDataTest(unittest.TestCase):
 
     self.assertEqual(attribute_names, expected_attribute_names)
 
-
-class OsqueryQueryDataTest(unittest.TestCase):
-  """Tests for the OsqueryQuery attribute container."""
-
-  def testGetAttributeNames(self):
-    """Tests the GetAttributeNames function."""
-    attribute_container = containers.OsqueryQuery(
-        query='', name='', description='', platforms=[],
-        configuration_content='',
-        file_collection_columns=[])
-
-    expected_attribute_names = [
-        'configuration_content', 'description',
-        'file_collection_columns', 'metadata', 'name', 'platforms', 'query',
-    ]
-
-    attribute_names = sorted(attribute_container.GetAttributeNames())
-
-    self.assertEqual(attribute_names, expected_attribute_names)
-
-
-class OsqueryResultDataTest(unittest.TestCase):
-  """Tests for the OsqueryResult attribute container."""
-
-  def testGetAttributeNames(self):
-    """Tests the GetAttributeNames function."""
-    attribute_container = containers.OsqueryResult(
-        name='', description='', hostname='', query='',
-        data_frame=pandas.DataFrame(), flow_identifier='', client_identifier='')
-
-    expected_attribute_names = [
-        'client_identifier', 'data_frame', 'description', 'flow_identifier',
-        'hostname', 'metadata', 'name', 'query']
-
-    attribute_names = sorted(attribute_container.GetAttributeNames())
-
-    self.assertEqual(attribute_names, expected_attribute_names)
 
 class TicketAttributeTest(unittest.TestCase):
   """Tests for the TicketAttribute attribute container."""

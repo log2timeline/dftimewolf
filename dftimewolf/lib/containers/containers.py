@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import datetime
 
-from typing import Optional, Union, List, TYPE_CHECKING, Dict, Any
+from typing import Optional, Union, TYPE_CHECKING, Dict, Any
 import pandas as pd
 
 from dftimewolf.lib.containers import interface
@@ -368,26 +368,6 @@ class Host(interface.AttributeContainer):
     return self.hostname
 
 
-class GrrFlow(interface.AttributeContainer):
-  """Attribute container definition for a host.
-
-  Attributes:
-    hostname (str): The host's hostname.
-    flow_id (str): A hexadecimal flow ID.
-  """
-
-  CONTAINER_TYPE = "grr_flow"
-
-  def __init__(self, hostname: str, flow: str) -> None:
-    super(GrrFlow, self).__init__()
-    self.hostname = hostname
-    self.flow_id = flow
-
-  def __str__(self) -> str:
-    """Override __str()__."""
-    return f"{self.hostname}:{self.flow_id}"
-
-
 class WorkspaceLogs(interface.AttributeContainer):
   """Google Workspace logs container.
 
@@ -522,84 +502,6 @@ class AWSSnapshot(interface.AttributeContainer):
     return self.id
 
 
-class OsqueryQuery(interface.AttributeContainer):
-  """Attribute container for an Osquery query.
-
-  Attributes:
-    query (str): The osquery query.
-    configuration_content (str): The JSON content of an osquery
-        configuration.
-    name (Optional[str]): A name for the osquery.
-    platforms (Optional[List[str]]): A constraint on the platform(s) the query
-        should be run.  Valid values are 'darwin', 'linux', 'windows',
-    description (Optional[str]): A description for the query.
-    file_collection_columns (Optional[List[str]]): The list of file collection
-        columns.
-  """
-
-  CONTAINER_TYPE = "osquery_query"
-
-  def __init__(
-    self,
-    query: str,
-    configuration_content: str = '',
-    name: Optional[str] = None,
-    platforms: Optional[List[str]] = None,
-    description: Optional[str] = None,
-    file_collection_columns: Optional[List[str]] = None
-  ) -> None:
-    super(OsqueryQuery, self).__init__()
-    self.description = description
-    self.name = name
-    self.platforms = platforms
-    self.query = query
-    self.configuration_content = configuration_content
-    self.file_collection_columns = file_collection_columns or []
-
-  def __str__(self) -> str:
-    """Override __str()__."""
-    return f"{self.name}"
-
-
-class OsqueryResult(interface.AttributeContainer):
-  """Attribute container for an Osquery result.
-
-  Attributes:
-    name (str): Name for the osquery.
-    description (str): A description for the query.
-    query (str): The osquery query.
-    hostname (str): The hostname.
-    data_frame (pandas.DataFrame): A dataframe containing the result.
-    flow_identifier (Optional[str]): The source GRR Flow Identifier.
-    client_identifier (Optional[str]): The source GRR client identifier.
-  """
-
-  CONTAINER_TYPE = "osquery_result"
-
-  def __init__(
-    self,
-    data_frame: pd.DataFrame,
-    hostname: str,
-    query: str,
-    client_identifier: Optional[str] = None,
-    description: Optional[str] = None,
-    flow_identifier: Optional[str] = None,
-    name: Optional[str] = None,
-  ) -> None:
-    super(OsqueryResult, self).__init__()
-    self.data_frame = data_frame
-    self.hostname = hostname
-    self.query = query
-    self.client_identifier = client_identifier
-    self.description = description
-    self.flow_identifier = flow_identifier
-    self.name = name
-
-  def __str__(self) -> str:
-    """Override __str()__."""
-    return f"{self.hostname}:{self.name}"
-
-
 class BigQueryQuery(interface.AttributeContainer):
   """Attribute container for a BigQuery query.
 
@@ -661,24 +563,6 @@ class Telemetry(interface.AttributeContainer):
   def __str__(self) -> str:
     """Override __str()__."""
     return f"Telemetry<{self.key}:{self.value}>"
-
-
-class GRRArtifact(interface.AttributeContainer):
-  """GRR Artifact container.
-
-  Attributes:
-    name: Name of the GRR artifact.
-  """
-
-  CONTAINER_TYPE = "grr_artifact"
-
-  def __init__(self, name: str):
-    super().__init__()
-    self.name = name
-
-  def __str__(self) -> str:
-    """Override __str()__."""
-    return self.name
 
 
 class TimesketchSavedSearch(interface.AttributeContainer):
