@@ -7,7 +7,6 @@ from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal.compute import GoogleComputeImage
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers, interface
-from dftimewolf.lib.containers import interface as container_interface
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib import cache
 from dftimewolf.lib import spanner_telemetry as telemetry
