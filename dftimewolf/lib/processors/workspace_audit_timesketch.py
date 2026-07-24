@@ -12,7 +12,7 @@ from dftimewolf.lib.module import BaseModule
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib import cache
-from dftimewolf.lib import telemetry
+from dftimewolf.lib import spanner_telemetry as telemetry
 from dftimewolf.lib.containers import manager as container_manager
 
 

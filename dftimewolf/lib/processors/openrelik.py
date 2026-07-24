@@ -8,7 +8,8 @@ from openrelik_api_client import api_client, folders, workflows
 
 from dftimewolf.lib import module
 from dftimewolf.lib import cache
-from dftimewolf.lib import telemetry
+from dftimewolf.lib import opentelemetry
+from dftimewolf.lib import spanner_telemetry as telemetry
 from dftimewolf.lib.containers import manager as container_manager
 from dftimewolf.lib.containers import containers, interface
 from dftimewolf.lib.modules import manager as modules_manager
@@ -133,7 +134,10 @@ class OpenRelikProcessor(module.ThreadAwareModule):
         str: The path to the downloaded file.
     """
     self.logger.info(f"Downloading {filename}, ID:{file_id}")
-    local_path = self.openrelik_api_client.download_file(file_id, filename)
+    with opentelemetry.start_span('OpenRelik.DownloadFile', {
+        'file_id': file_id,
+    }):
+      local_path = self.openrelik_api_client.download_file(file_id, filename)
     if not local_path:
       self.logger.error(f"Failed to download {filename}, ID:{file_id}")
       return None
@@ -145,16 +149,24 @@ class OpenRelikProcessor(module.ThreadAwareModule):
   ) -> None:  # pytype: disable=signature-mismatch
     file_ids = []
     self.logger.info(f"Uploading file {container.path}")
-    file_id = self.openrelik_api_client.upload_file(
-      container.path, self.folder_id
-    )
+    with opentelemetry.start_span('OpenRelik.UploadFile', {
+        'file_path': container.path,
+    }):
+      file_id = self.openrelik_api_client.upload_file(
+        container.path, self.folder_id
+      )
     if file_id:
       self.logger.info(f"Uploaded file {container.path}")
       file_ids.append(file_id)
 
-    workflow_id = self.openrelik_workflow_client.create_workflow(
-      self.folder_id, file_ids, self.template_workflow_id
-    )
+    with opentelemetry.start_span('OpenRelik.CreateWorkflow', {
+        'folder_id': self.folder_id,
+        'file_ids': file_ids,
+        'template_id': self.template_workflow_id,
+    }):
+      workflow_id = self.openrelik_workflow_client.create_workflow(
+        self.folder_id, file_ids, self.template_workflow_id
+      )
     workflow_url = f"{self.openrelik_ui}/folder/{self.folder_id}"
     self.PublishMessage(
       f"New workflow ID {workflow_id} can be viewed at: {workflow_url}"

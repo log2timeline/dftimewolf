@@ -20,7 +20,7 @@ from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib import cache
-from dftimewolf.lib import telemetry
+from dftimewolf.lib import spanner_telemetry as telemetry
 from dftimewolf.lib.containers import manager as container_manager
 
 
@@ -114,7 +114,7 @@ class WorkspaceAuditCollector(module.BaseModule):
           with open(credentials_path, 'w') as token_file:
             token_file.write(credentials.to_json())
 
-    return credentials
+    return credentials  # pytype: disable=bad-return-type
 
   # pylint: disable=arguments-differ
   def SetUp(self,

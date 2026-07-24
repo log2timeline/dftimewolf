@@ -11,7 +11,7 @@ try:
 except ImportError:
   HAS_SPANNER = False
 
-from dftimewolf.lib import telemetry
+from dftimewolf.lib import spanner_telemetry
 
 
 class BaseTelemetryTest(unittest.TestCase):
@@ -19,41 +19,58 @@ class BaseTelemetryTest(unittest.TestCase):
 
   def tearDown(self):
     """Delete singleton attributes."""
-    if hasattr(telemetry.BaseTelemetry, 'instance'):
-      delattr(telemetry.BaseTelemetry, 'instance')
-    if hasattr(telemetry.GoogleCloudSpannerTelemetry, 'instance'):
-      delattr(telemetry.GoogleCloudSpannerTelemetry, 'instance')
+    if hasattr(spanner_telemetry.BaseTelemetry, 'instance'):
+      delattr(spanner_telemetry.BaseTelemetry, 'instance')
+    if hasattr(spanner_telemetry.GoogleCloudSpannerTelemetry, 'instance'):
+      delattr(spanner_telemetry.GoogleCloudSpannerTelemetry, 'instance')
 
   @mock.patch('uuid.uuid4', return_value='test_uuid')
   def testInit(self, unused_mock_uuid):
     """Tests that the BaseTelemetry object is properly initialized."""
-    telemetry1 = telemetry.BaseTelemetry()
-    self.assertEqual(telemetry1.uuid, 'test_uuid')
-    self.assertEqual(telemetry1.entries, [])
+    spanner_telemetry1 = spanner_telemetry.BaseTelemetry()
+    self.assertEqual(spanner_telemetry1.uuid, 'test_uuid')
+    self.assertEqual(spanner_telemetry1.entries, [])
 
   def testLogTelemetry(self):
     """Tests that LogTelemetry logs the correct data."""
-    telemetry1 = telemetry.BaseTelemetry()
-    telemetry1.SetRecipeName('random_recipe')
-    telemetry1.LogTelemetry('test_key', 'test_value', 'random_module')
-    self.assertEqual(len(telemetry1.entries), 1)
+    spanner_telemetry1 = spanner_telemetry.BaseTelemetry()
+    spanner_telemetry1.SetRecipeName('random_recipe')
+    spanner_telemetry1.LogTelemetry('test_key', 'test_value', 'random_module')
+    self.assertEqual(len(spanner_telemetry1.entries), 1)
     self.assertEqual(
-        telemetry1.entries[0],
+        spanner_telemetry1.entries[0],
         '\ttest_key: \ttest_value (random_module in random_recipe)')
 
-  # patch UUID to return a constant value
   @mock.patch('uuid.uuid4', return_value='test_uuid')
   def testFormatTelemetry(self, unused_mock_uuid):
     """Tests that the resulting Telemetry is properly formatted."""
-    telemetry1 = telemetry.BaseTelemetry()
-    telemetry1.SetRecipeName('random_recipe')
-    telemetry1.LogTelemetry('test_key', 'test_value', 'random_module')
-    result = telemetry1.FormatTelemetry()
+    spanner_telemetry1 = spanner_telemetry.BaseTelemetry()
+    spanner_telemetry1.SetRecipeName('random_recipe')
+    spanner_telemetry1.LogTelemetry('test_key', 'test_value', 'random_module')
+    result = spanner_telemetry1.FormatTelemetry()
     self.assertEqual(
         result,
         ('Telemetry information for: test_uuid\n\ttest_key:'
          ' \ttest_value (random_module in random_recipe)')
     )
+
+  @mock.patch('dftimewolf.config.Config.GetExtra')
+  def testGetTelemetryInvalidConfig(self, mock_get_extra):
+    """Tests that GetTelemetry returns BaseTelemetry when config is invalid/disabled."""
+    # Case 1: Extra telemetry config is empty
+    mock_get_extra.return_value = {}
+    telemetry = spanner_telemetry.GetTelemetry()
+    self.assertIsInstance(telemetry, spanner_telemetry.BaseTelemetry)
+    telemetry.LogTelemetry('key', 'val', 'module')
+
+    # Case 2: Config is missing spanner sub-dict or enabled is False
+    mock_get_extra.return_value = {
+        'type': 'google_cloud_spanner',
+        'config': {'spanner': {'enabled': False}}
+    }
+    telemetry = spanner_telemetry.GetTelemetry()
+    self.assertIsInstance(telemetry, spanner_telemetry.BaseTelemetry)
+    telemetry.LogTelemetry('key', 'val', 'module')
 
 @unittest.skipIf(not HAS_SPANNER, 'Missing google.cloud.spanner dependency.')
 class GoogleCloudSpannerTelemetryTest(unittest.TestCase):
@@ -66,33 +83,33 @@ class GoogleCloudSpannerTelemetryTest(unittest.TestCase):
 
   def tearDown(self):
     """Delete singleton attributes, stop patching."""
-    if hasattr(telemetry.BaseTelemetry, 'instance'):
-      delattr(telemetry.BaseTelemetry, 'instance')
-    if hasattr(telemetry.GoogleCloudSpannerTelemetry, 'instance'):
-      delattr(telemetry.GoogleCloudSpannerTelemetry, 'instance')
+    if hasattr(spanner_telemetry.BaseTelemetry, 'instance'):
+      delattr(spanner_telemetry.BaseTelemetry, 'instance')
+    if hasattr(spanner_telemetry.GoogleCloudSpannerTelemetry, 'instance'):
+      delattr(spanner_telemetry.GoogleCloudSpannerTelemetry, 'instance')
     self.patcher.stop()
 
   def testSingleton(self):
     """Tests that the singleton property of the Telemetry object holds."""
-    telemetry1 = telemetry.GoogleCloudSpannerTelemetry(
+    spanner_telemetry1 = spanner_telemetry.GoogleCloudSpannerTelemetry(
         project_name='test_project',
         instance_name='test_instance',
         database_name='test_database')
-    telemetry2 = telemetry.GoogleCloudSpannerTelemetry(
+    spanner_telemetry2 = spanner_telemetry.GoogleCloudSpannerTelemetry(
         project_name='foo', instance_name='bar', database_name='bas')
 
-    self.assertEqual(id(telemetry1), id(telemetry2))
-    self.assertEqual(id(telemetry1.database), id(telemetry2.database))
+    self.assertEqual(id(spanner_telemetry1), id(spanner_telemetry2))
+    self.assertEqual(id(spanner_telemetry1.database), id(spanner_telemetry2.database))
 
   def testInit(self):
     """Tests that the GoogleCloudSpannerTelemetry object is properly
     initialized."""
-    telemetry1 = telemetry.GoogleCloudSpannerTelemetry(
+    spanner_telemetry1 = spanner_telemetry.GoogleCloudSpannerTelemetry(
         project_name='test_project',
         instance_name='test_instance',
         database_name='test_database')
-    self.assertIsNotNone(telemetry1.uuid)
-    self.assertIsNotNone(telemetry1.database)
+    self.assertIsNotNone(spanner_telemetry1.uuid)
+    self.assertIsNotNone(spanner_telemetry1.database)
     self.mock_spanner_client.assert_called_with(project='test_project')
     instance = self.mock_spanner_client.return_value.instance
     instance.assert_called_with('test_instance')
@@ -103,7 +120,7 @@ class GoogleCloudSpannerTelemetryTest(unittest.TestCase):
   @mock.patch('uuid.uuid4', return_value='test_uuid')
   def testFormatTelemetrySelectStatement(self, unused_mock_uuid):
     """Tests that the Spanner SELECT statement is crafted correctly."""
-    telemetry1 = telemetry.GoogleCloudSpannerTelemetry(
+    spanner_telemetry1 = spanner_telemetry.GoogleCloudSpannerTelemetry(
         project_name='test_project',
         instance_name='test_instance',
         database_name='test_database')
@@ -114,7 +131,7 @@ class GoogleCloudSpannerTelemetryTest(unittest.TestCase):
         'row0_data', 'row1_data', 'row2_data', 'row3_data', 'row4_data'
     ]]
     # pylint: disable=protected-access
-    telemetry1._GetAllWorkflowTelemetryTransaction(transaction, entries)
+    spanner_telemetry1._GetAllWorkflowTelemetryTransaction(transaction, entries)
     transaction.execute_sql.assert_called_with(
         'SELECT * from Telemetry WHERE workflow_uuid = @uuid ORDER BY time ASC',
         params={'uuid': 'test_uuid'},
@@ -125,20 +142,20 @@ class GoogleCloudSpannerTelemetryTest(unittest.TestCase):
 
   @mock.patch('uuid.uuid4', return_value='test_uuid')
   def testLogTelemetryInsert(self, unused_mock_uuid):
-    """Tests that the correct insert call is made when adding telemetry."""
-    telemetry1 = telemetry.GoogleCloudSpannerTelemetry(
+    """Tests that the correct insert call is made when adding spanner_telemetry."""
+    spanner_telemetry1 = spanner_telemetry.GoogleCloudSpannerTelemetry(
         project_name='test_project',
         instance_name='test_instance',
         database_name='test_database')
     mock_transaction = mock.Mock()
-    fake_telemetry = {
+    fake_spanner_telemetry = {
         'test_key1': 'test_value1',
         'test_key4': 'test_value4',
         'test_key2': 'test_value2',
         'test_key3': 'test_value3',
     }
     # pylint: disable=protected-access
-    telemetry1._LogTelemetryTransaction(mock_transaction, fake_telemetry)
+    spanner_telemetry1._LogTelemetryTransaction(mock_transaction, fake_spanner_telemetry)
     mock_transaction.insert.assert_called_once()
     args = mock_transaction.insert.call_args
     self.assertEqual(args.kwargs['table'], 'Telemetry')
@@ -153,16 +170,16 @@ class GoogleCloudSpannerTelemetryTest(unittest.TestCase):
   @mock.patch('uuid.uuid4', return_value='test_uuid')
   def testLogTelemetryRunInTransaction(self, unused_mock_uuid):
     """Tests that the data to be inserted is properly formed."""
-    telemetry1 = telemetry.GoogleCloudSpannerTelemetry(
+    spanner_telemetry1 = spanner_telemetry.GoogleCloudSpannerTelemetry(
         project_name='test_project',
         instance_name='test_instance',
         database_name='test_database')
-    telemetry1.SetRecipeName('random_recipe')
-    telemetry1.LogTelemetry('test_key', 'test_value', 'random_module')
+    spanner_telemetry1.SetRecipeName('random_recipe')
+    spanner_telemetry1.LogTelemetry('test_key', 'test_value', 'random_module')
     instance = self.mock_spanner_client.return_value.instance.return_value
     database = instance.database.return_value
     database.run_in_transaction.assert_called_with(
-        telemetry1._LogTelemetryTransaction,  # pylint: disable=protected-access
+        spanner_telemetry1._LogTelemetryTransaction,  # pylint: disable=protected-access
         {
             'workflow_uuid': 'test_uuid',
             'time': mock.ANY,
