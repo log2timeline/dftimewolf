@@ -42,6 +42,8 @@ from typing import Any, Callable, Iterator, ParamSpec, TypeVar
 from opentelemetry import context as otel_context
 from opentelemetry import trace
 
+# pylint: disable=invalid-name
+
 logger = logging.getLogger('dftimewolf')
 
 ROOT_SPAN = None
@@ -81,7 +83,7 @@ def is_enabled() -> bool:
     bool: True if OpenTelemetry is enabled.
   """
   try:
-    # pylint: disable=g-import-not-at-top
+    # pylint: disable=import-outside-toplevel
     # pytype: disable=import-error
     from dftimewolf import config
     telemetry_config = config.Config.GetExtra('telemetry')
@@ -109,7 +111,7 @@ def get_current_span() -> trace.Span | None:
   span = trace.get_current_span()
   if span and span.is_recording():
     return span
-  global ROOT_SPAN
+  global ROOT_SPAN  # pylint: disable=global-statement
   if ROOT_SPAN:
     return ROOT_SPAN
   tracer = trace.get_tracer('dftimewolf')
@@ -197,7 +199,7 @@ def start_span(
         for k, v in attributes.items():
           span.set_attribute(k, _clean_attribute_value(v))
       yield span
-  except Exception as e:
+  except Exception as e:  # pylint: disable=broad-except,broad-exception-caught
     # pylint: disable=broad-exception-caught
     logger.warning(
         'Telemetry sub-span %s encountered error or could not be created: %s',
@@ -227,7 +229,7 @@ def SetupOpenTelemetry(tracer_provider: trace.TracerProvider | None = None) -> N
 
   otel_mode = 'otlp-http'
   try:
-    # pylint: disable=g-import-not-at-top
+    # pylint: disable=import-outside-toplevel
     # pytype: disable=import-error
     from dftimewolf import config
     telemetry_config = config.Config.GetExtra('telemetry')
@@ -237,7 +239,7 @@ def SetupOpenTelemetry(tracer_provider: trace.TracerProvider | None = None) -> N
     pass
 
   try:
-    # pylint: disable=g-import-not-at-top
+    # pylint: disable=import-outside-toplevel
     # pytype: disable=import-error
     from opentelemetry.sdk.resources import Resource
     from opentelemetry.sdk.trace import TracerProvider
@@ -255,7 +257,7 @@ def SetupOpenTelemetry(tracer_provider: trace.TracerProvider | None = None) -> N
 
   if otel_mode == 'otlp-grpc':
     try:
-      # pylint: disable=g-import-not-at-top
+      # pylint: disable=import-outside-toplevel
       # pytype: disable=import-error
       from opentelemetry.exporter.otlp.proto.grpc import trace_exporter as grpc_exporter
       endpoint = os.environ.get('DFTIMEWOLF_OTLP_GRPC_ENDPOINT', 'localhost:4317')
@@ -267,7 +269,7 @@ def SetupOpenTelemetry(tracer_provider: trace.TracerProvider | None = None) -> N
       logger.warning('gRPC OTLP exporter not installed: %s', e)
   elif otel_mode == 'otlp-http':
     try:
-      # pylint: disable=g-import-not-at-top
+      # pylint: disable=import-outside-toplevel
       # pytype: disable=import-error
       from opentelemetry.exporter.otlp.proto.http import trace_exporter as http_exporter
       endpoint = os.environ.get(

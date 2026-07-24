@@ -14,11 +14,10 @@ from typing import Any, Optional, cast
 from dftimewolf import config
 from dftimewolf.lib import errors
 from dftimewolf.lib import logging_utils
-from dftimewolf.lib import resources
 from dftimewolf.lib import opentelemetry
+from dftimewolf.lib import resources
 from dftimewolf.lib import spanner_telemetry
 from dftimewolf.lib import utils
-from opentelemetry import trace
 from dftimewolf.lib.modules import module_runner
 from dftimewolf.lib.recipes import manager as recipes_manager
 from dftimewolf.lib.validators import manager as validators_manager
@@ -432,10 +431,8 @@ def RunTool() -> int:
     int: 0 DFTimewolf could be run successfully, 1 otherwise.
   """
   opentelemetry.SetupOpenTelemetry()
-  tracer = trace.get_tracer('dftimewolf')
-  root_span = opentelemetry.get_current_span() or trace.INVALID_SPAN
 
-  with trace.use_span(root_span, end_on_exit=True):
+  with opentelemetry.start_span('dftimewolf'):
     tool = DFTimewolfTool()
 
     try:

@@ -16,8 +16,8 @@ from dftimewolf.lib.opentelemetry import (
     start_span,
 )
 
-
 try:
+  # pylint: disable=unused-import
   import opentelemetry.sdk.trace  # type: ignore
   import opentelemetry.exporter.otlp.proto.http.trace_exporter  # type: ignore
   HAS_OTEL_SDK = True
@@ -44,13 +44,19 @@ class OpenTelemetryTest(unittest.TestCase):
   @mock.patch('dftimewolf.config.Config.GetExtra')
   def testSetupOpenTelemetryDisabled(self, mock_get_extra):
     """Tests that SetupOpenTelemetry handles disabled config gracefully."""
-    mock_get_extra.return_value = {'type': 'google_cloud_spanner', 'config': {'opentelemetry': {'enabled': False}}}
+    mock_get_extra.return_value = {
+        'type': 'google_cloud_spanner',
+        'config': {'opentelemetry': {'enabled': False}}
+    }
     SetupOpenTelemetry()
 
   @mock.patch('dftimewolf.config.Config.GetExtra')
   def testSetupOpenTelemetryInvalidMode(self, mock_get_extra):
     """Tests that SetupOpenTelemetry handles unsupported mode gracefully."""
-    mock_get_extra.return_value = {'type': 'google_cloud_spanner', 'config': {'opentelemetry': {'enabled': True, 'mode': 'unsupported_mode'}}}
+    mock_get_extra.return_value = {
+        'type': 'google_cloud_spanner',
+        'config': {'opentelemetry': {'enabled': True, 'mode': 'unsupported_mode'}}
+    }
     SetupOpenTelemetry()
 
   def testSetupOpenTelemetryCustomTracerProvider(self):
@@ -68,7 +74,10 @@ class OpenTelemetryTest(unittest.TestCase):
   @mock.patch('opentelemetry.sdk.trace.TracerProvider')
   def testSetupOpenTelemetryOtlpHttp(self, mock_provider_cls, mock_exporter_cls, mock_get_extra):
     """Tests SetupOpenTelemetry with otlp-http mode."""
-    mock_get_extra.return_value = {'type': 'google_cloud_spanner', 'config': {'opentelemetry': {'enabled': True, 'mode': 'otlp-http'}}}
+    mock_get_extra.return_value = {
+        'type': 'google_cloud_spanner',
+        'config': {'opentelemetry': {'enabled': True, 'mode': 'otlp-http'}}
+    }
     SetupOpenTelemetry()
     mock_exporter_cls.assert_called_once()
     mock_provider_cls.assert_called_once()
@@ -76,7 +85,7 @@ class OpenTelemetryTest(unittest.TestCase):
   def testSafeTelemetryCallDecoratorCatchesExceptions(self):
     """Tests that @safe_telemetry_call catches exceptions and returns None."""
     @safe_telemetry_call
-    def failing_function():
+    def failing_function():  # pylint: disable=invalid-name
       raise RuntimeError('Simulated telemetry failure')
 
     result = failing_function()
@@ -85,10 +94,16 @@ class OpenTelemetryTest(unittest.TestCase):
   @mock.patch('dftimewolf.config.Config.GetExtra')
   def testGetCurrentSpan(self, mock_get_extra):
     """Tests get_current_span returns None when disabled, and active when enabled."""
-    mock_get_extra.return_value = {'type': 'google_cloud_spanner', 'config': {'opentelemetry': {'enabled': False}}}
+    mock_get_extra.return_value = {
+        'type': 'google_cloud_spanner',
+        'config': {'opentelemetry': {'enabled': False}}
+    }
     self.assertIsNone(get_current_span())
 
-    mock_get_extra.return_value = {'type': 'google_cloud_spanner', 'config': {'opentelemetry': {'enabled': True, 'mode': 'otlp-http'}}}
+    mock_get_extra.return_value = {
+        'type': 'google_cloud_spanner',
+        'config': {'opentelemetry': {'enabled': True, 'mode': 'otlp-http'}}
+    }
     span = get_current_span()
     self.assertIsNotNone(span)
 
@@ -103,6 +118,7 @@ class OpenTelemetryTest(unittest.TestCase):
 
     # Non-serializable object (falls back to str(object))
     class CustomObj:
+      """Custom dummy object for testing."""
       def __str__(self):
         return 'CustomObjStr'
     add_attribute_to_current_span('test_custom', CustomObj())
@@ -115,7 +131,7 @@ class OpenTelemetryTest(unittest.TestCase):
   def testStartSpanContextManager(self):
     """Tests start_span context manager executes block safely."""
     block_executed = False
-    with start_span('TestSpan', {'attr': 'val'}) as span:
+    with start_span('TestSpan', {'attr': 'val'}) as _unused_span:
       block_executed = True
 
     self.assertTrue(block_executed)
@@ -124,7 +140,7 @@ class OpenTelemetryTest(unittest.TestCase):
     """Tests start_span context manager handles exceptions in block."""
     block_executed = False
     try:
-      with start_span('FailingSpan') as span:
+      with start_span('FailingSpan') as _unused_span:
         raise ValueError('Test Exception')
     except ValueError:
       block_executed = True
@@ -150,9 +166,10 @@ class OpenTelemetryTest(unittest.TestCase):
   def testBaseModuleLogTelemetryWithAndWithoutTelemetry(self):
     """Tests BaseModule.LogTelemetry works when telemetry is or isn't set."""
     class DummyModule(module.BaseModule):
+      """Dummy module implementation for testing."""
       def Process(self):
         pass
-      def SetUp(self):
+      def SetUp(self, *args, **kwargs):
         pass
 
     container_mgr = mock.MagicMock()

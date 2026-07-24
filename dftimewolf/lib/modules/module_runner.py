@@ -10,14 +10,14 @@ import time
 import traceback
 import typing
 from concurrent import futures
+from opentelemetry import trace
 
 from dftimewolf.lib import cache
 from dftimewolf.lib import errors
 from dftimewolf.lib import module as dftw_module
-from dftimewolf.lib import spanner_telemetry as telemetry
 from dftimewolf.lib import opentelemetry
+from dftimewolf.lib import spanner_telemetry as telemetry
 from dftimewolf.lib import utils
-from opentelemetry import trace
 from dftimewolf.lib.containers import interface as container_interface
 from dftimewolf.lib.containers import manager as container_manager
 from dftimewolf.lib.modules import manager as modules_manager
