@@ -11,14 +11,14 @@ from typing import Any, Callable, Dict, Optional, Sequence, Type, TypeVar, cast
 from dftimewolf.lib import cache
 from dftimewolf.lib import errors
 from dftimewolf.lib import logging_utils
-from dftimewolf.lib import telemetry
+from dftimewolf.lib import spanner_telemetry as telemetry
+from dftimewolf.lib import opentelemetry
 from dftimewolf.lib.containers import interface
 from dftimewolf.lib.containers import manager as container_manager
 
 
 T = TypeVar("T", bound="interface.AttributeContainer")  # pylint: disable=invalid-name,line-too-long
 
-TELEMETRY = telemetry
 
 class BaseModule(object):
   """Interface of a DFTimewolf module.
@@ -75,6 +75,18 @@ class BaseModule(object):
     for key, value in data.items():
       if self._telemetry is not None:
         self._telemetry.LogTelemetry(key, value, type(self).__name__)
+        opentelemetry.add_attribute_to_current_span(key, value)
+
+  def LogTelemetryEvent(
+      self, event_name: str, attributes: Optional[Dict[str, Any]] = None
+  ) -> None:
+    """Logs a telemetry event (annotation) to the current OpenTelemetry span.
+
+    Args:
+      event_name: The name or description of the event.
+      attributes: Optional dictionary of attributes to attach to the event.
+    """
+    opentelemetry.add_event_to_current_span(event_name, attributes)
 
   def CleanUp(self) -> None:
     """Cleans up module output to prepare it for the next module."""
@@ -260,6 +272,7 @@ class ThreadAwareModule(BaseModule):
   Process will be passed one container of the type specified by
   GetThreadOnContainerType().
   """
+
 
   @abc.abstractmethod
   def PreProcess(self) -> None:

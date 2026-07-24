@@ -6,7 +6,7 @@ import pandas as pd
 
 from dftimewolf.lib import module
 from dftimewolf.lib import cache
-from dftimewolf.lib import telemetry
+from dftimewolf.lib import spanner_telemetry as telemetry
 from dftimewolf.lib.containers import manager as container_manager
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.processors.llmproviders import manager as llm_manager

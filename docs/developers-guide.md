@@ -124,6 +124,45 @@ There are **two** locations to register new modules:
 - registering it at the end of the module file
 - adding it to the `MODULES` dictionary in the main entry point script [dftimewolf_recipes.py](https://github.com/log2timeline/dftimewolf/blob/main/dftimewolf/cli/dftimewolf_recipes.py)
 
+## OpenTelemetry
+
+dfTimewolf provides built-in OpenTelemetry tracing capabilities for monitoring recipe and module execution.
+
+### Initialization & Configuration
+
+OpenTelemetry is initialized automatically at startup via `SetupOpenTelemetry()`. Exporter behavior is controlled via environment variables or the `~/.dftimewolfrc` configuration file (`telemetry.otel_mode`).
+
+Supported OTLP modes (`DFTIMEWOLF_OTEL_MODE`):
+- `otlp-http` (Recommended): Exports traces via HTTP OTLP (`DFTIMEWOLF_OTLP_HTTP_ENDPOINT`, default `http://localhost:4318/v1/traces`).
+- `otlp-grpc`: Exports traces via gRPC OTLP (`DFTIMEWOLF_OTLP_GRPC_ENDPOINT`, default `localhost:4317`).
+
+### Using OpenTelemetry in Modules
+
+Inside any `BaseModule` subclass, telemetry helper methods are available:
+
+- **Attributes**: Use `self.LogTelemetry(data)` to attach key-value pairs to state telemetry and the active OpenTelemetry span.
+  ```python
+  self.LogTelemetry({'sketch_id': '1234', 'status': 'success'})
+  ```
+- **Events (Annotations)**: Use `self.LogTelemetryEvent(event_name, attributes)` to log point-in-time annotations to the active span.
+  ```python
+  self.LogTelemetryEvent('UploadStarted', {'file_size': 1024})
+  ```
+
+### Custom Sub-spans
+
+For fine-grained tracing within a module (e.g. tracking specific API calls or sub-tasks), use `start_span`:
+
+```python
+from dftimewolf.lib import opentelemetry
+
+with opentelemetry.start_span('Timesketch.Upload', {'sketch_id': '1234'}):
+    # Perform upload logic
+    pass
+```
+
+All telemetry functions fail safely, ensuring that tracing errors or missing dependencies never interrupt forensic execution.
+
 ## Run tests
 
 It is recommended to run tests locally to discover issues early in the development lifecycle.
