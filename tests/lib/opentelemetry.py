@@ -6,9 +6,13 @@ from typing import Any, cast
 import unittest
 from unittest import mock
 
-# pylint: disable=unused-import
-import opentelemetry.exporter.otlp.proto.http.trace_exporter  # type: ignore
-import opentelemetry.sdk.trace  # type: ignore
+try:
+  # pylint: disable=unused-import
+  import opentelemetry.exporter.otlp.proto.http.trace_exporter  # type: ignore
+  import opentelemetry.sdk.trace  # type: ignore
+  HAS_OPENTELEMETRY = True
+except (ImportError, ModuleNotFoundError):
+  HAS_OPENTELEMETRY = False
 
 from dftimewolf.lib import module
 from dftimewolf.lib.opentelemetry import (
@@ -62,6 +66,7 @@ class OpenTelemetryTest(unittest.TestCase):
       SetupOpenTelemetry(tracer_provider=mock_provider)
       mock_set.assert_called_once_with(mock_provider)
 
+  @unittest.skipIf(not HAS_OPENTELEMETRY, 'Missing opentelemetry dependency.')
   @mock.patch('dftimewolf.config.Config.GetExtra')
   @mock.patch(
       'opentelemetry.exporter.otlp.proto.http.trace_exporter.OTLPSpanExporter'
