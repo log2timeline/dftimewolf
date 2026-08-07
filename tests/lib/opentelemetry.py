@@ -163,6 +163,23 @@ class OpenTelemetryTest(unittest.TestCase):
 
       self.assertTrue(block_executed)
 
+  @mock.patch('dftimewolf.config.Config.GetExtra')
+  @mock.patch('opentelemetry.trace.get_tracer')
+  def testStartSpanPropagatesExceptionsWhenEnabled(self, mock_get_tracer, mock_get_extra):
+    """Tests start_span propagates exceptions when telemetry is enabled."""
+    mock_get_extra.return_value = {
+        'config': {'opentelemetry': {'enabled': True}}
+    }
+    mock_tracer = mock.MagicMock()
+    mock_span = mock.MagicMock()
+    mock_tracer.start_as_current_span.return_value.__enter__.return_value = mock_span
+    mock_get_tracer.return_value = mock_tracer
+
+    with self.assertRaises(ValueError):
+      with start_span('TestSpan') as span:
+        self.assertEqual(span, mock_span)
+        raise ValueError('Test Exception')
+
   def testBaseModuleLogTelemetryWithAndWithoutTelemetry(self):
     """Tests BaseModule.LogTelemetry works when telemetry is or isn't set."""
     class DummyModule(module.BaseModule):
