@@ -193,20 +193,24 @@ def start_span(
     return
 
   tracer = trace.get_tracer('dftimewolf')
+  entered = False
   try:
     with tracer.start_as_current_span(name) as span:
       if span and span.is_recording() and attributes:
         for k, v in attributes.items():
           span.set_attribute(k, _clean_attribute_value(v))
+      entered = True
       yield span
   except Exception as e:  # pylint: disable=broad-except,broad-exception-caught
-    # pylint: disable=broad-exception-caught
-    logger.warning(
-        'Telemetry sub-span %s encountered error or could not be created: %s',
-        name,
-        e,
-    )
-    yield None
+    if not entered:
+      logger.warning(
+          'Telemetry sub-span %s encountered error or could not be created: %s',
+          name,
+          e,
+      )
+      yield None
+    else:
+      raise
 
 
 @safe_telemetry_call
