@@ -7,7 +7,7 @@ from libcloudforensics.providers.gcp.internal import compute
 from dftimewolf.lib import cache
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import manager as container_manager
-from dftimewolf.lib import telemetry
+from dftimewolf.lib import spanner_telemetry as telemetry
 
 
 #pylint: disable=abstract-method

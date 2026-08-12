@@ -38,9 +38,14 @@ class BaseTelemetry():
   """Interface for implementing a telemetry module."""
 
   def __init__(self, uuid: Optional[str] = None) -> None:
-    """Initializes a BaseTelemetry object."""
-    super().__init__()
+    """Initializes a BaseTelemetry object.
 
+    Args:
+      uuid: Optional workflow UUID string. Note that self.uuid is explicitly
+        stored as a string (str) because a string value is required when passing
+        workflow_uuid parameters into Spanner transactions and queries.
+    """
+    super().__init__()
     self.uuid: str
     if not uuid:
       self.uuid = str(uuid_lib.uuid4())
@@ -173,9 +178,15 @@ def GetTelemetry(
   """Returns the currently configured Telemetry object."""
   telemetry_config = config.Config.GetExtra('telemetry')
   if telemetry_config.get('type') == 'google_cloud_spanner' and HAS_SPANNER:
-    return GoogleCloudSpannerTelemetry(
-        **telemetry_config['config'], uuid=uuid)
+    spanner_config = telemetry_config.get('config', {}).get('spanner', {})
+    if spanner_config.get('enabled', False):
+      return GoogleCloudSpannerTelemetry(
+          project_name=spanner_config.get('project_name', ''),
+          instance_name=spanner_config.get('instance_name', ''),
+          database_name=spanner_config.get('database_name', ''),
+          uuid=uuid)
   return BaseTelemetry(uuid=uuid)
+
 
 
 def LogTelemetry(key: str, value: str, src_module_name: str) -> None:

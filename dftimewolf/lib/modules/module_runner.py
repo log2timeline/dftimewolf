@@ -10,12 +10,15 @@ import time
 import traceback
 import typing
 from concurrent import futures
+from opentelemetry import trace
 
 from dftimewolf.lib import cache
 from dftimewolf.lib import errors
 from dftimewolf.lib import module as dftw_module
-from dftimewolf.lib import telemetry
+from dftimewolf.lib import opentelemetry
+from dftimewolf.lib import spanner_telemetry as telemetry
 from dftimewolf.lib import utils
+from dftimewolf.lib.containers import interface as container_interface
 from dftimewolf.lib.containers import manager as container_manager
 from dftimewolf.lib.modules import manager as modules_manager
 
@@ -124,8 +127,10 @@ class ModuleRunner(object):
     """
     self._ExtractParsedSetUpArgs(running_args)
 
-    time_ready = time.time()*1000
-    self._SetUpAndRunPreflights()
+    tracer = trace.get_tracer('dftimewolf')
+    with tracer.start_as_current_span('SetUpAndRunPreflights'):
+      time_ready = time.time()*1000
+      self._SetUpAndRunPreflights()
     time_preflights = time.time()*1000
     self._telemetry.LogTelemetry(
       'preflights_delta', str(time_preflights - time_ready), 'core')
@@ -248,19 +253,24 @@ class ModuleRunner(object):
 
   def _SetUpAndRunPreflights(self) -> None:
     """Run all preflight modules."""
+    tracer = trace.get_tracer('dftimewolf')
     for preflight_definition in self._recipe.get('preflights', []):
       preflight_name = preflight_definition['name']
       runtime_name = preflight_definition.get('runtime_name', preflight_name)
 
-      preflight = self._module_pool[runtime_name]
+      with tracer.start_as_current_span(f'Preflight:{runtime_name}'):
+        preflight = self._module_pool[runtime_name]
 
-      try:
-        preflight.SetUp(**(self._module_setup_args[runtime_name]))
-        preflight.Process()
-      except errors.DFTimewolfError as error:
-        self._HandledException(error, runtime_name)
-      except Exception as error:  # pylint: disable=broad-exception-caught
-        self._UnhandledException(error, runtime_name)
+        try:
+          preflight.SetUp(**(self._module_setup_args[runtime_name]))
+          preflight.Process()
+          span = opentelemetry.get_current_span()
+          if span and span.is_recording():
+            span.set_status(trace.StatusCode.OK)
+        except errors.DFTimewolfError as error:
+          self._HandledException(error, runtime_name)
+        except Exception as error:  # pylint: disable=broad-exception-caught
+          self._UnhandledException(error, runtime_name)
 
       self._container_manager.CompleteModule(runtime_name)
       self._threading_event_per_module[runtime_name] = threading.Event()
@@ -278,20 +288,46 @@ class ModuleRunner(object):
     runtime_name = module_definition.get('runtime_name', module_name)
     self._logger.info('Setting up module: {0:s}'.format(runtime_name))
 
-    module = self._module_pool[runtime_name]
+    tracer = trace.get_tracer('dftimewolf')
+    with tracer.start_as_current_span(f'SetUp:{runtime_name}'):
+      module = self._module_pool[runtime_name]
 
-    try:
-      if runtime_name in self._errors and any(e.critical for e in self._errors[runtime_name]):
-        self._logger.warning('Aborting execution of %s due to previous critical error', runtime_name)
-        return
+      try:
+        if runtime_name in self._errors and any(e.critical for e in self._errors[runtime_name]):
+          self._logger.warning('Aborting execution of %s due to previous critical error', runtime_name)
+          return
 
-      module.SetUp(**(self._module_setup_args[runtime_name]))
-    except errors.DFTimewolfError as error:
-      self._HandledException(error, runtime_name)
-    except Exception as error:  # pylint: disable=broad-exception-caught
-      self._UnhandledException(error, runtime_name)
+        module.SetUp(**(self._module_setup_args[runtime_name]))
+        span = opentelemetry.get_current_span()
+        if span and span.is_recording():
+          span.set_status(trace.StatusCode.OK)
+      except errors.DFTimewolfError as error:
+        self._HandledException(error, runtime_name)
+      except Exception as error:  # pylint: disable=broad-exception-caught
+        self._UnhandledException(error, runtime_name)
 
     self._threading_event_per_module[runtime_name] = threading.Event()
+
+  def _WrapProcessContainerWithSpan(
+      self,
+      module: dftw_module.ThreadAwareModule,
+      container: container_interface.AttributeContainer,
+  ) -> None:
+    """Worker function for _RunModuleProcessThreaded that wraps Process in a child span."""
+    tracer = trace.get_tracer('dftimewolf')
+    with tracer.start_as_current_span(f'{module.name}.ProcessContainer') as span:
+      span.set_attribute('container_type', type(container).__name__)
+      try:
+        module.Process(container)
+        span.set_status(trace.StatusCode.OK)
+      except errors.DFTimewolfError as error:
+        span.record_exception(error)
+        span.set_status(trace.StatusCode.ERROR, str(error))
+        raise
+      except Exception as error:  # pylint: disable=broad-except
+        span.record_exception(error)
+        span.set_status(trace.StatusCode.ERROR, str(error))
+        raise
 
   def _RunModuleProcessThreaded(self, module: dftw_module.ThreadAwareModule) -> list[futures.Future[None]]:
     """Runs Process of a single ThreadAwareModule module.
@@ -318,7 +354,7 @@ class ModuleRunner(object):
       for c in containers:
         self._logger.debug(f"Launching {module.name}.Process thread with {str(c)}")
         ctx = contextvars.copy_context()
-        future_results.append(executor.submit(ctx.run, module.Process, c))
+        future_results.append(executor.submit(ctx.run, self._WrapProcessContainerWithSpan, module, c))
     return future_results
 
   def _RunModuleThreadCallback(self, module_definition: dict[str, str]) -> None:
@@ -348,21 +384,27 @@ class ModuleRunner(object):
     self._logger.info('Running module: {0:s}'.format(runtime_name))
     time_start = time.time()
 
-    try:
-      if isinstance(module, dftw_module.ThreadAwareModule):
-        module.PreProcess()
-        futures_ = self._RunModuleProcessThreaded(module)
-        module.PostProcess()
-        self._HandleFuturesFromThreadedModule(futures_)
-      else:
-        module.Process()
+    tracer = trace.get_tracer('dftimewolf')
+    ctx = opentelemetry.get_context()
+    with tracer.start_as_current_span(runtime_name, context=ctx):
+      try:
+        if isinstance(module, dftw_module.ThreadAwareModule):
+          module.PreProcess()
+          futures_ = self._RunModuleProcessThreaded(module)
+          module.PostProcess()
+          self._HandleFuturesFromThreadedModule(futures_)
+        else:
+          module.Process()
 
-      self._container_manager.CompleteModule(runtime_name)
+        self._container_manager.CompleteModule(runtime_name)
+        span = opentelemetry.get_current_span()
+        if span and span.is_recording():
+          span.set_status(trace.StatusCode.OK)
 
-    except errors.DFTimewolfError as error:
-      self._HandledException(error, runtime_name)
-    except Exception as error:  # pylint: disable=broad-exception-caught
-      self._UnhandledException(error, runtime_name)
+      except errors.DFTimewolfError as error:
+        self._HandledException(error, runtime_name)
+      except Exception as error:  # pylint: disable=broad-exception-caught
+        self._UnhandledException(error, runtime_name)
 
     self._threading_event_per_module[runtime_name].set()
     self._logger.info('Module {0:s} finished execution'.format(runtime_name))
@@ -427,6 +469,10 @@ class ModuleRunner(object):
     self.PublishMessage(source=runtime_name, message=message, is_error=True)
     self._logger.debug('', exc_info=True)
     self._errors[runtime_name].append(error)
+    span = opentelemetry.get_current_span()
+    if span and span.is_recording():
+      span.record_exception(error)
+      span.set_status(trace.StatusCode.ERROR, message)
 
   def _UnhandledException(self, error: Exception, runtime_name: str) -> None:
     """Handles an otherwise unhandled exception."""
@@ -440,3 +486,7 @@ class ModuleRunner(object):
         stacktrace=traceback.format_exc(),
         critical=True,
         unexpected=True))
+    span = opentelemetry.get_current_span()
+    if span and span.is_recording():
+      span.record_exception(error)
+      span.set_status(trace.StatusCode.ERROR, message)

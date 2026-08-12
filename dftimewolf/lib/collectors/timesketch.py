@@ -10,7 +10,8 @@ from timesketch_api_client import client, search, sketch
 
 from dftimewolf.lib import module, timesketch_utils
 from dftimewolf.lib import cache
-from dftimewolf.lib import telemetry
+from dftimewolf.lib import opentelemetry
+from dftimewolf.lib import spanner_telemetry as telemetry
 from dftimewolf.lib.containers import manager as container_manager
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
@@ -198,7 +199,8 @@ class TimesketchSearchEventCollector(module.BaseModule):
       The Timesketch sketch.
     """
     assert self.timesketch_api_client
-    sketch_obj = self.timesketch_api_client.get_sketch(sketch_id)
+    with opentelemetry.start_span('Timesketch.GetSketch', {'sketch_id': sketch_id}):
+      sketch_obj = self.timesketch_api_client.get_sketch(sketch_id)
     if not sketch_obj:
       self.ModuleError(f"Could not get sketch {sketch_id}", critical=True)
     self._cache.AddToCache("timesketch_sketch", sketch_obj)
@@ -248,11 +250,16 @@ class TimesketchSearchEventCollector(module.BaseModule):
         label_chip.label = label
       search_obj.add_chip(label_chip)
 
-    # Timesketch API returns a max of 10000 results by default
-    if search_obj.expected_size > 10000:
-      search_obj.max_entries = search_obj.expected_size + 1
+    with opentelemetry.start_span('Timesketch.Search', {
+        'sketch_id': selected_sketch.id,
+        'query_string': search_obj.query_string,
+        'return_fields': return_fields,
+    }):
+      # Timesketch API returns a max of 10000 results by default
+      if search_obj.expected_size > 10000:
+        search_obj.max_entries = search_obj.expected_size + 1
 
-    return search_obj.to_pandas()
+      return search_obj.to_pandas()
 
   def _OutputSearchResults(self, data_frame: pd.DataFrame) -> None:
     """Stores the search results in a container or file.

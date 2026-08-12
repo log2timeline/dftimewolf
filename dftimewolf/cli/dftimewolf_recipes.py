@@ -14,8 +14,9 @@ from typing import Any, Optional, cast
 from dftimewolf import config
 from dftimewolf.lib import errors
 from dftimewolf.lib import logging_utils
+from dftimewolf.lib import opentelemetry
 from dftimewolf.lib import resources
-from dftimewolf.lib import telemetry
+from dftimewolf.lib import spanner_telemetry
 from dftimewolf.lib import utils
 from dftimewolf.lib.modules import module_runner
 from dftimewolf.lib.recipes import manager as recipes_manager
@@ -75,7 +76,7 @@ class DFTimewolfTool(object):
   def __init__(
       self,
       workflow_uuid: Optional[str] = None,
-      telemetry_: Optional[telemetry.BaseTelemetry] = None,
+      telemetry_: Optional[spanner_telemetry.BaseTelemetry] = None,
       config_path: Optional[str] = None) -> None:
     """Initializes a DFTimewolf tool."""
     super().__init__()
@@ -86,13 +87,12 @@ class DFTimewolfTool(object):
     self._recipes_manager = recipes_manager.RecipesManager()
     self._recipe: resources.Recipe = None  # type: ignore
     self._uuid = workflow_uuid or str(uuid.uuid4())
-
     logger.success(f'dfTimewolf tool initialized with UUID: {self._uuid}')
 
     self._DetermineDataFilesPath()
     self.LoadConfiguration(config_path)
 
-    self._telemetry = telemetry_ or telemetry.GetTelemetry(uuid=self._uuid)
+    self._telemetry = telemetry_ or spanner_telemetry.GetTelemetry(uuid=self._uuid)
     self._module_runner = module_runner.ModuleRunner(logger, self._telemetry, self.PublishMessage)
 
   @property
@@ -430,44 +430,48 @@ def RunTool() -> int:
   Returns:
     int: 0 DFTimewolf could be run successfully, 1 otherwise.
   """
-  tool = DFTimewolfTool()
+  opentelemetry.SetupOpenTelemetry()
 
-  try:
-    tool.ReadRecipes()
+  with opentelemetry.start_span('dftimewolf'):
+    tool = DFTimewolfTool()
 
-    help_requested = any(h in sys.argv for h in ('-h', '--help'))
+    try:
+      tool.ReadRecipes()
 
-    if len(sys.argv) < 2 or help_requested:
+      help_requested = any(h in sys.argv for h in ('-h', '--help'))
+
+      if len(sys.argv) < 2 or help_requested:
+        print(tool.GenerateHelpText(), file=sys.stderr)
+        return not help_requested
+
+      tool.SelectRecipe(sys.argv[1])
+
+      args_parser = tool.GenerateArgsParserForRecipe()
+      params = vars(args_parser.parse_args(sys.argv[2:]))
+
+      tool.ApplyArgs(params)
+    except recipes_manager.RecipeNotFoundError as error:
+      logger.error(str(error))
       print(tool.GenerateHelpText(), file=sys.stderr)
-      return not help_requested
+      return 1
+    except Exception as error:  # pylint: disable=broad-except
+      logger.critical(str(error))
+      logger.debug('', exc_info=True)
+      return 1
 
-    tool.SelectRecipe(sys.argv[1])
-    args_parser = tool.GenerateArgsParserForRecipe()
-    params = vars(args_parser.parse_args(sys.argv[2:]))
+    if tool.dry_run:
+      logger.info("Exiting as --dry_run flag is set.")
+      return 0
 
-    tool.ApplyArgs(params)
-  except recipes_manager.RecipeNotFoundError as error:
-    logger.error(str(error))
-    print(tool.GenerateHelpText(), file=sys.stderr)
-    return 1
-  except Exception as error:  # pylint: disable=broad-except
-    logger.critical(str(error))
-    logger.debug('', exc_info=True)
-    return 1
+    tool.LogExecutionPlan()
 
-  if tool.dry_run:
-    logger.info("Exiting as --dry_run flag is set.")
-    return 0
+    return_value = tool.RunAllModules()
 
-  tool.LogExecutionPlan()
+    tool.LogTelemetry()
 
-  return_value = tool.RunAllModules()
+    print(tool.GetReport())
 
-  tool.LogTelemetry()
-
-  print(tool.GetReport())
-
-  return return_value
+    return return_value
 
 
 def Main() -> int:
