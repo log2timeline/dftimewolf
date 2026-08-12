@@ -49,9 +49,9 @@ class GoogleDriveExporter(module.ThreadAwareModule):
                      telemetry_=telemetry_,
                      publish_message_callback=publish_message_callback)
 
-    self.parent_folder_id: Optional[str] = None
-    self.folder_id: Optional[str] = None
-    self.new_folder_name: Optional[str] = None
+    self.parent_folder_id = str()
+    self.folder_id = str()
+    self.new_folder_name = str()
     self._credentials: oauth2_credentials.Credentials | external_account_authorized_user.Credentials
     self._drive_resource: Optional[discovery.Resource] = None
     self._max_upload_workers: Optional[int] = None

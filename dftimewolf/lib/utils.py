@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Common utilities for DFTimewolf."""
 
+import abc
 import argparse
 import os
 import random
@@ -133,18 +134,17 @@ def ImportArgsFromDict(value: Any,
   return value
 
 
-# pytype: disable=bad-return-type
-# mypy: disable-error-code="empty-body"
 class FormatterInterface(object):
   """Interface to format text in reports."""
 
   # A text representation of the format.
   FORMAT = ''
 
+  @abc.abstractmethod
   def IndentStart(self) -> str:
     """Returns formatted text for starting an indent."""
-    pass
 
+  @abc.abstractmethod
   def IndentText(self, text: str, level: int=1) -> str:
     """Return a formatted text that is indented.
 
@@ -156,40 +156,38 @@ class FormatterInterface(object):
     Returns:
         str: A formatted indented string.
     """
-    pass
 
+  @abc.abstractmethod
   def IndentEnd(self) -> str:
     """Return a formatted text for ending an indent."""
-    pass
 
+  @abc.abstractmethod
   def BoldText(self, text: str) -> str:
     """Return a formatted text that will be bold."""
-    pass
 
+  @abc.abstractmethod
   def Link(self, url: str, text: str) -> str:
     """Return a formatted text that contains a link."""
-    pass
 
+  @abc.abstractmethod
   def ItalicText(self, text: str) -> str:
     """Return a formatted text that will be italic."""
-    pass
 
+  @abc.abstractmethod
   def UnderlineText(self, text: str) -> str:
     """Return a formatted text that will be underlined."""
-    pass
 
+  @abc.abstractmethod
   def Line(self) -> str:
     """Return a formatted new line."""
-    pass
 
+  @abc.abstractmethod
   def Heading(self, text: str, level: int=1) -> str:
     """Return a formatted heading."""
-    pass
 
+  @abc.abstractmethod
   def Paragraph(self, text: str) -> str:
     """Return a formatted paragraph."""
-    pass
-# pytype: enable=bad-return-type
 
 
 class HTMLFormatter(FormatterInterface):

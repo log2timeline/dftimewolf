@@ -48,13 +48,13 @@ class TimesketchExporter(module.ThreadAwareModule):
                      telemetry_=telemetry_,
                      publish_message_callback=publish_message_callback)
 
-    self.incident_id = None  # type: Union[str, None]
-    self.sketch_id = 0  # type: int
-    self.timesketch_api = None  # type: ts_client.TimesketchApi
-    self._analyzers = []  # type: List[str]
-    self.wait_for_timelines = False  # type: bool
-    self.host_url = None  # type: Union[str, None]
-    self.sketch = None  # type: ts_sketch.Sketch
+    self.incident_id = str()
+    self.sketch_id = 0
+    self.timesketch_api: ts_client.TimesketchApi
+    self._analyzers: list[str] = []
+    self.wait_for_timelines = False
+    self.host_url = str()
+    self.sketch: ts_sketch.Sketch
     self._processed_timelines: Set[int] = set()
 
   # pylint: disable=arguments-differ
@@ -109,7 +109,6 @@ class TimesketchExporter(module.ThreadAwareModule):
           critical=True)
     self.incident_id = incident_id
     self.sketch_id = int(sketch_id) if sketch_id else 0
-    self.sketch = None
 
     # Check that we have a timesketch session.
     if not (self.timesketch_api or self.timesketch_api.session):
@@ -214,6 +213,8 @@ class TimesketchExporter(module.ThreadAwareModule):
       return
 
     timeline = self.sketch.get_timeline(timeline_name=timeline_name)
+    if not timeline:
+      raise RuntimeError(f'Timeline {timeline_name} not found')
     self.logger.info(
         "Running analyzers {0!s} on timeline {1:s}".format(
             self._analyzers, timeline_name))
@@ -223,7 +224,7 @@ class TimesketchExporter(module.ThreadAwareModule):
           'analyzers': self._analyzers,
       }):
         # By default run_analyzers() ignores analyzers that have already been run
-        results: List[ts_analyzer.AnalyzerResult] = timeline.run_analyzers(
+        results: list[ts_analyzer.AnalyzerResult] = timeline.run_analyzers(
             analyzer_names=self._analyzers)
       if not results:
         self.logger.debug(
@@ -281,6 +282,8 @@ class TimesketchExporter(module.ThreadAwareModule):
               'Unable to import {0:s}: {1!s}'.format(path, exception),
               critical=False)
         if streamer.response and container.description:
+          if not streamer.timeline:
+            raise RuntimeError(f'Timeline {timeline_name} not found')
           streamer.timeline.description = container.description
   # pytype: enable=signature-mismatch
 

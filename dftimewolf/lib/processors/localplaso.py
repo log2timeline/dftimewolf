@@ -184,13 +184,12 @@ class LocalPlasoProcessor(module.BaseModule):
   def Process(self) -> None:
     """Executes log2timeline.py on the module input."""
 
-    combined_list = [
-    ]  # type: List[Union[containers.File, containers.Directory]]
+    combined_list: list[containers.File | containers.Directory] = []
     for file_container in self.GetContainers(containers.File, pop=True):
       combined_list.append(file_container)
 
     for directory_container in self.GetContainers(containers.Directory,
-                                                        pop=True):
+                                                  pop=True):
       combined_list.append(directory_container)
 
     for item in combined_list:

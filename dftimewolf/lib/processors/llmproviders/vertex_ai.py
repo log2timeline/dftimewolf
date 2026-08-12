@@ -144,7 +144,7 @@ class VertexAILLMProvider(interface.LLMProvider):
     """
     genai_model = self._get_model(model)
     try:
-      response = genai_model.generate_content(contents=prompt, **kwargs)
+      response = genai_model.generate_content(contents=prompt, **kwargs)  # pyrefly: ignore=[no-matching-overload]
     except Exception as e:
       log.warning("Exception while calling VertexAI: %s", e)
       raise
@@ -187,7 +187,7 @@ class VertexAILLMProvider(interface.LLMProvider):
     if not self.chat_session:
       self.chat_session = self._get_model(model).start_chat()
     try:
-      response = self.chat_session.send_message(prompt, **kwargs)
+      response = self.chat_session.send_message(prompt, **kwargs)  # pyrefly: ignore=[no-matching-overload
     except Exception as e:
       log.warning("Exception while calling VertexAI: %s", e)
       raise

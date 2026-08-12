@@ -35,14 +35,14 @@ class SSHMultiplexer(module.PreflightModule):
     self.hostname = str()
     self.user = None # type: Optional[str]
     self.id_file = None  # type: Optional[str]
-    self.extra_ssh_options = [] # type: Optional[List[str]]
+    self.extra_ssh_options: list[str] = []
     self.control_filename = f"~/.ssh/ctrl-dftw-{str(uuid.uuid4())}"
 
   def SetUp(self,  # pylint: disable=arguments-differ
             hostname: str,
             user: Optional[str],
             id_file: Optional[str],
-            extra_ssh_options: Optional[List[str]]) -> None:
+            extra_ssh_options: list[str]) -> None:
     """Sets up the SSH multiplexer module's attributes.
 
     Args:
@@ -55,7 +55,7 @@ class SSHMultiplexer(module.PreflightModule):
     self.hostname = hostname
     self.user = user
     self.id_file = id_file
-    self.extra_ssh_options = extra_ssh_options
+    self.extra_ssh_options: list[str] = extra_ssh_options
 
   def Process(self) -> None:
     """Open a shared SSH connection."""

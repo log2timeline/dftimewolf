@@ -62,13 +62,13 @@ def ListDriveFolder(
     )
 
     for file in response.get("files", []):
-      files.append(file)
+      files.append(file)  # pyrefly: ignore=[bad-argument-type]
       if (
           recursive
           and file.get("mimeType") == "application/vnd.google-apps.folder"
       ):
         files.extend(
-            ListDriveFolder(drive_resource, file.get("id"), fields, recursive)
+            ListDriveFolder(drive_resource, file.get("id", ""), fields, recursive)
         )
 
     page_token = response.get("nextPageToken", None)
@@ -234,10 +234,10 @@ class GoogleDriveCollector(module.BaseModule):
     drive_resource = discovery.build(
         "drive", "v3", credentials=self._credentials
     )
-    drive_files = []
+    drive_files: list[dict[str, Any]] = []
     if self._drive_ids:
       drive_files.extend(
-          [
+          [  # pyrefly: ignore=[bad-argument-type]
               drive_resource.files().get(fileId=drive_id).execute()
               for drive_id in self._drive_ids
           ]

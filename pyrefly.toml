@@ -1,0 +1,8 @@
+project-includes = ["dftimewolf"]
+project-excludes = [
+    "**/_pb2.py",
+]
+python-version = "3.14.3"
+
+[errors]
+bad-override = "ignore"

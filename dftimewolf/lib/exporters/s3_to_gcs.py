@@ -54,7 +54,7 @@ class S3ToGCSCopy(module.ThreadAwareModule):
 
     self.aws_region: str = ''
     self.dest_project_name: str = ''
-    self.dest_project: gcp_project.GoogleCloudProject = None
+    self.dest_project: gcp_project.GoogleCloudProject = None  # pyrefly: ignore=[bad-assignment]
     self.dest_bucket: str = ''
     self.filter: Any = None
     self.bucket_exists = False
@@ -137,8 +137,8 @@ class S3ToGCSCopy(module.ThreadAwareModule):
     """Grant access to the storage transfer service account to use the bucket.
 
     See https://cloud.google.com/storage-transfer/docs/configure-access#sink"""
-    request = self.dest_project.storagetransfer.GcstApi().\
-        googleServiceAccounts().get(projectId=self.dest_project_name)  # pylint: disable=no-member
+    api_handle = self.dest_project.storagetransfer.GcstApi()
+    request = api_handle.googleServiceAccounts().get(projectId=self.dest_project_name)  # pylint: disable=no-member  # pyrefly: ignore=[missing-attribute]
     service_account = request.execute()['accountEmail']
 
     client = storage_client(project=self.dest_project_name)
