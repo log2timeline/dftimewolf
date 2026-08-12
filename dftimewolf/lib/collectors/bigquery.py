@@ -56,8 +56,7 @@ class BigQueryCollector(module.ThreadAwareModule):
   def PreProcess(self) -> None:
     """Empty PreProcess."""
 
-  def Process(self, container: containers.BigQueryQuery
-              ) -> None:  # pytype: disable=signature-mismatch
+  def Process(self, container: containers.BigQueryQuery) -> None:
     """Collects data from BigQuery.
 
     Args:
@@ -85,11 +84,9 @@ class BigQueryCollector(module.ThreadAwareModule):
       out_container.metadata = container.metadata
       self.StoreContainer(out_container)
 
-    # pytype: disable=module-attr
     except google.cloud.exceptions.NotFound as exception:
       self.ModuleError(f'Error accessing project: {exception!s}',
           critical=True)
-    # pytype: enable=module-attr
 
     except (google_auth_exceptions.DefaultCredentialsError,
             google_auth_exceptions.RefreshError) as exception:

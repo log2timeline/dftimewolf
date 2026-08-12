@@ -4,7 +4,7 @@ Threaded version of existing Timesketch module."""
 
 import time
 import uuid
-from typing import Optional, List, Type, Union, Set, Callable
+from typing import Optional, Type, Set, Callable
 
 from timesketch_import_client import importer
 from timesketch_api_client import sketch as ts_sketch
@@ -147,7 +147,7 @@ class TimesketchExporter(module.ThreadAwareModule):
       self.logger.info('New sketch created: {0:d}'.format(self.sketch_id))
 
     # register callback in timesketch module
-    self.RegisterStreamingCallback(callback=self.Process,  # type: ignore
+    self.RegisterStreamingCallback(callback=self.Process,  # pyrefly: ignore=[bad-argument-type]
                                    container_type=containers.File)
 
   def _CreateSketch(
@@ -241,7 +241,6 @@ class TimesketchExporter(module.ThreadAwareModule):
       self.ModuleError(
           'Unable to run analyzer: {0!s}'.format(exception), critical=False)
 
-  # pytype: disable=signature-mismatch
   def Process(self, container: containers.File) -> None:
     """Executes a Timesketch export.
 
@@ -285,7 +284,6 @@ class TimesketchExporter(module.ThreadAwareModule):
           if not streamer.timeline:
             raise RuntimeError(f'Timeline {timeline_name} not found')
           streamer.timeline.description = container.description
-  # pytype: enable=signature-mismatch
 
   def GetThreadOnContainerType(self) -> Type[interface.AttributeContainer]:
     return containers.File

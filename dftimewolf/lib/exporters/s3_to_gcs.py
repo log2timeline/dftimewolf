@@ -110,8 +110,7 @@ class S3ToGCSCopy(module.ThreadAwareModule):
     except Exception as exception: # pylint: disable=broad-except
       self.ModuleError(str(exception), critical=True)
 
-  def Process(self, container: containers.AWSS3Object
-              ) -> None:  # pytype: disable=signature-mismatch
+  def Process(self, container: containers.AWSS3Object) -> None:
     """Creates and exports disk image to the output bucket."""
     if self.filter and not self.filter.match(container.path):
       self.logger.debug(

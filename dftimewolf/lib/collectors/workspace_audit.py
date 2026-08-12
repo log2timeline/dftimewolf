@@ -89,7 +89,7 @@ class WorkspaceAuditCollector(module.BaseModule):
       if os.path.exists(credentials_path):
         try:
           credentials = oauth2_credentials.Credentials.from_authorized_user_file(
-              credentials_path, self.SCOPES)  # type: ignore[no-untyped-call]
+              credentials_path, self.SCOPES)
         except ValueError as exception:
           self.logger.warning(
               f'Unable to load credentials: {exception:s}')
@@ -98,7 +98,7 @@ class WorkspaceAuditCollector(module.BaseModule):
       # If there are no (valid) credentials available, let the user log in.
       if not credentials or not credentials.valid:
         if credentials and credentials.expired and credentials.refresh_token:
-          credentials.refresh(Request())  # type: ignore
+          credentials.refresh(Request())
         else:
           secrets_path = os.path.join(
               os.path.expanduser('~'), self._CLIENT_SECRET_FILENAME)
@@ -119,7 +119,7 @@ class WorkspaceAuditCollector(module.BaseModule):
           with open(credentials_path, 'w') as token_file:
             token_file.write(credentials.to_json())
 
-    return credentials  # pytype: disable=bad-return-type
+    return credentials
 
   # pylint: disable=arguments-differ
   def SetUp(self,

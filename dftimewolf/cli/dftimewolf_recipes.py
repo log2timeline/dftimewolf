@@ -85,7 +85,7 @@ class DFTimewolfTool(object):
     self._data_files_path = ''
     self._running_args: dict[str, typing.Any] = {}
     self._recipes_manager = recipes_manager.RecipesManager()
-    self._recipe: resources.Recipe = None  # type: ignore
+    self._recipe: resources.Recipe
     self._uuid = workflow_uuid or str(uuid.uuid4())
     logger.success(f'dfTimewolf tool initialized with UUID: {self._uuid}')
 
@@ -410,6 +410,8 @@ def SetupLogging(stdout_log: bool = False) -> None:
   file_handler.setLevel(logging.DEBUG)  # Always log DEBUG logs to files.
   logger.addHandler(file_handler)
 
+  assert file_handler.stream  # For typing
+
   if stdout_log:
     console_handler = logging.StreamHandler(stream=sys.stdout)
     colorize = sys.stdout.isatty() and not bool(os.environ.get('DFTIMEWOLF_NO_RAINBOW'))
@@ -419,9 +421,9 @@ def SetupLogging(stdout_log: bool = False) -> None:
     console_handler.setFormatter(logging_utils.WolfFormatter(
         handler_level=console_handler.level, colorize=colorize))
     logger.addHandler(console_handler)
-    logger.info(f'Logging to stdout and {file_handler.stream.name}')  # type: ignore
+    logger.info(f'Logging to stdout and {file_handler.stream.name}')
   else:
-    logger.info(f'Logging to {file_handler.stream.name}')  # type: ignore
+    logger.info(f'Logging to {file_handler.stream.name}')
 
 
 def RunTool() -> int:

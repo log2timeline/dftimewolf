@@ -49,7 +49,7 @@ class UtilsTest(unittest.TestCase):
     member_name = tar.getmembers()[1].name
     self.assertIn(test_name, member_name)
     member_data = (
-        tar.extractfile(member_name).read())  # pytype: disable=attribute-error
+        tar.extractfile(member_name).read())
     self.assertEqual(member_data, test_data.encode('utf-8'))
 
   def testWriteDataFrameToJsonl(self):

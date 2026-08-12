@@ -40,7 +40,7 @@ class GeminiLLMProvider(interface.LLMProvider):
   def __init__(self) -> None:
     """Initializes the GeminiLLMProvider."""
     super().__init__()
-    self.chat_session: genai.ChatSession | None = None  # type: ignore
+    self.chat_session: genai.ChatSession | None = None
     self._configure()
 
   def _configure(self) -> None:
@@ -51,21 +51,21 @@ class GeminiLLMProvider(interface.LLMProvider):
         or os.environ.get('API_KEY')
     )
     if api_key:
-      genai.configure(api_key=api_key)  # type: ignore
+      genai.configure(api_key=api_key)
     elif self.options.get('sa_path'):
       with open(str(self.options.get('sa_path')), 'r') as sa_file:
         sa_content = json.loads(sa_file.read())
       sa_credential = (
           service_account.Credentials.from_service_account_info(
-              sa_content))  # type: ignore[no-untyped-call]
-      genai.configure(credentials=sa_credential)  # type: ignore
+              sa_content))
+      genai.configure(credentials=sa_credential)
     else:
       raise RuntimeError(
           'Could not authenticate. '
           'Please configure an API key or service account to access Gemini.'
       )
 
-  def _get_model(self, model: str) -> genai.GenerativeModel:  # type: ignore
+  def _get_model(self, model: str) -> genai.GenerativeModel:
     """Returns the Gemini generative model.
 
     Args:
@@ -75,7 +75,7 @@ class GeminiLLMProvider(interface.LLMProvider):
     generation_config = self.models[model]['options'].get('generative_config')
     safety_settings = self.models[model]['options'].get('safety_settings')
     system_instruction=self.models[model]['options'].get('system_instruction')
-    return genai.GenerativeModel(  # type: ignore
+    return genai.GenerativeModel(
         model_name=model_name,
         system_instruction=system_instruction,
         generation_config=generation_config,
@@ -99,7 +99,7 @@ class GeminiLLMProvider(interface.LLMProvider):
           )
       )
   )
-  @ratelimit.limits(calls=CALL_LIMIT, period=ONE_MINUTE)  # type: ignore
+  @ratelimit.limits(calls=CALL_LIMIT, period=ONE_MINUTE)
   def Generate(self, prompt: str, model: str, **kwargs: str) -> str:
     """Generates text from the LLM provider.
 
@@ -140,7 +140,7 @@ class GeminiLLMProvider(interface.LLMProvider):
           )
       )
   )
-  @ratelimit.limits(calls=CALL_LIMIT, period=ONE_MINUTE)  # type: ignore
+  @ratelimit.limits(calls=CALL_LIMIT, period=ONE_MINUTE)
   def GenerateWithHistory(self, prompt: str, model: str, **kwargs: str) -> str:
     """Generates text from the provider with history i.e. chat
 

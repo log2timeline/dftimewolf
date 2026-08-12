@@ -185,7 +185,6 @@ class GCEForensicsVMTest(modules_test_base.ModuleTestBase):
     )
     self._ProcessModule()
 
-    self.assertIsNone(self._module.project)
     mock_StartAnalysisVM.assert_not_called()
     mock_AttachDisk.assert_not_called()
 

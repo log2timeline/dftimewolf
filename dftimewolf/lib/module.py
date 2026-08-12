@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """Class definition for DFTimewolf modules."""
-# pytype: disable=ignored-abstractmethod,bad-return-type
 
 import abc
 import logging
@@ -227,7 +226,7 @@ class BaseModule(object):
     """
 
   @abc.abstractmethod
-  def SetUp(self, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
+  def SetUp(self, *args, **kwargs) -> None:
     """Sets up necessary module configuration options."""
 
 
@@ -248,7 +247,7 @@ class PreflightModule(BaseModule):
     """
 
   @abc.abstractmethod
-  def SetUp(self, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
+  def SetUp(self, *args, **kwargs) -> None:
     """Sets up necessary module configuration options."""
 
   @abc.abstractmethod
@@ -285,8 +284,7 @@ class ThreadAwareModule(BaseModule):
 
   # pylint: disable=arguments-differ
   @abc.abstractmethod
-  def Process(self, container: interface.AttributeContainer
-              ) -> None:  # pytype: disable=signature-mismatch
+  def Process(self, container: interface.AttributeContainer) -> None:
     """Carry out a single process based on the input container. This will be
     run in parallel, based on the number of containers of the ThreadOn type,
     given by GetThreadOnContainerType(), up to GetThreadPoolSize() max

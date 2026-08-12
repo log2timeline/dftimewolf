@@ -60,7 +60,7 @@ class LLMProcessorBase(module.BaseModule):
     provider_class = llm_manager.LLMProviderManager.GetProvider(
       provider_name=provider_name
     )
-    self.provider = provider_class()  # pytype: disable=not-instantiable
+    self.provider = provider_class()
     assert self.provider  # to appease mypy
 
     if model_name not in self.provider.models:
@@ -95,19 +95,16 @@ class LLMProcessorBase(module.BaseModule):
     Returns:
       The LLM response.
     """
-    # pytype: disable=attribute-error
-    # (since provider and model attributes are already checked in setup)
     if content and mime_type:
       return self.provider.Generate(
         prompt=prompt,
         model=self.model_name,
         mime_type=mime_type,
         content=content,
-      )  # pytype: disable=wrong-arg-types
+      )
     return self.provider.Generate(
       prompt=prompt, model=self.model_name, response_schema=response_schema
     )
-    # pytype: enable=attribute-error
 
   def Process(self) -> None:
     """To be implemented by subclasses."""

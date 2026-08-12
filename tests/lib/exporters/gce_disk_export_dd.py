@@ -50,11 +50,13 @@ class GoogleCloudDiskExportStreamTest(modules_test_base.ModuleTestBase):
         'gs://fake-bucket',
         'fake-source-disk',
         None,
-        False
+        False,
+        '',
+        ''
     )
-    self.assertEqual(self._module.source_project.project_id,
+    self.assertEqual(self._module._source_project.project_id,  # pylint: disable=protected-access
                      'fake-source-project')
-    self.assertEqual(self._module.source_disks[0].name,
+    self.assertEqual(self._module._source_disks[0].name,  # pylint: disable=protected-access
                      'fake-source-disk')
     self.assertEqual(self._module.gcs_output_location,
                      'gs://fake-bucket/')
@@ -85,7 +87,9 @@ class GoogleCloudDiskExportStreamTest(modules_test_base.ModuleTestBase):
         'gs://fake-bucket',
         'fake-source-disk',
         None,
-        False
+        False,
+        '',
+        ''
     )
     FAKE_SOURCE_PROJECT.compute.CreateInstanceFromArgument = mock_create_instance_from_arguments
     mock_create_instance_from_arguments.return_value = FAKE_INSTANCE

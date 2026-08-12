@@ -217,7 +217,7 @@ class GCPCloudResourceTree(module.BaseModule):
 
     all_active_resources_sorted = sorted(
         self.resources_dict.values(),
-        key=lambda resource: resource.creation_timestamp)  # type: ignore
+        key=lambda resource: resource.creation_timestamp)
 
     for resource in all_active_resources_sorted:
       # Building list of timestamp ranges to query. The loop will go through the
@@ -307,7 +307,7 @@ class GCPCloudResourceTree(module.BaseModule):
 
       # Recursively obtain parents for each resource in the chain
       parent_resource.parent = self._GetResourceParentTree(parent_resource)
-      parent_resource.children.add(resource)  # pytype: disable=attribute-error
+      parent_resource.children.add(resource)
 
     # Return the resource with all the parent chain filled
     return parent_resource
@@ -564,7 +564,7 @@ class GCPCloudResourceTree(module.BaseModule):
       request: Request portion of the log message.
       response: Response portion of the log message.
     """
-    resource.creation_timestamp = response.get('insertTime')  # type: ignore
+    resource.creation_timestamp = response.get('insertTime', '')
     resource.created_by = response.get('user', '')
 
     if 'sourceDisk' in request:
@@ -647,8 +647,7 @@ class GCPCloudResourceTree(module.BaseModule):
         # created. The automatically created disk has the same name as the
         # gce_instance
         if disk_resource.name == resource.name:
-          # pylint: disable=line-too-long
-          disk_resource.creation_timestamp = resource.creation_timestamp  # type: ignore
+          disk_resource.creation_timestamp = resource.creation_timestamp  # pyrefly: ignore=[bad-argument-type]
           resource.parent = disk_resource
           disk_resource.id = resource.id + '-disk'
 

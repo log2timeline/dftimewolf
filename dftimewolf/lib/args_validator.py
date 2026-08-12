@@ -10,7 +10,7 @@ from dftimewolf.lib import errors, resources
 class AbstractValidator(abc.ABC):
   """Base class for validator objects."""
 
-  NAME: str = None  # type: ignore
+  NAME: str
 
   def __init__(self, dry_run: bool=False) -> None:
     """Initialize.

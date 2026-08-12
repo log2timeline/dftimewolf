@@ -40,7 +40,7 @@ _DEBUG_FORMATTER = logging.Formatter('[%(asctime)sZ] [%(name)-20s] %(levelname)-
 _DEFAULT_FORMATTER = logging.Formatter('[%(asctime)sZ] [%(name)-20s] %(levelname)-8s %(message)s')
 
 
-class WolfLogger(logging.getLoggerClass()):  # type: ignore
+class WolfLogger(logging.Logger):
   """Custom logging Class with a `success` logging function."""
 
   def success(self, *args: Any, **kwargs: Any) -> None:  # pylint: disable=invalid-name

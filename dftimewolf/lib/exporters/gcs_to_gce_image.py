@@ -143,8 +143,7 @@ class GCSToGCEImage(module.ThreadAwareModule):
       # IAM service raises googleapiclient.errors.HttpError
       self.ModuleError(str(exception), critical=True)
 
-  def Process(self, container: containers.GCSObject
-              ) -> None:  # pytype: disable=signature-mismatch
+  def Process(self, container: containers.GCSObject) -> None:
     """Creates a GCE image from an image in GCS.
 
     Args:

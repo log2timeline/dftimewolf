@@ -194,8 +194,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
             critical=True)
       self.ModuleError(str(exception), critical=True)
 
-  def Process(self, container: containers.GCEDisk
-              ) -> None:  # pytype: disable=signature-mismatch
+  def Process(self, container: containers.GCEDisk) -> None:
     """Copies a disk to the destination project.
 
     Args:

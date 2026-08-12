@@ -144,9 +144,7 @@ class OpenRelikProcessor(module.ThreadAwareModule):
     self.logger.info(f"Saved output for file ID {file_id} to {local_path}")
     return str(local_path)
 
-  def Process(
-    self, container: containers.File
-  ) -> None:  # pytype: disable=signature-mismatch
+  def Process(self, container: containers.File) -> None:
     file_ids = []
     self.logger.info(f"Uploading file {container.path}")
     with opentelemetry.start_span('OpenRelik.UploadFile', {

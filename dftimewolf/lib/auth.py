@@ -31,12 +31,12 @@ def GetGoogleOauth2Credential(
   with lock:
     if os.path.exists(credentials_path):
       credentials = oauth_credentials.Credentials.from_authorized_user_file(
-          credentials_path, scopes)  # type: ignore[no-untyped-call]
+          credentials_path, scopes)
 
     # If there are no (valid) credentials available, let the user log in.
     if not credentials or not credentials.valid:
       if credentials and credentials.expired and credentials.refresh_token:
-        credentials.refresh(Request())  # type: ignore
+        credentials.refresh(Request())
       else:
         secrets_path = os.path.join(os.path.expanduser("~"), secret_path)
         if not os.path.exists(secrets_path):

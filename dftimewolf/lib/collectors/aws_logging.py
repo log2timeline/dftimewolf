@@ -37,7 +37,7 @@ class AWSLogsCollector(module.BaseModule):
     self._query_filter: Optional[str] = None
     self._start_time: Optional[datetime.datetime] = None
     self._end_time: Optional[datetime.datetime] = None
-    self._region: str = None  # type: ignore
+    self._region = str()
 
   # pylint: disable=arguments-differ
   def SetUp(self,

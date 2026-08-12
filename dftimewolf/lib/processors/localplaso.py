@@ -53,12 +53,12 @@ class LocalPlasoProcessor(module.BaseModule):
     """Checks if an image is available on the local Docker installation."""
     try:
       # Checks if image exists locally, does not pull from registry.
-      client = docker.from_env()  # type: ignore
+      client = docker.from_env()
       client.images.get(DOCKER_IMAGE)
       return True
-    except docker.errors.ImageNotFound: # type: ignore
+    except docker.errors.ImageNotFound:
       return False
-    except docker.errors.DockerException as e: # type: ignore
+    except docker.errors.DockerException as e:
       self.logger.warning('Docker error: %s', str(e))
       return False
 
@@ -75,7 +75,7 @@ class LocalPlasoProcessor(module.BaseModule):
             'mode': 'rw'
         }
     }
-    client = docker.from_env()  # type: ignore
+    client = docker.from_env()
     self.logger.debug(f"Running a Docker container with image {DOCKER_IMAGE}")
     client.containers.run(
         DOCKER_IMAGE,

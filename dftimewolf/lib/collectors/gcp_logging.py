@@ -25,12 +25,12 @@ from dftimewolf.lib.containers import manager as container_manager
 
 def _CustomToAPIRepr(self: entries.ProtobufEntry) -> Dict[str, Any]:
   """API repr (JSON format) for entry."""
-  info = super(entries.ProtobufEntry, self).to_api_repr()  # type: ignore[no-untyped-call]
-  info['protoPayload'] = self.payload  # type: ignore
-  return info  # type: ignore
+  info = super(entries.ProtobufEntry, self).to_api_repr()
+  info['protoPayload'] = self.payload
+  return info
 
 
-entries.ProtobufEntry.to_api_repr = _CustomToAPIRepr  # type: ignore
+entries.ProtobufEntry.to_api_repr = _CustomToAPIRepr
 
 
 class GCPLogsCollector(module.BaseModule):
@@ -70,8 +70,8 @@ class GCPLogsCollector(module.BaseModule):
       logging.Client: A GCP logging client
     """
     if self._project_name:
-      return logging.Client(_use_grpc=False, project=self._project_name)  # type: ignore[no-untyped-call]
-    return logging.Client(_use_grpc=False)  # type: ignore[no-untyped-call]
+      return logging.Client(_use_grpc=False, project=self._project_name)
+    return logging.Client(_use_grpc=False)
 
   def ListPages(self, logging_client: Any) -> Any:
     """Returns pages based on a Cloud Logging filter

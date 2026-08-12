@@ -74,8 +74,7 @@ class GCEImageFromDisk(module.ThreadAwareModule):
         if obj:
           self.StoreContainer(containers.GCEDisk(obj, source_project))
 
-  def Process(self, container: containers.GCEDisk
-              ) -> None:  # pytype: disable=signature-mismatch
+  def Process(self, container: containers.GCEDisk) -> None:
     """Creates a GCE disk from an image.
 
     Args:

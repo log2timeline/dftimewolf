@@ -40,7 +40,7 @@ class WorkspaceAuditTimesketch(BaseModule):
     with open(self._FORMAT_STRINGS_PATH, 'r') as formatters_json:
       self._all_application_format_strings = json.load(formatters_json)
 
-  def SetUp(self, *args, **kwargs): # type: ignore
+  def SetUp(self, *args, **kwargs):
     """Sets up necessary module configuration options."""
     # No configuration required.
 

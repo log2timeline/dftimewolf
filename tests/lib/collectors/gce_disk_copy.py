@@ -476,7 +476,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     self._module.PreProcess()
     conts = self._module.GetContainers(self._module.GetThreadOnContainerType())
     for d in conts:
-      self._module.Process(d)  # pytype: disable=wrong-arg-types
+      self._module.Process(d)
       # GetContainers returns the abstract base class type, but process is
       # called with the instantiated child class.
     with self.assertRaises(errors.DFTimewolfError) as error:
@@ -503,7 +503,7 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     conts = self._module.GetContainers(self._module.GetThreadOnContainerType())
     with self.assertRaises(errors.DFTimewolfError) as error:
       for d in conts:
-        self._module.Process(d)  # pytype: disable=wrong-arg-types
+        self._module.Process(d)
         # GetContainers returns the abstract base class type, but process is
         # called with the instantiated child class.
     self.assertEqual(error.exception.message,

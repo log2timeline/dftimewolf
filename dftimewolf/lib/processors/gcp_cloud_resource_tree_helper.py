@@ -170,7 +170,7 @@ class Resource():
     return self._creation_timestamp
 
   @creation_timestamp.setter
-  def creation_timestamp(self, value: Union[datetime.datetime, str]) -> None:
+  def creation_timestamp(self, value: datetime.datetime | str) -> None:
     """Property creation_timestamp Setter.
 
     Args:

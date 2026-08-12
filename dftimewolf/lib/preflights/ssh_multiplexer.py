@@ -3,7 +3,7 @@
 import subprocess
 import uuid
 
-from typing import Optional, List, Callable
+from typing import Optional, Callable
 
 from dftimewolf.lib import module
 from dftimewolf.lib.modules import manager as modules_manager
@@ -55,7 +55,7 @@ class SSHMultiplexer(module.PreflightModule):
     self.hostname = hostname
     self.user = user
     self.id_file = id_file
-    self.extra_ssh_options: list[str] = extra_ssh_options
+    self.extra_ssh_options = extra_ssh_options
 
   def Process(self) -> None:
     """Open a shared SSH connection."""

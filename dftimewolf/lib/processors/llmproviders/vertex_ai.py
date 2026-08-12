@@ -62,7 +62,7 @@ class VertexAILLMProvider(interface.LLMProvider):
       with open(service_account_path) as sa_file:
         info = json.loads(sa_file.read())
       sa_credential = (
-          service_account.Credentials.from_service_account_info(info))  # type: ignore[no-untyped-call]
+          service_account.Credentials.from_service_account_info(info))
       vertexai.init(
           credentials=sa_credential,
           api_key=api_key,
@@ -127,7 +127,7 @@ class VertexAILLMProvider(interface.LLMProvider):
           )
       )
   )
-  @ratelimit.limits(calls=CALL_LIMIT, period=ONE_MINUTE)  # type: ignore
+  @ratelimit.limits(calls=CALL_LIMIT, period=ONE_MINUTE)
   def Generate(self, prompt: str, model: str, **kwargs: str) -> str:
     """Generates text from the LLM provider.
 
@@ -169,7 +169,7 @@ class VertexAILLMProvider(interface.LLMProvider):
           )
       )
   )
-  @ratelimit.limits(calls=CALL_LIMIT, period=ONE_MINUTE)  # type: ignore
+  @ratelimit.limits(calls=CALL_LIMIT, period=ONE_MINUTE)
   def GenerateWithHistory(self, prompt: str, model: str, **kwargs: str) -> str:
     """Generates text from the provider with history.
 

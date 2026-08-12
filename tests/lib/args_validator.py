@@ -9,7 +9,6 @@ from dftimewolf.lib import errors
 
 
 # pylint: disable=abstract-class-instantiated
-# pytype: disable=not-instantiable
 class CommaSeparatedValidatorTest(unittest.TestCase):
   """Tests CommaSeparatedValidator."""
 

@@ -91,7 +91,7 @@ class GoogleDriveExporter(module.ThreadAwareModule):
     """Preprocesses the files and uploads them to Google Drive."""
     if self.new_folder_name:
       new_folder = self.CreateFolderInDrive(
-          self.parent_folder_id,  # type: ignore[arg-type]
+          self.parent_folder_id,
           self.new_folder_name,
       )
       self.folder_id = new_folder["id"]
