@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """Base class to Export Compute disk images to Google Cloud Storage."""
-from typing import List, Optional, Callable
+from typing import Callable
 from googleapiclient.errors import HttpError
 from libcloudforensics.providers.gcp.internal import project as gcp_project
-from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk  # pylint: disable=line-too-long
+from libcloudforensics.providers.gcp.internal import compute
 from dftimewolf.lib import cache
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import manager as container_manager
@@ -43,34 +43,39 @@ class GoogleCloudDiskExportBase(module.BaseModule):
                      container_manager_=container_manager_,
                      telemetry_=telemetry_,
                      publish_message_callback=publish_message_callback)
-    self.source_project = None  # type: gcp_project.GoogleCloudProject
-    self.remote_instance_name = None  # type: Optional[str]
-    self.source_disk_names = []  # type: List[str]
+    self._source_project: gcp_project.GoogleCloudProject
+    self._remote_instance_name = str()
+    self.source_disk_names: list[str] = []
     self.all_disks = False
 
   def _GetDisksFromNames(
-      self, source_disk_names: List[str]) -> List[GoogleComputeDisk]:
+      self,
+      source_disk_names: list[str]
+  ) -> list[compute.GoogleComputeDisk | compute.GoogleRegionComputeDisk]:
     """Gets disks from a project by disk name.
 
     Args:
-      source_disk_names: List of disk names to get from the project.
+      source_disk_names: list of disk names to get from the project.
 
     Returns:
-      List of GoogleComputeDisk objects to copy.
+      list of compute.GoogleComputeDisk objects to copy.
     """
-    disks = []
+    disks: list[compute.GoogleComputeDisk | compute.GoogleRegionComputeDisk] = []
     for name in source_disk_names:
       try:
-        disks.append(self.source_project.compute.GetDisk(name))
+        disks.append(self._source_project.compute.GetDisk(name))
       except RuntimeError:
         self.ModuleError(
             'Disk "{0:s}" was not found in project {1:s}'.format(
-                name, self.source_project.project_id),
+                name, self._source_project.project_id),
             critical=True)
     return disks
 
   def _GetDisksFromInstance(
-      self, instance_name: str, all_disks: bool) -> List[GoogleComputeDisk]:
+      self,
+      instance_name: str,
+      all_disks: bool
+  ) -> list[compute.GoogleComputeDisk | compute.GoogleRegionComputeDisk]:
     """Gets disks to copy based on an instance name.
 
     Args:
@@ -79,10 +84,10 @@ class GoogleCloudDiskExportBase(module.BaseModule):
           False, get only the instance's boot disk.
 
     Returns:
-      list: List of GoogleComputeDisk objects to copy.
+      list: list of compute.GoogleComputeDisk objects to copy.
     """
     try:
-      remote_instance = self.source_project.compute.GetInstance(instance_name)
+      remote_instance = self._source_project.compute.GetInstance(instance_name)
     except RuntimeError as exception:
       self.ModuleError(str(exception), critical=True)
 
@@ -90,28 +95,28 @@ class GoogleCloudDiskExportBase(module.BaseModule):
       return list(remote_instance.ListDisks().values())
     return [remote_instance.GetBootDisk()]
 
-  def _FindDisksToCopy(self) -> List[GoogleComputeDisk]:
+  def _FindDisksToCopy(self) -> list[compute.GoogleComputeDisk | compute.GoogleRegionComputeDisk]:
     """Determines which disks to copy depending on object attributes.
 
     Returns:
       The disks to copy to the analysis project.
     """
-    if not (self.remote_instance_name or self.source_disk_names):
+    if not (self._remote_instance_name or self.source_disk_names):
       self.ModuleError(
           'You need to specify at least an instance name or disks to copy',
           critical=True)
-    if self.remote_instance_name and self.source_disk_names:
+    if self._remote_instance_name and self.source_disk_names:
       self.ModuleError(
           ('Both --source_disk_names and --remote_instance_name are provided, '
           'remote_instance_name will be ignored in favour of '
           'source_disk_names.'),
           critical=False)
-    disks_to_copy = []
+    disks_to_copy: list[compute.GoogleComputeDisk | compute.GoogleRegionComputeDisk] = []
     try:
       if self.source_disk_names:
         disks_to_copy = self._GetDisksFromNames(self.source_disk_names)
-      elif self.remote_instance_name:
-        disks_to_copy = self._GetDisksFromInstance(self.remote_instance_name,
+      elif self._remote_instance_name:
+        disks_to_copy = self._GetDisksFromInstance(self._remote_instance_name,
                                                    self.all_disks)
     except HttpError as exception:
       if exception.resp.status == 403:
@@ -131,7 +136,9 @@ class GoogleCloudDiskExportBase(module.BaseModule):
 
     return disks_to_copy
 
-  def _DetachDisks(self, disks: List[GoogleComputeDisk]) -> None:
+  def _DetachDisks(
+      self,
+      disks: list[compute.GoogleComputeDisk | compute.GoogleRegionComputeDisk]) -> None:
     """Detaches disks from VMs in case they are attached.
 
     Args:
@@ -142,11 +149,11 @@ class GoogleCloudDiskExportBase(module.BaseModule):
         users = disk.GetValue('users')
         if users:
           instance_name = users[0].split('/')[-1]
-          instance = self.source_project.compute.GetInstance(instance_name)
+          instance = self._source_project.compute.GetInstance(instance_name)
           self.logger.warning(
             'Disk "{0:s}" will be detached from instance "{1:s}"'.format(
               disk.name, instance_name))
-          instance.DetachDisk(disk)
+          instance.DetachDisk(disk)  # pyrefly: ignore=[bad-argument-type]
     except HttpError as exception:
       if exception.resp.status == 400:
         self.ModuleError(
@@ -154,7 +161,9 @@ class GoogleCloudDiskExportBase(module.BaseModule):
             'TERMINATED state: {0!s}'.format(exception)), critical=True)
       self.ModuleError(str(exception), critical=True)
 
-  def _VerifyDisksInSameZone(self, disks: List[GoogleComputeDisk]) -> bool:
+  def _VerifyDisksInSameZone(
+      self,
+      disks: list[compute.GoogleComputeDisk | compute.GoogleRegionComputeDisk]) -> bool:
     """Verifies that all dicts are in the same Zone.
 
     Args:

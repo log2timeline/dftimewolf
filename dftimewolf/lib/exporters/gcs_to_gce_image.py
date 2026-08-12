@@ -75,7 +75,7 @@ class GCSToGCEImage(module.ThreadAwareModule):
                      telemetry_=telemetry_,
                      publish_message_callback=publish_message_callback)
     self.dest_project_name: str = ''
-    self.dest_project: gcp_project.GoogleCloudProject = ''
+    self.dest_project: gcp_project.GoogleCloudProject
     self.iam_service: Any = None
     self.role_name = ''
 
@@ -278,9 +278,11 @@ class GCSToGCEImage(module.ThreadAwareModule):
     """
     # Find the account
     crm = common.CreateService('cloudresourcemanager', 'v1')
+    # pyrefly: ignore=[missing-attribute]
     project = crm.projects().get(projectId=self.dest_project_name).execute() #pylint: disable=no-member
 
     # Get the existing IAM bindings
+    # pyrefly: ignore=[missing-attribute]
     policy = crm.projects().getIamPolicy( #pylint: disable=no-member
         resource=self.dest_project_name
     ).execute()
@@ -317,6 +319,7 @@ class GCSToGCEImage(module.ThreadAwareModule):
         'members': compute_acc
       })
 
+    # pyrefly: ignore=[missing-attribute]
     crm.projects().setIamPolicy( #pylint: disable=no-member
         resource=self.dest_project_name,
         body={'policy': {'bindings': policy['bindings']}}

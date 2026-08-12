@@ -36,6 +36,7 @@ mypy = "^2.1.0"
 pylint = "^4.0.5"
 pytype = "^2024.10.11"
 pyrefly = "^1.0.0"
+google-api-python-client-stubs = "^1.39.0"
 
 [tool.poetry.group.spannertelemetry]
 optional = true

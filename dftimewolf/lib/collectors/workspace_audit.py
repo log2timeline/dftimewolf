@@ -7,12 +7,13 @@ import json
 import re
 import tempfile
 
-from typing import Optional, Callable
+from typing import Optional, Callable, TYPE_CHECKING
 
 import filelock
 from google.auth.exceptions import DefaultCredentialsError, RefreshError
 from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
+from google.oauth2 import credentials as oauth2_credentials
+from google.auth import external_account_authorized_user
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient import discovery
 
@@ -22,6 +23,9 @@ from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib import cache
 from dftimewolf.lib import telemetry
 from dftimewolf.lib.containers import manager as container_manager
+
+if TYPE_CHECKING:
+  from googleapiclient._apis.admin.reports_v1 import resources
 
 
 RE_TIMESTAMP = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$')
@@ -46,15 +50,17 @@ class WorkspaceAuditCollector(module.BaseModule):
                      container_manager_=container_manager_,
                      telemetry_=telemetry_,
                      publish_message_callback=publish_message_callback)
-    self._credentials: Optional[Credentials] = None
+    self._credentials: external_account_authorized_user.Credentials | oauth2_credentials.Credentials
     self._application_name = ''
     self._filter_expression = ''
     self._user_key = 'all'
     self._start_time = None  # type: Optional[datetime.datetime]
     self._end_time = None # type: Optional[datetime.datetime]
 
-  def _BuildAuditResource(self, credentials: Optional[Credentials]
-                          ) -> discovery.Resource:
+  def _BuildAuditResource(
+      self,
+      credentials: external_account_authorized_user.Credentials | oauth2_credentials.Credentials
+  ) -> "resources.ReportsResource":
     """Builds a reports resource object to use to request logs.
 
     Args:
@@ -63,27 +69,26 @@ class WorkspaceAuditCollector(module.BaseModule):
     Returns:
       A resource object for interacting with the Workspace audit API.
     """
-    service = discovery.build('admin', 'reports_v1', credentials=credentials)
+    service: "resources.ReportsResource" = discovery.build('admin', 'reports_v1', credentials=credentials)
     return service
 
-  def _GetCredentials(self) -> Optional[Credentials]:
+  def _GetCredentials(self) -> external_account_authorized_user.Credentials | oauth2_credentials.Credentials:
     """Obtains API credentials for accessing the Workspace audit API.
 
     Returns:
       google.oauth2.credentials.Credentials: Google API credentials.
     """
-    credentials: Optional[Credentials] = None
+    credentials: external_account_authorized_user.Credentials | oauth2_credentials.Credentials | None = None
 
     # The credentials file stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
-    credentials_path = os.path.join(
-        os.path.expanduser('~'), self._CREDENTIALS_FILENAME)
-    lock = filelock.FileLock(credentials_path + '.lock')  # pylint: disable=abstract-class-instantiated
+    credentials_path = os.path.join(os.path.expanduser('~'), self._CREDENTIALS_FILENAME)
+    lock = filelock.FileLock(credentials_path + '.lock')
     with lock:
       if os.path.exists(credentials_path):
         try:
-          credentials = Credentials.from_authorized_user_file(
+          credentials = oauth2_credentials.Credentials.from_authorized_user_file(
               credentials_path, self.SCOPES)  # type: ignore[no-untyped-call]
         except ValueError as exception:
           self.logger.warning(
@@ -185,7 +190,7 @@ class WorkspaceAuditCollector(module.BaseModule):
     try:
       # Pylint can't see the activities method.
       # pylint: disable=no-member
-      request = audit_resource.activities().list(**request_parameters)
+      request = audit_resource.activities().list(**request_parameters)  # pyrefly: ignore=[missing-attribute]
       while request is not None:
         response = request.execute()
         audit_records = response.get('items', [])
@@ -195,7 +200,7 @@ class WorkspaceAuditCollector(module.BaseModule):
 
         # Pylint can't see the activities method.
         # pylint: disable=no-member
-        request = audit_resource.activities().list_next(request, response)
+        request = audit_resource.activities().list_next(request, response)  # pyrefly: ignore=[missing-attribute]
     except (RefreshError, DefaultCredentialsError) as exception:
       self.ModuleError(
           'Something is wrong with your gcloud access token or '

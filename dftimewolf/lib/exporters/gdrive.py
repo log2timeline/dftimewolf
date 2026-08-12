@@ -6,10 +6,11 @@ to upload files to a specified folder.
 """
 
 import io
-from typing import Any, Optional, Type, cast, Callable
+from typing import Any, Optional, Type, cast, Callable, TYPE_CHECKING
 
 from google.auth import exceptions as googleauth_exceptions
-from google.oauth2.credentials import Credentials
+from google.oauth2 import credentials as oauth2_credentials
+from google.auth import external_account_authorized_user
 from googleapiclient import discovery
 from googleapiclient import errors as googleapi_errors
 from googleapiclient.http import MediaIoBaseUpload
@@ -20,6 +21,10 @@ from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib import cache
 from dftimewolf.lib import telemetry
 from dftimewolf.lib.containers import manager as container_manager
+
+if TYPE_CHECKING:
+  from googleapiclient._apis.drive.v3 import resources
+
 
 
 class GoogleDriveExporter(module.ThreadAwareModule):
@@ -47,7 +52,7 @@ class GoogleDriveExporter(module.ThreadAwareModule):
     self.parent_folder_id: Optional[str] = None
     self.folder_id: Optional[str] = None
     self.new_folder_name: Optional[str] = None
-    self._credentials: Optional[Credentials] = None
+    self._credentials: oauth2_credentials.Credentials | external_account_authorized_user.Credentials
     self._drive_resource: Optional[discovery.Resource] = None
     self._max_upload_workers: Optional[int] = None
 
@@ -152,7 +157,7 @@ class GoogleDriveExporter(module.ThreadAwareModule):
       ModuleError: If the folder creation fails.
     """
     try:
-      drive_resource = discovery.build(
+      drive_resource: resources.DriveResource = discovery.build(
           "drive", "v3", credentials=self._credentials
       )
       created_folder = (

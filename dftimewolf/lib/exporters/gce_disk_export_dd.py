@@ -23,11 +23,11 @@ The export process happen in the following order:
 
 import os
 import time
-from typing import List, Optional, Callable
+from typing import Callable
 
 from libcloudforensics.providers.gcp.internal import common as gcp_common
 from libcloudforensics.providers.gcp.internal import project as gcp_project
-from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk
+from libcloudforensics.providers.gcp.internal import compute
 
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.modules import manager as modules_manager
@@ -52,7 +52,7 @@ class GoogleCloudDiskExportStream(GoogleCloudDiskExportBase):
     source_disk_names (list[str]): Comma-separated list of disk names to copy.
     all_disks (bool): True if all disks attached to the source
         instance should be copied.
-    source_disks (list[gcp_project.compute.GoogleComputeDisk]): List of disks
+    source_disks (list[gcp_project.compute.compute.GoogleComputeDisk]): List of disks
         to be exported.
   """
 
@@ -76,25 +76,24 @@ class GoogleCloudDiskExportStream(GoogleCloudDiskExportBase):
                      container_manager_=container_manager_,
                      telemetry_=telemetry_,
                      publish_message_callback=publish_message_callback)
-    self.source_project = None  # type: gcp_project.GoogleCloudProject
     self.gcs_output_location = str()
-    self.remote_instance_name = None  # type: Optional[str]
-    self.source_disk_names = []  # type: List[str]
+    self.remote_instance_name = str()
+    self.source_disk_names: list[str] = []
     self.all_disks = False
-    self.source_disks = []  # type: List[GoogleComputeDisk]
+    self._source_disks: list[compute.GoogleComputeDisk | compute.GoogleRegionComputeDisk] = []
     self.startup_script = str()
-    self.boot_image_project = None # type: Optional[str]
-    self.boot_image_family = None # type: Optional[str]
+    self.boot_image_project = str()
+    self.boot_image_family = str()
 
   # pylint: disable=arguments-differ
   def SetUp(self,
             source_project_name: str,
             gcs_output_location: str,
-            source_disk_names: Optional[str]=None,
-            remote_instance_name: Optional[str]=None,
-            all_disks: bool=False,
-            boot_image_project: Optional[str]=None,
-            boot_image_family: Optional[str]=None) -> None:
+            source_disk_names: str,
+            remote_instance_name: str,
+            all_disks: bool,
+            boot_image_project: str,
+            boot_image_family: str) -> None:
     """Sets up a Google Cloud Platform (GCP) Disk Export.
 
     This method creates the required objects to initialize
@@ -127,17 +126,17 @@ class GoogleCloudDiskExportStream(GoogleCloudDiskExportBase):
           stored.
       boot_image_family: Name of the image to use to create the boot disk.
     """
-    self.source_project = gcp_project.GoogleCloudProject(source_project_name)
+    self._source_project = gcp_project.GoogleCloudProject(source_project_name)
     self.remote_instance_name = remote_instance_name
     self.source_disk_names = []
     if source_disk_names:
       self.source_disk_names = source_disk_names.split(',')
     self.all_disks = all_disks
 
-    self.source_disks = self._FindDisksToCopy()
-    if not self._VerifyDisksInSameZone(self.source_disks):
+    self._source_disks = self._FindDisksToCopy()
+    if not self._VerifyDisksInSameZone(self._source_disks):
       self.ModuleError('All disks need to be in the same Zone.', critical=True)
-    self._DetachDisks(self.source_disks)
+    self._DetachDisks(self._source_disks)
     # Add a trailing slash if it's not already there.
     self.gcs_output_location = os.path.join(gcs_output_location, '')
     self.startup_script = utils.ReadExportScript(_EXPORT_STARTUP_SCRIPT)
@@ -149,20 +148,20 @@ class GoogleCloudDiskExportStream(GoogleCloudDiskExportBase):
     export_instance_name = gcp_common.GenerateUniqueInstanceName(
       'dftimewolf-export')
     self.startup_script = self.startup_script.format(
-      project_id=self.source_project.project_id,
+      project_id=self._source_project.project_id,
       archive_bucket=self.gcs_output_location,
-      zone=self.source_disks[0].zone,
+      zone=self._source_disks[0].zone,
       instance_name=export_instance_name)
-    export_instance = self.source_project.compute.CreateInstanceFromArguments(
+    export_instance = self._source_project.compute.CreateInstanceFromArguments(
       instance_name=export_instance_name,
       machine_type='{0:s}-{1:d}'.format('e2-standard', 16),
-      zone=self.source_disks[0].zone,
+      zone=self._source_disks[0].zone,
       boot_disk_type='pd-standard',
       boot_disk_size=20,
       boot_image_project=self.boot_image_project,
       boot_image_family=self.boot_image_family,
       metadata={'startup-script': self.startup_script},
-      data_disks=self.source_disks,
+      data_disks=self._source_disks,
       additional_scopes=['https://www.googleapis.com/auth/cloud-platform'])
 
     while not self._ExportJobFinished():
@@ -175,7 +174,7 @@ class GoogleCloudDiskExportStream(GoogleCloudDiskExportBase):
       time.sleep(30)
 
     export_instace_api_object = export_instance.GetOperation()
-    for disk in self.source_disks:
+    for disk in self._source_disks:
       for key_value_dict in export_instace_api_object.get(
         'metadata', {}).get('items', []):
         if not key_value_dict['key'].startswith('archive_path_'):
@@ -208,7 +207,7 @@ class GoogleCloudDiskExportStream(GoogleCloudDiskExportBase):
     Returns:
       True if export is done, else False.
     """
-    for disk in self.source_disks:
+    for disk in self._source_disks:
       labels_dict = disk.GetLabels()
       label_value = labels_dict.get('archive_hash_verified', False)
       if not label_value  or label_value != 'true':

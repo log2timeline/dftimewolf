@@ -5,8 +5,7 @@ import os
 import tempfile
 import urllib.parse
 import zipfile
-from io import BufferedWriter
-from typing import List, Callable, Union
+from typing import List, Callable
 
 import vt
 
@@ -50,7 +49,7 @@ class VTCollector(module.BaseModule):
 
     self.hashes_list: List[str] = []
     self.directory = ''
-    self.client = None  # type: vt.Client
+    self.client: vt.client.Client
     self.vt_type = ''
 
   def Process(self) -> None:
@@ -59,20 +58,20 @@ class VTCollector(module.BaseModule):
     for vt_hash in self.hashes_list:
       try:
         download_link_list = self._getDownloadLinks(vt_hash)
+
+        for download_link in download_link_list:
+          filename = f'{vt_hash}.{self.vt_type}'
+
+          downloaded_filepath = self._downloadFile(download_link, filename)
+
+          if downloaded_filepath is None:
+            self.logger.warning(
+                f'File not found {urllib.parse.quote(download_link)}')
+            continue
+
+          self._createContainer(vt_hash=vt_hash, filepath=downloaded_filepath)
       except vt.error.APIError:
         self.logger.warning(f"Hash not found on VT: {vt_hash}")
-
-      for download_link in download_link_list:
-        filename = f'{vt_hash}.{self.vt_type}'
-
-        file = self._downloadFile(download_link, filename)
-
-        if file is None:
-          self.logger.warning(
-              f'File not found {urllib.parse.quote(download_link)}')
-          continue
-
-        self._createContainer(vt_hash=vt_hash, file=file)
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(
@@ -120,8 +119,9 @@ class VTCollector(module.BaseModule):
           critical=True,
       )
 
-  def _downloadFile(self, download_link: str,
-                    filename: str) -> Union[BufferedWriter, None]:
+  def _downloadFile(self,
+                    download_link: str,
+                    filename: str) -> str | None:
     """Downloads a file to a given filename.
 
     Args:
@@ -135,22 +135,22 @@ class VTCollector(module.BaseModule):
     self.logger.debug(f"Download link {urllib.parse.quote(download_link)}")
 
     download = self.client.get(download_link)
-    if download.status == 200:
-      file_content = download.content.read()
+    if download.status != 200:
+      return None
 
-      if len(file_content) == 0:
-        return None
-      download_file_path = os.path.join(self.directory, filename)
-      file = open(download_file_path, "wb")
-      file.write(file_content)
-      file.close()
-      self.logger.info(f"File downloaded to: {download_file_path}")
+    file_content = download.content.read()
 
-    assert isinstance(file, BufferedWriter)
+    if len(file_content) == 0:
+      return None
+    download_file_path = os.path.join(self.directory, filename)
+    file = open(download_file_path, "wb")
+    file.write(file_content)
+    file.close()
+    self.logger.info(f"File downloaded to: {download_file_path}")
 
-    return file
+    return download_file_path
 
-  def _createContainer(self, vt_hash: str, file: BufferedWriter) -> None:
+  def _createContainer(self, vt_hash: str, filepath: str) -> None:
     """Creates the container for the next steps.
 
     Args:
@@ -159,18 +159,18 @@ class VTCollector(module.BaseModule):
     """
 
     if self.vt_type == 'pcap':
-      file_container = containers.File(name=vt_hash, path=file.name)
+      file_container = containers.File(name=vt_hash, path=filepath)
       self.StoreContainer(file_container)
 
     if self.vt_type == 'evtx':
       # Unzip the file so that plaso can go over EVTX part in the archive
-      extract_output_dir = f'{file.name}_extract'
+      extract_output_dir = f'{filepath}_extract'
       if not os.path.isdir(extract_output_dir):
         os.makedirs(extract_output_dir)
 
-      with zipfile.ZipFile(file.name) as archive:
+      with zipfile.ZipFile(filepath) as archive:
         archive.extractall(path=extract_output_dir)
-        self.logger.debug(f'{file.name} file extracted to {extract_output_dir}')
+        self.logger.debug(f'{filepath} file extracted to {extract_output_dir}')
 
       dir_container = containers.Directory(
           name=vt_hash, path=os.path.abspath(extract_output_dir))

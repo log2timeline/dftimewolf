@@ -21,7 +21,7 @@ def GetGoogleOauth2Credential(
   Returns:
     Optional[Credentials]: Google Oauth2 credential.
   """
-  credentials: external_account_authorized_user.Credentials | oauth_credentials.Credentials = None  # pyrefly: ignore=[bad-assignment]
+  credentials: external_account_authorized_user.Credentials | oauth_credentials.Credentials | None = None
 
   # The credentials file stores the user's access and refresh tokens, and is
   # created automatically when the authorization flow completes for the first
