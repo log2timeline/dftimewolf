@@ -4,7 +4,7 @@ import datetime
 import json
 import tempfile
 import time
-from typing import Any, Dict, Optional, Tuple, Callable
+from typing import Any, Optional, Tuple, Callable
 
 from google.api_core import exceptions as google_api_exceptions
 from google.auth import exceptions as google_auth_exceptions
@@ -23,7 +23,7 @@ from dftimewolf.lib.containers import manager as container_manager
 # Monkey patching the ProtobufEntry because of various issues, notably
 # https://github.com/googleapis/google-cloud-python/issues/7918
 
-def _CustomToAPIRepr(self: entries.ProtobufEntry) -> Dict[str, Any]:
+def _CustomToAPIRepr(self: entries.ProtobufEntry) -> dict[str, Any]:
   """API repr (JSON format) for entry."""
   info = super(entries.ProtobufEntry, self).to_api_repr()
   info['protoPayload'] = self.payload

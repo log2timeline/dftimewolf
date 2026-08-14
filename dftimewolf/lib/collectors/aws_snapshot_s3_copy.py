@@ -2,7 +2,7 @@
 """Copies AWS EBS snapshots into AWS S3."""
 
 import time
-from typing import Any, Optional, Type, List, Callable
+from typing import Any, Optional, Type, Callable
 import boto3
 
 from libcloudforensics.providers.aws import forensics
@@ -177,11 +177,11 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
     # If we reached here, we have a problem
     raise AWSSnapshotS3CopyException('No suitable availability zone found')
 
-  def _CheckSnapshotsExist(self, snap_ids: List[str]) -> bool:
+  def _CheckSnapshotsExist(self, snap_ids: list[str]) -> bool:
     """Check the snapshots that we want to copy exist.
 
     Args:
-      snap_ids (List[str]): A list of snapshot IDs to look for.
+      snap_ids: A list of snapshot IDs to look for.
     Returns:
       True if the snapshots all exist and we have permissions to list them,
           False otherwise.

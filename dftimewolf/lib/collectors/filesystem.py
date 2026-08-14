@@ -2,7 +2,7 @@
 """Collects artifacts from the local file system."""
 
 import os
-from typing import Callable, List
+from typing import Callable
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
@@ -39,7 +39,7 @@ class FilesystemCollector(module.BaseModule):
                      container_manager_=container_manager_,
                      telemetry_=telemetry_,
                      publish_message_callback=publish_message_callback)
-    self._paths = [] # type: List[str]
+    self._paths: list[str] = []
 
   def SetUp(self, paths: str) -> None:  # pylint: disable=arguments-differ
     """Sets up the paths to collect.

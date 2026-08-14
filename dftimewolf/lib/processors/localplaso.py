@@ -3,7 +3,7 @@ import os
 import subprocess
 import tempfile
 import uuid
-from typing import Optional, Union, List, Callable
+from typing import Callable
 import docker
 
 from dftimewolf.lib import module
@@ -35,7 +35,7 @@ class LocalPlasoProcessor(module.BaseModule):
                      container_manager_=container_manager_,
                      telemetry_=telemetry_,
                      publish_message_callback=publish_message_callback)
-    self._timezone = None  # type: Optional[str]
+    self._timezone = str()
     self._output_path = str()
     self._plaso_path = str()
     self._use_docker = False
@@ -85,7 +85,7 @@ class LocalPlasoProcessor(module.BaseModule):
         auto_remove=True)
     self.logger.debug("Docker container finished running and is auto-removed.")
 
-  def _LocalPlasoRun(self, command: List[str]) -> None:
+  def _LocalPlasoRun(self, command: list[str]) -> None:
     try:
       l2t_proc = subprocess.Popen(
           command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -100,7 +100,7 @@ class LocalPlasoProcessor(module.BaseModule):
           ' Check log file for details.')
       self.ModuleError(message, critical=True)
 
-  def SetUp(self, timezone: Optional[str], use_docker: bool) -> None:  # pylint: disable=arguments-differ
+  def SetUp(self, timezone: str, use_docker: bool) -> None:  # pylint: disable=arguments-differ
     """Sets up the local time zone with Plaso (log2timeline) should use.
 
     Args:
@@ -124,7 +124,7 @@ class LocalPlasoProcessor(module.BaseModule):
           critical=True)
 
   def _processContainer(
-      self, container: Union[containers.File, containers.Directory]) -> None:
+      self, container: containers.File | containers.Directory) -> None:
     """ Processes a given container either File or Directory
 
     Args:

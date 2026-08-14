@@ -4,7 +4,7 @@
 import datetime
 import json
 import tempfile
-from typing import Any, Dict, List, Optional, Callable
+from typing import Any, Optional, Callable
 
 from libcloudforensics.providers.gcp.internal import common as gcp_common
 from libcloudforensics.providers.gcp.internal import log as gcp_log
@@ -22,15 +22,15 @@ class GCPCloudResourceTree(module.BaseModule):
   """GCP Cloud Resource Tree Creator.
 
   Attributes:
-    project_id (str): Id of the project where the resource is located.
-    location (str): Resource location (zone/region) or 'global'
-    resource_id (str): Id of the the resource to build the tree for.
-    resource_name (str): Name of the resource to build the tree for.
-    resource_type (str): Resource type.
-    mode (gcp_crt_helper.OperatingMode): Module operation mode
-    resources_dict (Dict[str, Resource]): Dictionary of resources
-    period_covered_by_retrieved_logs (Dict[str, datetime]): Dictionary of the
-      time range of logs retrieved and processed
+    project_id: Id of the project where the resource is located.
+    location: Resource location (zone/region) or 'global'
+    resource_id: Id of the the resource to build the tree for.
+    resource_name: Name of the resource to build the tree for.
+    resource_type: Resource type.
+    mode: Module operation mode
+    resources_dict: Dictionary of resources
+    period_covered_by_retrieved_logs: Dictionary of the time range of logs
+        retrieved and processed
   """
 
   def __init__(self,
@@ -61,8 +61,8 @@ class GCPCloudResourceTree(module.BaseModule):
     self.resource_type: str = str()
     self.mode: gcp_crt_helper.OperatingMode = (
         gcp_crt_helper.OperatingMode.ONLINE)
-    self.period_covered_by_retrieved_logs: Dict[str, datetime.datetime] = {}
-    self.resources_dict: Dict[str, gcp_crt_helper.Resource] = {}
+    self.period_covered_by_retrieved_logs: dict[str, datetime.datetime] = {}
+    self.resources_dict: dict[str, gcp_crt_helper.Resource] = {}
 
   # pylint: disable=arguments-differ
   def SetUp(self,
@@ -213,7 +213,7 @@ class GCPCloudResourceTree(module.BaseModule):
     Args:
       project_id: Project id to get list of resources from.
     """
-    time_ranges: List[Dict[str, datetime.datetime]] = []
+    time_ranges: list[dict[str, datetime.datetime]] = []
 
     all_active_resources_sorted = sorted(
         self.resources_dict.values(),
@@ -353,7 +353,7 @@ class GCPCloudResourceTree(module.BaseModule):
       project_id: str,
       start_timestamp: datetime.datetime,
       end_timestamp: datetime.datetime,
-      resource_id: Optional[str] = None) -> List[Dict[str, Any]]:
+      resource_id: Optional[str] = None) -> list[dict[str, Any]]:
     """Acquires log messages from GCP logs.
 
     Acquires log messages from GCP logs for a specific project id and time
@@ -415,7 +415,7 @@ class GCPCloudResourceTree(module.BaseModule):
       query_filter = f"""{query_filter} AND (resource.labels.instance_id="{
         resource_id}" OR resource.labels.image_id="{resource_id}")"""
 
-    log_messages: List[Dict[str,
+    log_messages: list[dict[str,
                             Any]] = gcl.ExecuteQuery(qfilter=[query_filter])
 
     return log_messages
@@ -449,7 +449,7 @@ class GCPCloudResourceTree(module.BaseModule):
 
       self._ParseLogMessages(log_messages)
 
-  def _ParseLogMessages(self, log_messages: List[Dict[str, Any]]) -> None:
+  def _ParseLogMessages(self, log_messages: list[dict[str, Any]]) -> None:
     """Parses supplied GCP Cloud log messages.
 
     Parses supplied GCP Cloud log messages and fills self._resource_dict with
@@ -460,7 +460,7 @@ class GCPCloudResourceTree(module.BaseModule):
     """
     for log_message in log_messages:
 
-      proto_payload: Dict[str, Any] = log_message.get('protoPayload', {})
+      proto_payload: dict[str, Any] = log_message.get('protoPayload', {})
 
       if not proto_payload:
         continue
@@ -552,8 +552,8 @@ class GCPCloudResourceTree(module.BaseModule):
           self.resources_dict[resource.id] = resource
 
   def _ParseInsertLogMessage(self, resource: gcp_crt_helper.Resource,
-                             request: Dict[str, Any],
-                             response: Dict[str, Any]) -> None:
+                             request: dict[str, Any],
+                             response: dict[str, Any]) -> None:
     """Parses a GCP log message where the operation is insert or create.
 
     The function changes the passed resource object based on the input in the
@@ -722,7 +722,7 @@ class GCPCloudResourceTree(module.BaseModule):
 
   def _RetrieveListOfDisks(
       self, project_id: str,
-      compute_api_client: Any) -> Dict[str, gcp_crt_helper.Resource]:
+      compute_api_client: Any) -> dict[str, gcp_crt_helper.Resource]:
     """Retrieves list of disks in a project.
 
     Args:
@@ -732,7 +732,7 @@ class GCPCloudResourceTree(module.BaseModule):
     Returns:
       Dict of disks
     """
-    result: Dict[str, gcp_crt_helper.Resource] = {}
+    result: dict[str, gcp_crt_helper.Resource] = {}
 
     request = compute_api_client.disks().aggregatedList(project=project_id)  # pylint: disable=no-member
 
@@ -769,7 +769,7 @@ class GCPCloudResourceTree(module.BaseModule):
 
   def _RetrieveListOfDiskImages(
       self, project_id: str,
-      compute_api_client: Any) -> Dict[str, gcp_crt_helper.Resource]:
+      compute_api_client: Any) -> dict[str, gcp_crt_helper.Resource]:
     """Retrieves list of disk images in a project.
 
     Args:
@@ -779,7 +779,7 @@ class GCPCloudResourceTree(module.BaseModule):
     Returns:
       Dict of disk images
     """
-    result: Dict[str, gcp_crt_helper.Resource] = {}
+    result: dict[str, gcp_crt_helper.Resource] = {}
 
     # Disk images are not tied to a zone, so there is no aggregatedList
     request = compute_api_client.images().list(project=project_id)  # pylint: disable=no-member
@@ -812,7 +812,7 @@ class GCPCloudResourceTree(module.BaseModule):
 
   def _RetrieveListOfSnapshots(
       self, project_id: str,
-      compute_api_client: Any) -> Dict[str, gcp_crt_helper.Resource]:
+      compute_api_client: Any) -> dict[str, gcp_crt_helper.Resource]:
     """Retrieves list of snapshots in a project.
 
     Args:
@@ -822,7 +822,7 @@ class GCPCloudResourceTree(module.BaseModule):
     Returns:
       Dict of snapshots
     """
-    result: Dict[str, gcp_crt_helper.Resource] = {}
+    result: dict[str, gcp_crt_helper.Resource] = {}
 
     request = compute_api_client.snapshots().list(project=project_id)  # pylint: disable=no-member
 
@@ -850,7 +850,7 @@ class GCPCloudResourceTree(module.BaseModule):
 
   def _RetrieveListOfInstances(
       self, project_id: str,
-      compute_api_client: Any) -> Dict[str, gcp_crt_helper.Resource]:
+      compute_api_client: Any) -> dict[str, gcp_crt_helper.Resource]:
     """Retrieves list of instances in a project.
 
     Args:
@@ -860,7 +860,7 @@ class GCPCloudResourceTree(module.BaseModule):
     Returns:
       Dict of instances
     """
-    result: Dict[str, gcp_crt_helper.Resource] = {}
+    result: dict[str, gcp_crt_helper.Resource] = {}
 
     request = compute_api_client.instances().aggregatedList(project=project_id)  # pylint: disable=no-member
 
@@ -927,7 +927,7 @@ class GCPCloudResourceTree(module.BaseModule):
 
   def _RetrieveListOfInstanceTemplates(
       self, project_id: str,
-      compute_api_client: Any) -> Dict[str, gcp_crt_helper.Resource]:
+      compute_api_client: Any) -> dict[str, gcp_crt_helper.Resource]:
     """Retrieves list of instance templates in a project.
 
     Args:
@@ -937,7 +937,7 @@ class GCPCloudResourceTree(module.BaseModule):
     Returns:
       Dict of instance templates
     """
-    result: Dict[str, gcp_crt_helper.Resource] = {}
+    result: dict[str, gcp_crt_helper.Resource] = {}
 
     # Retrieve list of instance templates in a project
     request = compute_api_client.instanceTemplates().list(project=project_id)  # pylint: disable=no-member
@@ -1012,7 +1012,7 @@ class GCPCloudResourceTree(module.BaseModule):
 
   def _RetrieveListOfMachineImages(
       self, project_id: str,
-      compute_api_client: Any) -> Dict[str, gcp_crt_helper.Resource]:
+      compute_api_client: Any) -> dict[str, gcp_crt_helper.Resource]:
     """Retrieves list of machine images in a project.
 
     Args:
@@ -1022,7 +1022,7 @@ class GCPCloudResourceTree(module.BaseModule):
     Returns:
       Dict of machine images
     """
-    result: Dict[str, gcp_crt_helper.Resource] = {}
+    result: dict[str, gcp_crt_helper.Resource] = {}
 
     request = compute_api_client.machineImages().list(project=project_id)  # pylint: disable=no-member
 

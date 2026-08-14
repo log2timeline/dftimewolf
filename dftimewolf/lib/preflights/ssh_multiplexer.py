@@ -3,7 +3,7 @@
 import subprocess
 import uuid
 
-from typing import Optional, Callable
+from typing import Callable
 
 from dftimewolf.lib import module
 from dftimewolf.lib.modules import manager as modules_manager
@@ -33,15 +33,15 @@ class SSHMultiplexer(module.PreflightModule):
                      telemetry_=telemetry_,
                      publish_message_callback=publish_message_callback)
     self.hostname = str()
-    self.user = None # type: Optional[str]
-    self.id_file = None  # type: Optional[str]
+    self.user = str()
+    self.id_file = str()
     self.extra_ssh_options: list[str] = []
     self.control_filename = f"~/.ssh/ctrl-dftw-{str(uuid.uuid4())}"
 
   def SetUp(self,  # pylint: disable=arguments-differ
             hostname: str,
-            user: Optional[str],
-            id_file: Optional[str],
+            user: str,
+            id_file: str,
             extra_ssh_options: list[str]) -> None:
     """Sets up the SSH multiplexer module's attributes.
 

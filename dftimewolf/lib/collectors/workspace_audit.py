@@ -7,7 +7,7 @@ import json
 import re
 import tempfile
 
-from typing import Optional, Callable, TYPE_CHECKING
+from typing import Callable, TYPE_CHECKING
 
 import filelock
 from google.auth.exceptions import DefaultCredentialsError, RefreshError
@@ -54,8 +54,8 @@ class WorkspaceAuditCollector(module.BaseModule):
     self._application_name = ''
     self._filter_expression = ''
     self._user_key = 'all'
-    self._start_time = None  # type: Optional[datetime.datetime]
-    self._end_time = None # type: Optional[datetime.datetime]
+    self._start_time: datetime.datetime
+    self._end_time: datetime.datetime
 
   def _BuildAuditResource(
       self,
@@ -125,9 +125,9 @@ class WorkspaceAuditCollector(module.BaseModule):
   def SetUp(self,
             application_name: str,
             filter_expression: str,
-            user_key: str='all',
-            start_time: Optional[datetime.datetime]=None,
-            end_time: Optional[datetime.datetime]=None) -> None:
+            user_key: str,
+            start_time: datetime.datetime,
+            end_time: datetime.datetime) -> None:
     """Sets up a Workspace Audit logs collector.
 
     Args:

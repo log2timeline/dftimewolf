@@ -6,7 +6,7 @@ import io
 import json
 import os
 from io import StringIO, TextIOWrapper
-from typing import List, Union, Dict, TextIO
+from typing import TextIO
 
 from dftimewolf.lib import errors, resources
 
@@ -22,11 +22,11 @@ class RecipesManager(object):
   ALLOW_RECIPE_OVERRIDE = False
 
   def __init__(self) -> None:
-    self._recipes = {}  # type: Dict[str, resources.Recipe]
+    self._recipes: dict[str, resources.Recipe] = {}
 
   def _ReadRecipeFromFileObject(
       self,
-      file_object: Union[StringIO, TextIOWrapper, TextIO]) -> resources.Recipe:
+      file_object: StringIO | TextIOWrapper | TextIO) -> resources.Recipe:
     """Reads a recipe from a JSON file-like object.
 
     Args:
@@ -64,7 +64,7 @@ class RecipesManager(object):
 
     del self._recipes[recipe_name]
 
-  def GetRecipes(self) -> List[resources.Recipe]:
+  def GetRecipes(self) -> list[resources.Recipe]:
     """Retrieves the registered recipes.
 
     Returns:
@@ -131,7 +131,7 @@ class RecipesManager(object):
 
     self._recipes[recipe_name] = recipe
 
-  def RegisterRecipes(self, recipes: List[resources.Recipe]) -> None:
+  def RegisterRecipes(self, recipes: list[resources.Recipe]) -> None:
     """Registers recipes.
 
     The recipes are identified based on their lower case name.
@@ -145,6 +145,6 @@ class RecipesManager(object):
     for recipe in recipes:
       self.RegisterRecipe(recipe)
 
-  def Recipes(self) -> Dict[str, resources.Recipe]:
+  def Recipes(self) -> dict[str, resources.Recipe]:
     """Returns recipes object."""
     return self._recipes

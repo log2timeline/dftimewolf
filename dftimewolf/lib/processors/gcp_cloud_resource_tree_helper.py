@@ -4,7 +4,7 @@ import datetime
 import enum
 import io
 import json
-from typing import Dict, List, Optional, Any, Set, Union
+from typing import Optional, Any, Set
 import pandas as pd
 
 
@@ -73,7 +73,7 @@ class Resource():
     self.deleter_useragent: str = str()
     self.parent: Optional[Resource] = None
     self.children: Set[Resource] = set()
-    self.disks: List[Resource] = []
+    self.disks: list[Resource] = []
     self.deleted: bool = False
     self._resource_name: str = str()
     self._creation_timestamp: Optional[datetime.datetime] = None
@@ -188,7 +188,7 @@ class Resource():
     return self._deletion_timestamp
 
   @deletion_timestamp.setter
-  def deletion_timestamp(self, value: Union[datetime.datetime, str]) -> None:
+  def deletion_timestamp(self, value: datetime.datetime | str) -> None:
     """Property deletion_timestamp Setter.
 
     Args:
@@ -207,14 +207,14 @@ class Resource():
 
     return False
 
-  def GenerateTree(self) -> List[Dict[str, 'Resource']]:
+  def GenerateTree(self) -> list[dict[str, 'Resource']]:
     """Generates the resource tree.
 
     Returns:
       List of dictionaries containing a reference to the resource and its name
       indented based on it's location in the tree.
     """
-    output: List[Any] = []
+    output: list[Any] = []
 
     # Count the number of parent resources and the level in the tree the
     # resource is at.
@@ -230,7 +230,7 @@ class Resource():
     if parent_resource:
       while counter > 0:
         counter = counter - 1
-        entry: Dict[str, Any] = {}
+        entry: dict[str, Any] = {}
         entry['resource_object'] = parent_resource
         entry['tree'] = f'{self._TAB*counter}{parent_resource.name}'
         output.insert(0, entry)
@@ -248,7 +248,7 @@ class Resource():
 
     return output
 
-  def GenerateChildrenTree(self, level: int) -> List[Dict[str, 'Resource']]:
+  def GenerateChildrenTree(self, level: int) -> list[dict[str, 'Resource']]:
     """Generates the resource children tree.
 
     Args:
@@ -258,10 +258,10 @@ class Resource():
       List of dictionaries containing a reference to the children resource and
           their names indented based on their location in the tree.
     """
-    result: List[Dict[str, Resource]] = []
+    result: list[dict[str, Resource]] = []
 
     for child in self.children:
-      entry: Dict[str, Any] = {}
+      entry: dict[str, Any] = {}
       entry['resource_object'] = child
       entry['tree'] = f'{self._TAB*level}{child.name}'
       result.append(entry)
@@ -314,7 +314,7 @@ class Resource():
 
     return output.getvalue()
 
-  def AsDict(self) -> Dict[str, Any]:
+  def AsDict(self) -> dict[str, Any]:
     """Returns a dictionary representation of the resource object."""
     creation_timestamp = ""
     if self.creation_timestamp:
@@ -370,7 +370,7 @@ class Resource():
 class ResourceEncoder(json.JSONEncoder):
   """A Class that implements custom json encoding for Resource object."""
 
-  def default(self, o: Resource) -> Dict[str, Optional[Resource]]:
+  def default(self, o: Resource) -> dict[str, Optional[Resource]]:
     """Returns a dictionary representation of the resource object."""
     if isinstance(o, Resource):
       return o.AsDict()

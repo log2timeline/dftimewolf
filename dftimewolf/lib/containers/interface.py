@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """The attribute container interface."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import pandas as pd
 
@@ -26,7 +26,7 @@ class AttributeContainer():
   CONTAINER_TYPE = str()
   metadata: dict[str, Any] = {}
 
-  def __init__(self, metadata: Optional[Dict[str, Any]] = None):
+  def __init__(self, metadata: Optional[dict[str, Any]] = None):
     """Initializes an AttributeContainer.
 
     Args:
@@ -39,7 +39,7 @@ class AttributeContainer():
       self.metadata = metadata
 
   # TODO: note that this method is only used by tests.
-  def GetAttributeNames(self) -> List[str]:
+  def GetAttributeNames(self) -> list[str]:
     """Retrieves the names of all attributes.
 
     Returns:

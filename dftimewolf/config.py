@@ -3,7 +3,7 @@
 
 import json
 
-from typing import Dict, Any
+from typing import Any
 
 from dftimewolf.lib import errors
 
@@ -11,10 +11,10 @@ from dftimewolf.lib import errors
 class Config(object):
   """Class that handles DFTimewolf's configuration parameters."""
 
-  _extra_config = {}  # type: Dict[str, Dict[str, Any]]
+  _extra_config: dict[str, dict[str, Any]] = {}
 
   @classmethod
-  def GetExtra(cls, name: str='') -> Dict[str, Any]:
+  def GetExtra(cls, name: str='') -> dict[str, Any]:
     """Retrieves extra configuration parameters.
 
     These parameters should be loaded through LoadExtra or LoadExtraData.

@@ -4,7 +4,7 @@
 import os
 import shutil
 import tempfile
-from typing import List, Optional, Callable
+from typing import Optional, Callable
 
 from dftimewolf.lib import module, utils
 from dftimewolf.lib.containers import containers
@@ -86,7 +86,7 @@ class LocalFilesystemCopy(module.BaseModule):
           return
 
   def _CopyFileOrDirectory(
-      self, source: str, destination_directory: str) -> List[str]:
+      self, source: str, destination_directory: str) -> list[str]:
     """Recursively copies files from source to destination_directory.
 
     Files will be copied to `destination_directory`'s root. Directories

@@ -2,7 +2,7 @@
 """Creates an analysis VM and attaches GCP disks to it for analysis."""
 
 import time
-from typing import Callable, Dict
+from typing import Callable
 
 from libcloudforensics import errors as lcf_errors
 from libcloudforensics.providers.gcp import forensics as gcp_forensics
@@ -71,7 +71,7 @@ class GCEForensicsVM(module.BaseModule):
     self.cpu_cores = 0
     self.image_project = str()
     self.image_family = str()
-    self._gcp_label = {}  # type: Dict[str, str]
+    self._gcp_label: dict[str, str] = {}
     self.create_analysis_vm = bool()
 
   # pylint: disable=arguments-differ,too-many-arguments

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Copies GCE Disks across projects."""
 
-from typing import List, Optional, Dict, Type, Union, Callable
+from typing import Optional, Type, Callable
 
 from googleapiclient.errors import HttpError
 from libcloudforensics import errors as lcf_errors
@@ -57,26 +57,26 @@ class GCEDiskCopy(module.ThreadAwareModule):
 
     self.destination_project: gcp_project.GoogleCloudProject = None  # pyrefly: ignore=[bad-assignment]
     self.source_project: gcp_project.GoogleCloudProject = None  # pyrefly: ignore=[bad-assignment]
-    self.remote_instance_names = []  # type: List[str]
-    self.disk_names = []  # type: List[str]
+    self.remote_instance_names: list[str] = []
+    self.disk_names: list[str] = []
     self.all_disks = False
     self.stop_instances = False
     self.quarantine_instances = False
-    self.exempted_src_ips = []  # type: List[str]
-    self._gcp_label = {}  # type: Dict[str, str]
-    self.source_zone = None  # type: Optional[str]
-    self.warned = False  # type: bool
-    self.failed_disks = []  # type: List[str]
+    self.exempted_src_ips: list[str] = []
+    self._gcp_label: dict[str, str] = {}
+    self.source_zone = str()
+    self.warned = False
+    self.failed_disks: list[str] = []
     self.at_least_one_success = False
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
             destination_project_name: Optional[str],
             source_project_name: str,
-            source_zone: Optional[str],
+            source_zone: str,
             destination_zone: str,
-            remote_instance_names: Union[str, List[str], None],
-            disk_names: Union[str, List[str], None],
+            remote_instance_names: str | list[str] | None,
+            disk_names: str | list[str] | None,
             all_disks: bool,
             stop_instances: bool,
             quarantine_instances: bool = False,
@@ -282,7 +282,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
   def _GetDisksFromInstance(
       self,
       instance_name: str,
-      all_disks: bool) -> List[str]:
+      all_disks: bool) -> list[str]:
     """Gets disks to copy based on an instance name.
 
     Args:

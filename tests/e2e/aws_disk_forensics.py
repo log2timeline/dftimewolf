@@ -31,8 +31,6 @@ from dftimewolf.lib import resources, state
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.recipes import manager as recipes_manager
 
-from typing import Dict
-
 log = logging.getLogger(__name__)
 
 # pylint: disable=line-too-long
@@ -299,7 +297,7 @@ class AWSToGCPForensicsEndToEndTest(unittest.TestCase):
       log.error(f'Failed to delete GCE Disk {name}: {str(error)}')
 
 
-def ReadProjectInfo() -> Dict[str, str]:
+def ReadProjectInfo() -> dict[str, str]:
   """Read project information to run e2e test.
   Returns:
     dict: A dict with the project information.

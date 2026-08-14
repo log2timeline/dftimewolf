@@ -25,6 +25,7 @@ timesketch-api-client = "^20260611"
 timesketch-import-client = "^20260611"
 vertexai = "^1.71.1"
 vt-py = "^0.22.0"
+tabulate = "^0.10.0"
 
 [tool.poetry.group.dev.dependencies]
 absl-py = "^2.4.0"
@@ -32,9 +33,7 @@ coverage = "^7.14.1"
 graphviz = "^0.21"
 mkdocs = "^1.6.1"
 mock = "^5.2.0"
-mypy = "^2.1.0"
 pylint = "^4.0.5"
-pytype = "^2024.10.11"
 pyrefly = "^1.0.0"
 google-api-python-client-stubs = "^1.39.0"
 

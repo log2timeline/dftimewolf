@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import datetime
 
-from typing import Optional, Union, TYPE_CHECKING, Dict, Any
+from typing import Optional, TYPE_CHECKING, Any
 import pandas as pd
 
 from dftimewolf.lib.containers import interface
@@ -33,7 +33,7 @@ class Report(interface.AttributeContainer):
     module_name: str,
     text: str,
     text_format: str = "plaintext",
-    metadata: Optional[Dict[str, Any]] = None,
+    metadata: Optional[dict[str, Any]] = None,
   ) -> None:
     """Initializes the analysis report.
 
@@ -245,7 +245,7 @@ class ForensicsVM(interface.AttributeContainer):
   def __init__(
     self,
     name: str,
-    evidence_disk: Union["GoogleComputeDisk", "AWSVol", "AZComputeDisk", None],
+    evidence_disk: "GoogleComputeDisk" | "AWSVol" | "AZComputeDisk" | None,
     platform: str,
   ) -> None:
     super(ForensicsVM, self).__init__()
@@ -335,7 +335,7 @@ class DataFrame(interface.AttributeContainer):
     description: str,
     name: str,
     source: Optional[str] = None,
-    metadata: Optional[Dict[str, Any]] = None,
+    metadata: Optional[dict[str, Any]] = None,
   ) -> None:
     super(DataFrame, self).__init__(metadata=metadata)
     self.data_frame = data_frame
@@ -679,8 +679,8 @@ class TimesketchAggregation(interface.AttributeContainer):
     name: str,
     key: str,
     description: str,
-    results: Dict[str, int],
-    metadata: Optional[Dict[str, Any]] = None,
+    results: dict[str, int],
+    metadata: Optional[dict[str, Any]] = None,
   ):
     """Initializes the TimesketchAggregation container."""
     self.name = name

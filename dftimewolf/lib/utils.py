@@ -10,7 +10,7 @@ import string
 import tarfile
 import tempfile
 import time
-from typing import Any, Dict, Optional, Type
+from typing import Any, Optional, Type
 
 import pandas as pd
 from dftimewolf.config import Config
@@ -91,7 +91,7 @@ class DFTimewolfFormatterClass(
 
 
 def ImportArgsFromDict(value: Any,
-                       args: Dict[str, Any],
+                       args: dict[str, Any],
                        config: Type[Config] | None = None) -> Any:
   """Replaces some arguments by those specified by a key-value dictionary.
 

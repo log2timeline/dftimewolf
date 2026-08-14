@@ -180,10 +180,12 @@ class GCSToGCEImage(module.ThreadAwareModule):
     """Retrieve role information from the account for the image builder role.
 
     Returns:
-      A Dict containing the role information, or None if the role does not
+      A dict containing the role information, or None if the role does not
         exist.
+
     Raises:
-      googleapiclient.errors.HttpError: On IAM API errors."""
+      googleapiclient.errors.HttpError: On IAM API errors.
+    """
     request = self.iam_service.roles().list( #pylint: disable=no-member
         parent='projects/' + self.dest_project_name,
         showDeleted=True)

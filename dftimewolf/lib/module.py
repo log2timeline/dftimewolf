@@ -5,7 +5,7 @@ import abc
 import logging
 import sys
 import traceback
-from typing import Any, Callable, Dict, Literal, NoReturn, Optional, overload, Sequence, Type, TypeVar, cast
+from typing import Any, Callable, Literal, NoReturn, Optional, overload, Sequence, Type, TypeVar, cast
 
 from dftimewolf.lib import cache
 from dftimewolf.lib import errors
@@ -58,7 +58,7 @@ class BaseModule(object):
                        logging.getLogger(name=self.name))
     self.logger.parent = logging.getLogger('dftimewolf')
 
-  def LogTelemetry(self, data: Dict[str, str]) -> None:
+  def LogTelemetry(self, data: dict[str, str]) -> None:
     """Logs useful telemetry using the telemetry attribute in the state object.
 
     Args:
@@ -77,7 +77,7 @@ class BaseModule(object):
         opentelemetry.add_attribute_to_current_span(key, value)
 
   def LogTelemetryEvent(
-      self, event_name: str, attributes: Optional[Dict[str, Any]] = None
+      self, event_name: str, attributes: Optional[dict[str, Any]] = None
   ) -> None:
     """Logs a telemetry event (annotation) to the current OpenTelemetry span.
 

@@ -4,7 +4,7 @@
 import json
 import tempfile
 import datetime
-from typing import Any, Dict, Optional, Callable
+from typing import Any, Optional, Callable
 
 from boto3 import session as boto3_session
 from botocore import exceptions as boto_exceptions
@@ -90,7 +90,7 @@ class AWSLogsCollector(module.BaseModule):
 
     cloudtrail_client = session.client('cloudtrail', region_name=self._region)
 
-    request_params: Dict[str, Any] = {}
+    request_params: dict[str, Any] = {}
     if self._query_filter:
       k, v = self._query_filter.split(',')
       filters = [{'AttributeKey': k, 'AttributeValue': v}]

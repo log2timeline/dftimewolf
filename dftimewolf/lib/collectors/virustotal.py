@@ -5,7 +5,7 @@ import os
 import tempfile
 import urllib.parse
 import zipfile
-from typing import List, Callable
+from typing import Callable
 
 import vt
 
@@ -47,7 +47,7 @@ class VTCollector(module.BaseModule):
                      telemetry_=telemetry_,
                      publish_message_callback=publish_message_callback)
 
-    self.hashes_list: List[str] = []
+    self.hashes_list: list[str] = []
     self.directory = ''
     self.client: vt.client.Client
     self.vt_type = ''
@@ -202,7 +202,7 @@ class VTCollector(module.BaseModule):
       )
       return tempfile.mkdtemp()
 
-  def _getDownloadLinks(self, vt_hash: str) -> List[str]:
+  def _getDownloadLinks(self, vt_hash: str) -> list[str]:
     """Checks if a hash has a Pcap or Evtx file available.
     Returns a list of the URLs for download.
     One hash can have multiple Pcaps / Evtx available.

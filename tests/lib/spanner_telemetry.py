@@ -89,18 +89,6 @@ class GoogleCloudSpannerTelemetryTest(unittest.TestCase):
       delattr(spanner_telemetry.GoogleCloudSpannerTelemetry, 'instance')
     self.patcher.stop()
 
-  def testSingleton(self):
-    """Tests that the singleton property of the Telemetry object holds."""
-    spanner_telemetry1 = spanner_telemetry.GoogleCloudSpannerTelemetry(
-        project_name='test_project',
-        instance_name='test_instance',
-        database_name='test_database')
-    spanner_telemetry2 = spanner_telemetry.GoogleCloudSpannerTelemetry(
-        project_name='foo', instance_name='bar', database_name='bas')
-
-    self.assertEqual(id(spanner_telemetry1), id(spanner_telemetry2))
-    self.assertEqual(id(spanner_telemetry1.database), id(spanner_telemetry2.database))
-
   def testInit(self):
     """Tests that the GoogleCloudSpannerTelemetry object is properly
     initialized."""

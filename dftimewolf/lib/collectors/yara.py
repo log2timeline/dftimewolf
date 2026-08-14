@@ -35,9 +35,9 @@ class YetiYaraCollector(module.BaseModule):
                      container_manager_=container_manager_,
                      telemetry_=telemetry_,
                      publish_message_callback=publish_message_callback)
-    self.rule_name_filter = '' # type: str
-    self.api_key = ''  # type: str
-    self.api_root = '' # type: str
+    self.rule_name_filter = ''
+    self.api_key = ''
+    self.api_root = ''
 
   # pylint: disable=arguments-differ
   def SetUp(self, rule_name_filter: str, api_key: str, api_root: str) -> None:
