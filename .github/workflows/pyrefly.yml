@@ -21,7 +21,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install poetry
-        poetry install
+        poetry install --all-groups
     - name: Pyrefly type checking
       run: |
         poetry run pyrefly check
