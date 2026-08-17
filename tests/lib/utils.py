@@ -48,8 +48,9 @@ class UtilsTest(unittest.TestCase):
     tar = tarfile.TarFile.open(output_file)
     member_name = tar.getmembers()[1].name
     self.assertIn(test_name, member_name)
-    member_data = (
-        tar.extractfile(member_name).read())
+    tar_member = tar.extractfile(member_name)
+    self.assertIsNotNone(tar_member)
+    member_data = tar_member.read()
     self.assertEqual(member_data, test_data.encode('utf-8'))
 
   def testWriteDataFrameToJsonl(self):

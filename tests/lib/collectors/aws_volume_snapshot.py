@@ -53,7 +53,7 @@ FAKE_DESCRIBE_SNAPSHOTS_RESPONSE = {
 }
 
 # pylint: disable=protected-access
-orig = botocore.client.BaseClient._make_api_call
+orig = botocore.client.BaseClient._make_api_call  # pyrefly: ignore[missing-attribute]
 
 def MockMakeAPICall(self, operation_name : str, kwarg : Any) -> Any:
   """Mock the boto3 api calls for specified client methods.

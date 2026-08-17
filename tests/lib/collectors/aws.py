@@ -180,6 +180,7 @@ class AWSCollectorTest(modules_test_base.ModuleTestBase):
     forensics_vm = forensics_vms[0]
     self.assertIsNotNone(forensics_vm)
     self.assertEqual('fake-analysis-vm', forensics_vm.name)
+    self.assertIsInstance(forensics_vm.evidence_disk, ebs.AWSVolume)
     self.assertEqual(
         'fake-volume-id-copy',
         forensics_vm.evidence_disk.volume_id)

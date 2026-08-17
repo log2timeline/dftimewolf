@@ -63,8 +63,10 @@ class AttributeContainer():
     """
     self.metadata[key] = value
 
-  def __eq__(self, other: "AttributeContainer") -> bool:
+  def __eq__(self, other: object) -> bool:
     """Override the `==` operator. Equality ignores metadata."""
+    if not isinstance(other, type(self)):
+      return False
     if self.CONTAINER_TYPE != other.CONTAINER_TYPE:
       return False
     for k, v in self.__dict__.items():

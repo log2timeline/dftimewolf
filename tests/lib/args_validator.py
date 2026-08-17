@@ -18,19 +18,19 @@ class CommaSeparatedValidatorTest(unittest.TestCase):
     Really, CommaSeparatedValidator is an abstract class so should never be
     instantiated, but we're doing this for unit tests, so we can test the
     non-abstract method."""
-    args_validator.CommaSeparatedValidator.__abstractmethods__=set()
+    args_validator.CommaSeparatedValidator.__abstractmethods__ = frozenset[str]()
 
     # pylint: disable=unused-variable
     with mock.patch.object(args_validator.CommaSeparatedValidator,
                            '__init__',
                            return_value=None) as mock_init:
-      validator = args_validator.CommaSeparatedValidator()
+      validator = args_validator.CommaSeparatedValidator()  # pyrefly: ignore[bad-instantiation]
       mock_init.assert_called_once()
     # pylint: enable=unused-variable
 
   def testValidate(self) -> None:
     """Tests validation."""
-    args_validator.CommaSeparatedValidator.__abstractmethods__=set()
+    args_validator.CommaSeparatedValidator.__abstractmethods__ = frozenset[str]()
 
     recipe_argument = resources.RecipeArgument()
     recipe_argument.switch = 'testcommaseparated'
@@ -38,7 +38,7 @@ class CommaSeparatedValidatorTest(unittest.TestCase):
     with mock.patch.object(args_validator.CommaSeparatedValidator,
                            'ValidateSingle',
                            side_effect=lambda x, y: x) as mock_validatesingle:
-      validator = args_validator.CommaSeparatedValidator()
+      validator = args_validator.CommaSeparatedValidator()  # pyrefly: ignore[bad-instantiation]
       recipe_argument.validation_params = {'comma_separated': True}
       val = validator.Validate('one,two,three', recipe_argument)
       self.assertEqual(mock_validatesingle.call_count, 3)
@@ -47,7 +47,7 @@ class CommaSeparatedValidatorTest(unittest.TestCase):
     with mock.patch.object(args_validator.CommaSeparatedValidator,
                            'ValidateSingle',
                            side_effect=lambda x, y: x) as mock_validatesingle:
-      validator = args_validator.CommaSeparatedValidator()
+      validator = args_validator.CommaSeparatedValidator()  # pyrefly: ignore[bad-instantiation]
       recipe_argument.validation_params = {'comma_separated': False}
       val = validator.Validate('one,two,three', recipe_argument)
       self.assertEqual(mock_validatesingle.call_count, 1)
@@ -56,7 +56,7 @@ class CommaSeparatedValidatorTest(unittest.TestCase):
     with mock.patch.object(args_validator.CommaSeparatedValidator,
                            'ValidateSingle',
                            side_effect=lambda x, y: x):
-      validator = args_validator.CommaSeparatedValidator()
+      validator = args_validator.CommaSeparatedValidator()  # pyrefly: ignore[bad-instantiation]
       recipe_argument.validation_params = {}
       val = validator.Validate('one,two,three', recipe_argument)
       self.assertEqual(mock_validatesingle.call_count, 1)
@@ -76,7 +76,7 @@ class CommaSeparatedValidatorTest(unittest.TestCase):
     with (mock.patch.object(args_validator.CommaSeparatedValidator,
                            'ValidateSingle',
                            side_effect=FailingValidateSingle)):
-      validator = args_validator.CommaSeparatedValidator()
+      validator = args_validator.CommaSeparatedValidator()  # pyrefly: ignore[bad-instantiation]
       argument_definition = resources.RecipeArgument()
       argument_definition.validation_params = {'comma_separated': True}
       with self.assertRaises(errors.RecipeArgsValidationFailure):

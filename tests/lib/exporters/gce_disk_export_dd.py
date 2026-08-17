@@ -27,6 +27,8 @@ FAKE_INSTANCE = compute.GoogleComputeInstance(
 class GoogleCloudDiskExportStreamTest(modules_test_base.ModuleTestBase):
   """Tests for the Google Cloud disk bit-stream export."""
 
+  _module: gce_disk_export_dd.GoogleCloudDiskExportStream
+
   def setUp(self):
     self._InitModule(gce_disk_export_dd.GoogleCloudDiskExportStream)
     super().setUp()
@@ -46,13 +48,13 @@ class GoogleCloudDiskExportStreamTest(modules_test_base.ModuleTestBase):
     mock_get_disk.return_value = FAKE_DISK
     mock_disk_get_operation.return_value = {}
     self._module.SetUp(
-        'fake-source-project',
-        'gs://fake-bucket',
-        'fake-source-disk',
-        None,
-        False,
-        '',
-        ''
+        source_project_name='fake-source-project',
+        gcs_output_location='gs://fake-bucket',
+        source_disk_names='fake-source-disk',
+        remote_instance_name='',
+        all_disks=False,
+        boot_image_project='',
+        boot_image_family=''
     )
     self.assertEqual(self._module._source_project.project_id,  # pylint: disable=protected-access
                      'fake-source-project')
@@ -83,15 +85,15 @@ class GoogleCloudDiskExportStreamTest(modules_test_base.ModuleTestBase):
     mock_get_disk.return_value = FAKE_DISK
     mock_disk_get_operation.return_value = {}
     self._module.SetUp(
-        'fake-source-project',
-        'gs://fake-bucket',
-        'fake-source-disk',
-        None,
-        False,
-        '',
-        ''
+        source_project_name='fake-source-project',
+        gcs_output_location='gs://fake-bucket',
+        source_disk_names='fake-source-disk',
+        remote_instance_name='',
+        all_disks=False,
+        boot_image_project='',
+        boot_image_family=''
     )
-    FAKE_SOURCE_PROJECT.compute.CreateInstanceFromArgument = mock_create_instance_from_arguments
+    FAKE_SOURCE_PROJECT.compute.CreateInstanceFromArgument = mock_create_instance_from_arguments  # pyrefly: ignore[missing-attribute]
     mock_create_instance_from_arguments.return_value = FAKE_INSTANCE
     mock_get_disk_labels.return_value = {'archive_hash_verified': 'true'}
     mock_instance_get_operation.return_value = {}

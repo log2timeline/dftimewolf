@@ -1,4 +1,4 @@
-project-includes = ["dftimewolf"]
+project-includes = ["dftimewolf", "tests"]
 project-excludes = [
     "**/_pb2.py",
 ]

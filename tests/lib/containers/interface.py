@@ -13,8 +13,8 @@ class AttributeContainerTest(unittest.TestCase):
   def testGetAttributeNames(self):
     """Tests the GetAttributeNames function."""
     attribute_container = interface.AttributeContainer()
-    attribute_container.attribute_name = 'attribute_name'
-    attribute_container.attribute_value = 'attribute_value'
+    attribute_container.attribute_name = 'attribute_name'  # pyrefly: ignore[missing-attribute]
+    attribute_container.attribute_value = 'attribute_value'  # pyrefly: ignore[missing-attribute]
 
     expected_attribute_names = [
         'attribute_name', 'attribute_value', 'metadata']

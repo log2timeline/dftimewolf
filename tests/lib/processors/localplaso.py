@@ -39,7 +39,7 @@ class LocalPlasoTest(modules_test_base.ModuleTestBase):
 
     self._module.StoreContainer(
         containers.File(name='test', path='/notexist/test'))
-    self._module.SetUp(timezone=None, use_docker=False)
+    self._module.SetUp(timezone='', use_docker=False)
     self._ProcessModule()
     mock_Popen.assert_called_once()
     args = mock_Popen.call_args[0][0]  # Get positional arguments of first call
@@ -55,7 +55,7 @@ class LocalPlasoTest(modules_test_base.ModuleTestBase):
     mock_docker.return_value = mock.Mock()
     self._module.StoreContainer(
         containers.File(name='test', path='/notexist/test'))
-    self._module.SetUp(timezone=None, use_docker=True)
+    self._module.SetUp(timezone='', use_docker=True)
     self._ProcessModule()
     mock_docker().containers.run.assert_called_once()
     args = mock_docker().containers.run.call_args[1]
@@ -85,7 +85,7 @@ class LocalPlasoTest(modules_test_base.ModuleTestBase):
     mock_docker().images.get.side_effect = docker.errors.ImageNotFound(
         message="")
     with self.assertRaises(errors.DFTimewolfError) as error:
-      self._module.SetUp(timezone=None, use_docker=False)
+      self._module.SetUp(timezone='', use_docker=False)
     self.assertEqual((
         'Could not run log2timeline.py from PATH or a local Docker image. '
         'To fix: \n'

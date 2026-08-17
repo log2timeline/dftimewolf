@@ -75,8 +75,8 @@ class DatetimeValidatorTest(parameterized.TestCase):
   # pylint: disable=protected-access
   def testValidateOrder(self):
     """Tests the _ValidateOrder method."""
-    first = '2023-01-01 00:00:00'
-    second = '2023-01-02 00:00:00'
+    first = datetime.datetime(2023, 0, 1, 0, 0, 0, tzinfo=datetime.timezone.utc)
+    second = datetime.datetime(2023, 0, 2, 0, 0, 0, tzinfo=datetime.timezone.utc)
 
     # Correct order passes
     val = self.validator._ValidateOrder(first, second)

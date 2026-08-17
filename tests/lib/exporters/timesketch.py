@@ -15,6 +15,8 @@ from tests.lib import modules_test_base
 class TimesketchExporterTest(modules_test_base.ModuleTestBase):
   """Tests for the Threaded Timesketch exporter."""
 
+  _module: timesketch.TimesketchExporter
+
   def setUp(self):
     self._InitModule(timesketch.TimesketchExporter)
     super().setUp()

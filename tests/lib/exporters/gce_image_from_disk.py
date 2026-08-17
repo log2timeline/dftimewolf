@@ -117,12 +117,12 @@ class GCEImageFromDiskTest(modules_test_base.ModuleTestBase):
     for c in FAKE_STATE_OBJECT_LIST:
       self._module.StoreContainer(c)
 
-    self._module.SetUp(None,
-                   FAKE_GCP_SOURCE_PROJECT_NAME,
-                   FAKE_SOURCE_ZONE,
-                   FAKE_GCP_DEST_PROJECT_NAME,
-                   FAKE_DEST_ZONE,
-                   FAKE_NAME_PREFIX)
+    self._module.SetUp('',
+                       FAKE_GCP_SOURCE_PROJECT_NAME,
+                       FAKE_SOURCE_ZONE,
+                       FAKE_GCP_DEST_PROJECT_NAME,
+                       FAKE_DEST_ZONE,
+                       FAKE_NAME_PREFIX)
 
     self._ProcessModule()
 
