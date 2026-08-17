@@ -99,7 +99,7 @@ class GoogleDriveCollector(module.BaseModule):
                      container_manager_=container_manager_,
                      telemetry_=telemetry_,
                      publish_message_callback=publish_message_callback)
-    self._credentials: external_account_authorized_user.Credentials | oauth_credentials.Credentials = None  # pyrefly: ignore=[bad-assignment]
+    self._credentials: external_account_authorized_user.Credentials | oauth_credentials.Credentials
     self._drive_ids: list[str] = []
     self._folder_id: str = ""
     self._output_directory: str = ""

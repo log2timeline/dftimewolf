@@ -65,7 +65,7 @@ class AWSCollector(module.BaseModule):
                      publish_message_callback=publish_message_callback)
     self.remote_profile_name = str()
     self.remote_zone = str()
-    self.source_account: aws_account.AWSAccount = None  # pyrefly: ignore[bad-assignment]
+    self.source_account: aws_account.AWSAccount
     self.incident_id = str()
     self.remote_instance_id = str()
     self.volume_ids: list[str] = []

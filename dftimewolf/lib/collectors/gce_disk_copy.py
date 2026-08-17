@@ -55,8 +55,8 @@ class GCEDiskCopy(module.ThreadAwareModule):
                      telemetry_=telemetry_,
                      publish_message_callback=publish_message_callback)
 
-    self.destination_project: gcp_project.GoogleCloudProject = None  # pyrefly: ignore=[bad-assignment]
-    self.source_project: gcp_project.GoogleCloudProject = None  # pyrefly: ignore=[bad-assignment]
+    self.destination_project: gcp_project.GoogleCloudProject
+    self.source_project: gcp_project.GoogleCloudProject
     self.remote_instance_names: list[str] = []
     self.disk_names: list[str] = []
     self.all_disks = False

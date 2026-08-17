@@ -54,7 +54,7 @@ class S3ToGCSCopy(module.ThreadAwareModule):
 
     self.aws_region: str = ''
     self.dest_project_name: str = ''
-    self.dest_project: gcp_project.GoogleCloudProject = None  # pyrefly: ignore=[bad-assignment]
+    self.dest_project: gcp_project.GoogleCloudProject
     self.dest_bucket: str = ''
     self.filter: Any = None
     self.bucket_exists = False

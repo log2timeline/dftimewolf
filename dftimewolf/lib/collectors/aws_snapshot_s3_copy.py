@@ -64,7 +64,7 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
     self.ec2: Any = None
     self.s3: Any = None
     self.iam_details: Any = None
-    self.aws_account: account.AWSAccount = None  # pyrefly: ignore=[bad-assignment]
+    self.aws_account: account.AWSAccount
     self.bucket_exists: bool = False
 
   # pylint: disable=arguments-differ
