@@ -6,7 +6,7 @@ to upload files to a specified folder.
 """
 
 import io
-from typing import Any, Optional, Type, cast, Callable, TYPE_CHECKING
+from typing import Any, Optional, Type, cast, Callable
 
 from google.auth import exceptions as googleauth_exceptions
 from google.oauth2 import credentials as oauth2_credentials
@@ -21,9 +21,6 @@ from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib import cache
 from dftimewolf.lib import spanner_telemetry as telemetry
 from dftimewolf.lib.containers import manager as container_manager
-
-if TYPE_CHECKING:
-  from googleapiclient._apis.drive.v3 import resources
 
 
 
@@ -114,7 +111,7 @@ class GoogleDriveExporter(module.ThreadAwareModule):
           "drive", "v3", credentials=self._credentials
       )
       uploaded_file = (
-          drive_resource.files()
+          drive_resource.files()  # pyrefly: ignore=[missing-attribute]
           .create(
               body={
                   "name": container.name,
@@ -157,11 +154,11 @@ class GoogleDriveExporter(module.ThreadAwareModule):
       ModuleError: If the folder creation fails.
     """
     try:
-      drive_resource: resources.DriveResource = discovery.build(
+      drive_resource = discovery.build(
           "drive", "v3", credentials=self._credentials
       )
       created_folder = (
-          drive_resource.files()
+          drive_resource.files()  # pyrefly: ignore=[missing-attribute]
           .create(
               body={
                   "name": folder_name,

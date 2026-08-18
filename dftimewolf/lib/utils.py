@@ -77,7 +77,7 @@ def WriteDataFrameToJsonl(df: pd.DataFrame) -> str:
       mode='w', delete=False, encoding='utf-8', suffix='.jsonl'
       ) as output_file:
     output_file.write(
-        df.to_json(orient='records', lines=True, date_format='iso'))
+        str(df.to_json(orient='records', lines=True, date_format='iso')))
     return output_file.name
 
 

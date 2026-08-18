@@ -7,7 +7,7 @@ import json
 import re
 import tempfile
 
-from typing import Callable, TYPE_CHECKING
+from typing import Any, Callable
 
 import filelock
 from google.auth.exceptions import DefaultCredentialsError, RefreshError
@@ -23,9 +23,6 @@ from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib import cache
 from dftimewolf.lib import spanner_telemetry as telemetry
 from dftimewolf.lib.containers import manager as container_manager
-
-if TYPE_CHECKING:
-  from googleapiclient._apis.admin.reports_v1 import resources
 
 
 RE_TIMESTAMP = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$')
@@ -60,7 +57,7 @@ class WorkspaceAuditCollector(module.BaseModule):
   def _BuildAuditResource(
       self,
       credentials: external_account_authorized_user.Credentials | oauth2_credentials.Credentials
-  ) -> "resources.ReportsResource":
+  ) -> Any:
     """Builds a reports resource object to use to request logs.
 
     Args:
@@ -69,7 +66,7 @@ class WorkspaceAuditCollector(module.BaseModule):
     Returns:
       A resource object for interacting with the Workspace audit API.
     """
-    service: "resources.ReportsResource" = discovery.build('admin', 'reports_v1', credentials=credentials)
+    service = discovery.build('admin', 'reports_v1', credentials=credentials)
     return service
 
   def _GetCredentials(self) -> external_account_authorized_user.Credentials | oauth2_credentials.Credentials:

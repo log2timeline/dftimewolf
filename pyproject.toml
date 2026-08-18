@@ -35,7 +35,6 @@ mkdocs = "^1.6.1"
 mock = "^5.2.0"
 pylint = "^4.0.5"
 pyrefly = "^1.0.0"
-google-api-python-client-stubs = "^1.39.0"
 
 [tool.poetry.group.spannertelemetry]
 optional = true

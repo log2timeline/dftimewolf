@@ -544,7 +544,7 @@ version = "2026.5.20"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.7"
-groups = ["main", "dev", "opentelemetry", "spannertelemetry"]
+groups = ["main", "opentelemetry", "spannertelemetry"]
 files = [
     {file = "certifi-2026.5.20-py3-none-any.whl", hash = "sha256:3c52e209ba0a4ad7aebe60436a4ab349c39e1e602e8c134221e546902ad25897"},
     {file = "certifi-2026.5.20.tar.gz", hash = "sha256:69dea482ab64caa7b9f6aba1c6bf48bb6a5448d1c0f1b17ab42ad8c763a5344d"},
@@ -556,7 +556,7 @@ version = "2.0.0"
 description = "Foreign Function Interface for Python calling C code."
 optional = false
 python-versions = ">=3.9"
-groups = ["main", "dev", "spannertelemetry"]
+groups = ["main", "spannertelemetry"]
 files = [
     {file = "cffi-2.0.0-cp310-cp310-macosx_10_13_x86_64.whl", hash = "sha256:0cf2d91ecc3fcc0625c2c530fe004f82c110405f101548512cce44322fa8ac44"},
     {file = "cffi-2.0.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:f73b96c41e3b2adedc34a7356e64c8eb96e03a3782b535e043a986276ce12a49"},
@@ -653,7 +653,7 @@ version = "3.4.7"
 description = "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet."
 optional = false
 python-versions = ">=3.7"
-groups = ["main", "dev", "opentelemetry", "spannertelemetry"]
+groups = ["main", "opentelemetry", "spannertelemetry"]
 files = [
     {file = "charset_normalizer-3.4.7-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:cdd68a1fb318e290a2077696b7eb7a21a49163c455979c639bf5a5dcdc46617d"},
     {file = "charset_normalizer-3.4.7-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:e17b8d5d6a8c47c85e68ca8379def1303fd360c3e22093a807cd34a71cd082b8"},
@@ -939,7 +939,7 @@ version = "41.0.7"
 description = "cryptography is a package which provides cryptographic recipes and primitives to Python developers."
 optional = false
 python-versions = ">=3.7"
-groups = ["main", "dev", "spannertelemetry"]
+groups = ["main", "spannertelemetry"]
 files = [
     {file = "cryptography-41.0.7-cp37-abi3-macosx_10_12_universal2.whl", hash = "sha256:3c78451b78313fa81607fa1b3f1ae0a5ddd8014c38a02d9db0616133987b9cdf"},
     {file = "cryptography-41.0.7-cp37-abi3-macosx_10_12_x86_64.whl", hash = "sha256:928258ba5d6f8ae644e764d0f996d61a8777559f72dfeb2eea7e2fe0ad6e782d"},
@@ -1251,7 +1251,7 @@ version = "2.25.2"
 description = "Google API client core library"
 optional = false
 python-versions = ">=3.7"
-groups = ["main", "dev", "spannertelemetry"]
+groups = ["main", "spannertelemetry"]
 markers = "python_version == \"3.14\""
 files = [
     {file = "google_api_core-2.25.2-py3-none-any.whl", hash = "sha256:e9a8f62d363dc8424a8497f4c2a47d6bcda6c16514c935629c257ab5d10210e7"},
@@ -1279,7 +1279,7 @@ version = "2.31.0"
 description = "Google API client core library"
 optional = false
 python-versions = ">=3.10"
-groups = ["main", "dev", "spannertelemetry"]
+groups = ["main", "spannertelemetry"]
 markers = "python_version <= \"3.13\""
 files = [
     {file = "google_api_core-2.31.0-py3-none-any.whl", hash = "sha256:ef79fb3784c71cbac89cbd03301ba0c8fb8ad2aa95d7f9204dd9628f7adf59ab"},
@@ -1308,7 +1308,7 @@ version = "2.198.0"
 description = "Google API Client Library for Python"
 optional = false
 python-versions = ">=3.7"
-groups = ["main", "dev"]
+groups = ["main"]
 files = [
     {file = "google_api_python_client-2.198.0-py3-none-any.whl", hash = "sha256:fabac935474e817da5e662ff61bf7139439d6f92b32d332a7318a2d45931e03e"},
     {file = "google_api_python_client-2.198.0.tar.gz", hash = "sha256:dfe3e16fb241af6e9c460a33f65085b3450e05cea09364f6b5d8997fb7e43e2a"},
@@ -1322,29 +1322,12 @@ httplib2 = ">=0.19.0,<1.0.0"
 uritemplate = ">=3.0.1,<5"
 
 [[package]]
-name = "google-api-python-client-stubs"
-version = "1.39.0"
-description = "Type stubs for google-api-python-client"
-optional = false
-python-versions = ">=3.7"
-groups = ["dev"]
-files = [
-    {file = "google_api_python_client_stubs-1.39.0-py3-none-any.whl", hash = "sha256:eedef91ce51cf7a83ac861608dbfee5b995f9d7e89bbe4d1dad334cb8b6a8326"},
-    {file = "google_api_python_client_stubs-1.39.0.tar.gz", hash = "sha256:c5af3e779011cc3447e0ab89c72159351da7495692201d08a0d23e6b7b67c097"},
-]
-
-[package.dependencies]
-google-api-python-client = ">=2.198.0"
-types-httplib2 = ">=0.22.0.2"
-typing-extensions = ">=3.10.0"
-
-[[package]]
 name = "google-auth"
 version = "2.53.0"
 description = "Google Authentication Library"
 optional = false
 python-versions = ">=3.10"
-groups = ["main", "dev", "spannertelemetry"]
+groups = ["main", "spannertelemetry"]
 files = [
     {file = "google_auth-2.53.0-py3-none-any.whl", hash = "sha256:6e7449917c599b35126a99ec268ec6880301f2fea41dce198fe8fd83ff642b68"},
     {file = "google_auth-2.53.0.tar.gz", hash = "sha256:e7e6aa16f6bee7b2b264830fd04f08087a1d5a836df516251a5d15327b246c9c"},
@@ -1373,7 +1356,7 @@ version = "0.4.0"
 description = "Google Authentication Library: httplib2 transport"
 optional = false
 python-versions = ">=3.10"
-groups = ["main", "dev"]
+groups = ["main"]
 files = [
     {file = "google_auth_httplib2-0.4.0-py3-none-any.whl", hash = "sha256:8e55cfafa3358cba85f6cad4a886138e88e158d71e7e5c9ee5936a5c1507fb91"},
     {file = "google_auth_httplib2-0.4.0.tar.gz", hash = "sha256:d5b030a204b7a4b4d553ba9ca701b62481ee2b74419325580be70f7d85ffed35"},
@@ -1772,7 +1755,7 @@ version = "1.73.0"
 description = "Common protobufs used in Google APIs"
 optional = false
 python-versions = ">=3.7"
-groups = ["main", "dev", "opentelemetry", "spannertelemetry"]
+groups = ["main", "opentelemetry", "spannertelemetry"]
 files = [
     {file = "googleapis_common_protos-1.73.0-py3-none-any.whl", hash = "sha256:dfdaaa2e860f242046be561e6d6cb5c5f1541ae02cfbcb034371aadb2942b4e8"},
     {file = "googleapis_common_protos-1.73.0.tar.gz", hash = "sha256:778d07cd4fbeff84c6f7c72102f0daf98fa2bfd3fa8bea426edc545588da0b5a"},
@@ -1937,7 +1920,7 @@ version = "0.22.0"
 description = "A comprehensive HTTP client library."
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-groups = ["main", "dev"]
+groups = ["main"]
 files = [
     {file = "httplib2-0.22.0-py3-none-any.whl", hash = "sha256:14ae0a53c1ba8f3d37e9e27cf37eabb0fb9980f435ba405d546948b009dd64dc"},
     {file = "httplib2-0.22.0.tar.gz", hash = "sha256:d7a10bc5ef5ab08322488bde8c726eeee5c8618723fdb399597ec58f3d82df81"},
@@ -1952,7 +1935,7 @@ version = "3.17"
 description = "Internationalized Domain Names in Applications (IDNA)"
 optional = false
 python-versions = ">=3.9"
-groups = ["main", "dev", "opentelemetry", "spannertelemetry"]
+groups = ["main", "opentelemetry", "spannertelemetry"]
 files = [
     {file = "idna-3.17-py3-none-any.whl", hash = "sha256:466e48829084efe2548012b855df21540b96f2e20e51bd124c851536556a592c"},
     {file = "idna-3.17.tar.gz", hash = "sha256:5eb0cb53bc467c12eadcf6de83163ad8527cec9416f44b9b61b19caedad2b87f"},
@@ -3323,7 +3306,7 @@ version = "1.27.1"
 description = "Beautiful, Pythonic protocol buffers"
 optional = false
 python-versions = ">=3.7"
-groups = ["main", "dev", "spannertelemetry"]
+groups = ["main", "spannertelemetry"]
 files = [
     {file = "proto_plus-1.27.1-py3-none-any.whl", hash = "sha256:e4643061f3a4d0de092d62aa4ad09fa4756b2cbb89d4627f3985018216f9fefc"},
     {file = "proto_plus-1.27.1.tar.gz", hash = "sha256:912a7460446625b792f6448bade9e55cd4e41e6ac10e27009ef71a7f317fa147"},
@@ -3341,7 +3324,7 @@ version = "5.29.6"
 description = ""
 optional = false
 python-versions = ">=3.8"
-groups = ["main", "dev", "opentelemetry", "spannertelemetry"]
+groups = ["main", "opentelemetry", "spannertelemetry"]
 files = [
     {file = "protobuf-5.29.6-cp310-abi3-win32.whl", hash = "sha256:62e8a3114992c7c647bce37dcc93647575fc52d50e48de30c6fcb28a6a291eb1"},
     {file = "protobuf-5.29.6-cp310-abi3-win_amd64.whl", hash = "sha256:7e6ad413275be172f67fdee0f43484b6de5a904cc1c3ea9804cb6fe2ff366eda"},
@@ -3362,7 +3345,7 @@ version = "0.6.4"
 description = "Pure-Python implementation of ASN.1 types and DER/BER/CER codecs (X.208)"
 optional = false
 python-versions = ">=3.8"
-groups = ["main", "dev", "spannertelemetry"]
+groups = ["main", "spannertelemetry"]
 files = [
     {file = "pyasn1-0.6.4-py3-none-any.whl", hash = "sha256:deda9277cfd454080ec40b207fb6df82206a3a2688735233cdcd8d3d565f088b"},
     {file = "pyasn1-0.6.4.tar.gz", hash = "sha256:9c447d8431c947fe4c8febc4ed9e760bc29011a5b01e5c74b67025bd9fb8ce81"},
@@ -3374,7 +3357,7 @@ version = "0.4.2"
 description = "A collection of ASN.1-based protocols modules"
 optional = false
 python-versions = ">=3.8"
-groups = ["main", "dev", "spannertelemetry"]
+groups = ["main", "spannertelemetry"]
 files = [
     {file = "pyasn1_modules-0.4.2-py3-none-any.whl", hash = "sha256:29253a9207ce32b64c3ac6600edc75368f98473906e8fd1043bd6b5b1de2c14a"},
     {file = "pyasn1_modules-0.4.2.tar.gz", hash = "sha256:677091de870a80aae844b1ca6134f54652fa2c8c5a52aa396440ac3106e941e6"},
@@ -3389,7 +3372,7 @@ version = "3.0"
 description = "C parser in Python"
 optional = false
 python-versions = ">=3.10"
-groups = ["main", "dev", "spannertelemetry"]
+groups = ["main", "spannertelemetry"]
 markers = "implementation_name != \"PyPy\""
 files = [
     {file = "pycparser-3.0-py3-none-any.whl", hash = "sha256:b727414169a36b7d524c1c3e31839a521725078d7b2ff038656844266160a992"},
@@ -3673,7 +3656,7 @@ version = "3.3.2"
 description = "pyparsing - Classes and methods to define and execute parsing grammars"
 optional = false
 python-versions = ">=3.9"
-groups = ["main", "dev"]
+groups = ["main"]
 files = [
     {file = "pyparsing-3.3.2-py3-none-any.whl", hash = "sha256:850ba148bd908d7e2411587e247a1e4f0327839c40e2e5e6d05a007ecc69911d"},
     {file = "pyparsing-3.3.2.tar.gz", hash = "sha256:c777f4d763f140633dcb6d8a3eda953bf7a214dc4eff598413c070bcdc117cbc"},
@@ -3880,7 +3863,7 @@ version = "2.34.2"
 description = "Python HTTP for Humans."
 optional = false
 python-versions = ">=3.10"
-groups = ["main", "dev", "opentelemetry", "spannertelemetry"]
+groups = ["main", "opentelemetry", "spannertelemetry"]
 files = [
     {file = "requests-2.34.2-py3-none-any.whl", hash = "sha256:2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0"},
     {file = "requests-2.34.2.tar.gz", hash = "sha256:f288924cae4e29463698d6d60bc6a4da69c89185ad1e0bcc4104f584e960b9ed"},
@@ -4330,24 +4313,12 @@ slack = ["slack-sdk"]
 telegram = ["requests"]
 
 [[package]]
-name = "types-httplib2"
-version = "0.32.0.20260720"
-description = "Typing stubs for httplib2"
-optional = false
-python-versions = ">=3.10"
-groups = ["dev"]
-files = [
-    {file = "types_httplib2-0.32.0.20260720-py3-none-any.whl", hash = "sha256:c8e838557fccd39bb08569839c7e625489c5b2db1c89ab54b6a3b808b9e9b392"},
-    {file = "types_httplib2-0.32.0.20260720.tar.gz", hash = "sha256:fdf42301174bccd6cede13dcffe130753f5c32c64b0a2b681a011504ffe6d1eb"},
-]
-
-[[package]]
 name = "typing-extensions"
 version = "4.15.0"
 description = "Backported and Experimental Type Hints for Python 3.9+"
 optional = false
 python-versions = ">=3.9"
-groups = ["main", "dev", "opentelemetry", "spannertelemetry"]
+groups = ["main", "opentelemetry", "spannertelemetry"]
 files = [
     {file = "typing_extensions-4.15.0-py3-none-any.whl", hash = "sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548"},
     {file = "typing_extensions-4.15.0.tar.gz", hash = "sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466"},
@@ -4387,7 +4358,7 @@ version = "4.2.0"
 description = "Implementation of RFC 6570 URI Templates"
 optional = false
 python-versions = ">=3.9"
-groups = ["main", "dev"]
+groups = ["main"]
 files = [
     {file = "uritemplate-4.2.0-py3-none-any.whl", hash = "sha256:962201ba1c4edcab02e60f9a0d3821e82dfc5d2d6662a21abd533879bdb8a686"},
     {file = "uritemplate-4.2.0.tar.gz", hash = "sha256:480c2ed180878955863323eea31b0ede668795de182617fef9c6ca09e6ec9d0e"},
@@ -4399,7 +4370,7 @@ version = "2.7.0"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 optional = false
 python-versions = ">=3.10"
-groups = ["main", "dev", "opentelemetry", "spannertelemetry"]
+groups = ["main", "opentelemetry", "spannertelemetry"]
 files = [
     {file = "urllib3-2.7.0-py3-none-any.whl", hash = "sha256:9fb4c81ebbb1ce9531cce37674bbc6f1360472bc18ca9a553ede278ef7276897"},
     {file = "urllib3-2.7.0.tar.gz", hash = "sha256:231e0ec3b63ceb14667c67be60f2f2c40a518cb38b03af60abc813da26505f4c"},
@@ -4667,4 +4638,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.15"
-content-hash = "fad68733d8ce09a7b5722916a08ff839704f99b4f54984f1e16173cf22c24e0a"
+content-hash = "294217b7f3c4991a82e6c847e3bbe4715092b5cabc863b9639a351e81de6b5a0"

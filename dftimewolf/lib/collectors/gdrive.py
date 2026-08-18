@@ -7,7 +7,7 @@
 
 import os.path
 import tempfile
-from typing import Any, Callable, TYPE_CHECKING
+from typing import Any, Callable
 
 from concurrent import futures
 from google.auth import exceptions as googleauth_exceptions
@@ -25,12 +25,9 @@ from dftimewolf.lib import cache
 from dftimewolf.lib import spanner_telemetry as telemetry
 from dftimewolf.lib.containers import manager as container_manager
 
-if TYPE_CHECKING:
-  from googleapiclient._apis.drive.v3 import resources
-
 
 def ListDriveFolder(
-    drive_resource: "resources.DriveResource",
+    drive_resource: Any,
     folder_id: str,
     fields: str,
     recursive: bool = False,
@@ -238,7 +235,7 @@ class GoogleDriveCollector(module.BaseModule):
     if self._drive_ids:
       drive_files.extend(
           [  # pyrefly: ignore=[bad-argument-type]
-              drive_resource.files().get(fileId=drive_id).execute()
+              drive_resource.files().get(fileId=drive_id).execute()  # pyrefly: ignore=[missing-attribute]
               for drive_id in self._drive_ids
           ]
       )
@@ -302,7 +299,7 @@ class GoogleDriveCollector(module.BaseModule):
         drive_resource = discovery.build(
             "drive", "v3", credentials=self._credentials
         )
-        request = drive_resource.files().get_media(fileId=drive_id)
+        request = drive_resource.files().get_media(fileId=drive_id)  # pyrefly: ignore=[missing-attribute]
         downloader = MediaIoBaseDownload(out_file, request)
         done = False
         while not done:
