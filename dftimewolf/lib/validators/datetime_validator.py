@@ -2,7 +2,7 @@
 """Validator for dates and times"""
 import datetime
 
-from typing import Any, Union
+from typing import Any
 from dateutil import parser
 
 from dftimewolf.lib import errors, resources, args_validator
@@ -101,8 +101,8 @@ class DatetimeValidator(args_validator.AbstractValidator):
     return parsed_datetime
 
   def _ValidateOrder(self,
-      first: Union[str, datetime.datetime],
-      second: Union[str, datetime.datetime]) -> bool:
+      first: datetime.datetime,
+      second: datetime.datetime) -> bool:
     """Validates date ordering.
 
     Args:

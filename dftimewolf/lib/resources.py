@@ -2,7 +2,7 @@
 """Various dfTimewolf resource objects."""
 
 import dataclasses
-from typing import Any, Dict, Sequence
+from typing import Any, Sequence
 
 
 class NoTestParamsError(Exception):
@@ -25,7 +25,7 @@ class RecipeArgument:
   switch: str = ''
   help_text: str = ''
   default: Any = None
-  validation_params: Dict[str, Any] = dataclasses.field(default_factory=dict)
+  validation_params: dict[str, Any] = dataclasses.field(default_factory=dict)
 
 
 class Recipe(object):
@@ -41,7 +41,7 @@ class Recipe(object):
 
   def __init__(self,
                description: str,
-               contents: Dict[str, Any],
+               contents: dict[str, Any],
                args: Sequence[RecipeArgument]) -> None:
     """Initializes a recipe.
 
@@ -54,7 +54,7 @@ class Recipe(object):
     super(Recipe, self).__init__()
     self.args: Sequence[RecipeArgument] = args
     self.contents = contents
-    self.name = contents['name']  # type: str
+    self.name: str = contents['name']
     self.description = description
 
   def GetHelpString(self) -> str:

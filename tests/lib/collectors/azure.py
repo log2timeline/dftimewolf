@@ -60,6 +60,8 @@ FAKE_DISK_COPY = compute.AZComputeDisk(
 class AzureCollectorTest(modules_test_base.ModuleTestBase):
   """Tests for the Azure collector."""
 
+  _module: azure.AzureCollector  # pyrefly: ignore[bad-override-mutable-attribute]
+
   def setUp(self):
     self._InitModule(azure.AzureCollector)
     super().setUp()
@@ -105,7 +107,7 @@ class AzureCollectorTest(modules_test_base.ModuleTestBase):
         ssh_public_key='fake-ssh-public-key',
         cpu_cores=4,
         memory_in_mb=8192,
-        region=None,
+        region='',
         dst_profile='test-remote-profile-name'
     )
 
@@ -200,6 +202,7 @@ class AzureCollectorTest(modules_test_base.ModuleTestBase):
     forensics_vms = self._module.GetContainers(containers.ForensicsVM)
     forensics_vm = forensics_vms[0]
     self.assertEqual('fake-analysis-vm', forensics_vm.name)
+    self.assertIsInstance(forensics_vm.evidence_disk, compute.AZComputeDisk)
     self.assertEqual(
         'fake-disk-copy', forensics_vm.evidence_disk.name)
 

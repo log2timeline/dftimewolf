@@ -1,16 +1,16 @@
 """Authentication module."""
 import os.path
-from typing import Optional
 
 import filelock
 from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
+from google.oauth2 import credentials as oauth_credentials
+from google.auth import external_account_authorized_user
 from google_auth_oauthlib.flow import InstalledAppFlow
 
 
 def GetGoogleOauth2Credential(
     scopes: list[str], credential_path: str, secret_path: str
-) -> Optional[Credentials]:
+) -> external_account_authorized_user.Credentials | oauth_credentials.Credentials:
   """Gets a Google Oauth2 credential.
   
   Args:
@@ -21,7 +21,7 @@ def GetGoogleOauth2Credential(
   Returns:
     Optional[Credentials]: Google Oauth2 credential.
   """
-  credentials: Optional[Credentials] = None
+  credentials: external_account_authorized_user.Credentials | oauth_credentials.Credentials | None = None
 
   # The credentials file stores the user's access and refresh tokens, and is
   # created automatically when the authorization flow completes for the first
@@ -30,13 +30,13 @@ def GetGoogleOauth2Credential(
   lock = filelock.FileLock(credentials_path + ".lock")  # pylint: disable=abstract-class-instantiated
   with lock:
     if os.path.exists(credentials_path):
-      credentials = Credentials.from_authorized_user_file(
-          credentials_path, scopes)  # type: ignore[no-untyped-call]
+      credentials = oauth_credentials.Credentials.from_authorized_user_file(
+          credentials_path, scopes)
 
     # If there are no (valid) credentials available, let the user log in.
     if not credentials or not credentials.valid:
       if credentials and credentials.expired and credentials.refresh_token:
-        credentials.refresh(Request())  # type: ignore
+        credentials.refresh(Request())
       else:
         secrets_path = os.path.join(os.path.expanduser("~"), secret_path)
         if not os.path.exists(secrets_path):

@@ -2,7 +2,7 @@
 """Copies AWS EBS snapshots into AWS S3."""
 
 import time
-from typing import Any, Optional, Type, List, Callable
+from typing import Any, Optional, Type, Callable
 import boto3
 
 from libcloudforensics.providers.aws import forensics
@@ -64,7 +64,7 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
     self.ec2: Any = None
     self.s3: Any = None
     self.iam_details: Any = None
-    self.aws_account: account.AWSAccount = None
+    self.aws_account: account.AWSAccount
     self.bucket_exists: bool = False
 
   # pylint: disable=arguments-differ
@@ -122,8 +122,7 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
     if self.iam_details['profile']['created']:
       time.sleep(20) # Propagation delay
 
-  def Process(self, container: containers.AWSSnapshot
-              ) -> None:  # pytype: disable=signature-mismatch
+  def Process(self, container: containers.AWSSnapshot) -> None:  # pyrefly: ignore=[bad-override]
     """Perform the copy of the snapshot to S3."""
 
     # Aws accounts have thread safety issues. Create a unique one per thread
@@ -178,11 +177,11 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
     # If we reached here, we have a problem
     raise AWSSnapshotS3CopyException('No suitable availability zone found')
 
-  def _CheckSnapshotsExist(self, snap_ids: List[str]) -> bool:
+  def _CheckSnapshotsExist(self, snap_ids: list[str]) -> bool:
     """Check the snapshots that we want to copy exist.
 
     Args:
-      snap_ids (List[str]): A list of snapshot IDs to look for.
+      snap_ids: A list of snapshot IDs to look for.
     Returns:
       True if the snapshots all exist and we have permissions to list them,
           False otherwise.

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """The attribute container interface."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import pandas as pd
 
@@ -23,10 +23,10 @@ class AttributeContainer():
     metadata: A dict of container metadata that can be used for passing
       metadata between collection/processing module and output modules.
   """
-  CONTAINER_TYPE: str = None  # type: ignore
+  CONTAINER_TYPE = str()
   metadata: dict[str, Any] = {}
 
-  def __init__(self, metadata: Optional[Dict[str, Any]] = None):
+  def __init__(self, metadata: Optional[dict[str, Any]] = None):
     """Initializes an AttributeContainer.
 
     Args:
@@ -39,7 +39,7 @@ class AttributeContainer():
       self.metadata = metadata
 
   # TODO: note that this method is only used by tests.
-  def GetAttributeNames(self) -> List[str]:
+  def GetAttributeNames(self) -> list[str]:
     """Retrieves the names of all attributes.
 
     Returns:
@@ -63,8 +63,10 @@ class AttributeContainer():
     """
     self.metadata[key] = value
 
-  def __eq__(self, other: "AttributeContainer") -> bool:
+  def __eq__(self, other: object) -> bool:
     """Override the `==` operator. Equality ignores metadata."""
+    if not isinstance(other, type(self)):
+      return False
     if self.CONTAINER_TYPE != other.CONTAINER_TYPE:
       return False
     for k, v in self.__dict__.items():

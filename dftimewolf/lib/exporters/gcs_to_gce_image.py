@@ -75,7 +75,7 @@ class GCSToGCEImage(module.ThreadAwareModule):
                      telemetry_=telemetry_,
                      publish_message_callback=publish_message_callback)
     self.dest_project_name: str = ''
-    self.dest_project: gcp_project.GoogleCloudProject = ''
+    self.dest_project: gcp_project.GoogleCloudProject
     self.iam_service: Any = None
     self.role_name = ''
 
@@ -143,8 +143,7 @@ class GCSToGCEImage(module.ThreadAwareModule):
       # IAM service raises googleapiclient.errors.HttpError
       self.ModuleError(str(exception), critical=True)
 
-  def Process(self, container: containers.GCSObject
-              ) -> None:  # pytype: disable=signature-mismatch
+  def Process(self, container: containers.GCSObject) -> None:  # pyrefly: ignore[bad-override]
     """Creates a GCE image from an image in GCS.
 
     Args:
@@ -181,10 +180,12 @@ class GCSToGCEImage(module.ThreadAwareModule):
     """Retrieve role information from the account for the image builder role.
 
     Returns:
-      A Dict containing the role information, or None if the role does not
+      A dict containing the role information, or None if the role does not
         exist.
+
     Raises:
-      googleapiclient.errors.HttpError: On IAM API errors."""
+      googleapiclient.errors.HttpError: On IAM API errors.
+    """
     request = self.iam_service.roles().list( #pylint: disable=no-member
         parent='projects/' + self.dest_project_name,
         showDeleted=True)
@@ -278,9 +279,11 @@ class GCSToGCEImage(module.ThreadAwareModule):
     """
     # Find the account
     crm = common.CreateService('cloudresourcemanager', 'v1')
+    # pyrefly: ignore=[missing-attribute]
     project = crm.projects().get(projectId=self.dest_project_name).execute() #pylint: disable=no-member
 
     # Get the existing IAM bindings
+    # pyrefly: ignore=[missing-attribute]
     policy = crm.projects().getIamPolicy( #pylint: disable=no-member
         resource=self.dest_project_name
     ).execute()
@@ -317,6 +320,7 @@ class GCSToGCEImage(module.ThreadAwareModule):
         'members': compute_acc
       })
 
+    # pyrefly: ignore=[missing-attribute]
     crm.projects().setIamPolicy( #pylint: disable=no-member
         resource=self.dest_project_name,
         body={'policy': {'bindings': policy['bindings']}}

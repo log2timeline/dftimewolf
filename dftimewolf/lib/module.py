@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 """Class definition for DFTimewolf modules."""
-# pytype: disable=ignored-abstractmethod,bad-return-type
 
 import abc
 import logging
 import sys
 import traceback
-from typing import Any, Callable, Dict, Optional, Sequence, Type, TypeVar, cast
+from typing import Any, Callable, Literal, NoReturn, Optional, overload, Sequence, Type, TypeVar, cast
 
 from dftimewolf.lib import cache
 from dftimewolf.lib import errors
@@ -59,7 +58,7 @@ class BaseModule(object):
                        logging.getLogger(name=self.name))
     self.logger.parent = logging.getLogger('dftimewolf')
 
-  def LogTelemetry(self, data: Dict[str, str]) -> None:
+  def LogTelemetry(self, data: dict[str, str]) -> None:
     """Logs useful telemetry using the telemetry attribute in the state object.
 
     Args:
@@ -78,7 +77,7 @@ class BaseModule(object):
         opentelemetry.add_attribute_to_current_span(key, value)
 
   def LogTelemetryEvent(
-      self, event_name: str, attributes: Optional[Dict[str, Any]] = None
+      self, event_name: str, attributes: Optional[dict[str, Any]] = None
   ) -> None:
     """Logs a telemetry event (annotation) to the current OpenTelemetry span.
 
@@ -93,6 +92,10 @@ class BaseModule(object):
     # No clean up is required.
     return
 
+  @overload
+  def ModuleError(self, message: str, critical: Literal[True]) -> NoReturn: ...
+  @overload
+  def ModuleError(self, message: str, critical: Literal[False]=False) -> None: ...
   def ModuleError(self, message: str, critical: bool=False) -> None:
     """Declares a module error.
 
@@ -115,14 +118,13 @@ class BaseModule(object):
         self._telemetry.LogTelemetry(
             'error_stacktrace', stacktrace, self.name)
 
-    error = errors.DFTimewolfError(
-        message, name=self.name, stacktrace=stacktrace, critical=critical)
     if self._telemetry:
       self._telemetry.LogTelemetry('error_detail', message, self.name)
 
     self.PublishMessage(message, is_error=True, is_critical=critical)
     if critical:
-      raise error
+      raise errors.DFTimewolfError(
+          message, name=self.name, stacktrace=stacktrace, critical=critical)
 
   def PublishMessage(
       self, message: str, is_error: bool = False, is_critical: bool = False
@@ -224,7 +226,7 @@ class BaseModule(object):
     """
 
   @abc.abstractmethod
-  def SetUp(self, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
+  def SetUp(self, *args, **kwargs) -> None:
     """Sets up necessary module configuration options."""
 
 
@@ -245,7 +247,7 @@ class PreflightModule(BaseModule):
     """
 
   @abc.abstractmethod
-  def SetUp(self, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
+  def SetUp(self, *args, **kwargs) -> None:
     """Sets up necessary module configuration options."""
 
   @abc.abstractmethod
@@ -282,8 +284,7 @@ class ThreadAwareModule(BaseModule):
 
   # pylint: disable=arguments-differ
   @abc.abstractmethod
-  def Process(self, container: interface.AttributeContainer
-              ) -> None:  # pytype: disable=signature-mismatch
+  def Process(self, container: interface.AttributeContainer) -> None:  # pyrefly: ignore[bad-override]
     """Carry out a single process based on the input container. This will be
     run in parallel, based on the number of containers of the ThreadOn type,
     given by GetThreadOnContainerType(), up to GetThreadPoolSize() max

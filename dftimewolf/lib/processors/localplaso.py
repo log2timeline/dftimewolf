@@ -3,7 +3,7 @@ import os
 import subprocess
 import tempfile
 import uuid
-from typing import Optional, Union, List, Callable
+from typing import Callable
 import docker
 
 from dftimewolf.lib import module
@@ -35,7 +35,7 @@ class LocalPlasoProcessor(module.BaseModule):
                      container_manager_=container_manager_,
                      telemetry_=telemetry_,
                      publish_message_callback=publish_message_callback)
-    self._timezone = None  # type: Optional[str]
+    self._timezone = str()
     self._output_path = str()
     self._plaso_path = str()
     self._use_docker = False
@@ -53,12 +53,12 @@ class LocalPlasoProcessor(module.BaseModule):
     """Checks if an image is available on the local Docker installation."""
     try:
       # Checks if image exists locally, does not pull from registry.
-      client = docker.from_env()  # type: ignore
+      client = docker.from_env()
       client.images.get(DOCKER_IMAGE)
       return True
-    except docker.errors.ImageNotFound: # type: ignore
+    except docker.errors.ImageNotFound:
       return False
-    except docker.errors.DockerException as e: # type: ignore
+    except docker.errors.DockerException as e:
       self.logger.warning('Docker error: %s', str(e))
       return False
 
@@ -75,7 +75,7 @@ class LocalPlasoProcessor(module.BaseModule):
             'mode': 'rw'
         }
     }
-    client = docker.from_env()  # type: ignore
+    client = docker.from_env()
     self.logger.debug(f"Running a Docker container with image {DOCKER_IMAGE}")
     client.containers.run(
         DOCKER_IMAGE,
@@ -85,7 +85,7 @@ class LocalPlasoProcessor(module.BaseModule):
         auto_remove=True)
     self.logger.debug("Docker container finished running and is auto-removed.")
 
-  def _LocalPlasoRun(self, command: List[str]) -> None:
+  def _LocalPlasoRun(self, command: list[str]) -> None:
     try:
       l2t_proc = subprocess.Popen(
           command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -100,7 +100,7 @@ class LocalPlasoProcessor(module.BaseModule):
           ' Check log file for details.')
       self.ModuleError(message, critical=True)
 
-  def SetUp(self, timezone: Optional[str], use_docker: bool) -> None:  # pylint: disable=arguments-differ
+  def SetUp(self, timezone: str, use_docker: bool) -> None:  # pylint: disable=arguments-differ
     """Sets up the local time zone with Plaso (log2timeline) should use.
 
     Args:
@@ -124,7 +124,7 @@ class LocalPlasoProcessor(module.BaseModule):
           critical=True)
 
   def _processContainer(
-      self, container: Union[containers.File, containers.Directory]) -> None:
+      self, container: containers.File | containers.Directory) -> None:
     """ Processes a given container either File or Directory
 
     Args:
@@ -184,13 +184,12 @@ class LocalPlasoProcessor(module.BaseModule):
   def Process(self) -> None:
     """Executes log2timeline.py on the module input."""
 
-    combined_list = [
-    ]  # type: List[Union[containers.File, containers.Directory]]
+    combined_list: list[containers.File | containers.Directory] = []
     for file_container in self.GetContainers(containers.File, pop=True):
       combined_list.append(file_container)
 
     for directory_container in self.GetContainers(containers.Directory,
-                                                        pop=True):
+                                                  pop=True):
       combined_list.append(directory_container)
 
     for item in combined_list:

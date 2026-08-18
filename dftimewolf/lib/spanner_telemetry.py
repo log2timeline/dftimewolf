@@ -2,7 +2,7 @@
 import datetime
 from dataclasses import dataclass
 import logging
-from typing import Dict, Any, List, Union, Optional
+from typing import Any, Optional
 import uuid as uuid_lib
 
 from dftimewolf import config
@@ -11,7 +11,7 @@ logger = logging.getLogger('dftimewolf')
 
 # mypy complains when doing from google.cloud import spanner
 try:
-  from google.cloud import spanner  # type: ignore
+  from google.cloud import spanner
   from google.api_core import exceptions
   HAS_SPANNER = True
 except ImportError:
@@ -32,7 +32,7 @@ class TelemetryCollection:
   """
   module_type: str
   module_name: str
-  telemetry: Dict[str, str]
+  telemetry: dict[str, str]
 
 class BaseTelemetry():
   """Interface for implementing a telemetry module."""
@@ -51,7 +51,7 @@ class BaseTelemetry():
       self.uuid = str(uuid_lib.uuid4())
     else:
       self.uuid = uuid
-    self.entries = [] # type: List[str]
+    self.entries: list[str] = []
     self._recipe_name: str = 'unset'
 
   def SetRecipeName(self, recipe_name: str) -> None:
@@ -104,7 +104,7 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
 
   def FormatTelemetry(self) -> str:
     """Gets all telemetry for a given workflow UUID."""
-    entries = []  # type: List[str]
+    entries: list[str] = []
     try:
       self.database.run_in_transaction(
           self._GetAllWorkflowTelemetryTransaction, entries=entries)
@@ -119,7 +119,7 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
   def _GetAllWorkflowTelemetryTransaction(
     self,
     transaction: Any,
-    entries: List[str]) -> None:
+    entries: list[str]) -> None:
     entries.append(f'Telemetry information for: {self.uuid}')
     query = (
       'SELECT * from Telemetry WHERE workflow_uuid = @uuid ORDER BY time ASC'
@@ -162,7 +162,7 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
       logger.warning(f'Could not send telemetry: {error}')
 
   def _LogTelemetryTransaction(
-      self, transaction: Any, telemetry: Dict[str, str]) -> None:
+      self, transaction: Any, telemetry: dict[str, str]) -> None:
     # Using items() provides a stable order for the columns and values
     columns = []
     values = []
@@ -174,7 +174,7 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
 
 def GetTelemetry(
     uuid: Optional[str] = None
-  ) -> Union[BaseTelemetry, GoogleCloudSpannerTelemetry]:
+  ) -> BaseTelemetry | GoogleCloudSpannerTelemetry:
   """Returns the currently configured Telemetry object."""
   telemetry_config = config.Config.GetExtra('telemetry')
   if telemetry_config.get('type') == 'google_cloud_spanner' and HAS_SPANNER:

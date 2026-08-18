@@ -64,6 +64,11 @@ class GCPCloudResourceTreeModuleTest(unittest.TestCase):
     # pylint: disable=protected-access
     self._processor._GetResourcesMetaDataFromLogs('test-project-hkhalifa')
 
+    # Type appeasement
+    self.assertIsNotNone(r1.creation_timestamp)
+    self.assertIsNotNone(r2.creation_timestamp)
+    self.assertIsNotNone(r3.creation_timestamp)
+
     _mock_GetLogMessages.assert_has_calls([
         mock.call('test-project-hkhalifa',
                   r2.creation_timestamp - timedelta(hours=1),

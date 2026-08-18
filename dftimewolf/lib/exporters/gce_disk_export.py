@@ -42,8 +42,7 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase):
                      telemetry_=telemetry_,
                      publish_message_callback=publish_message_callback)
 
-    self._source_project: gcp_project.GoogleCloudProject = None
-    self._analysis_project: gcp_project.GoogleCloudProject = None
+    self._analysis_project: gcp_project.GoogleCloudProject
     self._gcs_output_location: str = ''
     self._image_format: str = ''
     self._exported_image_name: str = ''
@@ -114,7 +113,7 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase):
                                                   all_disks=all_disks)
       for d in instance_disks:
         container = containers.GCEDisk(name=d.name, project=source_project_name)
-        container.metadata['SOURCE_MACHINE'] = self.remote_instance_name
+        container.metadata['SOURCE_MACHINE'] = self._remote_instance_name
         container.metadata['SOURCE_DISK'] = d.name
         self.StoreContainer(container, for_self_only=True)
 

@@ -62,7 +62,7 @@ class VertexAILLMProvider(interface.LLMProvider):
       with open(service_account_path) as sa_file:
         info = json.loads(sa_file.read())
       sa_credential = (
-          service_account.Credentials.from_service_account_info(info))  # type: ignore[no-untyped-call]
+          service_account.Credentials.from_service_account_info(info))
       vertexai.init(
           credentials=sa_credential,
           api_key=api_key,
@@ -127,8 +127,8 @@ class VertexAILLMProvider(interface.LLMProvider):
           )
       )
   )
-  @ratelimit.limits(calls=CALL_LIMIT, period=ONE_MINUTE)  # type: ignore
-  def Generate(self, prompt: str, model: str, **kwargs: str) -> str:
+  @ratelimit.limits(calls=CALL_LIMIT, period=ONE_MINUTE)
+  def Generate(self, prompt: str, model: str, **kwargs: str) -> str:  # pyrefly: ignore[bad-override]
     """Generates text from the LLM provider.
 
     Args:
@@ -140,11 +140,11 @@ class VertexAILLMProvider(interface.LLMProvider):
       The model output.
 
     Raises:
-      Exception on an error occuring when generating content.
+      Exception on an error occurring when generating content.
     """
     genai_model = self._get_model(model)
     try:
-      response = genai_model.generate_content(contents=prompt, **kwargs)
+      response = genai_model.generate_content(contents=prompt, **kwargs)  # pyrefly: ignore=[no-matching-overload]
     except Exception as e:
       log.warning("Exception while calling VertexAI: %s", e)
       raise
@@ -169,7 +169,7 @@ class VertexAILLMProvider(interface.LLMProvider):
           )
       )
   )
-  @ratelimit.limits(calls=CALL_LIMIT, period=ONE_MINUTE)  # type: ignore
+  @ratelimit.limits(calls=CALL_LIMIT, period=ONE_MINUTE)
   def GenerateWithHistory(self, prompt: str, model: str, **kwargs: str) -> str:
     """Generates text from the provider with history.
 
@@ -182,12 +182,12 @@ class VertexAILLMProvider(interface.LLMProvider):
       The model output.
 
     Raises:
-      Exception on an error occuring when generating content.
+      Exception on an error occurring when generating content.
     """
     if not self.chat_session:
       self.chat_session = self._get_model(model).start_chat()
     try:
-      response = self.chat_session.send_message(prompt, **kwargs)
+      response = self.chat_session.send_message(prompt, **kwargs)  # pyrefly: ignore=[no-matching-overload
     except Exception as e:
       log.warning("Exception while calling VertexAI: %s", e)
       raise

@@ -1,0 +1,5 @@
+project-includes = ["dftimewolf", "tests"]
+project-excludes = [
+    "**/_pb2.py",
+]
+python-version = "3.14.3"

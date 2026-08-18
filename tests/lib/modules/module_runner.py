@@ -96,11 +96,9 @@ class ModuleRunnerTest(parameterized.TestCase):
       mock_dm_1_process.side_effect = mock_delay
 
       running_args = test_recipe.basic_recipe
-      # pytype: disable=unsupported-operands
-      running_args['preflights'][0]['args'] = {'args': 'none'}
+      running_args['preflights'][0]['args'] = {'args': 'none'}  # pyrefly: ignore=[bad-typed-dict-key]
       running_args['modules'][0]['args'] = {'runtime_value': 'value 1'}
       running_args['modules'][1]['args'] = {'runtime_value': 'value 2'}
-      # pytype: enable=unsupported-operands
 
       self._runner.Initialise(test_recipe.basic_recipe, TEST_MODULES)
       return_value = self._runner.Run(running_args=running_args)
@@ -145,7 +143,7 @@ class ModuleRunnerTest(parameterized.TestCase):
       mock_parent.attach_mock(mock_dm_2_process, 'mock_dm_2_process')
 
       running_args = test_recipe.with_runtime_names
-      running_args['preflights'][0]['args'] = {'args': 'none'}  # pytype: disable=unsupported-operands
+      running_args['preflights'][0]['args'] = {'args': 'none'}  # pyrefly: ignore=[bad-typed-dict-key]
 
       self._runner.Initialise(test_recipe.with_runtime_names, TEST_MODULES)
       return_value = self._runner.Run(running_args=running_args)
@@ -189,7 +187,7 @@ class ModuleRunnerTest(parameterized.TestCase):
 
       # The generator module will create 3 containers with values 'one', 'two', 'three'
       running_args = test_recipe.threaded_no_preflights
-      running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
+      running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}
 
       self._runner.Initialise(test_recipe.threaded_no_preflights, TEST_MODULES)
       return_value = self._runner.Run(running_args=running_args)
@@ -207,7 +205,7 @@ class ModuleRunnerTest(parameterized.TestCase):
     """Tests container handling and delivery with threaded modules."""
     # The generator module will create 3 containers with values 'one', 'two', 'three'
     running_args = test_recipe.threaded_no_preflights
-    running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
+    running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}
 
     self._runner.Initialise(test_recipe.threaded_no_preflights, TEST_MODULES)
 
@@ -258,11 +256,9 @@ class ModuleRunnerTest(parameterized.TestCase):
   def test_FinalReportBasicRecipe(self):
     """Tests the final report against a simple recipe."""
     running_args = test_recipe.basic_recipe
-    # pytype: disable=unsupported-operands
-    running_args['preflights'][0]['args'] = {'args': 'none'}
+    running_args['preflights'][0]['args'] = {'args': 'none'}  # pyrefly: ignore=[bad-typed-dict-key]
     running_args['modules'][0]['args'] = {'runtime_value': 'value 1'}
     running_args['modules'][1]['args'] = {'runtime_value': 'value 2'}
-    # pytype: enable=unsupported-operands
 
     self._runner.Initialise(test_recipe.basic_recipe, TEST_MODULES)
     return_value = self._runner.Run(running_args=running_args)
@@ -297,11 +293,9 @@ class ModuleRunnerTest(parameterized.TestCase):
     modules.DummyModule2.Process = _new_dummy2_process
 
     running_args = test_recipe.basic_recipe
-    # pytype: disable=unsupported-operands
-    running_args['preflights'][0]['args'] = {'args': 'none'}
+    running_args['preflights'][0]['args'] = {'args': 'none'}  # pyrefly: ignore=[bad-typed-dict-key]
     running_args['modules'][0]['args'] = {'runtime_value': 'value 1'}
     running_args['modules'][1]['args'] = {'runtime_value': 'value 2'}
-    # pytype: enable=unsupported-operands
 
     self._runner.Initialise(test_recipe.basic_recipe, TEST_MODULES)
     return_value = self._runner.Run(running_args=running_args)
@@ -329,7 +323,7 @@ class ModuleRunnerTest(parameterized.TestCase):
   def test_FinalReportThreadedRecipe(self):
     """Tests the final report against a simple recipe."""
     running_args = test_recipe.threaded_no_preflights
-    running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
+    running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}
 
     self._runner.Initialise(test_recipe.threaded_no_preflights, TEST_MODULES)
     return_value = self._runner.Run(running_args=running_args)
@@ -354,12 +348,12 @@ class ModuleRunnerTest(parameterized.TestCase):
 
   def test_FinalReportThreadedRecipeErrors(self):
     """Tests the final report against a simple recipe."""
-    def _new_tacm_process(self, _unused):
+    def _new_tacm_process(self: thread_aware_modules.ThreadAwareConsumerModule, container) -> None:  # pylint: disable=unused-argument
       self.ModuleError('Critical error message', critical=True)
     thread_aware_modules.ThreadAwareConsumerModule.Process = _new_tacm_process
 
     running_args = test_recipe.threaded_no_preflights
-    running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
+    running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}
 
     self._runner.Initialise(test_recipe.threaded_no_preflights, TEST_MODULES)
     return_value = self._runner.Run(running_args=running_args)
@@ -539,7 +533,7 @@ class ModuleRunnerTest(parameterized.TestCase):
 
       # The generator module will create 3 containers with values 'one', 'two', 'three'
       running_args = test_recipe.threaded_no_preflights
-      running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
+      running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}
 
       self._runner.Initialise(test_recipe.threaded_no_preflights, TEST_MODULES)
       return_value = self._runner.Run(running_args=running_args)
@@ -570,7 +564,7 @@ class ModuleRunnerTest(parameterized.TestCase):
 
       # The generator module will create 3 containers with values 'one', 'two', 'three'
       running_args = test_recipe.threaded_no_preflights
-      running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
+      running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}
 
       self._runner.Initialise(test_recipe.threaded_no_preflights, TEST_MODULES)
       return_value = self._runner.Run(running_args=running_args)
@@ -601,7 +595,7 @@ class ModuleRunnerTest(parameterized.TestCase):
 
       # The generator module will create 3 containers with values 'one', 'two', 'three'
       running_args = test_recipe.threaded_no_preflights
-      running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}  # pytype: disable=unsupported-operands
+      running_args['modules'][0]['args'] = {'runtime_value': 'one,two,three'}
 
       self._runner.Initialise(test_recipe.threaded_no_preflights, TEST_MODULES)
       return_value = self._runner.Run(running_args=running_args)

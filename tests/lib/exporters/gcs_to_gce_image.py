@@ -48,8 +48,7 @@ FAKE_STATE_GCS_OBJECT_LIST = [
 class GCSToGCEImageTest(modules_test_base.ModuleTestBase):
   """Tests for the Google Cloud disk exporter."""
 
-  # For pytype
-  _module: gcs_to_gce_image.GCSToGCEImage
+  _module: gcs_to_gce_image.GCSToGCEImage  # pyrefly: ignore[bad-override-mutable-attribute]
 
   def setUp(self):
     self._InitModule(gcs_to_gce_image.GCSToGCEImage)

@@ -6,7 +6,7 @@ import tempfile
 import json
 import string
 
-from typing import Any, Dict, List, Optional, Callable
+from typing import Any, Optional, Callable
 
 from dftimewolf.lib.module import BaseModule
 from dftimewolf.lib.containers import containers
@@ -40,12 +40,12 @@ class WorkspaceAuditTimesketch(BaseModule):
     with open(self._FORMAT_STRINGS_PATH, 'r') as formatters_json:
       self._all_application_format_strings = json.load(formatters_json)
 
-  def SetUp(self, *args, **kwargs): # type: ignore
+  def SetUp(self, *args, **kwargs):
     """Sets up necessary module configuration options."""
     # No configuration required.
 
   def _ExtractActorInformation(
-      self, actor_dict: Dict[str, str]) -> Dict[str, Optional[str]]:
+      self, actor_dict: dict[str, str]) -> dict[str, Optional[str]]:
     """Extracts actor information from a Workspace log record.
 
     Args:
@@ -62,7 +62,7 @@ class WorkspaceAuditTimesketch(BaseModule):
         'actor_key': actor_dict.get('key')}
 
   def _FlattenParameters(
-      self, parameters: List[Dict[str, str]]) -> Dict[str, str]:
+      self, parameters: list[dict[str, str]]) -> dict[str, str]:
     """Flattens out parameter information from a Workspace log record.
 
     The parameter list looks like this:
@@ -87,15 +87,15 @@ class WorkspaceAuditTimesketch(BaseModule):
             'Full parameter dictionary: {0:s}'.format(str(parameters)))
         continue
       name = name.lower()
-      value = parameter.get('value')  # type: Optional[str]
+      value: str = parameter.get('value', '')
       if not value:
-        multivalue = parameter.get('multiValue', '')  # type: str
+        multivalue: str = parameter.get('multiValue', '')
         value = ', '.join(multivalue)
       if name and value:
         parameters_dict[name] = str(value)
     return parameters_dict
 
-  def _AddMessageString(self, timesketch_record: Dict[str, Any]) -> None:
+  def _AddMessageString(self, timesketch_record: dict[str, Any]) -> None:
     """Builds a Timesketch message string from a Timesketch record.
 
     Args:
@@ -141,7 +141,7 @@ class WorkspaceAuditTimesketch(BaseModule):
 
     timesketch_record['message'] = message
 
-  def _ProcessLogLine(self, log_record_string: str) -> List[str]:
+  def _ProcessLogLine(self, log_record_string: str) -> list[str]:
     """Processes a single JSON formatted Google Workspace log line.
 
     Args:

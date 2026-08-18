@@ -34,7 +34,7 @@ NESTED_ARG_RECIPE = {
 }
 
 NESTED_ARG_RECIPE_ARGS = [
-    resources.RecipeArgument(*arg) for arg in NESTED_ARG_RECIPE['args']]
+    resources.RecipeArgument(*arg) for arg in NESTED_ARG_RECIPE['args']]  # pyrefly: ignore[bad-argument-type]
 
 OPTIONAL_ARG_RECIPE = {
     'name': 'optional_arg_recipe',
@@ -50,7 +50,7 @@ OPTIONAL_ARG_RECIPE = {
 }
 
 OPTIONAL_ARG_RECIPE_ARGS = [
-    resources.RecipeArgument(*arg) for arg in OPTIONAL_ARG_RECIPE['args']]
+    resources.RecipeArgument(*arg) for arg in OPTIONAL_ARG_RECIPE['args']]  # pyrefly: ignore[bad-argument-type]
 
 NO_ARG_RECIPE = {
     'name': 'no_arg_recipe',
@@ -192,7 +192,7 @@ class MainToolTest(parameterized.TestCase):
     """Tests recipe validation when there are no args."""
     # pylint: disable=protected-access
     no_arg_recipe = resources.Recipe(
-        NO_ARG_RECIPE.__doc__,
+        str(NO_ARG_RECIPE.__doc__),
         NO_ARG_RECIPE,
         [])
     self.tool._recipes_manager.RegisterRecipe(no_arg_recipe)
@@ -210,7 +210,7 @@ class MainToolTest(parameterized.TestCase):
     """Tests that a recipe with no test params specified generates an error."""
     # pylint: disable=protected-access
     optional_arg_recipe = resources.Recipe(
-        OPTIONAL_ARG_RECIPE.__doc__,
+        str(OPTIONAL_ARG_RECIPE.__doc__),
         OPTIONAL_ARG_RECIPE,
         OPTIONAL_ARG_RECIPE_ARGS)
     self.tool._recipes_manager.RegisterRecipe(optional_arg_recipe)
@@ -225,7 +225,7 @@ class MainToolTest(parameterized.TestCase):
     """Tests that a recipe with args referenced in other args is populated."""
     # pylint: disable=protected-access
     nested_arg_recipe = resources.Recipe(
-        NESTED_ARG_RECIPE.__doc__,
+        str(NESTED_ARG_RECIPE.__doc__),
         NESTED_ARG_RECIPE,
         NESTED_ARG_RECIPE_ARGS)
     self.tool._recipes_manager.RegisterRecipe(nested_arg_recipe)
@@ -247,7 +247,7 @@ class MainToolTest(parameterized.TestCase):
     """Tests that a recipe fails when args don't validate."""
     # pylint: disable=protected-access
     nested_arg_recipe = resources.Recipe(
-        NESTED_ARG_RECIPE.__doc__,
+        str(NESTED_ARG_RECIPE.__doc__),
         NESTED_ARG_RECIPE,
         NESTED_ARG_RECIPE_ARGS)
     self.tool._recipes_manager.RegisterRecipe(nested_arg_recipe)
@@ -265,7 +265,7 @@ class MainToolTest(parameterized.TestCase):
     """Tests setting the dry_run flag."""
     # pylint: disable=protected-access
     nested_arg_recipe = resources.Recipe(
-        NESTED_ARG_RECIPE.__doc__,
+        str(NESTED_ARG_RECIPE.__doc__),
         NESTED_ARG_RECIPE,
         NESTED_ARG_RECIPE_ARGS)
     self.tool._recipes_manager.RegisterRecipe(nested_arg_recipe)
@@ -287,7 +287,7 @@ class MainToolTest(parameterized.TestCase):
     """Tests handling of optional arguments."""
     # pylint: disable=protected-access
     optional_arg_recipe = resources.Recipe(
-        OPTIONAL_ARG_RECIPE.__doc__,
+        str(OPTIONAL_ARG_RECIPE.__doc__),
         OPTIONAL_ARG_RECIPE,
         OPTIONAL_ARG_RECIPE_ARGS)
     self.tool._recipes_manager.RegisterRecipe(optional_arg_recipe)
@@ -303,7 +303,7 @@ class MainToolTest(parameterized.TestCase):
     """Tests handling of optional arguments."""
     # pylint: disable=protected-access
     optional_arg_recipe = resources.Recipe(
-        OPTIONAL_ARG_RECIPE.__doc__,
+        str(OPTIONAL_ARG_RECIPE.__doc__),
         OPTIONAL_ARG_RECIPE,
         OPTIONAL_ARG_RECIPE_ARGS)
     self.tool._recipes_manager.RegisterRecipe(optional_arg_recipe)

@@ -7,11 +7,12 @@
 
 import os.path
 import tempfile
-from typing import Any, Optional, Callable
+from typing import Any, Callable
 
 from concurrent import futures
 from google.auth import exceptions as googleauth_exceptions
-from google.oauth2.credentials import Credentials
+from google.oauth2 import credentials as oauth_credentials
+from google.auth import external_account_authorized_user
 from googleapiclient import discovery
 from googleapiclient import errors as googleapi_errors
 from googleapiclient.http import MediaIoBaseDownload
@@ -26,7 +27,7 @@ from dftimewolf.lib.containers import manager as container_manager
 
 
 def ListDriveFolder(
-    drive_resource: discovery.Resource,
+    drive_resource: Any,
     folder_id: str,
     fields: str,
     recursive: bool = False,
@@ -42,11 +43,10 @@ def ListDriveFolder(
   Returns:
     list[dict[str, Any]]: List of files in the folder.
   """
-  files = []
+  files: list[dict[str, Any]] = []
   page_token = None
   query = f"'{folder_id}' in parents and trashed = false"
   while True:
-    # pylint: disable=maybe-no-member
     response = (
         drive_resource.files()
         .list(
@@ -59,13 +59,13 @@ def ListDriveFolder(
     )
 
     for file in response.get("files", []):
-      files.append(file)
+      files.append(file)  # pyrefly: ignore=[bad-argument-type]
       if (
           recursive
           and file.get("mimeType") == "application/vnd.google-apps.folder"
       ):
         files.extend(
-            ListDriveFolder(drive_resource, file.get("id"), fields, recursive)
+            ListDriveFolder(drive_resource, file.get("id", ""), fields, recursive)
         )
 
     page_token = response.get("nextPageToken", None)
@@ -96,7 +96,7 @@ class GoogleDriveCollector(module.BaseModule):
                      container_manager_=container_manager_,
                      telemetry_=telemetry_,
                      publish_message_callback=publish_message_callback)
-    self._credentials: Optional[Credentials] = None
+    self._credentials: external_account_authorized_user.Credentials | oauth_credentials.Credentials
     self._drive_ids: list[str] = []
     self._folder_id: str = ""
     self._output_directory: str = ""
@@ -231,11 +231,11 @@ class GoogleDriveCollector(module.BaseModule):
     drive_resource = discovery.build(
         "drive", "v3", credentials=self._credentials
     )
-    drive_files = []
+    drive_files: list[dict[str, Any]] = []
     if self._drive_ids:
       drive_files.extend(
-          [
-              drive_resource.files().get(fileId=drive_id).execute()
+          [  # pyrefly: ignore=[bad-argument-type]
+              drive_resource.files().get(fileId=drive_id).execute()  # pyrefly: ignore=[missing-attribute]
               for drive_id in self._drive_ids
           ]
       )
@@ -299,7 +299,7 @@ class GoogleDriveCollector(module.BaseModule):
         drive_resource = discovery.build(
             "drive", "v3", credentials=self._credentials
         )
-        request = drive_resource.files().get_media(fileId=drive_id)
+        request = drive_resource.files().get_media(fileId=drive_id)  # pyrefly: ignore=[missing-attribute]
         downloader = MediaIoBaseDownload(out_file, request)
         done = False
         while not done:

@@ -60,11 +60,11 @@ class OllamaLLMProvider(interface.LLMProvider):
         total=CALL_LIMIT,
         backoff_factor=1,
         status_forcelist=[
-            requests.codes.too_many_requests,  # type: ignore
-            requests.codes.internal_server_error,  # type: ignore
-            requests.codes.bad_gateway,  # type: ignore
-            requests.codes.service_unavailable,  # type: ignore
-            requests.codes.gateway_timeout  # type: ignore
+            requests.codes.too_many_requests,
+            requests.codes.internal_server_error,
+            requests.codes.bad_gateway,
+            requests.codes.service_unavailable,
+            requests.codes.gateway_timeout
         ]
     )
 
@@ -116,7 +116,7 @@ class OllamaLLMProvider(interface.LLMProvider):
         request_options[option_name] = option_default
     return request_options
 
-  def Generate(self, prompt: str, model: str, **kwargs: str) -> str:
+  def Generate(self, prompt: str, model: str, **kwargs: str) -> str:  # pyrefly: ignore[bad-override]
     """Generates text from the LLM provider.
 
     Args:

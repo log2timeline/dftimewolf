@@ -28,8 +28,9 @@ FAKE_ANALYSIS_VM = compute.GoogleComputeInstance(
 class GCEForensicsVMTest(modules_test_base.ModuleTestBase):
   """Tests for the Forensics VM creator."""
 
+  _module: GCEForensicsVM  # pyrefly: ignore[bad-override-mutable-attribute]
+
   def setUp(self):
-    self._module: GCEForensicsVM
     self._InitModule(GCEForensicsVM)
     super().setUp()
 
@@ -185,7 +186,6 @@ class GCEForensicsVMTest(modules_test_base.ModuleTestBase):
     )
     self._ProcessModule()
 
-    self.assertIsNone(self._module.project)
     mock_StartAnalysisVM.assert_not_called()
     mock_AttachDisk.assert_not_called()
 

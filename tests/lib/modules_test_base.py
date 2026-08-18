@@ -25,15 +25,15 @@ class _message:
 class ModuleTestBase(parameterized.TestCase):
   """A base class for DFTW module testing."""
 
-  _module = None
+  _module: module.BaseModule
 
   def __init__(self, *args, **kwargs):
     """Init."""
     super().__init__(*args, *kwargs)
 
-    self._cache: cache.DFTWCache = None
-    self._container_manager: container_manager.ContainerManager = None
-    self._telemetry: mock.MagicMock = None
+    self._cache: cache.DFTWCache
+    self._container_manager: container_manager.ContainerManager
+    self._telemetry: mock.MagicMock
 
     self.messages: list[_message] = []
 

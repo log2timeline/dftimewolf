@@ -131,7 +131,7 @@ class ContainerManagerTest(unittest.TestCase):
     # Have every module store a unique container
     for c in (_TEST_RECIPE.get('preflights', []) +
               _TEST_RECIPE.get('modules', [])):
-      name = c.get('runtime_name', c['name'])
+      name = str(c.get('runtime_name', c['name']))
       self._container_manager.StoreContainer(
         source_module=name, container=_TestContainer1(f'Stored by {name}'))
 
@@ -368,7 +368,7 @@ class ContainerManagerTest(unittest.TestCase):
     # Have every module store a unique container
     for c in (_TEST_RECIPE.get('preflights', []) +
               _TEST_RECIPE.get('modules', [])):
-      name = c.get('runtime_name', c['name'])
+      name = str(c.get('runtime_name', c['name']))
       self._container_manager.StoreContainer(
           source_module=name, container=_TestContainer1(f'Stored by {name}'))
 

@@ -8,8 +8,8 @@ from unittest import mock
 
 try:
   # pylint: disable=unused-import
-  import opentelemetry.exporter.otlp.proto.http.trace_exporter  # type: ignore
-  import opentelemetry.sdk.trace  # type: ignore
+  import opentelemetry.exporter.otlp.proto.http.trace_exporter
+  import opentelemetry.sdk.trace
   HAS_OPENTELEMETRY = True
 except (ImportError, ModuleNotFoundError):
   HAS_OPENTELEMETRY = False

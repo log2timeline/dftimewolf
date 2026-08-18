@@ -15,8 +15,7 @@ from tests.lib import modules_test_base
 class GoogleDriveCollectorTest(modules_test_base.ModuleTestBase):
   """Tests for the Google Drive collector."""
 
-  # For pytype
-  _module: gdrive.GoogleDriveCollector
+  _module: gdrive.GoogleDriveCollector  # pyrefly: ignore[bad-override-mutable-attribute]
 
   def setUp(self):
     # pylint: disable=protected-access

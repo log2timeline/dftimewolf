@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Reads logs from a BigQuery table."""
-from typing import Callable, Type, Union
+from typing import Callable, Type
 
 from google.auth import exceptions as google_auth_exceptions
 from google.cloud import bigquery
@@ -56,8 +56,7 @@ class BigQueryCollector(module.ThreadAwareModule):
   def PreProcess(self) -> None:
     """Empty PreProcess."""
 
-  def Process(self, container: containers.BigQueryQuery
-              ) -> None:  # pytype: disable=signature-mismatch
+  def Process(self, container: containers.BigQueryQuery) -> None:  # pyrefly: ignore=[bad-override]
     """Collects data from BigQuery.
 
     Args:
@@ -72,11 +71,22 @@ class BigQueryCollector(module.ThreadAwareModule):
       df = bq_client.query(container.query).to_dataframe()
       self.logger.info('Query returned %d rows', df.shape[0])
 
-    # pytype: disable=module-attr
+      out_container: containers.DataFrame | containers.File
+      if container.pandas_output:
+        out_container = containers.DataFrame(
+            df, container.description, container.description)
+      else:
+        filename = utils.WriteDataFrameToJsonl(df)
+        out_container = containers.File(name=container.description, path=filename)
+        self.logger.info(f'Downloaded logs to {filename}')
+
+      # Copy metadata from source to output
+      out_container.metadata = container.metadata
+      self.StoreContainer(out_container)
+
     except google.cloud.exceptions.NotFound as exception:
       self.ModuleError(f'Error accessing project: {exception!s}',
           critical=True)
-    # pytype: enable=module-attr
 
     except (google_auth_exceptions.DefaultCredentialsError,
             google_auth_exceptions.RefreshError) as exception:
@@ -91,19 +101,6 @@ class BigQueryCollector(module.ThreadAwareModule):
       self.ModuleError(
           f'Unknown exception encountered: {str(error)}',
           critical=True)
-
-    out_container: Union[containers.DataFrame, containers.File]
-    if container.pandas_output:
-      out_container = containers.DataFrame(
-          df, container.description, container.description)
-    else:
-      filename = utils.WriteDataFrameToJsonl(df)
-      out_container = containers.File(name=container.description, path=filename)
-      self.logger.info(f'Downloaded logs to {filename}')
-
-    # Copy metadata from source to output
-    out_container.metadata = container.metadata
-    self.StoreContainer(out_container)
 
   def PostProcess(self) -> None:
     """Empty PostProcess."""

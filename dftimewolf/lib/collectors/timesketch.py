@@ -3,7 +3,7 @@
 
 import datetime
 import tempfile
-from typing import List, Callable
+from typing import Callable
 
 import pandas as pd
 from timesketch_api_client import client, search, sketch
@@ -76,8 +76,8 @@ class TimesketchSearchEventCollector(module.BaseModule):
     self.query_string: str = ""
     self.start_datetime: datetime.datetime | None = None
     self.end_datetime: datetime.datetime | None = None
-    self.indices: List[int] = []
-    self.labels: List[str] = []
+    self.indices: list[int] = []
+    self.labels: list[str] = []
     self.output_format: str = ""
     self.return_fields: str = ""
     self.search_name: str = ""

@@ -56,8 +56,7 @@ FAKE_VOLUME_COPY = ebs.AWSVolume(
 class AWSCollectorTest(modules_test_base.ModuleTestBase):
   """Tests for the AWS collector."""
 
-  # For Pytype
-  _module: aws.AWSCollector
+  _module: aws.AWSCollector  # pyrefly: ignore[bad-override-mutable-attribute]
 
   def setUp(self):
     self._InitModule(aws.AWSCollector)
@@ -180,9 +179,10 @@ class AWSCollectorTest(modules_test_base.ModuleTestBase):
     forensics_vm = forensics_vms[0]
     self.assertIsNotNone(forensics_vm)
     self.assertEqual('fake-analysis-vm', forensics_vm.name)
+    self.assertIsInstance(forensics_vm.evidence_disk, ebs.AWSVolume)
     self.assertEqual(
         'fake-volume-id-copy',
-        forensics_vm.evidence_disk.volume_id)  # pytype: disable=attribute-error
+        forensics_vm.evidence_disk.volume_id)
 
   # pylint: disable=line-too-long
   @mock.patch('boto3.session.Session._setup_loader')

@@ -2,7 +2,7 @@
 """Creates an analysis VM and attaches GCP disks to it for analysis."""
 
 import time
-from typing import Callable, Dict
+from typing import Callable
 
 from libcloudforensics import errors as lcf_errors
 from libcloudforensics.providers.gcp import forensics as gcp_forensics
@@ -62,16 +62,16 @@ class GCEForensicsVM(module.BaseModule):
                      telemetry_=telemetry_,
                      publish_message_callback=publish_message_callback)
 
-    self.project = None  # type: gcp_project.GoogleCloudProject
-    self.analysis_vm = None  # type: compute.GoogleComputeInstance
+    self.project: gcp_project.GoogleCloudProject
+    self.analysis_vm: compute.GoogleComputeInstance
     self.analysis_vm_name = ''
     self.incident_id = str()
-    self.boot_disk_size = 0.0
+    self.boot_disk_size = 0
     self.boot_disk_type = str()
     self.cpu_cores = 0
     self.image_project = str()
     self.image_family = str()
-    self._gcp_label = {}  # type: Dict[str, str]
+    self._gcp_label: dict[str, str] = {}
     self.create_analysis_vm = bool()
 
   # pylint: disable=arguments-differ,too-many-arguments
@@ -79,7 +79,7 @@ class GCEForensicsVM(module.BaseModule):
             project_name: str,
             incident_id: str,
             zone: str,
-            boot_disk_size: float,
+            boot_disk_size: int,
             boot_disk_type: str,
             cpu_cores: int,
             image_project: str,

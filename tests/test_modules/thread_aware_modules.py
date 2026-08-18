@@ -8,7 +8,7 @@ from dftimewolf.lib import module
 from dftimewolf.lib.containers import interface
 
 
-_T = TypeVar("TestContainer")  # pylint: disable=typevar-name-mismatch
+_T = TypeVar("TestContainer")  # pylint: disable=typevar-name-mismatch  # pyrefly: ignore=[invalid-type-var]
 
 
 class TestContainer(interface.AttributeContainer):
@@ -21,7 +21,7 @@ class TestContainer(interface.AttributeContainer):
     self.value = value
 
   def __eq__(self, other: _T) -> bool:
-    return self.value == other.value
+    return isinstance(other, TestContainer) and self.value == other.value
 
   def __str__(self) -> str:
     return self.value
@@ -63,7 +63,7 @@ class ContainerGeneratorModule(module.BaseModule):
                      telemetry_=telemetry_,
                      publish_message_callback=publish_message_callback)
 
-  def SetUp(self, runtime_value=None): # pylint: disable=arguments-differ
+  def SetUp(self, runtime_value: str=''): # pylint: disable=arguments-differ
     """Dummy setup function."""
     self.list = runtime_value.split(',')
     self.PublishMessage('Message from ContainerGeneratorModule:SetUp')

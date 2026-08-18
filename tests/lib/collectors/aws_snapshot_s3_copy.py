@@ -103,7 +103,7 @@ FAKE_LIST_BUCKETS_RESPONSE = {
 FAKE_CREATE_BUCKET_RESPONSE = None
 
 # pylint: disable=protected-access
-orig = botocore.client.BaseClient._make_api_call
+orig = botocore.client.BaseClient._make_api_call  # pyrefly: ignore[missing-attribute]
 
 def MockMakeAPICall(self, operation_name: str, kwarg: Any) -> Any:
   """Mock the boto3 api calls for specified client methods.
@@ -130,8 +130,9 @@ def MockMakeAPICall(self, operation_name: str, kwarg: Any) -> Any:
 class AWSSnapshotS3CopyCollectorTest(modules_test_base.ModuleTestBase):
   """Tests for the AWSSnapshotS3CopyCollector."""
 
+  _module: aws_snapshot_s3_copy.AWSSnapshotS3CopyCollector  # pyrefly: ignore[bad-override-mutable-attribute]
+
   def setUp(self):
-    self._module: aws_snapshot_s3_copy.AWSSnapshotS3CopyCollector
     self._InitModule(aws_snapshot_s3_copy.AWSSnapshotS3CopyCollector)
     super().setUp()
 
@@ -140,8 +141,9 @@ class AWSSnapshotS3CopyCollectorTest(modules_test_base.ModuleTestBase):
     with mock.patch('botocore.client.BaseClient._make_api_call',
         new=MockMakeAPICall):
 
-      self._module.SetUp(','.join([snapshot['SnapshotId']\
-            for snapshot in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']]),
+      self._module.SetUp(
+          ','.join([str(snapshot['SnapshotId'])
+                    for snapshot in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']]),
           FAKE_BUCKET,
           FAKE_REGION,
           FAKE_SUBNET)
@@ -158,8 +160,9 @@ class AWSSnapshotS3CopyCollectorTest(modules_test_base.ModuleTestBase):
     """Tests SetUp of the self._module without a subnet."""
     with mock.patch('botocore.client.BaseClient._make_api_call',
         new=MockMakeAPICall):
-      self._module.SetUp(','.join([snapshot['SnapshotId']\
-            for snapshot in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']]),
+      self._module.SetUp(
+          ','.join([str(snapshot['SnapshotId'])
+                    for snapshot in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']]),
           FAKE_BUCKET,
           FAKE_REGION)
 
@@ -181,7 +184,7 @@ class AWSSnapshotS3CopyCollectorTest(modules_test_base.ModuleTestBase):
         new=MockMakeAPICall):
 
       snaps_str = ','.join(
-          [s['SnapshotId'] for s in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']])
+          [str(s['SnapshotId']) for s in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']])
       self._module.SetUp(snaps_str,
           FAKE_BUCKET,
           FAKE_REGION)
@@ -215,7 +218,7 @@ class AWSSnapshotS3CopyCollectorTest(modules_test_base.ModuleTestBase):
     mock_sleep.return_value = None
 
     snaps_str = ','.join(
-        [s['SnapshotId'] for s in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']])
+        [str(s['SnapshotId']) for s in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']])
 
     with mock.patch('botocore.client.BaseClient._make_api_call',
         new=MockMakeAPICall):
@@ -258,7 +261,7 @@ class AWSSnapshotS3CopyCollectorTest(modules_test_base.ModuleTestBase):
 
     for snapshot in FAKE_DESCRIBE_SNAPSHOTS['Snapshots']:
       self._module.StoreContainer(containers.AWSSnapshot(
-          snapshot['SnapshotId']))
+          str(snapshot['SnapshotId'])))
 
     with mock.patch('botocore.client.BaseClient._make_api_call',
         new=MockMakeAPICall):

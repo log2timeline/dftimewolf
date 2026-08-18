@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Creates an analysis VM and copies AWS volumes to it for analysis."""
 
-from typing import List, Optional, Callable
+from typing import Optional, Callable
 
 from libcloudforensics.providers.aws import forensics as aws_forensics
 from libcloudforensics.providers.aws.internal import account as aws_account
@@ -65,14 +65,14 @@ class AWSCollector(module.BaseModule):
                      publish_message_callback=publish_message_callback)
     self.remote_profile_name = str()
     self.remote_zone = str()
-    self.source_account = None  # type: aws_account.AWSAccount
+    self.source_account: aws_account.AWSAccount
     self.incident_id = str()
-    self.remote_instance_id = None  # type: Optional[str]
-    self.volume_ids = []  # type: List[str]
+    self.remote_instance_id = str()
+    self.volume_ids: list[str] = []
     self.all_volumes = False
-    self.analysis_profile_name = None  # type: Optional[str]
-    self.analysis_zone = None  # type: Optional[str]
-    self.analysis_vm = None  # type: ec2.AWSInstance
+    self.analysis_profile_name = str()
+    self.analysis_zone = str()
+    self.analysis_vm: ec2.AWSInstance
     # See https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html
     self.device_suffixes = list('fghijklmnop')
 
@@ -86,23 +86,25 @@ class AWSCollector(module.BaseModule):
           volume_id=volume.volume_id,
           src_profile=self.remote_profile_name,
           dst_profile=self.analysis_profile_name)
-      self.analysis_vm.AttachVolume(
-          new_volume, self._FindNextAvailableDeviceName())
-      print('Volume {0:s} successfully copied to {1:s}'.format(
-          volume.volume_id, new_volume.volume_id))
 
-      container = containers.ForensicsVM(
-          name=self.analysis_vm.name,
-          evidence_disk=new_volume,
-          platform='aws')
-      self.StoreContainer(container)
+      if self.analysis_vm is not None:
+        self.analysis_vm.AttachVolume(
+            new_volume, self._FindNextAvailableDeviceName())
+        print('Volume {0:s} successfully copied to {1:s}'.format(
+            volume.volume_id, new_volume.volume_id))
+
+        container = containers.ForensicsVM(
+            name=str(self.analysis_vm.name),
+            evidence_disk=new_volume,
+            platform='aws')
+        self.StoreContainer(container)
 
   # pylint: disable=arguments-differ,too-many-arguments
   def SetUp(self,
             remote_profile_name: str,
             remote_zone: str,
             incident_id: str,
-            remote_instance_id: Optional[str]=None,
+            remote_instance_id: str,
             volume_ids: Optional[str]=None,
             all_volumes: bool=False,
             analysis_profile_name: Optional[str]=None,
@@ -193,7 +195,7 @@ class AWSCollector(module.BaseModule):
         dst_profile=self.analysis_profile_name,
     )
 
-  def _GetVolumesFromIds(self, volume_ids: List[str]) -> List[ebs.AWSVolume]:
+  def _GetVolumesFromIds(self, volume_ids: list[str]) -> list[ebs.AWSVolume]:
     """Gets volumes from an account by volume IDs.
 
     Args:
@@ -216,7 +218,7 @@ class AWSCollector(module.BaseModule):
 
   def _GetVolumesFromInstance(self,
                               instance_id: str,
-                              all_volumes: bool) -> List[ebs.AWSVolume]:
+                              all_volumes: bool) -> list[ebs.AWSVolume]:
     """Gets volumes to copy based on an instance name.
 
     Args:
@@ -237,7 +239,7 @@ class AWSCollector(module.BaseModule):
       return list(remote_instance.ListVolumes().values())
     return [remote_instance.GetBootVolume()]
 
-  def _FindVolumesToCopy(self) -> List[ebs.AWSVolume]:
+  def _FindVolumesToCopy(self) -> list[ebs.AWSVolume]:
     """Determines which volumes to copy depending on the collector's attributes.
 
     Returns:

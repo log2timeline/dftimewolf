@@ -21,9 +21,9 @@ class WorkspaceAuditTimesketchTest(modules_test_base.ModuleTestBase):
   """Tests for the Workspace Audit logging Timesketch processor."""
 
   maxDiff = None
+  _module: workspace_audit_timesketch.WorkspaceAuditTimesketch  # pyrefly: ignore[bad-override-mutable-attribute]
 
   def setUp(self):
-    self._module: workspace_audit_timesketch.WorkspaceAuditTimesketch
     self._InitModule(workspace_audit_timesketch.WorkspaceAuditTimesketch)
     super().setUp()
 

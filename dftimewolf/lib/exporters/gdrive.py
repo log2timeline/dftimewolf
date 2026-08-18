@@ -9,7 +9,8 @@ import io
 from typing import Any, Optional, Type, cast, Callable
 
 from google.auth import exceptions as googleauth_exceptions
-from google.oauth2.credentials import Credentials
+from google.oauth2 import credentials as oauth2_credentials
+from google.auth import external_account_authorized_user
 from googleapiclient import discovery
 from googleapiclient import errors as googleapi_errors
 from googleapiclient.http import MediaIoBaseUpload
@@ -20,6 +21,7 @@ from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib import cache
 from dftimewolf.lib import spanner_telemetry as telemetry
 from dftimewolf.lib.containers import manager as container_manager
+
 
 
 class GoogleDriveExporter(module.ThreadAwareModule):
@@ -44,10 +46,10 @@ class GoogleDriveExporter(module.ThreadAwareModule):
                      telemetry_=telemetry_,
                      publish_message_callback=publish_message_callback)
 
-    self.parent_folder_id: Optional[str] = None
-    self.folder_id: Optional[str] = None
-    self.new_folder_name: Optional[str] = None
-    self._credentials: Optional[Credentials] = None
+    self.parent_folder_id = str()
+    self.folder_id = str()
+    self.new_folder_name = str()
+    self._credentials: oauth2_credentials.Credentials | external_account_authorized_user.Credentials
     self._drive_resource: Optional[discovery.Resource] = None
     self._max_upload_workers: Optional[int] = None
 
@@ -86,7 +88,7 @@ class GoogleDriveExporter(module.ThreadAwareModule):
     """Preprocesses the files and uploads them to Google Drive."""
     if self.new_folder_name:
       new_folder = self.CreateFolderInDrive(
-          self.parent_folder_id,  # type: ignore[arg-type]
+          self.parent_folder_id,
           self.new_folder_name,
       )
       self.folder_id = new_folder["id"]
@@ -109,7 +111,7 @@ class GoogleDriveExporter(module.ThreadAwareModule):
           "drive", "v3", credentials=self._credentials
       )
       uploaded_file = (
-          drive_resource.files()
+          drive_resource.files()  # pyrefly: ignore=[missing-attribute]
           .create(
               body={
                   "name": container.name,
@@ -156,7 +158,7 @@ class GoogleDriveExporter(module.ThreadAwareModule):
           "drive", "v3", credentials=self._credentials
       )
       created_folder = (
-          drive_resource.files()
+          drive_resource.files()  # pyrefly: ignore=[missing-attribute]
           .create(
               body={
                   "name": folder_name,

@@ -39,25 +39,25 @@ class OpenRelikProcessor(module.ThreadAwareModule):
                      container_manager_=container_manager_,
                      telemetry_=telemetry_,
                      publish_message_callback=publish_message_callback)
-    self.openrelik_api_client: api_client.APIClient = None
-    self.openrelik_folder_client: folders.FoldersAPI = None
-    self.openrelik_workflow_client: workflows.WorkflowsAPI = None
+    self.openrelik_api_client: api_client.APIClient
+    self.openrelik_folder_client: folders.FoldersAPI
+    self.openrelik_workflow_client: workflows.WorkflowsAPI
     self.openrelik_api: str | None = None
     self.openrelik_ui: str | None = None
     self.openrelik_api_key: str | None = None
-    self.template_workflow_id: int | None = None
-    self.folder_id: int | None = None
-    self.incident_id: str | None = None
+    self.template_workflow_id: int
+    self.folder_id: int = 0
+    self.incident_id = str()
 
   # pylint: disable=arguments-differ
   def SetUp(
     self,
-    incident_id: str | None,
-    folder_id: int | None,
-    template_workflow_id: int | None,
-    openrelik_api: str | None,
-    openrelik_ui: str | None,
-    openrelik_api_key: str | None,
+    incident_id: str,
+    folder_id: int,
+    template_workflow_id: int,
+    openrelik_api: str,
+    openrelik_ui: str,
+    openrelik_api_key: str,
   ) -> None:
     self.openrelik_api = openrelik_api
     self.openrelik_ui = openrelik_ui
@@ -75,7 +75,7 @@ class OpenRelikProcessor(module.ThreadAwareModule):
     if not self.folder_id or not self.openrelik_folder_client.folder_exists(
       self.folder_id
     ):
-      self.folder_id = self.openrelik_folder_client.create_root_folder(
+      self.folder_id = self.openrelik_folder_client.create_root_folder(  # pyrefly: ignore=[bad-assignment]
         f"{self.incident_id}"
       )
       self.logger.info(f"Created folder {self.folder_id}")
@@ -92,7 +92,7 @@ class OpenRelikProcessor(module.ThreadAwareModule):
       self.folder_id, workflow_id
     )
     status = None
-    tasks = workflow.get("tasks")
+    tasks = workflow.get("tasks", [])
     if tasks and len(tasks) > 0:
       status = tasks[0].get("status_short")
     if not status:
@@ -105,7 +105,7 @@ class OpenRelikProcessor(module.ThreadAwareModule):
       workflow = self.openrelik_workflow_client.get_workflow(
         self.folder_id, workflow_id
       )
-      tasks = workflow.get("tasks")
+      tasks = workflow.get("tasks", [])
       if tasks:
         status = tasks[0].get("status_short")
     self.logger.debug(f"Workflow {workflow_id} status: {status}")
@@ -144,9 +144,7 @@ class OpenRelikProcessor(module.ThreadAwareModule):
     self.logger.info(f"Saved output for file ID {file_id} to {local_path}")
     return str(local_path)
 
-  def Process(
-    self, container: containers.File
-  ) -> None:  # pytype: disable=signature-mismatch
+  def Process(self, container: containers.File) -> None:  # pyrefly: ignore[bad-override]
     file_ids = []
     self.logger.info(f"Uploading file {container.path}")
     with opentelemetry.start_span('OpenRelik.UploadFile', {
@@ -167,6 +165,8 @@ class OpenRelikProcessor(module.ThreadAwareModule):
       workflow_id = self.openrelik_workflow_client.create_workflow(
         self.folder_id, file_ids, self.template_workflow_id
       )
+      if not workflow_id:
+        raise RuntimeError('Workflow creation failed.')
     workflow_url = f"{self.openrelik_ui}/folder/{self.folder_id}"
     self.PublishMessage(
       f"New workflow ID {workflow_id} can be viewed at: {workflow_url}"

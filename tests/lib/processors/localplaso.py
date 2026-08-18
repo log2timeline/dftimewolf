@@ -16,8 +16,7 @@ from tests.lib import modules_test_base
 class LocalPlasoTest(modules_test_base.ModuleTestBase):
   """Tests for the local Plaso processor."""
 
-  # For Pytype
-  _module: localplaso.LocalPlasoProcessor
+  _module: localplaso.LocalPlasoProcessor  # pyrefly: ignore[bad-override-mutable-attribute]
 
   def setUp(self):
     self._InitModule(localplaso.LocalPlasoProcessor)
@@ -39,7 +38,7 @@ class LocalPlasoTest(modules_test_base.ModuleTestBase):
 
     self._module.StoreContainer(
         containers.File(name='test', path='/notexist/test'))
-    self._module.SetUp(timezone=None, use_docker=False)
+    self._module.SetUp(timezone='', use_docker=False)
     self._ProcessModule()
     mock_Popen.assert_called_once()
     args = mock_Popen.call_args[0][0]  # Get positional arguments of first call
@@ -55,7 +54,7 @@ class LocalPlasoTest(modules_test_base.ModuleTestBase):
     mock_docker.return_value = mock.Mock()
     self._module.StoreContainer(
         containers.File(name='test', path='/notexist/test'))
-    self._module.SetUp(timezone=None, use_docker=True)
+    self._module.SetUp(timezone='', use_docker=True)
     self._ProcessModule()
     mock_docker().containers.run.assert_called_once()
     args = mock_docker().containers.run.call_args[1]
@@ -64,7 +63,7 @@ class LocalPlasoTest(modules_test_base.ModuleTestBase):
     self.assertIsNotNone(match)
     self.assertRegex(
         self._module.GetContainers(containers.File)[0].path,
-        f".*/{match.group(1)}")  # pytype: disable=attribute-error
+        f".*/{match.group(1)}")
 
   @mock.patch.dict('os.environ', {'PATH': '/fake/path:/fake/path/2'})
   @mock.patch('os.path.isfile')
@@ -85,7 +84,7 @@ class LocalPlasoTest(modules_test_base.ModuleTestBase):
     mock_docker().images.get.side_effect = docker.errors.ImageNotFound(
         message="")
     with self.assertRaises(errors.DFTimewolfError) as error:
-      self._module.SetUp(timezone=None, use_docker=False)
+      self._module.SetUp(timezone='', use_docker=False)
     self.assertEqual((
         'Could not run log2timeline.py from PATH or a local Docker image. '
         'To fix: \n'

@@ -84,7 +84,6 @@ def is_enabled() -> bool:
   """
   try:
     # pylint: disable=import-outside-toplevel
-    # pytype: disable=import-error
     from dftimewolf import config
     telemetry_config = config.Config.GetExtra('telemetry')
     otel_config = telemetry_config.get('config', {}).get('opentelemetry', {})
@@ -234,7 +233,6 @@ def SetupOpenTelemetry(tracer_provider: trace.TracerProvider | None = None) -> N
   otel_mode = 'otlp-http'
   try:
     # pylint: disable=import-outside-toplevel
-    # pytype: disable=import-error
     from dftimewolf import config
     telemetry_config = config.Config.GetExtra('telemetry')
     otel_config = telemetry_config.get('config', {}).get('opentelemetry', {})
@@ -244,7 +242,6 @@ def SetupOpenTelemetry(tracer_provider: trace.TracerProvider | None = None) -> N
 
   try:
     # pylint: disable=import-outside-toplevel
-    # pytype: disable=import-error
     from opentelemetry.sdk.resources import Resource
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
@@ -262,7 +259,6 @@ def SetupOpenTelemetry(tracer_provider: trace.TracerProvider | None = None) -> N
   if otel_mode == 'otlp-grpc':
     try:
       # pylint: disable=import-outside-toplevel
-      # pytype: disable=import-error
       from opentelemetry.exporter.otlp.proto.grpc import trace_exporter as grpc_exporter
       endpoint = os.environ.get('DFTIMEWOLF_OTLP_GRPC_ENDPOINT', 'localhost:4317')
       insecure = os.environ.get('DFTIMEWOLF_OTLP_INSECURE', 'true').lower() == 'true'
@@ -274,7 +270,6 @@ def SetupOpenTelemetry(tracer_provider: trace.TracerProvider | None = None) -> N
   elif otel_mode == 'otlp-http':
     try:
       # pylint: disable=import-outside-toplevel
-      # pytype: disable=import-error
       from opentelemetry.exporter.otlp.proto.http import trace_exporter as http_exporter
       endpoint = os.environ.get(
           'DFTIMEWOLF_OTLP_HTTP_ENDPOINT', 'http://localhost:4318/v1/traces'

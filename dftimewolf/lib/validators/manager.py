@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Manager class for validators."""
-from typing import Any, Dict, List, Optional, Sequence, Type
+from typing import Any, Optional, Sequence, Type
 
 from dftimewolf.lib import errors, resources, args_validator
 
@@ -8,10 +8,10 @@ from dftimewolf.lib import errors, resources, args_validator
 class ValidatorsManager:
   """Class that handles validating arguments."""
 
-  _validator_classes = {}  # type: Dict[str, Type['args_validator.AbstractValidator']] # pylint: disable=line-too-long
+  _validator_classes: dict[str, Type['args_validator.AbstractValidator']] = {}
 
   @classmethod
-  def ListValidators(cls) -> List[str]:
+  def ListValidators(cls) -> list[str]:
     """Returns a list of all registered validators.
 
     Returns:
