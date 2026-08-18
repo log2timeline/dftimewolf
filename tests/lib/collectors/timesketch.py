@@ -16,8 +16,7 @@ from tests.lib import modules_test_base
 class TimesketchSearchEventCollectorTest(modules_test_base.ModuleTestBase):
   """Tests for the TimesketchSearchEventCollector module."""
 
-  # For pytype
-  _module: timesketch.TimesketchSearchEventCollector
+  _module: timesketch.TimesketchSearchEventCollector  # pyrefly: ignore[bad-override-mutable-attribute]
 
   def setUp(self) -> None:
     self._InitModule(timesketch.TimesketchSearchEventCollector)

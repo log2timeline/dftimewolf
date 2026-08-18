@@ -33,8 +33,9 @@ FAKE_STATE_GCS_OBJECT_LIST = [
 class GCEDiskFromImageTest(modules_test_base.ModuleTestBase):
   """Tests for the Google Cloud disk creator."""
 
+  _module: gce_disk_from_image.GCEDiskFromImage  # pyrefly: ignore[bad-override-mutable-attribute]
+
   def setUp(self):
-    self._module: gce_disk_from_image.GCEDiskFromImage
     self._InitModule(gce_disk_from_image.GCEDiskFromImage)
     super().setUp()
 

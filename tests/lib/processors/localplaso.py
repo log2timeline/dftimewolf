@@ -16,8 +16,7 @@ from tests.lib import modules_test_base
 class LocalPlasoTest(modules_test_base.ModuleTestBase):
   """Tests for the local Plaso processor."""
 
-  # For Pytype
-  _module: localplaso.LocalPlasoProcessor
+  _module: localplaso.LocalPlasoProcessor  # pyrefly: ignore[bad-override-mutable-attribute]
 
   def setUp(self):
     self._InitModule(localplaso.LocalPlasoProcessor)

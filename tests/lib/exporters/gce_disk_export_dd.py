@@ -27,7 +27,7 @@ FAKE_INSTANCE = compute.GoogleComputeInstance(
 class GoogleCloudDiskExportStreamTest(modules_test_base.ModuleTestBase):
   """Tests for the Google Cloud disk bit-stream export."""
 
-  _module: gce_disk_export_dd.GoogleCloudDiskExportStream
+  _module: gce_disk_export_dd.GoogleCloudDiskExportStream  # pyrefly: ignore[bad-override-mutable-attribute]
 
   def setUp(self):
     self._InitModule(gce_disk_export_dd.GoogleCloudDiskExportStream)

@@ -30,7 +30,7 @@ class FakeLLMProvider(interface.LLMProvider):
 class DataFrameLLMProcessorTest(modules_test_base.ModuleTestBase):
   """Tests for the DataFrameLLMProcessor."""
 
-  _module: llm_base.DataFrameLLMProcessor
+  _module: llm_base.DataFrameLLMProcessor  # pyrefly: ignore[bad-override-mutable-attribute]
 
   def setUp(self):
     """Tests that the processor can be initialized."""

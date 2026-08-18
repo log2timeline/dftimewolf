@@ -348,7 +348,7 @@ class ModuleRunnerTest(parameterized.TestCase):
 
   def test_FinalReportThreadedRecipeErrors(self):
     """Tests the final report against a simple recipe."""
-    def _new_tacm_process(self: thread_aware_modules.ThreadAwareConsumerModule, container) -> None:
+    def _new_tacm_process(self: thread_aware_modules.ThreadAwareConsumerModule, container) -> None:  # pylint: disable=unused-argument
       self.ModuleError('Critical error message', critical=True)
     thread_aware_modules.ThreadAwareConsumerModule.Process = _new_tacm_process
 

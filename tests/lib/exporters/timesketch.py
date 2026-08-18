@@ -15,7 +15,7 @@ from tests.lib import modules_test_base
 class TimesketchExporterTest(modules_test_base.ModuleTestBase):
   """Tests for the Threaded Timesketch exporter."""
 
-  _module: timesketch.TimesketchExporter
+  _module: timesketch.TimesketchExporter  # pyrefly: ignore[bad-override-mutable-attribute]
 
   def setUp(self):
     self._InitModule(timesketch.TimesketchExporter)

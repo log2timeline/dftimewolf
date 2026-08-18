@@ -60,7 +60,7 @@ FAKE_DISK_COPY = compute.AZComputeDisk(
 class AzureCollectorTest(modules_test_base.ModuleTestBase):
   """Tests for the Azure collector."""
 
-  _module: azure.AzureCollector
+  _module: azure.AzureCollector  # pyrefly: ignore[bad-override-mutable-attribute]
 
   def setUp(self):
     self._InitModule(azure.AzureCollector)

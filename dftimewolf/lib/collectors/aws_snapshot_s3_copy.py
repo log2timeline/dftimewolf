@@ -122,7 +122,7 @@ class AWSSnapshotS3CopyCollector(module.ThreadAwareModule):
     if self.iam_details['profile']['created']:
       time.sleep(20) # Propagation delay
 
-  def Process(self, container: containers.AWSSnapshot) -> None:
+  def Process(self, container: containers.AWSSnapshot) -> None:  # pyrefly: ignore=[bad-override]
     """Perform the copy of the snapshot to S3."""
 
     # Aws accounts have thread safety issues. Create a unique one per thread

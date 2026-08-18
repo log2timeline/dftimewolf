@@ -284,7 +284,7 @@ class ThreadAwareModule(BaseModule):
 
   # pylint: disable=arguments-differ
   @abc.abstractmethod
-  def Process(self, container: interface.AttributeContainer) -> None:
+  def Process(self, container: interface.AttributeContainer) -> None:  # pyrefly: ignore[bad-override]
     """Carry out a single process based on the input container. This will be
     run in parallel, based on the number of containers of the ThreadOn type,
     given by GetThreadOnContainerType(), up to GetThreadPoolSize() max

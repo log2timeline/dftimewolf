@@ -80,8 +80,9 @@ def MockMakeAPICall(self, operation_name : str, kwarg : Any) -> Any:
 class AWSVolumeSnapshotCollectorTest(modules_test_base.ModuleTestBase):
   """Tests for the AWSVolumeSnapshotCollector."""
 
+  _module: aws_volume_snapshot.AWSVolumeSnapshotCollector  # pyrefly: ignore[bad-override-mutable-attribute]
+
   def setUp(self):
-    self._module: aws_volume_snapshot.AWSVolumeSnapshotCollector
     self._InitModule(aws_volume_snapshot.AWSVolumeSnapshotCollector)
     super().setUp()
 

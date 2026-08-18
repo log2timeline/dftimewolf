@@ -56,8 +56,7 @@ FAKE_VOLUME_COPY = ebs.AWSVolume(
 class AWSCollectorTest(modules_test_base.ModuleTestBase):
   """Tests for the AWS collector."""
 
-  # For Pytype
-  _module: aws.AWSCollector
+  _module: aws.AWSCollector  # pyrefly: ignore[bad-override-mutable-attribute]
 
   def setUp(self):
     self._InitModule(aws.AWSCollector)

@@ -116,7 +116,7 @@ class OllamaLLMProvider(interface.LLMProvider):
         request_options[option_name] = option_default
     return request_options
 
-  def Generate(self, prompt: str, model: str, **kwargs: str) -> str:
+  def Generate(self, prompt: str, model: str, **kwargs: str) -> str:  # pyrefly: ignore[bad-override]
     """Generates text from the LLM provider.
 
     Args:

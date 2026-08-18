@@ -61,7 +61,7 @@ class GCEDiskFromImage(module.ThreadAwareModule):
           self.StoreContainer(containers.GCEImage(obj, dest_project))
 
 
-  def Process(self, container: containers.GCEImage) -> None:
+  def Process(self, container: containers.GCEImage) -> None:  # pyrefly: ignore[bad-override]
     """Creates a GCE disk from an image.
 
     Args:

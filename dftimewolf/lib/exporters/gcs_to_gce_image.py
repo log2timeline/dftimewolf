@@ -143,7 +143,7 @@ class GCSToGCEImage(module.ThreadAwareModule):
       # IAM service raises googleapiclient.errors.HttpError
       self.ModuleError(str(exception), critical=True)
 
-  def Process(self, container: containers.GCSObject) -> None:
+  def Process(self, container: containers.GCSObject) -> None:  # pyrefly: ignore[bad-override]
     """Creates a GCE image from an image in GCS.
 
     Args:

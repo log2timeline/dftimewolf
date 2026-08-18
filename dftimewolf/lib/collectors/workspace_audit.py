@@ -200,7 +200,7 @@ class WorkspaceAuditCollector(module.BaseModule):
 
         # Pylint can't see the activities method.
         # pylint: disable=no-member
-        request = audit_resource.activities().list_next(request, response)  # pyrefly: ignore=[missing-attribute]
+        request = audit_resource.activities().list_next(request, response)
     except (RefreshError, DefaultCredentialsError) as exception:
       self.ModuleError(
           'Something is wrong with your gcloud access token or '

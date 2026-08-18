@@ -31,8 +31,7 @@ def FakeListDir(string):
 class LocalFileSystemTest(modules_test_base.ModuleTestBase):
   """Tests for the local filesystem exporter."""
 
-  # For Pytype
-  _module: local_filesystem.LocalFilesystemCopy
+  _module: local_filesystem.LocalFilesystemCopy  # pyrefly: ignore[bad-override-mutable-attribute]
 
   def setUp(self):
     self._InitModule(local_filesystem.LocalFilesystemCopy)

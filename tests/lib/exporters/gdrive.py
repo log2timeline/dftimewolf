@@ -13,8 +13,7 @@ from tests.lib import modules_test_base
 class GoogleDriveExporterTest(modules_test_base.ModuleTestBase):
   """Tests for the Google Drive exporter."""
 
-  # For pytype
-  _module: gdrive.GoogleDriveExporter
+  _module: gdrive.GoogleDriveExporter  # pyrefly: ignore[bad-override-mutable-attribute]
 
   def setUp(self):
     # pylint: disable=protected-access

@@ -241,7 +241,7 @@ class TimesketchExporter(module.ThreadAwareModule):
       self.ModuleError(
           'Unable to run analyzer: {0!s}'.format(exception), critical=False)
 
-  def Process(self, container: containers.File) -> None:
+  def Process(self, container: containers.File) -> None:  # pyrefly: ignore[bad-override]
     """Executes a Timesketch export.
 
     Args:

@@ -17,8 +17,9 @@ from tests.lib import modules_test_base
 class AzureLogging(modules_test_base.ModuleTestBase):
   """Tests for the Azure logging collector."""
 
+  _module: azure_logging.AzureLogsCollector  # pyrefly: ignore[bad-override-mutable-attribute]
+
   def setUp(self):
-    self._module: azure_logging.AzureLogsCollector
     self._InitModule(azure_logging.AzureLogsCollector)
     super().setUp()
 

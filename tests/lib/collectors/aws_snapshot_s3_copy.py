@@ -130,8 +130,9 @@ def MockMakeAPICall(self, operation_name: str, kwarg: Any) -> Any:
 class AWSSnapshotS3CopyCollectorTest(modules_test_base.ModuleTestBase):
   """Tests for the AWSSnapshotS3CopyCollector."""
 
+  _module: aws_snapshot_s3_copy.AWSSnapshotS3CopyCollector  # pyrefly: ignore[bad-override-mutable-attribute]
+
   def setUp(self):
-    self._module: aws_snapshot_s3_copy.AWSSnapshotS3CopyCollector
     self._InitModule(aws_snapshot_s3_copy.AWSSnapshotS3CopyCollector)
     super().setUp()
 

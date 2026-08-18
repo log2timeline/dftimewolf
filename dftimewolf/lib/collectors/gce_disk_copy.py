@@ -194,7 +194,7 @@ class GCEDiskCopy(module.ThreadAwareModule):
             critical=True)
       self.ModuleError(str(exception), critical=True)
 
-  def Process(self, container: containers.GCEDisk) -> None:
+  def Process(self, container: containers.GCEDisk) -> None:  # pyrefly: ignore=[bad-override]
     """Copies a disk to the destination project.
 
     Args:

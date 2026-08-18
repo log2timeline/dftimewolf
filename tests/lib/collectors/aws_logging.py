@@ -19,8 +19,9 @@ from tests.lib import modules_test_base
 class AWSLoggingTest(modules_test_base.ModuleTestBase):
   """Tests for the AWS logging collector."""
 
+  _module: aws_logging.AWSLogsCollector  # pyrefly: ignore[bad-override-mutable-attribute]
+
   def setUp(self):
-    self._module: aws_logging.AWSLogsCollector
     self._InitModule(aws_logging.AWSLogsCollector)
     super().setUp()
 

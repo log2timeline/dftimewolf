@@ -100,7 +100,7 @@ class GeminiLLMProvider(interface.LLMProvider):
       )
   )
   @ratelimit.limits(calls=CALL_LIMIT, period=ONE_MINUTE)
-  def Generate(self, prompt: str, model: str, **kwargs: str) -> str:
+  def Generate(self, prompt: str, model: str, **kwargs: str) -> str:  # pyrefly: ignore[bad-override]
     """Generates text from the LLM provider.
 
     Args:

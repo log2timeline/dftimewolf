@@ -302,7 +302,7 @@ class GoogleDriveCollector(module.BaseModule):
         drive_resource = discovery.build(
             "drive", "v3", credentials=self._credentials
         )
-        request = drive_resource.files().get_media(fileId=drive_id)  # pyrefly: ignore=[missing-attribute]
+        request = drive_resource.files().get_media(fileId=drive_id)
         downloader = MediaIoBaseDownload(out_file, request)
         done = False
         while not done:

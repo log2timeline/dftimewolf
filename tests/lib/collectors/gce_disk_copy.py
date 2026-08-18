@@ -60,8 +60,7 @@ FAKE_DISK_COPY = [
 class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
   """Tests for the GCEDiskCopy collector."""
 
-  # For pytype
-  _module: gce_disk_copy.GCEDiskCopy
+  _module: gce_disk_copy.GCEDiskCopy  # pyrefly: ignore[bad-override-mutable-attribute]
 
   def setUp(self) -> None:
     self._InitModule(gce_disk_copy.GCEDiskCopy)

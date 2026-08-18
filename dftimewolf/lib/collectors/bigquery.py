@@ -56,7 +56,7 @@ class BigQueryCollector(module.ThreadAwareModule):
   def PreProcess(self) -> None:
     """Empty PreProcess."""
 
-  def Process(self, container: containers.BigQueryQuery) -> None:
+  def Process(self, container: containers.BigQueryQuery) -> None:  # pyrefly: ignore=[bad-override]
     """Collects data from BigQuery.
 
     Args:
