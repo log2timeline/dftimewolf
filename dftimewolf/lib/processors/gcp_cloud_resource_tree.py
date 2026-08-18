@@ -24,7 +24,7 @@ class GCPCloudResourceTree(module.BaseModule):
   Attributes:
     project_id: Id of the project where the resource is located.
     location: Resource location (zone/region) or 'global'
-    resource_id: Id of the the resource to build the tree for.
+    resource_id: Id of the resource to build the tree for.
     resource_name: Name of the resource to build the tree for.
     resource_type: Resource type.
     mode: Module operation mode
