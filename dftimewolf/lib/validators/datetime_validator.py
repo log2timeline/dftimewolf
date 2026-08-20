@@ -9,11 +9,11 @@ from dftimewolf.lib import errors, resources, args_validator
 from dftimewolf.lib.validators import manager as validators_manager
 
 
-
 class DatetimeValidator(args_validator.AbstractValidator):
   """Validates a date and time string.
 
-  Accepts dates in ISO2601 format only.
+  Accepts dates in ISO8601 format, and the special value ``now`` for the
+  current UTC time.
   """
 
   NAME = 'datetime'
@@ -35,6 +35,24 @@ class DatetimeValidator(args_validator.AbstractValidator):
         parsed_datetime.tzinfo.utcoffset(parsed_datetime) is None):
       parsed_datetime = parsed_datetime.replace(tzinfo=datetime.timezone.utc)
     return parsed_datetime
+
+  def _ParseDatetime(self, value: str) -> datetime.datetime:
+    """Parses a datetime string, including the special value ``now``.
+
+    Args:
+      value: The datetime string to parse.
+
+    Returns:
+      A timezone-aware datetime object.
+
+    Raises:
+      parser.ParserError: If the value is not a valid datetime.
+      ValueError: If the value is not a valid datetime.
+    """
+    if value.lower() == 'now':
+      return datetime.datetime.now(datetime.timezone.utc)
+    parsed_datetime = parser.isoparse(value)
+    return self._EnsureTimezone(parsed_datetime)
 
   def Validate(self, argument_value: Any,
                recipe_argument: resources.RecipeArgument) -> datetime.datetime:
@@ -62,8 +80,7 @@ class DatetimeValidator(args_validator.AbstractValidator):
     validation_parameters = recipe_argument.validation_params
 
     try:
-      parsed_datetime = parser.isoparse(argument_value)
-      parsed_datetime = self._EnsureTimezone(parsed_datetime)
+      parsed_datetime = self._ParseDatetime(argument_value)
     except (parser.ParserError, ValueError) as exception:
       raise errors.RecipeArgsValidationFailure(
           recipe_argument.switch,
@@ -118,13 +135,11 @@ class DatetimeValidator(args_validator.AbstractValidator):
     first_datetime: datetime.datetime
     second_datetime: datetime.datetime
     if isinstance(first, str):
-      first_datetime = parser.isoparse(first)
-      first_datetime = self._EnsureTimezone(first_datetime)
+      first_datetime = self._ParseDatetime(first)
     else:
       first_datetime = first
     if isinstance(second, str):
-      second_datetime = parser.isoparse(second)
-      second_datetime = self._EnsureTimezone(second_datetime)
+      second_datetime = self._ParseDatetime(second)
     else:
       second_datetime = second
 
