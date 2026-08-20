@@ -3,6 +3,7 @@
 
 import abc
 import argparse
+import datetime
 import os
 import random
 import re
@@ -102,6 +103,10 @@ def ImportArgsFromDict(value: Any,
   It is used to load arguments from the CLI and any extra configuration
   parameters passed in recipes.
 
+  When a token resolves to a ``datetime.datetime`` and the recipe value is
+  solely ``@token``, the datetime object is preserved. When the token is
+  embedded in a larger string, it is formatted as an ISO8601 timestamp.
+
   Args:
     value (object): The value a dictionary. This is passed recursively and may
         change in nature: string, list, or dict. The top-level variable should
@@ -120,6 +125,14 @@ def ImportArgsFromDict(value: Any,
         actual_param = args[token]
         if isinstance(actual_param, str):
           value = value.replace("@"+token, actual_param)
+        elif isinstance(actual_param, datetime.datetime):
+          # Keep datetime objects when the recipe arg is solely "@token" so
+          # modules that expect datetime continue to receive them. When the
+          # token is embedded in a larger string, expand to ISO8601.
+          if value == f'@{token}':
+            value = actual_param
+          else:
+            value = value.replace('@' + token, actual_param.isoformat())
         else:
           value = actual_param
   elif isinstance(value, list):
