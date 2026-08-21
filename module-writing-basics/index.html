@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://dfTimewolf.com/module-writing-basics/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Module writing basics - dfTimewolf</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Module writing basics";
+        var mkdocs_page_input_path = "module-writing-basics.md";
+        var mkdocs_page_url = "/module-writing-basics/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="..">
+          <img src="../_static/logo.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../getting-started/">Getting started</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../user-manual/">User manual</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../developers-guide/">Developers' guide</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Module writing basics</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#0-an-empty-template">0 - An empty template</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#__init__">__init__()</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#getthreadoncontainertype">GetThreadOnContainerType()</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#getthreadpoolsize">GetThreadPoolSize()</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#keepthreadedcontainersinstate">KeepThreadedContainersInState()</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#setup">SetUp()</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#preprocess">PreProcess()</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#process">Process()</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#postprocess">PostProcess()</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#1-parallel-processing-helpers">1 - Parallel Processing Helpers</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#2-initialisation">2 - Initialisation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#3-processing">3 - Processing</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../architecture/">Architecture</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../recipe-list/">Recipe list</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../recipe-caveat/">Recipe caveats</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">dfTimewolf</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Module writing basics</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="how-to-write-a-dftimewolf-module">How to write a DFTimewolf Module<a class="headerlink" href="#how-to-write-a-dftimewolf-module" title="Permanent link">&para;</a></h1>
+<p>The purpose of this guide is to walk a contributor through the basics of how to write a DFTimewolf module. Our example will perform the following:</p>
+<ul>
+<li>Receive filepaths of files on the local filesystem</li>
+<li>Hash the files and check against a list of hashes</li>
+<li>Move matching files to an output directory</li>
+<li>Keep only matching files in the state for processing by a later module</li>
+</ul>
+<h2 id="0-an-empty-template">0 - An empty template<a class="headerlink" href="#0-an-empty-template" title="Permanent link">&para;</a></h2>
+<p>Each module will be a subclass of either a <code>BaseModule</code> or <code>ThreadAwareModule</code>. The latter supports running multiple actions in parallel, and so you should use a <code>ThreadAwareModule</code> when you will be processing multiple inputs that don't interact. For example, you may perform the same operation on multiple files in your local filesystem, or multiple disk snapshots in a cloud computing environment. Alternatively, you should use a <code>BaseModule</code> if you intend to only operate on a single entity, or if a system you interact with can handle its own parallel processing.</p>
+<p>A third type of module available is the <code>PreflightModule</code>. While functionaly identical to <code>BaseModule</code> the orchestration runs all <code>PreflightModule</code>s before standard modules. For example, you could use a <code>PreflightModule</code> to check for access to a cloud environment.</p>
+<p>Our example will be a <code>ThreadAwareModule</code> as the methods to be implemented are a superset of those for <code>BaseModule</code>. Our empty template starts as follows:</p>
+<pre><code class="language-python">class FileHashModule(module.ThreadAwareModule):
+  def __init__(self, state, name, critical):
+    &quot;&quot;&quot;Init.&quot;&quot;&quot;
+    (FileHashModule, self).__init__(state, name=name, critical=critical)
+
+  def GetThreadOnContainerType(self):
+    &quot;&quot;&quot;What container type to thread on.&quot;&quot;&quot;
+
+  def KeepThreadedContainersInState(self) -&gt; bool:
+      &quot;&quot;&quot;Keep, or pop the containers used for threading.&quot;&quot;&quot;
+
+  def GetThreadPoolSize(self):
+    &quot;&quot;&quot;Thread Pool Size.&quot;&quot;&quot;
+
+  def SetUp(self):
+    &quot;&quot;&quot;SetUp.&quot;&quot;&quot;
+
+  def PreProcess(self):
+    &quot;&quot;&quot;PreProcess.&quot;&quot;&quot;
+
+  def Process(self, container):
+    &quot;&quot;&quot;Processing.&quot;&quot;&quot;
+
+  def PostProcess(self):
+    &quot;&quot;&quot;PostProcessing.&quot;&quot;&quot;
+
+
+modules_manager.ModulesManager.RegisterModule(FileHashModule)
+</code></pre>
+<p>In this template we have left out type checking for brevity, but if you wish to contribute your module upstream, you will need type annotations, checked by mypy, pytype and pylint.</p>
+<h3 id="__init__">__init__()<a class="headerlink" href="#__init__" title="Permanent link">&para;</a></h3>
+<p>A standard class method, use this to declare any class members.</p>
+<h3 id="getthreadoncontainertype">GetThreadOnContainerType()<a class="headerlink" href="#getthreadoncontainertype" title="Permanent link">&para;</a></h3>
+<p>Specific to <code>ThreadAwareModule</code> this method should return a container type that will be the basis of parallel processing.</p>
+<h3 id="getthreadpoolsize">GetThreadPoolSize()<a class="headerlink" href="#getthreadpoolsize" title="Permanent link">&para;</a></h3>
+<p>Specific to <code>ThreadAwareModule</code> this method tells the orchestration how many parallel threads to use for this module's <code>Process()</code> method.</p>
+<h3 id="keepthreadedcontainersinstate">KeepThreadedContainersInState()<a class="headerlink" href="#keepthreadedcontainersinstate" title="Permanent link">&para;</a></h3>
+<p>Specific to <code>ThreadAwareModule</code> this method returns True in the base class. If set to false by the child class, containers used for parallel processing will be popped from the state.</p>
+<h3 id="setup">SetUp()<a class="headerlink" href="#setup" title="Permanent link">&para;</a></h3>
+<p>Called by the orchestration only once, with parameters as defined by the recipe file.</p>
+<h3 id="preprocess">PreProcess()<a class="headerlink" href="#preprocess" title="Permanent link">&para;</a></h3>
+<p>Specific to <code>ThreadAwareModule</code>, this method is called exactly once by the orchestration between <code>SetUp()</code> and <code>Process()</code>.</p>
+<h3 id="process">Process()<a class="headerlink" href="#process" title="Permanent link">&para;</a></h3>
+<p>This method performs the bulk of the processing action. This method is called for each module in parallel, based on dependencies as outlines by the recipe file.</p>
+<p>For a <code>BaseModule</code> no parameters will be passed in, but for a <code>ThreadAwareModule</code> the method will be called with a single container of the type specified in <code>GetThreadOnContainerType()</code></p>
+<h3 id="postprocess">PostProcess()<a class="headerlink" href="#postprocess" title="Permanent link">&para;</a></h3>
+<p>Specific to <code>ThreadAwareModule</code>, this method is called exactly once by the orchestration after <code>Process()</code>.</p>
+<h2 id="1-parallel-processing-helpers">1 - Parallel Processing Helpers<a class="headerlink" href="#1-parallel-processing-helpers" title="Permanent link">&para;</a></h2>
+<p>Three of the methods outlined above are used to tell the orchestration how to handle parallel processing.</p>
+<p>The <code>GetThreadOnContainerType()</code> method is used to identify which container is used for threading. That is, this is the container type that will get passed to <code>Process(container)</code> one at a time. Since we're operating on local filesystem files, we can use the existing container, <code>containers.File</code>.</p>
+<pre><code class="language-python">  def GetThreadOnContainerType(self):
+    return containers.File
+</code></pre>
+<p>Second of these methods is <code>GetThreadPoolSize()</code> which tells the orchestration how many threads this module supports. Since we are doing local processing, we will set the number of threads to be based on the number of CPUs in the machine doing the work - halved to ensure we're not being greedy on local resources.</p>
+<pre><code class="language-python">  def GetThreadPoolSize(self):
+    count = math.floor(os.cpu_count() / 2)
+    return 1 if count &lt; 1 else count
+</code></pre>
+<p>Finally, we want to operate on file containers, and only keep those file containers in the state if the hash is matched. We will do that by telling the orchestration to pop the containers when passed to <code>Process()</code> and add the matches back.</p>
+<pre><code class="language-python">  def KeepThreadedContainersInState(self):
+    return False
+</code></pre>
+<h2 id="2-initialisation">2 - Initialisation<a class="headerlink" href="#2-initialisation" title="Permanent link">&para;</a></h2>
+<p>Two methods are used as part of module initialisation: The python class <code>__init__()</code> and DFTimewolf's <code>SetUp()</code> method.</p>
+<p>__init__ is simple enough, we only need to declare the class members:</p>
+<pre><code class="language-python">  def __init__(self, state, name, critical):
+    super(FileRegexModule, self).__init__(state, name=name, critical=critical)
+    self.hashes = []
+    self.destination_dir = ''
+</code></pre>
+<p><code>SetUp()</code> is called by the orchestration with parameters as defined by the recipe file. Our module is going to receive two parameters: a comma separated list of files and a comma separated list of hashes. For any module that can take input in this manner should expect comma seperated values in a string rather than a <code>list</code> because it will likely come from a human on the CLI.</p>
+<pre><code class="language-python">  def SetUp(self, paths, hashes, destination_directory):
+    # Set the hashes
+    self.hashes = hashes.split(',')
+
+    # Files passed in should be added to the container store in the state.
+    for p in paths.split(','):
+      if p:
+        filename = os.path.basename(p)
+        self.StoreContainer(containers.File(name=filename, path=p))
+</code></pre>
+<h2 id="3-processing">3 - Processing<a class="headerlink" href="#3-processing" title="Permanent link">&para;</a></h2>
+<p>Now we arrive at the heavy lifting of our module, we have 3 methods remaining to implement.</p>
+<p><code>PreProcess</code> is used for any actions that aren't considered part of the <code>SetUp()</code> but also need to be taken before processing. In an example that operates on a cloud platform, you could use this to create IAM permissions needed to perform the work.</p>
+<pre><code class="language-python">  def PreProcess(self):
+    if not os.access(self.destination_dir, os.W_OK):
+      self.ModuleError(
+          message=f'Cannot write to destination {self.destination_dir}, bailing out',
+          critical=True)
+</code></pre>
+<p>In our contrived example, we're going to test we have write permissions on the destination directory, and if not, we are raising a module error that will be handled by the orchestration.</p>
+<p>Next up is <code>Process(container)</code>. This method will receive one <code>File</code> container (as per <code>GetThreadOnContainerType()</code>) and perform the check.</p>
+<pre><code class="language-python">  def Process(container):
+    BUF_SIZE = 65536
+    sha1 = hashlib.sha1()
+
+    with open(container.path, 'rb') as f:
+        while True:
+          data = f.read(BUF_SIZE)
+          if not data:
+              break
+          sha1.update(data)
+
+    digest = sha1.hexdigest()
+    if digest in self.hashes:
+      os.rename(container.path, f'{self.destination_dir}/{container.name}')
+      self.StoreContainer(
+          containers.File(
+              name=container.name,
+              path=f'{self.destination_dir}/{container.name}'))
+</code></pre>
+<p>Finally, we would implement a <code>PostProcess()</code> method. In our example, there is no great need for post processing, but for the sake of the example, we might have the following:</p>
+<pre><code class="language-python">  def PostProcess():
+    count = len(self.GetContainers(containers.File))
+    if count == 0:
+      self.ModuleError(
+          message=f'No matching hashes found.',
+          critical=False)
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../developers-guide/" class="btn btn-neutral float-left" title="Developers' guide"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../architecture/" class="btn btn-neutral float-right" title="Architecture">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../developers-guide/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../architecture/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
