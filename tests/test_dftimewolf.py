@@ -2,6 +2,7 @@
 """Tests for DFTimewolf functions."""
 
 import argparse
+import datetime
 import unittest
 
 import six
@@ -139,3 +140,37 @@ class DFTimewolfTest(unittest.TestCase):
     imported_args = dftw_utils.ImportArgsFromDict(
         provided_args, vars(args), config.Config)
     self.assertEqual(imported_args, expected_args)
+
+  def test_datetime_token_preserves_object(self):
+    """Tests that a sole @datetime token remains a datetime object."""
+    start_date = datetime.datetime(
+        2024, 1, 1, 12, 0, 0, tzinfo=datetime.timezone.utc)
+    recipe_args = {'start_time': '@start_date'}
+    imported_args = dftw_utils.ImportArgsFromDict(
+        recipe_args, {'start_date': start_date}, config.Config)
+
+    self.assertIs(imported_args['start_time'], start_date)
+
+  def test_datetime_tokens_expand_to_iso8601_in_strings(self):
+    """Tests that datetime tokens embedded in strings expand to ISO8601."""
+    start_date = datetime.datetime(
+        2024, 1, 1, 12, 0, 0, tzinfo=datetime.timezone.utc)
+    end_date = datetime.datetime(
+        2024, 1, 2, 18, 30, 45, tzinfo=datetime.timezone.utc)
+    recipe_args = {
+        'sheet_title': 'example @start_date @end_date',
+    }
+    expected_args = {
+        'sheet_title': (
+            f'example {start_date.isoformat()} {end_date.isoformat()}'),
+    }
+
+    imported_args = dftw_utils.ImportArgsFromDict(
+        recipe_args,
+        {'start_date': start_date, 'end_date': end_date},
+        config.Config)
+
+    self.assertEqual(imported_args, expected_args)
+    self.assertEqual(
+        imported_args['sheet_title'],
+        'example 2024-01-01T12:00:00+00:00 2024-01-02T18:30:45+00:00')
