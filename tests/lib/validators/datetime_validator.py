@@ -3,6 +3,7 @@
 
 import datetime
 import unittest
+from unittest import mock
 
 from absl.testing import parameterized
 
@@ -35,6 +36,20 @@ class DatetimeValidatorTest(parameterized.TestCase):
     date_string = '2023-12-31 23:29:59'
     val = self.validator.Validate(date_string, self.recipe_argument)
     self.assertEqual(val, date_value)
+
+  def testValidateNow(self):
+    """Tests that ``now`` resolves to the current UTC time."""
+    frozen_now = datetime.datetime(
+        2024, 6, 15, 12, 30, 45, tzinfo=datetime.timezone.utc)
+    with mock.patch.object(datetime_validator, 'datetime') as mock_datetime:
+      mock_datetime.datetime.now.return_value = frozen_now
+      mock_datetime.timezone = datetime.timezone
+      for now_value in ('now', 'NOW', 'Now'):
+        with self.subTest(now_value=now_value):
+          val = self.validator.Validate(now_value, self.recipe_argument)
+          self.assertEqual(val, frozen_now)
+          mock_datetime.datetime.now.assert_called_with(
+              datetime.timezone.utc)
 
   def testValidateSuccessWithOrder(self):
     """Tests validation success with order parameters."""
