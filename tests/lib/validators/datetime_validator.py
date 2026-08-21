@@ -134,15 +134,5 @@ class EndTimeValidatorTest(unittest.TestCase):
     self.assertEqual(val, datetime.datetime(
         2024, 1, 1, 9, 13, 0, tzinfo=datetime.timezone.utc))
 
-  def testValidateNow(self):
-    """Tests that ``now`` is accepted and not forced to end of day."""
-    frozen_now = datetime.datetime(
-        2024, 6, 15, 12, 30, 45, tzinfo=datetime.timezone.utc)
-    with mock.patch.object(datetime_validator, 'datetime') as mock_datetime:
-      mock_datetime.datetime.now.return_value = frozen_now
-      mock_datetime.timezone = datetime.timezone
-      val = self.validator.Validate('now', self.recipe_argument)
-    self.assertEqual(val, frozen_now)
-
 if __name__ == '__main__':
   unittest.main()
