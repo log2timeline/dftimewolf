@@ -129,7 +129,7 @@ class ContainerManager():
               module.storage[container.CONTAINER_TYPE] = []
 
             # If the container to add exists already in the state, don't add it again
-            if id(container) in [id(c) for c, _ in module.storage[container.CONTAINER_TYPE]]:
+            if any(c is container for c, _ in module.storage[container.CONTAINER_TYPE]):
               continue
             module.storage[container.CONTAINER_TYPE].append((container, source_module))
 
