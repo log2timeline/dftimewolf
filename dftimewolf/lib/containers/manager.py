@@ -130,6 +130,7 @@ class ContainerManager():
 
             # If the container to add exists already in the state, don't add it again
             if any(c is container for c, _ in module.storage[container.CONTAINER_TYPE]):
+              self._logger.debug('Duplicate container not added to storage: %s', str(container))
               continue
             module.storage[container.CONTAINER_TYPE].append((container, source_module))
 
