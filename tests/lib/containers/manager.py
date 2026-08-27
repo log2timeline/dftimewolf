@@ -4,8 +4,6 @@ import logging
 import unittest
 from unittest import mock
 
-import pandas as pd
-
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.containers import interface
 from dftimewolf.lib.containers import manager
