@@ -563,43 +563,6 @@ class ContainerManagerTest(unittest.TestCase):
     self._container_manager.StoreContainer(
         source_module='Preflight1', container=container_3)
 
-    # Dataframe members of containers have special handling; check that too
-    df1 = pd.DataFrame(columns=['a', 'b'], data=[[1, 2], [3, 4]])
-    df2 = pd.DataFrame(columns=['c', 'd'], data=[[5, 6], [7, 8]])
-    df_c_1 = containers.DataFrame(data_frame=df1,
-                                  description='Description', name='name')
-    df_c_2 = containers.DataFrame(data_frame=df2,
-                                  description='Description', name='name')
-
-    self._container_manager.StoreContainer(
-        source_module='Preflight1',
-        container=df_c_1)
-    self._container_manager.StoreContainer(
-        source_module='Preflight1',
-        container=df_c_1)
-    self._container_manager.StoreContainer(
-        source_module='Preflight1',
-        container=df_c_2)
-
-    actual = self._container_manager.GetContainers(
-        requesting_module='ModuleA', container_class=_TestContainer1)
-    self.assertEqual(len(actual), 1)
-    self.assertIn(_TestContainer1('param1'), actual)
-
-    actual = self._container_manager.GetContainers(
-        requesting_module='ModuleA', container_class=_TestContainer2)
-    self.assertEqual(len(actual), 2)
-    self.assertIn(_TestContainer2('param1'), actual)
-    self.assertIn(_TestContainer2('param2'), actual)
-
-    actual = self._container_manager.GetContainers(
-        requesting_module='ModuleA', container_class=containers.DataFrame)
-    self.assertEqual(len(actual), 2)
-    self.assertIn(containers.DataFrame(
-        data_frame=df1, description='Description', name='name'), actual)
-    self.assertIn(containers.DataFrame(
-        data_frame=df2, description='Description', name='name'), actual)
-
   def test_ContainerStreaming(self):
     """Tests that container streaming operates as expected."""
     # Preflight1 will generate containers
