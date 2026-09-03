@@ -5,11 +5,10 @@ import abc
 import logging
 import sys
 import traceback
-from typing import Any, Callable, Literal, NoReturn, Optional, overload, Sequence, Type, TypeVar, cast
+from typing import Any, Callable, Literal, NoReturn, Optional, overload, Sequence, Type, TypeVar
 
 from dftimewolf.lib import cache
 from dftimewolf.lib import errors
-from dftimewolf.lib import logging_utils
 from dftimewolf.lib import spanner_telemetry as telemetry
 from dftimewolf.lib import opentelemetry
 from dftimewolf.lib.containers import interface
@@ -54,8 +53,7 @@ class BaseModule(object):
     self._telemetry = telemetry_
     self._publish_message_callback = publish_message_callback
 
-    self.logger = cast(logging_utils.WolfLogger,
-                       logging.getLogger(name=self.name))
+    self.logger = logging.getLogger(name=self.name)
     self.logger.parent = logging.getLogger('dftimewolf')
 
   def LogTelemetry(self, data: dict[str, str]) -> None:
@@ -141,7 +139,7 @@ class BaseModule(object):
     elif is_error:
       self.logger.error(message)
     else:
-      self.logger.success(message)
+      self.logger.info(message)
     self._publish_message_callback(self.name, message, is_error)
 
   def RegisterStreamingCallback(
