@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://dfTimewolf.com/architecture/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Architecture - dfTimewolf</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Architecture";
+        var mkdocs_page_input_path = "architecture.md";
+        var mkdocs_page_url = "/architecture/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="..">
+          <img src="../_static/logo.png" class="logo" alt="Logo"/>
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../getting-started/">Getting started</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../user-manual/">User manual</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../developers-guide/">Developers' guide</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../module-writing-basics/">Module writing basics</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Architecture</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#modules">Modules</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#thread-aware-modules">Thread Aware Modules</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#logging">Logging</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#error-reporting">Error reporting</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#recipes">Recipes</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#state-and-attributecontainers">State and AttributeContainers</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#life-of-a-dftimewolf-run">Life of a dfTimewolf run</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../recipe-list/">Recipe list</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../recipe-caveat/">Recipe caveats</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">dfTimewolf</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Architecture</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h1>
+<p>The main concepts you need to be aware of when digging into dfTimewolf's
+codebase are:</p>
+<ul>
+<li>Modules</li>
+<li>Recipes</li>
+<li>The <code>state</code> object</li>
+</ul>
+<p><strong>Modules</strong> are individual Python objects that will interact with specific
+platforms depending on attributes passed through the command line or
+<code>AttributeContainer</code> objects created by a previous module's execution.
+<strong>Recipes</strong> are instructions that define how modules are chained, essentially
+defining which Module's output becomes another Module's input. Input and output
+are all stored in a <strong>State</strong> object that is attached to each module.</p>
+<h2 id="modules">Modules<a class="headerlink" href="#modules" title="Permanent link">&para;</a></h2>
+<p>Modules all extend the <code>BaseModule</code>
+<a href="https://github.com/log2timeline/dftimewolf/blob/main/dftimewolf/lib/module.py">class</a>,
+and implement the <code>SetUp</code>, and <code>Process</code> functions.</p>
+<p><code>SetUp</code> is what is called with the recipe's modified arguments. Actions here
+should include things that have low overhead and can be accomplished with no big
+delay, like checking for API permissions, verifying that a file exists, etc. The
+idea here is to detect working conditions and "fail early" if the module can't
+run correctly.</p>
+<p><code>Process</code> is where all the magic happens - here is where you'll want to
+parallelize (see also <a href="#thread-aware-modules">Thread Aware Modules</a>) things as
+much as possible (copying a disk, running plaso, etc.). You'll be reading from
+containers pushed by previous modules (e.g. processed plaso files) and adding
+your own for future modules to process. Accessing containers is done through the
+<code>GetContainers</code> and <code>StoreContainer</code> functions of the <code>state</code> object.</p>
+<p>Tip: If you want your module to be able to take inputs from both recipe
+arguments or the state, consider including something like the following in your
+<code>SetUp</code>:</p>
+<pre><code class="language-python">  for p in param.split(','):
+    self.StoreContainer(containers.MyContainer(p))
+</code></pre>
+<p>This way, any recipe arguments (in this example, comma separated) are available
+in <code>Process</code> via <code>self.GetContainers()</code>, in addition to any containers
+from previous modules.</p>
+<h3 id="thread-aware-modules">Thread Aware Modules<a class="headerlink" href="#thread-aware-modules" title="Permanent link">&para;</a></h3>
+<p>If your module takes multiple inputs you can take advantage of the
+<code>ThreadAwareModule</code> base class to have your inputs processed in parallel
+threads. The following are the differences from implementing <code>BaseModule</code>:</p>
+<ul>
+<li>Process takes a single container argument. You process this single container,
+rather than sourcing containers to process from <code>self.GetContainers()</code>.</li>
+<li>Required method overrides:</li>
+<li><code>GetThreadOnContainerType()</code> - The type of container that is to be used as
+  input to the parallel threads.</li>
+<li><code>GetThreadPoolSize()</code> - Determine the maximum number of simultaneous threads.</li>
+<li>Optional method overrides:</li>
+<li><code>PreProcess()</code> &amp; <code>PostProcess()</code> - Work that needs to be done prior to, or
+  after <code>Process(container)</code>, that only occurs once regardless of the number of
+  inputs.</li>
+<li><code>KeepThreadedContainersInState()</code> - Used to determine whether the containers
+  passed to <code>Process(container)</code> should be removed from the state after
+  processing.</li>
+</ul>
+<h3 id="logging">Logging<a class="headerlink" href="#logging" title="Permanent link">&para;</a></h3>
+<p>Modules can log messages to make the execution flow clearer for the user. This
+is done through the module's <code>logger</code> attribute: <code>self.logger.info('message')</code>.
+This uses the standard python <code>logging</code> module so can use functions like <code>info</code>,
+<code>warning</code>, <code>debug</code>.</p>
+<h3 id="error-reporting">Error reporting<a class="headerlink" href="#error-reporting" title="Permanent link">&para;</a></h3>
+<p>Modules can also report errors using their <code>ModuleError</code> function. Errors added
+this way will be reported at the end of the run. Semantically, they mean that
+the recipe flow didn't go as expected and should be examined.</p>
+<p><code>ModuleError</code> also takes a <code>critical</code> parameter, which will raise an exception
+and interrupt the flow of the whole recipe. This should be used for errors that
+dftimewolf can't recover from (e.g. if a binary run by one of the modules can't
+be found on disk).</p>
+<h2 id="recipes">Recipes<a class="headerlink" href="#recipes" title="Permanent link">&para;</a></h2>
+<p>Recipes are JSON files that describe how Modules are chained, and which
+parameters can be ingested from the command-line. A recipe JSON object follows a
+specific format:</p>
+<ul>
+<li><code>name</code>: This is the name with which the recipe will be invoked (e.g.
+  <code>plaso_ts</code>).</li>
+<li><code>description</code>: This is a longer description of what the recipe does. It will
+  show up in the help message when invoking <code>dftimewolf recipe_hame -h</code>.</li>
+<li><code>short_description</code>: This is what will show up in the help message when
+  invoking <code>dftimewolf -h</code>.</li>
+<li><code>modules</code>: An array of JSON objects describing modules and their corresponding
+  arguments.</li>
+<li><code>wants</code>: What other modules this module should wait for before calling its
+    <code>Process</code> function.</li>
+<li><code>name</code>: The name of the module class that will be instantiated.</li>
+<li><code>runtime_name</code>: Optional argument, use this for recipes when you're using
+    the same module more than once.</li>
+<li><code>args</code>: A list of (argument_name, argument) tuples that will be passed on to
+    the module's <code>SetUp()</code> function. If <code>argument</code> starts with an <code>@</code>, it will
+    be replaced with its corresponding value from the command-line or the
+    <code>~/.dftimewolfrc</code> file.</li>
+<li><code>args</code>: Recipes need to describe the way arguments are handled in a global
+  <code>args</code> variable. This variable is a list of
+  <code>(switch, help_message, default_value)</code> tuples that will be passed to the
+  <code>argparse.add_argument</code> function for later parsing.</li>
+</ul>
+<h2 id="state-and-attributecontainers">State and AttributeContainers<a class="headerlink" href="#state-and-attributecontainers" title="Permanent link">&para;</a></h2>
+<p>The State object is an instance of the
+<a href="https://github.com/log2timeline/dftimewolf/blob/main/dftimewolf/lib/state.py">DFTimewolfState class</a>.
+It has a couple of useful functions and attributes:</p>
+<ul>
+<li><code>StoreContainer</code>: Store your containers to make them available to future
+  modules.</li>
+<li><code>GetContainers</code>: Retrieve the containers stored using <code>StoreContainer</code>. It
+  takes a <code>container_class</code> param where you can select which containers you're
+  interested in.</li>
+<li><code>RegisterStreamingCallback</code>: Use this to register a function that will be
+  called on the container as it is streamed in real-time.</li>
+</ul>
+<h2 id="life-of-a-dftimewolf-run">Life of a dfTimewolf run<a class="headerlink" href="#life-of-a-dftimewolf-run" title="Permanent link">&para;</a></h2>
+<p>The dfTimewolf cycle is as follows:</p>
+<ul>
+<li>The recipe JSON is parsed, all requested modules are instantiated, as well as
+  the semaphores that will schedule the execution of the Module's <code>Process</code>
+  functions.</li>
+<li>Command-line arguments are taken into account and passed to Module's <code>SetUp</code>
+  function. This occurs in parallel for all modules, regardless of the semaphores
+  they declared in the recipe.</li>
+<li>The modules with no blocking semaphores start running their <code>Process</code>
+  function. At the end of their run, they free their semaphore, signalling other
+  modules that they can proceed with their own <code>Process</code> function.</li>
+<li>This cycle repeats until all modules have called their <code>Process</code> function.</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../module-writing-basics/" class="btn btn-neutral float-left" title="Module writing basics"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../recipe-list/" class="btn btn-neutral float-right" title="Recipe list">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../module-writing-basics/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../recipe-list/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
