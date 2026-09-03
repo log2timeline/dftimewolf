@@ -64,7 +64,7 @@ MODULES = {
 }
 
 
-logger = cast(logging_utils.WolfLogger, logging.getLogger('dftimewolf'))
+logger = logging.getLogger('dftimewolf')
 
 
 class DFTimewolfTool(object):
@@ -87,7 +87,7 @@ class DFTimewolfTool(object):
     self._recipes_manager = recipes_manager.RecipesManager()
     self._recipe: resources.Recipe
     self._uuid = workflow_uuid or str(uuid.uuid4())
-    logger.success(f'dfTimewolf tool initialized with UUID: {self._uuid}')
+    logger.info(f'dfTimewolf tool initialized with UUID: {self._uuid}')
 
     self._DetermineDataFilesPath()
     self.LoadConfiguration(config_path)
@@ -394,9 +394,6 @@ def SetupLogging(stdout_log: bool = False) -> None:
   Args:
     stdout_log (bool): Whether to log to stdout as well as a file.
   """
-  # Add a custom level name
-  logging.addLevelName(logging_utils.SUCCESS, 'SUCCESS')
-
   # Clear handlers (for dependencies that are setting them)
   root_log = logging.getLogger()
   root_log.handlers = []

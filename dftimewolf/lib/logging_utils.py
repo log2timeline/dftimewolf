@@ -20,13 +20,8 @@ def GenerateTempLogFile() -> str:
   logfile.close()
   return log_filename
 
-
-SUCCESS = 25  # 25 is right between INFO and WARNING
-
-
 LEVEL_COLOR_MAP = {
     'WARNING': '\u001b[0;93m',
-    'SUCCESS': '\u001b[1;30;42m',
     'INFO': '\u001b[0;97m',
     'DEBUG': '\u001b[0;94m',
     'CRITICAL': '\u001b[1;31;107m',
@@ -38,16 +33,6 @@ RESET_SEQ = '\u001b[0m'
 logging.Formatter.converter = time.gmtime
 _DEBUG_FORMATTER = logging.Formatter('[%(asctime)sZ] [%(name)-20s] %(levelname)-8s [%(threadName)-22s] %(message)s')
 _DEFAULT_FORMATTER = logging.Formatter('[%(asctime)sZ] [%(name)-20s] %(levelname)-8s %(message)s')
-
-
-class WolfLogger(logging.Logger):
-  """Custom logging Class with a `success` logging function."""
-
-  def success(self, *args: Any, **kwargs: Any) -> None:  # pylint: disable=invalid-name
-    """Logs a success message."""
-    super(WolfLogger, self).log(SUCCESS, *args, **kwargs)
-
-logging.setLoggerClass(WolfLogger)
 
 
 class WolfFormatter(logging.Formatter):
