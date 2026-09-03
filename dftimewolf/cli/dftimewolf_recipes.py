@@ -9,7 +9,7 @@ import signal
 import sys
 import typing
 import uuid
-from typing import Any, Optional, cast
+from typing import Any, Optional
 
 from dftimewolf import config
 from dftimewolf.lib import errors

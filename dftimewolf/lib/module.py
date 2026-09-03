@@ -5,11 +5,10 @@ import abc
 import logging
 import sys
 import traceback
-from typing import Any, Callable, Literal, NoReturn, Optional, overload, Sequence, Type, TypeVar, cast
+from typing import Any, Callable, Literal, NoReturn, Optional, overload, Sequence, Type, TypeVar
 
 from dftimewolf.lib import cache
 from dftimewolf.lib import errors
-from dftimewolf.lib import logging_utils
 from dftimewolf.lib import spanner_telemetry as telemetry
 from dftimewolf.lib import opentelemetry
 from dftimewolf.lib.containers import interface
