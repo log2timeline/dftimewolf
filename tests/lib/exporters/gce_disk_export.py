@@ -61,7 +61,8 @@ class GoogleCloudDiskExportTest(modules_test_base.ModuleTestBase):
                        remote_instance_name='',
                        all_disks=False,
                        exported_image_name='image-df-export-temp',
-                       image_format='qcow2')
+                       image_format='qcow2',
+                       cloudbuild_zone='zone1')
     FAKE_SOURCE_PROJECT.compute.CreateImageFromDisk = mock_create_image_from_disk
     mock_create_image_from_disk.return_value = FAKE_IMAGE
     FAKE_IMAGE.ExportImage = mock_export_image
@@ -72,7 +73,8 @@ class GoogleCloudDiskExportTest(modules_test_base.ModuleTestBase):
     mock_export_image.assert_called_with(
         'gs://fake-bucket',
         output_name='image-df-export-temp',
-        image_format='qcow2')
+        image_format='qcow2',
+        zone='zone1')
     mock_delete_image.assert_called_once()
     output_url = os.path.join(
         'gs://fake-bucket', 'image-df-export-temp.tar.gz')
@@ -107,7 +109,8 @@ class GoogleCloudDiskExportTest(modules_test_base.ModuleTestBase):
                        remote_instance_name='',
                        all_disks=False,
                        exported_image_name='image-df-export-temp',
-                       image_format='qcow2')
+                       image_format='qcow2',
+                       cloudbuild_zone='zone1')
 
     container = containers.GCEDisk(name='fake-source-disk', project='fake-source-project')
     container.metadata['SOURCE_MACHINE'] = 'fake-source-machine'
@@ -124,7 +127,8 @@ class GoogleCloudDiskExportTest(modules_test_base.ModuleTestBase):
     mock_export_image.assert_called_with(
         'gs://fake-bucket',
         output_name='image-df-export-temp',
-        image_format='qcow2')
+        image_format='qcow2',
+        zone='zone1')
     mock_delete_image.assert_called_once()
     output_url = os.path.join(
         'gs://fake-bucket', 'image-df-export-temp.tar.gz')

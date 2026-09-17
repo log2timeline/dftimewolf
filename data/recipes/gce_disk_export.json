@@ -33,7 +33,8 @@
         "remote_instance_name": "@remote_instance_name",
         "all_disks": "@all_disks",
         "exported_image_name": "@exported_image_name",
-        "image_format": "@image_format"
+        "image_format": "@image_format",
+        "cloudbuild_zone": "us-central1-a"
       }
     }
   ],

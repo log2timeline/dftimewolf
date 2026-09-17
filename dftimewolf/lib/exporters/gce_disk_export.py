@@ -46,6 +46,7 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase):
     self._gcs_output_location: str = ''
     self._image_format: str = ''
     self._exported_image_name: str = ''
+    self._cloudbuild_zone: str = ''
 
   # pylint: disable=arguments-differ
   def SetUp(self,
@@ -56,7 +57,8 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase):
             remote_instance_name: str,
             all_disks: bool,
             exported_image_name: str,
-            image_format: str) -> None:
+            image_format: str,
+            cloudbuild_zone: str) -> None:
     """Sets up a Google Cloud Platform (GCP) Disk Export.
 
     This method creates the required objects to initialize
@@ -97,10 +99,12 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase):
           is selected, exported image name as
           "exported-image-{TIMESTAMP('%Y%m%d%H%M%S')}".
       image_format: The image format to use.
+      cloudbuild_zone: The zone in which to launch the cloudbuild job.
     """
     self._image_format = image_format
     self._gcs_output_location = gcs_output_location
     self._exported_image_name = exported_image_name
+    self._cloudbuild_zone = cloudbuild_zone or 'us-central1-a'
 
     self._source_project = gcp_project.GoogleCloudProject(source_project_name)
     if analysis_project_name:
@@ -138,7 +142,8 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase):
       # {src_disk.name}-{TIMESTAMP('%Y%m%d%H%M%S')}.tar.gz
       output_url = image_object.ExportImage(self._gcs_output_location,
                                             output_name=self._exported_image_name,
-                                            image_format=self._image_format)
+                                            image_format=self._image_format,
+                                            zone=self._cloudbuild_zone)
       image_object.Delete()
       self.logger.info(f'Disk was exported to: {output_url}')
       container = containers.GCSObject(path=output_url)
