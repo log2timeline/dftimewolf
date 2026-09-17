@@ -2067,14 +2067,14 @@ adal = ["adal (>=1.0.2)"]
 
 [[package]]
 name = "libcloudforensics"
-version = "20260505"
+version = "20260916"
 description = "libcloudforensics is a set of tools to help acquire forensic evidence from Cloud platforms."
 optional = false
 python-versions = ">=3.11"
 groups = ["main"]
 files = [
-    {file = "libcloudforensics-20260505-py3-none-any.whl", hash = "sha256:12536b1a618a78fb7292f05d9b0ca623769f7c4a3b174515345d8c4c4ea702fc"},
-    {file = "libcloudforensics-20260505.tar.gz", hash = "sha256:61154e8956acc58256855ea8428dd0839175255bbbc2e6e3b4d8ca672207bab5"},
+    {file = "libcloudforensics-20260916-py3-none-any.whl", hash = "sha256:b1cfb1c2b91334c1c0032774eea8e8259bc086faeddfd298f9e87f22545c8b27"},
+    {file = "libcloudforensics-20260916.tar.gz", hash = "sha256:c2058088cd50c7a912549a004dc06d6847dd2dd647ff38b3b5b3a9f0883964c8"},
 ]
 
 [package.dependencies]
@@ -2093,16 +2093,16 @@ botocore = ">=1.29.135"
 google-api-core = "*"
 google-api-python-client = ">=2.95.0,<3.0.0"
 google-auth = ">=2.22.0,<3.0.0"
-httplib2 = ">=0.22.0,<0.23.0"
+httplib2 = ">=0.22,<0.33"
 kubernetes = ">=27.2.0,<28.0.0"
 msrest = ">=0.7.1,<0.8.0"
 msrestazure = ">=0.6.4,<0.7.0"
 netaddr = ">=0.8.0,<0.9.0"
 pycryptodome = ">=3.19.1,<4.0.0"
 pyjwt = ">=2.8.0,<3.0.0"
-pyopenssl = ">=23.2.0,<24.0.0"
+pyopenssl = ">=23.2,<27.0"
 requests = ">=2.31.0,<3.0.0"
-setuptools = ">=75.8.0,<76.0.0"
+setuptools = ">=75.8,<84.0"
 sshpubkeys = ">=3.3.1,<4.0.0"
 urllib3 = ">=2.6.0"
 
@@ -4196,7 +4196,7 @@ version = "0.6.0"
 description = "A non-validating SQL parser."
 optional = false
 python-versions = ">=3.10"
-groups = ["dev", "spannertelemetry"]
+groups = ["spannertelemetry"]
 files = [
     {file = "sqlparse-0.6.0-py3-none-any.whl", hash = "sha256:b861c0288ce2fa56209a9a6412d2e066ac664b3873b89c26c9d8415e8e32996f"},
     {file = "sqlparse-0.6.0.tar.gz", hash = "sha256:113c35c75365ab9cc9c7231d68c6428fb11c085fc8e9eb1ad659b7ddbf6cd2b9"},
@@ -4638,4 +4638,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.15"
-content-hash = "294217b7f3c4991a82e6c847e3bbe4715092b5cabc863b9639a351e81de6b5a0"
+content-hash = "fe71343efa54fe546b3b6988caf63c63fa5d6791e4fad7a61ed14e200e88eb30"
