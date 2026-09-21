@@ -5,28 +5,25 @@ from typing import Any
 from dftimewolf.lib import errors, resources, args_validator
 from dftimewolf.lib.validators import manager as validators_manager
 
-# Source: az account list-locations | jq -r '.[].name' | sort
-# Fetched 2023-02-07
+# Source: curl https://datacenters.microsoft.com/wp-json/globe/regions | \
+#   jq -r '.[].id' | sort | uniq
+# Fetched 2026-09-21
 # TODO - Fetch at runtime?
 REGIONS = frozenset({
-    'asia', 'asiapacific', 'australia', 'australiacentral',
-    'australiacentral2', 'australiaeast', 'australiasoutheast', 'brazil',
-    'brazilsouth', 'brazilsoutheast', 'canada', 'canadacentral', 'canadaeast',
-    'centralindia', 'centralus', 'centraluseuap', 'centralusstage',
-    'eastasia', 'eastasiastage', 'eastus', 'eastus2', 'eastus2euap',
-    'eastus2stage', 'eastusstage', 'eastusstg', 'europe', 'france',
-    'francecentral', 'francesouth', 'germany', 'germanynorth',
-    'germanywestcentral', 'global', 'india', 'japan', 'japaneast',
-    'japanwest', 'jioindiacentral', 'jioindiawest', 'korea', 'koreacentral',
-    'koreasouth', 'northcentralus', 'northcentralusstage', 'northeurope',
-    'norway', 'norwayeast', 'norwaywest', 'qatarcentral', 'singapore',
-    'southafrica', 'southafricanorth', 'southafricawest', 'southcentralus',
-    'southcentralusstage', 'southcentralusstg', 'southeastasia',
-    'southeastasiastage', 'southindia', 'swedencentral', 'switzerland',
-    'switzerlandnorth', 'switzerlandwest', 'uae', 'uaecentral', 'uaenorth',
-    'uk', 'uksouth', 'ukwest', 'unitedstates', 'unitedstateseuap',
-    'westcentralus', 'westeurope', 'westindia', 'westus', 'westus2',
-    'westus2stage', 'westus3', 'westusstage'})
+    'australiacentral', 'australiaeast', 'australiasoutheast', 'austriaeast',
+    'belgiumcentral', 'brazilsouth', 'canadacentral', 'canadaeast',
+    'centralindia', 'centralus', 'chilecentral', 'chinaeast2', 'chinanorth2',
+    'chinanorth3', 'denmark-north-europe-4', 'denmarkeast', 'eastasia',
+    'eastus', 'eastus2', 'eastus3', 'francecentral', 'germanywestcentral',
+    'greececentral', 'indonesiacentral', 'israelcentral', 'italynorth',
+    'japaneast', 'japanwest', 'koreacentral', 'malaysiawest', 'mexicocentral',
+    'newzealandnorth', 'northcentralus', 'northeurope', 'northeurope3',
+    'norwayeast', 'polandcentral', 'qatarcentral', 'saudiarabiaeast',
+    'southafricanorth', 'southcentralindia', 'southcentralus',
+    'southeast-asia-3', 'southeastasia', 'southindia', 'spaincentral',
+    'swedencentral', 'switzerlandnorth', 'taiwannorth', 'thailand-south',
+    'uaenorth', 'uksouth', 'ukwest', 'westcentralus', 'westeurope', 'westus',
+    'westus2', 'westus3'})
 
 
 class AzureRegionValidator(args_validator.AbstractValidator):
