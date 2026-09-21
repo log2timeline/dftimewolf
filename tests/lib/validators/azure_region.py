@@ -22,7 +22,7 @@ class AzureRegionValidatorTest(unittest.TestCase):
 
   def testValidateSuccess(self):
     """Test that correct values do not throw an exception."""
-    regions = ['eastasia', 'norwayeast', 'westindia']
+    regions = ['eastasia', 'norwayeast', 'southindia']
 
     for region in regions:
       val  = self.validator.Validate(region, self.recipe_argument)
