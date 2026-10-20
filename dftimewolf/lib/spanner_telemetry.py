@@ -2,6 +2,7 @@
 import datetime
 from dataclasses import dataclass
 import logging
+import threading
 from typing import Any, Optional
 import uuid as uuid_lib
 
@@ -94,13 +95,25 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
     self.project_name = project_name
     self.instance_name = instance_name
     self.database_name = database_name
+    self._database: Any = None
+    self._database_lock = threading.Lock()
 
   @property
   def database(self) -> Any:
-    """Returns the Spanner database object."""
-    spanner_client = spanner.Client(project=self.project_name)
-    instance = spanner_client.instance(self.instance_name)
-    return instance.database(self.database_name)
+    """Returns the Spanner database object.
+
+    The object is created on first use and then reused. A new Spanner client
+    for each entry fetches new credentials and creates a new session pool,  
+    which makes each entry slow. Modules log telemetry from several threads,
+    so a lock makes them share one object.
+    
+    """
+    with self._database_lock:
+      if self._database is None:
+        spanner_client = spanner.Client(project=self.project_name)
+        instance = spanner_client.instance(self.instance_name)
+        self._database = instance.database(self.database_name)
+      return self._database
 
   def FormatTelemetry(self) -> str:
     """Gets all telemetry for a given workflow UUID."""
@@ -144,9 +157,11 @@ class GoogleCloudSpannerTelemetry(BaseTelemetry):
       src_module_name: Name of the module that generated the telemetry.
     """
 
+    now = datetime.datetime.now(datetime.timezone.utc)
+
     telemetry = {
       'workflow_uuid': self.uuid,
-      'time': datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+      'time': now.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
       'source_module': src_module_name,
       'recipe': self._recipe_name,
       'key': key,

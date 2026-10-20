@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 """Tests for the Telemetry modules."""
 
+import datetime
+import os
+import time
 import unittest
 import mock
 
@@ -177,6 +180,49 @@ class GoogleCloudSpannerTelemetryTest(unittest.TestCase):
             'value': 'test_value'
         })
 
+  def testDatabaseIsCreatedOnce(self):
+    """Tests that all entries of a telemetry object share one Spanner client."""
+    spanner_telemetry1 = spanner_telemetry.GoogleCloudSpannerTelemetry(
+        project_name='test_project',
+        instance_name='test_instance',
+        database_name='test_database')
+    spanner_telemetry1.LogTelemetry('test_key1', 'test_value1', 'random_module')
+    spanner_telemetry1.LogTelemetry('test_key2', 'test_value2', 'random_module')
+    spanner_telemetry1.FormatTelemetry()
+    self.mock_spanner_client.assert_called_once()
+
+  @unittest.skipUnless(hasattr(time, 'tzset'), 'Needs time.tzset().')
+  def testLogTelemetryTimeIsUtc(self):
+    """Tests that the time of an entry is UTC on a host in another time zone."""
+    old_tz = os.environ.get('TZ')
+
+    def RestoreTimeZone():
+      if old_tz is None:
+        os.environ.pop('TZ', None)
+      else:
+        os.environ['TZ'] = old_tz
+      time.tzset()
+
+    # A POSIX time zone 7 hours west of UTC, with no daylight saving time.
+    os.environ['TZ'] = 'TST07'
+    time.tzset()
+    self.addCleanup(RestoreTimeZone)
+
+    spanner_telemetry1 = spanner_telemetry.GoogleCloudSpannerTelemetry(
+        project_name='test_project',
+        instance_name='test_instance',
+        database_name='test_database')
+    spanner_telemetry1.LogTelemetry('test_key', 'test_value', 'random_module')
+
+    instance = self.mock_spanner_client.return_value.instance.return_value
+    database = instance.database.return_value
+    telemetry = database.run_in_transaction.call_args.args[1]
+    logged = datetime.datetime.strptime(
+        telemetry['time'], '%Y-%m-%dT%H:%M:%S.%fZ').replace(
+            tzinfo=datetime.timezone.utc)
+    self.assertLess(
+        abs(datetime.datetime.now(datetime.timezone.utc) - logged),
+        datetime.timedelta(minutes=1))
 
 if __name__ == '__main__':
   unittest.main()
