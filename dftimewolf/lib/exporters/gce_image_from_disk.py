@@ -3,9 +3,11 @@
 
 from typing import Callable, Type
 
+from libcloudforensics import errors as lcf_errors
 from libcloudforensics.providers.gcp.internal import common
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk
+from libcloudforensics.providers.gcp.internal.compute import GoogleComputeImage
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers, interface
 from dftimewolf.lib.modules import manager as modules_manager
@@ -98,10 +100,22 @@ class GCEImageFromDisk(module.ThreadAwareModule):
     # use a class member due to an underlying thread safety issue in
     # httplib2: https://github.com/googleapis/google-cloud-python/issues/3501
     project = gcp_project.GoogleCloudProject(self.dest_project)
-    image_name = common.GenerateUniqueInstanceName(
-        prefix=f'{self.name_prefix}-{source_disk.name}',
-        truncate_at=common.COMPUTE_NAME_LIMIT)
-    image = project.compute.CreateImageFromDisk(source_disk, name=image_name)
+
+    # Record the image name before the image exists. A run of this module
+    # after a crash then reuses the image, and leaves no image behind.
+    key = self.ResumeKey(f'image:{source_disk.name}')
+    image_name = self.GetFromCache(key)
+    if not image_name:
+      image_name = common.GenerateUniqueInstanceName(
+          prefix=f'{self.name_prefix}-{source_disk.name}',
+          truncate_at=common.COMPUTE_NAME_LIMIT)
+      self.AddToCache(key, image_name)
+
+    try:
+      image = project.compute.CreateImageFromDisk(source_disk, name=image_name)
+    except lcf_errors.ResourceAlreadyExistsError:
+      self.logger.info(f'Reusing image {image_name} of an earlier run')
+      image = GoogleComputeImage(self.dest_project, '', image_name)
     self.StoreContainer(
         containers.GCEImage(image.name, self.dest_project))
 

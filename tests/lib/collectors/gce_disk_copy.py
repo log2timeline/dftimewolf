@@ -624,6 +624,8 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
         'test-target-project-name',
         'my-owned-instance',
         exempted_src_ips=['10.0.0.1'])
+    self.assertTrue(self._cache.GetFromCache(
+        self._module.ResumeKey('quarantine:my-owned-instance')))
 
     out_disks = [d for d in self._module.GetContainers(containers.GCEDisk)
                  if d.name not in ('disk1', 'disk2')]
@@ -633,6 +635,116 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     self.assertListEqual(out_disk_names, expected_disk_names)
     for d in out_disks:
       self.assertEqual(d.project, 'test-analysis-project-name')
+
+  @typing.no_type_check
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
+  @mock.patch('libcloudforensics.providers.gcp.forensics.CreateDiskCopy')
+  @mock.patch('dftimewolf.lib.collectors.gce_disk_copy.GCEDiskCopy._GetDisksFromInstance')
+  @mock.patch('libcloudforensics.providers.gcp.forensics.InstanceNetworkQuarantine')
+  def testQuarantineSkipsRecordedInstance(self,
+                                          mock_quarantine,
+                                          mock_getDisksFromInstance,
+                                          mock_CreateDiskCopy,
+                                          mock_GetInstance):
+    """Tests that a run after a crash does not quarantine the instance again."""
+    mock_getDisksFromInstance.return_value = ['disk1']
+    mock_CreateDiskCopy.return_value = FAKE_DISK_COPY[0]
+    mock_GetInstance.return_value = FAKE_INSTANCE
+    self._cache.AddToCache(
+        self._module.ResumeKey('quarantine:my-owned-instance'), True)
+
+    self._module.SetUp(
+        'test-analysis-project-name',
+        'test-target-project-name',
+        'source_zone',
+        'fake_zone',
+        'my-owned-instance',
+        None,
+        False,
+        False,
+        quarantine_instances=True,
+    )
+    self._ProcessModule()
+
+    mock_quarantine.assert_not_called()
+
+  @typing.no_type_check
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetDisk')
+  @mock.patch('libcloudforensics.providers.gcp.forensics.CreateDiskCopy')
+  def testProcessReusesRecordedCopy(self, mock_CreateDiskCopy, mock_GetDisk):
+    """Tests that a run after a crash reuses each copy that still exists."""
+    earlier_copy = compute.GoogleComputeDisk(
+        'test-analysis-project-name', 'fake_zone', 'disk1-earlier')
+
+    def GetDisk(disk_name, zone=None):
+      del zone  # Unused.
+      if disk_name == earlier_copy.name:
+        return earlier_copy
+      raise lcf_errors.ResourceNotFoundError('Disk not found', __name__)
+
+    mock_GetDisk.side_effect = GetDisk
+    mock_CreateDiskCopy.return_value = FAKE_DISK_COPY[1]
+    self._cache.AddToCache(
+        self._module.ResumeKey('disk:disk1'), 'disk1-earlier')
+    self._cache.AddToCache(
+        self._module.ResumeKey('disk:disk2'), 'disk2-deleted')
+
+    self._module.SetUp(
+        'test-analysis-project-name',
+        'test-target-project-name',
+        'source_zone',
+        'fake_zone',
+        None,
+        'disk1,disk2',
+        False,
+        False,
+    )
+    self._ProcessModule()
+
+    mock_CreateDiskCopy.assert_called_once_with(
+        'test-target-project-name',
+        'test-analysis-project-name',
+        'fake_zone',
+        disk_name='disk2',
+        src_zone='source_zone')
+    out_disk_names = [d.name for d in self._module.GetContainers(
+        containers.GCEDisk) if d.name not in ('disk1', 'disk2')]
+    self.assertCountEqual(out_disk_names, ['disk1-earlier', 'disk2-copy'])
+    self.assertEqual(
+        self._cache.GetFromCache(self._module.ResumeKey('disk:disk2')),
+        'disk2-copy')
+
+  @typing.no_type_check
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeDisk.Delete')
+  @mock.patch('libcloudforensics.providers.gcp.forensics.CreateDiskCopy')
+  def testProcessDeletesCopyThatCannotBeRecorded(self,
+                                                 mock_CreateDiskCopy,
+                                                 mock_Delete):
+    """Tests that Process() deletes a copy whose name it cannot record.
+
+    Else a run after the failure cannot find the copy, and makes another one.
+    """
+    mock_CreateDiskCopy.return_value = FAKE_DISK_COPY[0]
+    self._module.SetUp(
+        'test-analysis-project-name',
+        'test-target-project-name',
+        'source_zone',
+        'fake_zone',
+        None,
+        'disk1',
+        False,
+        False,
+    )
+    self._module.PreProcess()
+    (container,) = self._module.GetContainers(containers.GCEDisk)
+
+    with mock.patch.object(
+        self._cache, 'AddToCache',
+        side_effect=errors.DFTimewolfError('Cannot record')):
+      with self.assertRaises(errors.DFTimewolfError):
+        self._module.Process(container)
+
+    mock_Delete.assert_called_once()
 
 
 if __name__ == '__main__':
