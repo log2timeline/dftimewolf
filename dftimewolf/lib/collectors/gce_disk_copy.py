@@ -249,9 +249,12 @@ class GCEDiskCopy(module.ThreadAwareModule):
     if not name:
       return None
 
+    project = gcp_project.GoogleCloudProject(
+        self.destination_project.project_id,
+        default_zone=self.destination_project.default_zone)
+
     try:
-      disk = self.destination_project.compute.GetDisk(
-          name, zone=self.destination_project.default_zone)
+      disk = project.compute.GetDisk(name, zone=project.default_zone)
     except lcf_errors.ResourceNotFoundError:
       self.logger.info(f'Disk {name} of an earlier run is gone, copying again')
       return None
@@ -303,9 +306,9 @@ class GCEDiskCopy(module.ThreadAwareModule):
         remote_instance = self.source_project.compute.GetInstance(i)
         # TODO(dfjxs): Account for GKE Nodes
         remote_instance.Stop()
+        self.logger.info(f'Stopped instance {i}')
       except lcf_errors.InstanceStateChangeError as exception:
         self.ModuleError(str(exception), critical=False)
-      self.logger.info(f'Stopped instance {i}')
 
   def _QuarantineInstances(self) -> None:
     """Quarantines instances where it was requested."""
@@ -328,9 +331,9 @@ class GCEDiskCopy(module.ThreadAwareModule):
             i,
             exempted_src_ips=self.exempted_src_ips)
         self.AddToCache(key, True)
+        self.logger.info(f'Quarantined instance {i}')
       except lcf_errors.LCFError as exception:
         self.ModuleError(str(exception), critical=False)
-      self.logger.info(f'Quarantined instance {i}')
 
   def _GetDisksFromInstance(
       self,
