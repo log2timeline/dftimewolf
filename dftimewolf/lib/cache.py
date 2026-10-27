@@ -57,6 +57,15 @@ class DFTWCache:
     with self._mutex:
       return self._cache.get(name, default_value)
 
+  def KeepsResumeKeys(self) -> bool:
+    """Returns True if a later run of a module can read its resume: keys.
+
+    This cache keeps the keys in memory, for one run only. A runner that can
+    run a module again, for example after a crash, uses a subclass that keeps
+    them, and returns True.
+    """
+    return False
+
   def SetRecipeName(self, recipe_name: str) -> None:
     """Dedicated method for setting the name of the current recipe."""
     self.AddToCache(_RECIPE_NAME_CACHE_KEY, recipe_name)
