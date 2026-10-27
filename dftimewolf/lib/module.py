@@ -215,6 +215,23 @@ class BaseModule(object):
     """
     return self._cache.GetFromCache(name, default_value)
 
+  def ResumeKey(self, item: str) -> str:
+    """Returns the cache key that records an external resource of this module.
+
+    A module records the name of each resource that it creates under such a
+    key, as soon as it knows the name. A runner that can run the module again
+    keeps these keys, so that the next run can reuse the resource. The key
+    holds the runtime name, because all modules of a recipe share the cache.
+
+    Args:
+      item: Names the resource within this module, for example
+          'image:<disk name>'.
+
+    Returns:
+      The cache key.
+    """
+    return f"{cache.RESUME_KEY_PREFIX}{self.name}:{item}"
+
   @abc.abstractmethod
   def Process(self) -> None:
     """Processes input and builds the module's output attribute.

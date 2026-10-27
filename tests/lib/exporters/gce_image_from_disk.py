@@ -5,6 +5,7 @@
 
 import unittest
 
+from libcloudforensics import errors as lcf_errors
 from libcloudforensics.providers.gcp.internal import compute
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 import mock
@@ -137,6 +138,61 @@ class GCEImageFromDiskTest(modules_test_base.ModuleTestBase):
     for project in [c.project for \
         c in self._module.GetContainers(containers.GCEImage)]:
       self.assertEqual(project, FAKE_GCP_DEST_PROJECT_NAME)
+
+  # pylint: disable=line-too-long,unused-argument
+  @mock.patch('googleapiclient.discovery.Resource', return_value=FAKE_GCP_SOURCE_PROJECT)
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.CreateImageFromDisk')
+  # pylint: enable=line-too-long
+  def testProcessRecordsImageNameFirst(self, mock_lcf_create_image_from_disk,
+                                       mock_gcp_project):
+    """Tests that Process() records each image name before it creates it."""
+    recorded = {}
+
+    def CreateImage(disk, name):
+      recorded[disk.name] = self._cache.GetFromCache(
+          self._module.ResumeKey(f'image:{disk.name}'))
+      return compute.GoogleComputeImage(FAKE_GCP_DEST_PROJECT_NAME, '', name)
+
+    mock_lcf_create_image_from_disk.side_effect = CreateImage
+    self._module.SetUp(FAKE_DISKS,
+                       FAKE_GCP_SOURCE_PROJECT_NAME,
+                       FAKE_SOURCE_ZONE,
+                       FAKE_GCP_DEST_PROJECT_NAME,
+                       FAKE_DEST_ZONE,
+                       FAKE_NAME_PREFIX)
+
+    self._ProcessModule()
+
+    self.assertCountEqual(recorded, ['fake-disk-one', 'fake-disk-two'])
+    self.assertCountEqual(
+        [c.name for c in self._module.GetContainers(containers.GCEImage)],
+        recorded.values())
+
+  # pylint: disable=line-too-long,unused-argument
+  @mock.patch('googleapiclient.discovery.Resource', return_value=FAKE_GCP_SOURCE_PROJECT)
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.CreateImageFromDisk')
+  # pylint: enable=line-too-long
+  def testProcessReusesRecordedImage(self, mock_lcf_create_image_from_disk,
+                                     mock_gcp_project):
+    """Tests that a run after a crash reuses the image of the earlier run."""
+    self._cache.AddToCache(
+        self._module.ResumeKey('image:fake-disk-one'), 'earlier-image')
+    mock_lcf_create_image_from_disk.side_effect = (
+        lcf_errors.ResourceAlreadyExistsError('Image exists', __name__))
+    self._module.SetUp('fake-disk-one',
+                       FAKE_GCP_SOURCE_PROJECT_NAME,
+                       FAKE_SOURCE_ZONE,
+                       FAKE_GCP_DEST_PROJECT_NAME,
+                       FAKE_DEST_ZONE,
+                       FAKE_NAME_PREFIX)
+
+    self._ProcessModule()
+
+    mock_lcf_create_image_from_disk.assert_called_once_with(
+        mock.ANY, name='earlier-image')
+    self.assertEqual(
+        [c.name for c in self._module.GetContainers(containers.GCEImage)],
+        ['earlier-image'])
 
 
 if __name__ == '__main__':

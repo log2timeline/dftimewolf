@@ -5,6 +5,8 @@
 import os
 import unittest
 
+from googleapiclient.errors import HttpError
+import httplib2
 import mock
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal import compute
@@ -69,7 +71,7 @@ class GoogleCloudDiskExportTest(modules_test_base.ModuleTestBase):
     FAKE_IMAGE.Delete = mock_delete_image
     self._ProcessModule()
     mock_create_image_from_disk.assert_called_with(
-        FAKE_DISK)
+        FAKE_DISK, name=mock.ANY)
     mock_export_image.assert_called_with(
         'gs://fake-bucket',
         output_name='image-df-export-temp',
@@ -123,7 +125,7 @@ class GoogleCloudDiskExportTest(modules_test_base.ModuleTestBase):
     FAKE_IMAGE.Delete = mock_delete_image
     self._ProcessModule()
     mock_create_image_from_disk.assert_called_with(
-        FAKE_DISK)
+        FAKE_DISK, name=mock.ANY)
     mock_export_image.assert_called_with(
         'gs://fake-bucket',
         output_name='image-df-export-temp',
@@ -139,6 +141,94 @@ class GoogleCloudDiskExportTest(modules_test_base.ModuleTestBase):
     self.assertIn('SOURCE_MACHINE', urls[0].metadata)
     self.assertEqual(urls[0].metadata['SOURCE_DISK'], 'fake-source-disk')
     self.assertEqual(urls[0].metadata['SOURCE_MACHINE'], 'fake-source-machine')
+
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeImage.Delete')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeImage.ExportImage')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.CreateImageFromDisk')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetDisk')
+  @mock.patch('libcloudforensics.providers.gcp.internal.project.GoogleCloudProject')
+  def testProcessRecordsImageAndExport(self,
+                                       mock_gcp_project,
+                                       mock_get_disk,
+                                       mock_create_image_from_disk,
+                                       mock_export_image,
+                                       mock_delete_image):
+    """Tests that Process() records the image name first, then the export."""
+    mock_export_image.return_value = 'gs://fake-bucket/fake-image.tar.gz'
+    mock_gcp_project.return_value = FAKE_SOURCE_PROJECT
+    mock_get_disk.return_value = FAKE_DISK
+    image_key = self._module.ResumeKey('image:fake-source-disk')
+
+    def CreateImage(disk, name):
+      del disk  # Unused.
+      self.assertEqual(self._cache.GetFromCache(image_key), name)
+      return compute.GoogleComputeImage(
+          FAKE_SOURCE_PROJECT.project_id, '', name)
+
+    mock_create_image_from_disk.side_effect = CreateImage
+    self._module.SetUp(source_project_name='fake-source-project',
+                       gcs_output_location='gs://fake-bucket',
+                       analysis_project_name='',
+                       source_disk_names='fake-source-disk',
+                       remote_instance_name='',
+                       all_disks=False,
+                       exported_image_name='',
+                       image_format='',
+                       cloudbuild_zone='zone1')
+    FAKE_SOURCE_PROJECT.compute.GetDisk = mock_get_disk
+    FAKE_SOURCE_PROJECT.compute.CreateImageFromDisk = mock_create_image_from_disk
+
+    self._ProcessModule()
+
+    mock_create_image_from_disk.assert_called_once_with(
+        FAKE_DISK, name=self._cache.GetFromCache(image_key))
+    self.assertEqual(
+        self._cache.GetFromCache(
+            self._module.ResumeKey('export:fake-source-disk')),
+        'gs://fake-bucket/fake-image.tar.gz')
+    mock_delete_image.assert_called_once()
+
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeImage.Delete')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeImage.ExportImage')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.CreateImageFromDisk')
+  @mock.patch('libcloudforensics.providers.gcp.internal.project.GoogleCloudProject')
+  def testProcessReusesRecordedExport(self,
+                                      mock_gcp_project,
+                                      mock_create_image_from_disk,
+                                      mock_export_image,
+                                      mock_delete_image):
+    """Tests that a run after a crash reuses the export of the earlier run.
+
+    The earlier run crashed after the export, before it deleted the image. So
+    this run deletes the image. It ignores an image that is gone already.
+    """
+    mock_gcp_project.return_value = FAKE_SOURCE_PROJECT
+    mock_delete_image.side_effect = HttpError(
+        httplib2.Response({'status': 404}), b'Not found')
+    self._cache.AddToCache(
+        self._module.ResumeKey('image:fake-source-disk'), 'earlier-image')
+    self._cache.AddToCache(
+        self._module.ResumeKey('export:fake-source-disk'),
+        'gs://fake-bucket/earlier-image.tar.gz')
+    self._module.SetUp(source_project_name='fake-source-project',
+                       gcs_output_location='gs://fake-bucket',
+                       analysis_project_name='',
+                       source_disk_names='fake-source-disk',
+                       remote_instance_name='',
+                       all_disks=False,
+                       exported_image_name='',
+                       image_format='',
+                       cloudbuild_zone='zone1')
+    FAKE_SOURCE_PROJECT.compute.CreateImageFromDisk = mock_create_image_from_disk
+
+    self._ProcessModule()
+
+    mock_create_image_from_disk.assert_not_called()
+    mock_export_image.assert_not_called()
+    mock_delete_image.assert_called_once()
+    urls = self._module.GetContainers(containers.GCSObject)
+    self.assertEqual([u.path for u in urls],
+                     ['gs://fake-bucket/earlier-image.tar.gz'])
 
 
 if __name__ == '__main__':

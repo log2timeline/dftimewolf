@@ -7,6 +7,7 @@ from googleapiclient.errors import HttpError
 from libcloudforensics import errors as lcf_errors
 from libcloudforensics.providers.gcp import forensics as gcp_forensics
 from libcloudforensics.providers.gcp.internal import project as gcp_project
+from libcloudforensics.providers.gcp.internal.compute import GoogleComputeDisk
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers, interface
@@ -204,13 +205,18 @@ class GCEDiskCopy(module.ThreadAwareModule):
       self.logger.debug(f"Skipping {container.name} not in source project")
     self.logger.info(f'Disk copy of {container.name} started...')
 
+    # A run of this module after a crash reuses the copy of the earlier run.
+    key = self.ResumeKey(f'disk:{container.name}')
     try:
-      new_disk = gcp_forensics.CreateDiskCopy(
-          self.source_project.project_id,
-          self.destination_project.project_id,
-          self.destination_project.default_zone,
-          disk_name=container.name,
-          src_zone=self.source_zone)
+      new_disk = self._RecordedCopy(key)
+      if not new_disk:
+        new_disk = gcp_forensics.CreateDiskCopy(
+            self.source_project.project_id,
+            self.destination_project.project_id,
+            self.destination_project.default_zone,
+            disk_name=container.name,
+            src_zone=self.source_zone)
+        self._RecordCopy(key, new_disk)
       if self._gcp_label:
         new_disk.AddLabels(self._gcp_label)
       self.at_least_one_success = True
@@ -229,6 +235,48 @@ class GCEDiskCopy(module.ThreadAwareModule):
       self.logger.error(f'Could not create disk: {exception}')
       self.warned = True
       self.ModuleError(str(exception), critical=True)
+
+  def _RecordedCopy(self, key: str) -> Optional[GoogleComputeDisk]:
+    """Returns the copy that an earlier run recorded, if it still exists.
+
+    Args:
+      key: The resume key of the copy.
+
+    Returns:
+      The copy, or None if no run recorded one, or if it is gone.
+    """
+    name = self.GetFromCache(key)
+    if not name:
+      return None
+
+    project = gcp_project.GoogleCloudProject(
+        self.destination_project.project_id,
+        default_zone=self.destination_project.default_zone)
+
+    try:
+      disk = project.compute.GetDisk(name, zone=project.default_zone)
+    except lcf_errors.ResourceNotFoundError:
+      self.logger.info(f'Disk {name} of an earlier run is gone, copying again')
+      return None
+    self.logger.info(f'Reusing disk {name} of an earlier run')
+    return disk
+
+  def _RecordCopy(self, key: str, disk: GoogleComputeDisk) -> None:
+    """Records a new copy.
+
+    The library chooses the name of the copy, so the record comes after the
+    copy. If the record fails, this deletes the copy, so that no copy stays
+    without a record.
+
+    Args:
+      key: The resume key of the copy.
+      disk: The copy.
+    """
+    try:
+      self.AddToCache(key, disk.name)
+    except Exception:  # pylint: disable=broad-except
+      disk.Delete()
+      raise
 
   def PostProcess(self) -> None:
     """Stops or quarantines instances where it was requested."""
@@ -258,9 +306,9 @@ class GCEDiskCopy(module.ThreadAwareModule):
         remote_instance = self.source_project.compute.GetInstance(i)
         # TODO(dfjxs): Account for GKE Nodes
         remote_instance.Stop()
+        self.logger.info(f'Stopped instance {i}')
       except lcf_errors.InstanceStateChangeError as exception:
         self.ModuleError(str(exception), critical=False)
-      self.logger.info(f'Stopped instance {i}')
 
   def _QuarantineInstances(self) -> None:
     """Quarantines instances where it was requested."""
@@ -270,14 +318,22 @@ class GCEDiskCopy(module.ThreadAwareModule):
       return
 
     for i in self.remote_instance_names:
+      # A run of this module after a crash does not quarantine an instance
+      # again, which would add another pair of firewall rules.
+      key = self.ResumeKey(f'quarantine:{i}')
+      if self.GetFromCache(key):
+        self.logger.info(f'Instance {i} was quarantined by an earlier run')
+        continue
+
       try:
         gcp_forensics.InstanceNetworkQuarantine(
             self.source_project.project_id,
             i,
             exempted_src_ips=self.exempted_src_ips)
+        self.AddToCache(key, True)
+        self.logger.info(f'Quarantined instance {i}')
       except lcf_errors.LCFError as exception:
         self.ModuleError(str(exception), critical=False)
-      self.logger.info(f'Quarantined instance {i}')
 
   def _GetDisksFromInstance(
       self,
