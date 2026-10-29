@@ -33,7 +33,7 @@ coverage = "^7.14.1"
 graphviz = "^0.21"
 mkdocs = "^1.6.1"
 mock = "^5.2.0"
-pylint = "^4.0.5"
+pylint = "^4.0.9"
 pyrefly = "^1.0.0"
 
 [tool.poetry.group.spannertelemetry]
