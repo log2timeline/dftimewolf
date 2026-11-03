@@ -43,7 +43,7 @@ class _Copier(module.BaseModule):
 class SkipOnResumeIfCompleteTest(modules_test_base.ModuleTestBase):
   """Tests the SkipOnResumeIfComplete decorator."""
 
-  _module: _Copier
+  _module: _Copier  # pyrefly: ignore[bad-override-mutable-attribute]
 
   def setUp(self):
     super().setUp()
