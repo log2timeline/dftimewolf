@@ -35,6 +35,7 @@ class _Copier(module.BaseModule):
 
   @module.SkipOnResumeIfComplete(still_valid=_StillValid, undo=_Undo)
   def Copy(self, name: str) -> str:
+    """Returns the name of a new copy, or '' if the name is empty."""
     self.runs += 1
     return f'{name}-copy-{self.runs}' if name else ''
 
