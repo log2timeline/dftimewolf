@@ -140,12 +140,17 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase, module.ThreadAwareModule)
   def PreProcess(self):
     pass
 
+<<<<<<< HEAD
   def Process(self, container: containers.GCEDisk) -> None:  # pyrefly: ignore[bad-override]
+=======
+  def Process(self, container: containers.GCEDisk):  # pyrefly: ignore=[bad-override]
+>>>>>>> ba50b73 (Parallelise cloudbuild disk copies)
     """Creates and exports disk image to the output bucket."""
     if container.project != self._source_project.project_id:
       self.logger.info('Source project mismatch: skipping %s', str(container))
       return
 
+<<<<<<< HEAD
     # Record the image name before the image exists. The image name also
     # names the exported file, unless exported_image_name is set. A run of
     # this module after a crash then reuses the image and the file.
@@ -178,6 +183,15 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase, module.ThreadAwareModule)
                                             image_format=self._image_format,
                                             zone=self._cloudbuild_zone)
       self.AddToCache(export_key, output_url)
+=======
+    # A resumed run gets the same image name, which also names the exported
+    # file, unless exported_image_name is set. Then it reuses the image and
+    # the file of an earlier run.
+    image_object = GoogleComputeImage(
+        self._analysis_project.project_id, '',
+        self._ImageName(container.name))
+    output_url = self._ExportDisk(container.name, image_object.name)
+>>>>>>> ba50b73 (Parallelise cloudbuild disk copies)
     self._DeleteImage(image_object)
     self.logger.info(f'Disk was exported to: {output_url}')
     out_container = containers.GCSObject(path=output_url)
