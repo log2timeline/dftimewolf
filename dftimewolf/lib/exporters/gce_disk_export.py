@@ -14,7 +14,6 @@ from dftimewolf.lib.containers import containers
 from dftimewolf.lib.containers import interface
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib import cache
-from dftimewolf.lib import module
 from dftimewolf.lib import spanner_telemetry as telemetry
 from dftimewolf.lib.containers import manager as container_manager
 from dftimewolf.lib.exporters.gce_disk_export_base import GoogleCloudDiskExportBase  # pylint: disable=line-too-long
