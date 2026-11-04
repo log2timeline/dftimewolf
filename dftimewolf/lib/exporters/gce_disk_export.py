@@ -146,38 +146,13 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase, module.ThreadAwareModule)
       self.logger.info('Source project mismatch: skipping %s', str(container))
       return
 
-    # Record the image name before the image exists. The image name also
-    # names the exported file, unless exported_image_name is set. A run of
-    # this module after a crash then reuses the image and the file.
-    image_key = self.ResumeKey(f'image:{container.name}')
-    image_name = self.GetFromCache(image_key)
-    if not image_name:
-      image_name = common.GenerateUniqueInstanceName(
-          container.name, common.COMPUTE_NAME_LIMIT)
-      self.AddToCache(image_key, image_name)
+    # A resumed run gets the same image name, which also names the exported
+    # file, unless exported_image_name is set. Then it reuses the image and
+    # the file of an earlier run.
     image_object = GoogleComputeImage(
-        self._analysis_project.project_id, '', image_name)
-
-    # Record the export when it ends. A run after a crash during the export
-    # exports again, to the same file.
-    export_key = self.ResumeKey(f'export:{container.name}')
-    output_url = self.GetFromCache(export_key)
-    if not output_url:
-      try:
-        project_handle = gcp_project.GoogleCloudProject(
-            self._analysis_project.project_id)  # Thread safety!
-        project_handle.compute.CreateImageFromDisk(
-            self._source_project.compute.GetDisk(container.name),
-            name=image_name)
-      except lcf_errors.ResourceAlreadyExistsError:
-        self.logger.info(f'Reusing image {image_name} of an earlier run')
-      # If self.exported_image_name is empty, the file name is the image
-      # name, with .tar.gz or the image format.
-      output_url = image_object.ExportImage(self._gcs_output_location,
-                                            output_name=self._exported_image_name,
-                                            image_format=self._image_format,
-                                            zone=self._cloudbuild_zone)
-      self.AddToCache(export_key, output_url)
+        self._analysis_project.project_id, '',
+        self._ImageName(container.name))
+    output_url = self._ExportDisk(container.name, image_object.name)
     self._DeleteImage(image_object)
     self.logger.info(f'Disk was exported to: {output_url}')
     out_container = containers.GCSObject(path=output_url)
@@ -220,48 +195,9 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase, module.ThreadAwareModule)
       The URL of the exported file.
     """
     try:
-      self._analysis_project.compute.CreateImageFromDisk(
-          self._source_project.compute.GetDisk(disk_name), name=image_name)
-    except lcf_errors.ResourceAlreadyExistsError:
-      self.logger.info(f'Reusing image {image_name} of an earlier run')
-
-    # If self.exported_image_name is empty, the file name is the image name,
-    # with .tar.gz or the image format.
-    image_object = GoogleComputeImage(
-        self._analysis_project.project_id, '', image_name)
-    return image_object.ExportImage(self._gcs_output_location,
-                                    output_name=self._exported_image_name,
-                                    image_format=self._image_format,
-                                    zone=self._cloudbuild_zone)
-
-  @module.SkipOnResumeIfComplete()
-  def _ImageName(self, disk_name: str) -> str:
-    """Returns a new name for the image of a disk.
-
-    Args:
-      disk_name: The name of the disk.
-
-    Returns:
-      The image name.
-    """
-    return common.GenerateUniqueInstanceName(disk_name, common.COMPUTE_NAME_LIMIT)
-
-  @module.SkipOnResumeIfComplete()
-  def _ExportDisk(self, disk_name: str, image_name: str) -> str:
-    """Exports a disk to GCS, through an image.
-
-    A crash during the export runs it again, to the same file.
-
-    Args:
-      disk_name: The name of the disk.
-      image_name: The name of the image to create, or of the image of an
-          earlier run.
-
-    Returns:
-      The URL of the exported file.
-    """
-    try:
-      self._analysis_project.compute.CreateImageFromDisk(
+      project_handle = gcp_project.GoogleCloudProject(
+          self._analysis_project.project_id)  # Thread safety!
+      project_handle.compute.CreateImageFromDisk(
           self._source_project.compute.GetDisk(disk_name), name=image_name)
     except lcf_errors.ResourceAlreadyExistsError:
       self.logger.info(f'Reusing image {image_name} of an earlier run')
