@@ -146,7 +146,6 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase, module.ThreadAwareModule)
       self.logger.info('Source project mismatch: skipping %s', str(container))
       return
 
-<<<<<<< HEAD
     # Record the image name before the image exists. The image name also
     # names the exported file, unless exported_image_name is set. A run of
     # this module after a crash then reuses the image and the file.
@@ -234,20 +233,6 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase, module.ThreadAwareModule)
                                     output_name=self._exported_image_name,
                                     image_format=self._image_format,
                                     zone=self._cloudbuild_zone)
-=======
-      # A resumed run gets the same image name, which also names the exported
-      # file, unless exported_image_name is set. Then it reuses the image and
-      # the file of an earlier run.
-      image_object = GoogleComputeImage(
-          self._analysis_project.project_id, '',
-          self._ImageName(source_disk.name))
-      output_url = self._ExportDisk(source_disk.name, image_object.name)
-      self._DeleteImage(image_object)
-      self.logger.info(f'Disk was exported to: {output_url}')
-      container = containers.GCSObject(path=output_url)
-      container.metadata.update(source_disk.metadata)
-      self.StoreContainer(container)
->>>>>>> main
 
   @module.SkipOnResumeIfComplete()
   def _ImageName(self, disk_name: str) -> str:
