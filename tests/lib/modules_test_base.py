@@ -39,21 +39,38 @@ class ModuleTestBase(parameterized.TestCase):
 
   def _InitModule(self, test_module: type[module.BaseModule]):  # pylint: disable=arguments-differ
     """Initialises the module, the DFTW state and recipe for module testing."""
-    name = test_module.__name__
     self._cache = cache.DFTWCache()
+    self._telemetry = mock.MagicMock()
+    self._NewModule(test_module)
+
+  def _NewModule(self, test_module: type[module.BaseModule]) -> None:
+    """Creates the module, with a new container manager and recipe."""
+    name = test_module.__name__
     self._container_manager = container_manager.ContainerManager(
         logger=mock.MagicMock())
     self._container_manager.ParseRecipe(
         {'modules': [{'name': 'upstream'},
                      {'name': name, 'wants': ['upstream']},
                      {'name': 'downstream', 'wants': [name]}]})
-    self._telemetry = mock.MagicMock()
 
     self._module = test_module(name=name,
                                container_manager_=self._container_manager,
                                cache_=self._cache,
                                telemetry_=self._telemetry,
                                publish_message_callback=self._PublishMessage)
+
+  def _KeepResumeKeys(self) -> None:
+    """Makes the cache keep resume keys, as the cache of a resumable run does."""
+    self.enter_context(
+        mock.patch.object(self._cache, 'KeepsResumeKeys', return_value=True))
+
+  def _ResumeModule(self) -> None:
+    """Replaces the module with a new one, as a resumed run does.
+
+    The new module has a new container manager, as a new process has. It has
+    the same cache, which holds the resume keys of the earlier run.
+    """
+    self._NewModule(type(self._module))
 
   def _ProcessModule(self):
     """Runs the process stage for the module."""
