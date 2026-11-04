@@ -2,10 +2,13 @@
 """Class definition for DFTimewolf modules."""
 
 import abc
+import functools
+import hashlib
+import json
 import logging
 import sys
 import traceback
-from typing import Any, Callable, Literal, NoReturn, Optional, overload, Sequence, Type, TypeVar
+from typing import Any, Callable, Literal, NoReturn, Optional, cast, overload, Sequence, Type, TypeVar
 
 from dftimewolf.lib import cache
 from dftimewolf.lib import errors
@@ -325,3 +328,104 @@ class ThreadAwareModule(BaseModule):
     or pop them. Default behaviour is to keep the containers. Override this
     method to return false to pop them from the state."""
     return True
+
+
+# Keeps the resume key of a step short, also for long arguments.
+_STEP_DIGEST_LENGTH = 12
+# The field of the record of a complete step that holds its result.
+_STEP_RESULT = 'result'
+
+M = TypeVar('M', bound=Callable[..., Any])  # pylint: disable=invalid-name
+
+
+def SkipOnResumeIfComplete(
+    still_valid: Optional[Callable[..., bool]] = None,
+    undo: Optional[Callable[..., None]] = None,
+    key: Optional[Callable[..., Any]] = None) -> Callable[[M], M]:
+  """Skips a module method when a run resumes, if an earlier run completed it.
+
+  A runner that can run a module again, for example after a crash, keeps the
+  resume: keys of the module (see DFTWCache.KeepsResumeKeys()). With such a
+  runner, the decorator records the result of each completed call under a
+  resume key. When a resumed run makes a call with the same arguments, the
+  decorator returns the recorded result, and the method does not run again.
+  This is also true for a second call in the same run, so the identity of a
+  call must hold all that makes two writes different, for example their
+  destination. Without such a runner, for example in the CLI, the decorator
+  only calls the method.
+
+  Decorate a step that creates an external resource, and return the ID or the
+  name of the resource, not a live object. The result must be JSON: a tuple
+  comes back as a list. The decorator records only a true result. A false
+  result, such as None or '', means that the call created nothing, so a
+  resumed run calls the method again. The record comes after the method
+  returns, so a crash inside the method runs the whole method again. Two calls
+  with the same arguments at the same time both run. If the record fails, the
+  error stops the module before its next side effect, so do not catch it.
+
+  Args:
+    still_valid: Called as still_valid(self, result, *args, **kwargs) before a
+        recorded result is reused. Returns False if the resource is gone, for
+        example because a person deleted it. Then the method runs again.
+    undo: Called as undo(self, result, *args, **kwargs) if the record of a new
+        result fails. It deletes the new resource, so that no resource stays
+        without a record. Then the error of the record stops the module.
+    key: Called as key(self, *args, **kwargs). Returns the identity of the
+        call as JSON, if JSON cannot hold the arguments, or if only some of
+        them identify the call. By default, the arguments are the identity.
+
+  Returns:
+    The decorator.
+  """
+
+  def Decorator(method: M) -> M:
+
+    @functools.wraps(method)
+    def Wrapper(self: BaseModule, *args: Any, **kwargs: Any) -> Any:
+      if not self._cache.KeepsResumeKeys():  # pylint: disable=protected-access
+        return method(self, *args, **kwargs)
+
+      identity = key(self, *args, **kwargs) if key else [args, kwargs]
+      try:
+        text = json.dumps(identity, sort_keys=True)
+      except TypeError as error:
+        raise TypeError(
+            f'{method.__name__}: give SkipOnResumeIfComplete a key function '
+            f'that returns JSON for these arguments: {error}') from error
+      digest = hashlib.sha256(text.encode()).hexdigest()[:_STEP_DIGEST_LENGTH]
+      resume_key = self.ResumeKey(f'{method.__name__}:{digest}')
+
+      # Skip a call that an earlier run completed, unless its resource is gone.
+      record = self.GetFromCache(resume_key)
+      if record is not None:
+        result = record[_STEP_RESULT]
+        if not still_valid or still_valid(self, result, *args, **kwargs):
+          self.logger.info(
+              f'Skipping {method.__name__}, which an earlier run completed: '
+              f'{result!r}')
+          return result
+        self.logger.info(
+            f'The result of {method.__name__} of an earlier run is gone: '
+            f'{result!r}. Running it again.')
+
+      result = method(self, *args, **kwargs)
+      if not result:
+        return result
+
+      # Record the result at once, so that a resumed run skips the call. If the
+      # record fails, undo the call, so that no resource stays without a record.
+      try:
+        self.AddToCache(resume_key, {_STEP_RESULT: result})
+      except Exception:  # pylint: disable=broad-except
+        if undo:
+          try:
+            undo(self, result, *args, **kwargs)
+          except Exception:  # pylint: disable=broad-except
+            self.logger.exception(
+                f'Cannot undo {method.__name__}, which returned {result!r}')
+        raise
+      return result
+
+    return cast(M, Wrapper)
+
+  return Decorator

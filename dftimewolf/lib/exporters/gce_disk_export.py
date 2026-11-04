@@ -9,6 +9,7 @@ from libcloudforensics.providers.gcp.internal import common
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal.compute import GoogleComputeImage
 
+from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.containers import interface
 from dftimewolf.lib.modules import manager as modules_manager
@@ -191,6 +192,47 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase, module.ThreadAwareModule)
 
   def GetThreadPoolSize(self) -> int:
     return 5  # Arbitrary
+
+  @module.SkipOnResumeIfComplete()
+  def _ImageName(self, disk_name: str) -> str:
+    """Returns a new name for the image of a disk.
+
+    Args:
+      disk_name: The name of the disk.
+
+    Returns:
+      The image name.
+    """
+    return common.GenerateUniqueInstanceName(disk_name, common.COMPUTE_NAME_LIMIT)
+
+  @module.SkipOnResumeIfComplete()
+  def _ExportDisk(self, disk_name: str, image_name: str) -> str:
+    """Exports a disk to GCS, through an image.
+
+    A crash during the export runs it again, to the same file.
+
+    Args:
+      disk_name: The name of the disk.
+      image_name: The name of the image to create, or of the image of an
+          earlier run.
+
+    Returns:
+      The URL of the exported file.
+    """
+    try:
+      self._analysis_project.compute.CreateImageFromDisk(
+          self._source_project.compute.GetDisk(disk_name), name=image_name)
+    except lcf_errors.ResourceAlreadyExistsError:
+      self.logger.info(f'Reusing image {image_name} of an earlier run')
+
+    # If self.exported_image_name is empty, the file name is the image name,
+    # with .tar.gz or the image format.
+    image_object = GoogleComputeImage(
+        self._analysis_project.project_id, '', image_name)
+    return image_object.ExportImage(self._gcs_output_location,
+                                    output_name=self._exported_image_name,
+                                    image_format=self._image_format,
+                                    zone=self._cloudbuild_zone)
 
   def _DeleteImage(self, image: GoogleComputeImage) -> None:
     """Deletes the image of an export. An earlier run may have deleted it."""
