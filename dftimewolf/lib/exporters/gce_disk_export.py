@@ -11,6 +11,7 @@ from libcloudforensics.providers.gcp.internal.compute import GoogleComputeImage
 
 from dftimewolf.lib import module
 from dftimewolf.lib.containers import containers
+from dftimewolf.lib.containers import interface
 from dftimewolf.lib.modules import manager as modules_manager
 from dftimewolf.lib import cache
 from dftimewolf.lib import spanner_telemetry as telemetry
@@ -21,7 +22,7 @@ from dftimewolf.lib.exporters.gce_disk_export_base import GoogleCloudDiskExportB
 # pylint: disable=line-too-long
 
 
-class GoogleCloudDiskExport(GoogleCloudDiskExportBase):
+class GoogleCloudDiskExport(GoogleCloudDiskExportBase, module.ThreadAwareModule):
   """Google Cloud Platform (GCP) Disk Export.
 
   This module copies a GCE Disk into GCS storage.
@@ -135,25 +136,36 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase):
         container.metadata['SOURCE_DISK'] = d
         self.StoreContainer(container, for_self_only=True)
 
-  def Process(self) -> None:
-    """Creates and exports disk image to the output bucket."""
-    for source_disk in self.GetContainers(containers.GCEDisk):
-      if source_disk.project != self._source_project.project_id:
-        self.logger.info('Source project mismatch: skipping %s', str(source_disk))
-        continue
+  def PreProcess(self):
+    pass
 
-      # A resumed run gets the same image name, which also names the exported
-      # file, unless exported_image_name is set. Then it reuses the image and
-      # the file of an earlier run.
-      image_object = GoogleComputeImage(
-          self._analysis_project.project_id, '',
-          self._ImageName(source_disk.name))
-      output_url = self._ExportDisk(source_disk.name, image_object.name)
-      self._DeleteImage(image_object)
-      self.logger.info(f'Disk was exported to: {output_url}')
-      container = containers.GCSObject(path=output_url)
-      container.metadata.update(source_disk.metadata)
-      self.StoreContainer(container)
+  def Process(self, container: containers.GCEDisk) -> None:  # pyrefly: ignore[bad-override]
+    """Creates and exports disk image to the output bucket."""
+    if container.project != self._source_project.project_id:
+      self.logger.info('Source project mismatch: skipping %s', str(container))
+      return
+
+    # A resumed run gets the same image name, which also names the exported
+    # file, unless exported_image_name is set. Then it reuses the image and
+    # the file of an earlier run.
+    image_object = GoogleComputeImage(
+        self._analysis_project.project_id, '',
+        self._ImageName(container.name))
+    output_url = self._ExportDisk(container.name, image_object.name)
+    self._DeleteImage(image_object)
+    self.logger.info(f'Disk was exported to: {output_url}')
+    out_container = containers.GCSObject(path=output_url)
+    out_container.metadata.update(container.metadata)
+    self.StoreContainer(out_container)
+
+  def PostProcess(self):
+    pass
+
+  def GetThreadOnContainerType(self) -> type[interface.AttributeContainer]:
+    return containers.GCEDisk
+
+  def GetThreadPoolSize(self) -> int:
+    return 5  # Arbitrary
 
   @module.SkipOnResumeIfComplete()
   def _ImageName(self, disk_name: str) -> str:
@@ -182,7 +194,9 @@ class GoogleCloudDiskExport(GoogleCloudDiskExportBase):
       The URL of the exported file.
     """
     try:
-      self._analysis_project.compute.CreateImageFromDisk(
+      project_handle = gcp_project.GoogleCloudProject(
+          self._analysis_project.project_id)  # Thread safety!
+      project_handle.compute.CreateImageFromDisk(
           self._source_project.compute.GetDisk(disk_name), name=image_name)
     except lcf_errors.ResourceAlreadyExistsError:
       self.logger.info(f'Reusing image {image_name} of an earlier run')
