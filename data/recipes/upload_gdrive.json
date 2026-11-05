@@ -23,7 +23,7 @@
         ["--parent_folder_id", "", "0B0m2ov3yrR0bNzBhNjcxNjctN2EyYS00ZTgxLTk3YjgtMTI5NGI1OGI3MTJh"],
         [
             "--new_folder_name",
-            "Optional new folder name.  ",
+            "Optional new folder name.",
             null
         ],
         [
