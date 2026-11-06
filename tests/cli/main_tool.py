@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 """Tests the main tool functionality."""
 
+import glob
 import logging
 import inspect
 import json
 import re
+import os
 
 from absl.testing import absltest
 from absl.testing import parameterized
@@ -344,6 +346,21 @@ class MainToolTest(parameterized.TestCase):
       self.fail(
           f'In recipe {recipe_name}, the following args were used, but were not'
           ' defined in the recipe: ' + ', '.join(missing_args))
+
+  def testRecipeNamesMatchFilename(self):
+    """Tests that recipe names match their filenames."""
+    tool = dftimewolf_recipes.DFTimewolfTool()
+    recipe_dir = os.path.join(tool._data_files_path, 'recipes')  # pylint: disable=protected-access
+
+    recipe_files = glob.glob('*.json', root_dir=recipe_dir)
+
+    for recipe_file in recipe_files:
+      with self.subTest(recipe_file):
+        with open(os.path.join(recipe_dir, recipe_file)) as fh:
+          content = json.load(fh)
+          self.assertEqual(f'{content["name"]}.json',
+                           recipe_file,
+                           'Recipe name does not match filename')
 
 
 if __name__ == '__main__':
