@@ -3,11 +3,11 @@
 """Tests the main tool functionality."""
 
 import glob
-import logging
 import inspect
 import json
-import re
+import logging
 import os
+import re
 
 from absl.testing import absltest
 from absl.testing import parameterized
