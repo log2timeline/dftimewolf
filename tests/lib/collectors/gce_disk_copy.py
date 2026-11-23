@@ -746,6 +746,91 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
 
     mock_Delete.assert_called_once()
 
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.GetBootDisk')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.ListDisks')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
+  def testPreProcessBootDiskOnlyWarnsAboutOtherDisks(self,
+                                                     mock_get_instance,
+                                                     mock_list_disks,
+                                                     mock_get_boot_disk):
+    """Tests a warning when only the boot disk of a multi-disk instance is copied."""
+    mock_get_instance.return_value = FAKE_INSTANCE
+    mock_list_disks.return_value = {'disk1': FAKE_DISK,
+                                    'bootdisk': FAKE_BOOT_DISK}
+    mock_get_boot_disk.return_value = FAKE_BOOT_DISK
+    self._module.SetUp('test-analysis-project-name',
+                       'test-target-project-name',
+                       'source_zone',
+                       'fake_zone',
+                       'my-owned-instance',
+                       None,
+                       False,
+                       False)
+
+    with mock.patch.object(self._module, 'PublishMessage') as mock_publishmessage:
+      self._module.PreProcess()
+
+    mock_publishmessage.assert_called_once_with('You are collecting only the boot disk, but instance '
+                                                'my-owned-instance has 2 disk attachments')
+    disks = self._module.GetContainers(containers.GCEDisk)
+    self.assertEqual([d.name for d in disks], ['bootdisk'])
+
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.GetBootDisk')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.ListDisks')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
+  def testPreProcessBootDiskOnlyNoWarningForSingleDisk(self,
+                                                       mock_get_instance,
+                                                       mock_list_disks,
+                                                       mock_get_boot_disk):
+    """Tests no warning when the boot disk is the only disk of the instance."""
+    mock_get_instance.return_value = FAKE_INSTANCE
+    mock_list_disks.return_value = {'bootdisk': FAKE_BOOT_DISK}
+    mock_get_boot_disk.return_value = FAKE_BOOT_DISK
+    self._module.SetUp('test-analysis-project-name',
+                       'test-target-project-name',
+                       'source_zone',
+                       'fake_zone',
+                       'my-owned-instance',
+                       None,
+                       False,
+                       False)
+
+    with mock.patch.object(self._module, 'PublishMessage') as mock_publishmessage:
+      self._module.PreProcess()
+
+    mock_publishmessage.assert_not_called()
+    disks = self._module.GetContainers(containers.GCEDisk)
+    self.assertEqual([d.name for d in disks], ['bootdisk'])
+
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.GetBootDisk')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.ListDisks')
+  @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
+  def testPreProcessAllDisksSortedWithoutWarning(self,
+                                                 mock_get_instance,
+                                                 mock_list_disks,
+                                                 mock_get_boot_disk):
+    """Tests that all_disks returns sorted disk names and no warning."""
+    mock_get_instance.return_value = FAKE_INSTANCE
+    mock_list_disks.return_value = {'disk2': FAKE_DISK_MULTIPLE[1],
+                                    'disk1': FAKE_DISK_MULTIPLE[0],
+                                    'bootdisk': FAKE_BOOT_DISK}
+    self._module.SetUp('test-analysis-project-name',
+                       'test-target-project-name',
+                       'source_zone',
+                       'fake_zone',
+                       'my-owned-instance',
+                       None,
+                       True,
+                       False)
+
+    with mock.patch.object(self._module, 'PublishMessage') as mock_publishmessage:
+      self._module.PreProcess()
+
+    mock_publishmessage.assert_not_called()
+    mock_get_boot_disk.assert_not_called()
+    disks = self._module.GetContainers(containers.GCEDisk)
+    self.assertEqual([d.name for d in disks], ['bootdisk', 'disk1', 'disk2'])
+
 
 if __name__ == '__main__':
   unittest.main()
