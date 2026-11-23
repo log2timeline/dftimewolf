@@ -5,8 +5,6 @@ import argparse
 import datetime
 import unittest
 
-import six
-
 from dftimewolf.lib import utils as dftw_utils
 from dftimewolf import config
 
@@ -34,7 +32,7 @@ class DFTimewolfTest(unittest.TestCase):
     Raises:
       ValueError: There still exists a value with an @ parameter.
     """
-    if isinstance(value, six.string_types):
+    if isinstance(value, str):
       if dftw_utils.TOKEN_REGEX.search(value):
         raise ValueError('{0:s} must be replaced in dictionary'.format(value))
     elif isinstance(value, list):
