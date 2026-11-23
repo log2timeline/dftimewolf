@@ -746,7 +746,6 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
 
     mock_Delete.assert_called_once()
 
-  @typing.no_type_check
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.GetBootDisk')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.ListDisks')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
@@ -776,7 +775,6 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     disks = self._module.GetContainers(containers.GCEDisk)
     self.assertEqual([d.name for d in disks], ['bootdisk'])
 
-  @typing.no_type_check
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.GetBootDisk')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.ListDisks')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
@@ -804,7 +802,6 @@ class GCEDiskCopyTest(modules_test_base.ModuleTestBase):
     disks = self._module.GetContainers(containers.GCEDisk)
     self.assertEqual([d.name for d in disks], ['bootdisk'])
 
-  @typing.no_type_check
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.GetBootDisk')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleComputeInstance.ListDisks')
   @mock.patch('libcloudforensics.providers.gcp.internal.compute.GoogleCloudCompute.GetInstance')
