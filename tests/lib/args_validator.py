@@ -1,7 +1,7 @@
 """Tests args_validator classes."""
 
 import unittest
-import mock
+from unittest import mock
 
 from dftimewolf.lib import args_validator
 from dftimewolf.lib import resources

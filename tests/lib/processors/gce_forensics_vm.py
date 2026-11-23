@@ -3,10 +3,10 @@
 """Tests the GCEForensicsVM generator."""
 
 
+from unittest import mock
+
 from absl.testing import absltest
 from absl.testing import parameterized
-
-import mock
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal import compute
 from libcloudforensics import errors as lcf_errors

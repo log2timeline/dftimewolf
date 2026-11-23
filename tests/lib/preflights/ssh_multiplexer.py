@@ -3,7 +3,7 @@
 """Tests for the SSH multiplexer preflight."""
 
 import unittest
-import mock
+from unittest import mock
 
 from dftimewolf.lib.preflights import ssh_multiplexer
 from tests.lib import modules_test_base

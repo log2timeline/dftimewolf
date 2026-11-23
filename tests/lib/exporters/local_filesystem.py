@@ -3,8 +3,7 @@
 """Tests the local filesystem exporter."""
 
 import unittest
-
-import mock
+from unittest import mock
 
 from dftimewolf.lib import errors
 from dftimewolf.lib.containers import containers

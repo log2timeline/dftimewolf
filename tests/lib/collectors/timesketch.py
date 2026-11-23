@@ -4,8 +4,8 @@
 
 import datetime
 from typing import Any
+from unittest import mock
 
-import mock
 import pandas as pd
 
 from dftimewolf.lib.collectors import timesketch

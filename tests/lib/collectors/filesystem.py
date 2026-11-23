@@ -3,8 +3,7 @@
 """Tests the local filesystem collector."""
 
 import unittest
-
-import mock
+from unittest import mock
 
 from dftimewolf.lib.collectors import filesystem
 from dftimewolf.lib.containers import containers

@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 """Tests the GCP Cloud Tree module."""
 
+from datetime import timedelta
+import json
 import os
 import unittest
-import json
-from datetime import timedelta
-import mock
+from unittest import mock
 
 from dftimewolf.lib.processors import gcp_cloud_resource_tree as gcp_crt
 from dftimewolf.lib.processors import gcp_cloud_resource_tree_helper as gcp_crt_helper # pylint: disable=line-too-long

@@ -5,8 +5,8 @@
 from __future__ import unicode_literals
 
 import unittest
+from unittest import mock
 
-import mock
 from libcloudforensics.providers.azure.internal import account as az_account
 from libcloudforensics.providers.azure.internal import compute
 

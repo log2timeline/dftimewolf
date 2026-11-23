@@ -3,14 +3,12 @@
 """Tests for the GCEDiskCopy collector."""
 
 
-import unittest
 import typing
+import unittest
+from unittest import mock
 
 from googleapiclient.errors import HttpError
 import httplib2
-
-import mock
-
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 from libcloudforensics.providers.gcp.internal import compute
 from libcloudforensics import errors as lcf_errors
