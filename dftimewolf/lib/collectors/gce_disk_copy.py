@@ -354,9 +354,17 @@ class GCEDiskCopy(module.ThreadAwareModule):
       remote_instance = self.source_project.compute.GetInstance(
           instance_name, zone=self.source_zone)
 
+      all_disk_names = sorted(
+          [d.name for d in list(remote_instance.ListDisks().values())])
+
       if all_disks:
-        return [d.name for d in list(remote_instance.ListDisks().values())]
-      return [remote_instance.GetBootDisk().name]
+        return all_disk_names
+      boot_disk_names = [remote_instance.GetBootDisk().name]
+      if all_disk_names != boot_disk_names:
+        self.PublishMessage(
+            'You are collecting only the boot disk, but instance '
+            f'{instance_name} has {len(all_disk_names)} disk attachments')
+      return boot_disk_names
     except RuntimeError as exception:
       self.ModuleError(str(exception), critical=True)
       return []  # Unreachable, needed for linting.
