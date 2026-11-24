@@ -3,8 +3,8 @@
 
 import json
 import unittest
+from unittest import mock
 
-import mock
 import pandas as pd
 
 from dftimewolf import config

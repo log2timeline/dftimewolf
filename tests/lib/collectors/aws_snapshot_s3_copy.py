@@ -3,10 +3,10 @@
 """Tests the AWSSnapshotS3CopyCollector."""
 
 
-import unittest
 from typing import Any
+import unittest
+from unittest import mock
 
-import mock
 import botocore
 
 from libcloudforensics.providers.aws.internal import account as aws_account

@@ -3,8 +3,8 @@
 """Tests the S3ToGCSCopy module."""
 
 import unittest
+from unittest import mock
 
-import mock
 from libcloudforensics.providers.gcp.internal import project as gcp_project
 
 from dftimewolf.lib.containers import containers

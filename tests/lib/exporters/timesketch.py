@@ -3,8 +3,7 @@
 """Tests the Threaded Timesketch exporter."""
 
 import unittest
-
-import mock
+from unittest import mock
 
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.exporters import timesketch

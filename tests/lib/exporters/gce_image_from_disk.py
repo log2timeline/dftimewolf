@@ -4,11 +4,12 @@
 
 
 import unittest
+from unittest import mock
 
 from libcloudforensics import errors as lcf_errors
 from libcloudforensics.providers.gcp.internal import compute
 from libcloudforensics.providers.gcp.internal import project as gcp_project
-import mock
+
 from dftimewolf.lib.containers import containers
 from dftimewolf.lib.exporters import gce_image_from_disk
 from tests.lib import modules_test_base

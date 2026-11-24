@@ -132,11 +132,6 @@ class DependencyHelper(object):
       for dependency in dependency_reader.Read(file_object):
         self.dependencies[dependency.name] = dependency
 
-    dependency = DependencyDefinition('mock')
-    dependency.minimum_version = '0.7.1'
-    dependency.version_property = '__version__'
-    self._test_dependencies['mock'] = dependency
-
   def _CheckPythonModule(self, dependency):
     """Checks the availability of a Python module.
 

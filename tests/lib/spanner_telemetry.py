@@ -6,7 +6,7 @@ import datetime
 import os
 import time
 import unittest
-import mock
+from unittest import mock
 
 try:
   from google.cloud import spanner

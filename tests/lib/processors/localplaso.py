@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 """Tests the localplaso processor."""
 
-import unittest
 import re
-import mock
+import unittest
+from unittest import mock
+
 import docker
 
 from dftimewolf.lib import errors

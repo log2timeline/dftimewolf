@@ -9,10 +9,10 @@ import shutil
 import tarfile
 import tempfile
 import unittest
-
-import mock
+from unittest import mock
 
 import pandas as pd
+
 from dftimewolf.lib import utils
 
 

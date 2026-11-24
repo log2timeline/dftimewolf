@@ -5,8 +5,8 @@
 from __future__ import unicode_literals
 
 import unittest
+from unittest import mock
 
-import mock
 from libcloudforensics.providers.aws.internal import account as aws_account
 from libcloudforensics.providers.aws.internal import ebs, ec2
 
